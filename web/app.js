@@ -70,12 +70,12 @@ const availableTasks = {
     checks: [
       {
         id: "lang-hu",
-        label: "1. Weboldal nyelve magyar (lang=\"hu\")",
+        label: "1. Weboldal nyelve legyen magyar",
         check: (doc) => doc.documentElement.lang === "hu",
       },
       {
         id: "charset-utf8",
-        label: "1. Karakterkódolás UTF-8",
+        label: "2. Karakterkódolás legyen UTF-8",
         check: (doc) => {
           const meta = doc.querySelector('meta[charset]');
           return meta && meta.getAttribute('charset').toLowerCase() === 'utf-8';
