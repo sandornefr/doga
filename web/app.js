@@ -24,6 +24,12 @@ const studentClassYearSelect = document.getElementById("student-class-year");
 const studentClassLetterSelect = document.getElementById("student-class-letter");
 const studentInfo = document.getElementById("student-info");
 const btnLogout = document.getElementById("btn-logout");
+const tabHtml = document.getElementById("tab-html");
+const tabCss = document.getElementById("tab-css");
+const htmlEditorWrapper = document.getElementById("html-editor-wrapper");
+const cssEditorWrapper = document.getElementById("css-editor-wrapper");
+const tasksSection = document.getElementById("tasks-section");
+const btnToggleTasks = document.getElementById("btn-toggle-tasks");
 
 // Időzítő változók
 let timerSeconds = 60 * 60; // 60 perc
@@ -249,6 +255,89 @@ const availableTasks = {
           const link = doc.querySelector('.lablec a[href="#leiras"]');
           return link && link.textContent.includes('Ugrás az elejére');
         },
+      },
+      // CSS feladatok (14. pont)
+      {
+        id: "css-body-font",
+        label: "14a. CSS: body betűtípus Verdana",
+        check: (doc, html, css) => {
+          return css && /body\s*\{[^}]*font-family\s*:\s*[^;]*verdana/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-body-height",
+        label: "14b. CSS: body magasság 400px",
+        check: (doc, html, css) => {
+          return css && /body\s*\{[^}]*height\s*:\s*400px/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-p-justify",
+        label: "14c. CSS: bekezdések (p) sorkizárt",
+        check: (doc, html, css) => {
+          return css && /p\s*\{[^}]*text-align\s*:\s*justify/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-hobbi-bg",
+        label: "14d. CSS: .hobbi háttérszín rgb(255,207,207)",
+        check: (doc, html, css) => {
+          return css && /\.hobbi\s*\{[^}]*background(-color)?\s*:\s*(rgb\s*\(\s*255\s*,\s*207\s*,\s*207\s*\)|#ffcfcf)/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-nav-border",
+        label: "14e. CSS: nav li szegély (3px dotted red)",
+        check: (doc, html, css) => {
+          return css && /nav\s+li\s*\{[^}]*border\s*:[^;]*3px[^;]*dotted[^;]*red/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-footer-link",
+        label: "14f. CSS: .lablec a fehér és félkövér",
+        check: (doc, html, css) => {
+          const hasWhite = css && /\.lablec\s+a\s*\{[^}]*(color\s*:\s*(white|#fff|#ffffff))/i.test(css);
+          const hasBold = css && /\.lablec\s+a\s*\{[^}]*font-weight\s*:\s*bold/i.test(css);
+          return hasWhite && hasBold;
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-footer-hover",
+        label: "14g. CSS: .lablec a:hover nagybetűs",
+        check: (doc, html, css) => {
+          return css && /\.lablec\s+a:hover\s*\{[^}]*text-transform\s*:\s*uppercase/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-malna-list-image",
+        label: "14h. CSS: #malna list-style-image bogyo.png",
+        check: (doc, html, css) => {
+          return css && /#malna\s*\{[^}]*list-style-image\s*:\s*url\([^)]*bogyo\.png/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-malna-margin",
+        label: "14h. CSS: #malna margin-left 25px",
+        check: (doc, html, css) => {
+          return css && /#malna\s*\{[^}]*margin-left\s*:\s*25px/i.test(css);
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-malna-font-size",
+        label: "14h. CSS: #malna betűméret 0.9em/90%",
+        check: (doc, html, css) => {
+          return css && /#malna\s*\{[^}]*font-size\s*:\s*(0\.9em|90%|0\.9rem)/i.test(css);
+        },
+        cssCheck: true,
       },
     ],
   },
@@ -867,6 +956,12 @@ function createEditor(monaco, elementId, language, value) {
     tabSize: 2,
     insertSpaces: true,
     wordWrap: "on",
+    fontFamily: "'Fira Code', 'Consolas', 'Courier New', monospace",
+    fontLigatures: false,
+    renderWhitespace: "none",
+    cursorStyle: "line",
+    cursorBlinking: "blink",
+    cursorWidth: 2,
     suggest: {
       showWords: true,
       showSnippets: true,
@@ -877,6 +972,8 @@ function createEditor(monaco, elementId, language, value) {
       comments: false,
       strings: true,
     },
+    autoClosingBrackets: "always",
+    autoClosingQuotes: "always",
     "semanticHighlighting.enabled": false,
     theme: "vizsga-contrast",
   });
@@ -944,8 +1041,102 @@ function activateEmmet(monaco) {
   }
 
   window.emmetMonaco.emmetHTML(monaco);
-  window.emmetMonaco.emmetCSS(monaco);
 }
+
+// Auto Close Tag funkció HTML-hez
+function setupAutoCloseTag(editor, monaco) {
+  editor.onDidChangeModelContent((e) => {
+    if (e.changes.length === 0) return;
+
+    const change = e.changes[0];
+    const text = change.text;
+
+    // Ha > karaktert írunk és nem self-closing tag
+    if (text === '>') {
+      const model = editor.getModel();
+      const position = editor.getPosition();
+      const lineContent = model.getLineContent(position.lineNumber);
+      const beforeCursor = lineContent.substring(0, position.column - 1);
+
+      // Keressük meg a nyitó taget
+      const tagMatch = beforeCursor.match(/<([a-zA-Z][\w-]*)[^>]*$/);
+      if (tagMatch) {
+        const tagName = tagMatch[1].toLowerCase();
+        // Void elemek nem kapnak záró taget
+        const voidElements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+        if (!voidElements.includes(tagName) && !beforeCursor.endsWith('/')) {
+          // Ellenőrizzük, hogy a sor nem tartalmaz-e már záró taget
+          const afterCursor = lineContent.substring(position.column - 1);
+          if (!afterCursor.startsWith(`</${tagName}>`)) {
+            const closeTag = `</${tagName}>`;
+            editor.executeEdits('auto-close-tag', [{
+              range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+              text: closeTag,
+              forceMoveMarkers: false
+            }]);
+            // Kurzor visszahelyezése
+            editor.setPosition(position);
+          }
+        }
+      }
+    }
+  });
+}
+
+// Wrap with Abbreviation funkció
+function wrapWithAbbreviation(editor, monaco) {
+  const selection = editor.getSelection();
+  if (!selection || selection.isEmpty()) {
+    alert('Jelölj ki szöveget a becsomagoláshoz!');
+    return;
+  }
+
+  const abbreviation = prompt('Add meg az Emmet rövidítést (pl. div, ul>li, .container):', 'div');
+  if (!abbreviation) return;
+
+  const model = editor.getModel();
+  const selectedText = model.getValueInRange(selection);
+
+  // Egyszerű tag becsomagolás
+  let tagName = abbreviation;
+  let className = '';
+  let id = '';
+
+  // Parse abbreviation: div.class#id formátum
+  const classMatch = abbreviation.match(/\.([a-zA-Z0-9_-]+)/g);
+  const idMatch = abbreviation.match(/#([a-zA-Z0-9_-]+)/);
+  const tagMatch = abbreviation.match(/^([a-zA-Z][\w-]*)/);
+
+  if (tagMatch) tagName = tagMatch[1];
+  if (classMatch) className = classMatch.map(c => c.substring(1)).join(' ');
+  if (idMatch) id = idMatch[1];
+
+  // Ha csak class vagy id van, div-et használunk
+  if (!tagMatch && (classMatch || idMatch)) tagName = 'div';
+
+  let openTag = `<${tagName}`;
+  if (id) openTag += ` id="${id}"`;
+  if (className) openTag += ` class="${className}"`;
+  openTag += '>';
+
+  const closeTag = `</${tagName}>`;
+  const wrappedText = `${openTag}\n  ${selectedText.split('\n').join('\n  ')}\n${closeTag}`;
+
+  editor.executeEdits('wrap-with-abbreviation', [{
+    range: selection,
+    text: wrappedText,
+    forceMoveMarkers: true
+  }]);
+}
+
+// Billentyűkombinációk beállítása
+function setupKeyBindings(editor, monaco) {
+  // Ctrl+Shift+W - Wrap with Abbreviation
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyW, () => {
+    wrapWithAbbreviation(editor, monaco);
+  });
+}
+
 
 // Feladat választó feltöltése
 function populateTaskSelector() {
@@ -1057,7 +1248,7 @@ function handleStudentFormSubmit(e) {
   }
 
   if (!email) {
-    alert('Kérlek add meg a KanDó email címed!');
+    alert('Kérlek add meg a KANDÓS email címed!');
     studentEmailInput.focus();
     return;
   }
@@ -1113,7 +1304,7 @@ function updateTimerDisplay() {
 function startTimer() {
   if (timerRunning) return;
   timerRunning = true;
-  btnTimerToggle.textContent = 'Stop';
+  btnTimerToggle.textContent = '⏸';
   btnTimerToggle.classList.add('running');
 
   timerInterval = setInterval(() => {
@@ -1134,7 +1325,7 @@ function startTimer() {
 
 function stopTimer() {
   timerRunning = false;
-  btnTimerToggle.textContent = 'Start';
+  btnTimerToggle.textContent = '▶';
   btnTimerToggle.classList.remove('running');
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -1443,14 +1634,15 @@ preview.addEventListener("load", () => {
     return;
   }
 
-  // A tanuló által beírt nyers HTML-t használjuk az ellenőrzéshez
+  // A tanuló által beírt nyers HTML-t és CSS-t használjuk az ellenőrzéshez
   const studentHtml = htmlEditor ? htmlEditor.getValue() : '';
+  const studentCss = cssEditor ? cssEditor.getValue() : '';
   const studentDoc = parseStudentHtml(studentHtml);
 
   const results = currentTask.checks.map((task) => ({
     id: task.id,
     label: task.label,
-    done: task.check(studentDoc, studentHtml),
+    done: task.check(studentDoc, studentHtml, studentCss),
   }));
 
   renderTasks(results);
@@ -1544,7 +1736,6 @@ btnReset.addEventListener("click", () => {
 btnBlocks.addEventListener("click", () => {
   showBlockGuides = !showBlockGuides;
   btnBlocks.classList.toggle("is-active", showBlockGuides);
-  btnBlocks.textContent = `Blokk nézet: ${showBlockGuides ? "BE" : "KI"}`;
   updatePreview();
 });
 
@@ -1552,8 +1743,41 @@ btnInteract.addEventListener("click", () => {
   lockPreviewInteractions = !lockPreviewInteractions;
   const isEnabled = !lockPreviewInteractions;
   btnInteract.classList.toggle("is-active", isEnabled);
-  btnInteract.textContent = `Interakció: ${isEnabled ? "BE" : "KI"}`;
   updatePreview();
+});
+
+// Tab váltás HTML/CSS között
+function switchToTab(tab) {
+  if (tab === 'html') {
+    tabHtml.classList.add('active');
+    tabCss.classList.remove('active');
+    htmlEditorWrapper.classList.add('active');
+    cssEditorWrapper.classList.remove('active');
+    setTimeout(() => {
+      if (htmlEditor) htmlEditor.layout();
+    }, 10);
+  } else {
+    tabHtml.classList.remove('active');
+    tabCss.classList.add('active');
+    htmlEditorWrapper.classList.remove('active');
+    cssEditorWrapper.classList.add('active');
+    setTimeout(() => {
+      if (cssEditor) cssEditor.layout();
+    }, 10);
+  }
+}
+
+tabHtml.addEventListener('click', () => switchToTab('html'));
+tabCss.addEventListener('click', () => switchToTab('css'));
+
+// Feladatok szekció összecsukása
+btnToggleTasks.addEventListener('click', () => {
+  tasksSection.classList.toggle('collapsed');
+  // Monaco editor újraméretezése
+  setTimeout(() => {
+    if (htmlEditor) htmlEditor.layout();
+    if (cssEditor) cssEditor.layout();
+  }, 50);
 });
 
 (async function init() {
@@ -1595,6 +1819,11 @@ btnInteract.addEventListener("click", () => {
     cssEditor = createEditor(monaco, "css-editor", "css", "");
 
     activateEmmet(monaco);
+
+    // Auto Close Tag és Wrap with Abbreviation beállítása
+    setupAutoCloseTag(htmlEditor, monaco);
+    setupKeyBindings(htmlEditor, monaco);
+    setupKeyBindings(cssEditor, monaco);
 
     htmlEditor.onDidChangeModelContent(scheduleUpdate);
     htmlEditor.onDidChangeCursorPosition(syncActivePreviewBlock);

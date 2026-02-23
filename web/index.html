@@ -8,31 +8,26 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">
-        <span class="exam-title">Ágazati Alapvizsga WEB</span>
-        <span class="brand-separator">|</span>
-        <span id="student-info" class="student-info"></span>
-        <button id="btn-logout" type="button" class="btn-logout" title="Kijelentkezés / Tanuló váltás">⏏</button>
-      </div>
-      <div class="topbar-center">
-        <select id="task-selector" class="task-selector">
-          <option value="">-- Válassz feladatot --</option>
-        </select>
-        <button id="btn-task-desc" type="button" class="btn-task-desc" disabled>Feladat leírás</button>
-        <button id="btn-sample-img" type="button" class="btn-task-desc" disabled>Mintakép</button>
-        <button id="btn-sources" type="button" class="btn-task-desc" disabled>Források</button>
-      </div>
-      <div class="topbar-right">
-        <div class="timer-container">
-          <span class="timer-label">Hátralévő idő:</span>
-          <span id="timer" class="timer">60:00</span>
-          <button id="btn-timer-toggle" type="button" class="btn-timer" title="Időzítő indítása/megállítása">Start</button>
-          <button id="btn-timer-reset" type="button" class="btn-timer btn-timer-reset" title="Időzítő visszaállítása">Reset</button>
+      <div class="topbar-row">
+        <div class="brand">
+          <span id="student-info" class="student-info"></span>
+          <button id="btn-logout" type="button" class="btn-logout" title="Kijelentkezés">⏏</button>
         </div>
-        <div class="file-actions">
-          <button id="btn-save-file" type="button" class="btn-file" disabled title="Mentés fájlba">Mentés</button>
-          <button id="btn-load-file" type="button" class="btn-file" title="Betöltés fájlból">Betöltés</button>
+        <div class="topbar-center">
+          <select id="task-selector" class="task-selector">
+            <option value="">-- Feladat --</option>
+          </select>
+          <button id="btn-task-desc" type="button" class="btn-sm" disabled title="Feladat leírás">Leírás</button>
+          <button id="btn-sample-img" type="button" class="btn-sm" disabled title="Mintakép">Minta</button>
+          <button id="btn-sources" type="button" class="btn-sm" disabled title="Források">Forrás</button>
+        </div>
+        <div class="topbar-right">
+          <span id="timer" class="timer">60:00</span>
+          <button id="btn-timer-toggle" type="button" class="btn-timer" title="Start/Stop">▶</button>
+          <button id="btn-timer-reset" type="button" class="btn-timer" title="Reset">↺</button>
+          <button id="btn-load-file" type="button" class="btn-sm" title="Betöltés">📂</button>
           <input type="file" id="file-input" accept=".json" hidden />
+          <button id="btn-save-file" type="button" class="btn-sm btn-save" disabled title="Mentés">💾</button>
         </div>
       </div>
     </header>
@@ -40,34 +35,38 @@
     <main class="layout">
       <section class="panel left">
         <div class="panel-header">
-          <h2>Forráskód</h2>
+          <div class="editor-tabs">
+            <button id="tab-html" type="button" class="editor-tab active">HTML</button>
+            <button id="tab-css" type="button" class="editor-tab">CSS</button>
+          </div>
           <div class="actions">
-            <button id="btn-starter" type="button" disabled>Kiindulás betöltése</button>
-            <button id="btn-reset" type="button">Törlés</button>
-            <button id="btn-blocks" type="button" class="is-active">Blokk nézet: BE</button>
-            <button id="btn-interact" type="button" class="is-active">Interakció: BE</button>
+            <button id="btn-starter" type="button" disabled title="Kiindulás betöltése">⟲ Kiindulás</button>
+            <button id="btn-reset" type="button" title="Törlés">🗑</button>
+            <button id="btn-blocks" type="button" class="is-active" title="Blokk nézet">Blokk</button>
+            <button id="btn-interact" type="button" class="is-active" title="Interakció">Inter.</button>
           </div>
         </div>
 
-        <section class="field">
-          <span>HTML</span>
-          <div id="html-editor" class="editor" aria-label="HTML editor"></div>
-        </section>
+        <div class="editor-container">
+          <div id="html-editor-wrapper" class="editor-pane active">
+            <div id="html-editor" class="editor" aria-label="HTML editor"></div>
+          </div>
+          <div id="css-editor-wrapper" class="editor-pane">
+            <div id="css-editor" class="editor" aria-label="CSS editor"></div>
+          </div>
+        </div>
 
-        <section class="field">
-          <span>CSS</span>
-          <div id="css-editor" class="editor" aria-label="CSS editor"></div>
-        </section>
-
-        <section class="tasks">
-          <h3>Részfeladatok ellenőrzése</h3>
-          <div class="progress-container">
+        <section class="tasks" id="tasks-section">
+          <div class="tasks-header">
+            <span>Feladatok <button id="btn-toggle-tasks" type="button" class="btn-toggle-tasks" title="Összecsuk/Kinyit">▼</button></span>
+            <span id="progress-text" class="progress-text">0/0 (0%)</span>
+          </div>
+          <div id="tasks-content" class="tasks-content">
             <div class="progress-bar-bg">
               <div id="progress-bar" class="progress-bar-fill"></div>
             </div>
-            <span id="progress-text" class="progress-text">0/0 feladat teljesítve (0%)</span>
+            <ul id="task-list" class="task-list"></ul>
           </div>
-          <ul id="task-list" class="task-list"></ul>
         </section>
       </section>
 
@@ -75,8 +74,8 @@
         <div class="panel-header">
           <h2>Előnézet</h2>
           <div class="preview-actions">
-            <button id="btn-preview-new-tab" type="button" class="btn-preview-tab" disabled title="Előnézet új lapon (reszponzív teszteléshez)">Új lapon</button>
-            <div class="status" id="status">Válassz feladatot a kezdéshez…</div>
+            <button id="btn-preview-new-tab" type="button" class="btn-sm" disabled title="Új lapon">↗</button>
+            <span class="status" id="status">Válassz feladatot…</span>
           </div>
         </div>
         <iframe id="preview" title="Preview" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -84,21 +83,21 @@
     </main>
 
     <footer class="footer">
-      Tipp: Gépelés közben automatikus frissítés és ellenőrzés. A munkád automatikusan mentődik a böngészőben.
+      <kbd>Ctrl+Shift+W</kbd> Wrap | <kbd>Tab</kbd> Emmet | Automatikus mentés
     </footer>
 
     <!-- Tanuló adatai modal -->
     <div id="student-modal" class="student-modal-overlay">
       <div class="student-modal">
         <h2>Vizsga kezdése</h2>
-        <p>Add meg az adataidat a feladat megkezdése előtt:</p>
+        <p>Add meg az adataidat:</p>
         <form id="student-form">
           <div class="form-group">
             <label for="student-name">Név:</label>
             <input type="text" id="student-name" placeholder="Vezetéknév Keresztnév" required />
           </div>
           <div class="form-group">
-            <label for="student-email">KanDó email cím:</label>
+            <label for="student-email">Email:</label>
             <div class="email-input-wrapper">
               <input type="text" id="student-email" placeholder="felhasználónév" required />
               <span class="email-domain">@kkszki.hu</span>
@@ -108,7 +107,7 @@
             <label>Osztály:</label>
             <div class="class-selector-wrapper">
               <select id="student-class-year" class="class-select" required>
-                <option value="">Évfolyam</option>
+                <option value="">Évf.</option>
                 <option value="9">9.</option>
                 <option value="10">10.</option>
                 <option value="11">11.</option>
@@ -116,7 +115,7 @@
                 <option value="13">13.</option>
               </select>
               <select id="student-class-letter" class="class-select" required>
-                <option value="">Osztály</option>
+                <option value="">Oszt.</option>
                 <option value="A">A</option>
                 <option value="B">B</option>
                 <option value="C">C</option>
@@ -125,7 +124,7 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn-start-exam">Vizsga kezdése</button>
+          <button type="submit" class="btn-start-exam">Kezdés</button>
         </form>
       </div>
     </div>
