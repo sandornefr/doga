@@ -46,11 +46,11 @@ const availableTasks = {
     basePath: "forrasok/bogyos/",
     htmlFile: "bogyos_gyumolcsok.html",
     cssFile: "css/style.css",
-    taskDescFile: "weboldal_kódolás_bogyós_gyümölcsök.html",
+    taskDescFile: "weboldal_kodolas_bogyos_gyumolcsok.html",
     // A preview-ban használt base URL a képekhez és egyéb asset-ekhez
     previewBase: "forrasok/bogyos/",
     // Mintakép
-    sampleImage: "bogyós_gyümölcsök.png",
+    sampleImage: "bogyos_gyumolcsok.png",
     // Forrás fájlok
     sourceFiles: [
       { name: "forras.txt", label: "Áfonya szöveg (forras.txt)" },
