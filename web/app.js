@@ -841,13 +841,10 @@ function annotateHtmlWithSourceLines(html) {
 function buildDoc(html, css, withGuides) {
   const extra = withGuides ? guideScript : "";
   const interactionLock = lockPreviewInteractions ? `${previewLockStyle}\n${previewLockScript}` : "";
-  const htmlNoStyleLink = html.replace(/<link[^>]+href=["'][^"']*style\.css["'][^>]*\s*\/?>/gi, '');
-  const htmlForPreview = annotateHtmlWithSourceLines(htmlNoStyleLink);
+  const htmlForPreview = annotateHtmlWithSourceLines(html);
 
-  // Base URL a képekhez és egyéb asset-ekhez
   const baseHref = currentTask ? currentTask.previewBase : "";
 
-  // Bootstrap CSS és JS a feladat mappájából, ha van, különben CDN
   const bootstrapCSS = currentTask
     ? `<link href="${baseHref}bootstrap/bootstrap.min.css" rel="stylesheet" />`
     : `<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />`;
