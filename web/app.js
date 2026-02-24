@@ -857,7 +857,7 @@ function buildDoc(html, css, withGuides) {
 <html lang="hu">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=1200px, initial-scale=0.4" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.4" />
     <base href="${baseHref}" />
     ${bootstrapCSS}
     ${withGuides ? guideStyle : ""}
