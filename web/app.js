@@ -2013,6 +2013,14 @@ btnToggleTasks.addEventListener('click', () => {
     // Wrap gomb eseménykezelő
     btnWrap.addEventListener('click', handleWrapButton);
 
+    // Formáz gomb eseménykezelő
+    document.getElementById('btn-format').addEventListener('click', () => {
+      const activeEditor = htmlEditorWrapper.classList.contains('active') ? htmlEditor : cssEditor;
+      if (activeEditor) {
+        activeEditor.getAction('editor.action.formatDocument').run();
+      }
+    });
+
     htmlEditor.onDidChangeModelContent(scheduleUpdate);
     htmlEditor.onDidChangeCursorPosition(syncActivePreviewBlock);
     cssEditor.onDidChangeModelContent(scheduleUpdate);
