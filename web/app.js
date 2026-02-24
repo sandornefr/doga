@@ -247,14 +247,12 @@ const availableTasks = {
           return captions.length >= 6;
         },
       },
-      {
+            {
         id: "malna-list-ul",
-        label: "21. „A málna jótékony hatásai:” bekezdés alatti szövegből számozatlan felsorolást készített",
+        label: "21. „A málna jótékony hatásai:" bekezdés alatti szövegből számozatlan felsorolást készített",
         check: (doc) => {
-          const ul = doc.querySelector('ul');
-          if (!ul) return false;
-          const lis = ul.querySelectorAll('li');
-          return lis.length > 0;
+          const uls = doc.querySelectorAll('ul:not(.navbar-nav):not(.nav)');
+          return Array.from(uls).some(ul => ul.querySelectorAll('li').length > 0);
         },
       },
       {
