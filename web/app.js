@@ -1514,6 +1514,7 @@ function loadValidationImage(type, file) {
       validationImages[`${type}FileName`] = file.name;
       statusEl.textContent = `${type.toUpperCase()} validálás kép betöltve: ${file.name}`;
       resolve();
+      updatePreview(); // ← ez frissíti a feladatlistát
     };
     reader.readAsDataURL(file);
   });
