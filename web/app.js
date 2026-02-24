@@ -1961,16 +1961,14 @@ function switchToTab(tab) {
         if (cssEditor) cssEditor.layout();
       }, 10);
       break;
-    case 'css-validator':
-      tabCssValidator.classList.add('active');
-      cssValidatorWrapper.classList.add('active');
-      break;
   }
 }
 
 tabHtml.addEventListener('click', () => switchToTab('html'));
 tabCss.addEventListener('click', () => switchToTab('css'));
-tabCssValidator.addEventListener('click', () => switchToTab('css-validator'));
+tabCssValidator.addEventListener('click', () => {
+  window.open('https://jigsaw.w3.org/css-validator/#validate_by_input', '_blank');
+});
 
 // Külső linkek új lapon
 btnW3schools.addEventListener('click', () => {
