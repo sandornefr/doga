@@ -249,7 +249,7 @@ const availableTasks = {
       },
             {
         id: "malna-list-ul",
-        label: "21. "A málna jótékony hatásai:" bekezdés alatti szövegből számozatlan felsorolást készített",
+        label: "21. \"A málna jótékony hatásai:\" bekezdés alatti szövegből számozatlan felsorolást készített",
         check: (doc) => {
           const uls = doc.querySelectorAll('ul:not(.navbar-nav):not(.nav)');
           return Array.from(uls).some(ul => ul.querySelectorAll('li').length > 0);
