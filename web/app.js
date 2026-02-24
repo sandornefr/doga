@@ -1600,15 +1600,27 @@ function loadFromFile(file) {
         if (htmlEditor) htmlEditor.setValue(data.html || '');
         if (cssEditor) cssEditor.setValue(data.css || '');
 
-        // Időzítő visszaállítása
-        if (data.timerSeconds !== undefined) {
-          timerSeconds = data.timerSeconds;
-          updateTimerDisplay();
+        // Validálás képek visszaállítása
+        if (data.validationImages) {
+          if (data.validationImages.html) {
+            validationImages.html = data.validationImages.html;
+            validationImages.htmlFileName = data.validationImages.htmlFileName;
+          }
+          if (data.validationImages.css) {
+            validationImages.css = data.validationImages.css;
+            validationImages.cssFileName = data.validationImages.cssFileName;
+          }
         }
-
-        updatePreview();
-        statusEl.textContent = `Munka betöltve (mentve: ${new Date(data.savedAt).toLocaleString('hu-HU')})`;
-      }, 100);
+        
+         // Időzítő visszaállítása
+          if (data.timerSeconds !== undefined) {
+            timerSeconds = data.timerSeconds;
+            updateTimerDisplay();
+          }
+        
+          updatePreview();
+          statusEl.textContent = `Munka betöltve (mentve: ${new Date(data.savedAt).toLocaleString('hu-HU')})`;
+        }, 100);
 
     } catch (err) {
       alert('Hiba a fájl beolvasásakor: ' + err.message);
