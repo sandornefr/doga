@@ -70,12 +70,12 @@ const availableTasks = {
     checks: [
       {
         id: "lang-hu",
-        label: "1. Weboldal nyelve legyen magyar",
+        label: "1. Weboldal nyelve magyar",
         check: (doc) => doc.documentElement.lang === "hu",
       },
       {
         id: "charset-utf8",
-        label: "2. Karakterkódolás legyen UTF-8",
+        label: "2. Karakterkódolás UTF-8",
         check: (doc) => {
           const meta = doc.querySelector('meta[charset]');
           return meta && meta.getAttribute('charset').toLowerCase() === 'utf-8';
@@ -83,12 +83,12 @@ const availableTasks = {
       },
       {
         id: "title",
-        label: "2. Böngésző címsor: \"Bogyós gyümölcsök\"",
+        label: "3. Böngésző címsorában megjelenő cím \"Bogyós gyümölcsök\"",
         check: (doc) => doc.title === "Bogyós gyümölcsök",
       },
       {
         id: "style-link",
-        label: "3. style.css hivatkozás a head-ben",
+        label: "4. Hivatkozás helyezett el a css mappában található style.css stíluslapra",
         check: (doc) => {
           const links = doc.querySelectorAll('link[rel="stylesheet"]');
           return Array.from(links).some(l => l.href.includes('style.css'));
@@ -96,7 +96,7 @@ const availableTasks = {
       },
       {
         id: "fejlec-img",
-        label: "4a. Fejléc kép (fejlec.jpg) elhelyezve",
+        label: "5. Az img mappában található fejlec.jpg képet elhelyezte",
         check: (doc) => {
           const img = doc.querySelector('img[src*="fejlec"]');
           return img !== null;
@@ -104,20 +104,20 @@ const availableTasks = {
       },
       {
         id: "fejlec-alt",
-        label: "4b. Fejléc kép alt=\"Bogyós gyümölcsök\"",
+        label: "6. Ha nem jeleníthető meg a kép vagy ha az egeret felé visszük a \"Bogyós gyümölcsök\" szöveg jelenik meg",
         check: (doc) => {
           const img = doc.querySelector('img[src*="fejlec"]');
-          return img && img.alt === "Bogyós gyümölcsök";
+          return img && img.alt && img.title === "Bogyós gyümölcsök";
         },
       },
       {
         id: "fejlec-id",
-        label: "4c. Fejléc kép id=\"fejlec\"",
+        label: "7. Fejléc képre egyedi azonosítót állított fejlec néven",
         check: (doc) => doc.querySelector('img#fejlec') !== null,
       },
       {
         id: "goji-menu",
-        label: "5a. \"Goji bogyó\" menüpont létezik",
+        label: "8. \"Goji bogyó\" menüpont létezik",
         check: (doc) => {
           const links = doc.querySelectorAll('nav a, .navbar a');
           return Array.from(links).some(a => a.textContent.includes('Goji'));
@@ -125,7 +125,7 @@ const availableTasks = {
       },
       {
         id: "goji-link",
-        label: "5b. Goji bogyó link helyes URL és target=\"_blank\"",
+        label: "9. Goji bogyó linkje helyes és új oldalon nyílik meg",
         check: (doc) => {
           const links = doc.querySelectorAll('a');
           return Array.from(links).some(a =>
@@ -136,7 +136,7 @@ const availableTasks = {
       },
       {
         id: "h1-focim",
-        label: "6. Főcím 1-es szintű címsor (h1)",
+        label: "10. Főcím 1-es szintű címsor",
         check: (doc) => {
           const h1 = doc.querySelector('h1');
           return h1 && h1.textContent.includes('BOGYÓS');
@@ -144,7 +144,7 @@ const availableTasks = {
       },
       {
         id: "erdei-paragraphs",
-        label: "7a. Erdei gyümölcsök: 2 bekezdés",
+        label: "11. Az Erdei gyümölcsök részben 2 bekezdést készített, my-4 bootstrap osztályjelölővel",
         check: (doc) => {
           const erdei = doc.querySelector('#erdei');
           if (!erdei) return false;
@@ -154,7 +154,7 @@ const availableTasks = {
       },
       {
         id: "szeder-underline",
-        label: "8a. \"5 legjobb szedres...\" aláhúzott",
+        label: "12. \"5 legjobb szedres nyári finomság:\" aláhúzott",
         check: (doc) => {
           const u = doc.querySelector('u');
           return u && u.textContent.includes('5 legjobb');
@@ -162,7 +162,7 @@ const availableTasks = {
       },
       {
         id: "szeder-list",
-        label: "8b. Szedres finomságok számozott lista (ol)",
+        label: "13. Az \"5 legjobb szedres nyári finomság:\" alatti szövegből számozott felsorolást készített",
         check: (doc) => {
           const lists = doc.querySelectorAll('ol');
           return Array.from(lists).some(ol =>
@@ -172,7 +172,7 @@ const availableTasks = {
       },
       {
         id: "afonya-h3",
-        label: "9a. Áfonya rész: h3 címsor",
+        label: "14. Áfonya részben h3 címsort készített",
         check: (doc) => {
           const h3s = doc.querySelectorAll('h3');
           return Array.from(h3s).some(h => h.textContent.includes('Áfonya'));
@@ -180,7 +180,7 @@ const availableTasks = {
       },
       {
         id: "afonya-bold-italic",
-        label: "9c. \"áfonya\" félkövér, latin név dőlt",
+        label: "15. Az \"áfonya\" félkövér, a zárójelben lévő latin név dőlt",
         check: (doc) => {
           const bolds = doc.querySelectorAll('b, strong');
           const italics = doc.querySelectorAll('i, em');
@@ -191,15 +191,23 @@ const availableTasks = {
       },
       {
         id: "afonya-img",
-        label: "9d. Áfonya kép src és alt beállítva",
+        label: "16. A kép forrása az img mappában található afonya.jpg",
         check: (doc) => {
           const img = doc.querySelector('img[src*="afonya"]');
-          return img && img.alt === "Áfonya";
+          return img !== null;
+        },
+      },
+      {
+        id: "afonya-alt",
+        label: "17. Ha nem jeleníthető meg a kép vagy ha az egeret felé visszük a \"Áfonya\" szöveg jelenik meg",
+        check: (doc) => {
+          const img = doc.querySelector('img[src*="afonya"]');
+          return img && img.alt && img.title === "Áfonya";
         },
       },
       {
         id: "caption-classes",
-        label: "9e. Képaláírások: fw-bold és h5 osztályok (6 helyen)",
+        label: "18. Képaláírásokra alkalmazta az fw-bold és h5 osztályjelölőket (6 helyen)",
         check: (doc) => {
           const captions = doc.querySelectorAll('.fw-bold.h5');
           return captions.length >= 6;
@@ -207,7 +215,7 @@ const availableTasks = {
       },
       {
         id: "malna-list",
-        label: "10. Málna hatásai: számozatlan lista id=\"malna\"",
+        label: "19. \"A málna jótékony hatásai:\" alatti szövegből számozatlan felsorolást készített \"malna\" egyedi azonosítóval",
         check: (doc) => {
           const ul = doc.querySelector('ul#malna');
           return ul !== null;
@@ -215,7 +223,7 @@ const availableTasks = {
       },
       {
         id: "col-lg-4",
-        label: "11. Eper/Áfonya/Málna: col-lg-4 (3 oszlop nagy képernyőn)",
+        label: "20. Eper/Áfonya/Málna: 3 oszlopos elrendezésű nagy képernyőn",
         check: (doc) => {
           // Az Eper, Áfonya és Málna szekcióknak kell col-lg-4-nek lennie
           // Keressük meg azokat a col-lg-4 elemeket, amelyek tartalmazzák ezeket a címsorokat
@@ -239,7 +247,7 @@ const availableTasks = {
       },
       {
         id: "table-header",
-        label: "12a. Táblázat fejléc cellák (th) kitöltve",
+        label: "21. A táblázat fejléc celláit elkészítette",
         check: (doc) => {
           const ths = doc.querySelectorAll('thead th');
           return ths.length >= 3;
@@ -247,7 +255,7 @@ const availableTasks = {
       },
       {
         id: "table-w25",
-        label: "12b. Táblázat fejléc cellák: w-25 osztály",
+        label: "22. Táblázat fejléc celláira alkalmazza a w-25 osztályjelölőt",
         check: (doc) => {
           const ths = doc.querySelectorAll('thead th.w-25');
           return ths.length >= 3;
@@ -255,16 +263,16 @@ const availableTasks = {
       },
       {
         id: "footer-link",
-        label: "13. Lábléc: \"Ugrás az elejére\" link href=\"#leiras\"",
+        label: "23. A láblécbe hvatkozást készített a \"leiras\" egyedi aonosítóra és szövegként \"Ugrás az elejére\" jelenik meg",
         check: (doc) => {
           const link = doc.querySelector('.lablec a[href="#leiras"]');
           return link && link.textContent.includes('Ugrás az elejére');
         },
       },
-      // CSS feladatok (14. pont)
+      // CSS feladatok
       {
         id: "css-body-font",
-        label: "14a. CSS: body betűtípus Verdana",
+        label: "24. CSS: betűtípus Verdana",
         check: (doc, html, css) => {
           return css && /body\s*\{[^}]*font-family\s*:\s*[^;]*verdana/i.test(css);
         },
@@ -272,7 +280,7 @@ const availableTasks = {
       },
       {
         id: "css-body-height",
-        label: "14b. CSS: body magasság 400px",
+        label: "25. CSS: magasság 400px",
         check: (doc, html, css) => {
           return css && /body\s*\{[^}]*height\s*:\s*400px/i.test(css);
         },
@@ -280,7 +288,7 @@ const availableTasks = {
       },
       {
         id: "css-p-justify",
-        label: "14c. CSS: bekezdések (p) sorkizárt",
+        label: "26. CSS: bekezdések sorkizártak",
         check: (doc, html, css) => {
           return css && /p\s*\{[^}]*text-align\s*:\s*justify/i.test(css);
         },
@@ -288,7 +296,7 @@ const availableTasks = {
       },
       {
         id: "css-hobbi-bg",
-        label: "14d. CSS: .hobbi háttérszín rgb(255,207,207)",
+        label: "27. CSS: a hobbi osztályjelölő háttérszíne rgb(255,207,207)",
         check: (doc, html, css) => {
           return css && /\.hobbi\s*\{[^}]*background(-color)?\s*:\s*(rgb\s*\(\s*255\s*,\s*207\s*,\s*207\s*\)|#ffcfcf)/i.test(css);
         },
@@ -296,25 +304,33 @@ const availableTasks = {
       },
       {
         id: "css-nav-border",
-        label: "14e. CSS: nav li szegély (3px dotted red)",
+        label: "28. CSS: a navigáció listaelemére 3 képpontos pontozott vonalú piros szegélyt állított",
         check: (doc, html, css) => {
           return css && /nav\s+li\s*\{[^}]*border\s*:[^;]*3px[^;]*dotted[^;]*red/i.test(css);
         },
         cssCheck: true,
       },
       {
-        id: "css-footer-link",
-        label: "14f. CSS: .lablec a fehér és félkövér",
+        id: "css-footer-link-color",
+        label: "29. CSS: a lablec osztályjelölő fehér színű",
         check: (doc, html, css) => {
           const hasWhite = css && /\.lablec\s+a\s*\{[^}]*(color\s*:\s*(white|#fff|#ffffff))/i.test(css);
+          return hasWhite;
+        },
+        cssCheck: true,
+      },
+      {
+        id: "css-footer-link-style",
+        label: "30. CSS: a lablec osztályjelölő félkövér",
+        check: (doc, html, css) => {
           const hasBold = css && /\.lablec\s+a\s*\{[^}]*font-weight\s*:\s*bold/i.test(css);
-          return hasWhite && hasBold;
+          return hasBold;
         },
         cssCheck: true,
       },
       {
         id: "css-footer-hover",
-        label: "14g. CSS: .lablec a:hover nagybetűs",
+        label: "31. CSS: ha a lablec osztályjelölőjű hivatkozás felé visszük az egeret, akkor nagybetűs",
         check: (doc, html, css) => {
           return css && /\.lablec\s+a:hover\s*\{[^}]*text-transform\s*:\s*uppercase/i.test(css);
         },
@@ -322,7 +338,7 @@ const availableTasks = {
       },
       {
         id: "css-malna-list-image",
-        label: "14h. CSS: #malna list-style-image bogyo.png",
+        label: "32. CSS: a málna egyedi azonosítójú elemkijelölőre beállította az img mappában található bogyo.png-t",
         check: (doc, html, css) => {
           return css && /#malna\s*\{[^}]*list-style-image\s*:\s*url\([^)]*bogyo\.png/i.test(css);
         },
@@ -330,7 +346,7 @@ const availableTasks = {
       },
       {
         id: "css-malna-margin",
-        label: "14h. CSS: #malna margin-left 25px",
+        label: "33. CSS: a málna egyedi azonosítójú elemkijelölőre beállította, hogy a bal külső margó 25 képpont legyen",
         check: (doc, html, css) => {
           return css && /#malna\s*\{[^}]*margin-left\s*:\s*25px/i.test(css);
         },
@@ -338,7 +354,7 @@ const availableTasks = {
       },
       {
         id: "css-malna-font-size",
-        label: "14h. CSS: #malna betűméret 0.9em/90%",
+        label: "34. CSS: a málna egyedi azonosítójú elemkijelölőre beállította, hogy a betűméret 10%-kal kisebb, mint az alapértelmezett",
         check: (doc, html, css) => {
           return css && /#malna\s*\{[^}]*font-size\s*:\s*(0\.9em|90%|0\.9rem)/i.test(css);
         },
