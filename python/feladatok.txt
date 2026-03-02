@@ -257,6 +257,146 @@ A víz halmazállapota: folyékony
 Add meg a hőmérsékletet Celsius fokban! 150
 A víz halmazállapota: légnemű
 
+```
+
+13. feladat
+Pont: 14
+
+Egy postahivatalban a csekkbefizetések után a rendszernek azonnal ki kell számolnia a kezelési költséget, és a nap végén összesítenie kell a posta ebből származó bevételét.
+
+Készíts programot, amely megoldja a következő feladatokat:
+
+Készíts egy KezelesiKoltseg nevű függvényt, amely paraméterként megkapja a csekk összegét, és visszaadja a fizetendő kezelési költséget az alábbi szabályok szerint:
+Ha az összeg kisebb, mint 10.000 Ft, a költség 200 Ft.
+Ha az összeg 10.000 Ft vagy annál több, a költség 500 Ft.
+A főprogramban hozz létre egy változót a posta összes bevételének (összes kezelési költség) tárolására, 0 kezdőértékkel.
+Kérd be a felhasználótól a csekkek összegét a minta szerint!
+Minden megadott összeg után a függvény segítségével határozd meg, és írd ki a képernyőre a fizetendő kezelési költséget.
+A kiszámolt költséget add hozzá az összes bevételt tároló változóhoz.
+Az adatbekérést addig folytasd, amíg a felhasználó 0 értéket nem ad meg!
+A 0 beírása után (a program futásának végén) írd ki, mennyi volt a posta teljes bevétele a kezelési költségekből.
+
+Minta kód:
+
+```
+Adja meg a csekk összegét (0 a kilépés): 2000
+A fizetendő költség: 200 Ft
+Adja meg a csekk összegét (0 a kilépés): 10000
+A fizetendő költség: 500 Ft
+Adja meg a csekk összegét (0 a kilépés): 0
+A posta teljes bevétele a költségekből: 700 Ft
+
+```
+
+14. feladat
+Pont: 14
+
+A könyvtárban a késések utáni bírságot szeretnénk gyorsan kiszámolni. A programodnak nem kell tárolnia az adatokat, csak folyamatosan összeadnia a bevételt.
+
+Készíts programot, és oldd meg az alábbiakat:
+Írj egy Birsag nevű függvényt! A függvény kapja meg a késés idejét (napokban), és adja vissza a fizetendő összeget:
+5 nap késés: 0 Ft.
+6-10 nap késés: 500 Ft.
+10 napnál több késés: 1000 Ft.
+A főprogramban hozz létre egy változót (pl. bevetel), amiben a teljes beszedett bírságot fogod gyűjteni. Állítsd be 0-ra!
+Kezdj el egy ciklust, ami addig kér be adatokat, amíg a felhasználó -1-et nem ír!
+Kérd be a késés napjainak számát.
+Ha az adat helyes, hívd meg a Birsag függvényt, írd ki a fizetendő összeget (pl. "A bírság: 500 Ft"), és add hozzá ezt az összeget a bevetel változóhoz.
+Ha negatív számot írnak (de nem -1-et), írd ki: "Hibás adat!", és ne add hozzá az összeghez.
+Ha -1-et írnak, a ciklus álljon le (ne számoljon vele).
+A ciklus után írd ki, mennyi volt az összes beszedett bírság a nap végén.
+
+Minta kód:
+
+```
+Hány napot késett? (-1 a kilépés): 5
+A bírság: 0 Ft
+Hány napot késett? (-1 a kilépés): 8
+A bírság: 500 Ft
+Hány napot késett? (-1 a kilépés): 12
+A bírság: 1000 Ft
+Hány napot késett? (-1 a kilépés): -1
+A teljes beszedett bírság: 1500 Ft
+
+```
+
+15. feladat
+Pont: 14
+
+Egy okosóra adatait szeretnénk feldolgozni. A programnak nem kell eltárolnia az adatokat, csak értékelnie kell a napokat, és megszámolnia, hányszor sikerült a kitűzött cél.
+
+Készíts programot, és oldd meg az alábbiakat:
+Írj egy Aktivitas nevű függvényt! A függvény kapja meg a lépések számát, és adjon vissza logikai értéket:
+Ha a lépés több, mint 10.000, térjen vissza True (Igaz) értékkel.
+Egyébként térjen vissza False (Hamis) értékkel.
+A főprogramban hozz létre egy változót (pl.: sikeres_napok), amiben számlálni fogod, hányszor sikerült a cél. Állítsd be 0-ra!
+
+Készíts egy ciklust, ami pontosan 7 alkalommal fut le (a hét minden napjára)!
+A cikluson belül kérd be az aznapi lépésszámot a minta szerint (pl. "1. nap lépésszáma:").
+Hívd meg az Aktivitas függvényt a bekért adattal.
+Ha a függvény True-t ad vissza:
+Írd ki: "Teljesítve".
+Növeld meg a sikeres_napok változó értékét 1-gyel.
+Ha a függvény False-t ad vissza:
+Írd ki: "Nincs teljesítve".
+A ciklus lefutása után írd ki, hogy a héten összesen hány napon sikerült elérni a célt.
+
+Minta kód:
+
+```
+1. nap lépésszáma: 15000
+Teljesítve
+2. nap lépésszáma: 10000
+Nincs teljesítve
+3. nap lépésszáma: 9850
+Nincs teljesítve
+4. nap lépésszáma: 4568
+Nincs teljesítve
+5. nap lépésszáma: 12000
+Teljesítve
+6. nap lépésszáma: 5800
+Nincs teljesítve
+7. nap lépésszáma: 6900
+Nincs teljesítve
+A héten 2 napon sikerült a cél!
+
+```
+
+16. feladat
+Pont: 14
+
+Egy magasugró versenyen vagyunk. A versenyző 6 kísérletet tesz. A te feladatod egy programot írni, ami értékeli az ugrásokat, és megjegyzi, mi volt a legnagyobb magasság, amivel a sportoló megpróbálkozott.
+
+Készíts programot, és oldd meg az alábbiakat:
+Írj egy Siker nevű függvényt! A függvény kapja meg az ugrás magasságát (cm-ben), és adjon vissza egy szöveges értékelést:
+Ha a magasság nagyobb, mint 150 cm, térjen vissza azzal, hogy "Átment".
+Egyébként (150 vagy kevesebb) térjen vissza azzal, hogy "Leverte".
+A főprogramban hozz létre egy változót (pl. legnagyobb), amiben a legnagyobb próbálkozást fogod tárolni. Állítsd be 0-ra!
+
+Készíts egy ciklust, ami pontosan 6 alkalommal fut le (a 6 kísérletre)!
+A cikluson belül kérd be a léc magasságát cm-ben.
+Ha a magasság kisebb, mint 50 cm, írd ki: "Ez túl alacsony!" (és mást ne csinálj vele).
+Ha a magasság megfelelő (50 vagy több):
+Hívd meg a Siker függvényt, és írd ki az eredményét a képernyőre.
+Vizsgáld meg, hogy ez az új magasság nagyobb-e, mint az eddigi legnagyobb. Ha igen, akkor tárold el ezt az új értéket a legnagyobb változóban!
+A ciklus lefutása után írd ki, hogy mi volt a legnagyobb magasság, aminek a versenyző nekifutott.
+
+Minta kód:
+
+```
+1. ugrás magassága (cm): 150
+Eredmény: Leverte
+2. ugrás magassága (cm): 50
+Eredmény: Leverte
+3. ugrás magassága (cm): 49
+Ez túl alacsony!
+4. ugrás magassága (cm): 178
+Eredmény: Átment
+5. ugrás magassága (cm): 168
+Eredmény: Átment
+6. ugrás magassága (cm): 200
+Eredmény: Átment
+A legnagyobb próbálkozás: 200 cm
 
 ```
 
