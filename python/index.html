@@ -260,27 +260,7 @@
             animation: pulse 1s infinite;
         }
 
-        .task-timer-float {
-            position: fixed;
-            top: 12px;
-            right: 12px;
-            background: #111;
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            letter-spacing: 0.3px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-            z-index: 9999;
-            display: none;
-        }
-
-        .task-timer-float.warning {
-            background: #c92a2a;
-        }
-
-        .version-badge {
+.version-badge {
             position: fixed;
             right: 10px;
             bottom: 8px;
@@ -726,8 +706,7 @@
         <!-- Quiz Section -->
         <div id="quiz-section" class="hidden">
             <div class="timer-container">
-                <div class="timer" id="global-timer">Össz-idő: 24:00</div>
-                <div class="timer" id="task-timer">Feladat idő: 8:00</div>
+                <div class="timer" id="global-timer">Hátralévő idő: 45:00</div>
             </div>
 
             <div class="task-navigation" id="task-navigation"></div>
@@ -796,8 +775,7 @@
         </div>
     </div>
 
-    <div id="task-timer-float" class="task-timer-float">Feladat idő: 0:00</div>
-    <div class="version-badge">v1.21</div>
+    <div class="version-badge">v1.22</div>
 
     <script src="python_teszt.obfuscated.js"></script>
 </body>
