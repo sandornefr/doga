@@ -719,6 +719,9 @@
 
 <body>
     <div class="container">
+        <div style="text-align:center; margin-bottom: 1rem;">
+            <img src="kandologo.png" alt="Kandó KSZKI" style="height: 64px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));">
+        </div>
         <h1>🐍 Python Programozási Teszt</h1>
 
         <!-- Start Section -->
@@ -780,6 +783,7 @@
 
             <!-- Felső sáv: navigáció + pontszám + időmérő -->
             <div class="quiz-top-bar">
+                <img src="kandologo.png" alt="Kandó" style="height: 32px; width: auto; flex-shrink: 0;">
                 <div class="task-navigation" id="task-navigation"></div>
                 <div class="live-score">
                     <span id="score-display">0 / 30 pont</span>
@@ -863,6 +867,31 @@
     <div class="version-badge">v1.22</div>
 
     <script src="python_teszt.obfuscated.js"></script>
+    <script>
+        // Előtöltés a nyitóoldalon megadott adatokból (sessionStorage)
+        (function () {
+            const saved = sessionStorage.getItem('kandStudentData');
+            if (!saved) return;
+            try {
+                const d = JSON.parse(saved);
+                if (!d.name || !d.class) return;
+                const fName = document.getElementById('name');
+                const fEmail = document.getElementById('email');
+                const fClass = document.getElementById('class');
+                if (fName) fName.value = d.name;
+                if (fEmail) fEmail.value = d.email || '';
+                if (fClass) fClass.value = d.class || '';
+                // Megjelenítjük, hogy ki van bejelentkezve
+                const startSection = document.getElementById('start-section');
+                if (startSection) {
+                    const info = document.createElement('div');
+                    info.style.cssText = 'background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:0.65rem 1rem;border-radius:10px;font-size:0.95rem;font-weight:600;margin-bottom:0.5rem;';
+                    info.textContent = '✓ Bejelentkezve: ' + d.name + ' – ' + d.class + ' osztály';
+                    startSection.insertBefore(info, startSection.firstChild);
+                }
+            } catch (e) {}
+        })();
+    </script>
 </body>
 
 </html>

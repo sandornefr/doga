@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kandó KSZKI – Digitális Számonkérés</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            padding: 2.5rem 3rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 110px;
+            height: auto;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+        }
+
+        .school-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
+            margin-bottom: 0.3rem;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.8rem;
+        }
+
+        .divider {
+            border: none;
+            border-top: 2px solid #f1f5f9;
+            margin: 0 0 1.8rem 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.4rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #1e293b;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .email-row {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .email-row input {
+            border-radius: 10px 0 0 10px;
+            border-right: none;
+            flex: 1;
+        }
+
+        .email-suffix {
+            padding: 0.75rem 0.9rem;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.85rem;
+            color: #64748b;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .class-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .class-row select {
+            flex: 1;
+        }
+
+        .error-msg {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            display: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* Choice section */
+        .welcome-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-label {
+            font-size: 0.85rem;
+            color: #0369a1;
+            margin-bottom: 0.25rem;
+        }
+
+        .welcome-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .choice-label {
+            font-size: 0.95rem;
+            color: #64748b;
+            margin-bottom: 1.2rem;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-choice {
+            flex: 1;
+            padding: 1.4rem 1rem;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-choice:hover { transform: translateY(-3px); }
+        .btn-choice:active { transform: translateY(-1px); }
+
+        .btn-choice .icon { font-size: 2.2rem; }
+
+        .btn-python {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn-python:hover { box-shadow: 0 10px 24px rgba(102, 126, 234, 0.5); }
+
+        .btn-web {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 6px 18px rgba(240, 147, 251, 0.35);
+        }
+
+        .btn-web:hover { box-shadow: 0 10px 24px rgba(240, 147, 251, 0.5); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.4rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            border-bottom: 1px dashed #cbd5e1;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="kandologo.png" class="logo" alt="Kandó KSZKI logó">
+        <div class="school-name">Miskolci SZC Kandó Kálmán Informatikai Technikum</div>
+        <div class="subtitle">Digitális Számonkérési Rendszer</div>
+
+        <hr class="divider">
+
+        <!-- Bejelentkezési szekció -->
+        <div id="login-section">
+            <div class="section-title">Bejelentkezés</div>
+            <div class="error-msg" id="error-msg"></div>
+            <form id="login-form" novalidate>
+                <div class="form-group">
+                    <label for="inp-name">Teljes név</label>
+                    <input type="text" id="inp-name" placeholder="Vezetéknév Keresztnév" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="inp-email">Email cím</label>
+                    <div class="email-row">
+                        <input type="text" id="inp-email" placeholder="felhasználónév" autocomplete="username">
+                        <span class="email-suffix">@kkszki.hu</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Évfolyam és osztály</label>
+                    <div class="class-row">
+                        <select id="inp-year">
+                            <option value="">Évfolyam</option>
+                            <option value="9">9.</option>
+                            <option value="10">10.</option>
+                            <option value="11">11.</option>
+                            <option value="12">12.</option>
+                        </select>
+                        <select id="inp-letter">
+                            <option value="">Osztály</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="K">K</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login">Belépés →</button>
+            </form>
+        </div>
+
+        <!-- Teszt-választó szekció -->
+        <div id="choice-section" class="hidden">
+            <div class="welcome-box">
+                <div class="welcome-label">Bejelentkezve:</div>
+                <div class="welcome-name" id="welcome-name"></div>
+            </div>
+            <div class="choice-label">Válasszon számonkérési típust:</div>
+            <div class="choice-buttons">
+                <a href="python/index.html" class="btn-choice btn-python">
+                    <span class="icon">🐍</span>
+                    PYTHON
+                </a>
+                <a href="web/index.html" class="btn-choice btn-web">
+                    <span class="icon">🌐</span>
+                    WEB
+                </a>
+            </div>
+            <a class="back-link" id="back-link">← Más tanuló belépése</a>
+        </div>
+    </div>
+
+    <script>
+        const loginSection = document.getElementById('login-section');
+        const choiceSection = document.getElementById('choice-section');
+        const welcomeName = document.getElementById('welcome-name');
+        const errorMsg = document.getElementById('error-msg');
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMsg.style.display = 'none';
+        }
+
+        function showChoice(data) {
+            welcomeName.textContent = data.name + ' – ' + data.class + ' osztály';
+            loginSection.classList.add('hidden');
+            choiceSection.classList.remove('hidden');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            hideError();
+
+            const name = document.getElementById('inp-name').value.trim();
+            const emailUser = document.getElementById('inp-email').value.trim();
+            const year = document.getElementById('inp-year').value;
+            const letter = document.getElementById('inp-letter').value;
+
+            if (!name) { showError('Kérlek add meg a teljes neved!'); return; }
+            if (!emailUser) { showError('Kérlek add meg az email felhasználóneved!'); return; }
+            if (!year) { showError('Kérlek válaszd ki az évfolyamot!'); return; }
+            if (!letter) { showError('Kérlek válaszd ki az osztályt!'); return; }
+
+            const studentData = {
+                name: name,
+                email: emailUser + '@kkszki.hu',
+                classYear: year,
+                classLetter: letter,
+                class: year + '.' + letter
+            };
+
+            sessionStorage.setItem('kandStudentData', JSON.stringify(studentData));
+            showChoice(studentData);
+        });
+
+        document.getElementById('back-link').addEventListener('click', function () {
+            sessionStorage.removeItem('kandStudentData');
+            choiceSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            hideError();
+        });
+
+        // Ha már be van lépve, ugorjuk át a bejelentkezést
+        const saved = sessionStorage.getItem('kandStudentData');
+        if (saved) {
+            try {
+                const d = JSON.parse(saved);
+                if (d.name && d.class) showChoice(d);
+            } catch (e) { sessionStorage.removeItem('kandStudentData'); }
+        }
+    </script>
+</body>
+</html>

@@ -1581,15 +1581,24 @@ function populateTaskSelector() {
 
 // Tanuló adatok kezelése
 function loadStudentData() {
+  // Elsőként a localStorage-ből töltünk (visszatérő tanuló)
   const saved = localStorage.getItem('vizsga_student');
   if (saved) {
     try {
       studentData = JSON.parse(saved);
       updateStudentDisplay();
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { /* folytatjuk */ }
+  }
+  // Nyitóoldalról átadott adat (sessionStorage)
+  const session = sessionStorage.getItem('kandStudentData');
+  if (session) {
+    try {
+      studentData = JSON.parse(session);
+      saveStudentData();
+      updateStudentDisplay();
+      return true;
+    } catch (e) { /* folytatjuk */ }
   }
   return false;
 }
