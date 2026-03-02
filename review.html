@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javítói felület – Kandó KSZKI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* ── Fejléc ── */
+        .topbar {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar img { height: 36px; width: auto; }
+
+        .topbar-title {
+            flex: 1;
+        }
+
+        .topbar-title h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .topbar-title p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-open {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-open:hover { background: #4f46e5; }
+
+        .btn-print {
+            background: #475569;
+            color: white;
+        }
+
+        .btn-print:hover { background: #334155; }
+
+        .btn-clear {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-clear:hover { background: #b91c1c; }
+
+        /* ── Drop zóna ── */
+        #drop-zone {
+            max-width: 680px;
+            margin: 4rem auto;
+            text-align: center;
+            padding: 3rem 2rem;
+            border: 3px dashed #cbd5e1;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #drop-zone.drag-over {
+            border-color: #6366f1;
+            background: #f0f0ff;
+        }
+
+        #drop-zone .drop-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        #drop-zone h2 {
+            font-size: 1.3rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        #drop-zone p {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        #drop-zone .supported {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-python { background: #ede9fe; color: #6d28d9; }
+        .badge-web    { background: #fce7f3; color: #be185d; }
+
+        /* ── Tartalom terület ── */
+        #review-content {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ── Kártyák ── */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 0.75rem 1.2rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body { padding: 1rem 1.2rem; }
+
+        .ch-student  { background: #1e293b; color: white; }
+        .ch-score    { background: #14532d; color: white; }
+        .ch-task     { background: #1e40af; color: white; }
+        .ch-web-info { background: #831843; color: white; }
+        .ch-log      { background: #374151; color: white; }
+
+        /* ── Tanuló info ── */
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-item span {
+            font-size: 0.95rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .cheat-yes { color: #dc2626 !important; }
+        .cheat-no  { color: #16a34a !important; }
+
+        /* ── Összesített pontszám ── */
+        .score-hero {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .score-big {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #14532d;
+        }
+
+        .grade-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 900;
+            border: 4px solid;
+        }
+
+        .grade-1 { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+        .grade-2 { border-color: #d97706; color: #d97706; background: #fffbeb; }
+        .grade-3 { border-color: #0891b2; color: #0891b2; background: #ecfeff; }
+        .grade-4 { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+        .grade-5 { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+
+        .task-scores {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .task-score-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.88rem;
+        }
+
+        .task-score-row:last-child { border-bottom: none; }
+
+        .task-score-label { flex: 1; color: #475569; }
+
+        .task-score-pts {
+            font-weight: 700;
+            color: #1e293b;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .failed-list {
+            margin-top: 0.3rem;
+            padding-left: 1rem;
+        }
+
+        .failed-item {
+            font-size: 0.78rem;
+            color: #dc2626;
+            padding: 0.1rem 0;
+        }
+
+        .all-pass {
+            font-size: 0.78rem;
+            color: #16a34a;
+        }
+
+        /* ── Feladat kártyák ── */
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .meta-pill {
+            background: #f1f5f9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .meta-pill.skipped { background: #fef9c3; color: #92400e; }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0.75rem 0 0.3rem;
+        }
+
+        .desc-box {
+            background: #f8fafc;
+            border-left: 3px solid #6366f1;
+            padding: 0.6rem 0.8rem;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        .example-box {
+            background: #0f172a;
+            color: #a5f3fc;
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+
+        .code-wrap {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .code-wrap pre {
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .code-wrap code {
+            font-size: 0.85rem !important;
+            line-height: 1.6 !important;
+        }
+
+        .empty-code {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            color: #94a3b8;
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+
+        /* ── Tab-ok (web HTML/CSS) ── */
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 0.75rem;
+        }
+
+        .tab-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.15s;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+
+        /* ── Validálási képek ── */
+        .val-images {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .val-image-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .val-image-box img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .val-image-box p {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 0.3rem;
+            text-align: center;
+        }
+
+        /* ── Eseménynapló ── */
+        .log-toggle {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .log-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #475569;
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 0.5rem;
+        }
+
+        /* ── Tanári megjegyzés ── */
+        .teacher-note {
+            margin-top: 0.75rem;
+        }
+
+        .teacher-note label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .teacher-note textarea {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            color: #1e293b;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .teacher-note textarea:focus { outline: none; border-color: #6366f1; }
+
+        /* ── Nyomtatás ── */
+        @media print {
+            .topbar, #drop-zone, .teacher-note, .log-toggle { display: none !important; }
+            body { background: white; }
+            #review-content { max-width: 100%; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #e2e8f0; }
+            .code-wrap pre { white-space: pre-wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <img src="kandologo2.png" alt="Kandó KSZKI">
+    <div class="topbar-title">
+        <h1>Javítói felület</h1>
+        <p>Miskolci SZC Kandó Kálmán Informatikai Technikum</p>
+    </div>
+    <div class="topbar-actions">
+        <button class="btn btn-open" id="btn-open">📂 Fájl megnyitása</button>
+        <button class="btn btn-print hidden" id="btn-print">🖨️ Nyomtatás</button>
+        <button class="btn btn-clear hidden" id="btn-clear">✕ Bezárás</button>
+    </div>
+    <input type="file" id="file-input" accept=".txt,.json" hidden multiple>
+</header>
+
+<!-- Drop zóna -->
+<div id="drop-zone">
+    <div class="drop-icon">📄</div>
+    <h2>Húzd ide a beadott fájlt</h2>
+    <p>vagy kattints a <strong>Fájl megnyitása</strong> gombra a fejlécben</p>
+    <div class="supported">
+        <span class="badge badge-python">🐍 Python .txt</span>
+        <span class="badge badge-web">🌐 Web .json</span>
+    </div>
+    <p style="margin-top:1rem; font-size:0.8rem; color:#94a3b8;">Egyszerre több fájl is betölthető</p>
+</div>
+
+<!-- Tartalom -->
+<div id="review-content" class="hidden"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// Fájl kezelés
+// ─────────────────────────────────────────────────────────
+const dropZone     = document.getElementById('drop-zone');
+const fileInput    = document.getElementById('file-input');
+const btnOpen      = document.getElementById('btn-open');
+const btnPrint     = document.getElementById('btn-print');
+const btnClear     = document.getElementById('btn-clear');
+const reviewArea   = document.getElementById('review-content');
+
+btnOpen.addEventListener('click', () => fileInput.click());
+btnPrint.addEventListener('click', () => window.print());
+btnClear.addEventListener('click', () => {
+    reviewArea.innerHTML = '';
+    reviewArea.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    btnPrint.classList.add('hidden');
+    btnClear.classList.add('hidden');
+    fileInput.value = '';
+});
+
+fileInput.addEventListener('change', (e) => loadFiles(e.target.files));
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    loadFiles(e.dataTransfer.files);
+});
+dropZone.addEventListener('click', () => fileInput.click());
+
+function loadFiles(files) {
+    const arr = Array.from(files);
+    if (!arr.length) return;
+    reviewArea.innerHTML = '';
+    let pending = arr.length;
+    arr.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const container = document.createElement('div');
+                container.style.marginBottom = '2.5rem';
+                if (file.name.endsWith('.json')) {
+                    renderWebJson(JSON.parse(e.target.result), container, file.name);
+                } else {
+                    renderPythonTxt(e.target.result, container, file.name);
+                }
+                reviewArea.appendChild(container);
+            } catch (err) {
+                const msg = document.createElement('p');
+                msg.style.cssText = 'color:#dc2626;padding:1rem;';
+                msg.textContent = `❌ Hiba a fájl feldolgozásakor (${file.name}): ${err.message}`;
+                reviewArea.appendChild(msg);
+            }
+            if (--pending === 0) {
+                dropZone.classList.add('hidden');
+                reviewArea.classList.remove('hidden');
+                btnPrint.classList.remove('hidden');
+                btnClear.classList.remove('hidden');
+                hljs.highlightAll();
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+}
+
+// ─────────────────────────────────────────────────────────
+// Python TXT megjelenítő
+// ─────────────────────────────────────────────────────────
+function renderPythonTxt(text, container, filename) {
+    const lines = text.split('\n');
+    const parsed = parsePythonTxt(lines);
+
+    // Fejléc (tanuló adat)
+    const cheatClass = parsed.cheat.startsWith('Igen') ? 'cheat-yes' : 'cheat-no';
+    const cheatIcon  = parsed.cheat.startsWith('Igen') ? '⚠️' : '✓';
+
+    container.innerHTML += `
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+        <span class="badge badge-python" style="font-size:0.9rem;padding:0.4rem 0.9rem;">🐍 Python beadás</span>
+        <span style="font-size:0.8rem;color:#64748b;">${filename}</span>
+    </div>`;
+
+    // Tanuló kártya
+    container.innerHTML += card('ch-student', '👤 Tanuló adatai', `
+        <div class="student-grid">
+            <div class="info-item"><label>Név</label><span>${esc(parsed.nev)}</span></div>
+            <div class="info-item"><label>Email</label><span>${esc(parsed.email)}</span></div>
+            <div class="info-item"><label>Osztály</label><span>${esc(parsed.osztaly)}</span></div>
+            <div class="info-item"><label>Dátum</label><span>${esc(parsed.datum)}</span></div>
+            <div class="info-item"><label>Mód</label><span>${esc(parsed.mod)}</span></div>
+            <div class="info-item"><label>Csalás</label><span class="${cheatClass}">${cheatIcon} ${esc(parsed.cheat)}</span></div>
+        </div>
+    `);
+
+    // Összesített pontozás
+    const gradeNum = extractGradeNum(parsed.scoring.erdemjegy);
+    container.innerHTML += card('ch-score', '📊 Összesített pontozás', `
+        <div class="score-hero">
+            <div>
+                <div class="score-big">${esc(parsed.scoring.pontok)}</div>
+                <div style="font-size:0.85rem;color:#166534;margin-top:0.2rem;">${esc(parsed.scoring.szazalek)}</div>
+            </div>
+            <div class="grade-circle grade-${gradeNum}">${gradeNum}</div>
+            <div class="task-scores">
+                ${parsed.scoring.tasks.map(t => `
+                    <div class="task-score-row">
+                        <span class="task-score-label">${esc(t.label)}</span>
+                        <span class="task-score-pts">${esc(t.pts)}</span>
+                    </div>
+                    ${t.failed.length ? `<div class="failed-list">${t.failed.map(f => `<div class="failed-item">✗ ${esc(f)}</div>`).join('')}</div>` : `<div class="all-pass" style="margin-left:.5rem;">✓ Minden teljesítve</div>`}
+                `).join('')}
+            </div>
+        </div>
+    `);
+
+    // Feladatok
+    parsed.tasks.forEach((task, i) => {
+        const skipPill = task.atugva === 'Igen' ? '<span class="meta-pill skipped">⚡ Átugrott</span>' : '';
+        const emptyCode = !task.valasz || !task.valasz.trim();
+        const taskBody = `
+            <div class="task-meta">
+                <span class="meta-pill">⏱ ${esc(task.idoraforditas)}</span>
+                ${skipPill}
+            </div>
+            <div class="section-label">Feladat leírása</div>
+            <div class="desc-box">${esc(task.leiras)}</div>
+            <div class="section-label" style="margin-top:.75rem;">Minta kimenet</div>
+            <div class="example-box">${esc(task.minta)}</div>
+            <div class="section-label" style="margin-top:.75rem;">Tanuló válasza</div>
+            ${emptyCode
+                ? '<div class="empty-code">— Nem adott választ —</div>'
+                : `<div class="code-wrap"><pre><code class="language-python">${esc(task.valasz)}</code></pre></div>`
+            }
+            <div class="teacher-note">
+                <label>Tanári megjegyzés</label>
+                <textarea placeholder="Ide írhatsz megjegyzést..."></textarea>
+            </div>`;
+        container.innerHTML += card('ch-task', `📝 ${i + 1}. feladat – ${esc(task.header)}`, taskBody);
+    });
+
+    // Eseménynapló
+    if (parsed.eventlog.trim()) {
+        const logId = 'log-' + Math.random().toString(36).slice(2);
+        container.innerHTML += card('ch-log', '📋 Eseménynapló', `
+            <button class="log-toggle" onclick="document.getElementById('${logId}').classList.toggle('hidden')">Megjelenítés / Elrejtés</button>
+            <div id="${logId}" class="log-content hidden">${esc(parsed.eventlog)}</div>
+        `);
+    }
+}
+
+// ─────────────────────────────────────────────────────────
+// Python TXT parser
+// ─────────────────────────────────────────────────────────
+function parsePythonTxt(lines) {
+    const result = {
+        datum: '', nev: '', email: '', osztaly: '', mod: '', cheat: '',
+        scoring: { pontok: '', szazalek: '', erdemjegy: '', tasks: [] },
+        tasks: [],
+        eventlog: ''
+    };
+
+    let section = 'header'; // header | scoring | tasks | eventlog
+    let currentTask = null;
+    let taskSubSection = null; // leiras | minta | valasz
+    let scoringLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trimEnd();
+
+        // Szekció detektálás
+        if (trimmed === '=== ÖSSZESÍTETT PONTOZÁS ===') { section = 'scoring'; continue; }
+        if (trimmed === '=== FELADATOK ÉS VÁLASZOK ===') {
+            // Pontozás feldolgozása
+            result.scoring = parseScoringBlock(scoringLines);
+            section = 'tasks';
+            continue;
+        }
+        if (trimmed === '=== ESEMÉNYNAPLÓ ===') {
+            if (currentTask) { result.tasks.push(currentTask); currentTask = null; }
+            section = 'eventlog';
+            continue;
+        }
+
+        if (section === 'header') {
+            if (trimmed.startsWith('Dátum: '))   result.datum   = trimmed.slice(7);
+            if (trimmed.startsWith('Név: '))     result.nev     = trimmed.slice(5);
+            if (trimmed.startsWith('Email: '))   result.email   = trimmed.slice(7);
+            if (trimmed.startsWith('Osztály: ')) result.osztaly = trimmed.slice(9);
+            if (trimmed.startsWith('Mód: '))     result.mod     = trimmed.slice(5);
+            if (trimmed.startsWith('Csalás: '))  result.cheat   = trimmed.slice(8);
+        }
+
+        if (section === 'scoring') {
+            scoringLines.push(trimmed);
+        }
+
+        if (section === 'tasks') {
+            // Új feladat kezdete
+            const taskMatch = trimmed.match(/^--- (\d+)\. FELADAT \((.*?)\) ---$/);
+            if (taskMatch) {
+                if (currentTask) result.tasks.push(currentTask);
+                currentTask = {
+                    header: trimmed.replace(/^--- /, '').replace(/ ---$/, ''),
+                    idoraforditas: '', atugva: '',
+                    leiras: '', minta: '', valasz: ''
+                };
+                taskSubSection = 'meta';
+                continue;
+            }
+            if (!currentTask) continue;
+
+            if (trimmed.startsWith('Időráfordítás: ')) { currentTask.idoraforditas = trimmed.slice(15); continue; }
+            if (trimmed.startsWith('Átugrva: '))       { currentTask.atugva = trimmed.slice(9); continue; }
+            if (trimmed === 'FELADAT LEÍRÁSA:')  { taskSubSection = 'leiras'; continue; }
+            if (trimmed === 'MINTA KIMENET:')    { taskSubSection = 'minta'; continue; }
+            if (trimmed === 'TANULÓ VÁLASZA:')   { taskSubSection = 'valasz'; continue; }
+
+            if (taskSubSection === 'leiras') currentTask.leiras += (currentTask.leiras ? '\n' : '') + trimmed;
+            if (taskSubSection === 'minta')  currentTask.minta  += (currentTask.minta  ? '\n' : '') + trimmed;
+            if (taskSubSection === 'valasz') currentTask.valasz += (currentTask.valasz ? '\n' : '') + line.trimEnd();
+        }
+
+        if (section === 'eventlog') {
+            result.eventlog += trimmed + '\n';
+        }
+    }
+
+    if (currentTask) result.tasks.push(currentTask);
+
+    // Trim trailing whitespace from code
+    result.tasks.forEach(t => { t.valasz = t.valasz.trimEnd(); });
+
+    return result;
+}
+
+function parseScoringBlock(lines) {
+    const scoring = { pontok: '', szazalek: '', erdemjegy: '', tasks: [] };
+    let currentTask = null;
+
+    for (const line of lines) {
+        const t = line.trim();
+        if (t.startsWith('Megszerzett pontok:')) scoring.pontok    = t.slice(20).trim();
+        else if (t.startsWith('Százalék:'))       scoring.szazalek  = t.slice(10).trim();
+        else if (t.startsWith('Érdemjegy:'))      scoring.erdemjegy = t.slice(10).trim();
+        else if (/^\d+\. feladat:/.test(t)) {
+            if (currentTask) scoring.tasks.push(currentTask);
+            currentTask = { label: t.split(':')[0], pts: t.split(':')[1]?.trim() || '', failed: [] };
+        } else if (t.startsWith('- ') && currentTask) {
+            currentTask.failed.push(t.slice(2));
+        }
+    }
+    if (currentTask) scoring.tasks.push(currentTask);
+    return scoring;
+}
+
+function extractGradeNum(str) {
+    const m = (str || '').match(/\d/);
+    return m ? m[0] : '?';
+}
+
+// ─────────────────────────────────────────────────────────
+// Web JSON megjelenítő
+// ─────────────────────────────────────────────────────────
+function renderWebJson(data, container, filename) {
+    const saved = data.savedAt ? new Date(data.savedAt).toLocaleString('hu-HU') : '-';
+    const timer = data.timerSeconds !== undefined
+        ? Math.floor(data.timerSeconds / 60) + ' perc ' + (data.timerSeconds % 60) + ' mp (hátralévő)'
+        : '-';
+
+    container.innerHTML += `
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+        <span class="badge badge-web" style="font-size:0.9rem;padding:0.4rem 0.9rem;">🌐 Web beadás</span>
+        <span style="font-size:0.8rem;color:#64748b;">${esc(filename)}</span>
+    </div>`;
+
+    // Tanuló + feladat info
+    container.innerHTML += card('ch-web-info', '👤 Tanuló és feladat adatai', `
+        <div class="student-grid">
+            <div class="info-item"><label>Név</label><span>${esc(data.studentName || '-')}</span></div>
+            <div class="info-item"><label>Email</label><span>${esc(data.studentEmail || '-')}</span></div>
+            <div class="info-item"><label>Osztály</label><span>${esc(data.studentClass || '-')}</span></div>
+            <div class="info-item"><label>Feladat</label><span>${esc(data.taskName || data.taskId || '-')}</span></div>
+            <div class="info-item"><label>Mentve</label><span>${esc(saved)}</span></div>
+            <div class="info-item"><label>Hátralévő idő</label><span>${esc(timer)}</span></div>
+        </div>
+    `);
+
+    // Kód (HTML + CSS tabokkal)
+    const htmlTabId = 'tab-html-' + Math.random().toString(36).slice(2);
+    const cssTabId  = 'tab-css-'  + Math.random().toString(36).slice(2);
+    const htmlPaneId = 'pane-html-' + Math.random().toString(36).slice(2);
+    const cssPaneId  = 'pane-css-'  + Math.random().toString(36).slice(2);
+
+    const emptyHtml = !data.html || !data.html.trim();
+    const emptyCss  = !data.css  || !data.css.trim();
+
+    container.innerHTML += card('ch-task', '💻 Tanuló kódja', `
+        <div class="tabs">
+            <button id="${htmlTabId}" class="tab-btn active" onclick="switchTab('${htmlTabId}','${cssTabId}','${htmlPaneId}','${cssPaneId}')">HTML</button>
+            <button id="${cssTabId}"  class="tab-btn"        onclick="switchTab('${cssTabId}','${htmlTabId}','${cssPaneId}','${htmlPaneId}')">CSS</button>
+        </div>
+        <div id="${htmlPaneId}">
+            ${emptyHtml
+                ? '<div class="empty-code">— Üres HTML —</div>'
+                : `<div class="code-wrap"><pre><code class="language-html">${esc(data.html)}</code></pre></div>`
+            }
+        </div>
+        <div id="${cssPaneId}" class="hidden">
+            ${emptyCss
+                ? '<div class="empty-code">— Üres CSS —</div>'
+                : `<div class="code-wrap"><pre><code class="language-css">${esc(data.css)}</code></pre></div>`
+            }
+        </div>
+        <div class="teacher-note" style="margin-top:1rem;">
+            <label>Tanári megjegyzés</label>
+            <textarea placeholder="Ide írhatsz megjegyzést..."></textarea>
+        </div>
+    `);
+
+    // Validálási képek
+    const imgs = data.validationImages || {};
+    if (imgs.html || imgs.css) {
+        container.innerHTML += card('ch-log', '🖼️ Validálási képernyőképek', `
+            <div class="val-images">
+                ${imgs.html ? `<div class="val-image-box"><img src="${imgs.html}" alt="HTML validálás"><p>${esc(imgs.htmlFileName || 'HTML validálás')}</p></div>` : ''}
+                ${imgs.css  ? `<div class="val-image-box"><img src="${imgs.css}"  alt="CSS validálás"><p>${esc(imgs.cssFileName || 'CSS validálás')}</p></div>` : ''}
+            </div>
+        `);
+    }
+}
+
+// ─────────────────────────────────────────────────────────
+// Segédfüggvények
+// ─────────────────────────────────────────────────────────
+function card(headerClass, title, bodyHtml) {
+    return `<div class="card">
+        <div class="card-header ${headerClass}">${title}</div>
+        <div class="card-body">${bodyHtml}</div>
+    </div>`;
+}
+
+function esc(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function switchTab(activeTabId, inactiveTabId, activePaneId, inactivePaneId) {
+    document.getElementById(activeTabId).classList.add('active');
+    document.getElementById(inactiveTabId).classList.remove('active');
+    document.getElementById(activePaneId).classList.remove('hidden');
+    document.getElementById(inactivePaneId).classList.add('hidden');
+}
+</script>
+</body>
+</html>

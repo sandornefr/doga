@@ -280,8 +280,6 @@
                             <option value="">Évfolyam</option>
                             <option value="9">9.</option>
                             <option value="10">10.</option>
-                            <option value="11">11.</option>
-                            <option value="12">12.</option>
                         </select>
                         <select id="inp-letter">
                             <option value="">Osztály</option>
@@ -317,6 +315,26 @@
         </div>
     </div>
 
+    <!-- Oktatói jelszó modal -->
+    <div id="teacher-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:16px; padding:2rem; width:90%; max-width:360px; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+            <div style="text-align:center; font-size:1.5rem; margin-bottom:0.5rem;">🔐</div>
+            <div style="font-size:1.1rem; font-weight:700; color:#1e293b; text-align:center; margin-bottom:0.25rem;">Oktatói belépés</div>
+            <div style="font-size:0.85rem; color:#64748b; text-align:center; margin-bottom:1.25rem;">Add meg az oktatói jelszót:</div>
+            <div id="teacher-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.5rem 0.75rem; border-radius:8px; font-size:0.85rem; margin-bottom:0.75rem;"></div>
+            <input type="password" id="teacher-pw" placeholder="Jelszó" style="width:100%; padding:0.75rem 1rem; border:2px solid #e2e8f0; border-radius:10px; font-size:1rem; margin-bottom:0.75rem; box-sizing:border-box;" autocomplete="off">
+            <div style="display:flex; gap:0.5rem;">
+                <button id="teacher-cancel" style="flex:1; padding:0.7rem; border:2px solid #e2e8f0; background:white; border-radius:10px; font-size:0.95rem; cursor:pointer; color:#64748b;">Mégse</button>
+                <button id="teacher-ok" style="flex:2; padding:0.7rem; background:linear-gradient(135deg,#7c3aed,#4f46e5); color:white; border:none; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer;">Belépés</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oktatói link (mindig látható, a kártya alján kívül) -->
+    <div style="text-align:center; margin-top:1.2rem;">
+        <a id="teacher-link" style="color:#94a3b8; font-size:0.78rem; cursor:pointer; text-decoration:none; border-bottom:1px dashed #cbd5e1;">Oktatói belépés</a>
+    </div>
+
     <script>
         const loginSection = document.getElementById('login-section');
         const choiceSection = document.getElementById('choice-section');
@@ -333,7 +351,13 @@
         }
 
         function showChoice(data) {
-            welcomeName.textContent = data.name + ' – ' + data.class + ' osztály';
+            if (data.isTeacher) {
+                welcomeName.textContent = '📽️ Bemutató / oktatói mód';
+                welcomeName.style.color = '#6d28d9';
+            } else {
+                welcomeName.textContent = data.name + ' – ' + data.class + ' osztály';
+                welcomeName.style.color = '';
+            }
             loginSection.classList.add('hidden');
             choiceSection.classList.remove('hidden');
         }
@@ -366,6 +390,7 @@
 
         document.getElementById('back-link').addEventListener('click', function () {
             sessionStorage.removeItem('kandStudentData');
+            sessionStorage.removeItem('kandTeacherMode');
             choiceSection.classList.add('hidden');
             loginSection.classList.remove('hidden');
             hideError();
@@ -379,6 +404,51 @@
                 if (d.name && d.class) showChoice(d);
             } catch (e) { sessionStorage.removeItem('kandStudentData'); }
         }
+
+        // ── Oktatói belépés ──────────────────────────────────────────
+        // Jelszó módosításához cseréld le az alábbi értéket:
+        const TEACHER_PW = atob('a2FuZG90YW5hcg=='); // kandotanar
+
+        const teacherOverlay = document.getElementById('teacher-overlay');
+        const teacherPwInput = document.getElementById('teacher-pw');
+        const teacherError   = document.getElementById('teacher-error');
+
+        document.getElementById('teacher-link').addEventListener('click', function () {
+            teacherPwInput.value = '';
+            teacherError.style.display = 'none';
+            teacherOverlay.style.display = 'flex';
+            setTimeout(() => teacherPwInput.focus(), 100);
+        });
+
+        document.getElementById('teacher-cancel').addEventListener('click', function () {
+            teacherOverlay.style.display = 'none';
+        });
+
+        teacherPwInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') document.getElementById('teacher-ok').click();
+        });
+
+        document.getElementById('teacher-ok').addEventListener('click', function () {
+            if (teacherPwInput.value === TEACHER_PW) {
+                teacherOverlay.style.display = 'none';
+                const teacherData = {
+                    name: 'Oktató',
+                    email: 'oktato@kkszki.hu',
+                    class: 'Bemutató',
+                    classYear: '0',
+                    classLetter: 'T',
+                    isTeacher: true
+                };
+                sessionStorage.setItem('kandStudentData', JSON.stringify(teacherData));
+                sessionStorage.setItem('kandTeacherMode', 'true');
+                showChoice(teacherData);
+            } else {
+                teacherError.textContent = 'Helytelen jelszó!';
+                teacherError.style.display = 'block';
+                teacherPwInput.value = '';
+                teacherPwInput.focus();
+            }
+        });
     </script>
 </body>
 </html>
