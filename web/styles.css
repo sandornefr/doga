@@ -969,3 +969,165 @@ iframe {
     justify-content: center;
   }
 }
+
+/* ── Világos mód ── */
+html.light {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --muted: #64748b;
+  --text: #1e293b;
+  --accent: #16a34a;
+  --danger: #dc2626;
+  --card: #f1f5f9;
+  --border: #e2e8f0;
+}
+
+html.light body {
+  background: #f0f2f5;
+  color: var(--text);
+}
+
+html.light .topbar {
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom-color: #e2e8f0;
+}
+
+html.light .student-info { color: #1e293b; }
+
+html.light .btn-logout {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+html.light .btn-logout:hover { background: #fee2e2; }
+
+html.light .timer-container {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+html.light .timer { color: #16a34a; }
+html.light .timer.warning { color: #d97706; }
+html.light .timer.danger { color: #dc2626; }
+
+html.light .btn-timer {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+html.light .btn-timer:hover { background: #cbd5e1; }
+html.light .btn-timer.running { background: #dc2626; border-color: #ef4444; color: white; }
+
+html.light .btn-sm {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+html.light .btn-sm:hover:not(:disabled) { background: #cbd5e1; }
+
+html.light .task-selector {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+html.light .editor-tab {
+  background: #e2e8f0;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+html.light .editor-tab:hover { background: #cbd5e1; color: #1e293b; }
+html.light .editor-tab.active {
+  background: #f1f5f9;
+  color: #16a34a;
+  border-color: #16a34a;
+  border-bottom: 1px solid #f1f5f9;
+}
+html.light .editor-tab.ref-tab {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-color: #93c5fd;
+}
+html.light .editor-tab.ref-tab:hover { background: #bfdbfe; }
+html.light .editor-tab.ref-tab.active {
+  background: #bfdbfe;
+  color: #1d4ed8;
+  border-color: #3b82f6;
+}
+
+html.light button {
+  background: #e2e8f0;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+html.light button:hover { background: #cbd5e1; border-color: #94a3b8; }
+html.light button.is-active { border-color: #16a34a; color: #15803d; }
+
+html.light .editor-container {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+html.light .progress-bar-bg {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+html.light .tasks {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+html.light .footer kbd {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+html.light .modal-content {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+html.light .modal-header {
+  background: #f8fafc;
+  border-bottom-color: #e2e8f0;
+}
+html.light .modal-header h2 { color: #1e293b; }
+html.light .modal-close { color: #64748b; }
+html.light .modal-close:hover { color: #1e293b; }
+
+html.light .student-modal {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+html.light .student-modal h2 { color: #1e293b; }
+html.light .student-modal p { color: #64748b; }
+html.light .form-group label { color: #475569; }
+html.light .form-group input {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #1e293b;
+}
+html.light .form-group input::placeholder { color: #94a3b8; }
+html.light .email-input-wrapper {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+html.light .email-domain {
+  background: #e2e8f0;
+  color: #64748b;
+  border-left-color: #cbd5e1;
+}
+html.light .class-select {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+html.light .class-select option { background: #f8fafc; color: #1e293b; }

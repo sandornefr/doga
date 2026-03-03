@@ -2315,7 +2315,51 @@ btnToggleTasks.addEventListener('click', () => {
         "editor.lineHighlightBackground": "#1E293B55",
       },
     });
-    monaco.editor.setTheme("vizsga-contrast");
+
+    monaco.editor.defineTheme("vizsga-light", {
+      base: "vs",
+      inherit: true,
+      semanticHighlighting: false,
+      rules: [
+        { token: "tag", foreground: "0050A0", fontStyle: "bold" },
+        { token: "tag.html", foreground: "0050A0", fontStyle: "bold" },
+        { token: "delimiter", foreground: "555555" },
+        { token: "attribute.name", foreground: "B06000" },
+        { token: "attribute.name.html", foreground: "B06000" },
+        { token: "attribute.value", foreground: "2B6A2B" },
+        { token: "attribute.value.html", foreground: "2B6A2B" },
+        { token: "string", foreground: "2B6A2B" },
+        { token: "string.html", foreground: "2B6A2B" },
+        { token: "comment", foreground: "6A737D", fontStyle: "italic" },
+        { token: "comment.html", foreground: "6A737D", fontStyle: "italic" },
+      ],
+      colors: {
+        "editor.background": "#F8FAFC",
+        "editor.foreground": "#1E293B",
+        "editorLineNumber.foreground": "#94A3B8",
+        "editorLineNumber.activeForeground": "#475569",
+        "editorCursor.foreground": "#6366F1",
+        "editor.selectionBackground": "#BFDBFE99",
+        "editor.lineHighlightBackground": "#E2E8F055",
+      },
+    });
+
+    const savedTheme = localStorage.getItem('vizsga_theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light');
+      monaco.editor.setTheme("vizsga-light");
+      const btn = document.getElementById('btn-theme-toggle');
+      if (btn) btn.textContent = '☀️';
+    } else {
+      monaco.editor.setTheme("vizsga-contrast");
+    }
+
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+      const isLight = document.documentElement.classList.toggle('light');
+      monaco.editor.setTheme(isLight ? 'vizsga-light' : 'vizsga-contrast');
+      localStorage.setItem('vizsga_theme', isLight ? 'light' : 'dark');
+      document.getElementById('btn-theme-toggle').textContent = isLight ? '☀️' : '🌙';
+    });
 
     htmlEditor = createEditor(monaco, "html-editor", "html", "");
     cssEditor = createEditor(monaco, "css-editor", "css", "");
