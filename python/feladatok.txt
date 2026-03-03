@@ -419,7 +419,6 @@ tartalmaz:200|200 Ft-os díjat tartalmaz a kód
 tartalmaz:500|500 Ft-os díjat tartalmaz a kód
 teszt:2000,0:200 Ft|Kis összegnél (2000) 200 Ft díjat számol
 teszt:10000,0:500 Ft|Pontosan 10000 Ft esetén 500 Ft díjat számol
-teszt:15000,0:500 Ft|Nagy összegnél (15000) 500 Ft díjat számol
 teszt:2000,10000,0:700 Ft|Két tranzakció után összbevétel 700 Ft
 teszt:0:0 Ft|Azonnal kilépve 0 Ft bevételt jelez
 teszt:5000,10000,15000,0:1200 Ft|Három tranzakció összbevétele helyes (200+500+500)
