@@ -1137,7 +1137,6 @@ function annotateHtmlWithSourceLines(html) {
 function buildDoc(html, css, withGuides) {
   const extra = withGuides ? guideScript : "";
   const interactionLock = lockPreviewInteractions ? `${previewLockStyle}\n${previewLockScript}` : "";
-  const htmlForPreview = annotateHtmlWithSourceLines(html);
 
   const baseHref = currentTask ? currentTask.previewBase : "";
 
@@ -1148,6 +1147,14 @@ function buildDoc(html, css, withGuides) {
   const bootstrapJS = currentTask
     ? `<script src="${baseHref}bootstrap/bootstrap.bundle.min.js"></script>`
     : `<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>`;
+
+  // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
+  const cssLinkPattern = /<link[^>]+href=["'][^"']*css\/style\.css["'][^>]*\/?>/i;
+  const htmlWithCss = cssLinkPattern.test(html)
+    ? html.replace(cssLinkPattern, `<style>${css}</style>`)
+    : html;
+
+  const htmlForPreview = annotateHtmlWithSourceLines(htmlWithCss);
 
   return `<!doctype html>
 <html lang="hu">
@@ -1164,7 +1171,6 @@ function buildDoc(html, css, withGuides) {
     ${previewNavigationGuardScript}
     ${extra}
     ${bootstrapJS}
-    <style>${css}</style>
   </body>
 </html>`;
 }
@@ -2083,6 +2089,12 @@ function openPreviewInNewTab() {
     ? `<script src="${baseHref}bootstrap/bootstrap.bundle.min.js"><\/script>`
     : `<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>`;
 
+  // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
+  const cssLinkPatternTab = /<link[^>]+href=["'][^"']*css\/style\.css["'][^>]*\/?>/i;
+  const htmlWithCssTab = cssLinkPatternTab.test(html)
+    ? html.replace(cssLinkPatternTab, `<style>${css}</style>`)
+    : html;
+
   const fullHtml = `<!doctype html>
 <html lang="hu">
   <head>
@@ -2090,10 +2102,9 @@ function openPreviewInNewTab() {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <base href="${baseHref}" />
     ${bootstrapCSS}
-    <style>${css}</style>
   </head>
   <body>
-    ${html}
+    ${htmlWithCssTab}
     ${bootstrapJS}
   </body>
 </html>`;
