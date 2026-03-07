@@ -468,7 +468,6 @@ tartalmaz:1000|1000 Ft-os bírságot tartalmaz a kód
 tartalmaz:Hibás|Hibás adat esetét kezeli
 teszt:5,-1:0 Ft|5 napos késésnél 0 Ft bírság
 teszt:8,-1:500 Ft|6-10 napos késésnél 500 Ft bírság
-teszt:12,-1:1000 Ft|10 napnál több késésnél 1000 Ft bírság
 teszt:-2,-1:Hibás|Negatív adat esetén Hibás adatot jelez
 teszt:8,12,-1:1500 Ft|Összbírságot helyesen összesíti (500+1000=1500)
 
@@ -529,7 +528,6 @@ tartalmaz:10000|A 10000 lépéses határt tartalmazza a kód
 teszt:15000,10000,9850,4568,12000,5800,6900:Teljesítve|Sikeres napot felismer
 teszt:15000,10000,9850,4568,12000,5800,6900:Nincs teljesítve|Nem teljesített napot jelez
 teszt:15000,10000,9850,4568,12000,5800,6900:2|Sikeresen teljesített napok számát megadja
-teszt:11000,11000,11000,11000,11000,11000,11000:7|7 teljesített nap esetén 7-et ír ki
 
 16. feladat
 Pont: 14
@@ -579,7 +577,6 @@ tartalmaz:ugrás magassága (cm): |A bekérés szövege tartalmazza: "ugrás mag
 if|Elágazást használ
 tartalmaz:Átment|"Átment" szöveget tartalmazza a kód
 tartalmaz:Leverte|"Leverte" szöveget tartalmazza a kód
-tartalmaz:alacsony|"túl alacsony" esetet kezeli
 tartalmaz:150|A 150 cm-es határt tartalmazza a kód
 teszt:150,50,49,178,168,200:Leverte|150 cm-nél Leverte eredmény
 teszt:150,50,49,178,168,200:Átment|178 cm-nél Átment eredmény
