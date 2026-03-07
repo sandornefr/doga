@@ -1,1 +1,1862 @@
-const a0_0x2ff7cf=a0_0x3ddb;(function(_0x411563,_0x2fa0c2){const _0x2afe10=a0_0x3ddb,_0x98378b=_0x411563();while(!![]){try{const _0x1e7f4a=parseInt(_0x2afe10(0x2f3))/0x1*(parseInt(_0x2afe10(0x1f8))/0x2)+-parseInt(_0x2afe10(0x1d4))/0x3+-parseInt(_0x2afe10(0x283))/0x4+-parseInt(_0x2afe10(0x2af))/0x5+-parseInt(_0x2afe10(0x1fe))/0x6+parseInt(_0x2afe10(0x2eb))/0x7*(-parseInt(_0x2afe10(0x19f))/0x8)+parseInt(_0x2afe10(0x2ee))/0x9;if(_0x1e7f4a===_0x2fa0c2)break;else _0x98378b['push'](_0x98378b['shift']());}catch(_0x2edcb6){_0x98378b['push'](_0x98378b['shift']());}}}(a0_0x2a0f,0xe7408));const RAILWAY_URL=a0_0x2ff7cf(0x299);let testMode=a0_0x2ff7cf(0x2b4),tasks=[],selectedTasks=[],currentTaskIndex=0x0,globalTimeRemaining=0x2d*0x3c,globalTimer=null,codeEditor=null,testStartTime=null,testEndTime=null,studentData={},taskStartTimes=[],taskAnswers=[],eventLog=[],term=null,fitAddon=null,terminalReady=![],terminalInputResolver=null,terminalInputBuffer='',focusLossTimeout=null,focusCheckInterval=null,fullscreenCheckInterval=null,autosaveInterval=null,cheatDetected=![],cheatReason='',fullscreenEnforced=![],fullscreenGraceUntil=0x0,pyodideInstance=null,pyodideLoadingPromise=null,pythonCodeRunning=![],currentInputDisposable=null;async function getPyodide(){const _0x1f5b2d=a0_0x2ff7cf;if(pyodideInstance)return pyodideInstance;return!pyodideLoadingPromise&&(pyodideLoadingPromise=loadPyodide()[_0x1f5b2d(0x2bc)](_0x5ae434=>{pyodideLoadingPromise=null;throw _0x5ae434;})),pyodideInstance=await pyodideLoadingPromise,pyodideInstance;}const startSection=document[a0_0x2ff7cf(0x30b)](a0_0x2ff7cf(0x2df)),quizSection=document[a0_0x2ff7cf(0x30b)](a0_0x2ff7cf(0x1c1)),endSection=document[a0_0x2ff7cf(0x30b)](a0_0x2ff7cf(0x257)),submitModal=document[a0_0x2ff7cf(0x30b)](a0_0x2ff7cf(0x224)),fullscreenPrompt=document[a0_0x2ff7cf(0x30b)](a0_0x2ff7cf(0x29e));document[a0_0x2ff7cf(0x2ef)]('DOMContentLoaded',()=>{initializeApp();});async function initializeApp(){const _0x4a2b0d=a0_0x2ff7cf;logEvent('Application\x20initialized'),setupEventListeners(),loadTasksFromFile(),await loadTestMode(),startFullscreenCheck(),getPyodide()[_0x4a2b0d(0x2bb)](()=>debugLog(_0x4a2b0d(0x1e0)))[_0x4a2b0d(0x2bc)](_0xb8a8bd=>debugLog(_0x4a2b0d(0x202)+_0xb8a8bd['message']));}async function loadTestMode(){const _0x37aa51=a0_0x2ff7cf;if(!API_URL){debugLog(_0x37aa51(0x270));return;}try{debugLog(_0x37aa51(0x1a5));const _0x808d46=await fetch(RAILWAY_URL+_0x37aa51(0x277)),_0x2e23d7=await _0x808d46[_0x37aa51(0x2aa)]();_0x2e23d7['test_mode']?(testMode=_0x2e23d7['test_mode'],logEvent(_0x37aa51(0x1b5),{'mode':testMode}),debugLog('✅\x20Teszt\x20mód\x20betöltve:\x20'+(testMode===_0x37aa51(0x2b4)?'🎓\x20GYAKORLÓ':_0x37aa51(0x220)),{'testMode':testMode}),updateTestModeBadge()):(debugLog(_0x37aa51(0x25d)),updateTestModeBadge());}catch(_0x2dfe00){logEvent(_0x37aa51(0x1d9),{'error':_0x2dfe00['message']}),debugLog(_0x37aa51(0x1bb));}}async function submitToBackend(){const _0x43195f=a0_0x2ff7cf;try{const _0x53b414=Math[_0x43195f(0x215)]((testEndTime-testStartTime)/0x3e8),_0x5002f2=selectedTasks[_0x43195f(0x27e)](_0x1261f8=>_0x1261f8[_0x43195f(0x2a1)])[_0x43195f(0x287)](','),_0x2260fd=selectedTasks[_0x43195f(0x27e)](_0x512696=>_0x512696[_0x43195f(0x2db)]||0x0),_0x1f3ff3=taskAnswers[_0x43195f(0x27e)](_0x313089=>_0x313089[_0x43195f(0x228)]||0x0),_0x36bc4b=_0x1f3ff3[_0x43195f(0x2c8)]((_0x2d1220,_0x652432)=>_0x2d1220+_0x652432,0x0),_0x1f2c43=_0x2260fd[_0x43195f(0x2c8)]((_0x5ad7bf,_0x533ffe)=>_0x5ad7bf+_0x533ffe,0x0),_0x5a758b=JSON[_0x43195f(0x26a)](taskAnswers[_0x43195f(0x27e)]((_0x143eec,_0xd36788)=>({'task':selectedTasks[_0xd36788]?selectedTasks[_0xd36788][_0x43195f(0x2a1)]:_0xd36788+0x1,'code':_0x143eec[_0x43195f(0x1de)]||''}))),_0x5563c8={'name':studentData[_0x43195f(0x1f7)],'email':studentData['email'],'osztaly':studentData[_0x43195f(0x2b1)]||'','csoport':studentData[_0x43195f(0x305)]||null,'taskIds':_0x5002f2,'scores':_0x1f3ff3[_0x43195f(0x287)](','),'maxScores':_0x2260fd[_0x43195f(0x287)](','),'totalScore':_0x36bc4b,'maxTotal':_0x1f2c43,'duration':_0x53b414,'mode':testMode==='live'?'live':_0x43195f(0x2b4),'codeSnapshot':_0x5a758b};debugLog(_0x43195f(0x206));const _0x380779=await fetch(RAILWAY_URL+_0x43195f(0x2d3),{'method':_0x43195f(0x23c),'headers':{'Content-Type':_0x43195f(0x229)},'body':JSON[_0x43195f(0x26a)](_0x5563c8)});debugLog(_0x43195f(0x272)+_0x380779[_0x43195f(0x1f4)]);const _0xb48159=await _0x380779[_0x43195f(0x2aa)]();if(_0xb48159[_0x43195f(0x26d)])return logEvent('Submission\x20successful',{'submission_id':_0xb48159['id']}),debugLog('✅\x20Sikeres\x20beküldés!\x20ID:\x20'+_0xb48159['id']),{'success':!![],'submission_id':_0xb48159['id']};else throw new Error(_0x43195f(0x1f5));}catch(_0x2da2fb){return logEvent('Submission\x20error',{'error':_0x2da2fb[_0x43195f(0x2a2)]}),debugLog('❌\x20Backend\x20hiba'),null;}}async function autoSaveProgress(){const _0x33f72e=a0_0x2ff7cf;try{currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers[_0x33f72e(0x268)]&&(taskAnswers[currentTaskIndex]['answer']=codeEditor['getValue']());const _0x3bc514={'studentData':studentData,'taskAnswers':taskAnswers['map'](_0x1d6f27=>({'taskNumber':_0x1d6f27[_0x33f72e(0x269)],'answer':_0x1d6f27[_0x33f72e(0x1de)]||''})),'timestamp':new Date()['toISOString']()};sessionStorage[_0x33f72e(0x1d6)](_0x33f72e(0x2b6),JSON[_0x33f72e(0x26a)](_0x3bc514)),debugLog('💾\x20Automatikus\x20mentés\x20(lokális)');}catch(_0xf5d15c){console[_0x33f72e(0x208)](_0x33f72e(0x1c9),_0xf5d15c);}}function setupEventListeners(){const _0x394912=a0_0x2ff7cf;document[_0x394912(0x30b)](_0x394912(0x1da))['addEventListener'](_0x394912(0x2f7),startTest),document['getElementById']('skip-btn')[_0x394912(0x2ef)](_0x394912(0x2f7),skipTask),document[_0x394912(0x30b)](_0x394912(0x297))[_0x394912(0x2ef)](_0x394912(0x2f7),showSubmitModal),document['getElementById'](_0x394912(0x1ee))[_0x394912(0x2ef)](_0x394912(0x2f7),submitTest),document[_0x394912(0x30b)](_0x394912(0x239))['addEventListener'](_0x394912(0x2f7),hideSubmitModal),document[_0x394912(0x30b)](_0x394912(0x223))[_0x394912(0x2ef)](_0x394912(0x2f7),runPythonCode),document[_0x394912(0x30b)](_0x394912(0x2d4))[_0x394912(0x2ef)](_0x394912(0x2f7),checkScoring),document['addEventListener'](_0x394912(0x24a),_0xbfc97b=>{const _0x4f152c=_0x394912;return _0xbfc97b[_0x4f152c(0x2d0)](),![];}),document['addEventListener'](_0x394912(0x2d7),_0x579eb6=>{const _0x1b8744=_0x394912;if(_0x579eb6[_0x1b8744(0x2f4)]===_0x1b8744(0x2d9)||_0x579eb6[_0x1b8744(0x213)]&&_0x579eb6[_0x1b8744(0x1a7)]&&(_0x579eb6[_0x1b8744(0x2f4)]==='I'||_0x579eb6['key']==='J'||_0x579eb6[_0x1b8744(0x2f4)]==='C')||_0x579eb6[_0x1b8744(0x213)]&&_0x579eb6[_0x1b8744(0x2f4)]==='U')return _0x579eb6[_0x1b8744(0x2d0)](),![];}),detectDevTools(),document[_0x394912(0x2ef)](_0x394912(0x2ad),handleFullscreenChange),document[_0x394912(0x2ef)](_0x394912(0x22f),handleFullscreenChange),document['addEventListener']('mozfullscreenchange',handleFullscreenChange),document['addEventListener'](_0x394912(0x20a),handleFullscreenChange),document[_0x394912(0x2ef)]('visibilitychange',handleVisibilityChange),window[_0x394912(0x2ef)](_0x394912(0x1c6),handleWindowBlur),window['addEventListener'](_0x394912(0x1f6),handleWindowFocus),startFocusCheck();}async function loadTasksFromFile(){const _0x1235e4=a0_0x2ff7cf;try{const _0x28a55a=await fetch('feladatok.txt'),_0x1d1ee9=await _0x28a55a[_0x1235e4(0x1c2)]();parseTasks(_0x1d1ee9),logEvent(_0x1235e4(0x301),{'count':tasks[_0x1235e4(0x268)]});}catch(_0x12c35a){alert(_0x1235e4(0x302)),logEvent(_0x1235e4(0x267),{'error':_0x12c35a['message']});}}function parseTasks(_0x186a7e){const _0x217ed9=a0_0x2ff7cf,_0x586d37=_0x186a7e[_0x217ed9(0x1e4)]('\x0a');let _0x335e3c=null,_0x18f3a3=![],_0x93d28f=![],_0x23f481=[],_0x22d49b=[];for(let _0x44ebc3 of _0x586d37){const _0x470e64=_0x44ebc3[_0x217ed9(0x2f5)](/^(\d+)\.\s*feladat/i);if(_0x470e64){_0x335e3c&&(_0x335e3c[_0x217ed9(0x2a0)]=_0x23f481['join']('\x0a'),_0x335e3c[_0x217ed9(0x2a4)]=parseCriteria(_0x22d49b),tasks[_0x217ed9(0x1e5)](_0x335e3c));_0x335e3c={'number':parseInt(_0x470e64[0x1]),'description':'','example':'','points':0x8,'criteria':[]},_0x18f3a3=![],_0x93d28f=![],_0x23f481=[],_0x22d49b=[];continue;}const _0x49739a=_0x44ebc3['match'](/^Pont:\s*(\d+)/i);if(_0x49739a&&_0x335e3c){_0x335e3c[_0x217ed9(0x2db)]=parseInt(_0x49739a[0x1]);continue;}if(_0x44ebc3[_0x217ed9(0x308)]()==='Pontozas:'){_0x93d28f=!![],_0x18f3a3=![];continue;}if(_0x44ebc3[_0x217ed9(0x308)]()===_0x217ed9(0x1c0)||_0x44ebc3[_0x217ed9(0x308)]()===_0x217ed9(0x1aa)){if(!_0x93d28f)_0x18f3a3=!_0x18f3a3;continue;}if(_0x44ebc3[_0x217ed9(0x2f5)](/^Minta kód:/i))continue;if(_0x335e3c){if(_0x93d28f){if(_0x44ebc3[_0x217ed9(0x308)]()!=='')_0x22d49b[_0x217ed9(0x1e5)](_0x44ebc3[_0x217ed9(0x308)]());}else{if(_0x18f3a3)_0x23f481[_0x217ed9(0x1e5)](_0x44ebc3);else{if(_0x44ebc3['trim']()!==''){if(_0x335e3c['description']!=='')_0x335e3c[_0x217ed9(0x203)]+='\x0a';_0x335e3c['description']+=_0x44ebc3;}}}}}_0x335e3c&&(_0x335e3c[_0x217ed9(0x2a0)]=_0x23f481[_0x217ed9(0x287)]('\x0a'),_0x335e3c['criteria']=parseCriteria(_0x22d49b),tasks[_0x217ed9(0x1e5)](_0x335e3c));const _0x4123f7=tasks[_0x217ed9(0x1db)](_0x433e59=>_0x433e59[_0x217ed9(0x2db)]===0x8)[_0x217ed9(0x268)],_0x17fffb=tasks[_0x217ed9(0x1db)](_0x1c1d3f=>_0x1c1d3f['points']===0xe)['length'];debugLog('✅\x20'+tasks['length']+_0x217ed9(0x252)+_0x4123f7+_0x217ed9(0x214)+_0x17fffb+_0x217ed9(0x245));}function startTest(){const _0x334dc2=a0_0x2ff7cf,_0x104d0e=document[_0x334dc2(0x30b)]('name')[_0x334dc2(0x29d)]['trim'](),_0x595818=document[_0x334dc2(0x30b)](_0x334dc2(0x222))[_0x334dc2(0x29d)][_0x334dc2(0x308)](),_0x1f5aea=document[_0x334dc2(0x30b)](_0x334dc2(0x2b1))[_0x334dc2(0x29d)]['trim']();if(!_0x104d0e||!_0x595818||!_0x1f5aea){alert(_0x334dc2(0x198));return;}const _0x12e55a=tasks[_0x334dc2(0x1db)](_0x33c28b=>_0x33c28b[_0x334dc2(0x2db)]===0x8),_0x309770=tasks[_0x334dc2(0x1db)](_0x46e67e=>_0x46e67e[_0x334dc2(0x2db)]===0xe);if(_0x12e55a[_0x334dc2(0x268)]<0x2||_0x309770[_0x334dc2(0x268)]<0x1){alert(_0x334dc2(0x22e)+_0x12e55a['length']+'\x20db\x208\x20pontos,\x20'+_0x309770[_0x334dc2(0x268)]+'\x20db\x2014\x20pontos.');return;}studentData={'name':_0x104d0e,'email':_0x595818,'class':_0x1f5aea},testStartTime=new Date(),logEvent(_0x334dc2(0x29f),studentData),selectRandomTasks(),taskAnswers=selectedTasks['map'](_0x229dea=>({'taskNumber':_0x229dea['number'],'taskDescription':_0x229dea[_0x334dc2(0x203)],'taskExample':_0x229dea['example'],'answer':'','timeSpent':0x0,'startTime':null,'endTime':null,'skipped':![],'earnedPoints':0x0,'scoringResults':null})),globalTimeRemaining=0x2d*0x3c;if(testMode===_0x334dc2(0x20e)&&!pyodideInstance){const _0x506f1a=confirm(_0x334dc2(0x1be)+_0x334dc2(0x1fa)+_0x334dc2(0x2d6)+_0x334dc2(0x1a9));if(!_0x506f1a)return;}fullscreenEnforced=![],fullscreenGraceUntil=0x0,startSection['classList'][_0x334dc2(0x1b6)](_0x334dc2(0x2c5)),quizSection[_0x334dc2(0x200)][_0x334dc2(0x1eb)](_0x334dc2(0x2c5)),initializeCodeEditor(),initTerminal();const _0x2f2df7=sessionStorage[_0x334dc2(0x219)](_0x334dc2(0x21c))===_0x334dc2(0x248);!_0x2f2df7&&enterFullscreen(),setTimeout(()=>{const _0x1c5cd2=_0x334dc2;currentTaskIndex=0x0,startGlobalTimer(),startAutoSaveInterval(),showTask(currentTaskIndex),updateLiveScore();if(fitAddon)fitAddon[_0x1c5cd2(0x288)]();logEvent(_0x1c5cd2(0x1ce));},0x64);}function selectRandomTasks(){const _0x380570=a0_0x2ff7cf,_0x506457=tasks[_0x380570(0x1db)](_0x57c44e=>_0x57c44e[_0x380570(0x2db)]===0x8),_0x1f259b=tasks[_0x380570(0x1db)](_0x2a8f41=>_0x2a8f41[_0x380570(0x2db)]===0xe),_0x1ac032=[..._0x506457]['sort'](()=>0.5-Math[_0x380570(0x1bf)]()),_0x335e2a=[..._0x1f259b][_0x380570(0x303)](()=>0.5-Math[_0x380570(0x1bf)]()),_0x444b8d=_0x1ac032[_0x380570(0x235)](0x0,0x2),_0x319892=_0x335e2a[_0x380570(0x235)](0x0,0x1);selectedTasks=[..._0x444b8d,..._0x319892][_0x380570(0x303)](()=>0.5-Math['random']()),logEvent(_0x380570(0x306),{'tasks':selectedTasks['map'](_0xd6e3bd=>({'number':_0xd6e3bd['number'],'points':_0xd6e3bd[_0x380570(0x2db)]}))});}function parseCriteria(_0x450e26){const _0x5a81e9=a0_0x2ff7cf;return _0x450e26[_0x5a81e9(0x27e)](_0x25259b=>{const _0x1ab77b=_0x5a81e9,_0x1e2fae=_0x25259b[_0x1ab77b(0x2fc)]('|');if(_0x1e2fae===-0x1)return null;const _0x2171bd=_0x25259b[_0x1ab77b(0x19c)](0x0,_0x1e2fae),_0x394193=_0x25259b[_0x1ab77b(0x19c)](_0x1e2fae+0x1)[_0x1ab77b(0x308)](),_0x2a05d2=_0x2171bd[_0x1ab77b(0x2fc)](':');if(_0x2a05d2===-0x1)return{'type':_0x2171bd['trim'](),'args':null,'label':_0x394193};const _0x273f99=_0x2171bd[_0x1ab77b(0x19c)](0x0,_0x2a05d2)[_0x1ab77b(0x308)](),_0x3fcb14=_0x2171bd[_0x1ab77b(0x19c)](_0x2a05d2+0x1);return{'type':_0x273f99,'args':_0x3fcb14,'label':_0x394193};})['filter'](_0x5255ea=>_0x5255ea!==null);}function evaluateCriterion(_0x4845bd,_0x2fb2ef){const _0x3bb277=a0_0x2ff7cf,{type:_0x39fbd3,args:_0x4f5f84}=_0x2fb2ef;if(['if',_0x3bb277(0x1d8),'else',_0x3bb277(0x30c),_0x3bb277(0x244),_0x3bb277(0x1b4),_0x3bb277(0x259)][_0x3bb277(0x250)](_0x39fbd3))return new RegExp('\x5cb'+_0x39fbd3+'\x5cb')[_0x3bb277(0x1c3)](_0x4845bd);if(_0x39fbd3===_0x3bb277(0x1b2)){const _0x3880d7=parseInt(_0x4f5f84)||0x1;return(_0x4845bd[_0x3bb277(0x2f5)](/\binput\s*\(/g)||[])[_0x3bb277(0x268)]>=_0x3880d7;}if(_0x39fbd3===_0x3bb277(0x201)){const _0x81076c=parseInt(_0x4f5f84)||0x1;return(_0x4845bd[_0x3bb277(0x2f5)](/\b(int|float)\s*\(/g)||[])['length']>=_0x81076c;}if(_0x39fbd3===_0x3bb277(0x1a2))return new RegExp(_0x3bb277(0x2b2)+_0x4f5f84+_0x3bb277(0x240)+_0x4f5f84+_0x3bb277(0x255),'i')['test'](_0x4845bd);if(_0x39fbd3==='tartalmaz')return _0x4845bd[_0x3bb277(0x250)](_0x4f5f84);if(_0x39fbd3===_0x3bb277(0x196)){const _0x5b906a=[..._0x4845bd['matchAll'](/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];if(_0x5b906a[_0x3bb277(0x268)]===0x0)return![];return _0x5b906a[_0x3bb277(0x28f)](_0x236392=>_0x236392[0x1][_0x3bb277(0x19a)]('\x20'));}if(_0x39fbd3===_0x3bb277(0x22c)){const _0x2ce307=_0x4f5f84[_0x3bb277(0x265)](/[.*+?^${}()|[\]\\]/g,_0x3bb277(0x26b));return new RegExp('\x5cbinput\x5cs*\x5c(\x5cs*f?[\x22\x27]'+_0x2ce307+'[\x22\x27]\x5cs*\x5c)')[_0x3bb277(0x1c3)](_0x4845bd);}return![];}async function runCodeWithMockInputs(_0x3bc01a,_0x12ddbc){const _0x4ea0cf=a0_0x2ff7cf;let _0x59d9a2=0x0;const _0x363511=async _0xfb1d11=>{const _0x3b1090=a0_0x3ddb;if(_0x59d9a2<_0x12ddbc['length'])return String(_0x12ddbc[_0x59d9a2++])[_0x3b1090(0x308)]();return'';},_0x73ef40=globalThis[_0x4ea0cf(0x25b)];globalThis[_0x4ea0cf(0x25b)]=_0x363511;try{const _0x174ce4=await getPyodide();_0x174ce4[_0x4ea0cf(0x2ae)](_0x4ea0cf(0x27b));const _0x1a6a4f=wrapPythonCodeForAsyncInput(_0x3bc01a);await _0x174ce4['runPythonAsync'](_0x1a6a4f);const _0x30d74a=_0x174ce4['runPython'](_0x4ea0cf(0x1a3));return{'success':!![],'output':_0x30d74a||''};}catch(_0x1b24bd){return{'success':![],'output':'','error':_0x1b24bd[_0x4ea0cf(0x2a2)]};}finally{globalThis[_0x4ea0cf(0x25b)]=_0x73ef40;}}let scoringRunning=![];function a0_0x3ddb(_0x283daa,_0x4c2174){_0x283daa=_0x283daa-0x196;const _0x2a0fe9=a0_0x2a0f();let _0x3ddbaa=_0x2a0fe9[_0x283daa];if(a0_0x3ddb['XwirkD']===undefined){var _0x2ab2e9=function(_0x40d28b){const _0x357800='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x5ae434='',_0xb8a8bd='';for(let _0x808d46=0x0,_0x2e23d7,_0x2dfe00,_0x53b414=0x0;_0x2dfe00=_0x40d28b['charAt'](_0x53b414++);~_0x2dfe00&&(_0x2e23d7=_0x808d46%0x4?_0x2e23d7*0x40+_0x2dfe00:_0x2dfe00,_0x808d46++%0x4)?_0x5ae434+=String['fromCharCode'](0xff&_0x2e23d7>>(-0x2*_0x808d46&0x6)):0x0){_0x2dfe00=_0x357800['indexOf'](_0x2dfe00);}for(let _0x5002f2=0x0,_0x2260fd=_0x5ae434['length'];_0x5002f2<_0x2260fd;_0x5002f2++){_0xb8a8bd+='%'+('00'+_0x5ae434['charCodeAt'](_0x5002f2)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0xb8a8bd);};a0_0x3ddb['PMghcH']=_0x2ab2e9,a0_0x3ddb['mpIQFO']={},a0_0x3ddb['XwirkD']=!![];}const _0x15f758=_0x2a0fe9[0x0],_0x3a6e45=_0x283daa+_0x15f758,_0xd7ef38=a0_0x3ddb['mpIQFO'][_0x3a6e45];return!_0xd7ef38?(_0x3ddbaa=a0_0x3ddb['PMghcH'](_0x3ddbaa),a0_0x3ddb['mpIQFO'][_0x3a6e45]=_0x3ddbaa):_0x3ddbaa=_0xd7ef38,_0x3ddbaa;}async function checkScoring(){const _0x2fb14e=a0_0x2ff7cf;if(scoringRunning)return;const _0x597270=selectedTasks[currentTaskIndex];if(!_0x597270||!_0x597270[_0x2fb14e(0x2a4)]||_0x597270[_0x2fb14e(0x2a4)][_0x2fb14e(0x268)]===0x0)return;const _0x279df9=codeEditor[_0x2fb14e(0x2dd)]()[_0x2fb14e(0x308)]();scoringRunning=!![];const _0x4573a1=document['getElementById']('check-scoring-btn');_0x4573a1[_0x2fb14e(0x2b7)]=!![],_0x4573a1[_0x2fb14e(0x2f2)]=_0x2fb14e(0x2f0);const _0x3d1e8f=document['getElementById'](_0x2fb14e(0x1b9));_0x3d1e8f[_0x2fb14e(0x200)][_0x2fb14e(0x1eb)](_0x2fb14e(0x2c5));if(!_0x279df9){document[_0x2fb14e(0x30b)](_0x2fb14e(0x1f1))[_0x2fb14e(0x25f)]='<div\x20class=\x22scoring-header-row\x22><span\x20class=\x22scoring-title\x22\x20style=\x22color:#721c24\x22>⚠️\x20Nincs\x20beírva\x20kód!</span></div>',_0x4573a1[_0x2fb14e(0x2b7)]=![],_0x4573a1[_0x2fb14e(0x2f2)]=_0x2fb14e(0x1a1),scoringRunning=![];return;}const _0x3d1c13=_0x597270[_0x2fb14e(0x2a4)][_0x2fb14e(0x27e)](_0x35f836=>{const _0x54b924=_0x2fb14e;if(_0x35f836['type']===_0x54b924(0x19e))return{'criterion':_0x35f836,'passed':null,'pending':!![]};return{'criterion':_0x35f836,'passed':evaluateCriterion(_0x279df9,_0x35f836),'pending':![]};});updateScoringUI(_0x3d1c13);for(let _0x3d3d0b=0x0;_0x3d3d0b<_0x3d1c13['length'];_0x3d3d0b++){if(!_0x3d1c13[_0x3d3d0b][_0x2fb14e(0x1ba)])continue;const _0xab374b=_0x3d1c13[_0x3d3d0b][_0x2fb14e(0x2ac)],_0x1db977=_0xab374b[_0x2fb14e(0x25a)][_0x2fb14e(0x2fc)](':');if(_0x1db977===-0x1){_0x3d1c13[_0x3d3d0b]={'criterion':_0xab374b,'passed':![],'pending':![]};continue;}const _0x10236d=_0xab374b[_0x2fb14e(0x25a)][_0x2fb14e(0x19c)](0x0,_0x1db977),_0x3aa600=_0xab374b[_0x2fb14e(0x25a)]['substring'](_0x1db977+0x1),_0x11500a=_0x10236d[_0x2fb14e(0x1e4)](','),_0x5636bf=await runCodeWithMockInputs(_0x279df9,_0x11500a),_0x5357dd=_0x5636bf[_0x2fb14e(0x26d)]?_0x5636bf['output']['toLowerCase']()[_0x2fb14e(0x250)](_0x3aa600[_0x2fb14e(0x204)]()):![];_0x3d1c13[_0x3d3d0b]={'criterion':_0xab374b,'passed':_0x5357dd,'pending':![]},updateScoringUI(_0x3d1c13);}_0x4573a1[_0x2fb14e(0x2b7)]=![],_0x4573a1[_0x2fb14e(0x2f2)]='🔍\x20Pontozás',scoringRunning=![];}function updateScoringUI(_0xbcdd02){const _0x361bc2=a0_0x2ff7cf,_0x37cfac=document[_0x361bc2(0x30b)](_0x361bc2(0x1f1)),_0x1bade2=_0xbcdd02[_0x361bc2(0x1db)](_0x3ef1ff=>_0x3ef1ff[_0x361bc2(0x293)]===!![])[_0x361bc2(0x268)],_0x36d056=_0xbcdd02[_0x361bc2(0x268)];let _0x532cb7=_0x361bc2(0x1ac)+_0x1bade2+'\x20/\x20'+_0x36d056+_0x361bc2(0x21d);for(const _0x536a6a of _0xbcdd02){let _0x456225,_0x3da2cf;if(_0x536a6a['pending'])_0x456225='⏳',_0x3da2cf=_0x361bc2(0x292);else _0x536a6a[_0x361bc2(0x293)]?(_0x456225='✓',_0x3da2cf=_0x361bc2(0x262)):(_0x456225='✗',_0x3da2cf=_0x361bc2(0x2e7));_0x532cb7+=_0x361bc2(0x27f)+_0x3da2cf+_0x361bc2(0x1df)+_0x456225+'</span>'+_0x536a6a[_0x361bc2(0x2ac)][_0x361bc2(0x1c7)]+_0x361bc2(0x23e);}_0x532cb7+=_0x361bc2(0x280),_0x37cfac['innerHTML']=_0x532cb7,!_0xbcdd02[_0x361bc2(0x23b)](_0x3d71b5=>_0x3d71b5[_0x361bc2(0x1ba)])&&currentTaskIndex>=0x0&&taskAnswers[currentTaskIndex]&&(taskAnswers[currentTaskIndex][_0x361bc2(0x27a)]=_0x1bade2,taskAnswers[currentTaskIndex][_0x361bc2(0x1d2)]=_0xbcdd02['map'](_0x418b50=>({'label':_0x418b50[_0x361bc2(0x2ac)][_0x361bc2(0x1c7)],'passed':_0x418b50[_0x361bc2(0x293)]})),updateLiveScore());}function initializeCodeEditor(){const _0x41cc87=a0_0x2ff7cf,_0x18e343=document[_0x41cc87(0x30b)](_0x41cc87(0x20c));codeEditor=CodeMirror['fromTextArea'](_0x18e343,{'mode':_0x41cc87(0x1b7),'theme':_0x41cc87(0x2da),'lineNumbers':!![],'indentUnit':0x4,'indentWithTabs':![],'lineWrapping':!![],'matchBrackets':!![],'autoCloseBrackets':{'pairs':_0x41cc87(0x2e6),'explode':_0x41cc87(0x207)},'extraKeys':{'\x22':function(_0x4b732c){const _0x3713d6=_0x41cc87;_0x4b732c[_0x3713d6(0x2fd)]('\x22');}},'specialChars':/[\t]/,'specialCharPlaceholder':_0x1f12b4=>{const _0x1259d9=_0x41cc87,_0x193824=document[_0x1259d9(0x1dc)]('span');return _0x193824[_0x1259d9(0x2f2)]=_0x1f12b4==='\x09'?'→':'?',_0x193824[_0x1259d9(0x2c0)]='cm-specialchar',_0x193824;}}),codeEditor['on'](_0x41cc87(0x28d),()=>{const _0x31bfe1=_0x41cc87;currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers[_0x31bfe1(0x268)]&&(taskAnswers[currentTaskIndex]['answer']=codeEditor[_0x31bfe1(0x2dd)]());});}function initTerminal(){const _0x5515cf=a0_0x2ff7cf;term=new Terminal({'cursorBlink':!![],'convertEol':!![],'fontSize':0xe,'fontFamily':_0x5515cf(0x28b),'theme':{'background':'#0c0c0c','foreground':_0x5515cf(0x227),'cursor':_0x5515cf(0x227),'selection':_0x5515cf(0x2ce)}}),fitAddon=new FitAddon[(_0x5515cf(0x24d))](),term[_0x5515cf(0x1e6)](fitAddon);const _0x38ed51=document[_0x5515cf(0x30b)]('terminal');term[_0x5515cf(0x2e4)](_0x38ed51),fitAddon[_0x5515cf(0x288)](),terminalReady=!![];}function showTask(_0xfccdd9){const _0x14f99b=a0_0x2ff7cf;if(_0xfccdd9<0x0||_0xfccdd9>=selectedTasks[_0x14f99b(0x268)])return;const _0x5b6c2d=selectedTasks[_0xfccdd9],_0x4338c4=taskAnswers[_0xfccdd9];!_0x4338c4['startTime']&&(_0x4338c4[_0x14f99b(0x25e)]=new Date());document[_0x14f99b(0x30b)]('task-number')[_0x14f99b(0x2f2)]=_0xfccdd9+0x1+_0x14f99b(0x21a)+_0x5b6c2d[_0x14f99b(0x2db)]+'\x20pont)',document['getElementById'](_0x14f99b(0x210))['textContent']=_0x5b6c2d['description'],document[_0x14f99b(0x30b)](_0x14f99b(0x1f0))[_0x14f99b(0x2f2)]=_0x5b6c2d[_0x14f99b(0x2a0)];const _0x2c8b39=document[_0x14f99b(0x30b)](_0x14f99b(0x2d4)),_0x308116=document[_0x14f99b(0x30b)](_0x14f99b(0x1b9));document[_0x14f99b(0x30b)]('scoring-content')[_0x14f99b(0x25f)]='',_0x5b6c2d[_0x14f99b(0x2a4)]&&_0x5b6c2d['criteria'][_0x14f99b(0x268)]>0x0?(_0x2c8b39[_0x14f99b(0x200)][_0x14f99b(0x1eb)](_0x14f99b(0x2c5)),_0x308116[_0x14f99b(0x200)][_0x14f99b(0x1eb)](_0x14f99b(0x2c5)),setTimeout(checkScoring,0x12c)):(_0x2c8b39[_0x14f99b(0x200)]['add']('hidden'),_0x308116[_0x14f99b(0x200)][_0x14f99b(0x1b6)](_0x14f99b(0x2c5))),debugLog(_0x14f99b(0x249)+_0x5b6c2d['number']+_0x14f99b(0x216)),terminalReady&&term&&term[_0x14f99b(0x2e1)](),codeEditor[_0x14f99b(0x2d5)](_0x4338c4[_0x14f99b(0x1de)]||''),updateTaskNavigation(),logEvent(_0x14f99b(0x197),{'taskIndex':_0xfccdd9,'taskNumber':_0x5b6c2d[_0x14f99b(0x2a1)]});}function updateTaskNavigation(){const _0x41c650=a0_0x2ff7cf,_0xae862b=document[_0x41c650(0x30b)](_0x41c650(0x1fc));_0xae862b['innerHTML']='',selectedTasks['forEach']((_0x83a447,_0x50d10d)=>{const _0x2b1d40=_0x41c650,_0x6ab2d3=document[_0x2b1d40(0x1dc)](_0x2b1d40(0x2ca));_0x6ab2d3['className']=_0x2b1d40(0x27c),_0x6ab2d3[_0x2b1d40(0x2f2)]=_0x50d10d+0x1+_0x2b1d40(0x216),_0x50d10d===currentTaskIndex&&_0x6ab2d3['classList'][_0x2b1d40(0x1b6)](_0x2b1d40(0x233)),taskAnswers[_0x50d10d]['answer']&&taskAnswers[_0x50d10d][_0x2b1d40(0x1de)][_0x2b1d40(0x308)]()!==''&&_0x6ab2d3[_0x2b1d40(0x200)][_0x2b1d40(0x1b6)](_0x2b1d40(0x1e7)),_0x6ab2d3[_0x2b1d40(0x2ef)]('click',()=>{saveCurrentTaskTime(),currentTaskIndex=_0x50d10d,showTask(_0x50d10d);}),_0xae862b[_0x2b1d40(0x2a7)](_0x6ab2d3);});}function skipTask(){const _0x624953=a0_0x2ff7cf;saveCurrentTaskTime(),taskAnswers[currentTaskIndex][_0x624953(0x2e8)]=!![],currentTaskIndex=(currentTaskIndex+0x1)%selectedTasks['length'],showTask(currentTaskIndex),logEvent('Task\x20skipped',{'newIndex':currentTaskIndex});}function saveCurrentTaskTime(){const _0x56f672=a0_0x2ff7cf;if(currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers['length']){const _0x37fada=taskAnswers[currentTaskIndex];if(_0x37fada[_0x56f672(0x25e)]){const _0x318e13=new Date();_0x37fada[_0x56f672(0x2a9)]+=Math[_0x56f672(0x215)]((_0x318e13-_0x37fada['startTime'])/0x3e8),_0x37fada[_0x56f672(0x25e)]=null;}}}function getGrade(_0x192693){const _0x3b6dfe=a0_0x2ff7cf;if(_0x192693>=0x50)return{'value':0x5,'label':_0x3b6dfe(0x2ec)};if(_0x192693>=0x3c)return{'value':0x4,'label':_0x3b6dfe(0x30a)};if(_0x192693>=0x28)return{'value':0x3,'label':_0x3b6dfe(0x2fa)};if(_0x192693>=0x14)return{'value':0x2,'label':'Érdemjegy:\x202'};return{'value':0x1,'label':_0x3b6dfe(0x1a4)};}function updateLiveScore(){const _0x341a5a=a0_0x2ff7cf,_0x51d39f=selectedTasks[_0x341a5a(0x2c8)]((_0x5226a9,_0x2278d5)=>_0x5226a9+_0x2278d5[_0x341a5a(0x2db)],0x0),_0x42d4e1=taskAnswers[_0x341a5a(0x2c8)]((_0x4c5957,_0x690d1f)=>_0x4c5957+(_0x690d1f[_0x341a5a(0x27a)]||0x0),0x0),_0x1aa757=_0x51d39f>0x0?_0x42d4e1/_0x51d39f*0x64:0x0,_0x480c20=getGrade(_0x1aa757),_0x42cc98=document[_0x341a5a(0x30b)](_0x341a5a(0x260)),_0x1841f2=document[_0x341a5a(0x30b)](_0x341a5a(0x2b0));_0x42cc98&&(_0x42cc98[_0x341a5a(0x2f2)]=_0x42d4e1+_0x341a5a(0x22d)+_0x51d39f+_0x341a5a(0x1ef)),_0x1841f2&&(_0x1841f2['textContent']=_0x480c20[_0x341a5a(0x1c7)],_0x1841f2[_0x341a5a(0x2c0)]='score-grade\x20grade-'+_0x480c20[_0x341a5a(0x29d)]);}function buildScoringReport(){const _0x12e4e6=a0_0x2ff7cf,_0x2ead1c=selectedTasks['reduce']((_0x9240ad,_0x327b1c)=>_0x9240ad+_0x327b1c[_0x12e4e6(0x2db)],0x0),_0x48811e=taskAnswers[_0x12e4e6(0x2c8)]((_0x394187,_0x517b3c)=>_0x394187+(_0x517b3c['earnedPoints']||0x0),0x0),_0x3b5655=_0x2ead1c>0x0?_0x48811e/_0x2ead1c*0x64:0x0,_0x4afa95=getGrade(_0x3b5655),_0x45d238=[];return _0x45d238[_0x12e4e6(0x1e5)](_0x12e4e6(0x1ea)),_0x45d238[_0x12e4e6(0x1e5)](''),_0x45d238[_0x12e4e6(0x1e5)](_0x12e4e6(0x294)+_0x48811e+_0x12e4e6(0x22d)+_0x2ead1c),_0x45d238[_0x12e4e6(0x1e5)](_0x12e4e6(0x1d3)+_0x3b5655[_0x12e4e6(0x2c6)](0x1)+'%'),_0x45d238[_0x12e4e6(0x1e5)](''+_0x4afa95['label']),_0x45d238[_0x12e4e6(0x1e5)](''),taskAnswers[_0x12e4e6(0x2cb)]((_0x5c34e5,_0x5c1b82)=>{const _0x3ce628=_0x12e4e6,_0xeaeef8=selectedTasks[_0x5c1b82]?selectedTasks[_0x5c1b82][_0x3ce628(0x2db)]:0x0,_0x161967=_0x5c34e5[_0x3ce628(0x27a)]||0x0;_0x45d238[_0x3ce628(0x1e5)]('\x20\x20'+(_0x5c1b82+0x1)+_0x3ce628(0x1b3)+_0x161967+_0x3ce628(0x22d)+_0xeaeef8+_0x3ce628(0x1ef));if(_0x5c34e5[_0x3ce628(0x1d2)]&&_0x5c34e5[_0x3ce628(0x1d2)][_0x3ce628(0x268)]>0x0){const _0x2e7104=_0x5c34e5['scoringResults']['filter'](_0x4d506c=>!_0x4d506c[_0x3ce628(0x293)]);_0x2e7104[_0x3ce628(0x268)]>0x0?(_0x45d238[_0x3ce628(0x1e5)](_0x3ce628(0x2bd)),_0x2e7104[_0x3ce628(0x2cb)](_0x5a2e19=>_0x45d238[_0x3ce628(0x1e5)](_0x3ce628(0x309)+_0x5a2e19['label']))):_0x45d238[_0x3ce628(0x1e5)](_0x3ce628(0x282));}else _0x45d238[_0x3ce628(0x1e5)](_0x3ce628(0x2f6));}),_0x45d238['push'](''),_0x45d238['join']('\x0a');}function startGlobalTimer(){globalTimer&&clearInterval(globalTimer),globalTimer=setInterval(()=>{const _0x3da6c9=a0_0x3ddb;globalTimeRemaining--;const _0x552b08=Math[_0x3da6c9(0x1c4)](globalTimeRemaining/0x3c),_0x2bc1d1=globalTimeRemaining%0x3c,_0x174876=document[_0x3da6c9(0x30b)]('global-timer');_0x174876['textContent']=_0x3da6c9(0x1cb)+_0x552b08+':'+_0x2bc1d1[_0x3da6c9(0x1b0)]()[_0x3da6c9(0x278)](0x2,'0'),globalTimeRemaining<=0x3c&&_0x174876[_0x3da6c9(0x200)]['add'](_0x3da6c9(0x2c1)),globalTimeRemaining<=0x0&&(clearInterval(globalTimer),autoSubmitTest());},0x3e8);}async function runPythonCode(){const _0x284425=a0_0x2ff7cf;pythonCodeRunning&&(currentInputDisposable&&(currentInputDisposable['dispose'](),currentInputDisposable=null),pythonCodeRunning=![]);const _0x2f323b=codeEditor[_0x284425(0x2dd)]();if(!_0x2f323b||_0x2f323b[_0x284425(0x308)]()===''){term[_0x284425(0x237)](_0x284425(0x1d5));return;}pythonCodeRunning=!![];const _0x262e98=document[_0x284425(0x30b)]('run-code-btn');_0x262e98&&(_0x262e98[_0x284425(0x2b7)]=!![],_0x262e98[_0x284425(0x2f2)]=_0x284425(0x29a));term[_0x284425(0x2e1)]();const _0x198d4d=getIndentationIssues(_0x2f323b);_0x198d4d['length']>0x0&&(term[_0x284425(0x237)](_0x284425(0x2f8)),_0x198d4d['slice'](0x0,0x5)[_0x284425(0x2cb)](_0x230b89=>{const _0x1759c8=_0x284425;term[_0x1759c8(0x237)]('-\x20'+_0x230b89);}),_0x198d4d[_0x284425(0x268)]>0x5&&term[_0x284425(0x237)](_0x284425(0x1a8)+(_0x198d4d[_0x284425(0x268)]-0x5)+'\x20sor'),term['writeln'](''));logEvent('Code\x20execution\x20started',{'code':_0x2f323b['substring'](0x0,0x64)});let _0x376bfa;try{_0x376bfa=await getPyodide();}catch(_0x923a33){await sleep(0xc8),term[_0x284425(0x237)](_0x284425(0x2b5));testMode===_0x284425(0x20e)?(term[_0x284425(0x237)](_0x284425(0x263)),term[_0x284425(0x237)]('\x20\x20\x20Ha\x20ismételten\x20nem\x20működik,\x20értesítsd\x20a\x20tanárt!')):(term[_0x284425(0x237)](_0x284425(0x286)),term['writeln'](_0x284425(0x22b)));return;}try{globalThis[_0x284425(0x25b)]=customPythonInput,globalThis[_0x284425(0x231)]=_0x598569=>{const _0x496aae=_0x284425;term[_0x496aae(0x1fb)](String(_0x598569));},_0x376bfa['runPython'](_0x284425(0x304));const _0xe1a317=wrapPythonCodeForAsyncInput(_0x2f323b);await _0x376bfa[_0x284425(0x1e8)](_0xe1a317),await sleep(0x190),term['writeln']('\x0a✅\x20\x20Kód\x20sikeresen\x20lefutott!'),debugLog('✅\x20Kód\x20futtatva'),autoSaveProgress();}catch(_0x35d4cc){const _0x2c1ff5=_0x35d4cc['message']||String(_0x35d4cc),_0x124457=_0x2c1ff5[_0x284425(0x1e4)]('\x0a')[_0x284425(0x1db)](_0x397c70=>_0x397c70[_0x284425(0x308)]()),_0x1efeaa=_0x124457[_0x124457[_0x284425(0x268)]-0x1]||_0x2c1ff5;await sleep(0x190),term['writeln'](_0x284425(0x217)+_0x1efeaa),debugLog(_0x284425(0x2a5)),autoSaveProgress();}finally{pythonCodeRunning=![],currentInputDisposable=null,_0x262e98&&(_0x262e98[_0x284425(0x2b7)]=![],_0x262e98[_0x284425(0x2f2)]=_0x284425(0x21b));}}function getIndentationIssues(_0x2c648c){const _0x523bb9=a0_0x2ff7cf,_0x14a08a=[],_0x55d7b7=_0x2c648c[_0x523bb9(0x1e4)]('\x0a');return _0x55d7b7[_0x523bb9(0x2cb)]((_0x42fe29,_0x28841c)=>{const _0x26bef3=_0x523bb9;if(!_0x42fe29[_0x26bef3(0x308)]())return;const _0x5771cb=_0x42fe29[_0x26bef3(0x2f5)](/^[ \t]+/);if(!_0x5771cb)return;const _0x5e0e9e=_0x5771cb[0x0],_0x10f5b9=_0x5e0e9e[_0x26bef3(0x250)]('\x09'),_0x49cddc=_0x5e0e9e[_0x26bef3(0x250)]('\x20'),_0x5cebba=_0x28841c+0x1;if(_0x10f5b9&&_0x49cddc){_0x14a08a[_0x26bef3(0x1e5)](_0x5cebba+_0x26bef3(0x251));return;}if(_0x10f5b9){_0x14a08a[_0x26bef3(0x1e5)](_0x5cebba+_0x26bef3(0x28c));return;}_0x49cddc&&_0x5e0e9e[_0x26bef3(0x268)]%0x4!==0x0&&_0x14a08a[_0x26bef3(0x1e5)](_0x5cebba+_0x26bef3(0x1cf)+_0x5e0e9e[_0x26bef3(0x268)]+_0x26bef3(0x1e2));}),_0x14a08a;}function wrapPythonCodeForAsyncInput(_0x4d0702){const _0x5820e0=a0_0x2ff7cf,_0xe6ff45=transformInputCallsToAwait(_0x4d0702),_0x524f60=_0xe6ff45[_0x5820e0(0x1e4)]('\x0a')[_0x5820e0(0x27e)](_0x54572d=>_0x5820e0(0x205)+_0x54572d)['join']('\x0a');return _0x5820e0(0x274)+_0x524f60+_0x5820e0(0x24b);}function transformInputCallsToAwait(_0xeb4a52){const _0x236d9b=a0_0x2ff7cf;let _0x21a8d1='',_0xce6113=0x0,_0x536e46=![],_0x5bb9bf=![],_0xf8808c=![],_0x38bfea=![],_0xbbc056=![];while(_0xce6113<_0xeb4a52[_0x236d9b(0x268)]){const _0x3d579e=_0xeb4a52[_0xce6113],_0x4d4355=_0xeb4a52[_0x236d9b(0x235)](_0xce6113,_0xce6113+0x3);if(_0xbbc056){_0x21a8d1+=_0x3d579e;_0x3d579e==='\x0a'&&(_0xbbc056=![]);_0xce6113+=0x1;continue;}if(_0x536e46){if(_0x3d579e==='\x5c'){_0x21a8d1+=_0x3d579e+(_0xeb4a52[_0xce6113+0x1]||''),_0xce6113+=0x2;continue;}_0x21a8d1+=_0x3d579e;_0x3d579e==='\x27'&&(_0x536e46=![]);_0xce6113+=0x1;continue;}if(_0x5bb9bf){if(_0x3d579e==='\x5c'){_0x21a8d1+=_0x3d579e+(_0xeb4a52[_0xce6113+0x1]||''),_0xce6113+=0x2;continue;}_0x21a8d1+=_0x3d579e;_0x3d579e==='\x22'&&(_0x5bb9bf=![]);_0xce6113+=0x1;continue;}if(_0xf8808c){if(_0x4d4355===_0x236d9b(0x2ba)){_0x21a8d1+=_0x4d4355,_0xce6113+=0x3,_0xf8808c=![];continue;}_0x21a8d1+=_0x3d579e,_0xce6113+=0x1;continue;}if(_0x38bfea){if(_0x4d4355===_0x236d9b(0x20d)){_0x21a8d1+=_0x4d4355,_0xce6113+=0x3,_0x38bfea=![];continue;}_0x21a8d1+=_0x3d579e,_0xce6113+=0x1;continue;}if(_0x4d4355==='\x27\x27\x27'){_0x21a8d1+=_0x4d4355,_0xce6113+=0x3,_0xf8808c=!![];continue;}if(_0x4d4355===_0x236d9b(0x20d)){_0x21a8d1+=_0x4d4355,_0xce6113+=0x3,_0x38bfea=!![];continue;}if(_0x3d579e==='\x27'){_0x21a8d1+=_0x3d579e,_0xce6113+=0x1,_0x536e46=!![];continue;}if(_0x3d579e==='\x22'){_0x21a8d1+=_0x3d579e,_0xce6113+=0x1,_0x5bb9bf=!![];continue;}if(_0x3d579e==='#'){_0x21a8d1+=_0x3d579e,_0xce6113+=0x1,_0xbbc056=!![];continue;}if(_0xeb4a52['startsWith'](_0x236d9b(0x1b2),_0xce6113)&&isInputCallBoundary(_0xeb4a52,_0xce6113)){let _0x7f9ed5=_0xce6113+0x5;while(_0x7f9ed5<_0xeb4a52['length']&&(_0xeb4a52[_0x7f9ed5]==='\x20'||_0xeb4a52[_0x7f9ed5]==='\x09')){_0x7f9ed5+=0x1;}if(_0xeb4a52[_0x7f9ed5]==='('&&!hasAwaitBefore(_0xeb4a52,_0xce6113)){_0x21a8d1+=_0x236d9b(0x2c9),_0x21a8d1+=_0xeb4a52['slice'](_0xce6113+0x5,_0x7f9ed5+0x1),_0xce6113=_0x7f9ed5+0x1;continue;}}_0x21a8d1+=_0x3d579e,_0xce6113+=0x1;}return _0x21a8d1;}function isInputCallBoundary(_0xc5a177,_0xedb593){const _0x23cf9b=_0xedb593>0x0?_0xc5a177[_0xedb593-0x1]:'';if(_0x23cf9b&&(isIdentChar(_0x23cf9b)||_0x23cf9b==='.'))return![];const _0x1cd2ce=_0xedb593+0x5<_0xc5a177['length']?_0xc5a177[_0xedb593+0x5]:'';if(_0x1cd2ce&&isIdentChar(_0x1cd2ce))return![];return!![];}function hasAwaitBefore(_0x44dfbc,_0x264fc6){const _0x18f3f9=a0_0x2ff7cf;let _0x536c39=_0x264fc6-0x1;while(_0x536c39>=0x0&&(_0x44dfbc[_0x536c39]==='\x20'||_0x44dfbc[_0x536c39]==='\x09')){_0x536c39-=0x1;}const _0x4bbcef=_0x536c39-0x4;if(_0x4bbcef<0x0)return![];const _0x30b848=_0x44dfbc[_0x18f3f9(0x235)](_0x4bbcef,_0x536c39+0x1);if(_0x30b848!==_0x18f3f9(0x2c4))return![];const _0x299f10=_0x4bbcef-0x1>=0x0?_0x44dfbc[_0x4bbcef-0x1]:'';if(_0x299f10&&isIdentChar(_0x299f10))return![];return!![];}function isIdentChar(_0x535778){return _0x535778>='a'&&_0x535778<='z'||_0x535778>='A'&&_0x535778<='Z'||_0x535778>='0'&&_0x535778<='9'||_0x535778==='_';}function sleep(_0x198c5d){return new Promise(_0x2f0219=>setTimeout(_0x2f0219,_0x198c5d));}function customPythonInput(_0x3657ea){return new Promise(_0x19b75b=>{const _0x2b4ebf=a0_0x3ddb;_0x3657ea&&term[_0x2b4ebf(0x1fb)](String(_0x3657ea));if(!term||typeof term[_0x2b4ebf(0x258)]!==_0x2b4ebf(0x2b9)){_0x19b75b('');return;}let _0x487d6f='',_0x54ba62=null;const _0x4c097c=_0x3020d8=>{const _0x30a651=_0x2b4ebf;if(_0x3020d8==='\x0d'||_0x3020d8==='\x0a')term[_0x30a651(0x237)](''),_0x54ba62&&_0x54ba62[_0x30a651(0x1fd)](),_0x19b75b(_0x487d6f);else{if(_0x3020d8==='\x7f'||_0x3020d8==='\x08')_0x487d6f['length']>0x0&&(_0x487d6f=_0x487d6f[_0x30a651(0x235)](0x0,-0x1),term['write'](_0x30a651(0x1ed)));else _0x3020d8[_0x30a651(0x268)]>0x0&&_0x3020d8['charCodeAt'](0x0)>=0x20&&(_0x487d6f+=_0x3020d8,term['write'](_0x3020d8));}};_0x54ba62=term[_0x2b4ebf(0x258)](_0x4c097c),currentInputDisposable=_0x54ba62;});}function showSubmitModal(){const _0x31d7f0=a0_0x2ff7cf;submitModal[_0x31d7f0(0x1c5)][_0x31d7f0(0x2ed)]='flex',logEvent(_0x31d7f0(0x230));}function hideSubmitModal(){submitModal['style']['display']='none',logEvent('Submit\x20modal\x20hidden');}async function submitTest(){const _0x37bb83=a0_0x2ff7cf;hideSubmitModal(),saveCurrentTaskTime();globalTimer&&clearInterval(globalTimer);autosaveInterval&&(clearInterval(autosaveInterval),autosaveInterval=null);testEndTime=new Date(),logEvent(_0x37bb83(0x1ff),{'endTime':testEndTime});cheatDetected&&logEvent('Cheating\x20detected',{'reason':cheatReason});const _0x52458e=await submitToBackend();quizSection[_0x37bb83(0x200)]['add'](_0x37bb83(0x2c5)),endSection[_0x37bb83(0x200)]['remove'](_0x37bb83(0x2c5));const _0x3ead8f=Math[_0x37bb83(0x1c4)]((testEndTime-testStartTime)/0xea60),_0x4832e6=Math[_0x37bb83(0x1c4)]((testEndTime-testStartTime)%0xea60/0x3e8);document[_0x37bb83(0x30b)]('final-time')[_0x37bb83(0x2f2)]=_0x37bb83(0x1d0)+_0x3ead8f+_0x37bb83(0x1f3)+_0x4832e6+_0x37bb83(0x20f);const _0x27f7fb=document['getElementById'](_0x37bb83(0x211)),_0x954e4b=document['getElementById']('end-message');if(cheatDetected)_0x27f7fb[_0x37bb83(0x2f2)]=_0x37bb83(0x2d2),_0x954e4b[_0x37bb83(0x2f2)]=_0x37bb83(0x254);else testMode===_0x37bb83(0x2b4)?(_0x27f7fb[_0x37bb83(0x2f2)]=_0x37bb83(0x2ab),_0x954e4b[_0x37bb83(0x2f2)]=_0x37bb83(0x2b3)):(_0x27f7fb[_0x37bb83(0x2f2)]=_0x37bb83(0x2ab),_0x954e4b[_0x37bb83(0x2f2)]=_0x37bb83(0x295));_0x52458e&&_0x52458e[_0x37bb83(0x26d)]?(debugLog(_0x37bb83(0x2e0)),testMode===_0x37bb83(0x20e)&&sendEmailNotification(_0x52458e[_0x37bb83(0x266)])):debugLog('⚠️\x20Hiba\x20történt\x20a\x20beküldés\x20során,\x20de\x20a\x20teszt\x20véget\x20ért.'),downloadSubmissionTxt(_0x52458e?_0x52458e[_0x37bb83(0x266)]:''),exitFullscreen();}function autoSubmitTest(){const _0x3881d9=a0_0x2ff7cf;alert(_0x3881d9(0x199)),submitTest();}function enterFullscreen(){const _0x2a9da2=a0_0x2ff7cf,_0x12cf04=document['documentElement'];fullscreenGraceUntil=Date[_0x2a9da2(0x1b8)]()+0x1388;if(_0x12cf04[_0x2a9da2(0x26c)])_0x12cf04[_0x2a9da2(0x26c)]();else{if(_0x12cf04[_0x2a9da2(0x307)])_0x12cf04[_0x2a9da2(0x307)]();else{if(_0x12cf04[_0x2a9da2(0x23a)])_0x12cf04[_0x2a9da2(0x23a)]();else _0x12cf04[_0x2a9da2(0x1c8)]&&_0x12cf04[_0x2a9da2(0x1c8)]();}}logEvent('Fullscreen\x20entered');}function exitFullscreen(){const _0x1c6415=a0_0x2ff7cf;if(document[_0x1c6415(0x2b8)])document[_0x1c6415(0x2b8)]()[_0x1c6415(0x2bc)](()=>{});else{if(document[_0x1c6415(0x1ab)])document['webkitExitFullscreen']();else{if(document[_0x1c6415(0x2fb)])document[_0x1c6415(0x2fb)]();else document[_0x1c6415(0x289)]&&document[_0x1c6415(0x289)]();}}}function handleFullscreenChange(){const _0x56d93f=a0_0x2ff7cf,_0x1112e1=document[_0x56d93f(0x2c7)]||document[_0x56d93f(0x1e3)]||document[_0x56d93f(0x226)]||document[_0x56d93f(0x2fe)],_0x11f69b=!quizSection['classList'][_0x56d93f(0x2de)](_0x56d93f(0x2c5));if(!_0x1112e1&&!endSection['classList']['contains'](_0x56d93f(0x2c5)))return;if(testMode!==_0x56d93f(0x20e)){fullscreenPrompt['style'][_0x56d93f(0x2ed)]=_0x56d93f(0x2dc);return;}!_0x1112e1&&_0x11f69b?(fullscreenPrompt[_0x56d93f(0x1c5)][_0x56d93f(0x2ed)]=_0x56d93f(0x1d7),globalTimer&&clearInterval(globalTimer),taskTimer&&clearInterval(taskTimer),logEvent(_0x56d93f(0x24e)),setTimeout(()=>{const _0x5515dd=_0x56d93f;!document[_0x5515dd(0x2c7)]&&_0x11f69b&&handleCheating(_0x5515dd(0x22a));},0xbb8)):(fullscreenPrompt[_0x56d93f(0x1c5)][_0x56d93f(0x2ed)]='none',_0x1112e1&&(fullscreenEnforced=!![]));}function handleVisibilityChange(){const _0x16a06d=a0_0x2ff7cf;if(testMode!==_0x16a06d(0x20e))return;document[_0x16a06d(0x2c5)]&&!quizSection[_0x16a06d(0x200)][_0x16a06d(0x2de)](_0x16a06d(0x2c5))&&(logEvent(_0x16a06d(0x1a0)),handleCheating(_0x16a06d(0x2cd)));}function handleWindowBlur(){const _0x305cf9=a0_0x2ff7cf;if(testMode!==_0x305cf9(0x20e))return;!quizSection[_0x305cf9(0x200)][_0x305cf9(0x2de)](_0x305cf9(0x2c5))&&(logEvent(_0x305cf9(0x291)),focusLossTimeout=setTimeout(()=>{const _0x3d1f78=_0x305cf9;handleCheating(_0x3d1f78(0x234));},0x7d0));}function handleWindowFocus(){const _0xb77644=a0_0x2ff7cf;focusLossTimeout&&(clearTimeout(focusLossTimeout),focusLossTimeout=null),logEvent(_0xb77644(0x1dd));}function startFocusCheck(){focusCheckInterval=setInterval(()=>{const _0x398854=a0_0x3ddb;!document[_0x398854(0x1e1)]()&&!quizSection['classList'][_0x398854(0x2de)](_0x398854(0x2c5))&&testMode===_0x398854(0x20e)&&(logEvent(_0x398854(0x2d1)),handleCheating(_0x398854(0x2ff)));},0x1388);}function detectDevTools(){const _0x8d81c0=0xa0;setInterval(()=>{const _0x56cef1=a0_0x3ddb;(window['outerWidth']-window[_0x56cef1(0x23f)]>_0x8d81c0||window[_0x56cef1(0x2f1)]-window['innerHeight']>_0x8d81c0)&&(logEvent(_0x56cef1(0x1f9)),testMode===_0x56cef1(0x20e)&&!quizSection['classList']['contains']('hidden')&&handleCheating(_0x56cef1(0x2a3)));},0x3e8);}function startFullscreenCheck(){fullscreenCheckInterval&&clearInterval(fullscreenCheckInterval),fullscreenCheckInterval=setInterval(()=>{const _0x459172=a0_0x3ddb;if(testMode!=='live'||quizSection[_0x459172(0x200)][_0x459172(0x2de)](_0x459172(0x2c5)))return;const _0xa2536=document[_0x459172(0x2c7)]||document[_0x459172(0x1e3)]||document[_0x459172(0x226)]||document[_0x459172(0x2fe)];if(!_0xa2536){if(Date['now']()<fullscreenGraceUntil)return;if(!fullscreenEnforced)return;handleCheating(_0x459172(0x22a));}},0x3e8);}function handleCheating(_0x2fa324){const _0x4f7693=a0_0x2ff7cf;if(cheatDetected||quizSection[_0x4f7693(0x200)][_0x4f7693(0x2de)]('hidden'))return;cheatDetected=!![],cheatReason=_0x2fa324,globalTimer&&clearInterval(globalTimer),autosaveInterval&&(clearInterval(autosaveInterval),autosaveInterval=null),fullscreenPrompt[_0x4f7693(0x1c5)][_0x4f7693(0x2ed)]='none',exitFullscreen(),submitTest();}function logEvent(_0x4ae5f7,_0x21bd00={}){const _0x5b51ee=a0_0x2ff7cf,_0x5a3e08={'timestamp':new Date()[_0x5b51ee(0x243)](),'event':_0x4ae5f7,..._0x21bd00};eventLog[_0x5b51ee(0x1e5)](_0x5a3e08),debugLog(_0x5b51ee(0x1af)+_0x4ae5f7);}function debugLog(_0x58bb1d){const _0x23c912=a0_0x2ff7cf,_0x2e2086=document[_0x23c912(0x30b)]('debug-panel'),_0xdd2051=document[_0x23c912(0x30b)]('debug-content');if(!_0x2e2086||!_0xdd2051)return;const _0x3b044d=new Date()['toLocaleTimeString'](),_0x410d54=document[_0x23c912(0x1dc)](_0x23c912(0x225));_0x410d54[_0x23c912(0x1c5)]['marginBottom']=_0x23c912(0x285),_0x410d54[_0x23c912(0x1c5)][_0x23c912(0x273)]=_0x23c912(0x285),_0x410d54['style'][_0x23c912(0x279)]=_0x23c912(0x247),_0x410d54[_0x23c912(0x2f2)]='['+_0x3b044d+']\x20'+_0x58bb1d,_0xdd2051[_0x23c912(0x2a7)](_0x410d54),setTimeout(()=>{const _0x2b884d=_0x23c912;_0x2e2086['scrollTop']=_0x2e2086[_0x2b884d(0x1a6)];},0xa);}function updateTestModeBadge(){const _0x425a1b=a0_0x2ff7cf,_0x30bce9=document[_0x425a1b(0x30b)]('test-mode-badge'),_0xbc5fb2=document[_0x425a1b(0x30b)](_0x425a1b(0x253));if(!_0x30bce9||!_0xbc5fb2)return;_0x30bce9[_0x425a1b(0x1c5)][_0x425a1b(0x2ed)]=_0x425a1b(0x2ea);if(sessionStorage[_0x425a1b(0x219)](_0x425a1b(0x21c))===_0x425a1b(0x248))_0x30bce9[_0x425a1b(0x1c5)][_0x425a1b(0x1bc)]=_0x425a1b(0x2e5),_0x30bce9['style'][_0x425a1b(0x19d)]='white',_0x30bce9[_0x425a1b(0x1c5)]['border']=_0x425a1b(0x1f2),_0xbc5fb2['textContent']=_0x425a1b(0x290);else testMode===_0x425a1b(0x20e)?(_0x30bce9[_0x425a1b(0x1c5)][_0x425a1b(0x1bc)]=_0x425a1b(0x27d),_0x30bce9['style'][_0x425a1b(0x19d)]=_0x425a1b(0x296),_0x30bce9[_0x425a1b(0x1c5)]['border']='3px\x20solid\x20#c92a2a',_0xbc5fb2['textContent']='🔴\x20ÉLES\x20TESZT\x20MÓD\x20-\x20Az\x20eredmények\x20elküldésre\x20kerülnek\x20emailben!'):(_0x30bce9[_0x425a1b(0x1c5)][_0x425a1b(0x1bc)]=_0x425a1b(0x24c),_0x30bce9[_0x425a1b(0x1c5)][_0x425a1b(0x19d)]=_0x425a1b(0x296),_0x30bce9[_0x425a1b(0x1c5)]['border']=_0x425a1b(0x1ad),_0xbc5fb2['textContent']='🎓\x20GYAKORLÓ\x20MÓD\x20-\x20Nincs\x20email\x20értesítés');}function sendEmailNotification(_0x5e068c){const _0x5a86c9=a0_0x2ff7cf;if(!window[_0x5a86c9(0x1e9)]){debugLog(_0x5a86c9(0x271));return;}debugLog(_0x5a86c9(0x1bd));const _0x38f22a=testStartTime?testStartTime[_0x5a86c9(0x218)]('hu-HU'):'-',_0x21115c=testEndTime?testEndTime[_0x5a86c9(0x218)](_0x5a86c9(0x2d8)):'-',_0x544a0a=testStartTime&&testEndTime?Math[_0x5a86c9(0x215)]((testEndTime-testStartTime)/0x3e8):0x0,_0x39b778=taskAnswers[_0x5a86c9(0x27e)]((_0x24e4b1,_0x4f5e37)=>{const _0x1b5d93=_0x5a86c9,_0x209c34=formatDuration(_0x24e4b1['timeSpent']||0x0);return[_0x1b5d93(0x29c)+(_0x4f5e37+0x1)+'.\x20FELADAT\x20(Eredeti\x20'+(_0x24e4b1[_0x1b5d93(0x269)]||'-')+'\x20.\x20feladat)\x20---','Időráfordítás:\x20'+_0x209c34,_0x1b5d93(0x2a6)+(_0x24e4b1['skipped']?_0x1b5d93(0x2c2):_0x1b5d93(0x1ae)),'',_0x1b5d93(0x1cd),_0x24e4b1['taskDescription']||'','',_0x1b5d93(0x26e),_0x24e4b1[_0x1b5d93(0x212)]||'','','TANULÓ\x20VÁLASZA:',_0x24e4b1[_0x1b5d93(0x1de)]||'',''][_0x1b5d93(0x287)]('\x0a');})[_0x5a86c9(0x287)]('\x0a'),_0x315ee3=eventLog['map'](_0x4f5893=>{const _0x215b45=_0x5a86c9,_0x795deb=_0x4f5893[_0x215b45(0x2c3)]||'',_0x2dbd10=_0x4f5893[_0x215b45(0x238)]||_0x4f5893[_0x215b45(0x1ec)]||'';return _0x795deb+'\x20-\x20'+_0x2dbd10;})[_0x5a86c9(0x287)]('\x0a'),_0x551ffe=[_0x5a86c9(0x19b)+studentData[_0x5a86c9(0x1f7)],_0x5a86c9(0x2bf)+studentData[_0x5a86c9(0x222)],'Osztály:\x20'+studentData[_0x5a86c9(0x2b1)],_0x5a86c9(0x2cf)+_0x38f22a,'Teszt\x20vége:\x20'+_0x21115c,_0x5a86c9(0x1d0)+formatDuration(_0x544a0a),'Státusz:\x20'+(cheatDetected?_0x5a86c9(0x209):'Rendben'),'',buildScoringReport(),_0x5a86c9(0x29b),'',_0x39b778,'',_0x5a86c9(0x1cc),_0x315ee3][_0x5a86c9(0x287)]('\x0a'),_0xd7309c={'to_email':_0x5a86c9(0x1b1),'subject':studentData[_0x5a86c9(0x1f7)]||_0x5a86c9(0x246),'reply_to':studentData[_0x5a86c9(0x222)],'message':_0x551ffe};emailjs[_0x5a86c9(0x276)](_0x5a86c9(0x2e9),'template_vnqc2fd',_0xd7309c,_0x5a86c9(0x23d))[_0x5a86c9(0x2bb)](()=>{const _0x30330c=_0x5a86c9;debugLog(_0x30330c(0x275)),logEvent('Email\x20sent',{'submission_id':_0x5e068c});})[_0x5a86c9(0x2bc)](_0x29f3ae=>{const _0x55c251=_0x5a86c9;debugLog('❌\x20Email\x20küldési\x20hiba:\x20'+_0x29f3ae[_0x55c251(0x1c2)]),logEvent(_0x55c251(0x2e3),{'error':_0x29f3ae[_0x55c251(0x1c2)]});});}function downloadSubmissionTxt(_0x1a44bf){const _0xdb3cc0=a0_0x2ff7cf,_0x329974=[],_0x140c56=new Date();_0x329974['push'](_0xdb3cc0(0x284)),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x264)+_0x140c56[_0xdb3cc0(0x218)](_0xdb3cc0(0x2d8))),_0x329974[_0xdb3cc0(0x1e5)]('Azonosító:\x20'+(_0x1a44bf||'-')),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x236)+(studentData[_0xdb3cc0(0x1f7)]||'-')),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x2cc)+(studentData['email']||'-')),_0x329974['push']('Osztály:\x20'+(studentData[_0xdb3cc0(0x2b1)]||'-')),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x2be)+testMode);cheatDetected?_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x20b)+cheatReason+')'):_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x25c));_0x329974[_0xdb3cc0(0x1e5)](''),_0x329974[_0xdb3cc0(0x1e5)](buildScoringReport()),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x29b)),_0x329974[_0xdb3cc0(0x1e5)](''),taskAnswers[_0xdb3cc0(0x2cb)]((_0x2b1449,_0x3722c0)=>{const _0x595b4d=_0xdb3cc0;_0x329974[_0x595b4d(0x1e5)](_0x595b4d(0x29c)+(_0x3722c0+0x1)+_0x595b4d(0x232)+(_0x2b1449[_0x595b4d(0x269)]||'-')+'\x20.\x20feladat)\x20---'),_0x329974['push'](_0x595b4d(0x281)+formatDuration(_0x2b1449[_0x595b4d(0x2a9)]||0x0)),_0x329974['push'](_0x595b4d(0x2a6)+(_0x2b1449['skipped']?'Igen':_0x595b4d(0x1ae))),_0x329974[_0x595b4d(0x1e5)](''),_0x329974[_0x595b4d(0x1e5)](_0x595b4d(0x1cd)),_0x329974[_0x595b4d(0x1e5)](_0x2b1449[_0x595b4d(0x1d1)]||''),_0x329974[_0x595b4d(0x1e5)](''),_0x329974[_0x595b4d(0x1e5)]('MINTA\x20KIMENET:'),_0x329974[_0x595b4d(0x1e5)](_0x2b1449[_0x595b4d(0x212)]||''),_0x329974[_0x595b4d(0x1e5)](''),_0x329974['push'](_0x595b4d(0x28e)),_0x329974[_0x595b4d(0x1e5)](_0x2b1449[_0x595b4d(0x1de)]||''),_0x329974['push']('');}),_0x329974[_0xdb3cc0(0x1e5)](_0xdb3cc0(0x1cc)),eventLog[_0xdb3cc0(0x2cb)](_0x201e49=>{const _0x47911a=_0xdb3cc0,_0xdc0669=_0x201e49['timestamp']||'',_0x11aaa5=_0x201e49['event']||_0x201e49[_0x47911a(0x1ec)]||'';_0x329974['push'](_0xdc0669+'\x20-\x20'+_0x11aaa5);});const _0x2841cd=_0x329974['join']('\x0a'),_0x26f167=(studentData['name']||_0xdb3cc0(0x24f))['trim']()[_0xdb3cc0(0x1e4)](/\s+/),_0xbdaf7c=(_0x26f167[0x0]||'diak')[_0xdb3cc0(0x204)]()[_0xdb3cc0(0x221)](_0xdb3cc0(0x2a8))['replace'](/[\u0300-\u036f]/g,'')[_0xdb3cc0(0x265)](/[^a-z0-9]/g,''),_0x3cacc4=_0x26f167['slice'](0x1)[_0xdb3cc0(0x287)]('_')[_0xdb3cc0(0x204)]()[_0xdb3cc0(0x221)](_0xdb3cc0(0x2a8))[_0xdb3cc0(0x265)](/[\u0300-\u036f]/g,'')[_0xdb3cc0(0x265)](/[^a-z0-9_]/g,'')||_0xdb3cc0(0x242),[_0x313c1e,_0x5630c5]=(studentData[_0xdb3cc0(0x2b1)]||_0xdb3cc0(0x26f))['split']('.'),_0xcac554=(studentData[_0xdb3cc0(0x222)]||'')['replace'](_0xdb3cc0(0x241),'')[_0xdb3cc0(0x204)]()[_0xdb3cc0(0x265)](/[^a-z0-9.]/g,''),_0x4f9754=(_0xbdaf7c||_0xdb3cc0(0x298))+'_'+_0x3cacc4+'_'+(_0x313c1e||'0')+'_'+(_0x5630c5||'x')+'_'+(_0xcac554||'ismeretlen')+'_python.txt',_0x5eaec9=new Blob([_0x2841cd],{'type':_0xdb3cc0(0x28a)}),_0x105c77=URL[_0xdb3cc0(0x256)](_0x5eaec9),_0x192814=document[_0xdb3cc0(0x1dc)]('a');_0x192814[_0xdb3cc0(0x2f9)]=_0x105c77,_0x192814[_0xdb3cc0(0x2e2)]=_0x4f9754,document[_0xdb3cc0(0x21f)][_0xdb3cc0(0x2a7)](_0x192814),_0x192814[_0xdb3cc0(0x2f7)](),document['body'][_0xdb3cc0(0x261)](_0x192814),URL[_0xdb3cc0(0x21e)](_0x105c77);}function getEffectiveTimeSpent(_0x5a2038,_0x3ef34f){const _0xdc78c9=a0_0x2ff7cf,_0x589478=_0x5a2038[_0xdc78c9(0x2a9)]||0x0;if(_0x3ef34f!==currentTaskIndex)return _0x589478;if(!_0x5a2038['startTime'])return _0x589478;const _0x1311a2=Math[_0xdc78c9(0x215)]((Date['now']()-_0x5a2038[_0xdc78c9(0x25e)][_0xdc78c9(0x1ca)]())/0x3e8);return _0x589478+Math[_0xdc78c9(0x300)](0x0,_0x1311a2);}function startAutoSaveInterval(){autosaveInterval&&clearInterval(autosaveInterval),autosaveInterval=setInterval(()=>{const _0x15fbbb=a0_0x3ddb;!quizSection['classList']['contains'](_0x15fbbb(0x2c5))&&autoSaveProgress();},0x7530);}function formatDuration(_0x291a99){const _0x2324dd=a0_0x2ff7cf,_0x2b45a2=Math[_0x2324dd(0x300)](0x0,Math[_0x2324dd(0x1c4)](_0x291a99)),_0x187c15=Math[_0x2324dd(0x1c4)](_0x2b45a2/0x3c),_0xf14ef0=_0x2b45a2%0x3c;if(_0x187c15===0x0)return _0xf14ef0+_0x2324dd(0x20f);return _0x187c15+'\x20perc\x20'+_0xf14ef0+_0x2324dd(0x20f);}function a0_0x2a0f(){const _0xc11208=['CMvTB3zL','DhLWzq','ccai','y29UzMLYBs1ZDwjTAxq','ihbVBNq','DgfZAY1LEgfTCgXL','C2nVCMLUzY1JB250zw50','m3b4ihnVBgLKicm0mZm4y2e','ihbLCMmG','C3rHDhvZ','qMvRW7XSzmoPCYbZAwTLCNrLBgvU','zM9JDxm','BMfTzq','nej4wgL5qq','rgv2vg9VBhmGzgv0zwn0zwqGlsbWB3rLBNrPywWGy2HLyxrPBMC','sMf2yxnVBhq6iezYAxnZW610C2qGyxOGB2XKywX0icHgnsKSihBdOxjQideWlte1ig3dOxnVzhbLCMnLDcWGBwfQzcbWCSoZySoHBgqGW7PQCMeUcGO','D3jPDgu','DgfZAY1UyxzPz2f0Aw9U','zgLZCg9Zzq','mJKYotm5ogTMzLbZvW','vgvZDcbZDwjTAxr0zwq','y2XHC3nmAxn0','Aw50x2zSB2f0','4PQG77Ipifb5DgHVBIbLBmwryMv0W7zSDmoPC2KGAgLIytOG','zgvZy3jPChrPB24','Dg9mB3DLCKnHC2u','icaGia','8j+tPIbbzgf0igvSXzfRW6LZESoTDhzL','w117FsGP','Bg9N','q3nHBmoHCW','tvngDwXSC2nYzwvUq2HHBMDL','q3nHBmoHCZOGswDLBIaO','y29Kzs1LzgL0B3i','iIiI','BgL2zq','ig3dOxnVzhbLCMm','DgfZAY1KzxnJCMLWDgLVBG','zw5KlxrPDgXL','DgfZA0v4yw1WBgu','y3rYBeTLEq','igrIidGGCg9UDg9Zlca','CM91BMq','lIbMzwXHzgf0','cUkDJcaGsgLIytOG','Dg9mB2nHBgvtDhjPBMC','z2v0sxrLBq','lIbMzwXHzgf0icG','4PA2ieVdS2qGzNv0Dgf0W6fZyq','A2fUzfrLywnOzxjnB2rL','ihbVBNq8l3nWyw4+cIaGica8l2rPDJ48DwWGy2XHC3m9iNnJB3jPBMCTBgLZDci+','CMv2B2TLt2jQzwn0vvjm','yM9KEq','8j+uTcddIuXfuW','BM9YBwfSAxPL','zw1HAwW','CNvUlwnVzguTyNrU','C3vIBwL0lw1VzgfS','zgL2','Bw96rNvSBfnJCMvLBKvSzw1LBNq','i2mWyZbJma','C2nVCMu','yxbWBgLJyxrPB24VANnVBG','s2LSW6LWDmoPBcbHigz1BgXZy3jLzw4GBCoZzgldS2W','icaGsgeGzxOGC2vTihnLz8oTDcWGAw5KW610C2qGW7PQCMeGysbIW7zUz8oPC3RfKxqU','yMvRzxjLCW','ic8G','tMLUy3mGzwZdQwCGzMvSywrHDceGu3RdVgTZW6LNzxm6igXLz2fSW6fIyIaYigrIidGGCg9UDg9ZimoPCYaXigrIide0ihbVBNrVCYbMzwXHzgf0lGPkzwXLBMXLzZOG','D2vIA2L0zNvSBhnJCMvLBMnOyw5Nzq','u3vIBwL0ig1VzgfSihnOB3DU','ANnFChjPBNq','lIbgruXbrefuicHfCMvKzxrPia','ywn0AxzL','rwXOywD5DgfKigf6igfIBgfRB3q','C2XPy2u','tSoPDJOG','D3jPDgvSBG','zxzLBNq','y2fUy2vSlxn1yM1PDa','Bw96uMvXDwvZDez1BgXty3jLzw4','C29Tzq','ue9tva','y2vZEe5ACertqZe2ze9zmNu','pc9SAt4','Aw5UzxjxAwr0Aa','xgj8kf58xg4PxhmQzNjVBvXZkW','qgTRC3PRAs5ODq','AxnTzxjLDgXLBG','Dg9ju09tDhjPBMC','D2HPBgu','igrIide0ihbVBNrVCYK','uhL0Ag9UihrLC3P0','mxb4ihnVBgLKicmZmZm','Dhj1zq','8j+tNsbgzwXHzgf0igjLDmo2Bhr2ztOG','y29UDgv4Dg1LBNu','cGPHD2fPDcbFx3n0DwrLBNrFBwfPBL9FkcKk','BgLUzwfYlwDYywrPzw50kdeZnwrLzYWGiZuXy2y2nIaWjsWGiZm3yJi0zcaXmdaLkq','rML0qwrKB24','rNvSBhnJCMvLBIbLEgL0zwqGlsb0zxn0ihbHDxnLza','zgLHAYbPC21LCMv0BgvU','Aw5JBhvKzxm','lIbZB3i6igTLDMvYDcbuquiGkYbZESoZA8o2EG','igzLBgfKyxqGyMv0W7zSDhzLicG','DgvZDc1TB2rLlxrLEhq','q3nHBmoHC3qGW6LZEMXLBhtdVg5RlcbLESoPCNqGyxOGzwrKAwDPig11BMVdOwqGA2vYW7XSimoPCNtdQwTLBmoPC3jLlIbbignZywZdOxmGBwLHDhqGysb0zxn6DcbLCMvKBCoPBNLLoIbLBmoPz3rLBgvUlG','xhmRAw1WB3j0','y3jLyxrLt2jQzwn0vvjm','zw5KlxnLy3rPB24','B25eyxrH','CMv0DxjU','yxjNCW','ANnFAw5WDxq','q3nHBmoHCZOGtMvT','4PQG77IpifrLC3P0ig3dS2qGBMvTimoPCMTLEMv0DcWGywXHCmoPCNrLBg1LEMv0DdOGr1Lbs09stmot','C3rHCNruAw1L','Aw5Uzxjive1m','C2nVCMuTzgLZCgXHEq','CMvTB3zLq2HPBgq','C2nVCMLUzY1WyxnZ','8j+sOsbqCSoZySoHBgqGBwvNimo6ANjHigeGiKVdS2qGzNv0Dgf0W6fZysiGz29TyMjHBce','rmoHDhvToIa','CMvWBgfJzq','C3vIBwLZC2LVBL9Pza','vgfZAYbSB2fKigvYCM9Y','BgvUz3rO','DgfZA051BwjLCG','C3rYAw5NAwz5','xcqM','CMvXDwvZDez1BgXZy3jLzw4','C3vJy2vZCW','tuLoveeGs0Lnru5fvdO','mc54','4P2miefqssbvuKWGBMLUy3mGyMxdOwXSW610DMe','4PQG77IpievTywLSsLmGBMLUy3mGyMv0W7zSDhzL','8j+tOsbcywnRzw5KihBdOwXHC3OGC3tdOxr1C3O6ia','CgfKzgLUz0jVDhrVBq','yxn5BMmGzgvMif9FC3r1zgvUDf9TywLUx18OktOk','4PYfievTywLSihnPA2vYzxnLBIbLBgVdVgXKDMuH','C2vUza','l2fWAs9JB25MAwC','CgfKu3rHCNq','yM9YzgvYqM90Dg9T','zwfYBMvKug9PBNrZ','cMLTCg9YDcbZExmkzNjVBsbPBYbPBxbVCNqGu3rYAw5Nsu8kAw1WB3j0igj1AwX0Aw5ZcGPZExmUC3rKB3v0id0Gu3rYAw5Nsu8OkqPZExmUC3rKzxjYid0Gu3rYAw5Nsu8OkqOkyxn5BMmGzgvMigLUChv0khbYB21WDd0NjYK6cIaGicbMCM9TigPZigLTCg9YDcbQC19PBNb1DaOGicaGCMvZDwX0id0GyxDHAxqGANnFAw5WDxqOChjVBxb0kqOGicaGCMv0DxjUihjLC3vSDaOkyNvPBhrPBNmUAw5WDxqGpsbPBNb1DaO','DgfZAY1UyxyTyNrU','BgLUzwfYlwDYywrPzw50kdeZnwrLzYWGi2zMnMi2yIaWjsWGi2vLnwe2zIaXmdaLkq','BwfW','pgXPignSyxnZpsi','pc91Bd4','swtfKxldOwzVCMtdRxtdOxm6ia','icaGie1PBMrLBIbMzwX0W6L0zwWGDgvSAMvZW610DMuU','mZi4nta4t0jRv3jR','uhL0Ag9UihrLC3P0ic0GyMvHzmoHCW','nxb4','8j+sOsbAW6fYzcbIzsbHihtdTMjIAsbIW7zUz8oPC3RfKwBdVgXLDcWGBwfQzcbMCMLZC8oTDhnKigf6ig9SzgfSDcaOrJuPlG','AM9PBG','zML0','BxnfEgL0rNvSBhnJCMvLBG','Dgv4Dc9WBgfPBJTJAgfYC2v0pxv0zI04','q29UC29SyxmSicDmDwnPzgeGq29UC29SzsCSicDdB3vYAwvYie5LDYCSig1VBM9ZCgfJzq','lIbZB3i6ifrbqIbRyxjHA3rLCIbHigjLAmo6ESoHC2jHBG','y2HHBMDL','vefovuZdKYbwW4fmqvnAqtO','zxzLCNK','8j+tVE+4JYbcru1vvefuW5mGtCotrcdIGjmGt2T0yxtdS2KGBSoPEMv0lcbUAw5JC2vUzwSGA29YBmoHDg96W6fZB2SSig5PBMnZigjLywtdOxm','v2LUzg93igXVC3qGzM9JDxm','C2nVCMLUzY1Wzw5KAw5N','CgfZC2vK','twvNC3PLCNPLDhqGCg9UDg9RoIa','s8o2C3RdTM5QW7XRlcbOB2D5igTPDmo2BhtdTNr0zwqGysb0zxn6Dgv0isbbihBdOwXHC3PHAwrHDcbLBgVdVgXKDmo8AYbHihrHBSoHCM5HAY4','D2HPDgu','C3vIBwL0lwj0BG','zgLHAW','Ahr0Chm6lY9Hz2f6yxrPlNvWlNjHAwX3yxKUyxbW','4O+Ziez1Dc4UlG','pt09iezftefeqvrpsYddIvmGvSobteftwK9lid09pq','ls0Tia','DMfSDwu','zNvSBhnJCMvLBI1WCM9TChq','vgvZDcbZDgfYDgvK','zxHHBxbSzq','BNvTyMvY','BwvZC2fNzq','rgv2zwXVCgvYifrVB2XZimoPC3PSzwX2zq','y3jPDgvYAwe','4P2mieVdS2qGzNv0Dgf0W6fZAsbOAwjH','W4f0DwDYDMe6ia','yxbWzw5Kq2HPBgq','tKze','DgLTzvnWzw50','ANnVBG','4PYfifrLC3P0igjLzMvQzxP2zse','y3jPDgvYAw9U','zNvSBhnJCMvLBMnOyw5Nzq','CNvUuhL0Ag9U','ode5otaYnwfYuLzsta','C2nVCMuTz3jHzgu','y2XHC3m','kf58xg4PxhmQAw1WB3j0xhmR','s8o2C3RdTM5QW7XRigeGCSoPC3P2W6L0zwX0iq','ChjHy3rPy2u','dqRINyWGtMvTihnPA2vYW7XSDcbIzxtdTMX0zw5PigeGuhL0Ag9UimoPCNrLBg1LESwrDce','A2fUzg9bDxrVC2f2zq','zgLZywjSzwq','zxHPDez1BgXZy3jLzw4','zNvUy3rPB24','jYCN','DgHLBG','y2f0y2G','icaGie5LBsb0zwXQzxpdRxrLDhqGzMvSDmoPDgvSzwSGkhrHBSoHCMKGBCoPCMXLz2vSW6LZihn6W7XRC8oPz2vZktO','tCoZzdOG','vgfUDwZdSYbLBwfPBdOG','y2XHC3noyw1L','D2fYBMLUzW','swDLBG','DgLTzxn0yw1W','yxDHAxq','AgLKzgvU','Dg9gAxHLza','zNvSBhnJCMvLBKvSzw1LBNq','CMvKDwnL','yxDHAxqGAw5WDxq','yNv0Dg9U','zM9YrwfJAa','rw1HAwW6ia','tCoHC2LRigBdVgXYzsb2W6fSDg90DmoHBa','CMDIysGYntuSidi1nsWGmJu1lcaWlJiP','vgvZENqGA2v6zgv0ztOG','ChjLDMvUDerLzMf1Bhq','rM9JDxmGy2HLy2SGzMfPBgvK','4PQG77IpienZywZdOxmGW6LZEMXLBhzLiq','l2fWAs9ZDwjTAxq','y2HLy2STC2nVCMLUzY1IDg4','C2v0vMfSDwu','sgeGBw9ZDcbPBMtdRxrVzcbLBcbHihrLC3P0zxqSigvSXzfMB3jKDwXOyxqSigHVz3KGysbRW7nKB3qGBMvTigXLAgv0igz1DhrHDg5PlGOk','A2v5zg93BG','AhuTsfu','rJeY','Bw9UB2THAq','Cg9PBNrZ','BM9Uzq','z2v0vMfSDwu','y29UDgfPBNm','C3rHCNqTC2vJDgLVBG','4PYfifrLC3P0ihnPA2vYzxnLBIbIzwVdVgXKDMuH','y2XLyxi','zg93BMXVywq','rw1HAwWGC2vUzcbLCNjVCG','B3bLBG','BgLUzwfYlwDYywrPzw50kdeZnwrLzYWGiZDJm2fLzcaWjsWGiZrMndzLnsaXmdaLkq','kcLBxxT9jYC','C2nVCMLUzY1MywLS','C2TPChbLza','C2vYDMLJzv96EhnRBNrY','yMXVy2S','ndiWwwrwyLnc','W4LYzgvTAMvNEtOGnq','zgLZCgXHEq','mZi4nJK2mJbuDND0DMu','ywrKrxzLBNrmAxn0zw5LCG','4O+ZievSBgvUXzfYESoPCYbMB2X5yw1HDgjHBI4UlG','B3v0zxjizwLNAhq','Dgv4DenVBNrLBNq','ndm4mZeXrLnIAxnH','A2v5','Bwf0y2G','icaGicHqB250B3RdOxmGBMvTigz1Dg90DcbSzs4P','y2XPy2S','4PQG77IpiejLAmo6ESoHCYbMAwD5zwXTzxP0zxtdQxm6','AhjLzG','W4LYzgvTAMvNEtOGmW','Bw96q2fUy2vSrNvSBfnJCMvLBG','Aw5KzxHpzG','CMvWBgfJzvnLBgvJDgLVBG','BxngDwXSC2nYzwvUrwXLBwvUDa','qwjSywSGzSoZA3vZEIbLBhzLC3PLDhq','Bwf4','vgfZA3mGBg9HzgvK','sgLIysb0W7zYDmoPBNqGysbMzwXHzgf0B2SGyMv0W7zSDmoPC2vRB3iH','C29YDa','cMLTCg9YDcbZExmkzNjVBsbPBYbPBxbVCNqGu3rYAw5Nsu8kAw1WB3j0igj1AwX0Aw5ZcGOJieVdTNP2zxrSzw4GDgvYBwLUW6fSlwTPBwvUzxq6ihbYAw50kcKGyxPVBM5HBcbTzwDQzwXLBMLRcMnSyxnZif9uzxjTt3v0oGOGicaGzgvMihDYAxrLkhnLBgySihrLEhqPoGOGicaGicaGigzYB20GANmGAw1WB3j0igPZx3bYAw50cIaGicaGicaGANnFChjPBNqODgv4DcKkicaGicaGicbYzxr1CM4GBgvUkhrLEhqPcIaGicbKzwyGzMX1C2GOC2vSzIK6cIaGicaGicaGCgfZCWOkC3LZlNn0zg91Dca9if9uzxjTt3v0kcKkC3LZlNn0zgvYCIa9ifn0CMLUz0LpkcKkcMfZEw5JigrLzIbPBNb1DcHWCM9TChq9jYCPoGOGicaGzNjVBsbQCYbPBxbVCNqGANnFAw5WDxqkicaGihjLC3vSDca9igf3ywL0igPZx2LUChv0khbYB21WDcKkicaGihjLDhvYBIbYzxn1BhqkcMj1AwX0Aw5ZlMLUChv0id0GAw5WDxqk','z3jVDxa','vgfZA3mGC2vSzwn0zwq','D2vIA2L0uMvXDwvZDez1BgXZy3jLzw4','DhjPBq','icaGicaGlsa','W4LYzgvTAMvNEtOGna','z2v0rwXLBwvUDej5swq','zM9Y','Aw5WDxrFzM9YBwf0','vgfZAYbZAg93BG','s8oPCMXLAYWGDmo2BhrZzcbRAsbHEIddTNnZEMvZig1LESwrDce','qxOGAwtfKsbSzwRdOxj0isbbihrLC3P0igf1Dg9TyxrPA3vZyw4GyMvRW7XSzmoPC3jLigTLCSo8BhqU','zw5KC1DPDgG','vgfUDwZdSYbUzxzLoIa','C3vIC3rYAw5N','y29SB3i','DgvZENq','mte0otq0CvrNBw9O','vgfIigHPzgrLBIaTihbVDgvUDgLHBcbJAgvHDgLUzW','8j+uJsbqB250B3RdOxm','Aw1WB3j0','C3LZlNn0zg91Dc5Nzxr2ywX1zsGP','W4LYzgvTAMvNEtOGmq','8j+uHcbuzxn6DcbTW7nKigjLDmo2BhtdQxnLlI4U','C2nYB2XSsgvPz2H0','C2HPzNrlzxK','lsaUlI50B3BdOwjIAsa','tNLVBwOGt0STDcbOysbTW6LNAxmGzM9SExrHDg5Pihn6zxjLDg7dQwqSie3dQwDZW6L0igHHigvSXzfIyIbMCMLZC8oTDgvUW6LSlG','ygbG','D2vIA2L0rxHPDez1BgXZy3jLzw4','pgrPDIbJBgfZCZ0IC2nVCMLUzY1OzwfKzxiTCM93iJ4kicaGicaGica8C3bHBIbJBgfZCZ0IC2nVCMLUzY10AxrSzsi+ug9UDg96W6fZpc9ZCgfUpGOGicaGicaGidXZCgfUignSyxnZpsjZy29YAw5NlxnJB3jLiJ4','m3b4ihnVBgLKicmYyJHHm2u','tMvT','8j+tNsbfDMvUDdOG','Dg9tDhjPBMC','C2fUzg9YBMvMCKbNBwfPBc5JB20','Aw5WDxq','lIbMzwXHzgf0oIa','zgvM','vgvZDcbTB2rLigXVywrLza','ywrK','ChL0Ag9U','BM93','C2nVCMLUzY1Wyw5LBa','CgvUzgLUzW','4P2mifrLC3P0ig3dS2qGyMv0W7zSDmoPC2uGu0LlrvjuruXftIWGywXHCmoPCNrLBg1LEMv0DdOGr1Lbs09stmot','yMfJA2DYB3vUza','8j+tPYbfBwfPBcbRW7XSzmoPC2uUlI4','4PQG77IpieeGuhL0Ag9UimoPCNrLBg1LESwrig3dQwCGBMvTihtdTMX0XzfKW7z0DcbIzsb0zwXQzxnLBIekcG','CMfUzg9T','ygbGChL0Ag9U','CxvPEI1Zzwn0Aw9U','Dgv4Da','DgvZDa','zMXVB3i','C3r5Bgu','yMX1CG','BgfIzwW','Bxnszxf1zxn0rNvSBhnJCMvLBG','qxv0B3nHDMuGzMfPBgvKoG','z2v0vgLTzq','smoHDhjHBmoPDSwrigLKXze6ia','pt09ievtru3dIu5ztKfqtmotid09pq','rKvmqurbvcbmrConuSobu0e6','rw50zxjLzcbMDwXSC2nYzwvUigfUzcbZDgfYDgvKihrPBwvYCW','lIbZB3i6igjLAmo6ESoHCYbUzw0Gnc1LCYb0W7zIyNn6W7zYW7zZzsaO','vgvSAMvZigLKXze6ia','DgfZA0rLC2nYAxb0Aw9U','C2nVCMLUz1jLC3vSDhm','u3RdOxPHBmoPAZOG','mtuYoda0n0zbwfrMrW','4PQG77Ipie5PBMnZigjLW61YDMeGC2vTBwLSEwvUigVdS2qH','C2v0sxrLBq','zMXLEa','zwXPzG','vgvZDcbTB2rLigXVywqGzxjYB3i','C3rHCNqTyNrU','zMLSDgvY','y3jLyxrLrwXLBwvUDa','v2LUzg93igDHAw5LzcbMB2n1CW','yw5ZD2vY','iJ48C3bHBIbJBgfZCZ0IC2nVCMLUzY1Py29UiJ4','4PYfifb5DgHVBIddQxj0zwXTzxRfKsbRW6LZEG','AgfZrM9JDxm','ihn6W7nRW7z6kq','D2vIA2L0rNvSBhnJCMvLBKvSzw1LBNq','C3bSAxq','ChvZAa','Bg9HzefKzg9U','y29TCgXLDgvK','CNvUuhL0Ag9Uqxn5BMm','zw1HAwXQCW','pt09imowu1nArvpdJvrfvfqGue9ove9AW4ftid09pq'];a0_0x2a0f=function(){return _0xc11208;};return a0_0x2a0f();}
+// Python Teszt JavaScript - Google Sheets API kommunikációval
+// Visszafejtett és helyreállított verzió
+
+// Globális változók
+const RAILWAY_URL = 'https://agazati.up.railway.app';
+let testMode = 'practice';
+let tasks = [];
+let selectedTasks = [];
+let currentTaskIndex = 0;
+let globalTimeRemaining = 45 * 60; // 45 perc másodpercben
+let globalTimer = null;
+let codeEditor = null;
+let testStartTime = null;
+let testEndTime = null;
+let studentData = {};
+let taskStartTimes = [];
+let taskAnswers = [];
+let eventLog = [];
+let term = null;
+let fitAddon = null;
+let terminalReady = false;
+let terminalInputResolver = null;
+let terminalInputBuffer = '';
+let focusLossTimeout = null;
+let focusCheckInterval = null;
+let fullscreenCheckInterval = null;
+let autosaveInterval = null;
+let cheatDetected = false;
+let cheatReason = '';
+let cheatWarningCount = 0;
+let cheatPenalty = false;
+let fullscreenEnforced = false;
+let fullscreenGraceUntil = 0;
+
+// Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
+let pyodideInstance = null;
+let pyodideLoadingPromise = null;
+
+// Futás-lock – megakadályozza a párhuzamos kódfuttatást
+let pythonCodeRunning = false;
+let currentInputDisposable = null;
+
+async function getPyodide() {
+    if (pyodideInstance) return pyodideInstance;
+    if (!pyodideLoadingPromise) {
+        pyodideLoadingPromise = loadPyodide().catch(err => {
+            pyodideLoadingPromise = null; // Sikertelen betöltés után újrapróbálható
+            throw err;
+        });
+    }
+    pyodideInstance = await pyodideLoadingPromise;
+    return pyodideInstance;
+}
+
+// DOM elemek
+const startSection = document.getElementById('start-section');
+const quizSection = document.getElementById('quiz-section');
+const endSection = document.getElementById('end-section');
+const submitModal = document.getElementById('submit-modal');
+const fullscreenPrompt = document.getElementById('fullscreen-prompt');
+
+// Alkalmazás inicializálása
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+});
+
+async function initializeApp() {
+    logEvent('Application initialized');
+    setupEventListeners();
+    loadTasksFromFile();
+    await loadTestMode();
+    startFullscreenCheck();
+    // Pyodide előbetöltése a háttérben, amíg a diák kitölti az adatokat
+    getPyodide()
+        .then(() => debugLog('✅ Python értelmező kész'))
+        .catch(err => debugLog('⚠️ Python előbetöltési hiba: ' + err.message));
+}
+
+// Teszt mód betöltése az API-ból
+async function loadTestMode() {
+    if (!API_URL) {
+        debugLog('❌ API URL nincs beállítva');
+        return;
+    }
+
+    try {
+        debugLog('🔄 Teszt mód betöltése...');
+        const response = await fetch(RAILWAY_URL + '/api/config');
+        const data = await response.json();
+
+        if (data.test_mode) {
+            testMode = data.test_mode;
+            logEvent('Test mode loaded', { mode: testMode });
+            debugLog('✅ Teszt mód betöltve: ' + (testMode === 'practice' ? '🎓 GYAKORLÓ' : '🔴 ÉLES'), { testMode: testMode });
+            updateTestModeBadge();
+        } else {
+            debugLog('⚠️ Teszt mód nem érkezett, alapértelmezett: GYAKORLÓ');
+            updateTestModeBadge();
+        }
+    } catch (error) {
+        logEvent('Test mode load error', { error: error.message });
+        debugLog('❌ Teszt mód betöltése SIKERTELEN, alapértelmezett: GYAKORLÓ');
+    }
+}
+
+// Backend-re való beküldés
+async function submitToBackend() {
+    try {
+        const testDuration = Math.round((testEndTime - testStartTime) / 1000);
+
+        const taskIds = selectedTasks.map(t => t.number).join(',');
+        const maxScores = selectedTasks.map(t => t.points || 0);
+        const scores = taskAnswers.map(a => a.score || 0);
+        const totalScore = scores.reduce((s, v) => s + v, 0);
+        const maxTotal = maxScores.reduce((s, v) => s + v, 0);
+        const codeSnapshot = JSON.stringify(taskAnswers.map((a, i) => ({
+            task: selectedTasks[i] ? selectedTasks[i].number : i + 1,
+            code: a.answer || ''
+        })));
+
+        const payload = {
+            name: studentData.name,
+            email: studentData.email,
+            osztaly: studentData.class || '',
+            csoport: studentData.group || null,
+            taskIds: taskIds,
+            scores: scores.join(','),
+            maxScores: maxScores.join(','),
+            totalScore: totalScore,
+            maxTotal: maxTotal,
+            duration: testDuration,
+            mode: testMode === 'live' ? 'live' : 'practice',
+            codeSnapshot: codeSnapshot,
+            cheatPenalty: cheatPenalty,
+            cheatWarnings: cheatWarningCount
+        };
+
+        debugLog('📦 Adat előkészítve');
+
+        const response = await fetch(RAILWAY_URL + '/api/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        debugLog('📡 Backend válasz státusz: ' + response.status);
+
+        const result = await response.json();
+
+        if (result.success) {
+            logEvent('Submission successful', { submission_id: result.id });
+            debugLog('✅ Sikeres beküldés! ID: ' + result.id);
+            return { success: true, submission_id: result.id };
+        } else {
+            throw new Error('Beküldés sikertelen');
+        }
+    } catch (error) {
+        logEvent('Submission error', { error: error.message });
+        debugLog('❌ Backend hiba');
+        return null;
+    }
+}
+
+// Automatikus mentés (csak lokálisan, sessionStorage-ba)
+async function autoSaveProgress() {
+    try {
+        if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+            taskAnswers[currentTaskIndex].answer = codeEditor.getValue();
+        }
+        const saveData = {
+            studentData,
+            taskAnswers: taskAnswers.map(a => ({ taskNumber: a.taskNumber, answer: a.answer || '' })),
+            timestamp: new Date().toISOString()
+        };
+        sessionStorage.setItem('kandoAutosave', JSON.stringify(saveData));
+        debugLog('💾 Automatikus mentés (lokális)');
+    } catch (error) {
+        console.log('Autosave failed:', error);
+    }
+}
+
+// Event listener-ek beállítása
+function setupEventListeners() {
+    document.getElementById('start-btn').addEventListener('click', startTest);
+    document.getElementById('skip-btn').addEventListener('click', skipTask);
+    document.getElementById('submit-btn').addEventListener('click', showSubmitModal);
+    document.getElementById('confirm-submit').addEventListener('click', submitTest);
+    document.getElementById('cancel-submit').addEventListener('click', hideSubmitModal);
+    document.getElementById('run-code-btn').addEventListener('click', runPythonCode);
+    document.getElementById('check-scoring-btn').addEventListener('click', checkScoring);
+
+    // Jobb klikk letiltása
+    document.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        return false;
+    });
+
+    // DevTools billentyűk letiltása + ablakváltó kombinációk tiltása
+    document.addEventListener('keydown', e => {
+        // DevTools
+        if (e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+            (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+            return false;
+        }
+        // Ablakváltó kombinációk tiltása teszt közben
+        if (!quizSection.classList.contains('hidden') && testMode === 'live') {
+            if ((e.altKey && e.key === 'Tab') ||
+                (e.altKey && e.key === 'F4') ||
+                (e.ctrlKey && e.key === 'Tab') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'Tab') ||
+                e.key === 'Meta' || e.key === 'OS' ||
+                (e.ctrlKey && e.key === 'Escape') ||
+                (e.altKey && e.key === 'Escape')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+    });
+
+    // Touchpad vízszintes húzás tiltása (böngésző vissza/előre navigáció)
+    document.addEventListener('wheel', e => {
+        if (!quizSection.classList.contains('hidden')) {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 20) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    // Pointer-alapú swipe gesztus tiltása
+    let pointerStartX = 0;
+    document.addEventListener('pointerdown', e => { pointerStartX = e.clientX; });
+    document.addEventListener('pointermove', e => {
+        if (!quizSection.classList.contains('hidden') && e.buttons > 0) {
+            const dx = e.clientX - pointerStartX;
+            if (Math.abs(dx) > 80) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    // DevTools észlelés
+    detectDevTools();
+
+    // Fullscreen változás figyelése
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    // Láthatóság változás figyelése
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Ablak fókusz figyelése
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
+
+    startFocusCheck();
+}
+
+// Feladatok betöltése fájlból
+async function loadTasksFromFile() {
+    try {
+        const response = await fetch('feladatok.txt');
+        const text = await response.text();
+        parseTasks(text);
+        logEvent('Tasks loaded', { count: tasks.length });
+    } catch (error) {
+        alert('Hiba történt a feladatok betöltésekor!');
+        logEvent('Task load error', { error: error.message });
+    }
+}
+
+// Feladatok feldolgozása
+function parseTasks(text) {
+    const lines = text.split('\n');
+    let currentTask = null;
+    let inExample = false;
+    let inCriteria = false;
+    let exampleLines = [];
+    let criteriaLines = [];
+
+    for (let line of lines) {
+        const taskMatch = line.match(/^(\d+)\.\s*feladat/i);
+
+        if (taskMatch) {
+            if (currentTask) {
+                currentTask.example = exampleLines.join('\n');
+                currentTask.criteria = parseCriteria(criteriaLines);
+                tasks.push(currentTask);
+            }
+
+            currentTask = {
+                number: parseInt(taskMatch[1]),
+                description: '',
+                example: '',
+                points: 8,
+                criteria: []
+            };
+            inExample = false;
+            inCriteria = false;
+            exampleLines = [];
+            criteriaLines = [];
+            continue;
+        }
+
+        // Pontszám jelölés: "Pont: 14" vagy "Pont: 8"
+        const pointMatch = line.match(/^Pont:\s*(\d+)/i);
+        if (pointMatch && currentTask) {
+            currentTask.points = parseInt(pointMatch[1]);
+            continue;
+        }
+
+        // Pontozás szekció
+        if (line.trim() === 'Pontozas:') {
+            inCriteria = true;
+            inExample = false;
+            continue;
+        }
+
+        // Mind a ```python, mind a ``` jelölést támogatja
+        if (line.trim() === '```python' || line.trim() === '```') {
+            if (!inCriteria) inExample = !inExample;
+            continue;
+        }
+
+        if (line.match(/^Minta kód:/i)) {
+            continue;
+        }
+
+        if (currentTask) {
+            if (inCriteria) {
+                if (line.trim() !== '') criteriaLines.push(line.trim());
+            } else if (inExample) {
+                exampleLines.push(line);
+            } else if (line.trim() !== '') {
+                if (currentTask.description !== '') currentTask.description += '\n';
+                currentTask.description += line;
+            }
+        }
+    }
+
+    if (currentTask) {
+        currentTask.example = exampleLines.join('\n');
+        currentTask.criteria = parseCriteria(criteriaLines);
+        tasks.push(currentTask);
+    }
+
+    const count8 = tasks.filter(t => t.points === 8).length;
+    const count14 = tasks.filter(t => t.points === 14).length;
+    debugLog(`✅ ${tasks.length} feladat betöltve (${count8} db 8 pontos, ${count14} db 14 pontos)`);
+}
+
+// Teszt indítása
+function startTest() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const studentClass = document.getElementById('class').value.trim();
+
+    if (!name || !email || !studentClass) {
+        alert('Kérlek, töltsd ki az összes mezőt!');
+        return;
+    }
+
+    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks14 = tasks.filter(t => t.points === 14);
+    if (tasks8.length < 2 || tasks14.length < 1) {
+        alert(`Nincs elég feladat! Szükséges: legalább 2 db 8 pontos és 1 db 14 pontos feladat.\nJelenleg: ${tasks8.length} db 8 pontos, ${tasks14.length} db 14 pontos.`);
+        return;
+    }
+
+    studentData = {
+        name: name,
+        email: email,
+        class: studentClass
+    };
+
+    testStartTime = new Date();
+    logEvent('Test started', studentData);
+
+    selectRandomTasks();
+
+    taskAnswers = selectedTasks.map(task => ({
+        taskNumber: task.number,
+        taskDescription: task.description,
+        taskExample: task.example,
+        answer: '',
+        timeSpent: 0,
+        startTime: null,
+        endTime: null,
+        skipped: false,
+        earnedPoints: 0,
+        scoringResults: null
+    }));
+
+    if (testMode === 'practice') {
+        const customMin = parseInt(document.getElementById('custom-time-input')?.value) || 45;
+        globalTimeRemaining = Math.max(5, Math.min(120, customMin)) * 60;
+    } else {
+        globalTimeRemaining = 45 * 60;
+    }
+
+    // Élő módban ellenőrizzük, hogy a Python értelmező betöltődött-e
+    // (itt még fullscreen előtt vagyunk, tehát frissítés biztonságos)
+    if (testMode === 'live' && !pyodideInstance) {
+        const continueAnyway = confirm(
+            '⚠️ A Python értelmező még nem töltődött be teljesen!\n\n' +
+            'Javasolt: Frissítsd az oldalt (F5), várj 10-15 másodpercet, majd próbáld újra.\n\n' +
+            'Ha most indítod el a tesztet, előfordulhat, hogy a kódot nem lehet futtatni.\n\n' +
+            'Nyomj OK-t ha mégis folytatni szeretnéd, Mégsét ha előbb frissítenél.'
+        );
+        if (!continueAnyway) return;
+    }
+
+    fullscreenEnforced = false;
+    fullscreenGraceUntil = 0;
+
+    startSection.classList.add('hidden');
+    quizSection.classList.remove('hidden');
+
+    initializeCodeEditor();
+    initTerminal();
+
+    // Oktatói/bemutató módban nincs fullscreen kényszer
+    const isTeacherMode = sessionStorage.getItem('kandTeacherMode') === 'true';
+    if (!isTeacherMode) {
+        enterFullscreen();
+    }
+
+    setTimeout(() => {
+        currentTaskIndex = 0;
+        startGlobalTimer();
+        startAutoSaveInterval();
+        showTask(currentTaskIndex);
+        updateLiveScore();
+        if (fitAddon) fitAddon.fit();
+        logEvent('Entered fullscreen and started timers');
+    }, 100);
+}
+
+// Véletlenszerű feladatok kiválasztása (2 db 8 pontos + 1 db 14 pontos)
+function selectRandomTasks() {
+    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks14 = tasks.filter(t => t.points === 14);
+
+    const shuffled8 = [...tasks8].sort(() => 0.5 - Math.random());
+    const shuffled14 = [...tasks14].sort(() => 0.5 - Math.random());
+
+    const selected8 = shuffled8.slice(0, 2);
+    const selected14 = shuffled14.slice(0, 1);
+
+    // Véletlenszerű sorrendbe keverjük a kiválasztott feladatokat
+    selectedTasks = [...selected8, ...selected14].sort(() => 0.5 - Math.random());
+
+    logEvent('Tasks selected', {
+        tasks: selectedTasks.map(t => ({ number: t.number, points: t.points }))
+    });
+}
+
+// ─── PONTOZÓ MOTOR ────────────────────────────────────────────────────────────
+
+// Kritériumok beolvasása szöveges sorokból
+function parseCriteria(lines) {
+    return lines.map(line => {
+        const pipeIdx = line.indexOf('|');
+        if (pipeIdx === -1) return null;
+        const spec = line.substring(0, pipeIdx); // NE trim-elj – megőrzi a záró szóközt (pl. bekeres args)
+        const label = line.substring(pipeIdx + 1).trim();
+        const colonIdx = spec.indexOf(':');
+        if (colonIdx === -1) {
+            return { type: spec.trim(), args: null, label };
+        }
+        const type = spec.substring(0, colonIdx).trim();
+        const args = spec.substring(colonIdx + 1); // args-ot NEM trim-eljük
+        return { type, args, label };
+    }).filter(c => c !== null);
+}
+
+// Szinkron kritérium-ellenőrzés (nem teszt típusú)
+function evaluateCriterion(code, criterion) {
+    const { type, args } = criterion;
+
+    if (['if', 'elif', 'else', 'for', 'while', 'def', 'return'].includes(type)) {
+        return new RegExp(`\\b${type}\\b`).test(code);
+    }
+
+    if (type === 'input') {
+        const n = parseInt(args) || 1;
+        return (code.match(/\binput\s*\(/g) || []).length >= n;
+    }
+
+    if (type === 'int_float') {
+        const n = parseInt(args) || 1;
+        return (code.match(/\b(int|float)\s*\(/g) || []).length >= n;
+    }
+
+    if (type === 'import') {
+        return new RegExp(`(^|\\n)\\s*import\\s+${args}\\b|(^|\\n)\\s*from\\s+${args}\\s+import`, 'i').test(code);
+    }
+
+    if (type === 'tartalmaz') {
+        return code.includes(args);
+    }
+
+    if (type === 'input_format') {
+        // Ellenőrzi, hogy az összes input() bekérő szöveg szóközzel végződik-e
+        const calls = [...code.matchAll(/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];
+        if (calls.length === 0) return false;
+        return calls.every(m => m[1].endsWith(' '));
+    }
+
+    if (type === 'bekeres') {
+        // Ellenőrzi, hogy az input() PONTOSAN a megadott szöveggel hívódik-e meg
+        // A szövegnek betűre, szóközre, írásjelre pontosan egyeznie kell a mintával
+        // Sima string ("...") és f-string (f"...") esetét is kezeli
+        const escapedArgs = args.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`\\binput\\s*\\(\\s*f?["']${escapedArgs}["']\\s*\\)`).test(code);
+    }
+
+    return false;
+}
+
+// Teszteset futtatása mock inputokkal
+async function runCodeWithMockInputs(code, inputs) {
+    let inputIndex = 0;
+    const mockInputFn = async (_prompt) => {
+        if (inputIndex < inputs.length) return String(inputs[inputIndex++]).trim();
+        return '';
+    };
+
+    const savedInput = globalThis.js_input;
+    globalThis.js_input = mockInputFn;
+
+    try {
+        const pyodide = await getPyodide();
+
+        pyodide.runPython(`
+import sys
+from io import StringIO
+import builtins
+
+sys.stdout = StringIO()
+sys.stderr = StringIO()
+
+async def input(prompt=''):
+    from js import js_input
+    result = await js_input(prompt)
+    return result
+
+builtins.input = input
+`);
+
+        const wrappedCode = wrapPythonCodeForAsyncInput(code);
+        await pyodide.runPythonAsync(wrappedCode);
+
+        const stdout = pyodide.runPython('sys.stdout.getvalue()');
+        return { success: true, output: stdout || '' };
+    } catch (error) {
+        return { success: false, output: '', error: error.message };
+    } finally {
+        globalThis.js_input = savedInput;
+    }
+}
+
+// Pontozás ellenőrzése az aktuális feladatnál
+let scoringRunning = false;
+
+async function checkScoring() {
+    if (scoringRunning) return;
+
+    const task = selectedTasks[currentTaskIndex];
+    if (!task || !task.criteria || task.criteria.length === 0) return;
+
+    const code = codeEditor.getValue().trim();
+
+    scoringRunning = true;
+    const btn = document.getElementById('check-scoring-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Ellenőrzés folyamatban...';
+
+    const panel = document.getElementById('scoring-panel');
+    panel.classList.remove('hidden');
+
+    if (!code) {
+        document.getElementById('scoring-content').innerHTML =
+            '<div class="scoring-header-row"><span class="scoring-title" style="color:#721c24">⚠️ Nincs beírva kód!</span></div>';
+        btn.disabled = false;
+        btn.textContent = '🔍 Pontozás';
+        scoringRunning = false;
+        return;
+    }
+
+    // Szinkron kritériumok azonnali kiértékelése
+    const results = task.criteria.map(criterion => {
+        if (criterion.type === 'teszt') {
+            return { criterion, passed: null, pending: true };
+        }
+        return { criterion, passed: evaluateCriterion(code, criterion), pending: false };
+    });
+
+    updateScoringUI(results);
+
+    // Tesztesetek aszinkron futtatása egyenként
+    for (let i = 0; i < results.length; i++) {
+        if (!results[i].pending) continue;
+
+        const criterion = results[i].criterion;
+        const firstColon = criterion.args.indexOf(':');
+        if (firstColon === -1) {
+            results[i] = { criterion, passed: false, pending: false };
+            continue;
+        }
+
+        const inputsStr = criterion.args.substring(0, firstColon);
+        const expected = criterion.args.substring(firstColon + 1);
+        const inputs = inputsStr.split(',');
+
+        const result = await runCodeWithMockInputs(code, inputs);
+        const passed = result.success
+            ? result.output.toLowerCase().includes(expected.toLowerCase())
+            : false;
+
+        results[i] = { criterion, passed, pending: false };
+        updateScoringUI(results);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🔍 Pontozás';
+    scoringRunning = false;
+}
+
+// Pontozási eredmények megjelenítése
+function updateScoringUI(results) {
+    const content = document.getElementById('scoring-content');
+    const earned = results.filter(r => r.passed === true).length;
+    const total = results.length;
+
+    let html = `<div class="scoring-header-row">
+        <span class="scoring-title">Pontozás</span>
+        <span class="scoring-score">${earned} / ${total} pont</span>
+    </div><ul class="scoring-list">`;
+
+    for (const r of results) {
+        let icon, cls;
+        if (r.pending) {
+            icon = '⏳'; cls = 'scoring-pending';
+        } else if (r.passed) {
+            icon = '✓'; cls = 'scoring-pass';
+        } else {
+            icon = '✗'; cls = 'scoring-fail';
+        }
+        html += `<li class="${cls}"><span class="scoring-icon">${icon}</span>${r.criterion.label}</li>`;
+    }
+
+    html += '</ul>';
+    content.innerHTML = html;
+
+    // Ha már nincs függőben lévő teszt, mentjük a pontokat és frissítjük a live score-t
+    if (!results.some(r => r.pending) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
+        taskAnswers[currentTaskIndex].earnedPoints = earned;
+        taskAnswers[currentTaskIndex].scoringResults = results.map(r => ({
+            label: r.criterion.label,
+            passed: r.passed
+        }));
+        updateLiveScore();
+    }
+}
+
+// ──────────────────��──────────────────────────────────────────────────────────
+
+// Code Editor inicializálása
+function initializeCodeEditor() {
+    const textarea = document.getElementById('code-editor');
+    codeEditor = CodeMirror.fromTextArea(textarea, {
+        mode: 'python',
+        theme: 'monokai',
+        lineNumbers: true,
+        indentUnit: 4,
+        indentWithTabs: false,
+        lineWrapping: true,
+        matchBrackets: true,
+        autoCloseBrackets: { pairs: "()[]{}''", explode: "[]{}()" },
+        extraKeys: {
+            '"': function(cm) { cm.replaceSelection('"'); }
+        },
+        specialChars: /[\t]/,
+        specialCharPlaceholder: (ch) => {
+            const span = document.createElement('span');
+            span.textContent = ch === '\t' ? '→' : '?';
+            span.className = 'cm-specialchar';
+            return span;
+        }
+    });
+
+    codeEditor.on('change', () => {
+        if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+            taskAnswers[currentTaskIndex].answer = codeEditor.getValue();
+        }
+    });
+}
+
+// Terminál inicializálása
+function initTerminal() {
+    term = new Terminal({
+        cursorBlink: true,
+        convertEol: true,
+        fontSize: 14,
+        fontFamily: "Consolas, 'Lucida Console', 'Courier New', monospace",
+        theme: {
+            background: '#0c0c0c',
+            foreground: '#c0c0c0',
+            cursor: '#c0c0c0',
+            selection: 'rgba(255, 255, 255, 0.2)'
+        }
+    });
+
+    fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+
+    const terminalElement = document.getElementById('terminal');
+    term.open(terminalElement);
+    fitAddon.fit();
+
+    terminalReady = true;
+}
+
+// Feladat megjelenítése
+function showTask(index) {
+    if (index < 0 || index >= selectedTasks.length) {
+        return;
+    }
+
+    const task = selectedTasks[index];
+    const answer = taskAnswers[index];
+
+    if (!answer.startTime) {
+        answer.startTime = new Date();
+    }
+
+    document.getElementById('task-number').textContent = `${index + 1}. feladat (${task.points} pont)`;
+    document.getElementById('task-description').textContent = task.description;
+    document.getElementById('task-example').textContent = task.example;
+
+    // Pontozás gomb és panel kezelése feladatváltáskor
+    const scoringBtn = document.getElementById('check-scoring-btn');
+    const scoringPanel = document.getElementById('scoring-panel');
+    document.getElementById('scoring-content').innerHTML = '';
+    if (task.criteria && task.criteria.length > 0) {
+        scoringBtn.classList.remove('hidden');
+        scoringPanel.classList.remove('hidden');
+        // Automatikus pontozás futtatása kis késleltetéssel (editor betöltés után)
+        setTimeout(checkScoring, 300);
+    } else {
+        scoringBtn.classList.add('hidden');
+        scoringPanel.classList.add('hidden');
+    }
+
+    // Feladat szám mentése a tanári adatokhoz
+    debugLog(`📝 Feladat betöltve: ${task.number}. feladat`);
+
+    if (terminalReady && term) {
+        term.clear();
+    }
+
+    codeEditor.setValue(answer.answer || '');
+
+    updateTaskNavigation();
+
+    logEvent('Task shown', { taskIndex: index, taskNumber: task.number });
+}
+
+// Feladat navigáció frissítése
+function updateTaskNavigation() {
+    const nav = document.getElementById('task-navigation');
+    nav.innerHTML = '';
+
+    selectedTasks.forEach((task, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'task-nav-btn';
+        btn.textContent = `${index + 1}. feladat`;
+
+        if (index === currentTaskIndex) {
+            btn.classList.add('active');
+        }
+
+        if (taskAnswers[index].answer && taskAnswers[index].answer.trim() !== '') {
+            btn.classList.add('completed');
+        }
+
+        btn.addEventListener('click', () => {
+            saveCurrentTaskTime();
+            currentTaskIndex = index;
+            showTask(index);
+        });
+
+        nav.appendChild(btn);
+    });
+}
+
+// Feladat átugrása
+function skipTask() {
+    saveCurrentTaskTime();
+
+    taskAnswers[currentTaskIndex].skipped = true;
+
+    currentTaskIndex = (currentTaskIndex + 1) % selectedTasks.length;
+    showTask(currentTaskIndex);
+
+    logEvent('Task skipped', { newIndex: currentTaskIndex });
+}
+
+// Aktuális feladat idejének mentése
+function saveCurrentTaskTime() {
+    if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+        const answer = taskAnswers[currentTaskIndex];
+        if (answer.startTime) {
+            const now = new Date();
+            answer.timeSpent += Math.round((now - answer.startTime) / 1000);
+            answer.startTime = null;
+        }
+    }
+}
+
+// Érdemjegy kiszámítása százalék alapján
+function getGrade(percentage) {
+    if (percentage >= 80) return { value: 5, label: 'Érdemjegy: 5' };
+    if (percentage >= 60) return { value: 4, label: 'Érdemjegy: 4' };
+    if (percentage >= 40) return { value: 3, label: 'Érdemjegy: 3' };
+    if (percentage >= 20) return { value: 2, label: 'Érdemjegy: 2' };
+    return { value: 1, label: 'Érdemjegy: 1' };
+}
+
+// Élő pontszám frissítése a felső sávban
+function updateLiveScore() {
+    const totalPossible = selectedTasks.reduce((sum, t) => sum + t.points, 0);
+    const totalEarned = taskAnswers.reduce((sum, a) => sum + (a.earnedPoints || 0), 0);
+    const percentage = totalPossible > 0 ? (totalEarned / totalPossible) * 100 : 0;
+    const grade = getGrade(percentage);
+
+    const scoreDisplay = document.getElementById('score-display');
+    const gradeDisplay = document.getElementById('score-grade');
+
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `${totalEarned} / ${totalPossible} pont`;
+    }
+    if (gradeDisplay) {
+        gradeDisplay.textContent = grade.label;
+        gradeDisplay.className = `score-grade grade-${grade.value}`;
+    }
+}
+
+// Pontozási összefoglaló szöveges riport generálása (beadáshoz)
+function buildScoringReport() {
+    const totalPossible = selectedTasks.reduce((sum, t) => sum + t.points, 0);
+    const totalEarned = taskAnswers.reduce((sum, a) => sum + (a.earnedPoints || 0), 0);
+    const percentage = totalPossible > 0 ? (totalEarned / totalPossible) * 100 : 0;
+    const grade = getGrade(percentage);
+
+    const lines = [];
+    lines.push('=== ÖSSZESÍTETT PONTOZÁS ===');
+    lines.push('');
+    lines.push(`Megszerzett pontok: ${totalEarned} / ${totalPossible}`);
+    lines.push(`Százalék: ${percentage.toFixed(1)}%`);
+    lines.push(`${grade.label}`);
+    lines.push('');
+
+    taskAnswers.forEach((answer, index) => {
+        const taskPoints = selectedTasks[index] ? selectedTasks[index].points : 0;
+        const earned = answer.earnedPoints || 0;
+        lines.push(`  ${index + 1}. feladat: ${earned} / ${taskPoints} pont`);
+        if (answer.scoringResults && answer.scoringResults.length > 0) {
+            const failed = answer.scoringResults.filter(r => !r.passed);
+            if (failed.length > 0) {
+                lines.push(`    Nem teljesített feltételek (tanári mérlegelés szükséges):`);
+                failed.forEach(r => lines.push(`      - ${r.label}`));
+            } else {
+                lines.push(`    Minden feltétel teljesítve.`);
+            }
+        } else {
+            lines.push(`    (Pontozás nem futott le.)`);
+        }
+    });
+
+    lines.push('');
+    return lines.join('\n');
+}
+
+// Globális timer indítása
+function startGlobalTimer() {
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+
+    globalTimer = setInterval(() => {
+        globalTimeRemaining--;
+
+        const minutes = Math.floor(globalTimeRemaining / 60);
+        const seconds = globalTimeRemaining % 60;
+
+        const timerElement = document.getElementById('global-timer');
+        timerElement.textContent = `Hátralévő idő: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (globalTimeRemaining <= 60) {
+            timerElement.classList.add('warning');
+        }
+
+        if (globalTimeRemaining <= 0) {
+            clearInterval(globalTimer);
+            autoSubmitTest();
+        }
+    }, 1000);
+}
+
+
+// Python kód futtatása
+async function runPythonCode() {
+    if (pythonCodeRunning) {
+        if (currentInputDisposable) {
+            currentInputDisposable.dispose();
+            currentInputDisposable = null;
+        }
+        pythonCodeRunning = false;
+    }
+
+    const code = codeEditor.getValue();
+
+    if (!code || code.trim() === '') {
+        term.writeln('⚠️ Nincs beírva semmilyen kód!');
+        return;
+    }
+
+    pythonCodeRunning = true;
+    const runBtn = document.getElementById('run-code-btn');
+    if (runBtn) { runBtn.disabled = true; runBtn.textContent = '⏳ Fut...'; }
+
+    term.clear();
+    const indentationIssues = getIndentationIssues(code);
+    if (indentationIssues.length > 0) {
+        term.writeln('⚠️ Behúzás figyelmeztetés:');
+        indentationIssues.slice(0, 5).forEach((issue) => {
+            term.writeln(`- ${issue}`);
+        });
+        if (indentationIssues.length > 5) {
+            term.writeln(`- ...további ${indentationIssues.length - 5} sor`);
+        }
+        term.writeln('');
+    }
+
+    logEvent('Code execution started', { code: code.substring(0, 100) });
+
+    let pyodide;
+    try {
+        pyodide = await getPyodide();
+    } catch (error) {
+        await sleep(200);
+        term.writeln('\r\n❌ Nem sikerült betölteni a Python értelmezőt!');
+        if (testMode === 'live') {
+            term.writeln('💡 Próbáld meg újra a "Kód futtatása" gombbal!');
+            term.writeln('   Ha ismételten nem működik, értesítsd a tanárt!');
+        } else {
+            term.writeln('💡 Zárd be a többi böngészőfület, majd frissítsd az oldalt (F5).');
+            term.writeln('   Ha ez sem segít, indítsd újra a böngészőt.');
+        }
+        return;
+    }
+
+    try {
+        // Python input és közvetlen terminál-kimenet beállítása
+        globalThis.js_input = customPythonInput;
+        globalThis.js_print = (text) => { term.write(String(text)); };
+
+        pyodide.runPython(`
+import sys
+from io import StringIO
+import builtins
+
+# Közvetlen terminál-kimenet: print() azonnal megjelenik
+class _TermOut:
+    def write(self, text):
+        from js import js_print
+        js_print(text)
+        return len(text)
+    def flush(self):
+        pass
+
+sys.stdout = _TermOut()
+sys.stderr = StringIO()
+
+async def input(prompt=''):
+    from js import js_input
+    result = await js_input(prompt)
+    return result
+
+builtins.input = input
+`);
+
+        // Kód futtatása aszinkron módon
+        const wrappedCode = wrapPythonCodeForAsyncInput(code);
+        await pyodide.runPythonAsync(wrappedCode);
+
+        await sleep(400);
+        term.writeln('\n✅  Kód sikeresen lefutott!');
+        debugLog('✅ Kód futtatva');
+
+        // Automatikus mentés a háttérben
+        autoSaveProgress();
+
+    } catch (error) {
+        const errorMsg = error.message || String(error);
+        // Csak az utolsó sor
+        const lines = errorMsg.split('\n').filter(line => line.trim());
+        const relevantError = lines[lines.length - 1] || errorMsg;
+
+        await sleep(400);
+        term.writeln('\n❌  Hiba: ' + relevantError);
+        debugLog('❌ Kód futtatási hiba');
+
+        // Hibás kód esetén is mentünk
+        autoSaveProgress();
+    } finally {
+        pythonCodeRunning = false;
+        currentInputDisposable = null;
+        if (runBtn) { runBtn.disabled = false; runBtn.textContent = '▶ Kód futtatása'; }
+    }
+}
+
+function getIndentationIssues(code) {
+    const issues = [];
+    const lines = code.split('\n');
+
+    lines.forEach((line, index) => {
+        if (!line.trim()) {
+            return;
+        }
+        const match = line.match(/^[ \t]+/);
+        if (!match) {
+            return;
+        }
+        const indent = match[0];
+        const hasTab = indent.includes('\t');
+        const hasSpace = indent.includes(' ');
+        const lineNumber = index + 1;
+
+        if (hasTab && hasSpace) {
+            issues.push(`${lineNumber}. sor: kevert TAB + szóköz`);
+            return;
+        }
+        if (hasTab) {
+            issues.push(`${lineNumber}. sor: TAB karakter a behúzásban`);
+            return;
+        }
+        if (hasSpace && indent.length % 4 !== 0) {
+            issues.push(`${lineNumber}. sor: behúzás nem 4-es többszöröse (${indent.length} szóköz)`);
+        }
+    });
+
+    return issues;
+}
+
+function wrapPythonCodeForAsyncInput(code) {
+    const transformed = transformInputCallsToAwait(code);
+    const indented = transformed.split('\n').map((line) => '    ' + line).join('\n');
+    return `async def __student_main__():\n${indented}\n\nawait __student_main__()\n`;
+}
+
+function transformInputCallsToAwait(code) {
+    let out = '';
+    let i = 0;
+    let inSingle = false;
+    let inDouble = false;
+    let inTripleSingle = false;
+    let inTripleDouble = false;
+    let inComment = false;
+
+    while (i < code.length) {
+        const ch = code[i];
+        const next3 = code.slice(i, i + 3);
+
+        if (inComment) {
+            out += ch;
+            if (ch === '\n') {
+                inComment = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inSingle) {
+            if (ch === '\\') {
+                out += ch + (code[i + 1] || '');
+                i += 2;
+                continue;
+            }
+            out += ch;
+            if (ch === '\'') {
+                inSingle = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inDouble) {
+            if (ch === '\\') {
+                out += ch + (code[i + 1] || '');
+                i += 2;
+                continue;
+            }
+            out += ch;
+            if (ch === '"') {
+                inDouble = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inTripleSingle) {
+            if (next3 === "'''") {
+                out += next3;
+                i += 3;
+                inTripleSingle = false;
+                continue;
+            }
+            out += ch;
+            i += 1;
+            continue;
+        }
+
+        if (inTripleDouble) {
+            if (next3 === '"""') {
+                out += next3;
+                i += 3;
+                inTripleDouble = false;
+                continue;
+            }
+            out += ch;
+            i += 1;
+            continue;
+        }
+
+        if (next3 === "'''") {
+            out += next3;
+            i += 3;
+            inTripleSingle = true;
+            continue;
+        }
+
+        if (next3 === '"""') {
+            out += next3;
+            i += 3;
+            inTripleDouble = true;
+            continue;
+        }
+
+        if (ch === '\'') {
+            out += ch;
+            i += 1;
+            inSingle = true;
+            continue;
+        }
+
+        if (ch === '"') {
+            out += ch;
+            i += 1;
+            inDouble = true;
+            continue;
+        }
+
+        if (ch === '#') {
+            out += ch;
+            i += 1;
+            inComment = true;
+            continue;
+        }
+
+        if (code.startsWith('input', i) && isInputCallBoundary(code, i)) {
+            let k = i + 5;
+            while (k < code.length && (code[k] === ' ' || code[k] === '\t')) {
+                k += 1;
+            }
+            if (code[k] === '(' && !hasAwaitBefore(code, i)) {
+                out += 'await input';
+                out += code.slice(i + 5, k + 1);
+                i = k + 1;
+                continue;
+            }
+        }
+
+        out += ch;
+        i += 1;
+    }
+
+    return out;
+}
+
+function isInputCallBoundary(code, index) {
+    const prev = index > 0 ? code[index - 1] : '';
+    if (prev && (isIdentChar(prev) || prev === '.')) {
+        return false;
+    }
+    const next = index + 5 < code.length ? code[index + 5] : '';
+    if (next && isIdentChar(next)) {
+        return false;
+    }
+    return true;
+}
+
+function hasAwaitBefore(code, index) {
+    let j = index - 1;
+    while (j >= 0 && (code[j] === ' ' || code[j] === '\t')) {
+        j -= 1;
+    }
+    const start = j - 4;
+    if (start < 0) {
+        return false;
+    }
+    const word = code.slice(start, j + 1);
+    if (word !== 'await') {
+        return false;
+    }
+    const before = start - 1 >= 0 ? code[start - 1] : '';
+    if (before && isIdentChar(before)) {
+        return false;
+    }
+    return true;
+}
+
+function isIdentChar(ch) {
+    return (ch >= 'a' && ch <= 'z') ||
+        (ch >= 'A' && ch <= 'Z') ||
+        (ch >= '0' && ch <= '9') ||
+        ch === '_';
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Custom Python input - terminál alapú
+function customPythonInput(prompt) {
+    return new Promise((resolve) => {
+        if (prompt) {
+            term.write(String(prompt));
+        }
+
+        if (!term || typeof term.onData !== 'function') {
+            resolve('');
+            return;
+        }
+
+        let inputBuffer = '';
+        let disposable = null;
+
+        const inputHandler = (data) => {
+            if (data === '\r' || data === '\n') {
+                // Enter lenyomva
+                term.writeln('');
+                if (disposable) {
+                    disposable.dispose();
+                }
+                resolve(inputBuffer);
+            } else if (data === '\u007F' || data === '\b') {
+                // Backspace
+                if (inputBuffer.length > 0) {
+                    inputBuffer = inputBuffer.slice(0, -1);
+                    term.write('\b \b');
+                }
+            } else if (data.length > 0 && data.charCodeAt(0) >= 32) {
+                // Normál karakter (ASCII és ékezetes/unicode betűk is)
+                inputBuffer += data;
+                term.write(data);
+            }
+        };
+
+        disposable = term.onData(inputHandler);
+        currentInputDisposable = disposable;
+    });
+}
+
+// Beküldés modal megjelenítése
+function showSubmitModal() {
+    submitModal.style.display = 'flex';
+    logEvent('Submit modal shown');
+}
+
+// Beküldés modal elrejtése
+function hideSubmitModal() {
+    submitModal.style.display = 'none';
+    logEvent('Submit modal hidden');
+}
+
+// Teszt beküldése
+async function submitTest() {
+    hideSubmitModal();
+
+    saveCurrentTaskTime();
+
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+        autosaveInterval = null;
+    }
+
+    testEndTime = new Date();
+
+    logEvent('Test submitted', { endTime: testEndTime });
+
+    if (cheatDetected) {
+        logEvent('Cheating detected', { reason: cheatReason });
+    }
+
+    const result = await submitToBackend();
+
+    quizSection.classList.add('hidden');
+    endSection.classList.remove('hidden');
+    const totalMinutes = Math.floor((testEndTime - testStartTime) / 60000);
+    const totalSeconds = Math.floor(((testEndTime - testStartTime) % 60000) / 1000);
+
+    document.getElementById('final-time').textContent =
+        `Teljes idő: ${totalMinutes} perc ${totalSeconds} másodperc`;
+
+    const endTitle = document.getElementById('end-title');
+    const endMessage = document.getElementById('end-message');
+
+    if (cheatDetected) {
+        endTitle.textContent = '⚠️ Csalás észlelve!';
+        endMessage.textContent = 'Csalást észleltünk, ezért az eddigi munkád kerül értékelésre. A csalás miatt a teszt eredménye: elégtelen.';
+    } else if (testMode === 'practice') {
+        endTitle.textContent = '✅ Teszt befejezve!';
+        endMessage.textContent = 'Köszönjük a részvételt!';
+    } else {
+        endTitle.textContent = '✅ Teszt befejezve!';
+        endMessage.textContent = 'Köszönjük, hogy kitöltötted a tesztet! A válaszaidat elküldtük a tanárnak.';
+    }
+
+    if (result && result.success) {
+        debugLog('✅ Teszt sikeresen beküldve!');
+
+        // ÉLES módban email küldés a tanárnak
+        if (testMode === 'live') {
+            sendEmailNotification(result.submission_id);
+        }
+    } else {
+        debugLog('⚠️ Hiba történt a beküldés során, de a teszt véget ért.');
+    }
+
+    downloadSubmissionTxt(result ? result.submission_id : '');
+
+    exitFullscreen();
+}
+
+// Automatikus beküldés idő lejárta esetén
+function autoSubmitTest() {
+    alert('Az idő lejárt! A teszt automatikusan beküldésre került.');
+    submitTest();
+}
+
+// Fullscreen mód bekapcsolása
+function enterFullscreen() {
+    const elem = document.documentElement;
+    fullscreenGraceUntil = Date.now() + 5000;
+
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+
+    logEvent('Fullscreen entered');
+}
+
+// Fullscreen mód kikapcsolása
+function exitFullscreen() {
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+    }
+}
+
+// Fullscreen változás kezelése
+function handleFullscreenChange() {
+    const isFullscreen = document.fullscreenElement ||
+                        document.webkitFullscreenElement ||
+                        document.mozFullScreenElement ||
+                        document.msFullscreenElement;
+    const testActive = !quizSection.classList.contains('hidden');
+
+    if (!isFullscreen && !endSection.classList.contains('hidden')) {
+        return;
+    }
+
+    if (testMode !== 'live') {
+        fullscreenPrompt.style.display = 'none';
+        return;
+    }
+
+    if (!isFullscreen && testActive) {
+        fullscreenPrompt.style.display = 'flex';
+
+        if (globalTimer) {
+            clearInterval(globalTimer);
+        }
+        if (taskTimer) {
+            clearInterval(taskTimer);
+        }
+
+        logEvent('Fullscreen exited - test paused');
+
+        setTimeout(() => {
+            if (!document.fullscreenElement && testActive) {
+                showCheatWarning('Kiléptél a fullscreen módból');
+            }
+        }, 3000);
+    } else {
+        fullscreenPrompt.style.display = 'none';
+        if (isFullscreen) {
+            fullscreenEnforced = true;
+        }
+    }
+}
+
+// Láthatóság változás kezelése
+function handleVisibilityChange() {
+    if (testMode !== 'live') {
+        return;
+    }
+
+    if (document.hidden && !quizSection.classList.contains('hidden')) {
+        logEvent('Tab hidden - potential cheating');
+
+        showCheatWarning('Másik fülre váltottál');
+    }
+}
+
+// Ablak fókusz elvesztés kezelése
+function handleWindowBlur() {
+    if (testMode !== 'live') {
+        return;
+    }
+
+    if (!quizSection.classList.contains('hidden')) {
+        logEvent('Window lost focus');
+
+        focusLossTimeout = setTimeout(() => {
+            showCheatWarning('Elhagytad az ablakot');
+        }, 2000);
+    }
+}
+
+// Ablak fókusz visszanyerés kezelése
+function handleWindowFocus() {
+    if (focusLossTimeout) {
+        clearTimeout(focusLossTimeout);
+        focusLossTimeout = null;
+    }
+
+    logEvent('Window gained focus');
+}
+
+// Fókusz ellenőrzés indítása
+function startFocusCheck() {
+    focusCheckInterval = setInterval(() => {
+        if (!document.hasFocus() && !quizSection.classList.contains('hidden') && testMode === 'live') {
+            logEvent('Focus check failed');
+            showCheatWarning('Ablak fókusz elveszett');
+        }
+    }, 5000);
+}
+
+// DevTools észlelés
+function detectDevTools() {
+    const threshold = 160;
+
+    setInterval(() => {
+        if (window.outerWidth - window.innerWidth > threshold ||
+            window.outerHeight - window.innerHeight > threshold) {
+
+            logEvent('DevTools detected - potential cheating');
+
+            if (testMode === 'live' && !quizSection.classList.contains('hidden')) {
+                showCheatWarning('Developer Tools észlelve');
+            }
+        }
+    }, 1000);
+}
+
+function startFullscreenCheck() {
+    if (fullscreenCheckInterval) {
+        clearInterval(fullscreenCheckInterval);
+    }
+
+    fullscreenCheckInterval = setInterval(() => {
+        if (testMode !== 'live' || quizSection.classList.contains('hidden')) {
+            return;
+        }
+        const isFullscreen = document.fullscreenElement ||
+                            document.webkitFullscreenElement ||
+                            document.mozFullScreenElement ||
+                            document.msFullscreenElement;
+        if (!isFullscreen) {
+            if (Date.now() < fullscreenGraceUntil) {
+                return;
+            }
+            if (!fullscreenEnforced) {
+                return;
+            }
+            showCheatWarning('Kiléptél a fullscreen módból');
+        }
+    }, 1000);
+}
+
+function showCheatWarning(reason) {
+    if (quizSection.classList.contains('hidden')) return;
+    if (testMode !== 'live') return;
+    if (cheatDetected) return;
+    // Ha már volt 3 figyelmeztetés, ne számoljon tovább
+    if (cheatWarningCount >= 3) return;
+
+    cheatWarningCount++;
+    logEvent('Cheat warning #' + cheatWarningCount + ': ' + reason);
+
+    const overlay = document.getElementById('cheat-warning-overlay');
+    const textEl = document.getElementById('cheat-warning-text');
+    const countEl = document.getElementById('cheat-warning-count');
+    const finalMsg = document.getElementById('cheat-warning-final-msg');
+    const closeBtn = document.getElementById('cheat-warning-close-btn');
+
+    if (!overlay) return;
+
+    if (textEl) textEl.textContent = reason;
+    if (countEl) countEl.textContent = 'Csalási kísérlet 3/' + cheatWarningCount;
+    overlay.style.display = 'flex';
+
+    if (cheatWarningCount >= 3) {
+        cheatPenalty = true;
+        if (finalMsg) finalMsg.style.display = 'block';
+        if (closeBtn) closeBtn.textContent = 'Megértettem, folytatom a tesztet';
+        sendCheatNotification(reason);
+    } else {
+        if (finalMsg) finalMsg.style.display = 'none';
+        if (closeBtn) {
+            closeBtn.textContent = 'Megértettem, visszatérek';
+        }
+    }
+}
+
+function closeCheatWarning() {
+    const overlay = document.getElementById('cheat-warning-overlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function sendCheatNotification(reason) {
+    if (!window.emailjs || testMode !== 'live') return;
+    debugLog('📧 Oktató értesítése csalási kísérletről...');
+    const emailParams = {
+        to_email: 'sandornefr@gmail.com',
+        subject: '⚠️ Csalási kísérlet: ' + (studentData.name || 'Ismeretlen tanuló'),
+        reply_to: studentData.email || 'noreply@kkszki.hu',
+        message: [
+            '⚠️ CSALÁSI KÍSÉRLET ÉRTESÍTŐ',
+            '',
+            'Tanuló neve: ' + (studentData.name || '-'),
+            'Email: ' + (studentData.email || '-'),
+            'Osztály: ' + (studentData.class || '-'),
+            'Időpont: ' + new Date().toLocaleString('hu-HU'),
+            'Ok: ' + reason,
+            '',
+            '3/3 figyelmeztetés elérve. A tanuló a teszt folytatásához engedélyt kell kérjen.',
+            'Egy érdemjegy levonás automatikusan rögzítve!'
+        ].join('\n')
+    };
+    emailjs.send('service_zxskntr', 'template_vnqc2fd', emailParams, 'cesxNZpDSC16dOY2u')
+        .then(() => debugLog('✅ Oktató értesítve'))
+        .catch(err => debugLog('⚠️ Értesítési hiba: ' + err.message));
+}
+
+function handleCheating(reason) {
+    if (cheatDetected || quizSection.classList.contains('hidden')) {
+        return;
+    }
+
+    cheatDetected = true;
+    cheatReason = reason;
+
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+        autosaveInterval = null;
+    }
+
+    const overlay = document.getElementById('cheat-warning-overlay');
+    if (overlay) overlay.style.display = 'none';
+    fullscreenPrompt.style.display = 'none';
+    exitFullscreen();
+    submitTest();
+}
+
+// Esemény naplózás
+function logEvent(eventName, data = {}) {
+    const event = {
+        timestamp: new Date().toISOString(),
+        event: eventName,
+        ...data
+    };
+
+    eventLog.push(event);
+
+    debugLog('📝 Event: ' + eventName);
+}
+
+// Debug log
+function debugLog(message) {
+    const debugPanel = document.getElementById('debug-panel');
+    const debugContent = document.getElementById('debug-content');
+
+    if (!debugPanel || !debugContent) return;
+
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.style.marginBottom = '5px';
+    logEntry.style.paddingBottom = '5px';
+    logEntry.style.borderBottom = '1px solid #333';
+
+    // Csak az üzenetet írjuk ki
+    logEntry.textContent = `[${timestamp}] ${message}`;
+
+    debugContent.appendChild(logEntry);
+
+    // Automatikus görgetés az aljára
+    setTimeout(() => {
+        debugPanel.scrollTop = debugPanel.scrollHeight;
+    }, 10);
+}
+
+// Teszt mód badge frissítése
+function updateTestModeBadge() {
+    const badge = document.getElementById('test-mode-badge');
+    const text = document.getElementById('test-mode-text');
+
+    if (!badge || !text) return;
+
+    badge.style.display = 'block';
+
+    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
+    if (isTeacher) {
+        badge.style.background = 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)';
+        badge.style.color = 'white';
+        badge.style.border = '3px solid #4338ca';
+        text.textContent = '📽️ BEMUTATÓ MÓD – Oktatói nézet, nincsenek korlátozások, nincs beadás';
+    } else if (testMode === 'live') {
+        badge.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)';
+        badge.style.color = 'white';
+        badge.style.border = '3px solid #c92a2a';
+        text.textContent = '🔴 ÉLES TESZT MÓD - Az eredmények elküldésre kerülnek emailben!';
+    } else {
+        badge.style.background = 'linear-gradient(135deg, #51cf66 0%, #37b24d 100%)';
+        badge.style.color = 'white';
+        badge.style.border = '3px solid #2b8a3e';
+        text.textContent = '🎓 GYAKORLÓ MÓD - Nincs email értesítés';
+    }
+
+    // Időbeállítás megjelenítése: csak gyakorló módban, nem oktatónak
+    const picker = document.getElementById('practice-time-picker');
+    if (picker) {
+        picker.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+    }
+}
+
+// Email értesítés küldése (csak ÉLES módban)
+function sendEmailNotification(submissionId) {
+    if (!window.emailjs) {
+        debugLog('⚠️ EmailJS nincs betöltve');
+        return;
+    }
+
+    debugLog('📧 Email küldése...');
+
+    const start = testStartTime ? testStartTime.toLocaleString('hu-HU') : '-';
+    const end = testEndTime ? testEndTime.toLocaleString('hu-HU') : '-';
+    const totalSeconds = testStartTime && testEndTime
+        ? Math.round((testEndTime - testStartTime) / 1000)
+        : 0;
+
+    const tasksText = taskAnswers.map((answer, index) => {
+        const timeSpent = formatDuration(answer.timeSpent || 0);
+        return [
+            `--- ${index + 1}. FELADAT (Eredeti ${answer.taskNumber || '-'} . feladat) ---`,
+            `Időráfordítás: ${timeSpent}`,
+            `Átugrva: ${answer.skipped ? 'Igen' : 'Nem'}`,
+            '',
+            'FELADAT LEÍRÁSA:',
+            answer.taskDescription || '',
+            '',
+            'MINTA KIMENET:',
+            answer.taskExample || '',
+            '',
+            'TANULÓ VÁLASZA:',
+            answer.answer || '',
+            ''
+        ].join('\n');
+    }).join('\n');
+
+    const eventsText = eventLog.map((evt) => {
+        const time = evt.timestamp || '';
+        const type = evt.event || evt.type || '';
+        return `${time} - ${type}`;
+    }).join('\n');
+
+    const message = [
+        `Tanuló neve: ${studentData.name}`,
+        `Tanuló email: ${studentData.email}`,
+        `Osztály: ${studentData.class}`,
+        `Teszt kezdete: ${start}`,
+        `Teszt vége: ${end}`,
+        `Teljes idő: ${formatDuration(totalSeconds)}`,
+        `Státusz: ${cheatDetected ? 'Csalás (kizárva)' : cheatPenalty ? 'Figyelmeztetés (érdemjegy levonás!)' : 'Rendben'}`,
+        `Figyelmeztetések száma: ${cheatWarningCount}`,
+        '',
+        buildScoringReport(),
+        '=== FELADATOK ÉS VÁLASZOK ===',
+        '',
+        tasksText,
+        '',
+        '=== ESEMÉNYNAPLÓ ===',
+        eventsText
+    ].join('\n');
+
+    const emailParams = {
+        to_email: 'sandornefr@gmail.com',
+        subject: studentData.name || 'Python teszt',
+        reply_to: studentData.email,
+        message: message
+    };
+
+    emailjs.send('service_zxskntr', 'template_vnqc2fd', emailParams, 'cesxNZpDSC16dOY2u')
+        .then(() => {
+            debugLog('✅ Email sikeresen elküldve!');
+            logEvent('Email sent', { submission_id: submissionId });
+        })
+        .catch((error) => {
+            debugLog('❌ Email küldési hiba: ' + error.text);
+            logEvent('Email send error', { error: error.text });
+        });
+}
+
+function downloadSubmissionTxt(submissionId) {
+    const lines = [];
+    const now = new Date();
+
+    lines.push('Python teszt - beadás');
+    lines.push(`Dátum: ${now.toLocaleString('hu-HU')}`);
+    lines.push(`Azonosító: ${submissionId || '-'}`);
+    lines.push(`Név: ${studentData.name || '-'}`);
+    lines.push(`Email: ${studentData.email || '-'}`);
+    lines.push(`Osztály: ${studentData.class || '-'}`);
+    lines.push(`Mód: ${testMode}`);
+    if (cheatDetected) {
+        lines.push(`Csalás: Igen (${cheatReason})`);
+    } else {
+        lines.push('Csalás: Nem');
+    }
+    lines.push('');
+    lines.push(buildScoringReport());
+    lines.push('=== FELADATOK ÉS VÁLASZOK ===');
+    lines.push('');
+
+    taskAnswers.forEach((answer, index) => {
+        lines.push(`--- ${index + 1}. FELADAT (Eredeti ${answer.taskNumber || '-'} . feladat) ---`);
+        lines.push(`Időráfordítás: ${formatDuration(answer.timeSpent || 0)}`);
+        lines.push(`Átugrva: ${answer.skipped ? 'Igen' : 'Nem'}`);
+        lines.push('');
+        lines.push('FELADAT LEÍRÁSA:');
+        lines.push(answer.taskDescription || '');
+        lines.push('');
+        lines.push('MINTA KIMENET:');
+        lines.push(answer.taskExample || '');
+        lines.push('');
+        lines.push('TANULÓ VÁLASZA:');
+        lines.push(answer.answer || '');
+        lines.push('');
+    });
+
+    lines.push('=== ESEMÉNYNAPLÓ ===');
+    eventLog.forEach((evt) => {
+        const time = evt.timestamp || '';
+        const type = evt.event || evt.type || '';
+        lines.push(`${time} - ${type}`);
+    });
+
+    const content = lines.join('\n');
+    const nameParts = (studentData.name || 'diak ismeretlen').trim().split(/\s+/);
+    const safeLast = (nameParts[0] || 'diak').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    const safeFirst = nameParts.slice(1).join('_').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
+    const [classYear, classLetter] = (studentData.class || '0.x').split('.');
+    const safeEmail = (studentData.email || '')
+        .replace('@kkszki.hu', '')
+        .toLowerCase()
+        .replace(/[^a-z0-9.]/g, '');
+    const filename = `${safeLast || 'diak'}_${safeFirst}_${classYear || '0'}_${classLetter || 'x'}_${safeEmail || 'ismeretlen'}_python.txt`;
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function getEffectiveTimeSpent(answer, index) {
+    const base = answer.timeSpent || 0;
+    if (index !== currentTaskIndex) {
+        return base;
+    }
+    if (!answer.startTime) {
+        return base;
+    }
+    const elapsed = Math.round((Date.now() - answer.startTime.getTime()) / 1000);
+    return base + Math.max(0, elapsed);
+}
+
+function startAutoSaveInterval() {
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+    }
+    autosaveInterval = setInterval(() => {
+        if (!quizSection.classList.contains('hidden')) {
+            autoSaveProgress();
+        }
+    }, 30000);
+}
+
+function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds));
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes === 0) {
+        return `${remainingSeconds} másodperc`;
+    }
+    return `${minutes} perc ${remainingSeconds} másodperc`;
+}

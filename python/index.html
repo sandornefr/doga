@@ -765,31 +765,33 @@
             <!-- Test Information -->
             <div class="test-info">
                 <h2>📋 A tesztről</h2>
-                <p>
-                    Ez egy Python programozási dolgozat, amely 8 és 14 pontos feladatokból áll.
-                    A teszt során 2 db 8 pontos és 1 db 14 pontos feladatot kapsz véletlenszerűen.
-                </p>
-                <p><strong>Időkeret:</strong> A teljes tesztre 45 perc áll rendelkezésedre, amellyel szabadon gazdálkodhatsz a 3 feladat között.</p>
-                <p><strong>Funkciók:</strong></p>
+                <p>A teszt során <strong>3 véletlenszerű feladatot</strong> kapsz:</p>
                 <ul>
-                    <li>Feladatok között szabadon válthatsz</li>
-                    <li>"Skip" gombbal átugorhatod a feladatot és később visszatérhetsz rá</li>
-                    <li>Python syntax highlighting segíti a kódírást</li>
-                    <li>A válaszaid automatikusan mentésre kerülnek</li>
-                    <li>A válaszaid helyességét a Pontozás gomb megnyomásával ellenőrizheted</li>
+                    <li>🔹 <strong>2 db egyszerűbb feladat</strong> – egyenként <strong>8 pont</strong>, időkeret: 8–15 perc/feladat</li>
+                    <li>🔸 <strong>1 db összetettebb feladat</strong> – <strong>14 pont</strong>, időkeret: 25 perc</li>
                 </ul>
+                <p style="margin-top:0.8rem;"><strong>Összesen:</strong> 30 pont | <strong>Teljes idő:</strong> ~45 perc (szabadon oszthatod el a feladatok között)</p>
+                <p style="margin-top:0.8rem;"><strong>Funkciók:</strong> feladatok között szabadon válthatsz · Skip gomb · Python futtatás · automatikus mentés</p>
+            </div>
+
+            <!-- Practice time picker (csak gyakorló módban látszik) -->
+            <div id="practice-time-picker" style="display:none; background:#e8f5e9; border:1px solid #81c784; border-radius:8px; padding:1rem; margin-bottom:0.5rem;">
+                <label style="font-weight:600; color:#2e7d32; margin-right:12px;">⏱ Saját időkorlát (perc):</label>
+                <input type="number" id="custom-time-input" value="45" min="5" max="120" style="width:80px; padding:6px 10px; border:1px solid #81c784; border-radius:6px; font-size:1rem;">
+                <span style="color:#555; margin-left:8px; font-size:0.9rem;">Éles módban ez rögzített (45 perc)</span>
             </div>
 
             <!-- Warning Box -->
             <div class="warning-box">
-                <strong>⚠️ FONTOS SZABÁLYOK - EZEK MEGSZEGÉSE ELÉGTELEN OSZTÁLYZATOT EREDMÉNYEZ!</strong>
+                <strong>⚠️ ÉLES MÓDBAN ÉRVÉNYES SZABÁLYOK</strong>
                 <p>
-                    ❌ <strong>TILOS</strong> az ablakból kikattintani vagy másik fülre váltani<br>
+                    ❌ <strong>TILOS</strong> az ablakból kikattintani, másik fülre/ablakra váltani (Alt+Tab, Ctrl+Tab, Win gomb stb.)<br>
                     ❌ <strong>TILOS</strong> kilépni a fullscreen módból<br>
                     ❌ <strong>TILOS</strong> megnyitni a Developer Tools-t (F12, Ctrl+Shift+I)<br>
-                    ❌ <strong>TILOS</strong> az oldal kódjának módosítása<br>
                     <br>
-                    ✅ Ezen szabályok bármelyikének megszegése esetén a teszt azonnal véget ér és elégtelen osztályzatot kapsz!
+                    ⚡ <strong>Szabályszegés esetén</strong> a rendszer <strong>3 figyelmeztetést</strong> küld (<em>Csalási kísérlet 3/1 → 3/2 → 3/3</em>).<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;A 3. figyelmeztetés után az <strong>oktató azonnali értesítést kap</strong>, a feladatmegoldás csak engedéllyel folytatható,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;és <strong>egy érdemjegy levonással jár!</strong>
                 </p>
             </div>
 
@@ -895,24 +897,50 @@
         </div>
     </div>
 
+    <!-- Cheat Warning Overlay -->
+    <div id="cheat-warning-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:20000; justify-content:center; align-items:center; flex-direction:column;">
+        <div style="background:#1e1e2e; border:3px solid #e94560; border-radius:16px; padding:2.5rem 3rem; max-width:520px; width:90%; text-align:center; box-shadow:0 0 40px rgba(233,69,96,0.5);">
+            <div style="font-size:3rem; margin-bottom:0.8rem;">⚠️</div>
+            <h2 style="color:#e94560; font-size:1.5rem; margin-bottom:0.8rem;">FIGYELMEZTETÉS</h2>
+            <p id="cheat-warning-text" style="color:#e0e0e0; font-size:1rem; margin-bottom:1rem;"></p>
+            <div id="cheat-warning-count" style="color:#ffc107; font-size:1.5rem; font-weight:700; margin-bottom:1.2rem; letter-spacing:1px;"></div>
+            <!-- 3. figyelmeztetés után látható -->
+            <div id="cheat-warning-final-msg" style="display:none; background:#2d0a0a; border:1px solid #e94560; border-radius:10px; padding:1rem; margin-bottom:1.2rem; color:#fca5a5; font-size:0.95rem; line-height:1.6;">
+                Az oktató értesítése a csalási kísérletről megtörtént.<br>
+                A további feladatmegoldás <strong style="color:#ffc107;">engedélyhez kötött</strong>, de<br>
+                <strong style="color:#e94560;">egy érdemjegy levonással jár!</strong>
+            </div>
+            <button id="cheat-warning-close-btn" onclick="closeCheatWarning()" style="padding:0.7rem 2rem; background:#e94560; color:white; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer;">Megértettem, visszatérek</button>
+        </div>
+    </div>
 
     <script src="python_teszt.obfuscated.js"></script>
     <script>
-        // Előtöltés a nyitóoldalon megadott adatokból (sessionStorage)
+        // Előtöltés sessionStorage.kandoUser-ből
         (function () {
-            const saved = sessionStorage.getItem('kandStudentData');
-            if (!saved) return;
+            const saved = sessionStorage.getItem('kandoUser');
+            if (!saved) {
+                // Ha nincs bejelentkezett felhasználó, visszairányítás a login oldalra
+                window.location.href = '../login.html';
+                return;
+            }
             try {
-                const d = JSON.parse(saved);
-                if (!d.name || !d.class) return;
+                const u = JSON.parse(saved);
+
+                // kandTeacherMode beállítása oktató esetén
+                if (u.szerep === 'oktato') {
+                    sessionStorage.setItem('kandTeacherMode', 'true');
+                } else {
+                    sessionStorage.removeItem('kandTeacherMode');
+                }
 
                 // Mezők előtöltése (rejtetten, hogy startTest() olvasni tudja)
                 const fName = document.getElementById('name');
                 const fEmail = document.getElementById('email');
                 const fClass = document.getElementById('class');
-                if (fName) fName.value = d.name;
-                if (fEmail) fEmail.value = d.email || '';
-                if (fClass) fClass.value = d.class || '';
+                if (fName) fName.value = u.nev || '';
+                if (fEmail) fEmail.value = u.email || '';
+                if (fClass) fClass.value = u.osztaly || '';
 
                 // Bejelentkezési mezők elrejtése
                 [fName, fEmail, fClass].forEach(el => {
@@ -924,7 +952,7 @@
                 // Bejelentkezési összefoglaló kártya megjelenítése a gomb előtt
                 const startBtn = document.getElementById('start-btn');
                 if (startBtn) {
-                    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
+                    const isTeacher = u.szerep === 'oktato';
                     const card = document.createElement('div');
                     if (isTeacher) {
                         card.style.cssText = 'background:#f5f3ff;border:2px solid #a78bfa;color:#5b21b6;padding:0.9rem 1.2rem;border-radius:10px;font-size:0.95rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem;';
@@ -937,8 +965,8 @@
                         card.style.cssText = 'background:#eff6ff;border:1px solid #93c5fd;color:#1e40af;padding:0.9rem 1.2rem;border-radius:10px;font-size:0.95rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem;';
                         card.innerHTML = '<span style="font-size:1.3rem;">✓</span>'
                             + '<div>'
-                            + '<div style="font-weight:700;">' + d.name + '</div>'
-                            + '<div style="font-size:0.85rem;opacity:0.8;">' + (d.email || '') + ' &nbsp;|&nbsp; ' + d.class + ' osztály</div>'
+                            + '<div style="font-weight:700;">' + (u.nev || '') + '</div>'
+                            + '<div style="font-size:0.85rem;opacity:0.8;">' + (u.email || '') + ' &nbsp;|&nbsp; ' + (u.osztaly || '') + ' osztály</div>'
                             + '</div>';
                     }
                     startBtn.parentNode.insertBefore(card, startBtn);
