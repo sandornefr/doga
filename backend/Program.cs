@@ -106,10 +106,11 @@ app.MapPost("/api/submit", (SubmissionRequest req, Database db) =>
 });
 
 // Beadások listája (admin) – szűrhető ?osztaly=9A&csoport=1
-app.MapGet("/api/submissions", (HttpContext ctx, Database db,
-    string? osztaly = null, string? csoport = null) =>
+app.MapGet("/api/submissions", (HttpContext ctx, Database db) =>
 {
     if (!ValidateToken(ctx)) return Results.Unauthorized();
+    var osztaly = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport = ctx.Request.Query["csoport"].FirstOrDefault();
     var list = db.GetSubmissions(osztaly, csoport);
     return Results.Ok(list);
 });
