@@ -49,6 +49,18 @@
             transition: all 0.2s;
         }
         .logout-btn:hover { background: #e94560; color: white; }
+        .toggle-view-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid #536dfe;
+            border-radius: 8px;
+            color: #536dfe;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+        .toggle-view-btn:hover { background: #536dfe; color: white; }
 
         .portal {
             margin-top: 56px;
@@ -139,6 +151,7 @@
             <strong id="user-name">–</strong>
             <span id="user-role">–</span>
         </div>
+        <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
 </div>
@@ -184,33 +197,6 @@
                 <span class="label">Admin</span>
                 <span class="desc">Mód beállítása, statisztikák, jelszócsere</span>
             </a>
-            <div class="option-card" style="border-color:#536dfe; cursor:pointer;" onclick="toggleDiakNezet()">
-                <span class="icon">👁</span>
-                <span class="label" style="color:#e0e0e0;">Diák nézet</span>
-                <span class="desc">Mit látnak a diákok belépés után?</span>
-            </div>
-        </div>
-
-        <!-- Diák előnézet (alapból rejtett) -->
-        <div id="diak-elonezet" style="display:none; margin-top:24px;">
-            <div style="text-align:center; color:#888; font-size:0.85rem; margin-bottom:16px;">── Diák tárgyválasztó előnézet ──</div>
-            <div class="options-grid">
-                <a class="option-card python" href="python/index.html">
-                    <span class="icon">🐍</span>
-                    <span class="label">Python dolgozat</span>
-                    <span class="desc">Python programozási feladatok</span>
-                </a>
-                <a class="option-card web" href="web/index.html">
-                    <span class="icon">🌐</span>
-                    <span class="label">WEB dolgozat</span>
-                    <span class="desc">HTML, CSS, JavaScript feladatok</span>
-                </a>
-                <a class="option-card cs" href="cs/index.html">
-                    <span class="icon">⚙️</span>
-                    <span class="label">C# dolgozat</span>
-                    <span class="desc">C# programozási feladatok</span>
-                </a>
-            </div>
         </div>
     </div>
 </div>
@@ -228,17 +214,33 @@
         document.getElementById('portal-title').textContent = `Üdvözöllek, ${keresztnev}!`;
 
         if (user.szerep === 'oktato') {
-            document.getElementById('teacher-portal').style.display = 'grid';
+            document.getElementById('teacher-portal').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
+            document.getElementById('toggle-view-btn').style.display = 'block';
         } else {
             document.getElementById('student-portal').style.display = 'grid';
             document.getElementById('portal-sub').textContent = 'Melyik dolgozatot szeretnéd megírni?';
         }
     }
 
-    function toggleDiakNezet() {
-        const el = document.getElementById('diak-elonezet');
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    let isTeacherView = true;
+    function toggleView() {
+        const btn = document.getElementById('toggle-view-btn');
+        const teacher = document.getElementById('teacher-portal');
+        const student = document.getElementById('student-portal');
+        const sub = document.getElementById('portal-sub');
+        isTeacherView = !isTeacherView;
+        if (isTeacherView) {
+            teacher.style.display = 'block';
+            student.style.display = 'none';
+            sub.textContent = 'Mit szeretnél csinálni?';
+            btn.textContent = 'Tanulói nézet';
+        } else {
+            teacher.style.display = 'none';
+            student.style.display = 'grid';
+            sub.textContent = 'Melyik dolgozatot szeretnéd megírni?';
+            btn.textContent = 'Oktatói felület';
+        }
     }
 
     function logout() {
