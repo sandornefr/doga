@@ -217,6 +217,39 @@
             color: #666;
             margin-top: 4px;
         }
+
+        /* Jelszó toggle */
+        .password-wrapper {
+            display: flex;
+            align-items: center;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .password-wrapper:focus-within { border-color: #e94560; }
+        .password-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px 14px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+            min-width: 0;
+        }
+        .toggle-pw {
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 1.1rem;
+            user-select: none;
+            line-height: 1;
+        }
+        .toggle-pw:hover { color: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -247,7 +280,10 @@
 
         <div class="form-group">
             <label>Jelszó</label>
-            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            <div class="password-wrapper">
+                <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+                <button type="button" class="toggle-pw" onclick="togglePassword('login-password', this)">👁</button>
+            </div>
         </div>
 
         <button class="btn-submit" id="login-btn" onclick="doLogin()">Bejelentkezés</button>
@@ -280,12 +316,18 @@
 
         <div class="form-group">
             <label>Jelszó (min. 6 karakter)</label>
-            <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+            <div class="password-wrapper">
+                <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+                <button type="button" class="toggle-pw" onclick="togglePassword('reg-password', this)">👁</button>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Jelszó megerősítése</label>
-            <input type="password" id="reg-password2" placeholder="••••••••" autocomplete="new-password">
+            <div class="password-wrapper">
+                <input type="password" id="reg-password2" placeholder="••••••••" autocomplete="new-password">
+                <button type="button" class="toggle-pw" onclick="togglePassword('reg-password2', this)">👁</button>
+            </div>
         </div>
 
         <div class="form-group">
@@ -312,12 +354,24 @@
                 </div>
                 <div class="form-group">
                     <label>Osztály</label>
-                    <input type="text" id="reg-osztaly" placeholder="pl. 11/A">
+                    <select id="reg-osztaly">
+                        <option value="">– válassz –</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="F">F</option>
+                        <option value="K">K</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Csoport</label>
-                <input type="text" id="reg-csoport" placeholder="pl. 1 (opcionális)">
+                <select id="reg-csoport">
+                    <option value="">– válassz –</option>
+                    <option value="1">1. csoport</option>
+                    <option value="2">2. csoport</option>
+                    <option value="nincs">nincs csoport</option>
+                </select>
             </div>
         </div>
 
@@ -354,6 +408,18 @@
         document.getElementById('role-oktato').classList.toggle('selected', role === 'oktato');
         document.getElementById('student-fields').classList.toggle('show', role === 'tanulo');
         document.getElementById('teacher-code-field').classList.toggle('show', role === 'oktato');
+    }
+
+    // Jelszó megjelenítés toggle
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁';
+        }
     }
 
     // Email normalizálás (levágja a @kkszki.hu-t ha valaki bemásolja)
@@ -441,6 +507,12 @@
         if (jelszo.length < 6)          { showError('register-error', 'A jelszó legalább 6 karakter legyen!'); return; }
         if (jelszo !== jelszo2)         { showError('register-error', 'A két jelszó nem egyezik!'); return; }
 
+        if (selectedRole === 'tanulo') {
+            if (!document.getElementById('reg-osztaly').value)  { showError('register-error', 'Kérlek válassz osztályt!'); return; }
+            if (!document.getElementById('reg-csoport').value)  { showError('register-error', 'Kérlek válassz csoportot!'); return; }
+        }
+
+        const csoportVal = selectedRole === 'tanulo' ? document.getElementById('reg-csoport').value : null;
         const payload = {
             vezeteknev,
             keresztnev,
@@ -450,8 +522,8 @@
             szerep: selectedRole,
             oktatoiKod:  selectedRole === 'oktato' ? document.getElementById('reg-teacher-code').value : null,
             evfolyam:    selectedRole === 'tanulo'  ? document.getElementById('reg-evfolyam').value || null : null,
-            osztaly:     selectedRole === 'tanulo'  ? document.getElementById('reg-osztaly').value.trim() || null : null,
-            csoport:     selectedRole === 'tanulo'  ? document.getElementById('reg-csoport').value.trim() || null : null
+            osztaly:     selectedRole === 'tanulo'  ? document.getElementById('reg-osztaly').value || null : null,
+            csoport:     csoportVal === 'nincs' ? null : csoportVal
         };
 
         btn.disabled = true;
