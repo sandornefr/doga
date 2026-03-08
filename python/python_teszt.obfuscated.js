@@ -94,11 +94,6 @@ async function initializeApp() {
 
 // Teszt mód betöltése az API-ból
 async function loadTestMode() {
-    if (!API_URL) {
-        debugLog('❌ API URL nincs beállítva');
-        return;
-    }
-
     try {
         debugLog('🔄 Teszt mód betöltése...');
         const response = await fetch(RAILWAY_URL + '/api/config');
@@ -107,16 +102,15 @@ async function loadTestMode() {
         if (data.test_mode) {
             testMode = data.test_mode;
             logEvent('Test mode loaded', { mode: testMode });
-            debugLog('✅ Teszt mód betöltve: ' + (testMode === 'practice' ? '🎓 GYAKORLÓ' : '🔴 ÉLES'), { testMode: testMode });
-            updateTestModeBadge();
+            debugLog('✅ Teszt mód betöltve: ' + (testMode === 'practice' ? '🎓 GYAKORLÓ' : '🔴 ÉLES'));
         } else {
             debugLog('⚠️ Teszt mód nem érkezett, alapértelmezett: GYAKORLÓ');
-            updateTestModeBadge();
         }
     } catch (error) {
         logEvent('Test mode load error', { error: error.message });
         debugLog('❌ Teszt mód betöltése SIKERTELEN, alapértelmezett: GYAKORLÓ');
     }
+    updateTestModeBadge();
 }
 
 // Backend-re való beküldés
