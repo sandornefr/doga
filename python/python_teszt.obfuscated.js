@@ -1700,6 +1700,19 @@ function updateTestModeBadge() {
         badge.style.display = 'none';
     }
 
+    // Szabályok szöveg a popupban: csak éles módban
+    const isLive = testMode === 'live' && !isTeacher;
+    const rulesDiv = document.getElementById('start-live-rules');
+    if (rulesDiv) rulesDiv.style.display = isLive ? 'block' : 'none';
+
+    // Gomb szöveg éles módban
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.textContent = isLive
+            ? 'Elfogadom a szabályokat – Teszt indítása'
+            : 'Teszt indítása';
+    }
+
     // Időbeállítás: csak gyakorló módban, nem oktatónak
     const picker = document.getElementById('practice-time-picker');
     if (picker) {
