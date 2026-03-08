@@ -375,7 +375,9 @@ function startTest() {
     const email = document.getElementById('email').value.trim();
     const studentClass = document.getElementById('class').value.trim();
 
-    if (!name || !email || !studentClass) {
+    // Ha sessionStorage-ból jött az adat, csak a nevet és emailt ellenőrizzük
+    const fromSession = !!sessionStorage.getItem('kandoUser');
+    if (!name || !email || (!studentClass && !fromSession)) {
         alert('Kérlek, töltsd ki az összes mezőt!');
         return;
     }
