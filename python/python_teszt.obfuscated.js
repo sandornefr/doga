@@ -280,6 +280,17 @@ function setupEventListeners() {
         }
     }, { passive: false });
 
+    // Paste detektálás: nagy egyszeri beilllesztés = gyanús (két monitor / bypass)
+    document.addEventListener('paste', e => {
+        if (quizSection.classList.contains('hidden') || testMode !== 'live') return;
+        const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+        if (text.length >= 40) {
+            suspiciousJumps++;
+            logEvent('Suspicious paste', { chars: text.length, total: suspiciousJumps });
+            debugLog('⚠️ Gyanús beilllesztés: ' + text.length + ' karakter (összesen: ' + suspiciousJumps + ')');
+        }
+    });
+
     // DevTools észlelés
     detectDevTools();
 
