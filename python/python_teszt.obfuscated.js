@@ -1416,7 +1416,7 @@ async function submitTest() {
 
     // Oktatói visszajutás gomb
     try {
-        const saved = sessionStorage.getItem('kandUser');
+        const saved = sessionStorage.getItem('kandoUser');
         const u = saved ? JSON.parse(saved) : null;
         const teacherBtn = document.getElementById('end-teacher-btn');
         if (teacherBtn && u && u.szerep === 'oktato') {
