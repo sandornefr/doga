@@ -234,6 +234,7 @@ function setupEventListeners() {
                 (e.ctrlKey && e.key === 'Tab') ||
                 (e.ctrlKey && e.shiftKey && e.key === 'Tab') ||
                 e.key === 'Meta' || e.key === 'OS' ||
+                e.key === 'Escape' ||
                 (e.ctrlKey && e.key === 'Escape') ||
                 (e.altKey && e.key === 'Escape')) {
                 e.preventDefault();
@@ -1447,22 +1448,10 @@ function handleFullscreenChange() {
     }
 
     if (!isFullscreen && testActive) {
-        fullscreenPrompt.style.display = 'flex';
-
-        if (globalTimer) {
-            clearInterval(globalTimer);
-        }
-        if (taskTimer) {
-            clearInterval(taskTimer);
-        }
-
-        logEvent('Fullscreen exited - test paused');
-
-        setTimeout(() => {
-            if (!document.fullscreenElement && testActive) {
-                showCheatWarning('Kiléptél a fullscreen módból');
-            }
-        }, 3000);
+        fullscreenPrompt.style.display = 'none';
+        logEvent('Fullscreen exited - re-entering automatically');
+        setTimeout(() => enterFullscreen(), 150);
+        showCheatWarning('Kiléptél a teljes képernyős módból');
     } else {
         fullscreenPrompt.style.display = 'none';
         if (isFullscreen) {
@@ -1493,9 +1482,8 @@ function handleWindowBlur() {
     if (!quizSection.classList.contains('hidden')) {
         logEvent('Window lost focus');
 
-        focusLossTimeout = setTimeout(() => {
-            showCheatWarning('Elhagytad az ablakot');
-        }, 2000);
+        showCheatWarning('Elhagytad az ablakot (Alt+Tab / kikattintás)');
+        setTimeout(() => { try { window.focus(); } catch(e) {} }, 300);
     }
 }
 
