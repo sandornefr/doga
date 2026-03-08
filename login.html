@@ -478,7 +478,7 @@
                 }));
                 showSuccess('login-success', `Üdv, ${data.nev}! Átirányítás...`);
                 setTimeout(() => {
-                    window.location.href = 'portal.html';
+                    window.location.replace('portal.html');
                 }, 1000);
             } else {
                 showError('login-error', 'Hibás email cím vagy jelszó!');
@@ -568,7 +568,7 @@
         try {
             const user = JSON.parse(stored);
             if (user.token) {
-                window.location.href = 'portal.html';
+                window.location.replace('portal.html');
             }
         } catch {}
     }

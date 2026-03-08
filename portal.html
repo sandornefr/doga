@@ -223,17 +223,17 @@
 
     <!-- Tanulói nézet -->
     <div id="student-portal" class="options-grid" style="display:none">
-        <a class="option-card python" href="python/index.html">
+        <a class="option-card python" href="python/index.html" onclick="event.preventDefault(); location.replace('python/index.html')">
             <span class="icon">🐍</span>
             <span class="label">Python dolgozat</span>
             <span class="desc">Python programozási feladatok</span>
         </a>
-        <a class="option-card web" href="web/index.html">
+        <a class="option-card web" href="web/index.html" onclick="event.preventDefault(); location.replace('web/index.html')">
             <span class="icon">🌐</span>
             <span class="label">WEB dolgozat</span>
             <span class="desc">HTML, CSS, JavaScript feladatok</span>
         </a>
-        <a class="option-card cs" href="cs/index.html">
+        <a class="option-card cs" href="cs/index.html" onclick="event.preventDefault(); location.replace('cs/index.html')">
             <span class="icon">⚙️</span>
             <span class="label">C# dolgozat</span>
             <span class="desc">C# programozási feladatok</span>
@@ -279,7 +279,7 @@
 <script>
     const stored = sessionStorage.getItem('kandoUser');
     if (!stored) {
-        window.location.href = 'login.html';
+        window.location.replace('login.html');
     } else {
         const user = JSON.parse(stored);
         document.getElementById('user-name').textContent = user.nev || user.email;
@@ -320,7 +320,7 @@
 
     function logout() {
         sessionStorage.removeItem('kandoUser');
-        window.location.href = 'login.html';
+        window.location.replace('login.html');
     }
 
     function openDeleteModal() {
@@ -349,7 +349,7 @@
             if (res.ok) {
                 sessionStorage.removeItem('kandoUser');
                 alert('A fiókodat töröltük.');
-                window.location.href = 'login.html';
+                window.location.replace('login.html');
             } else if (res.status === 401) {
                 errEl.textContent = 'Hibás jelszó!';
                 errEl.style.display = 'block';

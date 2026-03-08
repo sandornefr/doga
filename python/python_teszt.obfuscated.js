@@ -34,6 +34,7 @@ let fullscreenEnforced = false;
 let fullscreenGraceUntil = 0;
 let suspiciousJumps = 0;
 let lastCodeLengths = [];
+let testSubmitted = false;
 
 // Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
 let pyodideInstance = null;
@@ -438,7 +439,22 @@ function startTest() {
     };
 
     testStartTime = new Date();
+    testSubmitted = false;
     logEvent('Test started', studentData);
+
+    // Vissza gomb blokkolása teszt közben
+    history.pushState(null, '', location.href);
+    window.addEventListener('popstate', function() {
+        if (testStartTime && !testSubmitted) {
+            history.pushState(null, '', location.href);
+        }
+    });
+    window.addEventListener('beforeunload', function(e) {
+        if (testStartTime && !testSubmitted) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 
     selectRandomTasks();
 
@@ -1388,6 +1404,7 @@ async function submitTest() {
     }
 
     testEndTime = new Date();
+    testSubmitted = true;
 
     logEvent('Test submitted', { endTime: testEndTime });
 

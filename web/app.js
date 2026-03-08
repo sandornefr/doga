@@ -1,3 +1,8 @@
+// Auth ellenőrzés – ha nincs bejelentkezve, vissza a loginra
+if (!sessionStorage.getItem('kandoUser')) {
+    location.replace('../login.html');
+}
+
 const preview = document.getElementById("preview");
 const statusEl = document.getElementById("status");
 const taskList = document.getElementById("task-list");
@@ -1625,6 +1630,13 @@ function updateStudentDisplay() {
 
 function logoutStudent() {
   if (!confirm('Biztosan kijelentkezel? A munkád mentve marad, de másik tanuló is bejelentkezhet.')) {
+    return;
+  }
+
+  // Ha kandoUser-rel jött, visszavisszük a portálra
+  if (sessionStorage.getItem('kandoUser')) {
+    sessionStorage.removeItem('kandoUser');
+    location.replace('../portal.html');
     return;
   }
 
