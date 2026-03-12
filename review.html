@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Javítói felület – Kandó KSZKI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
@@ -14,20 +14,21 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f1f5f9;
-            color: #1e293b;
+            background: #1a1a2e;
+            color: #e0e0e0;
             min-height: 100vh;
         }
 
         /* ── Fejléc ── */
         .topbar {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: white;
+            background: #16213e;
+            border-bottom: 2px solid #0f3460;
+            color: #e0e0e0;
             padding: 0.75rem 1.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 16px rgba(83,109,254,0.15);
             position: sticky;
             top: 0;
             z-index: 50;
@@ -35,18 +36,17 @@
 
         .topbar img { height: 36px; width: auto; }
 
-        .topbar-title {
-            flex: 1;
-        }
+        .topbar-title { flex: 1; }
 
         .topbar-title h1 {
             font-size: 1.1rem;
             font-weight: 700;
+            color: #e0e0e0;
         }
 
         .topbar-title p {
             font-size: 0.75rem;
-            color: #94a3b8;
+            color: #7986cb;
         }
 
         .topbar-actions {
@@ -66,25 +66,28 @@
         }
 
         .btn-open {
-            background: #6366f1;
+            background: #536dfe;
             color: white;
+            box-shadow: 0 0 12px rgba(83,109,254,0.4);
         }
 
-        .btn-open:hover { background: #4f46e5; }
+        .btn-open:hover { background: #3d5afe; box-shadow: 0 0 18px rgba(83,109,254,0.6); }
 
         .btn-print {
-            background: #475569;
-            color: white;
+            background: transparent;
+            color: #7986cb;
+            border: 1px solid #7986cb;
         }
 
-        .btn-print:hover { background: #334155; }
+        .btn-print:hover { background: #7986cb; color: white; }
 
         .btn-clear {
-            background: #dc2626;
-            color: white;
+            background: transparent;
+            color: #e94560;
+            border: 1px solid #e94560;
         }
 
-        .btn-clear:hover { background: #b91c1c; }
+        .btn-clear:hover { background: #e94560; color: white; }
 
         /* ── Drop zóna ── */
         #drop-zone {
@@ -92,28 +95,29 @@
             margin: 4rem auto;
             text-align: center;
             padding: 3rem 2rem;
-            border: 3px dashed #cbd5e1;
+            border: 3px dashed #0f3460;
             border-radius: 20px;
-            background: white;
+            background: #16213e;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         #drop-zone.drag-over {
-            border-color: #6366f1;
-            background: #f0f0ff;
+            border-color: #536dfe;
+            background: #1a2050;
+            box-shadow: 0 0 30px rgba(83,109,254,0.2);
         }
 
         #drop-zone .drop-icon { font-size: 3rem; margin-bottom: 1rem; }
 
         #drop-zone h2 {
             font-size: 1.3rem;
-            color: #1e293b;
+            color: #e0e0e0;
             margin-bottom: 0.5rem;
         }
 
         #drop-zone p {
-            color: #64748b;
+            color: #7986cb;
             font-size: 0.9rem;
             line-height: 1.6;
         }
@@ -132,8 +136,8 @@
             font-weight: 700;
         }
 
-        .badge-python { background: #ede9fe; color: #6d28d9; }
-        .badge-web    { background: #fce7f3; color: #be185d; }
+        .badge-python { background: rgba(83,109,254,0.2); color: #536dfe; border: 1px solid #536dfe; }
+        .badge-web    { background: rgba(46,213,115,0.15); color: #2ed573; border: 1px solid #2ed573; }
 
         /* ── Tartalom terület ── */
         #review-content {
@@ -146,9 +150,10 @@
 
         /* ── Kártyák ── */
         .card {
-            background: white;
+            background: #16213e;
+            border: 1px solid #0f3460;
             border-radius: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
             margin-bottom: 1.25rem;
             overflow: hidden;
         }
@@ -160,15 +165,16 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            border-bottom: 1px solid #0f3460;
         }
 
         .card-body { padding: 1rem 1.2rem; }
 
-        .ch-student  { background: #1e293b; color: white; }
-        .ch-score    { background: #14532d; color: white; }
-        .ch-task     { background: #1e40af; color: white; }
-        .ch-web-info { background: #831843; color: white; }
-        .ch-log      { background: #374151; color: white; }
+        .ch-student  { background: #0f3460; color: #e0e0e0; }
+        .ch-score    { background: #1a3a2a; color: #2ed573; }
+        .ch-task     { background: #1a2050; color: #536dfe; }
+        .ch-web-info { background: #2a1a3a; color: #ce93d8; }
+        .ch-log      { background: #1e2030; color: #7986cb; }
 
         /* ── Tanuló info ── */
         .student-grid {
@@ -181,7 +187,7 @@
             display: block;
             font-size: 0.72rem;
             font-weight: 700;
-            color: #64748b;
+            color: #7986cb;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 0.2rem;
@@ -189,12 +195,12 @@
 
         .info-item span {
             font-size: 0.95rem;
-            color: #1e293b;
+            color: #e0e0e0;
             font-weight: 600;
         }
 
-        .cheat-yes { color: #dc2626 !important; }
-        .cheat-no  { color: #16a34a !important; }
+        .cheat-yes { color: #e94560 !important; }
+        .cheat-no  { color: #2ed573 !important; }
 
         /* ── Összesített pontszám ── */
         .score-hero {
@@ -207,7 +213,8 @@
         .score-big {
             font-size: 2.5rem;
             font-weight: 800;
-            color: #14532d;
+            color: #2ed573;
+            text-shadow: 0 0 16px rgba(46,213,115,0.4);
         }
 
         .grade-circle {
@@ -222,11 +229,11 @@
             border: 4px solid;
         }
 
-        .grade-1 { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
-        .grade-2 { border-color: #d97706; color: #d97706; background: #fffbeb; }
-        .grade-3 { border-color: #0891b2; color: #0891b2; background: #ecfeff; }
-        .grade-4 { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
-        .grade-5 { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+        .grade-1 { border-color: #e94560; color: #e94560; background: rgba(233,69,96,0.1); }
+        .grade-2 { border-color: #ffa726; color: #ffa726; background: rgba(255,167,38,0.1); }
+        .grade-3 { border-color: #29b6f6; color: #29b6f6; background: rgba(41,182,246,0.1); }
+        .grade-4 { border-color: #2ed573; color: #2ed573; background: rgba(46,213,115,0.1); }
+        .grade-5 { border-color: #536dfe; color: #536dfe; background: rgba(83,109,254,0.1); }
 
         .task-scores {
             flex: 1;
@@ -238,17 +245,17 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.35rem 0;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #0f3460;
             font-size: 0.88rem;
         }
 
         .task-score-row:last-child { border-bottom: none; }
 
-        .task-score-label { flex: 1; color: #475569; }
+        .task-score-label { flex: 1; color: #7986cb; }
 
         .task-score-pts {
             font-weight: 700;
-            color: #1e293b;
+            color: #e0e0e0;
             min-width: 60px;
             text-align: right;
         }
@@ -260,13 +267,13 @@
 
         .failed-item {
             font-size: 0.78rem;
-            color: #dc2626;
+            color: #e94560;
             padding: 0.1rem 0;
         }
 
         .all-pass {
             font-size: 0.78rem;
-            color: #16a34a;
+            color: #2ed573;
         }
 
         /* ── Feladat kártyák ── */
@@ -278,50 +285,52 @@
         }
 
         .meta-pill {
-            background: #f1f5f9;
+            background: rgba(83,109,254,0.15);
+            border: 1px solid #536dfe;
             padding: 0.2rem 0.6rem;
             border-radius: 6px;
             font-size: 0.78rem;
-            color: #475569;
+            color: #536dfe;
             font-weight: 600;
         }
 
-        .meta-pill.skipped { background: #fef9c3; color: #92400e; }
+        .meta-pill.skipped { background: rgba(255,167,38,0.15); border-color: #ffa726; color: #ffa726; }
 
         .section-label {
             font-size: 0.75rem;
             font-weight: 700;
-            color: #94a3b8;
+            color: #7986cb;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0.75rem 0 0.3rem;
         }
 
         .desc-box {
-            background: #f8fafc;
-            border-left: 3px solid #6366f1;
+            background: #0f3460;
+            border-left: 3px solid #536dfe;
             padding: 0.6rem 0.8rem;
             border-radius: 0 6px 6px 0;
             font-size: 0.9rem;
             line-height: 1.6;
-            color: #334155;
+            color: #e0e0e0;
             white-space: pre-wrap;
         }
 
         .example-box {
-            background: #0f172a;
+            background: #0a0a1a;
             color: #a5f3fc;
             padding: 0.6rem 0.8rem;
             border-radius: 6px;
             font-family: 'Courier New', monospace;
             font-size: 0.85rem;
             white-space: pre-wrap;
+            border: 1px solid #0f3460;
         }
 
         .code-wrap {
             border-radius: 8px;
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #0f3460;
         }
 
         .code-wrap pre {
@@ -335,12 +344,12 @@
         }
 
         .empty-code {
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
+            background: #0f3460;
+            border: 1px dashed #536dfe;
             border-radius: 8px;
             padding: 1rem;
             text-align: center;
-            color: #94a3b8;
+            color: #7986cb;
             font-style: italic;
             font-size: 0.85rem;
         }
@@ -349,7 +358,7 @@
         .tabs {
             display: flex;
             gap: 0.25rem;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #0f3460;
             margin-bottom: 0.75rem;
         }
 
@@ -361,14 +370,14 @@
             font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
-            color: #64748b;
+            color: #7986cb;
             transition: all 0.15s;
             margin-bottom: -2px;
         }
 
         .tab-btn.active {
-            color: #6366f1;
-            border-bottom-color: #6366f1;
+            color: #536dfe;
+            border-bottom-color: #536dfe;
         }
 
         /* ── Validálási képek ── */
@@ -386,12 +395,12 @@
         .val-image-box img {
             width: 100%;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #0f3460;
         }
 
         .val-image-box p {
             font-size: 0.78rem;
-            color: #64748b;
+            color: #7986cb;
             margin-top: 0.3rem;
             text-align: center;
         }
@@ -400,7 +409,7 @@
         .log-toggle {
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #536dfe;
             font-size: 0.8rem;
             cursor: pointer;
             padding: 0;
@@ -410,8 +419,9 @@
         .log-content {
             font-family: 'Courier New', monospace;
             font-size: 0.75rem;
-            color: #475569;
-            background: #f8fafc;
+            color: #7986cb;
+            background: #0a0a1a;
+            border: 1px solid #0f3460;
             padding: 0.75rem;
             border-radius: 6px;
             max-height: 200px;
@@ -428,7 +438,7 @@
         .teacher-note label {
             font-size: 0.78rem;
             font-weight: 700;
-            color: #94a3b8;
+            color: #7986cb;
             text-transform: uppercase;
             display: block;
             margin-bottom: 0.3rem;
@@ -436,24 +446,37 @@
 
         .teacher-note textarea {
             width: 100%;
-            border: 1px solid #e2e8f0;
+            background: #0f3460;
+            border: 1px solid #536dfe;
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
             font-size: 0.85rem;
-            color: #1e293b;
+            color: #e0e0e0;
             resize: vertical;
             min-height: 60px;
             font-family: inherit;
         }
 
-        .teacher-note textarea:focus { outline: none; border-color: #6366f1; }
+        .teacher-note textarea:focus {
+            outline: none;
+            border-color: #7986cb;
+            box-shadow: 0 0 8px rgba(83,109,254,0.3);
+        }
 
         /* ── Nyomtatás ── */
         @media print {
             .topbar, #drop-zone, .teacher-note, .log-toggle { display: none !important; }
-            body { background: white; }
+            body { background: white; color: black; }
+            .card { background: white; border: 1px solid #ccc; box-shadow: none; }
+            .card-header { color: black !important; }
+            .ch-student { background: #1e293b; }
+            .ch-score   { background: #14532d; }
+            .ch-task    { background: #1e40af; }
+            .ch-web-info { background: #831843; }
+            .ch-log     { background: #374151; }
+            .info-item span { color: black; }
+            .desc-box { background: #f8fafc; color: black; }
             #review-content { max-width: 100%; padding: 0; }
-            .card { box-shadow: none; border: 1px solid #e2e8f0; }
             .code-wrap pre { white-space: pre-wrap; }
         }
     </style>
