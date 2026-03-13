@@ -2568,7 +2568,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     const hasStudentData = loadStudentData();
     if (isBemutato && !hasStudentData) {
       // Bemutató mód: nincs bejelentkezés szükséges
-      studentData = { name: 'Bemutató', email: 'bemutato@kkszki.hu', class: 'Oktatói' };
+      studentData = { name: 'Sándorné Feke Réka', email: 'sandornef@kkszki.hu', class: 'Oktató' };
       updateStudentDisplay();
       hideStudentModal();
       taskSelector.disabled = false;
