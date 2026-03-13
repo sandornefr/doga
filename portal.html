@@ -109,6 +109,61 @@
             color: #aaa;
             cursor: pointer;
         }
+        /* Bemutatás modal */
+        .bemutatas-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .bemutatas-modal-box {
+            background: #16213e;
+            border: 2px solid #ffa502;
+            border-radius: 14px;
+            padding: 2rem;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+        }
+        .bemutatas-modal-box h3 { color: #ffd32a; margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .bemutatas-modal-box p { color: #aaa; font-size: 0.85rem; margin-bottom: 1.4rem; }
+        .bemutatas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+        .bem-card {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 1rem 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .bem-card:hover { transform: translateY(-2px); }
+        .bem-card .bem-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+        .bem-card .bem-label { color: #e0e0e0; font-size: 0.9rem; font-weight: 700; display: block; }
+        .bem-card.python  { border-color: #3776ab; }
+        .bem-card.python:hover  { background: #1a3a5c; }
+        .bem-card.web     { border-color: #e44d26; }
+        .bem-card.web:hover     { background: #3a1a10; }
+        .bem-card.cs      { border-color: #9b59b6; }
+        .bem-card.cs:hover      { background: #2a1a3a; }
+        .bemutatas-cancel-btn {
+            padding: 0.5rem 1.4rem;
+            background: transparent;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
         .toggle-view-btn {
             padding: 6px 14px;
             background: transparent;
@@ -248,7 +303,7 @@
                 <span class="label">Javítás</span>
                 <span class="desc">Beadott dolgozatok megtekintése és értékelése</span>
             </a>
-            <a class="option-card bemutatas" href="python/index.html?bemutato=1">
+            <a class="option-card bemutatas" href="#" onclick="event.preventDefault(); openBemutatasModal()">
                 <span class="icon">📺</span>
                 <span class="label">Bemutatás</span>
                 <span class="desc">Feladatok bemutatása diákoknak</span>
@@ -259,6 +314,29 @@
                 <span class="desc">Mód beállítása, statisztikák, jelszócsere</span>
             </a>
         </div>
+    </div>
+</div>
+
+<!-- Bemutatás választó modal -->
+<div class="bemutatas-modal" id="bemutatas-modal">
+    <div class="bemutatas-modal-box">
+        <h3>📺 Bemutatás</h3>
+        <p>Melyik tárgyból mutatsz be feladatokat?</p>
+        <div class="bemutatas-grid">
+            <a class="bem-card python" href="python/index.html?bemutato=1" onclick="closeBemutatasModal()">
+                <span class="bem-icon">🐍</span>
+                <span class="bem-label">Python</span>
+            </a>
+            <a class="bem-card web" href="web/index.html?bemutato=1" onclick="closeBemutatasModal()">
+                <span class="bem-icon">🌐</span>
+                <span class="bem-label">WEB</span>
+            </a>
+            <a class="bem-card cs" href="cs/index.html?bemutato=1" onclick="closeBemutatasModal()">
+                <span class="bem-icon">⚙️</span>
+                <span class="bem-label">C#</span>
+            </a>
+        </div>
+        <button class="bemutatas-cancel-btn" onclick="closeBemutatasModal()">Mégse</button>
     </div>
 </div>
 
@@ -316,6 +394,13 @@
             sub.textContent = 'Melyik dolgozatot szeretnéd megírni?';
             btn.textContent = 'Oktatói felület';
         }
+    }
+
+    function openBemutatasModal() {
+        document.getElementById('bemutatas-modal').style.display = 'flex';
+    }
+    function closeBemutatasModal() {
+        document.getElementById('bemutatas-modal').style.display = 'none';
     }
 
     function logout() {
