@@ -1660,6 +1660,18 @@ function updateStudentDisplay() {
   } else {
     studentInfo.textContent = '';
   }
+  // Kijelentkezés gomb: portálon keresztül → "🏠 Főmenü", különben marad az ikon
+  const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
+  const btnLogoutEl = document.getElementById('btn-logout');
+  if (btnLogoutEl) {
+    if (sessionStorage.getItem('kandoUser') || isBemutato) {
+      btnLogoutEl.textContent = '🏠 Főmenü';
+      btnLogoutEl.title = 'Vissza a főmenübe';
+    } else {
+      btnLogoutEl.textContent = '⏏';
+      btnLogoutEl.title = 'Kijelentkezés';
+    }
+  }
   // Python váltó gomb: portálos bejelentkezés + csak gyakorló módban
   const switchBtn = document.getElementById('btn-switch-python');
   if (switchBtn && sessionStorage.getItem('kandoUser') && studentData.name) {
