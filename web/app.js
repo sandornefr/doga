@@ -2661,8 +2661,118 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     }
 
     statusEl.textContent = "Válassz feladatot a kezdéshez…";
+
+    // Anti-cheat inicializálás (test mode lekérdezése után)
+    const acKandoUser = (() => { try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); } catch { return {}; } })();
+    if (acKandoUser.szerep !== 'oktato') {
+      fetch('https://agazati.up.railway.app/api/config')
+        .then(r => r.json())
+        .then(data => { initAntiCheat(data.test_mode === 'live'); })
+        .catch(() => { initAntiCheat(false); });
+    } else {
+      // Ctrl+T/N blokkolás oktatónál is
+      initAntiCheat(false);
+    }
+
   } catch (error) {
     console.error(error);
     statusEl.textContent = "Editor hiba (Monaco/nyelvi modul). Nézd meg a konzolt.";
   }
 })();
+
+// ═══════════════════════════════════════════════════════
+// ANTI-CHEAT RENDSZER
+// ═══════════════════════════════════════════════════════
+let acLive = false;
+let acWarnings = 0;
+const AC_MAX = 3;
+let acPopupGrace = false;  // W3S/validator popup nyitásakor igaz → blur ignorálva
+
+// Engedélyezett popup ablakok megnyitásakor grace periódus
+(function patchRefPopup() {
+  const btn = document.getElementById('ref-drawer-open-popup');
+  if (!btn) return;
+  const orig = btn.onclick;
+  btn.addEventListener('click', () => { acPopupGrace = true; setTimeout(() => { acPopupGrace = false; }, 4000); }, true);
+})();
+
+function acShow(reason) {
+  if (!acLive) return;
+  acWarnings++;
+  const overlay = document.getElementById('ac-overlay');
+  if (!overlay) return;
+  document.getElementById('ac-text').textContent = reason;
+  document.getElementById('ac-count').textContent = acWarnings + '. figyelmeztetés / ' + AC_MAX;
+  if (acWarnings >= AC_MAX) {
+    document.getElementById('ac-title').textContent = '⛔ Szabályszegés rögzítve';
+    document.getElementById('ac-count').textContent = 'A dolgozatod zárolva. Értesítsd az oktatót!';
+    document.getElementById('ac-close-btn').textContent = 'Vissza a főmenübe';
+    document.getElementById('ac-close-btn').onclick = function() { acLive = false; location.replace('../portal.html'); };
+    acLive = false;
+  }
+  overlay.style.display = 'flex';
+}
+
+function acClose() {
+  const overlay = document.getElementById('ac-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+document.getElementById('ac-close-btn') && document.getElementById('ac-close-btn').addEventListener('click', acClose);
+
+function initAntiCheat(isLive) {
+  // Ctrl+T / Ctrl+N blokkolás – mindkét módban
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && ['t', 'T', 'n', 'N'].includes(e.key)) {
+      e.preventDefault();
+    }
+  }, true);
+
+  if (!isLive) return;
+  acLive = true;
+
+  // Fullscreen kényszer
+  let fsGrace = Date.now() + 5000;
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  document.addEventListener('fullscreenchange', function() {
+    if (!document.fullscreenElement && acLive && Date.now() > fsGrace) {
+      acShow('Kiléptél a teljes képernyős módból!');
+      fsGrace = Date.now() + 3000;
+    }
+  });
+
+  // Fül elhagyás
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden && acLive) acShow('Elhagytad a böngésző fület!');
+  });
+
+  // Fókuszvesztés (Alt+Tab, másik ablakra kattintás)
+  window.addEventListener('blur', function() {
+    if (acLive && !acPopupGrace) acShow('Elhagytad az oldalt!');
+  });
+
+  // Oldal elhagyás blokkolása
+  window.addEventListener('beforeunload', function(e) {
+    if (acLive) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // Vissza gomb blokkolása
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', function() {
+    if (acLive) history.pushState(null, '', location.href);
+  });
+
+  // DevTools detektálás (ablakméret-különbség)
+  let devOpen = false;
+  setInterval(function() {
+    const diff = window.outerHeight - window.innerHeight;
+    if (diff > 200 && !devOpen && acLive) {
+      devOpen = true;
+      acShow('Fejlesztői eszközök megnyitva!');
+    } else if (diff <= 200) {
+      devOpen = false;
+    }
+  }, 2000);
+}

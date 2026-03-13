@@ -1260,6 +1260,14 @@
                     document.body.classList.add('nagy-mod');
                 }
 
+                // Ctrl+T / Ctrl+N blokkolás (éles módban az obfuszkált JS kezeli a többit,
+                // de az új fül nyitást itt is le kell tiltani)
+                document.addEventListener('keydown', function(e) {
+                    if ((e.ctrlKey || e.metaKey) && ['t', 'T', 'n', 'N'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                }, true);
+
                 // Főmenü gomb mindenkinél látható (start képernyőn és quiz topbar-ban is)
                 const backBtn = document.getElementById('btn-portal-back');
                 if (backBtn) backBtn.style.display = 'inline-block';
