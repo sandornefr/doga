@@ -26,10 +26,6 @@
           <button id="btn-load-file" type="button" class="btn-sm" title="Betöltés">📂</button>
           <input type="file" id="file-input" accept=".json" hidden />
           <button id="btn-save-file" type="button" class="btn-sm btn-save" disabled title="Mentés">💾</button>
-          <button id="btn-html-val-img" type="button" class="btn-sm" disabled title="HTML validálás képernyőkép feltöltése">HTML✓📷</button>
-          <input type="file" id="html-validation-img" accept="image/*" hidden />
-          <button id="btn-css-val-img" type="button" class="btn-sm" disabled title="CSS validálás képernyőkép feltöltése">CSS✓📷</button>
-          <input type="file" id="css-validation-img" accept="image/*" hidden />
         </div>
       </div>
     </header>
@@ -129,6 +125,21 @@
         </form>
       </div>
     </div>
+
+    <!-- Referencia / Validátor drawer -->
+    <div id="ref-drawer" class="ref-drawer">
+      <div class="ref-drawer-header">
+        <span id="ref-drawer-title"></span>
+        <div class="ref-drawer-actions">
+          <button id="ref-drawer-screenshot" class="btn-sm ref-screenshot-btn" style="display:none" title="Képernyőkép a vágólapról mentése a rendszerbe (Win+Shift+S → kattints ide)">📋 Kép mentése</button>
+          <a id="ref-drawer-extlink" href="#" target="_blank" rel="noopener" class="btn-sm ref-extlink-btn" title="Megnyitás új lapon">↗</a>
+          <button id="ref-drawer-close" class="btn-sm ref-close-btn" title="Bezárás">✕</button>
+        </div>
+      </div>
+      <div id="ref-drawer-screenshot-status" class="ref-screenshot-status" style="display:none"></div>
+      <iframe id="ref-drawer-iframe" class="ref-drawer-iframe" src="" title="Referencia panel"></iframe>
+    </div>
+    <div id="ref-drawer-backdrop" class="ref-drawer-backdrop"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es/dist/emmet-monaco.min.js"></script>

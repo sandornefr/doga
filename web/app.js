@@ -1050,8 +1050,6 @@ async function selectTask(taskId) {
   if (btnSources) btnSources.disabled = !task.sourceFiles || task.sourceFiles.length === 0;
   if (btnPreviewNewTab) btnPreviewNewTab.disabled = false;
   if (btnSaveFile) btnSaveFile.disabled = false;
-  document.getElementById('btn-html-val-img').disabled = false;
-  document.getElementById('btn-css-val-img').disabled = false;
 
   if (descFrame && task.taskDescFile) {
     descFrame.src = task.basePath + task.taskDescFile;
@@ -1690,8 +1688,6 @@ function logoutStudent() {
   if (btnSources) btnSources.disabled = true;
   if (btnPreviewNewTab) btnPreviewNewTab.disabled = true;
   if (btnSaveFile) btnSaveFile.disabled = true;
-  document.getElementById('btn-html-val-img').disabled = true;
-  document.getElementById('btn-css-val-img').disabled = true;
 
   // Progress bar nullázása
   updateProgressBar(0, 0);
@@ -1840,18 +1836,24 @@ function restoreTimer() {
   }
 }
 
-// Validálás képek betöltése
+// Validálás képek betöltése (fájlból)
 function loadValidationImage(type, file) {
+  return loadValidationImageBlob(type, file, file.name);
+}
+
+// Validálás kép betöltése blob-ból (vágólapról vagy fájlból)
+function loadValidationImageBlob(type, blob, fileName) {
+  const name = fileName || `${type}-validalas.png`;
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       validationImages[type] = e.target.result;
-      validationImages[`${type}FileName`] = file.name;
-      statusEl.textContent = `${type.toUpperCase()} validálás kép betöltve: ${file.name}`;
+      validationImages[`${type}FileName`] = name;
+      statusEl.textContent = `${type.toUpperCase()} validálás kép elmentve: ${name}`;
       resolve();
-      updatePreview(); // ← ez frissíti a feladatlistát
+      updatePreview();
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
 }
 
@@ -2194,19 +2196,90 @@ studentForm.addEventListener("submit", handleStudentFormSubmit);
 // Kijelentkezés gomb
 btnLogout.addEventListener("click", logoutStudent);
 
-// Validálás képek eseménykezelők
-document.getElementById('btn-html-val-img').addEventListener('click', () => {
-  document.getElementById('html-validation-img').click();
+// ── Referencia / Validátor drawer ────────────────────────────────────────────
+
+const refDrawer     = document.getElementById('ref-drawer');
+const refBackdrop   = document.getElementById('ref-drawer-backdrop');
+const refTitle      = document.getElementById('ref-drawer-title');
+const refIframe     = document.getElementById('ref-drawer-iframe');
+const refScreenshot = document.getElementById('ref-drawer-screenshot');
+const refExtlink    = document.getElementById('ref-drawer-extlink');
+const refStatus     = document.getElementById('ref-drawer-screenshot-status');
+
+// activeRefType: 'w3s' | 'html-validator' | 'css-validator'
+let activeRefType = null;
+
+const REF_CONFIG = {
+  'w3s': {
+    title: '📚 W3Schools – HTML/CSS referencia',
+    url: 'https://www.w3schools.com/html/default.asp',
+    screenshot: false,
+  },
+  'html-validator': {
+    title: '✅ HTML Validator (W3C)',
+    url: 'https://validator.w3.org/#validate_by_input',
+    screenshot: 'html',
+  },
+  'css-validator': {
+    title: '✅ CSS Validator (W3C Jigsaw)',
+    url: 'https://jigsaw.w3.org/css-validator/#validate_by_input',
+    screenshot: 'css',
+  },
+};
+
+function openRefPanel(type) {
+  const cfg = REF_CONFIG[type];
+  if (!cfg) return;
+  activeRefType = type;
+  refTitle.textContent = cfg.title;
+  refIframe.src = cfg.url;
+  refExtlink.href = cfg.url;
+  refScreenshot.style.display = cfg.screenshot ? 'inline-flex' : 'none';
+  refScreenshot.dataset.imgType = cfg.screenshot || '';
+  refStatus.style.display = 'none';
+  refStatus.className = 'ref-screenshot-status';
+  refDrawer.classList.add('open');
+  refBackdrop.classList.add('open');
+}
+
+function closeRefPanel() {
+  refDrawer.classList.remove('open');
+  refBackdrop.classList.remove('open');
+  setTimeout(() => { refIframe.src = ''; }, 300);
+  activeRefType = null;
+}
+
+async function captureFromClipboard(imgType) {
+  refStatus.style.display = 'none';
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const imgMime = item.types.find(t => t.startsWith('image/'));
+      if (imgMime) {
+        const blob = await item.getType(imgMime);
+        await loadValidationImageBlob(imgType, blob);
+        showRefStatus('ok', `✔ ${imgType.toUpperCase()} validálás kép elmentve!`);
+        return;
+      }
+    }
+    showRefStatus('err', '✖ Nincs kép a vágólapon! Készíts előbb képernyőképet (Win+Shift+S).');
+  } catch {
+    showRefStatus('err', '✖ Vágólap hozzáférés megtagadva. Engedélyezd a böngésző felugró ablakban, majd próbáld újra.');
+  }
+}
+
+function showRefStatus(type, msg) {
+  refStatus.textContent = msg;
+  refStatus.className = `ref-screenshot-status ${type}`;
+  refStatus.style.display = 'block';
+}
+
+refScreenshot.addEventListener('click', () => {
+  const imgType = refScreenshot.dataset.imgType;
+  if (imgType) captureFromClipboard(imgType);
 });
-document.getElementById('btn-css-val-img').addEventListener('click', () => {
-  document.getElementById('css-validation-img').click();
-});
-document.getElementById('html-validation-img').addEventListener('change', async (e) => {
-  if (e.target.files[0]) await loadValidationImage('html', e.target.files[0]);
-});
-document.getElementById('css-validation-img').addEventListener('change', async (e) => {
-  if (e.target.files[0]) await loadValidationImage('css', e.target.files[0]);
-});
+document.getElementById('ref-drawer-close').addEventListener('click', closeRefPanel);
+refBackdrop.addEventListener('click', closeRefPanel);
 
 btnStarter.addEventListener("click", async () => {
   if (!currentTask || !htmlEditor || !cssEditor) return;
@@ -2270,17 +2343,9 @@ function switchToTab(tab) {
 
 tabHtml.addEventListener('click', () => switchToTab('html'));
 tabCss.addEventListener('click', () => switchToTab('css'));
-tabCssValidator.addEventListener('click', () => {
-  window.open('https://jigsaw.w3.org/css-validator/#validate_by_input', '_blank');
-});
-
-// Külső linkek új lapon
-btnW3schools.addEventListener('click', () => {
-  window.open('https://www.w3schools.com/html/default.asp', '_blank');
-});
-btnHtmlValidator.addEventListener('click', () => {
-  window.open('https://validator.w3.org/#validate_by_input', '_blank');
-});
+tabCssValidator.addEventListener('click', () => openRefPanel('css-validator'));
+btnW3schools.addEventListener('click', () => openRefPanel('w3s'));
+btnHtmlValidator.addEventListener('click', () => openRefPanel('html-validator'));
 
 // Feladatok szekció összecsukása
 if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
