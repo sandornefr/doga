@@ -2564,7 +2564,14 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     updateTimerDisplay();
 
     // Tanuló adatok ellenőrzése
-    if (loadStudentData()) {
+    const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
+    if (isBemutato && !loadStudentData()) {
+      // Bemutató mód: nincs bejelentkezés szükséges
+      studentData = { name: 'Bemutató', email: 'bemutato@kkszki.hu', class: 'Oktatói' };
+      updateStudentDisplay();
+      hideStudentModal();
+      taskSelector.disabled = false;
+    } else if (loadStudentData()) {
       // Van mentett tanuló adat
       hideStudentModal();
       taskSelector.disabled = false;
