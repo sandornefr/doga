@@ -1650,8 +1650,9 @@ function logoutStudent() {
     return;
   }
 
-  // Ha kandoUser-rel jött, visszavisszük a portálra
-  if (sessionStorage.getItem('kandoUser')) {
+  // Ha portálról jött (kandoUser vagy bemutato=1), visszavisszük a portálra
+  const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
+  if (sessionStorage.getItem('kandoUser') || isBemutato) {
     sessionStorage.removeItem('kandoUser');
     location.replace('../portal.html');
     return;
