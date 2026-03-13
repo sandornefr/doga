@@ -1437,39 +1437,37 @@ function activateEmmet(monaco) {
 function setupAutoCloseTag(editor, monaco) {
   editor.onDidChangeModelContent((e) => {
     if (e.changes.length === 0) return;
+    if (e.changes[0].text !== '>') return;
 
-    const change = e.changes[0];
-    const text = change.text;
+    const model = editor.getModel();
+    const position = editor.getPosition();
+    if (!model || !position) return;
 
-    // Ha > karaktert írunk és nem self-closing tag
-    if (text === '>') {
-      const model = editor.getModel();
-      const position = editor.getPosition();
-      const lineContent = model.getLineContent(position.lineNumber);
-      const beforeCursor = lineContent.substring(0, position.column - 1);
+    const lineContent = model.getLineContent(position.lineNumber);
+    // beforeCursor tartalmazza a most beírt '>'-t is (position.column a '>' utáni pozíció)
+    const beforeCursor = lineContent.substring(0, position.column - 1);
 
-      // Keressük meg a nyitó taget
-      const tagMatch = beforeCursor.match(/<([a-zA-Z][\w-]*)[^>]*$/);
-      if (tagMatch) {
-        const tagName = tagMatch[1].toLowerCase();
-        // Void elemek nem kapnak záró taget
-        const voidElements = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
-        if (!voidElements.includes(tagName) && !beforeCursor.endsWith('/')) {
-          // Ellenőrizzük, hogy a sor nem tartalmaz-e már záró taget
-          const afterCursor = lineContent.substring(position.column - 1);
-          if (!afterCursor.startsWith(`</${tagName}>`)) {
-            const closeTag = `</${tagName}>`;
-            editor.executeEdits('auto-close-tag', [{
-              range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-              text: closeTag,
-              forceMoveMarkers: false
-            }]);
-            // Kurzor visszahelyezése
-            editor.setPosition(position);
-          }
-        }
-      }
-    }
+    // Self-closing tag kizárása (pl. <br/> vagy <img/>)
+    if (beforeCursor.endsWith('/>')) return;
+
+    // Nyitó tag felismerése: <tagname ...>
+    const tagMatch = beforeCursor.match(/<([a-zA-Z][\w-]*)(?:\s[^>]*)?>$/);
+    if (!tagMatch) return;
+
+    const tagName = tagMatch[1].toLowerCase();
+    const voidElements = ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'];
+    if (voidElements.includes(tagName)) return;
+
+    // Már ott van-e a záró tag?
+    const afterCursor = lineContent.substring(position.column - 1);
+    if (afterCursor.startsWith(`</${tagName}>`)) return;
+
+    editor.executeEdits('auto-close-tag', [{
+      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+      text: `</${tagName}>`,
+      forceMoveMarkers: false
+    }]);
+    editor.setPosition(position);
   });
 }
 
