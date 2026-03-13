@@ -1022,11 +1022,9 @@
                     sessionStorage.removeItem('kandTeacherMode');
                 }
 
-                // Főmenü gomb csak oktatóknak
-                if (u.szerep === 'oktato') {
-                    const backBtn = document.getElementById('btn-portal-back');
-                    if (backBtn) backBtn.style.display = 'inline-block';
-                }
+                // Főmenü gomb mindenkinél látható
+                const backBtn = document.getElementById('btn-portal-back');
+                if (backBtn) backBtn.style.display = 'inline-block';
 
                 // WEB váltó gomb: oktatónak mindig, tanulónak csak gyakorló módban
                 if (u.szerep === 'oktato') {
