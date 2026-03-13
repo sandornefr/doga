@@ -2470,7 +2470,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
     monaco.editor.defineTheme("vizsga-light", {
       base: "vs",
-      inherit: false,
+      inherit: true,
       semanticHighlighting: false,
       rules: [
         { token: "",                              foreground: "000000" },
