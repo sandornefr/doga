@@ -131,13 +131,21 @@
       <div class="ref-drawer-header">
         <span id="ref-drawer-title"></span>
         <div class="ref-drawer-actions">
-          <button id="ref-drawer-screenshot" class="btn-sm ref-screenshot-btn" style="display:none" title="Képernyőkép a vágólapról mentése a rendszerbe (Win+Shift+S → kattints ide)">📋 Kép mentése</button>
-          <a id="ref-drawer-extlink" href="#" target="_blank" rel="noopener" class="btn-sm ref-extlink-btn" title="Megnyitás új lapon">↗</a>
+          <button id="ref-drawer-copy-code" class="btn-sm ref-copy-btn" style="display:none" title="Kód másolása vágólapra">📋 Kód másolása</button>
+          <button id="ref-drawer-screenshot" class="btn-sm ref-screenshot-btn" style="display:none" title="Képernyőkép a vágólapról mentése (Win+Shift+S → kattints ide)">📷 Kép mentése</button>
+          <button id="ref-drawer-open-popup" class="btn-sm ref-extlink-btn" title="Megnyitás popup ablakban">↗ Megnyitás</button>
           <button id="ref-drawer-close" class="btn-sm ref-close-btn" title="Bezárás">✕</button>
         </div>
       </div>
       <div id="ref-drawer-screenshot-status" class="ref-screenshot-status" style="display:none"></div>
-      <iframe id="ref-drawer-iframe" class="ref-drawer-iframe" src="" title="Referencia panel"></iframe>
+      <!-- Validator panel: lépések + kód előnézet -->
+      <div id="ref-drawer-body" class="ref-drawer-body">
+        <div id="ref-drawer-steps" class="ref-steps-box" style="display:none">
+          <p class="ref-steps-title" id="ref-steps-title"></p>
+          <ol class="ref-steps-list" id="ref-steps-list"></ol>
+        </div>
+        <textarea id="ref-code-preview" class="ref-code-preview" readonly spellcheck="false" style="display:none"></textarea>
+      </div>
     </div>
     <div id="ref-drawer-backdrop" class="ref-drawer-backdrop"></div>
 

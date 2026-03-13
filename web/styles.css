@@ -1093,6 +1093,14 @@ iframe {
 .ref-screenshot-btn:hover {
   background: #15803d !important;
 }
+.ref-copy-btn {
+  background: #0369a1 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-color: #075985 !important;
+}
+.ref-copy-btn:hover { background: #075985 !important; }
+
 .ref-extlink-btn {
   background: #1e40af !important;
   color: #fff !important;
@@ -1100,7 +1108,10 @@ iframe {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  cursor: pointer;
 }
+.ref-extlink-btn:hover { background: #1e3a8a !important; }
+
 .ref-close-btn {
   background: #374151 !important;
   color: #e2e8f0 !important;
@@ -1117,9 +1128,51 @@ iframe {
 .ref-screenshot-status.ok  { background: #14532d; color: #86efac; }
 .ref-screenshot-status.err { background: #7f1d1d; color: #fca5a5; }
 
-.ref-drawer-iframe {
+.ref-drawer-body {
   flex: 1;
-  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px;
+  gap: 10px;
+}
+
+.ref-steps-box {
+  background: #0b1220;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+.ref-steps-box .ref-steps-title {
+  font-weight: 700;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px 0;
+}
+.ref-steps-list {
+  margin: 0;
+  padding-left: 1.4em;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  line-height: 1.9;
+}
+.ref-steps-list b { color: #7dd3fc; }
+
+.ref-code-preview {
+  flex: 1;
   width: 100%;
-  background: #fff;
+  min-height: 0;
+  background: #060d1a;
+  color: #a8d8ea;
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: 'Consolas', 'Fira Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
 }

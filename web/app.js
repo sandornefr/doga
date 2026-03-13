@@ -2201,29 +2201,55 @@ btnLogout.addEventListener("click", logoutStudent);
 const refDrawer     = document.getElementById('ref-drawer');
 const refBackdrop   = document.getElementById('ref-drawer-backdrop');
 const refTitle      = document.getElementById('ref-drawer-title');
-const refIframe     = document.getElementById('ref-drawer-iframe');
 const refScreenshot = document.getElementById('ref-drawer-screenshot');
-const refExtlink    = document.getElementById('ref-drawer-extlink');
+const refCopyCode   = document.getElementById('ref-drawer-copy-code');
+const refOpenPopup  = document.getElementById('ref-drawer-open-popup');
 const refStatus     = document.getElementById('ref-drawer-screenshot-status');
+const refStepsBox   = document.getElementById('ref-drawer-steps');
+const refStepsTitle = document.getElementById('ref-steps-title');
+const refStepsList  = document.getElementById('ref-steps-list');
+const refCodePreview= document.getElementById('ref-code-preview');
 
-// activeRefType: 'w3s' | 'html-validator' | 'css-validator'
 let activeRefType = null;
 
 const REF_CONFIG = {
   'w3s': {
     title: '📚 W3Schools – HTML/CSS referencia',
     url: 'https://www.w3schools.com/html/default.asp',
+    popupW: 1100, popupH: 800,
     screenshot: false,
+    codeType: null,
+    steps: null,
   },
   'html-validator': {
     title: '✅ HTML Validator (W3C)',
     url: 'https://validator.w3.org/#validate_by_input',
+    popupW: 1000, popupH: 750,
     screenshot: 'html',
+    codeType: 'html',
+    steps: [
+      'Kattints a <b>📋 Kód másolása</b> gombra (fent)',
+      'Kattints a <b>↗ Megnyitás</b> gombra — megnyílik a validátor',
+      'A validátorban illeszd be a kódot (<b>Ctrl+V</b>) a szövegmezőbe',
+      'Kattints a <b>Check</b> gombra',
+      'Készíts képernyőképet az eredményről (<b>Win+Shift+S</b>)',
+      'Térj vissza ide és kattints a <b>📷 Kép mentése</b> gombra',
+    ],
   },
   'css-validator': {
     title: '✅ CSS Validator (W3C Jigsaw)',
     url: 'https://jigsaw.w3.org/css-validator/#validate_by_input',
+    popupW: 1000, popupH: 750,
     screenshot: 'css',
+    codeType: 'css',
+    steps: [
+      'Kattints a <b>📋 Kód másolása</b> gombra (fent)',
+      'Kattints a <b>↗ Megnyitás</b> gombra — megnyílik a validátor',
+      'A validátorban illeszd be a kódot (<b>Ctrl+V</b>) a szövegmezőbe',
+      'Kattints a <b>Check</b> gombra',
+      'Készíts képernyőképet az eredményről (<b>Win+Shift+S</b>)',
+      'Térj vissza ide és kattints a <b>📷 Kép mentése</b> gombra',
+    ],
   },
 };
 
@@ -2232,12 +2258,27 @@ function openRefPanel(type) {
   if (!cfg) return;
   activeRefType = type;
   refTitle.textContent = cfg.title;
-  refIframe.src = cfg.url;
-  refExtlink.href = cfg.url;
-  refScreenshot.style.display = cfg.screenshot ? 'inline-flex' : 'none';
-  refScreenshot.dataset.imgType = cfg.screenshot || '';
   refStatus.style.display = 'none';
   refStatus.className = 'ref-screenshot-status';
+
+  // Kód előnézet és lépések (validátoroknál)
+  if (cfg.codeType) {
+    const code = cfg.codeType === 'html' ? (htmlEditor ? htmlEditor.getValue() : '') : (cssEditor ? cssEditor.getValue() : '');
+    refCodePreview.value = code;
+    refCodePreview.style.display = 'block';
+    refStepsTitle.textContent = 'Hogyan validálj?';
+    refStepsList.innerHTML = cfg.steps.map(s => `<li>${s}</li>`).join('');
+    refStepsBox.style.display = 'block';
+    refCopyCode.style.display = 'inline-flex';
+    refScreenshot.style.display = 'inline-flex';
+    refScreenshot.dataset.imgType = cfg.screenshot;
+  } else {
+    refCodePreview.style.display = 'none';
+    refStepsBox.style.display = 'none';
+    refCopyCode.style.display = 'none';
+    refScreenshot.style.display = 'none';
+  }
+
   refDrawer.classList.add('open');
   refBackdrop.classList.add('open');
 }
@@ -2245,9 +2286,33 @@ function openRefPanel(type) {
 function closeRefPanel() {
   refDrawer.classList.remove('open');
   refBackdrop.classList.remove('open');
-  setTimeout(() => { refIframe.src = ''; }, 300);
   activeRefType = null;
 }
+
+refOpenPopup.addEventListener('click', () => {
+  const cfg = REF_CONFIG[activeRefType];
+  if (!cfg) return;
+  const left = Math.round((screen.width - cfg.popupW) / 2);
+  const top  = Math.round((screen.height - cfg.popupH) / 2);
+  window.open(cfg.url, 'ref_popup',
+    `width=${cfg.popupW},height=${cfg.popupH},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+});
+
+refCopyCode.addEventListener('click', async () => {
+  const cfg = REF_CONFIG[activeRefType];
+  if (!cfg || !cfg.codeType) return;
+  const code = refCodePreview.value;
+  try {
+    await navigator.clipboard.writeText(code);
+    refCopyCode.textContent = '✔ Másolva!';
+    setTimeout(() => { refCopyCode.textContent = '📋 Kód másolása'; }, 2000);
+  } catch {
+    refCodePreview.select();
+    document.execCommand('copy');
+    refCopyCode.textContent = '✔ Másolva!';
+    setTimeout(() => { refCopyCode.textContent = '📋 Kód másolása'; }, 2000);
+  }
+});
 
 async function captureFromClipboard(imgType) {
   refStatus.style.display = 'none';
