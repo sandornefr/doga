@@ -1052,7 +1052,7 @@ async function selectTask(taskId) {
   if (btnSaveFile) btnSaveFile.disabled = false;
 
   if (descFrame && task.taskDescFile) {
-    descFrame.src = task.basePath + task.taskDescFile;
+    descFrame.src = task.basePath + task.taskDescFile + '?v=3';
   }
 
   // Ellenőrizzük, van-e mentett munka
