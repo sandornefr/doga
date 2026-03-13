@@ -1660,8 +1660,9 @@ function logoutStudent() {
   // Időzítő leállítása
   stopTimer();
 
-  // Tanuló adatok törlése (csak a session-ből, nem a localStorage-ből!)
+  // Tanuló adatok törlése
   localStorage.removeItem('vizsga_student');
+  sessionStorage.removeItem('kandStudentData');
   studentData = { name: '', email: '', class: '' };
   updateStudentDisplay();
 
