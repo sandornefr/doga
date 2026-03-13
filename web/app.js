@@ -2656,9 +2656,8 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
       restoreTimer();
       updateTimerDisplay();
     } else {
-      // Nincs mentett adat - modal megjelenítése
-      showStudentModal();
-      taskSelector.disabled = true;
+      // Nincs bejelentkezett felhasználó → visszairányítás a portálra
+      location.replace('../portal.html');
     }
 
     statusEl.textContent = "Válassz feladatot a kezdéshez…";
