@@ -306,6 +306,13 @@
         .ered-ach.locked .ered-ach-name { color: #555; }
         .ered-loading { color: #888; text-align: center; padding: 30px 0; }
         .ered-next-goal { color: #60a5fa; font-size: 0.8rem; margin-top: 4px; }
+        .ered-countdown {
+            background: #0f3460; border-radius: 10px; padding: 12px 16px;
+            color: #e0e0e0; font-size: 0.92rem; margin-bottom: 18px; text-align: center;
+        }
+        .ered-countdown strong { color: #fbbf24; font-size: 1.1rem; }
+        .ered-countdown-sub { color: #888; font-size: 0.78rem; display: block; margin-top: 3px; }
+        .ered-countdown-done { color: #2ed573; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -508,7 +515,8 @@
         if (avgPct >= 65) return `Jó eséllyel sikerülne a vizsga ${subj}-ból – még egy kis gyakorlás! 🎯`;
         if (avgPct >= 50) return `Jó úton jársz, de még szükség van a gyakorlásra ${subj}-ból. 📚`;
         if (avgPct > 0)   return `Még sok a tennivaló ${subj}-ból, de kitartással menni fog! 💪`;
-        return `Még nem gyakoroltál ${subj}-ból. Kezdj el, hogy lásd a haladásod!`;
+        if (subj.includes('Python')) return `Még nem gyakoroltál PYTHON feladatot. Kezdd el, hogy fel tudj készülni az ágazati alapvizsgára!`;
+        return `Még nem gyakoroltál WEB feladatot. Kezdd el, hogy fel tudj készülni az ágazati alapvizsgára!`;
     }
 
     function renderSubject(data, label, barClass) {
@@ -538,13 +546,21 @@
     function renderAchievements(progress) {
         const unlocked = ACHIEVEMENTS.filter(a => a.check(progress));
         const locked   = ACHIEVEMENTS.filter(a => !a.check(progress));
-        let html = `<hr class="ered-divider"><div class="ered-ach-title">🏆 Achievementek (${unlocked.length}/${ACHIEVEMENTS.length})</div><div class="ered-ach-grid">`;
+        let html = `<hr class="ered-divider"><div class="ered-ach-title">🏆 Teljesítmények (${unlocked.length}/${ACHIEVEMENTS.length})</div><div class="ered-ach-grid">`;
         for (const a of [...unlocked, ...locked]) {
             const cls = unlocked.includes(a) ? 'unlocked' : 'locked';
             html += `<div class="ered-ach ${cls}"><span class="ered-ach-icon">${a.icon}</span><span class="ered-ach-name">${a.name}</span></div>`;
         }
         html += '</div>';
         return html;
+    }
+
+    function examCountdown() {
+        const deadline = new Date('2026-05-31T00:00:00');
+        const now = new Date();
+        const diff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+        if (diff <= 0) return `<div class="ered-countdown ered-countdown-done">🎓 Az ágazati alapvizsga időszaka megkezdődött!</div>`;
+        return `<div class="ered-countdown">📅 Az ágazati alapvizsgáig <strong>${diff} nap</strong> van hátra <span class="ered-countdown-sub">(felkészülési határidő: 2026. május 31.)</span></div>`;
     }
 
     async function openEredmenyek() {
@@ -562,6 +578,7 @@
                 python: { sessions: p.python?.sessions ?? 0, avgPercent: p.python?.avgPercent ?? 0, bestPercent: p.python?.bestPercent ?? 0, lastSession: p.python?.lastSession ?? null }
             };
             document.getElementById('ered-content').innerHTML =
+                examCountdown() +
                 renderSubject(progress.web,    '🌐 WEB dolgozat',    'ered-bar-web') +
                 renderSubject(progress.python, '🐍 Python dolgozat', 'ered-bar-python') +
                 renderAchievements(progress);
