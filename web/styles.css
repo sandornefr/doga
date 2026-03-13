@@ -236,6 +236,25 @@ body {
   border-color: #ef4444;
 }
 
+.btn-switch {
+  background: #1e3a5f;
+  color: #93c5fd;
+  border: 1px solid #3b82f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-switch:hover {
+  background: #1d4ed8;
+  border-color: #60a5fa;
+  color: #dbeafe;
+}
+
 /* Compact small buttons */
 .btn-sm {
   background: #374151;

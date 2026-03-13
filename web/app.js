@@ -1643,6 +1643,11 @@ function updateStudentDisplay() {
   } else {
     studentInfo.textContent = '';
   }
+  // Python váltó gomb: csak portálos bejelentkezésnél (kandoUser kell a Python apphoz)
+  const switchBtn = document.getElementById('btn-switch-python');
+  if (switchBtn) {
+    switchBtn.style.display = sessionStorage.getItem('kandoUser') && studentData.name ? 'inline-block' : 'none';
+  }
 }
 
 function logoutStudent() {

@@ -825,7 +825,8 @@
             <h1>Miskolci SZC Kandó Kálmán Informatikai Technikum</h1>
             <p>Python Programozási Teszt</p>
         </div>
-        <a id="btn-portal-back" href="../portal.html" style="display:none;margin-left:auto;padding:6px 14px;background:transparent;border:1px solid #7986cb;border-radius:8px;color:#7986cb;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#7986cb';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#7986cb'">← Főmenü</a>
+        <a id="btn-switch-web" href="../web/index.html" style="display:none;margin-left:auto;padding:6px 14px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:8px;color:#93c5fd;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#1d4ed8';this.style.color='#dbeafe'" onmouseout="this.style.background='#1e3a5f';this.style.color='#93c5fd'">🌐 WEB</a>
+        <a id="btn-portal-back" href="../portal.html" style="display:none;margin-left:8px;padding:6px 14px;background:transparent;border:1px solid #7986cb;border-radius:8px;color:#7986cb;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#7986cb';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#7986cb'">← Főmenü</a>
     </header>
     <div class="container">
         <h1>🐍 Python Programozási Teszt</h1>
@@ -1026,6 +1027,10 @@
                     const backBtn = document.getElementById('btn-portal-back');
                     if (backBtn) backBtn.style.display = 'inline-block';
                 }
+
+                // WEB váltó gomb minden bejelentkezett felhasználónak
+                const switchWebBtn = document.getElementById('btn-switch-web');
+                if (switchWebBtn) switchWebBtn.style.display = 'inline-block';
 
                 // Rejtett mezők feltöltése (startTest() ezeket olvassa)
                 const fName = document.getElementById('name');
