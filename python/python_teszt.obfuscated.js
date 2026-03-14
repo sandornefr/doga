@@ -84,16 +84,12 @@ async function initializeApp() {
     const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
 
     if (testMode === 'practice' || isTeacher) {
-        // Gyakorló / bemutató mód: rögtön indul, nincs popup
-        const startSection = document.getElementById('start-section');
-        if (startSection) startSection.style.display = 'none';
+        // Gyakorló / bemutató mód: rögtön indul, nincs popup (start-section rejtett marad)
         startTest();
     } else {
-        // Éles mód: megjelenítjük a szabályok popup-ot
-        const rulesDiv = document.getElementById('start-live-rules');
-        if (rulesDiv) rulesDiv.style.display = 'block';
-        const startBtn = document.getElementById('start-btn');
-        if (startBtn) startBtn.textContent = 'Elfogadom a szabályokat – Teszt indítása';
+        // Éles / vizsga mód: megjelenítjük a szabályok popup-ot
+        const startEl = document.getElementById('start-section');
+        if (startEl) startEl.classList.remove('hidden');
     }
 
     // Pyodide előbetöltése a háttérben
@@ -252,7 +248,7 @@ function setupEventListeners() {
             return false;
         }
         // Ablakváltó kombinációk tiltása teszt közben
-        if (!quizSection.classList.contains('hidden') && testMode === 'live') {
+        if (!quizSection.classList.contains('hidden') && (testMode === 'live' || testMode === 'vizsga')) {
             if ((e.altKey && e.key === 'Tab') ||
                 (e.altKey && e.key === 'F4') ||
                 (e.ctrlKey && e.key === 'Tab') ||
@@ -486,9 +482,9 @@ async function startTest() {
         globalTimeRemaining = 45 * 60;
     }
 
-    // Élő módban ellenőrizzük, hogy a Python értelmező betöltődött-e
+    // Élő/vizsga módban ellenőrizzük, hogy a Python értelmező betöltődött-e
     // (itt még fullscreen előtt vagyunk, tehát frissítés biztonságos)
-    if (testMode === 'live' && !pyodideInstance) {
+    if ((testMode === 'live' || testMode === 'vizsga') && !pyodideInstance) {
         const continueAnyway = confirm(
             '⚠️ A Python értelmező még nem töltődött be teljesen!\n\n' +
             'Javasolt: Frissítsd az oldalt (F5), várj 10-15 másodpercet, majd próbáld újra.\n\n' +
@@ -502,24 +498,38 @@ async function startTest() {
     fullscreenGraceUntil = 0;
 
     // Start overlay elrejtése
-    const startEl = document.getElementById('start-section');
-    if (startEl) startEl.style.display = 'none';
     startSection.classList.add('hidden');
     quizSection.classList.remove('hidden');
 
     await initializeCodeEditor();
-    initTerminal();
+    try {
+        initTerminal();
+    } catch (err) {
+        debugLog('⚠️ xterm.js hiba: ' + err.message + ' – egyszerű terminál');
+        initFallbackTerminal();
+    }
 
-    // Gyakorló módban jelzés a quiz top bar-ban
+    // Módjelzés a quiz top bar-ban
     const isTeacherMode = sessionStorage.getItem('kandTeacherMode') === 'true';
-    if (testMode === 'practice' && !isTeacherMode) {
+    if (!document.getElementById('quiz-mode-pill')) {
         const topBar = document.querySelector('.quiz-top-bar');
-        if (topBar && !document.getElementById('practice-mode-pill')) {
+        if (topBar) {
             const pill = document.createElement('div');
-            pill.id = 'practice-mode-pill';
-            pill.style.cssText = 'background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;';
-            pill.textContent = '🎓 GYAKORLÓ MÓD';
-            topBar.insertBefore(pill, topBar.firstChild);
+            pill.id = 'quiz-mode-pill';
+            if ((testMode === 'live' || testMode === 'vizsga') && !isTeacherMode) {
+                pill.style.cssText = 'background:#2d0a0a;border:1px solid #e94560;color:#e94560;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;';
+                pill.textContent = '🔴 SZÁMONKÉRÉS MÓD';
+            } else if (isTeacherMode) {
+                pill.style.cssText = 'background:#1a0d2e;border:1px solid #7c3aed;color:#c4b5fd;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;';
+                pill.textContent = '🎬 BEMUTATÓ MÓD';
+            } else {
+                pill.style.cssText = 'background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;';
+                pill.textContent = '🎓 GYAKORLÓ MÓD';
+            }
+            // Logo után, de navigáció előtt szúrjuk be
+            const nav = document.getElementById('task-navigation');
+            if (nav) topBar.insertBefore(pill, nav);
+            else topBar.insertBefore(pill, topBar.firstChild);
         }
     }
 
@@ -532,8 +542,8 @@ async function startTest() {
         document.body.appendChild(wm);
     }
 
-    // Oktatói/bemutató módban nincs fullscreen kényszer
-    if (!isTeacherMode && testMode === 'live') {
+    // Oktatói/bemutató módban nincs fullscreen kényszer; vizsga módban igen
+    if (!isTeacherMode && (testMode === 'live' || testMode === 'vizsga')) {
         enterFullscreen();
     }
 
@@ -894,6 +904,26 @@ function initTerminal() {
     fitAddon.fit();
 
     terminalReady = true;
+}
+
+// Egyszerű fallback terminál ha xterm.js nem töltődik be
+function initFallbackTerminal() {
+    const terminalElement = document.getElementById('terminal');
+    terminalElement.style.cssText += 'background:#0c0c0c;padding:8px;overflow-y:auto;box-sizing:border-box;';
+    const pre = document.createElement('pre');
+    pre.id = 'fallback-output';
+    pre.style.cssText = 'margin:0;color:#c0c0c0;font-family:Consolas,"Lucida Console","Courier New",monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;';
+    terminalElement.appendChild(pre);
+    term = {
+        clear: () => { if (pre) pre.textContent = ''; },
+        write: (text) => { if (pre) pre.textContent += text.replace(/\r\n/g, '\n').replace(/\r(?!\n)/g, '\n'); terminalElement.scrollTop = terminalElement.scrollHeight; },
+        writeln: (text) => { if (pre) pre.textContent += text.replace(/\r\n/g, '\n').replace(/\r(?!\n)/g, '\n') + '\n'; terminalElement.scrollTop = terminalElement.scrollHeight; },
+        loadAddon: () => {},
+        onData: () => {},
+    };
+    fitAddon = { fit: () => {} };
+    terminalReady = true;
+    debugLog('✅ Fallback terminál kész (xterm.js nem volt elérhető)');
 }
 
 // Feladat megjelenítése
@@ -1590,7 +1620,7 @@ function handleFullscreenChange() {
         return;
     }
 
-    if (testMode !== 'live') {
+    if (testMode !== 'live' && testMode !== 'vizsga') {
         fullscreenPrompt.style.display = 'none';
         return;
     }
@@ -1646,7 +1676,7 @@ function handleWindowFocus() {
 // Fókusz ellenőrzés indítása (csak logol, nem figyelmeztet – blur/visibility kezeli azt)
 function startFocusCheck() {
     focusCheckInterval = setInterval(() => {
-        if (!document.hasFocus() && !quizSection.classList.contains('hidden') && testMode === 'live') {
+        if (!document.hasFocus() && !quizSection.classList.contains('hidden') && (testMode === 'live' || testMode === 'vizsga')) {
             logEvent('Focus check: window still unfocused');
         }
     }, 5000);
@@ -1662,7 +1692,7 @@ function detectDevTools() {
 
             logEvent('DevTools detected - potential cheating');
 
-            if (testMode === 'live' && !quizSection.classList.contains('hidden')) {
+            if ((testMode === 'live' || testMode === 'vizsga') && !quizSection.classList.contains('hidden')) {
                 showCheatWarning('Developer Tools észlelve');
             }
         }
@@ -1675,7 +1705,7 @@ function startFullscreenCheck() {
     }
 
     fullscreenCheckInterval = setInterval(() => {
-        if (testMode !== 'live' || quizSection.classList.contains('hidden')) {
+        if ((testMode !== 'live' && testMode !== 'vizsga') || quizSection.classList.contains('hidden')) {
             return;
         }
         const isFullscreen = document.fullscreenElement ||
@@ -1736,8 +1766,8 @@ function closeCheatWarning() {
     const overlay = document.getElementById('cheat-warning-overlay');
     if (overlay) overlay.style.display = 'none';
     fullscreenPrompt.style.display = 'none';
-    // Visszalép fullscreen-be ha éles módban vagyunk és nem vagyunk fullscreen-ben
-    if (testMode === 'live' && !quizSection.classList.contains('hidden')) {
+    // Visszalép fullscreen-be ha éles/vizsga módban vagyunk és nem vagyunk fullscreen-ben
+    if ((testMode === 'live' || testMode === 'vizsga') && !quizSection.classList.contains('hidden')) {
         const isFs = document.fullscreenElement || document.webkitFullscreenElement ||
                      document.mozFullScreenElement || document.msFullscreenElement;
         if (!isFs) enterFullscreen();

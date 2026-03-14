@@ -21,10 +21,10 @@
 
     <!-- Pyodide for Python execution (Python 3.x) -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-    <!-- Xterm.js for terminal emulator -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css">
-    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+    <!-- Xterm.js for terminal emulator (verzió rögzítve) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <style>
@@ -1057,8 +1057,8 @@
     <div class="container">
         <h1><i class="fab fa-python"></i> Python Programozási Teszt</h1>
 
-        <!-- Start overlay -->
-        <div id="start-section">
+        <!-- Start overlay (kezdetben rejtett – JS mutatja meg éles/vizsga módban, vagy azonnal rejti el gyakorló módban) -->
+        <div id="start-section" class="hidden">
             <div class="start-box">
                 <h2><i class="fab fa-python"></i> Python Programozási Teszt</h2>
 
@@ -1123,6 +1123,7 @@
 
             <!-- Felső sáv: navigáció + pontszám + időmérő -->
             <div class="quiz-top-bar">
+                <img src="kandologo2.png" alt="Kandó KSZKI" style="height:26px;width:auto;flex-shrink:0;opacity:0.85;">
                 <a id="btn-quiz-portal-back" href="../portal.html" style="display:none;padding:4px 12px;background:transparent;border:1px solid #7986cb;border-radius:8px;color:#7986cb;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#7986cb';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#7986cb'">← Főmenü</a>
                 <a id="btn-quiz-switch-web" href="../web/index.html" style="display:none;padding:4px 12px;background:transparent;border:1px solid #3b82f6;border-radius:8px;color:#3b82f6;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#1d4ed8';this.style.color='#dbeafe'" onmouseout="this.style.background='transparent';this.style.color='#3b82f6'"><i class="fas fa-globe"></i> WEB</a>
                 <div class="task-navigation" id="task-navigation"></div>
