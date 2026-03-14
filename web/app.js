@@ -1102,7 +1102,7 @@ async function selectTask(taskId) {
   if (btnStarter) btnStarter.disabled = false;
   if (btnSources) {
     btnSources.disabled = !task.sourceFiles || task.sourceFiles.length === 0;
-    btnSources.textContent = 'Feladatleírás';
+    btnSources.textContent = 'Forrás';
   }
   sourcesVisible = false;
   if (btnPreviewNewTab) btnPreviewNewTab.disabled = false;
@@ -2105,7 +2105,7 @@ async function toggleSources() {
   if (sourcesVisible) {
     // Vissza a feladatleíráshoz
     sourcesVisible = false;
-    btnSources.textContent = 'Feladatleírás';
+    btnSources.textContent = 'Forrás';
     if (descFrame && currentTask.taskDescFile) {
       descFrame.removeAttribute('srcdoc');
       descFrame.src = currentTask.basePath + currentTask.taskDescFile + '?v=3';
@@ -2115,7 +2115,7 @@ async function toggleSources() {
 
   // Forrás megjelenítése a leírás helyén
   sourcesVisible = true;
-  btnSources.textContent = 'Forrás';
+  btnSources.textContent = 'Feladatleírás';
 
   // Fájlok betöltése a főablak kontextusában
   const files = currentTask.sourceFiles;
