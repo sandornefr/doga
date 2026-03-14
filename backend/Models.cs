@@ -74,6 +74,7 @@ public record UserListItem(
     string Nev,
     string Email,
     string Szerep,
+    string? Evfolyam,
     string? Osztaly,
     string? Csoport,
     string? CreatedAt
@@ -90,6 +91,33 @@ public record UserRecord(
     string? Osztaly,
     string? Csoport
 );
+
+// ── Task Sets ──────────────────────────────────────────────────────────────
+
+// tipus: "gyakorlo" | "live" | "vizsga"
+public record TaskSetRequest(string Nev, string? Tipus, string? PythonSzoveg, string? WebZipB64);
+
+public class TaskSetItem
+{
+    public int Id { get; set; }
+    public string Nev { get; set; } = "";
+    public string Tipus { get; set; } = "vizsga";
+    public bool Aktiv { get; set; }
+    public bool HasPython { get; set; }
+    public bool HasWeb { get; set; }
+    public string? Letrehozva { get; set; }
+}
+
+public class TaskSetDetail
+{
+    public int Id { get; set; }
+    public string Nev { get; set; } = "";
+    public string Tipus { get; set; } = "vizsga";
+    public bool Aktiv { get; set; }
+    public string? PythonSzoveg { get; set; }
+    public string? WebZipB64 { get; set; }
+    public string? Letrehozva { get; set; }
+}
 
 // ── Progress / Gamification ────────────────────────────────────────────────
 

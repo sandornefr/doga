@@ -282,6 +282,58 @@ app.MapPost("/api/auth/change-password", (HttpContext ctx,
     return Results.Ok(new { success = true });
 });
 
+// ── Task Sets ─────────────────────────────────────────────────────────────
+
+// Feladatsorok listája (oktató/admin)
+app.MapGet("/api/tasksets", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetTaskSets());
+});
+
+// Aktív feladatsor lekérése típus szerint (mindenki – a diák oldal használja)
+// ?tipus=gyakorlo | live | vizsga  (alapértelmezett: vizsga)
+app.MapGet("/api/tasksets/aktiv", (HttpContext ctx, Database db) =>
+{
+    var tipus = ctx.Request.Query["tipus"].FirstOrDefault() ?? "vizsga";
+    var ts = db.GetActiveTaskSet(tipus);
+    return ts != null ? Results.Ok(ts) : Results.NotFound();
+});
+
+// Egy feladatsor lekérése (oktató/admin)
+app.MapGet("/api/tasksets/{id:int}", (HttpContext ctx, int id, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var ts = db.GetTaskSet(id);
+    return ts != null ? Results.Ok(ts) : Results.NotFound();
+});
+
+// Feladatsor létrehozása (oktató/admin)
+app.MapPost("/api/tasksets", (HttpContext ctx, TaskSetRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(req.Nev))
+        return Results.BadRequest(new { error = "A feladatsor neve kötelező!" });
+    var id = db.SaveTaskSet(req);
+    return Results.Ok(new { success = true, id });
+});
+
+// Aktívvá tétel (oktató/admin)
+app.MapPatch("/api/tasksets/{id:int}/aktiv", (HttpContext ctx, int id, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var ok = db.SetActiveTaskSet(id);
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Törlés (oktató/admin)
+app.MapDelete("/api/tasksets/{id:int}", (HttpContext ctx, int id, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var ok = db.DeleteTaskSet(id);
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
 // ── Progress / Gamification ────────────────────────────────────────────────
 
 // Gyakorlás eredményének mentése (mindenki, email alapú)

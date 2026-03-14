@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Python Teszt</title>
+    <title>Kandó Teszt – Admin Panel</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -342,6 +342,47 @@
 
         .stat-label { font-size: 0.82rem; color: #888; }
 
+        /* Tab navigáció */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 9px 18px;
+            background: transparent;
+            color: #666;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.18s, background 0.18s, border-color 0.18s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #bbb;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab-btn.active {
+            background: #0f3460;
+            color: #e94560;
+            border-color: rgba(233,69,96,0.4);
+        }
+
+        .mode-vizsga { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+
         /* Inline styles felülírás */
         p[style*="color: #666"] { color: #666 !important; }
         div[style*="background: #f0f0f0"] { background: #0f3460 !important; }
@@ -377,8 +418,8 @@
         <div class="header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h1>🎓 Python Teszt - Admin Panel</h1>
-                    <p class="subtitle">Teszt konfiguráció és eredmények kezelése</p>
+                    <h1>🎓 Kandó Teszt – Admin Panel</h1>
+                    <p class="subtitle">Konfiguráció, feladatsorok és eredmények kezelése</p>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
                     <a href="../portal.html" style="padding: 8px 18px; background: transparent; color: #536dfe; border: 1px solid #536dfe; border-radius: 8px; cursor: pointer; font-weight: 700; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#536dfe';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#536dfe'">← Portal</a>
@@ -389,20 +430,19 @@
             </div>
         </div>
 
-        <!-- API URL Display (Read-only) -->
-        <div class="panel">
-            <h2>⚙️ API Információ</h2>
-            <div class="api-url-section">
-                <label for="api-url"><strong>Google Apps Script API URL:</strong></label>
-                <input type="text" id="api-url" readonly style="background: #f0f0f0; cursor: not-allowed;">
-                <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
-                    Ez az API URL mindenki számára ugyanaz. Az admin funkciók jelszóval védettek.
-                </p>
-            </div>
+        <input type="hidden" id="api-url">
+
+        <!-- Tab navigáció -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('vezerlot', this)">📊 Vezérlőpult</button>
+            <button class="tab-btn" onclick="switchTab('feladatsor', this)">📤 Feladatsorok</button>
+            <button class="tab-btn" onclick="switchTab('beadasok', this)">📋 Beadások</button>
+            <button class="tab-btn" onclick="switchTab('javitas', this)">📝 Javítás</button>
+            <button class="tab-btn" onclick="switchTab('felhasznalok', this)">👥 Felhasználók</button>
         </div>
 
         <!-- Config Panel -->
-        <div class="panel">
+        <div class="panel" data-tab="vezerlot">
             <h2>🔧 Teszt Mód</h2>
             <div id="config-loading" class="loading">Betöltés...</div>
             <div id="config-error" class="error" style="display: none;"></div>
@@ -443,8 +483,84 @@
             </div>
         </div>
 
+        <!-- Feladatsor Feltöltés -->
+        <div class="panel" data-tab="feladatsor" style="display:none;">
+            <h2>📤 Feladatsor Feltöltés</h2>
+            <div id="ts-msg" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:0.9rem;"></div>
+
+            <!-- Feltöltő form -->
+            <div style="background:#0d1b2e;border:1px solid #1a4a8a;border-radius:12px;padding:18px;margin-bottom:20px;">
+                <h3 style="color:#7dd3fc;margin-bottom:14px;font-size:1rem;">➕ Új feladatsor</h3>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">Feladatsor neve (pl. "Ágazati alapvizsga 2026"):</label>
+                    <input type="text" id="ts-nev"
+                        style="width:100%;padding:8px 12px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.9rem;"
+                        placeholder="Feladatsor neve...">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:6px;">Felhasználás típusa:</label>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="gyakorlo" style="accent-color:#4ade80;">
+                            📝 Gyakorló
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="live" style="accent-color:#f97316;">
+                            🔴 Órai számonkérés
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="vizsga" checked style="accent-color:#fbbf24;">
+                            🎓 Vizsga
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">
+                        Python feladatok szövege (feladatok.txt formátum – csak a vizsgán szereplő feladatok):
+                    </label>
+                    <textarea id="ts-python" rows="12"
+                        style="width:100%;padding:8px 12px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.82rem;font-family:monospace;resize:vertical;"
+                        placeholder="# 1. feladat – 8 pont&#10;Készíts programot, amely...&#10;input:1|Bekér egy számot&#10;if|if kulcsszó megléte&#10;..."></textarea>
+                    <div style="color:#64748b;font-size:0.78rem;margin-top:4px;">Ugyanolyan formátum, mint a feladatok.txt – minden feladat #N. feladat sorral kezdődik.</div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">WEB feladat (ZIP fájl – HTML, CSS, képek):</label>
+                    <input type="file" id="ts-web-zip" accept=".zip"
+                        style="color:#e0e0e0;font-size:0.88rem;">
+                    <div style="color:#64748b;font-size:0.78rem;margin-top:4px;">A ZIP-et a Drive mappából töltsd le, majd itt töltsd fel. Max ~20 MB.</div>
+                </div>
+                <button onclick="uploadTaskSet()"
+                    style="padding:9px 22px;background:#0f766e;border:1px solid #14b8a6;border-radius:8px;color:#ccfbf1;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                    💾 Feladatsor Mentése
+                </button>
+            </div>
+
+            <!-- Meglévő feladatsorok listája -->
+            <h3 style="color:#7dd3fc;margin-bottom:12px;font-size:1rem;">📋 Feltöltött feladatsorok</h3>
+            <div id="ts-loading" style="color:#888;font-size:0.9rem;display:none;">Betöltés...</div>
+            <div class="table-wrapper">
+                <table class="submissions-table" style="min-width:600px;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Név</th>
+                            <th>Típus</th>
+                            <th>Python</th>
+                            <th>WEB</th>
+                            <th>Létrehozva</th>
+                            <th>Státusz</th>
+                            <th>Műveletek</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ts-tbody">
+                        <tr><td colspan="8" class="loading">Nincs feltöltött feladatsor</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Kézi Javítás -->
-        <div class="panel">
+        <div class="panel" data-tab="javitas" style="display:none;">
             <h2>📝 Kézi Javítás</h2>
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
                 <label style="color:#aaa;font-weight:600;">Feladat száma:</label>
@@ -491,7 +607,7 @@
         </div>
 
         <!-- AI Grading -->
-        <div class="panel">
+        <div class="panel" data-tab="javitas" style="display:none;">
             <h2>🤖 Automatikus Javítás (AI)</h2>
             <div id="ai-grading-status" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
             <p style="margin-bottom: 15px; color: #666;">
@@ -509,7 +625,7 @@
         </div>
 
         <!-- Statistics -->
-        <div class="panel">
+        <div class="panel" data-tab="vezerlot">
             <h2>📊 Statisztikák</h2>
             <div class="stats">
                 <div class="stat-card">
@@ -529,26 +645,27 @@
         </div>
 
         <!-- Felhasználók -->
-        <div class="panel" id="users-panel" style="display:none;">
+        <div class="panel" id="users-panel" data-tab="felhasznalok" style="display:none;">
             <h2>👥 Felhasználók kezelése</h2>
             <div style="display:flex;gap:10px;margin-bottom:14px;">
                 <button class="btn-refresh" onclick="loadUsers()">🔄 Frissítés</button>
             </div>
             <div id="users-loading" class="loading" style="display:none;">Betöltés...</div>
             <div class="table-wrapper">
-                <table class="submissions-table" id="users-table" style="min-width:600px;">
+                <table class="submissions-table" id="users-table" style="min-width:700px;table-layout:auto;">
                     <thead>
                         <tr>
                             <th>Név</th>
                             <th>Email</th>
                             <th>Szerepkör</th>
                             <th>Osztály</th>
+                            <th>Csoport</th>
                             <th>Regisztrálva</th>
                             <th>Műveletek</th>
                         </tr>
                     </thead>
                     <tbody id="users-tbody">
-                        <tr><td colspan="6" class="loading">Nincs adat</td></tr>
+                        <tr><td colspan="7" class="loading">Nincs adat</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -570,7 +687,7 @@
         </div>
 
         <!-- Submissions -->
-        <div class="panel submissions-panel">
+        <div class="panel submissions-panel" data-tab="beadasok" style="display:none;">
             <h2>📋 Legutóbbi Beadások</h2>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button class="btn-refresh" onclick="loadSubmissions()">🔄 Frissítés</button>
@@ -668,12 +785,13 @@
                     sessionStorage.setItem('admin_authenticated', 'true');
                     sessionStorage.setItem('admin_username', username);
 
-                    document.getElementById('api-url').value = RAILWAY_URL;
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('admin-content').style.display = 'block';
-
+                    switchTab('vezerlot');
                     loadConfig();
                     loadSubmissions();
+                    loadUsers();
+                    loadTaskSets();
                 } else {
                     errorDiv.textContent = '❌ Hibás felhasználónév vagy jelszó!';
                     errorDiv.style.display = 'block';
@@ -696,11 +814,12 @@
             if (isAuthenticated && authToken) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
-                document.getElementById('api-url').value = RAILWAY_URL;
-                document.getElementById('users-panel').style.display = 'block';
+                const savedTab = sessionStorage.getItem('admin_tab') || 'vezerlot';
+                switchTab(savedTab);
                 loadConfig();
                 loadSubmissions();
                 loadUsers();
+                loadTaskSets();
             }
         }
 
@@ -721,20 +840,25 @@
                     tbody.innerHTML = '<tr><td colspan="6" class="loading">Nincs regisztrált felhasználó</td></tr>';
                     return;
                 }
-                tbody.innerHTML = users.map(u => `
+                tbody.innerHTML = users.map(u => {
+                    const osztalyTeljes = [u.evfolyam, u.osztaly].filter(Boolean).join('') || '-';
+                    const isOktato = u.szerep === 'oktato';
+                    return `
                     <tr>
-                        <td>${u.nev || ''}</td>
+                        <td style="font-weight:600;">${u.nev || ''}</td>
                         <td style="font-size:0.85rem;">${u.email}</td>
-                        <td><span style="color:${u.szerep==='oktato'?'#536dfe':'#2ed573'};font-weight:700;">${u.szerep==='oktato'?'Oktató':'Tanuló'}</span></td>
-                        <td>${u.osztaly || '-'}</td>
+                        <td><span style="color:${isOktato ? '#536dfe' : '#2ed573'};font-weight:700;">${isOktato ? 'Oktató' : 'Tanuló'}</span></td>
+                        <td style="text-align:center;">${osztalyTeljes}</td>
+                        <td style="text-align:center;">${u.csoport || '-'}</td>
                         <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,16) : '-'}</td>
                         <td style="display:flex;gap:6px;flex-wrap:wrap;">
                             <button onclick="openResetPassword('${u.email}')" style="padding:4px 10px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.8rem;">🔑 Jelszó</button>
                             <button onclick="deleteUser('${u.email}')" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.8rem;">🗑️ Törlés</button>
                         </td>
-                    </tr>`).join('');
+                    </tr>`;
+                }).join('');
             } catch (e) {
-                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="6" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
+                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
             } finally {
                 document.getElementById('users-loading').style.display = 'none';
             }
@@ -785,6 +909,19 @@
             location.reload();
         }
 
+        function switchTab(name, btn) {
+            document.querySelectorAll('[data-tab]').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`[data-tab="${name}"]`).forEach(el => el.style.display = 'block');
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                const activeBtn = document.querySelector(`.tab-btn[onclick*="'${name}'"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+            sessionStorage.setItem('admin_tab', name);
+        }
+
         // Check auth on page load
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth();
@@ -814,7 +951,6 @@
                 if (data.vizsga_kezdes) {
                     try {
                         const d = new Date(data.vizsga_kezdes);
-                        const pad = n => String(n).padStart(2,'0');
                         vkInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
                     } catch {}
                 }
@@ -1308,6 +1444,163 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         setInterval(() => {
             if (authToken) loadSubmissions();
         }, 30000);
+
+        // ── Feladatsor kezelés ─────────────────────────────────────────────
+
+        async function loadTaskSets() {
+            document.getElementById('ts-loading').style.display = 'block';
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets`, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error('Hiba');
+                const list = await res.json();
+                renderTaskSets(list);
+            } catch(e) {
+                document.getElementById('ts-tbody').innerHTML =
+                    '<tr><td colspan="8" style="color:#e94560;">Betöltési hiba</td></tr>';
+            } finally {
+                document.getElementById('ts-loading').style.display = 'none';
+            }
+        }
+
+        const TIPUS_LABEL = {
+            gyakorlo: '📝 Gyakorló',
+            live:     '🔴 Számonkérés',
+            vizsga:   '🎓 Vizsga'
+        };
+        const TIPUS_COLOR = {
+            gyakorlo: '#4ade80',
+            live:     '#f97316',
+            vizsga:   '#fbbf24'
+        };
+
+        function renderTaskSets(list) {
+            const tbody = document.getElementById('ts-tbody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">Nincs feltöltött feladatsor</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(ts => {
+                const color = TIPUS_COLOR[ts.tipus] || '#aaa';
+                const label = TIPUS_LABEL[ts.tipus] || ts.tipus;
+                return `
+                <tr>
+                    <td>${ts.id}</td>
+                    <td style="font-weight:600;">${escHtml(ts.nev)}</td>
+                    <td><span style="color:${color};font-size:0.82rem;font-weight:600;">${label}</span></td>
+                    <td>${ts.hasPython ? '<span style="color:#4ade80;">✓</span>' : '<span style="color:#666;">–</span>'}</td>
+                    <td>${ts.hasWeb    ? '<span style="color:#4ade80;">✓</span>' : '<span style="color:#666;">–</span>'}</td>
+                    <td style="font-size:0.82rem;color:#888;">${ts.letrehozva || '–'}</td>
+                    <td>${ts.aktiv
+                        ? `<span style="color:${color};font-weight:700;">● AKTÍV</span>`
+                        : '<span style="color:#555;">inaktív</span>'}</td>
+                    <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                        ${!ts.aktiv ? `<button onclick="activateTaskSet(${ts.id})"
+                            style="padding:4px 10px;background:#1a3a1a;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.8rem;">
+                            ✓ Aktívvá</button>` : ''}
+                        <button onclick="deleteTaskSet(${ts.id}, '${escHtml(ts.nev)}')"
+                            style="padding:4px 10px;background:#3a1a1a;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.8rem;">
+                            🗑 Törlés</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function uploadTaskSet() {
+            const nev = document.getElementById('ts-nev').value.trim();
+            const tipusEl = document.querySelector('input[name="ts-tipus"]:checked');
+            const tipus = tipusEl ? tipusEl.value : 'vizsga';
+            const pythonSzoveg = document.getElementById('ts-python').value.trim();
+            const zipFile = document.getElementById('ts-web-zip').files[0];
+
+            if (!nev) { showTsMsg('A feladatsor neve kötelező!', false); return; }
+            if (!pythonSzoveg && !zipFile) {
+                showTsMsg('Adj meg legalább Python szöveget vagy WEB ZIP-et!', false); return;
+            }
+
+            let webZipB64 = null;
+            if (zipFile) {
+                webZipB64 = await fileToBase64(zipFile);
+            }
+
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({
+                        Nev: nev,
+                        Tipus: tipus,
+                        PythonSzoveg: pythonSzoveg || null,
+                        WebZipB64: webZipB64
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Hiba');
+                showTsMsg(`✓ Feladatsor mentve (ID: ${data.id})`, true);
+                document.getElementById('ts-nev').value = '';
+                document.getElementById('ts-python').value = '';
+                document.getElementById('ts-web-zip').value = '';
+                loadTaskSets();
+            } catch(e) {
+                showTsMsg('Hiba: ' + e.message, false);
+            }
+        }
+
+        async function activateTaskSet(id) {
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets/${id}/aktiv`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error();
+                showTsMsg('✓ Feladatsor aktívvá téve', true);
+                loadTaskSets();
+            } catch {
+                showTsMsg('Hiba az aktívvá tétel során', false);
+            }
+        }
+
+        async function deleteTaskSet(id, nev) {
+            if (!confirm(`Biztosan törlöd: "${nev}"?`)) return;
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error();
+                showTsMsg('✓ Törölve', true);
+                loadTaskSets();
+            } catch {
+                showTsMsg('Hiba a törlés során', false);
+            }
+        }
+
+        function showTsMsg(text, ok) {
+            const el = document.getElementById('ts-msg');
+            el.textContent = text;
+            el.style.display = 'block';
+            el.style.background = ok ? 'rgba(74,222,128,0.1)' : 'rgba(233,69,96,0.1)';
+            el.style.border = ok ? '1px solid #4ade80' : '1px solid #e94560';
+            el.style.color  = ok ? '#4ade80' : '#ff8fa3';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
     </script>
 <div style="position:fixed;bottom:8px;right:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;">⌨ Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
 </body>

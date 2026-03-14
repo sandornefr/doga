@@ -55,6 +55,15 @@ public class Database
             INSERT OR IGNORE INTO config (key, value) VALUES ('test_mode', 'practice');
             INSERT OR IGNORE INTO config (key, value) VALUES ('vizsga_kezdes', '');
             INSERT OR IGNORE INTO config (key, value) VALUES ('vizsga_vege', '');
+            CREATE TABLE IF NOT EXISTS task_sets (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                nev           TEXT NOT NULL,
+                tipus         TEXT NOT NULL DEFAULT 'vizsga',
+                python_szoveg TEXT,
+                web_zip_b64   TEXT,
+                aktiv         INTEGER NOT NULL DEFAULT 0,
+                letrehozva    TEXT DEFAULT (datetime('now', 'localtime'))
+            );
             CREATE TABLE IF NOT EXISTS progress (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 email     TEXT NOT NULL,
@@ -308,8 +317,8 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT vezeteknev, keresztnev, email, szerep, osztaly, csoport, created_at
-            FROM users ORDER BY created_at DESC";
+            SELECT vezeteknev, keresztnev, email, szerep, evfolyam, osztaly, csoport, created_at
+            FROM users ORDER BY osztaly, csoport, vezeteknev, keresztnev";
         using var r = cmd.ExecuteReader();
         var list = new List<UserListItem>();
         while (r.Read())
@@ -319,7 +328,8 @@ public class Database
                 r.GetString(3),
                 r.IsDBNull(4) ? null : r.GetString(4),
                 r.IsDBNull(5) ? null : r.GetString(5),
-                r.IsDBNull(6) ? null : r.GetString(6)
+                r.IsDBNull(6) ? null : r.GetString(6),
+                r.IsDBNull(7) ? null : r.GetString(7)
             ));
         return list;
     }
@@ -412,6 +422,117 @@ public class Database
             Math.Round(pcts.Max(), 1),
             records.First().datum
         );
+    }
+
+    // ── Task Sets ─────────────────────────────────────────────────────────────
+
+    public int SaveTaskSet(TaskSetRequest r)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO task_sets (nev, tipus, python_szoveg, web_zip_b64)
+            VALUES ($nev, $tipus, $py, $web);
+            SELECT last_insert_rowid();";
+        cmd.Parameters.AddWithValue("$nev",   r.Nev);
+        cmd.Parameters.AddWithValue("$tipus", r.Tipus ?? "vizsga");
+        cmd.Parameters.AddWithValue("$py",    (object?)r.PythonSzoveg ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$web",   (object?)r.WebZipB64    ?? DBNull.Value);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public List<TaskSetItem> GetTaskSets()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT id, nev, tipus, aktiv,
+                   (python_szoveg IS NOT NULL AND python_szoveg != '') as has_python,
+                   (web_zip_b64   IS NOT NULL AND web_zip_b64   != '') as has_web,
+                   letrehozva
+            FROM task_sets ORDER BY letrehozva DESC";
+        var list = new List<TaskSetItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new TaskSetItem
+            {
+                Id         = r.GetInt32(0),
+                Nev        = r.GetString(1),
+                Tipus      = r.IsDBNull(2) ? "vizsga" : r.GetString(2),
+                Aktiv      = r.GetInt32(3) == 1,
+                HasPython  = r.GetInt32(4) == 1,
+                HasWeb     = r.GetInt32(5) == 1,
+                Letrehozva = r.IsDBNull(6) ? null : r.GetString(6)
+            });
+        return list;
+    }
+
+    // tipus: "gyakorlo" | "live" | "vizsga"
+    public TaskSetDetail? GetActiveTaskSet(string tipus)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT id, nev, tipus, python_szoveg, web_zip_b64, letrehozva
+            FROM task_sets WHERE aktiv = 1 AND tipus = $tipus LIMIT 1";
+        cmd.Parameters.AddWithValue("$tipus", tipus);
+        return ReadTaskSetDetail(cmd);
+    }
+
+    public TaskSetDetail? GetTaskSet(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT id, nev, tipus, python_szoveg, web_zip_b64, letrehozva
+            FROM task_sets WHERE id = $id";
+        cmd.Parameters.AddWithValue("$id", id);
+        return ReadTaskSetDetail(cmd);
+    }
+
+    public bool SetActiveTaskSet(int id)
+    {
+        using var conn = Open();
+        // Csak az ugyanolyan típusú feladatsorok közül deaktiválja a többit
+        using var getCmd = conn.CreateCommand();
+        getCmd.CommandText = "SELECT tipus FROM task_sets WHERE id = $id";
+        getCmd.Parameters.AddWithValue("$id", id);
+        var tipus = getCmd.ExecuteScalar()?.ToString();
+        if (tipus == null) return false;
+
+        using var deactCmd = conn.CreateCommand();
+        deactCmd.CommandText = "UPDATE task_sets SET aktiv = 0 WHERE tipus = $tipus";
+        deactCmd.Parameters.AddWithValue("$tipus", tipus);
+        deactCmd.ExecuteNonQuery();
+
+        using var actCmd = conn.CreateCommand();
+        actCmd.CommandText = "UPDATE task_sets SET aktiv = 1 WHERE id = $id";
+        actCmd.Parameters.AddWithValue("$id", id);
+        return actCmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool DeleteTaskSet(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM task_sets WHERE id = $id";
+        cmd.Parameters.AddWithValue("$id", id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    private static TaskSetDetail? ReadTaskSetDetail(SqliteCommand cmd)
+    {
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return new TaskSetDetail
+        {
+            Id           = r.GetInt32(0),
+            Nev          = r.GetString(1),
+            Tipus        = r.IsDBNull(2) ? "vizsga" : r.GetString(2),
+            PythonSzoveg = r.IsDBNull(3) ? null : r.GetString(3),
+            WebZipB64    = r.IsDBNull(4) ? null : r.GetString(4),
+            Letrehozva   = r.IsDBNull(5) ? null : r.GetString(5)
+        };
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
