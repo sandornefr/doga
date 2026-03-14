@@ -1327,6 +1327,8 @@
             const msLeft = vege - now;
             if (msLeft <= 0) { triggerPythonDeadline(); return; }
             setTimeout(triggerPythonDeadline, msLeft);
+            const warn10 = msLeft - 10 * 60 * 1000;
+            if (warn10 > 0) setTimeout(() => showPythonDeadlineWarning(10), warn10);
             const warn5 = msLeft - 5 * 60 * 1000;
             if (warn5 > 0) setTimeout(() => showPythonDeadlineWarning(5), warn5);
             const warn1 = msLeft - 60 * 1000;

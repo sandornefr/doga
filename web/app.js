@@ -2845,10 +2845,10 @@ function scheduleVizsgaDeadline(vizsgaVegeISO) {
     return;
   }
   setTimeout(triggerVizsgaDeadline, msLeft);
-  // 5 perces figyelmeztetés
+  const warn10 = msLeft - 10 * 60 * 1000;
+  if (warn10 > 0) setTimeout(() => showDeadlineWarning(10), warn10);
   const warn5 = msLeft - 5 * 60 * 1000;
   if (warn5 > 0) setTimeout(() => showDeadlineWarning(5), warn5);
-  // 1 perces figyelmeztetés
   const warn1 = msLeft - 60 * 1000;
   if (warn1 > 0) setTimeout(() => showDeadlineWarning(1), warn1);
 }
