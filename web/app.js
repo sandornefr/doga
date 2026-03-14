@@ -1747,10 +1747,13 @@ function updateStudentDisplay() {
 }
 
 function logoutStudent() {
-  // Ha portálról jött (kandoUser vagy bemutato=1), confirm nélkül visszavisszük a portálra
   const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
   if (sessionStorage.getItem('kandoUser') || isBemutato) {
-    // kandoUser-t NEM töröljük – a portal.html ellenőrzi és megjeleníti a főmenüt
+    // Vizsga módban: web rész befejezettnek jelölve
+    if (typeof acLive !== 'undefined' && acLive) {
+      sessionStorage.setItem('vizsga_web_beadva', '1');
+      submitWebToBackend();
+    }
     location.replace('../portal.html');
     return;
   }
@@ -2871,6 +2874,7 @@ function showDeadlineWarning(minutes) {
 
 function triggerVizsgaDeadline() {
   acLive = false;
+  sessionStorage.setItem('vizsga_web_beadva', '1');
   // Utolsó mentés a backendbe
   submitWebToBackend();
   // Szerkesztők tiltása

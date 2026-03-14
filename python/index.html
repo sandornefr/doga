@@ -1344,7 +1344,16 @@
             }
         }
 
+        // Beadás gombra flag beállítás (obfuszkált JS kezeli a tényleges beadást)
+        (function() {
+            const btn = document.getElementById('submit-btn');
+            if (btn) btn.addEventListener('click', function() {
+                sessionStorage.setItem('vizsga_python_beadva', '1');
+            }, true);
+        })();
+
         function triggerPythonDeadline() {
+            sessionStorage.setItem('vizsga_python_beadva', '1');
             // submitTest() az obfuszkált JS-ben van – meghívjuk ha elérhető
             if (typeof window.submitTest === 'function') {
                 window.submitTest();

@@ -359,6 +359,41 @@
             font-weight: 700;
             letter-spacing: 0.5px;
         }
+        /* Vizsga befejezés képernyő */
+        #vizsga-befejezve {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0a0e1a;
+            z-index: 500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        #vizsga-befejezve .vb-icon  { font-size: 4rem; margin-bottom: 1rem; }
+        #vizsga-befejezve .vb-title { color: #2ed573; font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
+        #vizsga-befejezve .vb-sub   { color: #94a3b8; font-size: 1rem; margin-bottom: 2rem; max-width: 440px; }
+        #vizsga-befejezve .vb-box   {
+            background: #16213e; border: 1px solid #0f3460; border-radius: 14px;
+            padding: 1.5rem 2rem; margin-bottom: 2rem; max-width: 400px; width: 100%;
+        }
+        #vizsga-befejezve .vb-task  { display: flex; align-items: center; gap: 10px; padding: 8px 0; color: #e0e0e0; font-size: 0.95rem; }
+        #vizsga-befejezve .vb-task + .vb-task { border-top: 1px solid #0f3460; }
+        #vizsga-befejezve .vb-check { color: #2ed573; font-size: 1.2rem; }
+        #vizsga-befejezve .vb-hint  { color: #475569; font-size: 0.8rem; margin-top: 1rem; }
+        /* Vizsga státusz kártyák */
+        .vizsga-status {
+            display: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .vizsga-status.beadva  { background: #052e16; color: #2ed573; border: 1px solid #2ed573; }
+        .vizsga-status.folyamatban { background: #1a1a2e; color: #94a3b8; border: 1px solid #334155; }
 
         .ered-countdown {
             background: #0f3460; border-radius: 10px; padding: 12px 16px;
@@ -398,15 +433,17 @@
 
     <!-- Tanulói nézet -->
     <div id="student-portal" class="options-grid" style="display:none">
-        <a class="option-card python" href="python/index.html" onclick="event.preventDefault(); location.replace('python/index.html')">
+        <a class="option-card python" id="card-python" href="python/index.html" onclick="event.preventDefault(); location.replace('python/index.html')">
             <span class="icon">🐍</span>
             <span class="label">PYTHON</span>
             <span class="desc">Python programozási feladatok</span>
+            <span class="vizsga-status" id="status-python"></span>
         </a>
-        <a class="option-card web" href="web/index.html" onclick="event.preventDefault(); location.replace('web/index.html')">
+        <a class="option-card web" id="card-web" href="web/index.html" onclick="event.preventDefault(); location.replace('web/index.html')">
             <span class="icon">🌐</span>
             <span class="label">WEB</span>
             <span class="desc">HTML, CSS, Bootstrap feladatok</span>
+            <span class="vizsga-status" id="status-web"></span>
         </a>
     </div>
 
@@ -430,6 +467,18 @@
             </a>
         </div>
     </div>
+</div>
+
+<!-- Vizsga befejezve képernyő -->
+<div id="vizsga-befejezve">
+    <div class="vb-icon">🎓</div>
+    <div class="vb-title">Vizsga befejezve!</div>
+    <div class="vb-sub">Mindkét digitális feladatot sikeresen beadtad. Most már elkezdheted a Packet Tracer feladatot.</div>
+    <div class="vb-box">
+        <div class="vb-task"><span class="vb-check">✓</span> WEB feladat – beadva</div>
+        <div class="vb-task"><span class="vb-check">✓</span> PYTHON feladat – beadva</div>
+    </div>
+    <div class="vb-hint">Ez az ablak bezárható. Indítsd el a Packet Tracer programot a folytatáshoz.</div>
 </div>
 
 <!-- Vizsga visszaszámláló képernyő -->
@@ -545,6 +594,9 @@
             const badge = document.getElementById('vizsga-badge');
             if (badge) badge.style.display = 'inline-block';
 
+            // Státusz kártyák + befejezési képernyő
+            updateVizsgaStatus();
+
             if (!cfg.vizsga_kezdes) return;
 
             const kezdes = new Date(cfg.vizsga_kezdes);
@@ -580,6 +632,29 @@
             const iv = setInterval(tick, 1000);
         } catch {}
     })();
+
+    function updateVizsgaStatus() {
+        const webBeadva    = sessionStorage.getItem('vizsga_web_beadva')    === '1';
+        const pythonBeadva = sessionStorage.getItem('vizsga_python_beadva') === '1';
+
+        ['web', 'python'].forEach(targy => {
+            const beadva  = targy === 'web' ? webBeadva : pythonBeadva;
+            const statusEl = document.getElementById('status-' + targy);
+            if (!statusEl) return;
+            statusEl.style.display = 'inline-block';
+            if (beadva) {
+                statusEl.textContent = '✓ Beadva';
+                statusEl.className = 'vizsga-status beadva';
+            } else {
+                statusEl.textContent = '→ Megnyitás';
+                statusEl.className = 'vizsga-status folyamatban';
+            }
+        });
+
+        if (webBeadva && pythonBeadva) {
+            document.getElementById('vizsga-befejezve').style.display = 'flex';
+        }
+    }
 
     // ── Eredmények modal ──────────────────────────────────────────────────────
 
