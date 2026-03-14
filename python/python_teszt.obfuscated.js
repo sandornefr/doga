@@ -1,1 +1,2023 @@
-const a0_0x1a744d=a0_0x2de4;(function(_0x1fe826,_0x320668){const _0x5d27c2=a0_0x2de4,_0x485971=_0x1fe826();while(!![]){try{const _0x43130f=-parseInt(_0x5d27c2(0x2ba))/0x1*(parseInt(_0x5d27c2(0x274))/0x2)+parseInt(_0x5d27c2(0x2d6))/0x3*(parseInt(_0x5d27c2(0x303))/0x4)+parseInt(_0x5d27c2(0x382))/0x5*(parseInt(_0x5d27c2(0x276))/0x6)+parseInt(_0x5d27c2(0x2b9))/0x7+parseInt(_0x5d27c2(0x219))/0x8+-parseInt(_0x5d27c2(0x29b))/0x9+-parseInt(_0x5d27c2(0x370))/0xa;if(_0x43130f===_0x320668)break;else _0x485971['push'](_0x485971['shift']());}catch(_0x1a4413){_0x485971['push'](_0x485971['shift']());}}}(a0_0x3fcb,0x3cc2b));const RAILWAY_URL='https://agazati.up.railway.app';let testMode=a0_0x1a744d(0x38a),tasks=[],selectedTasks=[],currentTaskIndex=0x0,globalTimeRemaining=0x2d*0x3c,globalTimer=null,codeEditor=null,testStartTime=null,testEndTime=null,studentData={},taskStartTimes=[],taskAnswers=[],eventLog=[],term=null,fitAddon=null,terminalReady=![],terminalInputResolver=null,terminalInputBuffer='',focusLossTimeout=null,focusCheckInterval=null,fullscreenCheckInterval=null,autosaveInterval=null,cheatDetected=![],cheatReason='',cheatWarningCount=0x0,cheatPenalty=![],lastCheatWarningTime=0x0,fullscreenEnforced=![],fullscreenGraceUntil=0x0,suspiciousJumps=0x0,lastCodeLengths=[],testSubmitted=![],pyodideInstance=null,pyodideLoadingPromise=null,pythonCodeRunning=![],currentInputDisposable=null;async function getPyodide(){const _0x132305=a0_0x1a744d;if(pyodideInstance)return pyodideInstance;return!pyodideLoadingPromise&&(pyodideLoadingPromise=loadPyodide()[_0x132305(0x21a)](_0x1f91db=>{pyodideLoadingPromise=null;throw _0x1f91db;})),pyodideInstance=await pyodideLoadingPromise,pyodideInstance;}const startSection=document[a0_0x1a744d(0x384)](a0_0x1a744d(0x1f5)),quizSection=document[a0_0x1a744d(0x384)]('quiz-section'),endSection=document[a0_0x1a744d(0x384)](a0_0x1a744d(0x2ce)),submitModal=document[a0_0x1a744d(0x384)](a0_0x1a744d(0x207)),fullscreenPrompt=document[a0_0x1a744d(0x384)](a0_0x1a744d(0x1ee));document[a0_0x1a744d(0x2ae)](a0_0x1a744d(0x2f0),()=>{initializeApp();});async function initializeApp(){const _0x1118e2=a0_0x1a744d;logEvent(_0x1118e2(0x331)),setupEventListeners(),await loadTasksFromFile(),await loadTestMode(),startFullscreenCheck();const _0x5526dd=sessionStorage[_0x1118e2(0x330)](_0x1118e2(0x221))===_0x1118e2(0x31c);if(testMode==='practice'||_0x5526dd){const _0xbfb8b6=document[_0x1118e2(0x384)](_0x1118e2(0x1f5));if(_0xbfb8b6)_0xbfb8b6[_0x1118e2(0x28f)][_0x1118e2(0x366)]=_0x1118e2(0x251);startTest();}else{const _0x50171b=document['getElementById'](_0x1118e2(0x324));if(_0x50171b)_0x50171b[_0x1118e2(0x28f)]['display']=_0x1118e2(0x210);const _0x56da73=document[_0x1118e2(0x384)]('start-btn');if(_0x56da73)_0x56da73['textContent']=_0x1118e2(0x379);}getPyodide()['then'](()=>debugLog('✅\x20Python\x20értelmező\x20kész'))['catch'](_0x536556=>debugLog(_0x1118e2(0x2a8)+_0x536556[_0x1118e2(0x37f)]));}async function loadTestMode(){const _0x58e4e8=a0_0x1a744d,_0x5b55a0=(_0x26b8dd,_0x356e61)=>{const _0xf75e6e=a0_0x2de4,_0x5aa71b=new AbortController(),_0x495533=setTimeout(()=>_0x5aa71b[_0xf75e6e(0x37d)](),_0x356e61);return fetch(_0x26b8dd,{'signal':_0x5aa71b['signal']})['finally'](()=>clearTimeout(_0x495533));};for(let _0x193458=0x1;_0x193458<=0x3;_0x193458++){try{debugLog(_0x58e4e8(0x241)+_0x193458+_0x58e4e8(0x36b));const _0x18609e=await _0x5b55a0(RAILWAY_URL+_0x58e4e8(0x246),0x1f40),_0x26b615=await _0x18609e[_0x58e4e8(0x2bb)]();_0x26b615[_0x58e4e8(0x2bf)]?(testMode=_0x26b615['test_mode'],logEvent(_0x58e4e8(0x25f),{'mode':testMode}),debugLog(_0x58e4e8(0x2bc)+(testMode==='practice'?_0x58e4e8(0x316):_0x58e4e8(0x253)))):debugLog('⚠️\x20Teszt\x20mód\x20nem\x20érkezett,\x20alapértelmezett:\x20GYAKORLÓ');break;}catch(_0x35041f){debugLog(_0x58e4e8(0x26f)+_0x193458+_0x58e4e8(0x365)+_0x35041f['message']);if(_0x193458<0x3)await new Promise(_0x46d24b=>setTimeout(_0x46d24b,0x7d0));else logEvent(_0x58e4e8(0x2b7),{'error':_0x35041f[_0x58e4e8(0x37f)]}),debugLog(_0x58e4e8(0x335));}}updateTestModeBadge();}async function submitToBackend(){const _0x30f4db=a0_0x1a744d;try{const _0x4a964b=Math[_0x30f4db(0x231)]((testEndTime-testStartTime)/0x3e8),_0x67378c=selectedTasks['map'](_0x4e3a4e=>_0x4e3a4e[_0x30f4db(0x265)])[_0x30f4db(0x2fb)](','),_0x53baa0=selectedTasks[_0x30f4db(0x29e)](_0xcca070=>_0xcca070[_0x30f4db(0x28a)]||0x0),_0x7ce5e1=taskAnswers[_0x30f4db(0x29e)](_0x101e3c=>_0x101e3c[_0x30f4db(0x2e5)]||0x0),_0x4b26ef=_0x7ce5e1['reduce']((_0x40d795,_0x2df80b)=>_0x40d795+_0x2df80b,0x0),_0x272e41=_0x53baa0[_0x30f4db(0x2cd)]((_0x1ee281,_0x41d179)=>_0x1ee281+_0x41d179,0x0),_0x5833ff=JSON[_0x30f4db(0x250)]({'tasks':taskAnswers[_0x30f4db(0x29e)]((_0x4ab12a,_0x4fa47e)=>({'task':selectedTasks[_0x4fa47e]?selectedTasks[_0x4fa47e][_0x30f4db(0x265)]:_0x4fa47e+0x1,'code':_0x4ab12a[_0x30f4db(0x2c1)]||''})),'suspiciousJumps':suspiciousJumps,'eventLog':eventLog}),_0x2ccb05={'name':studentData['name'],'email':studentData['email'],'osztaly':studentData[_0x30f4db(0x26b)]||'','csoport':studentData[_0x30f4db(0x31d)]||null,'taskIds':_0x67378c,'scores':_0x7ce5e1[_0x30f4db(0x2fb)](','),'maxScores':_0x53baa0[_0x30f4db(0x2fb)](','),'totalScore':_0x4b26ef,'maxTotal':_0x272e41,'duration':_0x4a964b,'mode':testMode===_0x30f4db(0x217)?_0x30f4db(0x217):_0x30f4db(0x38a),'codeSnapshot':_0x5833ff,'cheatPenalty':cheatPenalty,'cheatWarnings':cheatWarningCount};debugLog('📦\x20Adat\x20előkészítve');const _0xdfb374=await fetch(RAILWAY_URL+_0x30f4db(0x37a),{'method':_0x30f4db(0x2f3),'headers':{'Content-Type':_0x30f4db(0x359)},'body':JSON[_0x30f4db(0x250)](_0x2ccb05)});debugLog(_0x30f4db(0x2ca)+_0xdfb374[_0x30f4db(0x2a5)]);const _0x5b366d=await _0xdfb374[_0x30f4db(0x2bb)]();if(_0x5b366d[_0x30f4db(0x346)])return logEvent('Submission\x20successful',{'submission_id':_0x5b366d['id']}),debugLog(_0x30f4db(0x29c)+_0x5b366d['id']),{'success':!![],'submission_id':_0x5b366d['id']};else throw new Error(_0x30f4db(0x381));}catch(_0x268207){return logEvent('Submission\x20error',{'error':_0x268207[_0x30f4db(0x37f)]}),debugLog(_0x30f4db(0x232)),null;}}async function autoSaveProgress(){const _0x2c1d6f=a0_0x1a744d;try{if(currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers[_0x2c1d6f(0x272)]){const _0x1cdff0=codeEditor[_0x2c1d6f(0x21c)](),_0x479370=lastCodeLengths[currentTaskIndex]||0x0,_0xa60b14=_0x1cdff0[_0x2c1d6f(0x272)]-_0x479370;testMode===_0x2c1d6f(0x217)&&_0xa60b14>=0x50&&(suspiciousJumps++,logEvent(_0x2c1d6f(0x2de),{'chars':_0xa60b14,'task':currentTaskIndex+0x1,'total':suspiciousJumps}),debugLog(_0x2c1d6f(0x2e2)+_0xa60b14+_0x2c1d6f(0x204)+suspiciousJumps+')')),lastCodeLengths[currentTaskIndex]=_0x1cdff0[_0x2c1d6f(0x272)],taskAnswers[currentTaskIndex][_0x2c1d6f(0x2c1)]=_0x1cdff0;}const _0x4cf86f={'studentData':studentData,'taskAnswers':taskAnswers[_0x2c1d6f(0x29e)](_0x3473d7=>({'taskNumber':_0x3473d7[_0x2c1d6f(0x28e)],'answer':_0x3473d7[_0x2c1d6f(0x2c1)]||''})),'timestamp':new Date()[_0x2c1d6f(0x394)]()};sessionStorage[_0x2c1d6f(0x36c)](_0x2c1d6f(0x22e),JSON['stringify'](_0x4cf86f)),debugLog(_0x2c1d6f(0x312));}catch(_0x4d0934){console[_0x2c1d6f(0x391)]('Autosave\x20failed:',_0x4d0934);}}function a0_0x3fcb(){const _0x5e9ade=['input','getData','toISOString','runPythonAsync','max','F12','MINTA\x20KIMENET:','timestamp','Tab','Érdemjegy:\x201','fullscreenchange','end-student-name','\x20karakter','Név:\x20','task-example','altKey','fullscreen-prompt','\x20\x20\x20\x20Nem\x20teljesített\x20feltételek\x20(tanári\x20mérlegelés\x20szükséges):','open','revokeObjectURL','Ok:\x20','toFixed','Egy\x20érdemjegy\x20levonás\x20automatikusan\x20rögzítve!','start-section','scrollTop','random','3/3\x20figyelmeztetés\x20elérve.\x20A\x20tanuló\x20a\x20teszt\x20folytatásához\x20engedélyt\x20kell\x20kérjen.','pushState','Figyelmeztetés\x20(érdemjegy\x20levonás!)','\x20\x20\x20\x20(Pontozás\x20nem\x20futott\x20le.)','scoring-pass','taskExample','classList','Hátralévő\x20idő:\x20','\x20\x20\x20\x20\x20\x20-\x20','Rendben','slice','ctrlKey','\x20karakter\x20(összesen:\x20','2px\x20solid\x20#e94560','event','submit-modal','className','teszt','shiftKey','key','description','1px\x20solid\x20#333',':python:','js_input','block','runPython','```python','flex','.\x20FELADAT\x20(Eredeti\x20','\x20·\x20','timeSpent','live','Másik\x20fülre\x20váltottál','2589304ScXyHY','catch','min','getValue','add','Csalás\x20észlelve!','⚠️\x20EmailJS\x20nincs\x20betöltve','insertBefore','kandTeacherMode','cssText','int_float','Átugrva:\x20','warning','Nyomj\x20OK-t\x20ha\x20mégis\x20folytatni\x20szeretnéd,\x20Mégsét\x20ha\x20előbb\x20frissítenél.','\x0d\x0a❌\x20Nem\x20sikerült\x20betölteni\x20a\x20Python\x20értelmezőt!','\x08\x20\x08','DevTools\x20detected\x20-\x20potential\x20cheating','contextmenu','Submit\x20modal\x20shown','href','Pontozas:','kandoAutosave','text','border','round','❌\x20Backend\x20hiba','\x27\x27\x27','mozfullscreenchange','run-code-btn','email','\x20pont)','white','\x20pont</span>\x0a\x20\x20\x20\x20</div><ul\x20class=\x22scoring-list\x22>','div','sandornefr@gmail.com','❌\x20Kód\x20futtatási\x20hiba','Submit\x20modal\x20hidden','getTime','Érdemjegy:\x205','def','🔄\x20Teszt\x20mód\x20betöltése...\x20(','deltaX','rgba(255,\x20255,\x20255,\x200.2)','hidden','task-number','/api/config','Teszt\x20indítása','A\x20válaszaidat\x20elküldtük\x20a\x20tanárnak.','Dátum:\x20','TANULÓ\x20VÁLASZA:','clientX','\x20.\x20feladat)\x20---','test-watermark','===\x20FELADATOK\x20ÉS\x20VÁLASZOK\x20===','criteria','stringify','none','body','🔴\x20ÉLES','matchAll','Consolas,\x20\x27Lucida\x20Console\x27,\x20\x27Courier\x20New\x27,\x20monospace','substring','task-navigation','nev','paddingBottom','monokai','msFullscreenElement','\x20db\x208\x20pontos,\x20','cheat-warning-count','.\x20feladat','Test\x20mode\x20loaded','⏳\x20Fut...','webkitFullscreenElement','passed','startsWith','\x20\x20\x20\x20','number','\x0a❌\x20\x20Hiba:\x20','label','example','oktato','scrollHeight','class','Figyelmeztetések\x20száma:\x20','clipboardData','\x5cbinput\x5cs*\x5c(\x5cs*f?[\x22\x27]','⚠️\x20Betöltési\x20kísérlet\x20','Csalást\x20észleltünk,\x20ezért\x20az\x20eddigi\x20munkád\x20kerül\x20értékelésre.\x20A\x20teszt\x20eredménye:\x20elégtelen.','\x20/\x20','length','</li>','2fEFCAw','ismeretlen','2760SCfeqx','\x20sor','text/plain;charset=utf-8','cm-specialchar','Hiba\x20történt\x20a\x20feladatok\x20betöltésekor!','forEach','onData','fit','hu-HU','@kkszki.hu','0.x','match','emailjs','Test\x20started','has','📧\x20Email\x20küldése...','earnedPoints','innerHeight','hasFocus','replace','points','Érdemjegy:\x202','pointermove','\x0aimport\x20sys\x0afrom\x20io\x20import\x20StringIO\x0aimport\x20builtins\x0a\x0a#\x20Közvetlen\x20terminál-kimenet:\x20print()\x20azonnal\x20megjelenik\x0aclass\x20_TermOut:\x0a\x20\x20\x20\x20def\x20write(self,\x20text):\x0a\x20\x20\x20\x20\x20\x20\x20\x20from\x20js\x20import\x20js_print\x0a\x20\x20\x20\x20\x20\x20\x20\x20js_print(text)\x0a\x20\x20\x20\x20\x20\x20\x20\x20return\x20len(text)\x0a\x20\x20\x20\x20def\x20flush(self):\x0a\x20\x20\x20\x20\x20\x20\x20\x20pass\x0a\x0asys.stdout\x20=\x20_TermOut()\x0asys.stderr\x20=\x20StringIO()\x0a\x0aasync\x20def\x20input(prompt=\x27\x27):\x0a\x20\x20\x20\x20from\x20js\x20import\x20js_input\x0a\x20\x20\x20\x20result\x20=\x20await\x20js_input(prompt)\x0a\x20\x20\x20\x20return\x20result\x0a\x0abuiltins.input\x20=\x20input\x0a','taskNumber','style','Window\x20lost\x20focus','scoring-panel','preventDefault','toLowerCase','Meta','NFD','\x0aimport\x20sys\x0afrom\x20io\x20import\x20StringIO\x0aimport\x20builtins\x0a\x0asys.stdout\x20=\x20StringIO()\x0asys.stderr\x20=\x20StringIO()\x0a\x0aasync\x20def\x20input(prompt=\x27\x27):\x0a\x20\x20\x20\x20from\x20js\x20import\x20js_input\x0a\x20\x20\x20\x20result\x20=\x20await\x20js_input(prompt)\x0a\x20\x20\x20\x20return\x20result\x0a\x0abuiltins.input\x20=\x20input\x0a','FELADAT\x20LEÍRÁSA:','msExitFullscreen','outerHeight','https://agazati.up.railway.app/api/progress','3202839LzZWNe','✅\x20Sikeres\x20beküldés!\x20ID:\x20','template_vnqc2fd','map','scoring-pending','task-description','then','background','feladatok.txt','await','status','#0c0c0c','Érdemjegy:\x204','⚠️\x20Python\x20előbetöltési\x20hiba:\x20','charCodeAt','floor','()[]{}\x27\x27','Azonosító:\x20','fromTextArea','addEventListener','split','appendChild','Feladat\x20beadva','dispose','✅\x20Oktató\x20értesítve','===\x20ESEMÉNYNAPLÓ\x20===','Task\x20load\x20error','Email:\x20','Test\x20mode\x20load\x20error','▶\x20Kód\x20futtatása','3355352NirGRx','497138byGCgM','json','✅\x20Teszt\x20mód\x20betöltve:\x20','Teszt\x20vége:\x20','innerHTML','test_mode','fullscreenElement','answer','\x20db\x2014\x20pontos.','cesxNZpDSC16dOY2u','Task\x20skipped','\x20\x20\x20Ha\x20ismételten\x20nem\x20működik,\x20értesítsd\x20a\x20tanárt!','filter','debug-panel','for','end-icon','📡\x20Backend\x20válasz\x20státusz:\x20','skipped','\x20perc\x20','reduce','end-section','scoring-content','⚠️\x20Csalási\x20kísérlet:\x20','Focus\x20check:\x20window\x20still\x20unfocused','Teljes\x20idő:\x20','change','pointerdown','setValue','996RmtGYY','Python\x20teszt\x20-\x20beadás','```','visibilitychange','Task\x20shown','Megszerzett\x20pontok:\x20','.quiz-top-bar','.\x20sor:\x20behúzás\x20nem\x204-es\x20többszöröse\x20(','Suspicious\x20code\x20jump','#c0c0c0','Cheat\x20warning\x20#','toLocaleTimeString','⚠️\x20Gyanús\x20kódugrás:\x20+','Paste\x20blocked','Csalás:\x20Igen\x20(','score','paste','Fullscreen\x20entered','🚫\x20Nagy\x20beillesztés\x20nem\x20engedélyezett!','linear-gradient(135deg,\x20#7a0000,\x20#c0392b)','includes','custom-time-input','bekeres','marginBottom','end-teacher-btn','background:#0d2b0d;border:1px\x20solid\x20#2ed573;color:#2ed573;padding:3px\x2012px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;','DOMContentLoaded','Javasolt:\x20Frissítsd\x20az\x20oldalt\x20(F5),\x20várj\x2010-15\x20másodpercet,\x20majd\x20próbáld\x20újra.\x0a\x0a','\x20db\x2014\x20pontos)','POST','elif','wheel','end-title','python','\x22\x22\x22','⚠️\x20Nincs\x20beírva\x20semmilyen\x20kód!','test','join','\x0a✅\x20\x20Kód\x20sikeresen\x20lefutott!','debug-content','requestFullscreen','firstChild','💡\x20Próbáld\x20meg\x20újra\x20a\x20\x22Kód\x20futtatása\x22\x20gombbal!','\x5cb|(^|\x5cn)\x5cs*from\x5cs+','loadAddon','4388CzRCFW','evfolyam','final-time','submission_id','return','js_print','blur','contains','pending','taskDescription','popstate','5px','mozCancelFullScreen','cheat-warning-text','mozFullScreenElement','💾\x20Automatikus\x20mentés\x20(lokális)','Escape','Az\x20idő\x20lejárt!\x20A\x20teszt\x20automatikusan\x20beküldésre\x20került.','cheat-warning-overlay','🎓\x20GYAKORLÓ','<div\x20class=\x22scoring-header-row\x22><span\x20class=\x22scoring-title\x22\x20style=\x22color:#721c24\x22>⚠️\x20Nincs\x20beírva\x20kód!</span></div>','\x20-\x20','webkitExitFullscreen','value','push','true','group','test-mode-badge','scoringResults','score-grade\x20grade-','Igen','writeln','Időráfordítás:\x20','start-live-rules','<li\x20class=\x22','abs','start-btn','\x5cs+import','✅\x20Kód\x20futtatva','function','Köszönjük\x20a\x20részvételt!\x20(Gyakorló\x20mód)','\x20feladat\x20betöltve\x20(','buttons','⚠️\x20Behúzás\x20figyelmeztetés:','write','getItem','Application\x20initialized','type','createElement','---\x20','❌\x20Teszt\x20mód\x20betöltése\x20SIKERTELEN,\x20alapértelmezett:\x20GYAKORLÓ','Érdemjegy:\x203','Mód:\x20','Százalék:\x20','Email\x20send\x20error','test-mode-text','confirm-submit','keydown','===\x20ÖSSZESÍTETT\x20PONTOZÁS\x20===','score-display','sys.stdout.getvalue()','</ul>','Elhagytad\x20az\x20ablakot','exitFullscreen','kandoUser','Csalás:\x20Nem','Nem','success','replaceSelection','⚠️\x20CSALÁSI\x20KÍSÉRLET\x20ÉRTESÍTŐ','download','every','innerWidth','else','title','-\x20...további\x20','click','tartalmaz','Email\x20sent','(^|\x5cn)\x5cs*import\x5cs+','criterion','Csalás\x20(kizárva)','active','\x20másodperc','[\x22\x27]\x5cs*\x5c)','\x20szóköz)','application/json','⚠️\x20A\x20Python\x20értelmező\x20még\x20nem\x20töltődött\x20be\x20teljesen!\x0a\x0a','Fullscreen\x20exited','\x20\x20\x20\x20Minden\x20feltétel\x20teljesítve.','startTime','mozRequestFullScreen','webkitRequestFullscreen','now','send','name','Kérlek,\x20töltsd\x20ki\x20az\x20összes\x20mezőt!','outerWidth','/3\x20sikertelen:\x20','display','button','padStart','normalize','\x5c$&','/3)','setItem','toLocaleString','🎓\x20GYAKORLÓ\x20MÓD','span','2092990gRHBXO','Osztály:\x20','submit-btn','osztaly','msRequestFullscreen','remove','⚠️\x20Hiba\x20történt\x20a\x20beküldés\x20során,\x20de\x20a\x20teszt\x20véget\x20ért.','async\x20def\x20__student_main__():\x0a','Kiléptél\x20a\x20fullscreen\x20módból','Elfogadom\x20a\x20szabályokat\x20–\x20Teszt\x20indítása','/api/submit','parse','⏳\x20Ellenőrzés\x20folyamatban...','abort','sort','message','textContent','Beküldés\x20sikertelen','1565GfmIzf','noreply@kkszki.hu','getElementById','indexOf','disabled','global-timer','returnValue','deltaY','practice','🔍\x20Pontozás','check-scoring-btn','stopPropagation','cheat-warning-close-btn','trim','some','log'];a0_0x3fcb=function(){return _0x5e9ade;};return a0_0x3fcb();}function setupEventListeners(){const _0xe9cd90=a0_0x1a744d;document[_0xe9cd90(0x384)](_0xe9cd90(0x327))[_0xe9cd90(0x2ae)](_0xe9cd90(0x34f),startTest),document[_0xe9cd90(0x384)]('skip-btn')['addEventListener'](_0xe9cd90(0x34f),skipTask),document[_0xe9cd90(0x384)](_0xe9cd90(0x372))[_0xe9cd90(0x2ae)](_0xe9cd90(0x34f),showSubmitModal),document[_0xe9cd90(0x384)](_0xe9cd90(0x33b))['addEventListener'](_0xe9cd90(0x34f),submitTest),document[_0xe9cd90(0x384)]('cancel-submit')[_0xe9cd90(0x2ae)](_0xe9cd90(0x34f),hideSubmitModal),document['getElementById'](_0xe9cd90(0x235))[_0xe9cd90(0x2ae)](_0xe9cd90(0x34f),runPythonCode),document[_0xe9cd90(0x384)](_0xe9cd90(0x38c))['addEventListener']('click',checkScoring),document[_0xe9cd90(0x2ae)](_0xe9cd90(0x22a),_0x3be4b3=>{const _0x959bc5=_0xe9cd90;return _0x3be4b3[_0x959bc5(0x292)](),![];}),document['addEventListener'](_0xe9cd90(0x33c),_0xfb358a=>{const _0x44ac86=_0xe9cd90;if(_0xfb358a[_0x44ac86(0x20b)]===_0x44ac86(0x397)||_0xfb358a[_0x44ac86(0x203)]&&_0xfb358a[_0x44ac86(0x20a)]&&(_0xfb358a[_0x44ac86(0x20b)]==='I'||_0xfb358a['key']==='J'||_0xfb358a[_0x44ac86(0x20b)]==='C')||_0xfb358a[_0x44ac86(0x203)]&&_0xfb358a['key']==='U')return _0xfb358a[_0x44ac86(0x292)](),![];if(!quizSection[_0x44ac86(0x1fe)][_0x44ac86(0x30a)](_0x44ac86(0x244))&&testMode===_0x44ac86(0x217)){if(_0xfb358a[_0x44ac86(0x1ed)]&&_0xfb358a[_0x44ac86(0x20b)]==='Tab'||_0xfb358a[_0x44ac86(0x1ed)]&&_0xfb358a[_0x44ac86(0x20b)]==='F4'||_0xfb358a[_0x44ac86(0x203)]&&_0xfb358a[_0x44ac86(0x20b)]==='Tab'||_0xfb358a['ctrlKey']&&_0xfb358a[_0x44ac86(0x20a)]&&_0xfb358a['key']===_0x44ac86(0x1e6)||_0xfb358a[_0x44ac86(0x20b)]===_0x44ac86(0x294)||_0xfb358a[_0x44ac86(0x20b)]==='OS'||_0xfb358a[_0x44ac86(0x20b)]===_0x44ac86(0x313)||_0xfb358a['ctrlKey']&&_0xfb358a[_0x44ac86(0x20b)]===_0x44ac86(0x313)||_0xfb358a[_0x44ac86(0x1ed)]&&_0xfb358a[_0x44ac86(0x20b)]===_0x44ac86(0x313))return _0xfb358a['preventDefault'](),_0xfb358a['stopPropagation'](),![];}}),document['addEventListener'](_0xe9cd90(0x2f5),_0x28723f=>{const _0xa2af9b=_0xe9cd90;!quizSection[_0xa2af9b(0x1fe)][_0xa2af9b(0x30a)](_0xa2af9b(0x244))&&(Math[_0xa2af9b(0x326)](_0x28723f[_0xa2af9b(0x242)])>Math[_0xa2af9b(0x326)](_0x28723f[_0xa2af9b(0x389)])&&Math[_0xa2af9b(0x326)](_0x28723f[_0xa2af9b(0x242)])>0x14&&_0x28723f[_0xa2af9b(0x292)]());},{'passive':![]});let _0x31aa60=0x0;document[_0xe9cd90(0x2ae)](_0xe9cd90(0x2d4),_0x2fbd42=>{const _0x23a029=_0xe9cd90;_0x31aa60=_0x2fbd42[_0x23a029(0x24b)];}),document[_0xe9cd90(0x2ae)](_0xe9cd90(0x28c),_0x408707=>{const _0x3e0c15=_0xe9cd90;if(!quizSection[_0x3e0c15(0x1fe)][_0x3e0c15(0x30a)](_0x3e0c15(0x244))&&_0x408707[_0x3e0c15(0x32d)]>0x0){const _0x4aabb9=_0x408707[_0x3e0c15(0x24b)]-_0x31aa60;Math[_0x3e0c15(0x326)](_0x4aabb9)>0x50&&_0x408707[_0x3e0c15(0x292)]();}},{'passive':![]}),document['addEventListener'](_0xe9cd90(0x2e6),_0x1ff6dd=>{const _0x130777=_0xe9cd90;if(quizSection[_0x130777(0x1fe)]['contains'](_0x130777(0x244))||testMode!==_0x130777(0x217))return;const _0x4caf17=(_0x1ff6dd[_0x130777(0x26d)]||window['clipboardData'])?.[_0x130777(0x393)]('text/plain')||'';if(_0x4caf17[_0x130777(0x272)]>=0x2d){_0x1ff6dd['preventDefault'](),_0x1ff6dd[_0x130777(0x38d)](),suspiciousJumps++,logEvent(_0x130777(0x2e3),{'chars':_0x4caf17['length'],'total':suspiciousJumps}),debugLog('🚫\x20Beillesztés\x20blokkolva:\x20'+_0x4caf17['length']+_0x130777(0x1ea));const _0x3fb4fa=document[_0x130777(0x333)](_0x130777(0x23a));_0x3fb4fa[_0x130777(0x380)]=_0x130777(0x2e8),_0x3fb4fa[_0x130777(0x28f)][_0x130777(0x222)]='position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#e94560;color:white;padding:10px\x2022px;border-radius:8px;font-weight:700;z-index:99999;font-size:0.95rem;box-shadow:0\x204px\x2016px\x20rgba(0,0,0,0.4);',document[_0x130777(0x252)][_0x130777(0x2b0)](_0x3fb4fa),setTimeout(()=>_0x3fb4fa[_0x130777(0x375)](),0x9c4);}},!![]),detectDevTools(),document[_0xe9cd90(0x2ae)](_0xe9cd90(0x1e8),handleFullscreenChange),document[_0xe9cd90(0x2ae)]('webkitfullscreenchange',handleFullscreenChange),document[_0xe9cd90(0x2ae)](_0xe9cd90(0x234),handleFullscreenChange),document[_0xe9cd90(0x2ae)]('MSFullscreenChange',handleFullscreenChange),document['addEventListener'](_0xe9cd90(0x2d9),handleVisibilityChange),window['addEventListener'](_0xe9cd90(0x309),handleWindowBlur),window[_0xe9cd90(0x2ae)]('focus',handleWindowFocus),startFocusCheck();}async function loadTasksFromFile(){const _0x151039=a0_0x1a744d;try{const _0xc9d3de=await fetch(_0x151039(0x2a3)),_0x395912=await _0xc9d3de['text']();parseTasks(_0x395912),logEvent('Tasks\x20loaded',{'count':tasks[_0x151039(0x272)]});}catch(_0x181832){alert(_0x151039(0x27a)),logEvent(_0x151039(0x2b5),{'error':_0x181832[_0x151039(0x37f)]});}}function parseTasks(_0x5bfa74){const _0x606bb3=a0_0x1a744d,_0xce6f42=_0x5bfa74[_0x606bb3(0x2af)]('\x0a');let _0x587150=null,_0x16f676=![],_0x387aeb=![],_0x877c0f=[],_0x20ad6c=[];for(let _0x9fd1de of _0xce6f42){const _0x5d95de=_0x9fd1de[_0x606bb3(0x281)](/^(\d+)\.\s*feladat/i);if(_0x5d95de){_0x587150&&(_0x587150['example']=_0x877c0f['join']('\x0a'),_0x587150[_0x606bb3(0x24f)]=parseCriteria(_0x20ad6c),tasks[_0x606bb3(0x31b)](_0x587150));_0x587150={'number':parseInt(_0x5d95de[0x1]),'description':'','example':'','points':0x8,'criteria':[]},_0x16f676=![],_0x387aeb=![],_0x877c0f=[],_0x20ad6c=[];continue;}const _0x275951=_0x9fd1de[_0x606bb3(0x281)](/^Pont:\s*(\d+)/i);if(_0x275951&&_0x587150){_0x587150['points']=parseInt(_0x275951[0x1]);continue;}if(_0x9fd1de[_0x606bb3(0x38f)]()===_0x606bb3(0x22d)){_0x387aeb=!![],_0x16f676=![];continue;}if(_0x9fd1de['trim']()===_0x606bb3(0x212)||_0x9fd1de['trim']()===_0x606bb3(0x2d8)){if(!_0x387aeb)_0x16f676=!_0x16f676;continue;}if(_0x9fd1de['match'](/^Minta kód:/i))continue;if(_0x587150){if(_0x387aeb){if(_0x9fd1de['trim']()!=='')_0x20ad6c['push'](_0x9fd1de[_0x606bb3(0x38f)]());}else{if(_0x16f676)_0x877c0f['push'](_0x9fd1de);else{if(_0x9fd1de[_0x606bb3(0x38f)]()!==''){if(_0x587150[_0x606bb3(0x20c)]!=='')_0x587150[_0x606bb3(0x20c)]+='\x0a';_0x587150['description']+=_0x9fd1de;}}}}}_0x587150&&(_0x587150[_0x606bb3(0x268)]=_0x877c0f[_0x606bb3(0x2fb)]('\x0a'),_0x587150['criteria']=parseCriteria(_0x20ad6c),tasks[_0x606bb3(0x31b)](_0x587150));const _0x17987c=tasks[_0x606bb3(0x2c6)](_0x2b5d0e=>_0x2b5d0e[_0x606bb3(0x28a)]===0x8)['length'],_0xdc232e=tasks[_0x606bb3(0x2c6)](_0x50cf02=>_0x50cf02['points']===0xe)[_0x606bb3(0x272)];debugLog('✅\x20'+tasks['length']+_0x606bb3(0x32c)+_0x17987c+_0x606bb3(0x25c)+_0xdc232e+_0x606bb3(0x2f2));}function startTest(){const _0x5d0edb=a0_0x1a744d,_0x1b0868=document[_0x5d0edb(0x384)](_0x5d0edb(0x362))[_0x5d0edb(0x31a)][_0x5d0edb(0x38f)](),_0x336b75=document[_0x5d0edb(0x384)](_0x5d0edb(0x236))[_0x5d0edb(0x31a)][_0x5d0edb(0x38f)](),_0x58d112=document[_0x5d0edb(0x384)](_0x5d0edb(0x26b))[_0x5d0edb(0x31a)][_0x5d0edb(0x38f)](),_0x3d81d3=!!sessionStorage[_0x5d0edb(0x330)](_0x5d0edb(0x343));if(!_0x1b0868||!_0x336b75||!_0x58d112&&!_0x3d81d3){alert(_0x5d0edb(0x363));return;}const _0x4e81b6=tasks[_0x5d0edb(0x2c6)](_0x1e6f76=>_0x1e6f76[_0x5d0edb(0x28a)]===0x8),_0x38b9a9=tasks[_0x5d0edb(0x2c6)](_0x135d0a=>_0x135d0a[_0x5d0edb(0x28a)]===0xe);if(_0x4e81b6[_0x5d0edb(0x272)]<0x2||_0x38b9a9[_0x5d0edb(0x272)]<0x1){alert('Nincs\x20elég\x20feladat!\x20Szükséges:\x20legalább\x202\x20db\x208\x20pontos\x20és\x201\x20db\x2014\x20pontos\x20feladat.\x0aJelenleg:\x20'+_0x4e81b6[_0x5d0edb(0x272)]+_0x5d0edb(0x25c)+_0x38b9a9[_0x5d0edb(0x272)]+_0x5d0edb(0x2c2));return;}studentData={'name':_0x1b0868,'email':_0x336b75,'class':_0x58d112},testStartTime=new Date(),testSubmitted=![],logEvent(_0x5d0edb(0x283),studentData),history[_0x5d0edb(0x1f9)](null,'',location[_0x5d0edb(0x22c)]),window['addEventListener'](_0x5d0edb(0x30d),function(){const _0x123acc=_0x5d0edb;testStartTime&&!testSubmitted&&history[_0x123acc(0x1f9)](null,'',location[_0x123acc(0x22c)]);}),window['addEventListener']('beforeunload',function(_0x4de35c){const _0x1e4f60=_0x5d0edb;testStartTime&&!testSubmitted&&(_0x4de35c[_0x1e4f60(0x292)](),_0x4de35c[_0x1e4f60(0x388)]='');}),selectRandomTasks(),taskAnswers=selectedTasks[_0x5d0edb(0x29e)](_0x590867=>({'taskNumber':_0x590867['number'],'taskDescription':_0x590867[_0x5d0edb(0x20c)],'taskExample':_0x590867[_0x5d0edb(0x268)],'answer':'','timeSpent':0x0,'startTime':null,'endTime':null,'skipped':![],'earnedPoints':0x0,'scoringResults':null}));if(testMode===_0x5d0edb(0x38a)){const _0x32e5cd=parseInt(document[_0x5d0edb(0x384)](_0x5d0edb(0x2eb))?.[_0x5d0edb(0x31a)])||0x2d;globalTimeRemaining=Math[_0x5d0edb(0x396)](0x5,Math[_0x5d0edb(0x21b)](0x78,_0x32e5cd))*0x3c;}else globalTimeRemaining=0x2d*0x3c;if(testMode==='live'&&!pyodideInstance){const _0x364b88=confirm(_0x5d0edb(0x35a)+_0x5d0edb(0x2f1)+'Ha\x20most\x20indítod\x20el\x20a\x20tesztet,\x20előfordulhat,\x20hogy\x20a\x20kódot\x20nem\x20lehet\x20futtatni.\x0a\x0a'+_0x5d0edb(0x226));if(!_0x364b88)return;}fullscreenEnforced=![],fullscreenGraceUntil=0x0;const _0x1b64af=document['getElementById'](_0x5d0edb(0x1f5));if(_0x1b64af)_0x1b64af[_0x5d0edb(0x28f)][_0x5d0edb(0x366)]=_0x5d0edb(0x251);startSection[_0x5d0edb(0x1fe)][_0x5d0edb(0x21d)]('hidden'),quizSection[_0x5d0edb(0x1fe)][_0x5d0edb(0x375)]('hidden'),initializeCodeEditor(),initTerminal();const _0x569c71=sessionStorage[_0x5d0edb(0x330)]('kandTeacherMode')===_0x5d0edb(0x31c);if(testMode==='practice'&&!_0x569c71){const _0x25ff0d=document['querySelector'](_0x5d0edb(0x2dc));if(_0x25ff0d&&!document[_0x5d0edb(0x384)]('practice-mode-pill')){const _0x231f2e=document[_0x5d0edb(0x333)](_0x5d0edb(0x23a));_0x231f2e['id']='practice-mode-pill',_0x231f2e[_0x5d0edb(0x28f)][_0x5d0edb(0x222)]=_0x5d0edb(0x2ef),_0x231f2e[_0x5d0edb(0x380)]=_0x5d0edb(0x36e),_0x25ff0d[_0x5d0edb(0x220)](_0x231f2e,_0x25ff0d[_0x5d0edb(0x2ff)]);}}if(!document[_0x5d0edb(0x384)]('test-watermark')){const _0x1282ee=document[_0x5d0edb(0x333)](_0x5d0edb(0x23a));_0x1282ee['id']=_0x5d0edb(0x24d),_0x1282ee[_0x5d0edb(0x28f)]['cssText']='position:fixed;bottom:6px;right:10px;color:rgba(255,255,255,0.12);font-size:0.7rem;z-index:100;pointer-events:none;user-select:none;letter-spacing:0.3px;',_0x1282ee['textContent']=(studentData[_0x5d0edb(0x362)]||'')+_0x5d0edb(0x215)+(studentData[_0x5d0edb(0x236)]||''),document[_0x5d0edb(0x252)]['appendChild'](_0x1282ee);}!_0x569c71&&testMode===_0x5d0edb(0x217)&&enterFullscreen(),setTimeout(()=>{const _0x575f13=_0x5d0edb;currentTaskIndex=0x0,startGlobalTimer(),startAutoSaveInterval(),showTask(currentTaskIndex),updateLiveScore();if(fitAddon)fitAddon[_0x575f13(0x27d)]();logEvent('Entered\x20fullscreen\x20and\x20started\x20timers');},0x64);}function selectRandomTasks(){const _0x31985e=a0_0x1a744d,_0x775378=tasks[_0x31985e(0x2c6)](_0x5b826d=>_0x5b826d['points']===0x8),_0x33dda5=tasks[_0x31985e(0x2c6)](_0xeaadd8=>_0xeaadd8['points']===0xe),_0x37991=[..._0x775378]['sort'](()=>0.5-Math[_0x31985e(0x1f7)]()),_0x57139f=[..._0x33dda5][_0x31985e(0x37e)](()=>0.5-Math[_0x31985e(0x1f7)]()),_0x137e04=_0x37991['slice'](0x0,0x2),_0x271cdf=_0x57139f['slice'](0x0,0x1);selectedTasks=[..._0x137e04,..._0x271cdf][_0x31985e(0x37e)](()=>0.5-Math[_0x31985e(0x1f7)]()),logEvent('Tasks\x20selected',{'tasks':selectedTasks['map'](_0x53ef78=>({'number':_0x53ef78[_0x31985e(0x265)],'points':_0x53ef78[_0x31985e(0x28a)]}))});}function parseCriteria(_0x3f2a53){const _0x2ff6bb=a0_0x1a744d;return _0x3f2a53[_0x2ff6bb(0x29e)](_0x1783d2=>{const _0x15a041=_0x2ff6bb,_0x1d7f7f=_0x1783d2[_0x15a041(0x385)]('|');if(_0x1d7f7f===-0x1)return null;const _0x132291=_0x1783d2['substring'](0x0,_0x1d7f7f),_0x6cb1d2=_0x1783d2[_0x15a041(0x256)](_0x1d7f7f+0x1)[_0x15a041(0x38f)](),_0x261168=_0x132291[_0x15a041(0x385)](':');if(_0x261168===-0x1)return{'type':_0x132291[_0x15a041(0x38f)](),'args':null,'label':_0x6cb1d2};const _0x46edcf=_0x132291['substring'](0x0,_0x261168)[_0x15a041(0x38f)](),_0x419eeb=_0x132291[_0x15a041(0x256)](_0x261168+0x1);return{'type':_0x46edcf,'args':_0x419eeb,'label':_0x6cb1d2};})[_0x2ff6bb(0x2c6)](_0x55cb8a=>_0x55cb8a!==null);}function evaluateCriterion(_0x51e1d3,_0xb87db8){const _0x3868f0=a0_0x1a744d,{type:_0x26ed6f,args:_0x4a2811}=_0xb87db8;if(['if',_0x3868f0(0x2f4),_0x3868f0(0x34c),_0x3868f0(0x2c8),'while',_0x3868f0(0x240),_0x3868f0(0x307)]['includes'](_0x26ed6f))return new RegExp('\x5cb'+_0x26ed6f+'\x5cb')[_0x3868f0(0x2fa)](_0x51e1d3);if(_0x26ed6f===_0x3868f0(0x392)){const _0x2b96b4=parseInt(_0x4a2811)||0x1;return(_0x51e1d3[_0x3868f0(0x281)](/\binput\s*\(/g)||[])[_0x3868f0(0x272)]>=_0x2b96b4;}if(_0x26ed6f===_0x3868f0(0x223)){const _0x51a6c9=parseInt(_0x4a2811)||0x1;return(_0x51e1d3['match'](/\b(int|float)\s*\(/g)||[])['length']>=_0x51a6c9;}if(_0x26ed6f==='import')return new RegExp(_0x3868f0(0x352)+_0x4a2811+_0x3868f0(0x301)+_0x4a2811+_0x3868f0(0x328),'i')['test'](_0x51e1d3);if(_0x26ed6f===_0x3868f0(0x350))return _0x51e1d3[_0x3868f0(0x2ea)](_0x4a2811);if(_0x26ed6f==='input_format'){const _0x58301f=[..._0x51e1d3[_0x3868f0(0x254)](/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];if(_0x58301f[_0x3868f0(0x272)]===0x0)return![];return _0x58301f[_0x3868f0(0x34a)](_0x616980=>_0x616980[0x1]['endsWith']('\x20'));}if(_0x26ed6f===_0x3868f0(0x2ec)){const _0xf538ae=_0x4a2811[_0x3868f0(0x289)](/[.*+?^${}()|[\]\\]/g,_0x3868f0(0x36a));return new RegExp(_0x3868f0(0x26e)+_0xf538ae+_0x3868f0(0x357))[_0x3868f0(0x2fa)](_0x51e1d3);}return![];}async function runCodeWithMockInputs(_0x9ce723,_0x4cdc6a){const _0x1086df=a0_0x1a744d;let _0x470ff6=0x0;const _0x4bf09f=async _0x11514c=>{const _0x37894a=a0_0x2de4;if(_0x470ff6<_0x4cdc6a['length'])return String(_0x4cdc6a[_0x470ff6++])[_0x37894a(0x38f)]();return'';},_0x111b35=globalThis[_0x1086df(0x20f)];globalThis['js_input']=_0x4bf09f;try{const _0x3ad4ce=await getPyodide();_0x3ad4ce['runPython'](_0x1086df(0x296));const _0x5644e8=wrapPythonCodeForAsyncInput(_0x9ce723);await _0x3ad4ce[_0x1086df(0x395)](_0x5644e8);const _0x41a9a5=_0x3ad4ce[_0x1086df(0x211)](_0x1086df(0x33f));return{'success':!![],'output':_0x41a9a5||''};}catch(_0x4ea29e){return{'success':![],'output':'','error':_0x4ea29e[_0x1086df(0x37f)]};}finally{globalThis[_0x1086df(0x20f)]=_0x111b35;}}let scoringRunning=![];async function checkScoring(){const _0x196258=a0_0x1a744d;if(scoringRunning)return;const _0x46f1bb=selectedTasks[currentTaskIndex];if(!_0x46f1bb||!_0x46f1bb['criteria']||_0x46f1bb[_0x196258(0x24f)][_0x196258(0x272)]===0x0)return;const _0x3db214=codeEditor[_0x196258(0x21c)]()[_0x196258(0x38f)]();scoringRunning=!![];const _0x4eef=document[_0x196258(0x384)](_0x196258(0x38c));_0x4eef['disabled']=!![],_0x4eef[_0x196258(0x380)]=_0x196258(0x37c);const _0x5e6e6a=document[_0x196258(0x384)]('scoring-panel');_0x5e6e6a['classList'][_0x196258(0x375)](_0x196258(0x244));if(!_0x3db214){document[_0x196258(0x384)](_0x196258(0x2cf))['innerHTML']=_0x196258(0x317),_0x4eef['disabled']=![],_0x4eef[_0x196258(0x380)]='🔍\x20Pontozás',scoringRunning=![];return;}const _0x2fe094=_0x46f1bb[_0x196258(0x24f)][_0x196258(0x29e)](_0x48e113=>{const _0x2a6a64=_0x196258;if(_0x48e113[_0x2a6a64(0x332)]===_0x2a6a64(0x209))return{'criterion':_0x48e113,'passed':null,'pending':!![]};return{'criterion':_0x48e113,'passed':evaluateCriterion(_0x3db214,_0x48e113),'pending':![]};});updateScoringUI(_0x2fe094);for(let _0x3ab2b6=0x0;_0x3ab2b6<_0x2fe094[_0x196258(0x272)];_0x3ab2b6++){if(!_0x2fe094[_0x3ab2b6][_0x196258(0x30b)])continue;const _0x289ea7=_0x2fe094[_0x3ab2b6][_0x196258(0x353)],_0x2a4c6d=_0x289ea7['args'][_0x196258(0x385)](':');if(_0x2a4c6d===-0x1){_0x2fe094[_0x3ab2b6]={'criterion':_0x289ea7,'passed':![],'pending':![]};continue;}const _0xc83edd=_0x289ea7['args']['substring'](0x0,_0x2a4c6d),_0x1c7172=_0x289ea7['args'][_0x196258(0x256)](_0x2a4c6d+0x1),_0x5565c0=_0xc83edd[_0x196258(0x2af)](','),_0x36491d=await runCodeWithMockInputs(_0x3db214,_0x5565c0),_0x556bff=_0x36491d[_0x196258(0x346)]?_0x36491d['output']['toLowerCase']()[_0x196258(0x2ea)](_0x1c7172['toLowerCase']()):![];_0x2fe094[_0x3ab2b6]={'criterion':_0x289ea7,'passed':_0x556bff,'pending':![]},updateScoringUI(_0x2fe094);}_0x4eef[_0x196258(0x386)]=![],_0x4eef['textContent']=_0x196258(0x38b),scoringRunning=![];const _0x1cda8e=_0x2fe094[_0x196258(0x2c6)](_0x2e800a=>_0x2e800a[_0x196258(0x262)]===!![])[_0x196258(0x272)],_0x15351a=_0x2fe094[_0x196258(0x272)];if(_0x1cda8e>0x0)maybePostPythonProgress(_0x46f1bb,_0x1cda8e,_0x15351a);}const _pythonProgressPosted=new Set();function maybePostPythonProgress(_0x3d61a8,_0x287a8c,_0x529d8f){const _0x4381f2=a0_0x1a744d,_0x1d6082=sessionStorage[_0x4381f2(0x330)](_0x4381f2(0x343));if(!_0x1d6082)return;let _0x12ce86;try{_0x12ce86=JSON[_0x4381f2(0x37b)](_0x1d6082);}catch{return;}const _0x5f0f99=_0x12ce86[_0x4381f2(0x236)];if(!_0x5f0f99)return;const _0x28c056=_0x3d61a8['id']||_0x3d61a8[_0x4381f2(0x34d)]||String(selectedTasks[_0x4381f2(0x385)](_0x3d61a8)),_0x2abaa0=_0x5f0f99+_0x4381f2(0x20e)+_0x28c056;if(_pythonProgressPosted[_0x4381f2(0x284)](_0x2abaa0))return;_pythonProgressPosted[_0x4381f2(0x21d)](_0x2abaa0),fetch(_0x4381f2(0x29a),{'method':_0x4381f2(0x2f3),'headers':{'Content-Type':'application/json'},'body':JSON['stringify']({'email':_0x5f0f99,'nev':_0x12ce86[_0x4381f2(0x258)]||'','osztaly':_0x12ce86[_0x4381f2(0x373)]?(_0x12ce86[_0x4381f2(0x304)]||'')+'.'+_0x12ce86[_0x4381f2(0x373)]:'','targy':_0x4381f2(0x2f7),'feladat':_0x28c056,'pont':_0x287a8c,'maxPont':_0x529d8f})})[_0x4381f2(0x21a)](()=>{});}function updateScoringUI(_0x4c8290){const _0x3909d2=a0_0x1a744d,_0x27c1c8=document[_0x3909d2(0x384)](_0x3909d2(0x2cf)),_0x264cd5=_0x4c8290[_0x3909d2(0x2c6)](_0x5efea8=>_0x5efea8[_0x3909d2(0x262)]===!![])[_0x3909d2(0x272)],_0x3f8211=_0x4c8290[_0x3909d2(0x272)];let _0x55667a='<div\x20class=\x22scoring-header-row\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22scoring-title\x22>Pontozás</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22scoring-score\x22>'+_0x264cd5+_0x3909d2(0x271)+_0x3f8211+_0x3909d2(0x239);for(const _0x3c1c77 of _0x4c8290){let _0x955068,_0x192a4a;if(_0x3c1c77[_0x3909d2(0x30b)])_0x955068='⏳',_0x192a4a=_0x3909d2(0x29f);else _0x3c1c77[_0x3909d2(0x262)]?(_0x955068='✓',_0x192a4a=_0x3909d2(0x1fc)):(_0x955068='✗',_0x192a4a='scoring-fail');_0x55667a+=_0x3909d2(0x325)+_0x192a4a+'\x22><span\x20class=\x22scoring-icon\x22>'+_0x955068+'</span>'+_0x3c1c77[_0x3909d2(0x353)][_0x3909d2(0x267)]+_0x3909d2(0x273);}_0x55667a+=_0x3909d2(0x340),_0x27c1c8[_0x3909d2(0x2be)]=_0x55667a,!_0x4c8290[_0x3909d2(0x390)](_0x37d425=>_0x37d425['pending'])&&currentTaskIndex>=0x0&&taskAnswers[currentTaskIndex]&&(taskAnswers[currentTaskIndex][_0x3909d2(0x286)]=_0x264cd5,taskAnswers[currentTaskIndex]['scoringResults']=_0x4c8290[_0x3909d2(0x29e)](_0x52a223=>({'label':_0x52a223[_0x3909d2(0x353)][_0x3909d2(0x267)],'passed':_0x52a223['passed']})),updateLiveScore());}function initializeCodeEditor(){const _0x18afcd=a0_0x1a744d,_0x5bbdbc=document[_0x18afcd(0x384)]('code-editor');codeEditor=CodeMirror[_0x18afcd(0x2ad)](_0x5bbdbc,{'mode':_0x18afcd(0x2f7),'theme':_0x18afcd(0x25a),'lineNumbers':!![],'indentUnit':0x4,'indentWithTabs':![],'lineWrapping':!![],'matchBrackets':!![],'autoCloseBrackets':{'pairs':_0x18afcd(0x2ab),'explode':'[]{}()'},'extraKeys':{'\x22':function(_0x58db7e){const _0xe0f177=_0x18afcd;_0x58db7e[_0xe0f177(0x347)]('\x22');}},'specialChars':/[\t]/,'specialCharPlaceholder':_0x34a549=>{const _0x4b0647=_0x18afcd,_0x4960f0=document[_0x4b0647(0x333)](_0x4b0647(0x36f));return _0x4960f0[_0x4b0647(0x380)]=_0x34a549==='\x09'?'→':'?',_0x4960f0[_0x4b0647(0x208)]=_0x4b0647(0x279),_0x4960f0;}}),codeEditor['on'](_0x18afcd(0x2d3),()=>{const _0x4ac06f=_0x18afcd;currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers[_0x4ac06f(0x272)]&&(taskAnswers[currentTaskIndex]['answer']=codeEditor[_0x4ac06f(0x21c)]());});}function initTerminal(){const _0x359758=a0_0x1a744d;term=new Terminal({'cursorBlink':!![],'convertEol':!![],'fontSize':0xe,'fontFamily':_0x359758(0x255),'theme':{'background':_0x359758(0x2a6),'foreground':'#c0c0c0','cursor':_0x359758(0x2df),'selection':_0x359758(0x243)}}),fitAddon=new FitAddon['FitAddon'](),term[_0x359758(0x302)](fitAddon);const _0x3de29a=document[_0x359758(0x384)]('terminal');term[_0x359758(0x1f0)](_0x3de29a),fitAddon[_0x359758(0x27d)](),terminalReady=!![];}function showTask(_0x390547){const _0x3e047f=a0_0x1a744d;if(_0x390547<0x0||_0x390547>=selectedTasks['length'])return;const _0x3e2f49=selectedTasks[_0x390547],_0x120f73=taskAnswers[_0x390547];!_0x120f73[_0x3e047f(0x35d)]&&(_0x120f73[_0x3e047f(0x35d)]=new Date());document[_0x3e047f(0x384)](_0x3e047f(0x245))['textContent']=_0x390547+0x1+'.\x20feladat\x20('+_0x3e2f49[_0x3e047f(0x28a)]+_0x3e047f(0x237),document[_0x3e047f(0x384)](_0x3e047f(0x2a0))[_0x3e047f(0x380)]=_0x3e2f49['description'],document['getElementById'](_0x3e047f(0x1ec))[_0x3e047f(0x380)]=_0x3e2f49['example'];const _0x3b300c=document[_0x3e047f(0x384)](_0x3e047f(0x38c)),_0x1d9e11=document[_0x3e047f(0x384)](_0x3e047f(0x291));document[_0x3e047f(0x384)](_0x3e047f(0x2cf))[_0x3e047f(0x2be)]='',_0x3e2f49[_0x3e047f(0x24f)]&&_0x3e2f49[_0x3e047f(0x24f)][_0x3e047f(0x272)]>0x0?(_0x3b300c[_0x3e047f(0x1fe)][_0x3e047f(0x375)](_0x3e047f(0x244)),_0x1d9e11['classList'][_0x3e047f(0x375)](_0x3e047f(0x244)),setTimeout(checkScoring,0x12c)):(_0x3b300c[_0x3e047f(0x1fe)][_0x3e047f(0x21d)](_0x3e047f(0x244)),_0x1d9e11['classList'][_0x3e047f(0x21d)](_0x3e047f(0x244))),debugLog('📝\x20Feladat\x20betöltve:\x20'+_0x3e2f49['number']+'.\x20feladat'),terminalReady&&term&&term['clear'](),codeEditor[_0x3e047f(0x2d5)](_0x120f73[_0x3e047f(0x2c1)]||''),updateTaskNavigation(),logEvent(_0x3e047f(0x2da),{'taskIndex':_0x390547,'taskNumber':_0x3e2f49['number']});}function updateTaskNavigation(){const _0x33bc2b=a0_0x1a744d,_0x5ae361=document[_0x33bc2b(0x384)](_0x33bc2b(0x257));_0x5ae361[_0x33bc2b(0x2be)]='',selectedTasks[_0x33bc2b(0x27b)]((_0xbfc33a,_0x13f913)=>{const _0x191519=_0x33bc2b,_0x320f91=document[_0x191519(0x333)](_0x191519(0x367));_0x320f91[_0x191519(0x208)]='task-nav-btn',_0x320f91['textContent']=_0x13f913+0x1+_0x191519(0x25e),_0x13f913===currentTaskIndex&&_0x320f91['classList'][_0x191519(0x21d)](_0x191519(0x355)),taskAnswers[_0x13f913][_0x191519(0x2c1)]&&taskAnswers[_0x13f913][_0x191519(0x2c1)]['trim']()!==''&&_0x320f91[_0x191519(0x1fe)][_0x191519(0x21d)]('completed'),_0x320f91[_0x191519(0x2ae)](_0x191519(0x34f),()=>{saveCurrentTaskTime(),currentTaskIndex=_0x13f913,showTask(_0x13f913);}),_0x5ae361[_0x191519(0x2b0)](_0x320f91);});}function skipTask(){const _0x3fd43a=a0_0x1a744d;saveCurrentTaskTime(),taskAnswers[currentTaskIndex][_0x3fd43a(0x2cb)]=!![],currentTaskIndex=(currentTaskIndex+0x1)%selectedTasks[_0x3fd43a(0x272)],showTask(currentTaskIndex),logEvent(_0x3fd43a(0x2c4),{'newIndex':currentTaskIndex});}function saveCurrentTaskTime(){const _0x47b0f9=a0_0x1a744d;if(currentTaskIndex>=0x0&&currentTaskIndex<taskAnswers['length']){const _0x18c198=taskAnswers[currentTaskIndex];if(_0x18c198[_0x47b0f9(0x35d)]){const _0xc8295d=new Date();_0x18c198[_0x47b0f9(0x216)]+=Math[_0x47b0f9(0x231)]((_0xc8295d-_0x18c198[_0x47b0f9(0x35d)])/0x3e8),_0x18c198[_0x47b0f9(0x35d)]=null;}}}function getGrade(_0x1d8da7){const _0xc2512=a0_0x1a744d;if(_0x1d8da7>=0x50)return{'value':0x5,'label':_0xc2512(0x23f)};if(_0x1d8da7>=0x3c)return{'value':0x4,'label':_0xc2512(0x2a7)};if(_0x1d8da7>=0x28)return{'value':0x3,'label':_0xc2512(0x336)};if(_0x1d8da7>=0x14)return{'value':0x2,'label':_0xc2512(0x28b)};return{'value':0x1,'label':_0xc2512(0x1e7)};}function updateLiveScore(){const _0x1924dc=a0_0x1a744d,_0xf106ed=selectedTasks[_0x1924dc(0x2cd)]((_0x4dc633,_0x4e3acb)=>_0x4dc633+_0x4e3acb[_0x1924dc(0x28a)],0x0),_0x4f27f1=taskAnswers[_0x1924dc(0x2cd)]((_0x4d09ca,_0x106207)=>_0x4d09ca+(_0x106207[_0x1924dc(0x286)]||0x0),0x0),_0x403e94=_0xf106ed>0x0?_0x4f27f1/_0xf106ed*0x64:0x0,_0x191ac5=getGrade(_0x403e94),_0xaf02fc=document[_0x1924dc(0x384)](_0x1924dc(0x33e)),_0x55bf8d=document['getElementById']('score-grade');_0xaf02fc&&(_0xaf02fc[_0x1924dc(0x380)]=_0x4f27f1+_0x1924dc(0x271)+_0xf106ed+'\x20pont'),_0x55bf8d&&(_0x55bf8d[_0x1924dc(0x380)]=_0x191ac5['label'],_0x55bf8d[_0x1924dc(0x208)]=_0x1924dc(0x320)+_0x191ac5[_0x1924dc(0x31a)]);}function buildScoringReport(){const _0x20c977=a0_0x1a744d,_0x1c66be=selectedTasks['reduce']((_0x1087b1,_0x441888)=>_0x1087b1+_0x441888[_0x20c977(0x28a)],0x0),_0x58e4be=taskAnswers[_0x20c977(0x2cd)]((_0x4103e6,_0x3daff8)=>_0x4103e6+(_0x3daff8[_0x20c977(0x286)]||0x0),0x0),_0x46cea1=_0x1c66be>0x0?_0x58e4be/_0x1c66be*0x64:0x0,_0x1631fd=getGrade(_0x46cea1),_0x49f8c4=[];return _0x49f8c4[_0x20c977(0x31b)](_0x20c977(0x33d)),_0x49f8c4['push'](''),_0x49f8c4[_0x20c977(0x31b)](_0x20c977(0x2db)+_0x58e4be+_0x20c977(0x271)+_0x1c66be),_0x49f8c4[_0x20c977(0x31b)](_0x20c977(0x338)+_0x46cea1[_0x20c977(0x1f3)](0x1)+'%'),_0x49f8c4['push'](''+_0x1631fd[_0x20c977(0x267)]),_0x49f8c4['push'](''),taskAnswers[_0x20c977(0x27b)]((_0x5d42b4,_0x343c04)=>{const _0x39f63c=_0x20c977,_0x3d83f3=selectedTasks[_0x343c04]?selectedTasks[_0x343c04][_0x39f63c(0x28a)]:0x0,_0x35881b=_0x5d42b4[_0x39f63c(0x286)]||0x0;_0x49f8c4[_0x39f63c(0x31b)]('\x20\x20'+(_0x343c04+0x1)+'.\x20feladat:\x20'+_0x35881b+_0x39f63c(0x271)+_0x3d83f3+'\x20pont');if(_0x5d42b4[_0x39f63c(0x31f)]&&_0x5d42b4['scoringResults'][_0x39f63c(0x272)]>0x0){const _0x59fe91=_0x5d42b4[_0x39f63c(0x31f)][_0x39f63c(0x2c6)](_0x4a5622=>!_0x4a5622[_0x39f63c(0x262)]);_0x59fe91[_0x39f63c(0x272)]>0x0?(_0x49f8c4[_0x39f63c(0x31b)](_0x39f63c(0x1ef)),_0x59fe91[_0x39f63c(0x27b)](_0x517593=>_0x49f8c4[_0x39f63c(0x31b)](_0x39f63c(0x200)+_0x517593[_0x39f63c(0x267)]))):_0x49f8c4['push'](_0x39f63c(0x35c));}else _0x49f8c4['push'](_0x39f63c(0x1fb));}),_0x49f8c4[_0x20c977(0x31b)](''),_0x49f8c4['join']('\x0a');}function startGlobalTimer(){globalTimer&&clearInterval(globalTimer),globalTimer=setInterval(()=>{const _0x284613=a0_0x2de4;globalTimeRemaining--;const _0x4806b7=Math[_0x284613(0x2aa)](globalTimeRemaining/0x3c),_0x283ff2=globalTimeRemaining%0x3c,_0x398ba1=document[_0x284613(0x384)](_0x284613(0x387));_0x398ba1[_0x284613(0x380)]=_0x284613(0x1ff)+_0x4806b7+':'+_0x283ff2['toString']()[_0x284613(0x368)](0x2,'0'),globalTimeRemaining<=0x3c&&_0x398ba1[_0x284613(0x1fe)]['add'](_0x284613(0x225)),globalTimeRemaining<=0x0&&(clearInterval(globalTimer),autoSubmitTest());},0x3e8);}async function runPythonCode(){const _0x1b22d3=a0_0x1a744d;pythonCodeRunning&&(currentInputDisposable&&(currentInputDisposable['dispose'](),currentInputDisposable=null),pythonCodeRunning=![]);const _0x874d53=codeEditor['getValue']();if(!_0x874d53||_0x874d53['trim']()===''){term['writeln'](_0x1b22d3(0x2f9));return;}pythonCodeRunning=!![];const _0x3fcb8c=document[_0x1b22d3(0x384)](_0x1b22d3(0x235));_0x3fcb8c&&(_0x3fcb8c['disabled']=!![],_0x3fcb8c[_0x1b22d3(0x380)]=_0x1b22d3(0x260));term['clear']();const _0x34602b=getIndentationIssues(_0x874d53);_0x34602b[_0x1b22d3(0x272)]>0x0&&(term['writeln'](_0x1b22d3(0x32e)),_0x34602b[_0x1b22d3(0x202)](0x0,0x5)[_0x1b22d3(0x27b)](_0x160ea4=>{const _0x17abb6=_0x1b22d3;term[_0x17abb6(0x322)]('-\x20'+_0x160ea4);}),_0x34602b[_0x1b22d3(0x272)]>0x5&&term[_0x1b22d3(0x322)](_0x1b22d3(0x34e)+(_0x34602b[_0x1b22d3(0x272)]-0x5)+_0x1b22d3(0x277)),term[_0x1b22d3(0x322)](''));logEvent('Code\x20execution\x20started',{'code':_0x874d53[_0x1b22d3(0x256)](0x0,0x64)});let _0x226271;try{_0x226271=await getPyodide();}catch(_0x24dd2e){await sleep(0xc8),term[_0x1b22d3(0x322)](_0x1b22d3(0x227));testMode===_0x1b22d3(0x217)?(term[_0x1b22d3(0x322)](_0x1b22d3(0x300)),term[_0x1b22d3(0x322)](_0x1b22d3(0x2c5))):(term[_0x1b22d3(0x322)]('💡\x20Zárd\x20be\x20a\x20többi\x20böngészőfület,\x20majd\x20frissítsd\x20az\x20oldalt\x20(F5).'),term[_0x1b22d3(0x322)]('\x20\x20\x20Ha\x20ez\x20sem\x20segít,\x20indítsd\x20újra\x20a\x20böngészőt.'));return;}try{globalThis[_0x1b22d3(0x20f)]=customPythonInput,globalThis[_0x1b22d3(0x308)]=_0x58145f=>{const _0x21e93d=_0x1b22d3;term[_0x21e93d(0x32f)](String(_0x58145f));},_0x226271[_0x1b22d3(0x211)](_0x1b22d3(0x28d));const _0x267f43=wrapPythonCodeForAsyncInput(_0x874d53);await _0x226271[_0x1b22d3(0x395)](_0x267f43),await sleep(0x190),term['writeln'](_0x1b22d3(0x2fc)),debugLog(_0x1b22d3(0x329)),autoSaveProgress();}catch(_0xc0de0d){const _0x142e05=_0xc0de0d[_0x1b22d3(0x37f)]||String(_0xc0de0d),_0x2f2768=_0x142e05[_0x1b22d3(0x2af)]('\x0a')[_0x1b22d3(0x2c6)](_0x223608=>_0x223608[_0x1b22d3(0x38f)]()),_0x505be6=_0x2f2768[_0x2f2768[_0x1b22d3(0x272)]-0x1]||_0x142e05;await sleep(0x190),term[_0x1b22d3(0x322)](_0x1b22d3(0x266)+_0x505be6),debugLog(_0x1b22d3(0x23c)),autoSaveProgress();}finally{pythonCodeRunning=![],currentInputDisposable=null,_0x3fcb8c&&(_0x3fcb8c[_0x1b22d3(0x386)]=![],_0x3fcb8c[_0x1b22d3(0x380)]=_0x1b22d3(0x2b8));}}function getIndentationIssues(_0x4a2816){const _0x26fcd4=a0_0x1a744d,_0xdb9112=[],_0x5f3e81=_0x4a2816[_0x26fcd4(0x2af)]('\x0a');return _0x5f3e81[_0x26fcd4(0x27b)]((_0x2a6dc0,_0x4f481a)=>{const _0x23e29f=_0x26fcd4;if(!_0x2a6dc0[_0x23e29f(0x38f)]())return;const _0x5dde3f=_0x2a6dc0[_0x23e29f(0x281)](/^[ \t]+/);if(!_0x5dde3f)return;const _0x27e980=_0x5dde3f[0x0],_0x1e366=_0x27e980['includes']('\x09'),_0x923848=_0x27e980[_0x23e29f(0x2ea)]('\x20'),_0x1fc283=_0x4f481a+0x1;if(_0x1e366&&_0x923848){_0xdb9112[_0x23e29f(0x31b)](_0x1fc283+'.\x20sor:\x20kevert\x20TAB\x20+\x20szóköz');return;}if(_0x1e366){_0xdb9112[_0x23e29f(0x31b)](_0x1fc283+'.\x20sor:\x20TAB\x20karakter\x20a\x20behúzásban');return;}_0x923848&&_0x27e980['length']%0x4!==0x0&&_0xdb9112['push'](_0x1fc283+_0x23e29f(0x2dd)+_0x27e980[_0x23e29f(0x272)]+_0x23e29f(0x358));}),_0xdb9112;}function wrapPythonCodeForAsyncInput(_0x10a506){const _0x30bc30=a0_0x1a744d,_0x445919=transformInputCallsToAwait(_0x10a506),_0xb191bc=_0x445919['split']('\x0a')[_0x30bc30(0x29e)](_0x1ddf27=>_0x30bc30(0x264)+_0x1ddf27)[_0x30bc30(0x2fb)]('\x0a');return _0x30bc30(0x377)+_0xb191bc+'\x0a\x0aawait\x20__student_main__()\x0a';}function transformInputCallsToAwait(_0x529833){const _0x5f1915=a0_0x1a744d;let _0x279fda='',_0x416e49=0x0,_0x308638=![],_0x111542=![],_0x57e58f=![],_0x791104=![],_0x4abe75=![];while(_0x416e49<_0x529833[_0x5f1915(0x272)]){const _0xf48aea=_0x529833[_0x416e49],_0x1349d8=_0x529833[_0x5f1915(0x202)](_0x416e49,_0x416e49+0x3);if(_0x4abe75){_0x279fda+=_0xf48aea;_0xf48aea==='\x0a'&&(_0x4abe75=![]);_0x416e49+=0x1;continue;}if(_0x308638){if(_0xf48aea==='\x5c'){_0x279fda+=_0xf48aea+(_0x529833[_0x416e49+0x1]||''),_0x416e49+=0x2;continue;}_0x279fda+=_0xf48aea;_0xf48aea==='\x27'&&(_0x308638=![]);_0x416e49+=0x1;continue;}if(_0x111542){if(_0xf48aea==='\x5c'){_0x279fda+=_0xf48aea+(_0x529833[_0x416e49+0x1]||''),_0x416e49+=0x2;continue;}_0x279fda+=_0xf48aea;_0xf48aea==='\x22'&&(_0x111542=![]);_0x416e49+=0x1;continue;}if(_0x57e58f){if(_0x1349d8===_0x5f1915(0x233)){_0x279fda+=_0x1349d8,_0x416e49+=0x3,_0x57e58f=![];continue;}_0x279fda+=_0xf48aea,_0x416e49+=0x1;continue;}if(_0x791104){if(_0x1349d8===_0x5f1915(0x2f8)){_0x279fda+=_0x1349d8,_0x416e49+=0x3,_0x791104=![];continue;}_0x279fda+=_0xf48aea,_0x416e49+=0x1;continue;}if(_0x1349d8===_0x5f1915(0x233)){_0x279fda+=_0x1349d8,_0x416e49+=0x3,_0x57e58f=!![];continue;}if(_0x1349d8===_0x5f1915(0x2f8)){_0x279fda+=_0x1349d8,_0x416e49+=0x3,_0x791104=!![];continue;}if(_0xf48aea==='\x27'){_0x279fda+=_0xf48aea,_0x416e49+=0x1,_0x308638=!![];continue;}if(_0xf48aea==='\x22'){_0x279fda+=_0xf48aea,_0x416e49+=0x1,_0x111542=!![];continue;}if(_0xf48aea==='#'){_0x279fda+=_0xf48aea,_0x416e49+=0x1,_0x4abe75=!![];continue;}if(_0x529833[_0x5f1915(0x263)]('input',_0x416e49)&&isInputCallBoundary(_0x529833,_0x416e49)){let _0x4f71f1=_0x416e49+0x5;while(_0x4f71f1<_0x529833[_0x5f1915(0x272)]&&(_0x529833[_0x4f71f1]==='\x20'||_0x529833[_0x4f71f1]==='\x09')){_0x4f71f1+=0x1;}if(_0x529833[_0x4f71f1]==='('&&!hasAwaitBefore(_0x529833,_0x416e49)){_0x279fda+='await\x20input',_0x279fda+=_0x529833[_0x5f1915(0x202)](_0x416e49+0x5,_0x4f71f1+0x1),_0x416e49=_0x4f71f1+0x1;continue;}}_0x279fda+=_0xf48aea,_0x416e49+=0x1;}return _0x279fda;}function isInputCallBoundary(_0x35cccd,_0x537ed2){const _0x716961=a0_0x1a744d,_0x485e8b=_0x537ed2>0x0?_0x35cccd[_0x537ed2-0x1]:'';if(_0x485e8b&&(isIdentChar(_0x485e8b)||_0x485e8b==='.'))return![];const _0x368a89=_0x537ed2+0x5<_0x35cccd[_0x716961(0x272)]?_0x35cccd[_0x537ed2+0x5]:'';if(_0x368a89&&isIdentChar(_0x368a89))return![];return!![];}function hasAwaitBefore(_0x451390,_0x52bd63){const _0x1362e2=a0_0x1a744d;let _0x5d4e26=_0x52bd63-0x1;while(_0x5d4e26>=0x0&&(_0x451390[_0x5d4e26]==='\x20'||_0x451390[_0x5d4e26]==='\x09')){_0x5d4e26-=0x1;}const _0x1305a1=_0x5d4e26-0x4;if(_0x1305a1<0x0)return![];const _0x593790=_0x451390[_0x1362e2(0x202)](_0x1305a1,_0x5d4e26+0x1);if(_0x593790!==_0x1362e2(0x2a4))return![];const _0x4158ff=_0x1305a1-0x1>=0x0?_0x451390[_0x1305a1-0x1]:'';if(_0x4158ff&&isIdentChar(_0x4158ff))return![];return!![];}function isIdentChar(_0x240398){return _0x240398>='a'&&_0x240398<='z'||_0x240398>='A'&&_0x240398<='Z'||_0x240398>='0'&&_0x240398<='9'||_0x240398==='_';}function sleep(_0x5843c9){return new Promise(_0x4ff92b=>setTimeout(_0x4ff92b,_0x5843c9));}function customPythonInput(_0xb4fdc7){return new Promise(_0x410d87=>{const _0x3e5dd3=a0_0x2de4;_0xb4fdc7&&term['write'](String(_0xb4fdc7));if(!term||typeof term[_0x3e5dd3(0x27c)]!==_0x3e5dd3(0x32a)){_0x410d87('');return;}let _0xf502d4='',_0x270bde=null;const _0x14942b=_0x1fee38=>{const _0x785ff9=_0x3e5dd3;if(_0x1fee38==='\x0d'||_0x1fee38==='\x0a')term[_0x785ff9(0x322)](''),_0x270bde&&_0x270bde[_0x785ff9(0x2b2)](),_0x410d87(_0xf502d4);else{if(_0x1fee38==='\x7f'||_0x1fee38==='\x08')_0xf502d4['length']>0x0&&(_0xf502d4=_0xf502d4[_0x785ff9(0x202)](0x0,-0x1),term[_0x785ff9(0x32f)](_0x785ff9(0x228)));else _0x1fee38[_0x785ff9(0x272)]>0x0&&_0x1fee38[_0x785ff9(0x2a9)](0x0)>=0x20&&(_0xf502d4+=_0x1fee38,term[_0x785ff9(0x32f)](_0x1fee38));}};_0x270bde=term[_0x3e5dd3(0x27c)](_0x14942b),currentInputDisposable=_0x270bde;});}function showSubmitModal(){const _0x48a8ca=a0_0x1a744d;submitModal[_0x48a8ca(0x28f)][_0x48a8ca(0x366)]='flex',logEvent(_0x48a8ca(0x22b));}function hideSubmitModal(){const _0x1a7767=a0_0x1a744d;submitModal[_0x1a7767(0x28f)]['display']=_0x1a7767(0x251),logEvent(_0x1a7767(0x23d));}async function submitTest(){const _0x417641=a0_0x1a744d;hideSubmitModal(),saveCurrentTaskTime();globalTimer&&clearInterval(globalTimer);autosaveInterval&&(clearInterval(autosaveInterval),autosaveInterval=null);testEndTime=new Date(),testSubmitted=!![],logEvent('Test\x20submitted',{'endTime':testEndTime});cheatDetected&&logEvent('Cheating\x20detected',{'reason':cheatReason});const _0x2575d1=await submitToBackend();quizSection['classList'][_0x417641(0x21d)](_0x417641(0x244)),endSection['classList']['remove']('hidden');const _0x438ce5=Math['floor']((testEndTime-testStartTime)/0xea60),_0xfb3766=Math[_0x417641(0x2aa)]((testEndTime-testStartTime)%0xea60/0x3e8);document[_0x417641(0x384)](_0x417641(0x305))[_0x417641(0x380)]=_0x417641(0x2d2)+_0x438ce5+_0x417641(0x2cc)+_0xfb3766+_0x417641(0x356);const _0x2669aa=document[_0x417641(0x384)](_0x417641(0x2f6)),_0x4d5d47=document[_0x417641(0x384)]('end-message'),_0x1c9a7b=document[_0x417641(0x384)](_0x417641(0x2c9)),_0x30d903=document[_0x417641(0x384)](_0x417641(0x1e9));_0x30d903&&studentData&&studentData['name']&&(_0x30d903[_0x417641(0x380)]=studentData['name']);try{const _0x28cb66=sessionStorage[_0x417641(0x330)](_0x417641(0x343)),_0x2f7fb7=_0x28cb66?JSON[_0x417641(0x37b)](_0x28cb66):null,_0x464565=document['getElementById'](_0x417641(0x2ee));_0x464565&&_0x2f7fb7&&_0x2f7fb7['szerep']===_0x417641(0x269)&&(_0x464565[_0x417641(0x28f)][_0x417641(0x366)]=_0x417641(0x210));}catch(_0x7a706f){}if(cheatDetected){if(_0x1c9a7b)_0x1c9a7b[_0x417641(0x380)]='⚠️';_0x2669aa[_0x417641(0x380)]=_0x417641(0x21e),_0x2669aa[_0x417641(0x1fe)][_0x417641(0x21d)]('cheat'),_0x4d5d47[_0x417641(0x380)]=_0x417641(0x270);}else testMode===_0x417641(0x38a)?(_0x2669aa[_0x417641(0x380)]=_0x417641(0x2b1),_0x4d5d47['textContent']=_0x417641(0x32b)):(_0x2669aa[_0x417641(0x380)]=_0x417641(0x2b1),_0x4d5d47[_0x417641(0x380)]=_0x417641(0x248));_0x2575d1&&_0x2575d1['success']?(debugLog('✅\x20Teszt\x20sikeresen\x20beküldve!'),testMode===_0x417641(0x217)&&sendEmailNotification(_0x2575d1[_0x417641(0x306)])):debugLog(_0x417641(0x376)),downloadSubmissionTxt(_0x2575d1?_0x2575d1[_0x417641(0x306)]:''),exitFullscreen();}function a0_0x2de4(_0x1198e1,_0x4c5fcf){_0x1198e1=_0x1198e1-0x1e5;const _0x3fcb29=a0_0x3fcb();let _0x2de4ff=_0x3fcb29[_0x1198e1];return _0x2de4ff;}function autoSubmitTest(){const _0x3e3f48=a0_0x1a744d;alert(_0x3e3f48(0x314)),submitTest();}function enterFullscreen(){const _0xb306c3=a0_0x1a744d,_0x12172c=document['documentElement'];fullscreenGraceUntil=Date[_0xb306c3(0x360)]()+0x1388;if(_0x12172c['requestFullscreen'])_0x12172c[_0xb306c3(0x2fe)]();else{if(_0x12172c[_0xb306c3(0x35f)])_0x12172c[_0xb306c3(0x35f)]();else{if(_0x12172c['mozRequestFullScreen'])_0x12172c[_0xb306c3(0x35e)]();else _0x12172c[_0xb306c3(0x374)]&&_0x12172c['msRequestFullscreen']();}}logEvent(_0xb306c3(0x2e7));}function exitFullscreen(){const _0x3feeba=a0_0x1a744d;if(document[_0x3feeba(0x342)])document['exitFullscreen']()['catch'](()=>{});else{if(document[_0x3feeba(0x319)])document[_0x3feeba(0x319)]();else{if(document['mozCancelFullScreen'])document[_0x3feeba(0x30f)]();else document[_0x3feeba(0x298)]&&document[_0x3feeba(0x298)]();}}}function handleFullscreenChange(){const _0x56cd8a=a0_0x1a744d,_0x18dc26=document['fullscreenElement']||document[_0x56cd8a(0x261)]||document[_0x56cd8a(0x311)]||document['msFullscreenElement'],_0x2794d5=!quizSection[_0x56cd8a(0x1fe)][_0x56cd8a(0x30a)](_0x56cd8a(0x244));if(!_0x18dc26&&!endSection[_0x56cd8a(0x1fe)]['contains'](_0x56cd8a(0x244)))return;if(testMode!==_0x56cd8a(0x217)){fullscreenPrompt[_0x56cd8a(0x28f)][_0x56cd8a(0x366)]=_0x56cd8a(0x251);return;}!_0x18dc26&&_0x2794d5?(fullscreenPrompt[_0x56cd8a(0x28f)][_0x56cd8a(0x366)]='flex',logEvent(_0x56cd8a(0x35b)),showCheatWarning('Kiléptél\x20a\x20teljes\x20képernyős\x20módból')):(fullscreenPrompt[_0x56cd8a(0x28f)]['display']=_0x56cd8a(0x251),_0x18dc26&&(fullscreenEnforced=!![]));}function handleVisibilityChange(){const _0x58a081=a0_0x1a744d;if(testMode!==_0x58a081(0x217))return;document[_0x58a081(0x244)]&&!quizSection[_0x58a081(0x1fe)]['contains']('hidden')&&(logEvent('Tab\x20hidden\x20-\x20potential\x20cheating'),showCheatWarning(_0x58a081(0x218)));}function handleWindowBlur(){const _0x486e03=a0_0x1a744d;if(testMode!==_0x486e03(0x217))return;!quizSection['classList'][_0x486e03(0x30a)](_0x486e03(0x244))&&(logEvent(_0x486e03(0x290)),fullscreenPrompt[_0x486e03(0x28f)][_0x486e03(0x366)]=_0x486e03(0x213),showCheatWarning(_0x486e03(0x341)));}function handleWindowFocus(){focusLossTimeout&&(clearTimeout(focusLossTimeout),focusLossTimeout=null),logEvent('Window\x20gained\x20focus');}function startFocusCheck(){focusCheckInterval=setInterval(()=>{const _0x297f76=a0_0x2de4;!document[_0x297f76(0x288)]()&&!quizSection['classList'][_0x297f76(0x30a)](_0x297f76(0x244))&&testMode===_0x297f76(0x217)&&logEvent(_0x297f76(0x2d1));},0x1388);}function detectDevTools(){const _0x5e71af=0xa0;setInterval(()=>{const _0x5ef079=a0_0x2de4;(window[_0x5ef079(0x364)]-window[_0x5ef079(0x34b)]>_0x5e71af||window[_0x5ef079(0x299)]-window[_0x5ef079(0x287)]>_0x5e71af)&&(logEvent(_0x5ef079(0x229)),testMode===_0x5ef079(0x217)&&!quizSection['classList'][_0x5ef079(0x30a)](_0x5ef079(0x244))&&showCheatWarning('Developer\x20Tools\x20észlelve'));},0x3e8);}function startFullscreenCheck(){fullscreenCheckInterval&&clearInterval(fullscreenCheckInterval),fullscreenCheckInterval=setInterval(()=>{const _0x1e637f=a0_0x2de4;if(testMode!==_0x1e637f(0x217)||quizSection[_0x1e637f(0x1fe)]['contains'](_0x1e637f(0x244)))return;const _0x3a100b=document['fullscreenElement']||document[_0x1e637f(0x261)]||document[_0x1e637f(0x311)]||document[_0x1e637f(0x25b)];if(!_0x3a100b){if(Date[_0x1e637f(0x360)]()<fullscreenGraceUntil)return;if(!fullscreenEnforced)return;showCheatWarning(_0x1e637f(0x378));}},0x3e8);}function showCheatWarning(_0x444cf5){const _0x23ea67=a0_0x1a744d;if(quizSection['classList']['contains'](_0x23ea67(0x244)))return;if(testMode!==_0x23ea67(0x217))return;if(cheatDetected)return;if(cheatWarningCount>=0x3)return;const _0x2b98ca=Date['now']();if(_0x2b98ca-lastCheatWarningTime<0x5dc)return;lastCheatWarningTime=_0x2b98ca,cheatWarningCount++,logEvent(_0x23ea67(0x2e0)+cheatWarningCount+':\x20'+_0x444cf5);const _0x404412=document['getElementById']('cheat-warning-overlay'),_0x33a775=document['getElementById'](_0x23ea67(0x310)),_0x52a0b1=document['getElementById'](_0x23ea67(0x25d)),_0x3ad7ce=document[_0x23ea67(0x384)]('cheat-warning-final-msg'),_0x143836=document['getElementById'](_0x23ea67(0x38e));if(!_0x404412)return;if(_0x33a775)_0x33a775[_0x23ea67(0x380)]=_0x444cf5;if(_0x52a0b1)_0x52a0b1['textContent']='Csalási\x20kísérlet\x203/'+cheatWarningCount;_0x404412[_0x23ea67(0x28f)]['display']=_0x23ea67(0x213);if(cheatWarningCount>=0x3){cheatPenalty=!![];if(_0x3ad7ce)_0x3ad7ce[_0x23ea67(0x28f)][_0x23ea67(0x366)]='block';if(_0x143836)_0x143836[_0x23ea67(0x380)]='Megértettem,\x20folytatom\x20a\x20tesztet';sendCheatNotification(_0x444cf5);}else{if(_0x3ad7ce)_0x3ad7ce[_0x23ea67(0x28f)][_0x23ea67(0x366)]=_0x23ea67(0x251);_0x143836&&(_0x143836[_0x23ea67(0x380)]='Megértettem,\x20visszatérek');}}function closeCheatWarning(){const _0x369108=a0_0x1a744d,_0x5e6b6c=document['getElementById'](_0x369108(0x315));if(_0x5e6b6c)_0x5e6b6c[_0x369108(0x28f)][_0x369108(0x366)]='none';fullscreenPrompt['style']['display']='none';if(testMode===_0x369108(0x217)&&!quizSection[_0x369108(0x1fe)]['contains'](_0x369108(0x244))){const _0x3f20ec=document[_0x369108(0x2c0)]||document[_0x369108(0x261)]||document[_0x369108(0x311)]||document[_0x369108(0x25b)];if(!_0x3f20ec)enterFullscreen();}}function sendCheatNotification(_0x2e7299){const _0x24932b=a0_0x1a744d;if(!window[_0x24932b(0x282)]||testMode!==_0x24932b(0x217))return;debugLog('📧\x20Oktató\x20értesítése\x20csalási\x20kísérletről...');const _0x10782d={'to_email':'sandornefr@gmail.com','subject':_0x24932b(0x2d0)+(studentData['name']||'Ismeretlen\x20tanuló'),'reply_to':studentData['email']||_0x24932b(0x383),'message':[_0x24932b(0x348),'','Tanuló\x20neve:\x20'+(studentData[_0x24932b(0x362)]||'-'),_0x24932b(0x2b6)+(studentData[_0x24932b(0x236)]||'-'),_0x24932b(0x371)+(studentData['class']||'-'),'Időpont:\x20'+new Date()[_0x24932b(0x36d)]('hu-HU'),_0x24932b(0x1f2)+_0x2e7299,'',_0x24932b(0x1f8),_0x24932b(0x1f4)][_0x24932b(0x2fb)]('\x0a')};emailjs[_0x24932b(0x361)]('service_zxskntr','template_vnqc2fd',_0x10782d,_0x24932b(0x2c3))[_0x24932b(0x2a1)](()=>debugLog(_0x24932b(0x2b3)))['catch'](_0x3e0f04=>debugLog('⚠️\x20Értesítési\x20hiba:\x20'+_0x3e0f04['message']));}function handleCheating(_0x143f74){const _0x393eb0=a0_0x1a744d;if(cheatDetected||quizSection[_0x393eb0(0x1fe)][_0x393eb0(0x30a)](_0x393eb0(0x244)))return;cheatDetected=!![],cheatReason=_0x143f74;globalTimer&&clearInterval(globalTimer);autosaveInterval&&(clearInterval(autosaveInterval),autosaveInterval=null);const _0x3a170a=document[_0x393eb0(0x384)](_0x393eb0(0x315));if(_0x3a170a)_0x3a170a[_0x393eb0(0x28f)][_0x393eb0(0x366)]=_0x393eb0(0x251);fullscreenPrompt[_0x393eb0(0x28f)][_0x393eb0(0x366)]='none',exitFullscreen(),submitTest();}function logEvent(_0x27bd4c,_0x44e5fd={}){const _0x16a3f1=a0_0x1a744d,_0x441143={'timestamp':new Date()[_0x16a3f1(0x394)](),'event':_0x27bd4c,..._0x44e5fd};eventLog[_0x16a3f1(0x31b)](_0x441143);}function debugLog(_0x26bd38){const _0x5d9c69=a0_0x1a744d,_0x3bc197=document['getElementById'](_0x5d9c69(0x2c7)),_0x5ea694=document[_0x5d9c69(0x384)](_0x5d9c69(0x2fd));if(!_0x3bc197||!_0x5ea694)return;const _0xf63834=new Date()[_0x5d9c69(0x2e1)](),_0x4d0ebd=document[_0x5d9c69(0x333)](_0x5d9c69(0x23a));_0x4d0ebd[_0x5d9c69(0x28f)][_0x5d9c69(0x2ed)]=_0x5d9c69(0x30e),_0x4d0ebd[_0x5d9c69(0x28f)][_0x5d9c69(0x259)]=_0x5d9c69(0x30e),_0x4d0ebd[_0x5d9c69(0x28f)]['borderBottom']=_0x5d9c69(0x20d),_0x4d0ebd[_0x5d9c69(0x380)]='['+_0xf63834+']\x20'+_0x26bd38,_0x5ea694['appendChild'](_0x4d0ebd),setTimeout(()=>{const _0x4c75ba=_0x5d9c69;_0x3bc197[_0x4c75ba(0x1f6)]=_0x3bc197[_0x4c75ba(0x26a)];},0xa);}function updateTestModeBadge(){const _0x5a83cb=a0_0x1a744d,_0x14aaf7=document[_0x5a83cb(0x384)](_0x5a83cb(0x31e)),_0x278637=document[_0x5a83cb(0x384)](_0x5a83cb(0x33a));if(!_0x14aaf7||!_0x278637)return;_0x14aaf7[_0x5a83cb(0x28f)]['display']=_0x5a83cb(0x210);const _0x45270a=sessionStorage[_0x5a83cb(0x330)]('kandTeacherMode')===_0x5a83cb(0x31c);testMode===_0x5a83cb(0x217)&&!_0x45270a?(_0x14aaf7['style'][_0x5a83cb(0x366)]=_0x5a83cb(0x210),_0x14aaf7[_0x5a83cb(0x28f)][_0x5a83cb(0x2a2)]=_0x5a83cb(0x2e9),_0x14aaf7['style']['color']=_0x5a83cb(0x238),_0x14aaf7[_0x5a83cb(0x28f)][_0x5a83cb(0x230)]=_0x5a83cb(0x205),_0x278637[_0x5a83cb(0x380)]='🔴\x20ÉLES\x20TESZT\x20MÓD\x20–\x20Az\x20eredmények\x20elküldésre\x20kerülnek!'):_0x14aaf7[_0x5a83cb(0x28f)][_0x5a83cb(0x366)]=_0x5a83cb(0x251);const _0x2a9a8e=testMode===_0x5a83cb(0x217)&&!_0x45270a,_0x299ff0=document[_0x5a83cb(0x384)](_0x5a83cb(0x324));if(_0x299ff0)_0x299ff0[_0x5a83cb(0x28f)]['display']=_0x2a9a8e?_0x5a83cb(0x210):'none';const _0x2d1f51=document[_0x5a83cb(0x384)](_0x5a83cb(0x327));_0x2d1f51&&(_0x2d1f51[_0x5a83cb(0x380)]=_0x2a9a8e?_0x5a83cb(0x379):_0x5a83cb(0x247));const _0x36fb14=document[_0x5a83cb(0x384)]('practice-time-picker');_0x36fb14&&(_0x36fb14['style'][_0x5a83cb(0x366)]=!_0x45270a&&testMode===_0x5a83cb(0x38a)?_0x5a83cb(0x210):_0x5a83cb(0x251));}function sendEmailNotification(_0x9046f2){const _0x368511=a0_0x1a744d;if(!window[_0x368511(0x282)]){debugLog(_0x368511(0x21f));return;}debugLog(_0x368511(0x285));const _0x3a9c5c=testStartTime?testStartTime[_0x368511(0x36d)](_0x368511(0x27e)):'-',_0x188746=testEndTime?testEndTime['toLocaleString']('hu-HU'):'-',_0x5d8101=testStartTime&&testEndTime?Math[_0x368511(0x231)]((testEndTime-testStartTime)/0x3e8):0x0,_0x14ffc4=taskAnswers[_0x368511(0x29e)]((_0x347143,_0x3962ec)=>{const _0x320bc4=_0x368511,_0x24c442=formatDuration(_0x347143[_0x320bc4(0x216)]||0x0);return[_0x320bc4(0x334)+(_0x3962ec+0x1)+_0x320bc4(0x214)+(_0x347143[_0x320bc4(0x28e)]||'-')+_0x320bc4(0x24c),_0x320bc4(0x323)+_0x24c442,_0x320bc4(0x224)+(_0x347143[_0x320bc4(0x2cb)]?_0x320bc4(0x321):_0x320bc4(0x345)),'',_0x320bc4(0x297),_0x347143[_0x320bc4(0x30c)]||'','',_0x320bc4(0x398),_0x347143[_0x320bc4(0x1fd)]||'','','TANULÓ\x20VÁLASZA:',_0x347143[_0x320bc4(0x2c1)]||'','']['join']('\x0a');})[_0x368511(0x2fb)]('\x0a'),_0x2d6ce2=eventLog[_0x368511(0x29e)](_0x1e504f=>{const _0x4a1a44=_0x368511,_0x8c1387=_0x1e504f[_0x4a1a44(0x1e5)]||'',_0xebb1c6=_0x1e504f[_0x4a1a44(0x206)]||_0x1e504f[_0x4a1a44(0x332)]||'';return _0x8c1387+_0x4a1a44(0x318)+_0xebb1c6;})[_0x368511(0x2fb)]('\x0a'),_0x74002a=['Tanuló\x20neve:\x20'+studentData['name'],'Tanuló\x20email:\x20'+studentData[_0x368511(0x236)],_0x368511(0x371)+studentData[_0x368511(0x26b)],'Teszt\x20kezdete:\x20'+_0x3a9c5c,_0x368511(0x2bd)+_0x188746,_0x368511(0x2d2)+formatDuration(_0x5d8101),'Státusz:\x20'+(cheatDetected?_0x368511(0x354):cheatPenalty?_0x368511(0x1fa):_0x368511(0x201)),_0x368511(0x26c)+cheatWarningCount,'',buildScoringReport(),_0x368511(0x24e),'',_0x14ffc4,'',_0x368511(0x2b4),_0x2d6ce2][_0x368511(0x2fb)]('\x0a'),_0x3da59a={'to_email':_0x368511(0x23b),'subject':studentData[_0x368511(0x362)]||'Python\x20teszt','reply_to':studentData[_0x368511(0x236)],'message':_0x74002a};emailjs[_0x368511(0x361)]('service_zxskntr',_0x368511(0x29d),_0x3da59a,_0x368511(0x2c3))['then'](()=>{const _0x4b4bf8=_0x368511;debugLog('✅\x20Email\x20sikeresen\x20elküldve!'),logEvent(_0x4b4bf8(0x351),{'submission_id':_0x9046f2});})[_0x368511(0x21a)](_0x22d026=>{const _0x14ca5a=_0x368511;debugLog('❌\x20Email\x20küldési\x20hiba:\x20'+_0x22d026[_0x14ca5a(0x22f)]),logEvent(_0x14ca5a(0x339),{'error':_0x22d026[_0x14ca5a(0x22f)]});});}function downloadSubmissionTxt(_0x15509c){const _0x3d1253=a0_0x1a744d,_0xa6c0ed=[],_0x17c776=new Date();_0xa6c0ed['push'](_0x3d1253(0x2d7)),_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x249)+_0x17c776[_0x3d1253(0x36d)](_0x3d1253(0x27e))),_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x2ac)+(_0x15509c||'-')),_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x1eb)+(studentData[_0x3d1253(0x362)]||'-')),_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x2b6)+(studentData[_0x3d1253(0x236)]||'-')),_0xa6c0ed['push'](_0x3d1253(0x371)+(studentData['class']||'-')),_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x337)+testMode);cheatDetected?_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x2e4)+cheatReason+')'):_0xa6c0ed[_0x3d1253(0x31b)](_0x3d1253(0x344));_0xa6c0ed[_0x3d1253(0x31b)](''),_0xa6c0ed[_0x3d1253(0x31b)](buildScoringReport()),_0xa6c0ed[_0x3d1253(0x31b)]('===\x20FELADATOK\x20ÉS\x20VÁLASZOK\x20==='),_0xa6c0ed[_0x3d1253(0x31b)](''),taskAnswers['forEach']((_0x2dd993,_0x515ff8)=>{const _0x142127=_0x3d1253;_0xa6c0ed[_0x142127(0x31b)](_0x142127(0x334)+(_0x515ff8+0x1)+_0x142127(0x214)+(_0x2dd993['taskNumber']||'-')+_0x142127(0x24c)),_0xa6c0ed[_0x142127(0x31b)](_0x142127(0x323)+formatDuration(_0x2dd993[_0x142127(0x216)]||0x0)),_0xa6c0ed['push'](_0x142127(0x224)+(_0x2dd993[_0x142127(0x2cb)]?_0x142127(0x321):_0x142127(0x345))),_0xa6c0ed[_0x142127(0x31b)](''),_0xa6c0ed[_0x142127(0x31b)](_0x142127(0x297)),_0xa6c0ed[_0x142127(0x31b)](_0x2dd993[_0x142127(0x30c)]||''),_0xa6c0ed[_0x142127(0x31b)](''),_0xa6c0ed[_0x142127(0x31b)](_0x142127(0x398)),_0xa6c0ed[_0x142127(0x31b)](_0x2dd993['taskExample']||''),_0xa6c0ed['push'](''),_0xa6c0ed[_0x142127(0x31b)](_0x142127(0x24a)),_0xa6c0ed[_0x142127(0x31b)](_0x2dd993[_0x142127(0x2c1)]||''),_0xa6c0ed[_0x142127(0x31b)]('');}),_0xa6c0ed['push'](_0x3d1253(0x2b4)),eventLog[_0x3d1253(0x27b)](_0x544396=>{const _0x427533=_0x3d1253,_0x1c858e=_0x544396['timestamp']||'',_0x860fec=_0x544396[_0x427533(0x206)]||_0x544396[_0x427533(0x332)]||'';_0xa6c0ed[_0x427533(0x31b)](_0x1c858e+_0x427533(0x318)+_0x860fec);});const _0x18f213=_0xa6c0ed[_0x3d1253(0x2fb)]('\x0a'),_0x55eed3=(studentData[_0x3d1253(0x362)]||'diak\x20ismeretlen')[_0x3d1253(0x38f)]()[_0x3d1253(0x2af)](/\s+/),_0x173ab2=(_0x55eed3[0x0]||'diak')[_0x3d1253(0x293)]()[_0x3d1253(0x369)](_0x3d1253(0x295))['replace'](/[\u0300-\u036f]/g,'')['replace'](/[^a-z0-9]/g,''),_0x4c4e76=_0x55eed3[_0x3d1253(0x202)](0x1)[_0x3d1253(0x2fb)]('_')['toLowerCase']()['normalize'](_0x3d1253(0x295))[_0x3d1253(0x289)](/[\u0300-\u036f]/g,'')['replace'](/[^a-z0-9_]/g,'')||_0x3d1253(0x275),[_0x1fc997,_0x3cd2b3]=(studentData[_0x3d1253(0x26b)]||_0x3d1253(0x280))[_0x3d1253(0x2af)]('.'),_0x1ea638=(studentData[_0x3d1253(0x236)]||'')[_0x3d1253(0x289)](_0x3d1253(0x27f),'')[_0x3d1253(0x293)]()['replace'](/[^a-z0-9.]/g,''),_0x202897=(_0x173ab2||'diak')+'_'+_0x4c4e76+'_'+(_0x1fc997||'0')+'_'+(_0x3cd2b3||'x')+'_'+(_0x1ea638||_0x3d1253(0x275))+'_python.txt',_0x2115b9=new Blob([_0x18f213],{'type':_0x3d1253(0x278)}),_0x36af85=URL['createObjectURL'](_0x2115b9),_0x13aef0=document[_0x3d1253(0x333)]('a');_0x13aef0['href']=_0x36af85,_0x13aef0[_0x3d1253(0x349)]=_0x202897,document[_0x3d1253(0x252)][_0x3d1253(0x2b0)](_0x13aef0),_0x13aef0[_0x3d1253(0x34f)](),document[_0x3d1253(0x252)]['removeChild'](_0x13aef0),URL[_0x3d1253(0x1f1)](_0x36af85);}function getEffectiveTimeSpent(_0x1ab9d1,_0xf8872d){const _0x1b6e3f=a0_0x1a744d,_0x3ddad6=_0x1ab9d1[_0x1b6e3f(0x216)]||0x0;if(_0xf8872d!==currentTaskIndex)return _0x3ddad6;if(!_0x1ab9d1[_0x1b6e3f(0x35d)])return _0x3ddad6;const _0x122371=Math['round']((Date[_0x1b6e3f(0x360)]()-_0x1ab9d1[_0x1b6e3f(0x35d)][_0x1b6e3f(0x23e)]())/0x3e8);return _0x3ddad6+Math[_0x1b6e3f(0x396)](0x0,_0x122371);}function startAutoSaveInterval(){autosaveInterval&&clearInterval(autosaveInterval),autosaveInterval=setInterval(()=>{const _0x58b7e4=a0_0x2de4;!quizSection[_0x58b7e4(0x1fe)][_0x58b7e4(0x30a)](_0x58b7e4(0x244))&&autoSaveProgress();},0x2710);}function formatDuration(_0x19d831){const _0x2b3885=a0_0x1a744d,_0x5bf4ab=Math['max'](0x0,Math['floor'](_0x19d831)),_0xeb16f3=Math[_0x2b3885(0x2aa)](_0x5bf4ab/0x3c),_0xc642b=_0x5bf4ab%0x3c;if(_0xeb16f3===0x0)return _0xc642b+_0x2b3885(0x356);return _0xeb16f3+'\x20perc\x20'+_0xc642b+_0x2b3885(0x356);}
+// Python Teszt JavaScript - Google Sheets API kommunikációval
+// Visszafejtett és helyreállított verzió
+
+// Globális változók
+const RAILWAY_URL = 'https://agazati.up.railway.app';
+let testMode = 'practice';
+let tasks = [];
+let selectedTasks = [];
+let currentTaskIndex = 0;
+let globalTimeRemaining = 45 * 60; // 45 perc másodpercben
+let globalTimer = null;
+let codeEditor = null;
+let monacoReadyPromise = null;
+let testStartTime = null;
+let testEndTime = null;
+let studentData = {};
+let taskStartTimes = [];
+let taskAnswers = [];
+let eventLog = [];
+let term = null;
+let fitAddon = null;
+let terminalReady = false;
+let terminalInputResolver = null;
+let terminalInputBuffer = '';
+let focusLossTimeout = null;
+let focusCheckInterval = null;
+let fullscreenCheckInterval = null;
+let autosaveInterval = null;
+let cheatDetected = false;
+let cheatReason = '';
+let cheatWarningCount = 0;
+let cheatPenalty = false;
+let lastCheatWarningTime = 0;
+let fullscreenEnforced = false;
+let fullscreenGraceUntil = 0;
+let suspiciousJumps = 0;
+let lastCodeLengths = [];
+let testSubmitted = false;
+
+// Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
+let pyodideInstance = null;
+let pyodideLoadingPromise = null;
+
+// Futás-lock – megakadályozza a párhuzamos kódfuttatást
+let pythonCodeRunning = false;
+let currentInputDisposable = null;
+
+async function getPyodide() {
+    if (pyodideInstance) return pyodideInstance;
+    if (!pyodideLoadingPromise) {
+        pyodideLoadingPromise = loadPyodide().catch(err => {
+            pyodideLoadingPromise = null; // Sikertelen betöltés után újrapróbálható
+            throw err;
+        });
+    }
+    pyodideInstance = await pyodideLoadingPromise;
+    return pyodideInstance;
+}
+
+// DOM elemek
+const startSection = document.getElementById('start-section');
+const quizSection = document.getElementById('quiz-section');
+const endSection = document.getElementById('end-section');
+const submitModal = document.getElementById('submit-modal');
+const fullscreenPrompt = document.getElementById('fullscreen-prompt');
+
+// Alkalmazás inicializálása
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+});
+
+async function initializeApp() {
+    logEvent('Application initialized');
+    // Monaco előtöltése a háttérben, hogy startTest()-re kész legyen
+    monacoReadyPromise = new Promise((resolve) => {
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+        require(['vs/editor/editor.main'], resolve);
+    });
+    setupEventListeners();
+    await loadTasksFromFile();
+    await loadTestMode();
+    startFullscreenCheck();
+
+    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
+
+    if (testMode === 'practice' || isTeacher) {
+        // Gyakorló / bemutató mód: rögtön indul, nincs popup
+        const startSection = document.getElementById('start-section');
+        if (startSection) startSection.style.display = 'none';
+        startTest();
+    } else {
+        // Éles mód: megjelenítjük a szabályok popup-ot
+        const rulesDiv = document.getElementById('start-live-rules');
+        if (rulesDiv) rulesDiv.style.display = 'block';
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) startBtn.textContent = 'Elfogadom a szabályokat – Teszt indítása';
+    }
+
+    // Pyodide előbetöltése a háttérben
+    getPyodide()
+        .then(() => debugLog('✅ Python értelmező kész'))
+        .catch(err => debugLog('⚠️ Python előbetöltési hiba: ' + err.message));
+}
+
+// Teszt mód betöltése az API-ból (retry ha Railway alszik)
+async function loadTestMode() {
+    const fetchWithTimeout = (url, ms) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), ms);
+        return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+    };
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            debugLog('🔄 Teszt mód betöltése... (' + attempt + '/3)');
+            const response = await fetchWithTimeout(RAILWAY_URL + '/api/config', 8000);
+            const data = await response.json();
+
+            if (data.test_mode) {
+                testMode = data.test_mode;
+                logEvent('Test mode loaded', { mode: testMode });
+                debugLog('✅ Teszt mód betöltve: ' + (testMode === 'practice' ? '🎓 GYAKORLÓ' : '🔴 ÉLES'));
+            } else {
+                debugLog('⚠️ Teszt mód nem érkezett, alapértelmezett: GYAKORLÓ');
+            }
+            break; // sikeres → kilépés a ciklusból
+        } catch (error) {
+            debugLog('⚠️ Betöltési kísérlet ' + attempt + '/3 sikertelen: ' + error.message);
+            if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+            else {
+                logEvent('Test mode load error', { error: error.message });
+                debugLog('❌ Teszt mód betöltése SIKERTELEN, alapértelmezett: GYAKORLÓ');
+            }
+        }
+    }
+    updateTestModeBadge();
+}
+
+// Backend-re való beküldés
+async function submitToBackend() {
+    try {
+        const testDuration = Math.round((testEndTime - testStartTime) / 1000);
+
+        const taskIds = selectedTasks.map(t => t.number).join(',');
+        const maxScores = selectedTasks.map(t => t.points || 0);
+        const scores = taskAnswers.map(a => a.score || 0);
+        const totalScore = scores.reduce((s, v) => s + v, 0);
+        const maxTotal = maxScores.reduce((s, v) => s + v, 0);
+        const codeSnapshot = JSON.stringify({
+            tasks: taskAnswers.map((a, i) => ({
+                task: selectedTasks[i] ? selectedTasks[i].number : i + 1,
+                code: a.answer || ''
+            })),
+            suspiciousJumps: suspiciousJumps,
+            eventLog: eventLog
+        });
+
+        const payload = {
+            name: studentData.name,
+            email: studentData.email,
+            osztaly: studentData.class || '',
+            csoport: studentData.group || null,
+            taskIds: taskIds,
+            scores: scores.join(','),
+            maxScores: maxScores.join(','),
+            totalScore: totalScore,
+            maxTotal: maxTotal,
+            duration: testDuration,
+            mode: testMode === 'live' ? 'live' : 'practice',
+            codeSnapshot: codeSnapshot,
+            cheatPenalty: cheatPenalty,
+            cheatWarnings: cheatWarningCount
+        };
+
+        debugLog('📦 Adat előkészítve');
+
+        const response = await fetch(RAILWAY_URL + '/api/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        debugLog('📡 Backend válasz státusz: ' + response.status);
+
+        const result = await response.json();
+
+        if (result.success) {
+            logEvent('Submission successful', { submission_id: result.id });
+            debugLog('✅ Sikeres beküldés! ID: ' + result.id);
+            return { success: true, submission_id: result.id };
+        } else {
+            throw new Error('Beküldés sikertelen');
+        }
+    } catch (error) {
+        logEvent('Submission error', { error: error.message });
+        debugLog('❌ Backend hiba');
+        return null;
+    }
+}
+
+// Automatikus mentés (lokálisan, sessionStorage-ba) + kódugrás detektálás
+async function autoSaveProgress() {
+    try {
+        if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+            const newCode = codeEditor.getValue();
+            const prevLen = lastCodeLengths[currentTaskIndex] || 0;
+            const jump = newCode.length - prevLen;
+            // 80+ karakter hirtelen megjelenése 10 másodpercen belül = gyanús
+            if (testMode === 'live' && jump >= 80) {
+                suspiciousJumps++;
+                logEvent('Suspicious code jump', { chars: jump, task: currentTaskIndex + 1, total: suspiciousJumps });
+                debugLog('⚠️ Gyanús kódugrás: +' + jump + ' karakter (összesen: ' + suspiciousJumps + ')');
+            }
+            lastCodeLengths[currentTaskIndex] = newCode.length;
+            taskAnswers[currentTaskIndex].answer = newCode;
+        }
+        const saveData = {
+            studentData,
+            taskAnswers: taskAnswers.map(a => ({ taskNumber: a.taskNumber, answer: a.answer || '' })),
+            timestamp: new Date().toISOString()
+        };
+        sessionStorage.setItem('kandoAutosave', JSON.stringify(saveData));
+        debugLog('💾 Automatikus mentés (lokális)');
+    } catch (error) {
+        console.log('Autosave failed:', error);
+    }
+}
+
+// Event listener-ek beállítása
+function setupEventListeners() {
+    document.getElementById('start-btn').addEventListener('click', startTest);
+    document.getElementById('skip-btn').addEventListener('click', skipTask);
+    document.getElementById('submit-btn').addEventListener('click', showSubmitModal);
+    document.getElementById('confirm-submit').addEventListener('click', submitTest);
+    document.getElementById('cancel-submit').addEventListener('click', hideSubmitModal);
+    document.getElementById('run-code-btn').addEventListener('click', runPythonCode);
+    document.getElementById('check-scoring-btn').addEventListener('click', checkScoring);
+
+    // Jobb klikk letiltása
+    document.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        return false;
+    });
+
+    // DevTools billentyűk letiltása + ablakváltó kombinációk tiltása
+    document.addEventListener('keydown', e => {
+        // DevTools
+        if (e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+            (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+            return false;
+        }
+        // Ablakváltó kombinációk tiltása teszt közben
+        if (!quizSection.classList.contains('hidden') && testMode === 'live') {
+            if ((e.altKey && e.key === 'Tab') ||
+                (e.altKey && e.key === 'F4') ||
+                (e.ctrlKey && e.key === 'Tab') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'Tab') ||
+                e.key === 'Meta' || e.key === 'OS' ||
+                e.key === 'Escape' ||
+                (e.ctrlKey && e.key === 'Escape') ||
+                (e.altKey && e.key === 'Escape')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+    });
+
+    // Touchpad vízszintes húzás tiltása (böngésző vissza/előre navigáció)
+    document.addEventListener('wheel', e => {
+        if (!quizSection.classList.contains('hidden')) {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 20) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    // Pointer-alapú swipe gesztus tiltása
+    let pointerStartX = 0;
+    document.addEventListener('pointerdown', e => { pointerStartX = e.clientX; });
+    document.addEventListener('pointermove', e => {
+        if (!quizSection.classList.contains('hidden') && e.buttons > 0) {
+            const dx = e.clientX - pointerStartX;
+            if (Math.abs(dx) > 80) {
+                e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    // Paste blokkolás: 40+ karakteres beillesztés tiltott (két monitor / AI bypass)
+    document.addEventListener('paste', e => {
+        if (quizSection.classList.contains('hidden') || testMode !== 'live') return;
+        const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+        if (text.length >= 45) {
+            e.preventDefault();
+            e.stopPropagation();
+            suspiciousJumps++;
+            logEvent('Paste blocked', { chars: text.length, total: suspiciousJumps });
+            debugLog('🚫 Beillesztés blokkolva: ' + text.length + ' karakter');
+            // Rövid vizuális visszajelzés
+            const msg = document.createElement('div');
+            msg.textContent = '🚫 Nagy beillesztés nem engedélyezett!';
+            msg.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#e94560;color:white;padding:10px 22px;border-radius:8px;font-weight:700;z-index:99999;font-size:0.95rem;box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2500);
+        }
+    }, true);
+
+    // DevTools észlelés
+    detectDevTools();
+
+    // Fullscreen változás figyelése
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    // Láthatóság változás figyelése
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Ablak fókusz figyelése
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
+
+    startFocusCheck();
+}
+
+// Feladatok betöltése fájlból
+async function loadTasksFromFile() {
+    try {
+        const response = await fetch('feladatok.txt');
+        const text = await response.text();
+        parseTasks(text);
+        logEvent('Tasks loaded', { count: tasks.length });
+    } catch (error) {
+        alert('Hiba történt a feladatok betöltésekor!');
+        logEvent('Task load error', { error: error.message });
+    }
+}
+
+// Feladatok feldolgozása
+function parseTasks(text) {
+    const lines = text.split('\n');
+    let currentTask = null;
+    let inExample = false;
+    let inCriteria = false;
+    let exampleLines = [];
+    let criteriaLines = [];
+
+    for (let line of lines) {
+        const taskMatch = line.match(/^(\d+)\.\s*feladat/i);
+
+        if (taskMatch) {
+            if (currentTask) {
+                currentTask.example = exampleLines.join('\n');
+                currentTask.criteria = parseCriteria(criteriaLines);
+                tasks.push(currentTask);
+            }
+
+            currentTask = {
+                number: parseInt(taskMatch[1]),
+                description: '',
+                example: '',
+                points: 8,
+                criteria: []
+            };
+            inExample = false;
+            inCriteria = false;
+            exampleLines = [];
+            criteriaLines = [];
+            continue;
+        }
+
+        // Pontszám jelölés: "Pont: 14" vagy "Pont: 8"
+        const pointMatch = line.match(/^Pont:\s*(\d+)/i);
+        if (pointMatch && currentTask) {
+            currentTask.points = parseInt(pointMatch[1]);
+            continue;
+        }
+
+        // Pontozás szekció
+        if (line.trim() === 'Pontozas:') {
+            inCriteria = true;
+            inExample = false;
+            continue;
+        }
+
+        // Mind a ```python, mind a ``` jelölést támogatja
+        if (line.trim() === '```python' || line.trim() === '```') {
+            if (!inCriteria) inExample = !inExample;
+            continue;
+        }
+
+        if (line.match(/^Minta kód:/i)) {
+            continue;
+        }
+
+        if (currentTask) {
+            if (inCriteria) {
+                if (line.trim() !== '') criteriaLines.push(line.trim());
+            } else if (inExample) {
+                exampleLines.push(line);
+            } else if (line.trim() !== '') {
+                if (currentTask.description !== '') currentTask.description += '\n';
+                currentTask.description += line;
+            }
+        }
+    }
+
+    if (currentTask) {
+        currentTask.example = exampleLines.join('\n');
+        currentTask.criteria = parseCriteria(criteriaLines);
+        tasks.push(currentTask);
+    }
+
+    const count8 = tasks.filter(t => t.points === 8).length;
+    const count14 = tasks.filter(t => t.points === 14).length;
+    debugLog(`✅ ${tasks.length} feladat betöltve (${count8} db 8 pontos, ${count14} db 14 pontos)`);
+}
+
+// Teszt indítása
+async function startTest() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const studentClass = document.getElementById('class').value.trim();
+
+    // Ha sessionStorage-ból jött az adat, csak a nevet és emailt ellenőrizzük
+    const fromSession = !!sessionStorage.getItem('kandoUser');
+    if (!name || !email || (!studentClass && !fromSession)) {
+        alert('Kérlek, töltsd ki az összes mezőt!');
+        return;
+    }
+
+    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks14 = tasks.filter(t => t.points === 14);
+    if (tasks8.length < 2 || tasks14.length < 1) {
+        alert(`Nincs elég feladat! Szükséges: legalább 2 db 8 pontos és 1 db 14 pontos feladat.\nJelenleg: ${tasks8.length} db 8 pontos, ${tasks14.length} db 14 pontos.`);
+        return;
+    }
+
+    studentData = {
+        name: name,
+        email: email,
+        class: studentClass
+    };
+
+    testStartTime = new Date();
+    testSubmitted = false;
+    logEvent('Test started', studentData);
+
+    // Vissza gomb blokkolása teszt közben
+    history.pushState(null, '', location.href);
+    window.addEventListener('popstate', function() {
+        if (testStartTime && !testSubmitted) {
+            history.pushState(null, '', location.href);
+        }
+    });
+    window.addEventListener('beforeunload', function(e) {
+        if (testStartTime && !testSubmitted) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    selectRandomTasks();
+
+    taskAnswers = selectedTasks.map(task => ({
+        taskNumber: task.number,
+        taskDescription: task.description,
+        taskExample: task.example,
+        answer: '',
+        timeSpent: 0,
+        startTime: null,
+        endTime: null,
+        skipped: false,
+        earnedPoints: 0,
+        scoringResults: null
+    }));
+
+    if (testMode === 'practice') {
+        const customMin = parseInt(document.getElementById('custom-time-input')?.value) || 45;
+        globalTimeRemaining = Math.max(5, Math.min(120, customMin)) * 60;
+    } else {
+        globalTimeRemaining = 45 * 60;
+    }
+
+    // Élő módban ellenőrizzük, hogy a Python értelmező betöltődött-e
+    // (itt még fullscreen előtt vagyunk, tehát frissítés biztonságos)
+    if (testMode === 'live' && !pyodideInstance) {
+        const continueAnyway = confirm(
+            '⚠️ A Python értelmező még nem töltődött be teljesen!\n\n' +
+            'Javasolt: Frissítsd az oldalt (F5), várj 10-15 másodpercet, majd próbáld újra.\n\n' +
+            'Ha most indítod el a tesztet, előfordulhat, hogy a kódot nem lehet futtatni.\n\n' +
+            'Nyomj OK-t ha mégis folytatni szeretnéd, Mégsét ha előbb frissítenél.'
+        );
+        if (!continueAnyway) return;
+    }
+
+    fullscreenEnforced = false;
+    fullscreenGraceUntil = 0;
+
+    // Start overlay elrejtése
+    const startEl = document.getElementById('start-section');
+    if (startEl) startEl.style.display = 'none';
+    startSection.classList.add('hidden');
+    quizSection.classList.remove('hidden');
+
+    await initializeCodeEditor();
+    initTerminal();
+
+    // Gyakorló módban jelzés a quiz top bar-ban
+    const isTeacherMode = sessionStorage.getItem('kandTeacherMode') === 'true';
+    if (testMode === 'practice' && !isTeacherMode) {
+        const topBar = document.querySelector('.quiz-top-bar');
+        if (topBar && !document.getElementById('practice-mode-pill')) {
+            const pill = document.createElement('div');
+            pill.id = 'practice-mode-pill';
+            pill.style.cssText = 'background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;';
+            pill.textContent = '🎓 GYAKORLÓ MÓD';
+            topBar.insertBefore(pill, topBar.firstChild);
+        }
+    }
+
+    // Vízjel – tanuló neve + emailje (screenshothoz)
+    if (!document.getElementById('test-watermark')) {
+        const wm = document.createElement('div');
+        wm.id = 'test-watermark';
+        wm.style.cssText = 'position:fixed;bottom:6px;right:10px;color:rgba(255,255,255,0.12);font-size:0.7rem;z-index:100;pointer-events:none;user-select:none;letter-spacing:0.3px;';
+        wm.textContent = (studentData.name || '') + ' · ' + (studentData.email || '');
+        document.body.appendChild(wm);
+    }
+
+    // Oktatói/bemutató módban nincs fullscreen kényszer
+    if (!isTeacherMode && testMode === 'live') {
+        enterFullscreen();
+    }
+
+    setTimeout(() => {
+        currentTaskIndex = 0;
+        startGlobalTimer();
+        startAutoSaveInterval();
+        showTask(currentTaskIndex);
+        updateLiveScore();
+        if (fitAddon) fitAddon.fit();
+        logEvent('Entered fullscreen and started timers');
+    }, 100);
+}
+
+// Véletlenszerű feladatok kiválasztása (2 db 8 pontos + 1 db 14 pontos)
+function selectRandomTasks() {
+    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks14 = tasks.filter(t => t.points === 14);
+
+    const shuffled8 = [...tasks8].sort(() => 0.5 - Math.random());
+    const shuffled14 = [...tasks14].sort(() => 0.5 - Math.random());
+
+    const selected8 = shuffled8.slice(0, 2);
+    const selected14 = shuffled14.slice(0, 1);
+
+    // Véletlenszerű sorrendbe keverjük a kiválasztott feladatokat
+    selectedTasks = [...selected8, ...selected14].sort(() => 0.5 - Math.random());
+
+    logEvent('Tasks selected', {
+        tasks: selectedTasks.map(t => ({ number: t.number, points: t.points }))
+    });
+}
+
+// ─── PONTOZÓ MOTOR ────────────────────────────────────────────────────────────
+
+// Kritériumok beolvasása szöveges sorokból
+function parseCriteria(lines) {
+    return lines.map(line => {
+        const pipeIdx = line.indexOf('|');
+        if (pipeIdx === -1) return null;
+        const spec = line.substring(0, pipeIdx); // NE trim-elj – megőrzi a záró szóközt (pl. bekeres args)
+        const label = line.substring(pipeIdx + 1).trim();
+        const colonIdx = spec.indexOf(':');
+        if (colonIdx === -1) {
+            return { type: spec.trim(), args: null, label };
+        }
+        const type = spec.substring(0, colonIdx).trim();
+        const args = spec.substring(colonIdx + 1); // args-ot NEM trim-eljük
+        return { type, args, label };
+    }).filter(c => c !== null);
+}
+
+// Szinkron kritérium-ellenőrzés (nem teszt típusú)
+function evaluateCriterion(code, criterion) {
+    const { type, args } = criterion;
+
+    if (['if', 'elif', 'else', 'for', 'while', 'def', 'return'].includes(type)) {
+        return new RegExp(`\\b${type}\\b`).test(code);
+    }
+
+    if (type === 'input') {
+        const n = parseInt(args) || 1;
+        return (code.match(/\binput\s*\(/g) || []).length >= n;
+    }
+
+    if (type === 'int_float') {
+        const n = parseInt(args) || 1;
+        return (code.match(/\b(int|float)\s*\(/g) || []).length >= n;
+    }
+
+    if (type === 'import') {
+        return new RegExp(`(^|\\n)\\s*import\\s+${args}\\b|(^|\\n)\\s*from\\s+${args}\\s+import`, 'i').test(code);
+    }
+
+    if (type === 'tartalmaz') {
+        return code.includes(args);
+    }
+
+    if (type === 'input_format') {
+        // Ellenőrzi, hogy az összes input() bekérő szöveg szóközzel végződik-e
+        const calls = [...code.matchAll(/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];
+        if (calls.length === 0) return false;
+        return calls.every(m => m[1].endsWith(' '));
+    }
+
+    if (type === 'bekeres') {
+        // Ellenőrzi, hogy az input() PONTOSAN a megadott szöveggel hívódik-e meg
+        // A szövegnek betűre, szóközre, írásjelre pontosan egyeznie kell a mintával
+        // Sima string ("...") és f-string (f"...") esetét is kezeli
+        const escapedArgs = args.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`\\binput\\s*\\(\\s*f?["']${escapedArgs}["']\\s*\\)`).test(code);
+    }
+
+    return false;
+}
+
+// Teszteset futtatása mock inputokkal
+async function runCodeWithMockInputs(code, inputs) {
+    let inputIndex = 0;
+    const mockInputFn = async (_prompt) => {
+        if (inputIndex < inputs.length) return String(inputs[inputIndex++]).trim();
+        return '';
+    };
+
+    const savedInput = globalThis.js_input;
+    globalThis.js_input = mockInputFn;
+
+    try {
+        const pyodide = await getPyodide();
+
+        pyodide.runPython(`
+import sys
+from io import StringIO
+import builtins
+
+sys.stdout = StringIO()
+sys.stderr = StringIO()
+
+async def input(prompt=''):
+    from js import js_input
+    result = await js_input(prompt)
+    return result
+
+builtins.input = input
+`);
+
+        const wrappedCode = wrapPythonCodeForAsyncInput(code);
+        await pyodide.runPythonAsync(wrappedCode);
+
+        const stdout = pyodide.runPython('sys.stdout.getvalue()');
+        return { success: true, output: stdout || '' };
+    } catch (error) {
+        return { success: false, output: '', error: error.message };
+    } finally {
+        globalThis.js_input = savedInput;
+    }
+}
+
+// Pontozás ellenőrzése az aktuális feladatnál
+let scoringRunning = false;
+
+async function checkScoring() {
+    if (scoringRunning) return;
+
+    const task = selectedTasks[currentTaskIndex];
+    if (!task || !task.criteria || task.criteria.length === 0) return;
+
+    const code = codeEditor.getValue().trim();
+
+    scoringRunning = true;
+    const btn = document.getElementById('check-scoring-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Ellenőrzés folyamatban...';
+
+    const panel = document.getElementById('scoring-panel');
+    panel.classList.remove('hidden');
+
+    if (!code) {
+        document.getElementById('scoring-content').innerHTML =
+            '<div class="scoring-header-row"><span class="scoring-title" style="color:#721c24">⚠️ Nincs beírva kód!</span></div>';
+        btn.disabled = false;
+        btn.textContent = '🔍 Pontozás';
+        scoringRunning = false;
+        return;
+    }
+
+    // Szinkron kritériumok azonnali kiértékelése
+    const results = task.criteria.map(criterion => {
+        if (criterion.type === 'teszt') {
+            return { criterion, passed: null, pending: true };
+        }
+        return { criterion, passed: evaluateCriterion(code, criterion), pending: false };
+    });
+
+    updateScoringUI(results);
+
+    // Tesztesetek aszinkron futtatása egyenként
+    for (let i = 0; i < results.length; i++) {
+        if (!results[i].pending) continue;
+
+        const criterion = results[i].criterion;
+        const firstColon = criterion.args.indexOf(':');
+        if (firstColon === -1) {
+            results[i] = { criterion, passed: false, pending: false };
+            continue;
+        }
+
+        const inputsStr = criterion.args.substring(0, firstColon);
+        const expected = criterion.args.substring(firstColon + 1);
+        const inputs = inputsStr.split(',');
+
+        const result = await runCodeWithMockInputs(code, inputs);
+        const passed = result.success
+            ? result.output.toLowerCase().includes(expected.toLowerCase())
+            : false;
+
+        results[i] = { criterion, passed, pending: false };
+        updateScoringUI(results);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🔍 Pontozás';
+    scoringRunning = false;
+
+    // Progress mentése a backendre (csak ha van pont és portálos bejelentkezés)
+    const earned = results.filter(r => r.passed === true).length;
+    const total  = results.length;
+    if (earned > 0) maybePostPythonProgress(task, earned, total);
+}
+
+// ── Progress tracking (Python) ────────────────────────────────────────────
+const _pythonProgressPosted = new Set();
+
+function maybePostPythonProgress(task, earned, total) {
+    const kandoRaw = sessionStorage.getItem('kandoUser');
+    if (!kandoRaw) return;
+    let u;
+    try { u = JSON.parse(kandoRaw); } catch { return; }
+    const email = u.email;
+    if (!email) return;
+    const taskId = task.id || task.title || String(selectedTasks.indexOf(task));
+    const key = `${email}:python:${taskId}`;
+    if (_pythonProgressPosted.has(key)) return;
+    _pythonProgressPosted.add(key);
+    fetch('https://agazati.up.railway.app/api/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email,
+            nev: u.nev || '',
+            osztaly: u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '',
+            targy: 'python',
+            feladat: taskId,
+            pont: earned,
+            maxPont: total
+        })
+    }).catch(() => {});
+}
+
+// Pontozási eredmények megjelenítése
+function updateScoringUI(results) {
+    const content = document.getElementById('scoring-content');
+    const earned = results.filter(r => r.passed === true).length;
+    const total = results.length;
+
+    let html = `<div class="scoring-header-row">
+        <span class="scoring-title">Pontozás</span>
+        <span class="scoring-score">${earned} / ${total} pont</span>
+    </div><ul class="scoring-list">`;
+
+    for (const r of results) {
+        let icon, cls;
+        if (r.pending) {
+            icon = '⏳'; cls = 'scoring-pending';
+        } else if (r.passed) {
+            icon = '✓'; cls = 'scoring-pass';
+        } else {
+            icon = '✗'; cls = 'scoring-fail';
+        }
+        html += `<li class="${cls}"><span class="scoring-icon">${icon}</span>${r.criterion.label}</li>`;
+    }
+
+    html += '</ul>';
+    content.innerHTML = html;
+
+    // Ha már nincs függőben lévő teszt, mentjük a pontokat és frissítjük a live score-t
+    if (!results.some(r => r.pending) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
+        taskAnswers[currentTaskIndex].earnedPoints = earned;
+        taskAnswers[currentTaskIndex].scoringResults = results.map(r => ({
+            label: r.criterion.label,
+            passed: r.passed
+        }));
+        updateLiveScore();
+    }
+}
+
+// ──────────────────��──────────────────────────────────────────────────────────
+
+// Code Editor inicializálása (Monaco)
+async function initializeCodeEditor() {
+    await monacoReadyPromise;
+    const container = document.getElementById('code-editor');
+    const isNagyMod = document.body.classList.contains('nagy-mod');
+    codeEditor = monaco.editor.create(container, {
+        value: '',
+        language: 'python',
+        theme: 'vs-dark',
+        fontSize: isNagyMod ? 16 : 14,
+        lineNumbers: 'on',
+        automaticLayout: true,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        tabSize: 4,
+        insertSpaces: true,
+        fontFamily: "Consolas, 'Courier New', monospace",
+        renderLineHighlight: 'all',
+        bracketPairColorization: { enabled: true },
+        autoClosingBrackets: 'always',
+        autoClosingQuotes: 'always',
+        suggest: { snippetsPreventQuickSuggestions: false },
+    });
+
+    codeEditor.onDidChangeModelContent(() => {
+        if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+            taskAnswers[currentTaskIndex].answer = codeEditor.getValue();
+        }
+    });
+}
+
+// Terminál inicializálása
+function initTerminal() {
+    term = new Terminal({
+        cursorBlink: true,
+        convertEol: true,
+        fontSize: 14,
+        fontFamily: "Consolas, 'Lucida Console', 'Courier New', monospace",
+        theme: {
+            background: '#0c0c0c',
+            foreground: '#c0c0c0',
+            cursor: '#c0c0c0',
+            selection: 'rgba(255, 255, 255, 0.2)'
+        }
+    });
+
+    fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+
+    const terminalElement = document.getElementById('terminal');
+    term.open(terminalElement);
+    fitAddon.fit();
+
+    terminalReady = true;
+}
+
+// Feladat megjelenítése
+function showTask(index) {
+    if (index < 0 || index >= selectedTasks.length) {
+        return;
+    }
+
+    const task = selectedTasks[index];
+    const answer = taskAnswers[index];
+
+    if (!answer.startTime) {
+        answer.startTime = new Date();
+    }
+
+    document.getElementById('task-number').textContent = `${index + 1}. feladat (${task.points} pont)`;
+    document.getElementById('task-description').textContent = task.description;
+    document.getElementById('task-example').textContent = task.example;
+
+    // Pontozás gomb és panel kezelése feladatváltáskor
+    const scoringBtn = document.getElementById('check-scoring-btn');
+    const scoringPanel = document.getElementById('scoring-panel');
+    document.getElementById('scoring-content').innerHTML = '';
+    if (task.criteria && task.criteria.length > 0) {
+        scoringBtn.classList.remove('hidden');
+        scoringPanel.classList.remove('hidden');
+        // Automatikus pontozás futtatása kis késleltetéssel (editor betöltés után)
+        setTimeout(checkScoring, 300);
+    } else {
+        scoringBtn.classList.add('hidden');
+        scoringPanel.classList.add('hidden');
+    }
+
+    // Feladat szám mentése a tanári adatokhoz
+    debugLog(`📝 Feladat betöltve: ${task.number}. feladat`);
+
+    if (terminalReady && term) {
+        term.clear();
+    }
+
+    codeEditor.setValue(answer.answer || '');
+
+    updateTaskNavigation();
+
+    logEvent('Task shown', { taskIndex: index, taskNumber: task.number });
+}
+
+// Feladat navigáció frissítése
+function updateTaskNavigation() {
+    const nav = document.getElementById('task-navigation');
+    nav.innerHTML = '';
+
+    selectedTasks.forEach((task, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'task-nav-btn';
+        btn.textContent = `${index + 1}. feladat`;
+
+        if (index === currentTaskIndex) {
+            btn.classList.add('active');
+        }
+
+        if (taskAnswers[index].answer && taskAnswers[index].answer.trim() !== '') {
+            btn.classList.add('completed');
+        }
+
+        btn.addEventListener('click', () => {
+            saveCurrentTaskTime();
+            currentTaskIndex = index;
+            showTask(index);
+        });
+
+        nav.appendChild(btn);
+    });
+}
+
+// Feladat átugrása
+function skipTask() {
+    saveCurrentTaskTime();
+
+    taskAnswers[currentTaskIndex].skipped = true;
+
+    currentTaskIndex = (currentTaskIndex + 1) % selectedTasks.length;
+    showTask(currentTaskIndex);
+
+    logEvent('Task skipped', { newIndex: currentTaskIndex });
+}
+
+// Aktuális feladat idejének mentése
+function saveCurrentTaskTime() {
+    if (currentTaskIndex >= 0 && currentTaskIndex < taskAnswers.length) {
+        const answer = taskAnswers[currentTaskIndex];
+        if (answer.startTime) {
+            const now = new Date();
+            answer.timeSpent += Math.round((now - answer.startTime) / 1000);
+            answer.startTime = null;
+        }
+    }
+}
+
+// Érdemjegy kiszámítása százalék alapján
+function getGrade(percentage) {
+    if (percentage >= 80) return { value: 5, label: 'Érdemjegy: 5' };
+    if (percentage >= 60) return { value: 4, label: 'Érdemjegy: 4' };
+    if (percentage >= 40) return { value: 3, label: 'Érdemjegy: 3' };
+    if (percentage >= 20) return { value: 2, label: 'Érdemjegy: 2' };
+    return { value: 1, label: 'Érdemjegy: 1' };
+}
+
+// Élő pontszám frissítése a felső sávban
+function updateLiveScore() {
+    const totalPossible = selectedTasks.reduce((sum, t) => sum + t.points, 0);
+    const totalEarned = taskAnswers.reduce((sum, a) => sum + (a.earnedPoints || 0), 0);
+    const percentage = totalPossible > 0 ? (totalEarned / totalPossible) * 100 : 0;
+    const grade = getGrade(percentage);
+
+    const scoreDisplay = document.getElementById('score-display');
+    const gradeDisplay = document.getElementById('score-grade');
+
+    if (scoreDisplay) {
+        scoreDisplay.textContent = `${totalEarned} / ${totalPossible} pont`;
+    }
+    if (gradeDisplay) {
+        gradeDisplay.textContent = grade.label;
+        gradeDisplay.className = `score-grade grade-${grade.value}`;
+    }
+}
+
+// Pontozási összefoglaló szöveges riport generálása (beadáshoz)
+function buildScoringReport() {
+    const totalPossible = selectedTasks.reduce((sum, t) => sum + t.points, 0);
+    const totalEarned = taskAnswers.reduce((sum, a) => sum + (a.earnedPoints || 0), 0);
+    const percentage = totalPossible > 0 ? (totalEarned / totalPossible) * 100 : 0;
+    const grade = getGrade(percentage);
+
+    const lines = [];
+    lines.push('=== ÖSSZESÍTETT PONTOZÁS ===');
+    lines.push('');
+    lines.push(`Megszerzett pontok: ${totalEarned} / ${totalPossible}`);
+    lines.push(`Százalék: ${percentage.toFixed(1)}%`);
+    lines.push(`${grade.label}`);
+    lines.push('');
+
+    taskAnswers.forEach((answer, index) => {
+        const taskPoints = selectedTasks[index] ? selectedTasks[index].points : 0;
+        const earned = answer.earnedPoints || 0;
+        lines.push(`  ${index + 1}. feladat: ${earned} / ${taskPoints} pont`);
+        if (answer.scoringResults && answer.scoringResults.length > 0) {
+            const failed = answer.scoringResults.filter(r => !r.passed);
+            if (failed.length > 0) {
+                lines.push(`    Nem teljesített feltételek (tanári mérlegelés szükséges):`);
+                failed.forEach(r => lines.push(`      - ${r.label}`));
+            } else {
+                lines.push(`    Minden feltétel teljesítve.`);
+            }
+        } else {
+            lines.push(`    (Pontozás nem futott le.)`);
+        }
+    });
+
+    lines.push('');
+    return lines.join('\n');
+}
+
+// Globális timer indítása
+function startGlobalTimer() {
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+
+    globalTimer = setInterval(() => {
+        globalTimeRemaining--;
+
+        const minutes = Math.floor(globalTimeRemaining / 60);
+        const seconds = globalTimeRemaining % 60;
+
+        const timerElement = document.getElementById('global-timer');
+        timerElement.textContent = `Hátralévő idő: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (globalTimeRemaining <= 60) {
+            timerElement.classList.add('warning');
+        }
+
+        if (globalTimeRemaining <= 0) {
+            clearInterval(globalTimer);
+            autoSubmitTest();
+        }
+    }, 1000);
+}
+
+
+// Python kód futtatása
+async function runPythonCode() {
+    if (pythonCodeRunning) {
+        if (currentInputDisposable) {
+            currentInputDisposable.dispose();
+            currentInputDisposable = null;
+        }
+        pythonCodeRunning = false;
+    }
+
+    const code = codeEditor.getValue();
+
+    if (!code || code.trim() === '') {
+        term.writeln('⚠️ Nincs beírva semmilyen kód!');
+        return;
+    }
+
+    pythonCodeRunning = true;
+    const runBtn = document.getElementById('run-code-btn');
+    if (runBtn) { runBtn.disabled = true; runBtn.textContent = '⏳ Fut...'; }
+
+    term.clear();
+    const indentationIssues = getIndentationIssues(code);
+    if (indentationIssues.length > 0) {
+        term.writeln('⚠️ Behúzás figyelmeztetés:');
+        indentationIssues.slice(0, 5).forEach((issue) => {
+            term.writeln(`- ${issue}`);
+        });
+        if (indentationIssues.length > 5) {
+            term.writeln(`- ...további ${indentationIssues.length - 5} sor`);
+        }
+        term.writeln('');
+    }
+
+    logEvent('Code execution started', { code: code.substring(0, 100) });
+
+    let pyodide;
+    try {
+        pyodide = await getPyodide();
+    } catch (error) {
+        await sleep(200);
+        term.writeln('\r\n❌ Nem sikerült betölteni a Python értelmezőt!');
+        if (testMode === 'live') {
+            term.writeln('💡 Próbáld meg újra a "Kód futtatása" gombbal!');
+            term.writeln('   Ha ismételten nem működik, értesítsd a tanárt!');
+        } else {
+            term.writeln('💡 Zárd be a többi böngészőfület, majd frissítsd az oldalt (F5).');
+            term.writeln('   Ha ez sem segít, indítsd újra a böngészőt.');
+        }
+        return;
+    }
+
+    try {
+        // Python input és közvetlen terminál-kimenet beállítása
+        globalThis.js_input = customPythonInput;
+        globalThis.js_print = (text) => { term.write(String(text)); };
+
+        pyodide.runPython(`
+import sys
+from io import StringIO
+import builtins
+
+# Közvetlen terminál-kimenet: print() azonnal megjelenik
+class _TermOut:
+    def write(self, text):
+        from js import js_print
+        js_print(text)
+        return len(text)
+    def flush(self):
+        pass
+
+sys.stdout = _TermOut()
+sys.stderr = StringIO()
+
+async def input(prompt=''):
+    from js import js_input
+    result = await js_input(prompt)
+    return result
+
+builtins.input = input
+`);
+
+        // Kód futtatása aszinkron módon
+        const wrappedCode = wrapPythonCodeForAsyncInput(code);
+        await pyodide.runPythonAsync(wrappedCode);
+
+        await sleep(400);
+        term.writeln('\n✅  Kód sikeresen lefutott!');
+        debugLog('✅ Kód futtatva');
+
+        // Automatikus mentés a háttérben
+        autoSaveProgress();
+
+    } catch (error) {
+        const errorMsg = error.message || String(error);
+        // Csak az utolsó sor
+        const lines = errorMsg.split('\n').filter(line => line.trim());
+        const relevantError = lines[lines.length - 1] || errorMsg;
+
+        await sleep(400);
+        term.writeln('\n❌  Hiba: ' + relevantError);
+        debugLog('❌ Kód futtatási hiba');
+
+        // Hibás kód esetén is mentünk
+        autoSaveProgress();
+    } finally {
+        pythonCodeRunning = false;
+        currentInputDisposable = null;
+        if (runBtn) { runBtn.disabled = false; runBtn.textContent = '▶ Kód futtatása'; }
+    }
+}
+
+function getIndentationIssues(code) {
+    const issues = [];
+    const lines = code.split('\n');
+
+    lines.forEach((line, index) => {
+        if (!line.trim()) {
+            return;
+        }
+        const match = line.match(/^[ \t]+/);
+        if (!match) {
+            return;
+        }
+        const indent = match[0];
+        const hasTab = indent.includes('\t');
+        const hasSpace = indent.includes(' ');
+        const lineNumber = index + 1;
+
+        if (hasTab && hasSpace) {
+            issues.push(`${lineNumber}. sor: kevert TAB + szóköz`);
+            return;
+        }
+        if (hasTab) {
+            issues.push(`${lineNumber}. sor: TAB karakter a behúzásban`);
+            return;
+        }
+        if (hasSpace && indent.length % 4 !== 0) {
+            issues.push(`${lineNumber}. sor: behúzás nem 4-es többszöröse (${indent.length} szóköz)`);
+        }
+    });
+
+    return issues;
+}
+
+function wrapPythonCodeForAsyncInput(code) {
+    const transformed = transformInputCallsToAwait(code);
+    const indented = transformed.split('\n').map((line) => '    ' + line).join('\n');
+    return `async def __student_main__():\n${indented}\n\nawait __student_main__()\n`;
+}
+
+function transformInputCallsToAwait(code) {
+    let out = '';
+    let i = 0;
+    let inSingle = false;
+    let inDouble = false;
+    let inTripleSingle = false;
+    let inTripleDouble = false;
+    let inComment = false;
+
+    while (i < code.length) {
+        const ch = code[i];
+        const next3 = code.slice(i, i + 3);
+
+        if (inComment) {
+            out += ch;
+            if (ch === '\n') {
+                inComment = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inSingle) {
+            if (ch === '\\') {
+                out += ch + (code[i + 1] || '');
+                i += 2;
+                continue;
+            }
+            out += ch;
+            if (ch === '\'') {
+                inSingle = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inDouble) {
+            if (ch === '\\') {
+                out += ch + (code[i + 1] || '');
+                i += 2;
+                continue;
+            }
+            out += ch;
+            if (ch === '"') {
+                inDouble = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (inTripleSingle) {
+            if (next3 === "'''") {
+                out += next3;
+                i += 3;
+                inTripleSingle = false;
+                continue;
+            }
+            out += ch;
+            i += 1;
+            continue;
+        }
+
+        if (inTripleDouble) {
+            if (next3 === '"""') {
+                out += next3;
+                i += 3;
+                inTripleDouble = false;
+                continue;
+            }
+            out += ch;
+            i += 1;
+            continue;
+        }
+
+        if (next3 === "'''") {
+            out += next3;
+            i += 3;
+            inTripleSingle = true;
+            continue;
+        }
+
+        if (next3 === '"""') {
+            out += next3;
+            i += 3;
+            inTripleDouble = true;
+            continue;
+        }
+
+        if (ch === '\'') {
+            out += ch;
+            i += 1;
+            inSingle = true;
+            continue;
+        }
+
+        if (ch === '"') {
+            out += ch;
+            i += 1;
+            inDouble = true;
+            continue;
+        }
+
+        if (ch === '#') {
+            out += ch;
+            i += 1;
+            inComment = true;
+            continue;
+        }
+
+        if (code.startsWith('input', i) && isInputCallBoundary(code, i)) {
+            let k = i + 5;
+            while (k < code.length && (code[k] === ' ' || code[k] === '\t')) {
+                k += 1;
+            }
+            if (code[k] === '(' && !hasAwaitBefore(code, i)) {
+                out += 'await input';
+                out += code.slice(i + 5, k + 1);
+                i = k + 1;
+                continue;
+            }
+        }
+
+        out += ch;
+        i += 1;
+    }
+
+    return out;
+}
+
+function isInputCallBoundary(code, index) {
+    const prev = index > 0 ? code[index - 1] : '';
+    if (prev && (isIdentChar(prev) || prev === '.')) {
+        return false;
+    }
+    const next = index + 5 < code.length ? code[index + 5] : '';
+    if (next && isIdentChar(next)) {
+        return false;
+    }
+    return true;
+}
+
+function hasAwaitBefore(code, index) {
+    let j = index - 1;
+    while (j >= 0 && (code[j] === ' ' || code[j] === '\t')) {
+        j -= 1;
+    }
+    const start = j - 4;
+    if (start < 0) {
+        return false;
+    }
+    const word = code.slice(start, j + 1);
+    if (word !== 'await') {
+        return false;
+    }
+    const before = start - 1 >= 0 ? code[start - 1] : '';
+    if (before && isIdentChar(before)) {
+        return false;
+    }
+    return true;
+}
+
+function isIdentChar(ch) {
+    return (ch >= 'a' && ch <= 'z') ||
+        (ch >= 'A' && ch <= 'Z') ||
+        (ch >= '0' && ch <= '9') ||
+        ch === '_';
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Custom Python input - terminál alapú
+function customPythonInput(prompt) {
+    return new Promise((resolve) => {
+        if (prompt) {
+            term.write(String(prompt));
+        }
+
+        if (!term || typeof term.onData !== 'function') {
+            resolve('');
+            return;
+        }
+
+        let inputBuffer = '';
+        let disposable = null;
+
+        const inputHandler = (data) => {
+            if (data === '\r' || data === '\n') {
+                // Enter lenyomva
+                term.writeln('');
+                if (disposable) {
+                    disposable.dispose();
+                }
+                resolve(inputBuffer);
+            } else if (data === '\u007F' || data === '\b') {
+                // Backspace
+                if (inputBuffer.length > 0) {
+                    inputBuffer = inputBuffer.slice(0, -1);
+                    term.write('\b \b');
+                }
+            } else if (data.length > 0 && data.charCodeAt(0) >= 32) {
+                // Normál karakter (ASCII és ékezetes/unicode betűk is)
+                inputBuffer += data;
+                term.write(data);
+            }
+        };
+
+        disposable = term.onData(inputHandler);
+        currentInputDisposable = disposable;
+    });
+}
+
+// Beküldés modal megjelenítése
+function showSubmitModal() {
+    submitModal.style.display = 'flex';
+    logEvent('Submit modal shown');
+}
+
+// Beküldés modal elrejtése
+function hideSubmitModal() {
+    submitModal.style.display = 'none';
+    logEvent('Submit modal hidden');
+}
+
+// Teszt beküldése
+async function submitTest() {
+    hideSubmitModal();
+
+    saveCurrentTaskTime();
+
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+        autosaveInterval = null;
+    }
+
+    testEndTime = new Date();
+    testSubmitted = true;
+
+    logEvent('Test submitted', { endTime: testEndTime });
+
+    if (cheatDetected) {
+        logEvent('Cheating detected', { reason: cheatReason });
+    }
+
+    const result = await submitToBackend();
+
+    quizSection.classList.add('hidden');
+    endSection.classList.remove('hidden');
+    const totalMinutes = Math.floor((testEndTime - testStartTime) / 60000);
+    const totalSeconds = Math.floor(((testEndTime - testStartTime) % 60000) / 1000);
+
+    document.getElementById('final-time').textContent =
+        `Teljes idő: ${totalMinutes} perc ${totalSeconds} másodperc`;
+
+    const endTitle = document.getElementById('end-title');
+    const endMessage = document.getElementById('end-message');
+    const endIcon = document.getElementById('end-icon');
+    const endStudentName = document.getElementById('end-student-name');
+
+    if (endStudentName && studentData && studentData.name) {
+        endStudentName.textContent = studentData.name;
+    }
+
+    // Oktatói visszajutás gomb
+    try {
+        const saved = sessionStorage.getItem('kandoUser');
+        const u = saved ? JSON.parse(saved) : null;
+        const teacherBtn = document.getElementById('end-teacher-btn');
+        if (teacherBtn && u && u.szerep === 'oktato') {
+            teacherBtn.style.display = 'block';
+        }
+    } catch(e) {}
+
+    if (cheatDetected) {
+        if (endIcon) endIcon.textContent = '⚠️';
+        endTitle.textContent = 'Csalás észlelve!';
+        endTitle.classList.add('cheat');
+        endMessage.textContent = 'Csalást észleltünk, ezért az eddigi munkád kerül értékelésre. A teszt eredménye: elégtelen.';
+    } else if (testMode === 'practice') {
+        endTitle.textContent = 'Feladat beadva';
+        endMessage.textContent = 'Köszönjük a részvételt! (Gyakorló mód)';
+    } else {
+        endTitle.textContent = 'Feladat beadva';
+        endMessage.textContent = 'A válaszaidat elküldtük a tanárnak.';
+    }
+
+    if (result && result.success) {
+        debugLog('✅ Teszt sikeresen beküldve!');
+
+        // ÉLES módban email küldés a tanárnak
+        if (testMode === 'live') {
+            sendEmailNotification(result.submission_id);
+        }
+    } else {
+        debugLog('⚠️ Hiba történt a beküldés során, de a teszt véget ért.');
+    }
+
+    downloadSubmissionTxt(result ? result.submission_id : '');
+
+    exitFullscreen();
+}
+
+// Automatikus beküldés idő lejárta esetén
+function autoSubmitTest() {
+    alert('Az idő lejárt! A teszt automatikusan beküldésre került.');
+    submitTest();
+}
+
+// Fullscreen mód bekapcsolása
+function enterFullscreen() {
+    const elem = document.documentElement;
+    fullscreenGraceUntil = Date.now() + 5000;
+
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+
+    logEvent('Fullscreen entered');
+}
+
+// Fullscreen mód kikapcsolása
+function exitFullscreen() {
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+    }
+}
+
+// Fullscreen változás kezelése
+function handleFullscreenChange() {
+    const isFullscreen = document.fullscreenElement ||
+                        document.webkitFullscreenElement ||
+                        document.mozFullScreenElement ||
+                        document.msFullscreenElement;
+    const testActive = !quizSection.classList.contains('hidden');
+
+    if (!isFullscreen && !endSection.classList.contains('hidden')) {
+        return;
+    }
+
+    if (testMode !== 'live') {
+        fullscreenPrompt.style.display = 'none';
+        return;
+    }
+
+    if (!isFullscreen && testActive) {
+        // Azonnal feketére váltás – tartalom nem látható
+        fullscreenPrompt.style.display = 'flex';
+        logEvent('Fullscreen exited');
+        showCheatWarning('Kiléptél a teljes képernyős módból');
+    } else {
+        fullscreenPrompt.style.display = 'none';
+        if (isFullscreen) {
+            fullscreenEnforced = true;
+        }
+    }
+}
+
+// Láthatóság változás kezelése
+function handleVisibilityChange() {
+    if (testMode !== 'live') {
+        return;
+    }
+
+    if (document.hidden && !quizSection.classList.contains('hidden')) {
+        logEvent('Tab hidden - potential cheating');
+
+        showCheatWarning('Másik fülre váltottál');
+    }
+}
+
+// Ablak fókusz elvesztés kezelése
+function handleWindowBlur() {
+    if (testMode !== 'live') {
+        return;
+    }
+
+    if (!quizSection.classList.contains('hidden')) {
+        logEvent('Window lost focus');
+        fullscreenPrompt.style.display = 'flex';
+        showCheatWarning('Elhagytad az ablakot');
+    }
+}
+
+// Ablak fókusz visszanyerés kezelése
+function handleWindowFocus() {
+    if (focusLossTimeout) {
+        clearTimeout(focusLossTimeout);
+        focusLossTimeout = null;
+    }
+    logEvent('Window gained focus');
+}
+
+// Fókusz ellenőrzés indítása (csak logol, nem figyelmeztet – blur/visibility kezeli azt)
+function startFocusCheck() {
+    focusCheckInterval = setInterval(() => {
+        if (!document.hasFocus() && !quizSection.classList.contains('hidden') && testMode === 'live') {
+            logEvent('Focus check: window still unfocused');
+        }
+    }, 5000);
+}
+
+// DevTools észlelés
+function detectDevTools() {
+    const threshold = 160;
+
+    setInterval(() => {
+        if (window.outerWidth - window.innerWidth > threshold ||
+            window.outerHeight - window.innerHeight > threshold) {
+
+            logEvent('DevTools detected - potential cheating');
+
+            if (testMode === 'live' && !quizSection.classList.contains('hidden')) {
+                showCheatWarning('Developer Tools észlelve');
+            }
+        }
+    }, 1000);
+}
+
+function startFullscreenCheck() {
+    if (fullscreenCheckInterval) {
+        clearInterval(fullscreenCheckInterval);
+    }
+
+    fullscreenCheckInterval = setInterval(() => {
+        if (testMode !== 'live' || quizSection.classList.contains('hidden')) {
+            return;
+        }
+        const isFullscreen = document.fullscreenElement ||
+                            document.webkitFullscreenElement ||
+                            document.mozFullScreenElement ||
+                            document.msFullscreenElement;
+        if (!isFullscreen) {
+            if (Date.now() < fullscreenGraceUntil) {
+                return;
+            }
+            if (!fullscreenEnforced) {
+                return;
+            }
+            showCheatWarning('Kiléptél a fullscreen módból');
+        }
+    }, 1000);
+}
+
+function showCheatWarning(reason) {
+    if (quizSection.classList.contains('hidden')) return;
+    if (testMode !== 'live') return;
+    if (cheatDetected) return;
+    if (cheatWarningCount >= 3) return;
+    // Debounce: ugyanaz az esemény ne számlálódjon kétszer egymás után
+    const now = Date.now();
+    if (now - lastCheatWarningTime < 1500) return;
+    lastCheatWarningTime = now;
+
+    cheatWarningCount++;
+    logEvent('Cheat warning #' + cheatWarningCount + ': ' + reason);
+
+    const overlay = document.getElementById('cheat-warning-overlay');
+    const textEl = document.getElementById('cheat-warning-text');
+    const countEl = document.getElementById('cheat-warning-count');
+    const finalMsg = document.getElementById('cheat-warning-final-msg');
+    const closeBtn = document.getElementById('cheat-warning-close-btn');
+
+    if (!overlay) return;
+
+    if (textEl) textEl.textContent = reason;
+    if (countEl) countEl.textContent = 'Csalási kísérlet 3/' + cheatWarningCount;
+    overlay.style.display = 'flex';
+
+    if (cheatWarningCount >= 3) {
+        cheatPenalty = true;
+        if (finalMsg) finalMsg.style.display = 'block';
+        if (closeBtn) closeBtn.textContent = 'Megértettem, folytatom a tesztet';
+        sendCheatNotification(reason);
+    } else {
+        if (finalMsg) finalMsg.style.display = 'none';
+        if (closeBtn) {
+            closeBtn.textContent = 'Megértettem, visszatérek';
+        }
+    }
+}
+
+function closeCheatWarning() {
+    const overlay = document.getElementById('cheat-warning-overlay');
+    if (overlay) overlay.style.display = 'none';
+    fullscreenPrompt.style.display = 'none';
+    // Visszalép fullscreen-be ha éles módban vagyunk és nem vagyunk fullscreen-ben
+    if (testMode === 'live' && !quizSection.classList.contains('hidden')) {
+        const isFs = document.fullscreenElement || document.webkitFullscreenElement ||
+                     document.mozFullScreenElement || document.msFullscreenElement;
+        if (!isFs) enterFullscreen();
+    }
+}
+
+function sendCheatNotification(reason) {
+    if (!window.emailjs || testMode !== 'live') return;
+    debugLog('📧 Oktató értesítése csalási kísérletről...');
+    const emailParams = {
+        to_email: 'sandornefr@gmail.com',
+        subject: '⚠️ Csalási kísérlet: ' + (studentData.name || 'Ismeretlen tanuló'),
+        reply_to: studentData.email || 'noreply@kkszki.hu',
+        message: [
+            '⚠️ CSALÁSI KÍSÉRLET ÉRTESÍTŐ',
+            '',
+            'Tanuló neve: ' + (studentData.name || '-'),
+            'Email: ' + (studentData.email || '-'),
+            'Osztály: ' + (studentData.class || '-'),
+            'Időpont: ' + new Date().toLocaleString('hu-HU'),
+            'Ok: ' + reason,
+            '',
+            '3/3 figyelmeztetés elérve. A tanuló a teszt folytatásához engedélyt kell kérjen.',
+            'Egy érdemjegy levonás automatikusan rögzítve!'
+        ].join('\n')
+    };
+    emailjs.send('service_zxskntr', 'template_vnqc2fd', emailParams, 'cesxNZpDSC16dOY2u')
+        .then(() => debugLog('✅ Oktató értesítve'))
+        .catch(err => debugLog('⚠️ Értesítési hiba: ' + err.message));
+}
+
+function handleCheating(reason) {
+    if (cheatDetected || quizSection.classList.contains('hidden')) {
+        return;
+    }
+
+    cheatDetected = true;
+    cheatReason = reason;
+
+    if (globalTimer) {
+        clearInterval(globalTimer);
+    }
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+        autosaveInterval = null;
+    }
+
+    const overlay = document.getElementById('cheat-warning-overlay');
+    if (overlay) overlay.style.display = 'none';
+    fullscreenPrompt.style.display = 'none';
+    exitFullscreen();
+    submitTest();
+}
+
+// Esemény naplózás (csak belső gyűjtés, nem jelenik meg a debug panelben)
+function logEvent(eventName, data = {}) {
+    const event = {
+        timestamp: new Date().toISOString(),
+        event: eventName,
+        ...data
+    };
+
+    eventLog.push(event);
+}
+
+// Debug log
+function debugLog(message) {
+    const debugPanel = document.getElementById('debug-panel');
+    const debugContent = document.getElementById('debug-content');
+
+    if (!debugPanel || !debugContent) return;
+
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.style.marginBottom = '5px';
+    logEntry.style.paddingBottom = '5px';
+    logEntry.style.borderBottom = '1px solid #333';
+
+    // Csak az üzenetet írjuk ki
+    logEntry.textContent = `[${timestamp}] ${message}`;
+
+    debugContent.appendChild(logEntry);
+
+    // Automatikus görgetés az aljára
+    setTimeout(() => {
+        debugPanel.scrollTop = debugPanel.scrollHeight;
+    }, 10);
+}
+
+// Teszt mód badge frissítése
+function updateTestModeBadge() {
+    const badge = document.getElementById('test-mode-badge');
+    const text = document.getElementById('test-mode-text');
+
+    if (!badge || !text) return;
+
+    badge.style.display = 'block';
+
+    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
+
+    if (testMode === 'live' && !isTeacher) {
+        badge.style.display = 'block';
+        badge.style.background = 'linear-gradient(135deg, #7a0000, #c0392b)';
+        badge.style.color = 'white';
+        badge.style.border = '2px solid #e94560';
+        text.textContent = '🔴 ÉLES TESZT MÓD – Az eredmények elküldésre kerülnek!';
+    } else {
+        badge.style.display = 'none';
+    }
+
+    // Szabályok szöveg a popupban: csak éles módban
+    const isLive = testMode === 'live' && !isTeacher;
+    const rulesDiv = document.getElementById('start-live-rules');
+    if (rulesDiv) rulesDiv.style.display = isLive ? 'block' : 'none';
+
+    // Gomb szöveg éles módban
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.textContent = isLive
+            ? 'Elfogadom a szabályokat – Teszt indítása'
+            : 'Teszt indítása';
+    }
+
+    // Időbeállítás: csak gyakorló módban, nem oktatónak
+    const picker = document.getElementById('practice-time-picker');
+    if (picker) {
+        picker.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+    }
+}
+
+// Email értesítés küldése (csak ÉLES módban)
+function sendEmailNotification(submissionId) {
+    if (!window.emailjs) {
+        debugLog('⚠️ EmailJS nincs betöltve');
+        return;
+    }
+
+    debugLog('📧 Email küldése...');
+
+    const start = testStartTime ? testStartTime.toLocaleString('hu-HU') : '-';
+    const end = testEndTime ? testEndTime.toLocaleString('hu-HU') : '-';
+    const totalSeconds = testStartTime && testEndTime
+        ? Math.round((testEndTime - testStartTime) / 1000)
+        : 0;
+
+    const tasksText = taskAnswers.map((answer, index) => {
+        const timeSpent = formatDuration(answer.timeSpent || 0);
+        return [
+            `--- ${index + 1}. FELADAT (Eredeti ${answer.taskNumber || '-'} . feladat) ---`,
+            `Időráfordítás: ${timeSpent}`,
+            `Átugrva: ${answer.skipped ? 'Igen' : 'Nem'}`,
+            '',
+            'FELADAT LEÍRÁSA:',
+            answer.taskDescription || '',
+            '',
+            'MINTA KIMENET:',
+            answer.taskExample || '',
+            '',
+            'TANULÓ VÁLASZA:',
+            answer.answer || '',
+            ''
+        ].join('\n');
+    }).join('\n');
+
+    const eventsText = eventLog.map((evt) => {
+        const time = evt.timestamp || '';
+        const type = evt.event || evt.type || '';
+        return `${time} - ${type}`;
+    }).join('\n');
+
+    const message = [
+        `Tanuló neve: ${studentData.name}`,
+        `Tanuló email: ${studentData.email}`,
+        `Osztály: ${studentData.class}`,
+        `Teszt kezdete: ${start}`,
+        `Teszt vége: ${end}`,
+        `Teljes idő: ${formatDuration(totalSeconds)}`,
+        `Státusz: ${cheatDetected ? 'Csalás (kizárva)' : cheatPenalty ? 'Figyelmeztetés (érdemjegy levonás!)' : 'Rendben'}`,
+        `Figyelmeztetések száma: ${cheatWarningCount}`,
+        '',
+        buildScoringReport(),
+        '=== FELADATOK ÉS VÁLASZOK ===',
+        '',
+        tasksText,
+        '',
+        '=== ESEMÉNYNAPLÓ ===',
+        eventsText
+    ].join('\n');
+
+    const emailParams = {
+        to_email: 'sandornefr@gmail.com',
+        subject: studentData.name || 'Python teszt',
+        reply_to: studentData.email,
+        message: message
+    };
+
+    emailjs.send('service_zxskntr', 'template_vnqc2fd', emailParams, 'cesxNZpDSC16dOY2u')
+        .then(() => {
+            debugLog('✅ Email sikeresen elküldve!');
+            logEvent('Email sent', { submission_id: submissionId });
+        })
+        .catch((error) => {
+            debugLog('❌ Email küldési hiba: ' + error.text);
+            logEvent('Email send error', { error: error.text });
+        });
+}
+
+function downloadSubmissionTxt(submissionId) {
+    const lines = [];
+    const now = new Date();
+
+    lines.push('Python teszt - beadás');
+    lines.push(`Dátum: ${now.toLocaleString('hu-HU')}`);
+    lines.push(`Azonosító: ${submissionId || '-'}`);
+    lines.push(`Név: ${studentData.name || '-'}`);
+    lines.push(`Email: ${studentData.email || '-'}`);
+    lines.push(`Osztály: ${studentData.class || '-'}`);
+    lines.push(`Mód: ${testMode}`);
+    if (cheatDetected) {
+        lines.push(`Csalás: Igen (${cheatReason})`);
+    } else {
+        lines.push('Csalás: Nem');
+    }
+    lines.push('');
+    lines.push(buildScoringReport());
+    lines.push('=== FELADATOK ÉS VÁLASZOK ===');
+    lines.push('');
+
+    taskAnswers.forEach((answer, index) => {
+        lines.push(`--- ${index + 1}. FELADAT (Eredeti ${answer.taskNumber || '-'} . feladat) ---`);
+        lines.push(`Időráfordítás: ${formatDuration(answer.timeSpent || 0)}`);
+        lines.push(`Átugrva: ${answer.skipped ? 'Igen' : 'Nem'}`);
+        lines.push('');
+        lines.push('FELADAT LEÍRÁSA:');
+        lines.push(answer.taskDescription || '');
+        lines.push('');
+        lines.push('MINTA KIMENET:');
+        lines.push(answer.taskExample || '');
+        lines.push('');
+        lines.push('TANULÓ VÁLASZA:');
+        lines.push(answer.answer || '');
+        lines.push('');
+    });
+
+    lines.push('=== ESEMÉNYNAPLÓ ===');
+    eventLog.forEach((evt) => {
+        const time = evt.timestamp || '';
+        const type = evt.event || evt.type || '';
+        lines.push(`${time} - ${type}`);
+    });
+
+    const content = lines.join('\n');
+    const nameParts = (studentData.name || 'diak ismeretlen').trim().split(/\s+/);
+    const safeLast = (nameParts[0] || 'diak').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    const safeFirst = nameParts.slice(1).join('_').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
+    const [classYear, classLetter] = (studentData.class || '0.x').split('.');
+    const safeEmail = (studentData.email || '')
+        .replace('@kkszki.hu', '')
+        .toLowerCase()
+        .replace(/[^a-z0-9.]/g, '');
+    const filename = `${safeLast || 'diak'}_${safeFirst}_${classYear || '0'}_${classLetter || 'x'}_${safeEmail || 'ismeretlen'}_python.txt`;
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function getEffectiveTimeSpent(answer, index) {
+    const base = answer.timeSpent || 0;
+    if (index !== currentTaskIndex) {
+        return base;
+    }
+    if (!answer.startTime) {
+        return base;
+    }
+    const elapsed = Math.round((Date.now() - answer.startTime.getTime()) / 1000);
+    return base + Math.max(0, elapsed);
+}
+
+function startAutoSaveInterval() {
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+    }
+    autosaveInterval = setInterval(() => {
+        if (!quizSection.classList.contains('hidden')) {
+            autoSaveProgress();
+        }
+    }, 10000);
+}
+
+function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds));
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes === 0) {
+        return `${remainingSeconds} másodperc`;
+    }
+    return `${minutes} perc ${remainingSeconds} másodperc`;
+}

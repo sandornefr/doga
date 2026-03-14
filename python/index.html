@@ -14,13 +14,8 @@
         })();
     </script>
 
-    <!-- CodeMirror for Python syntax highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <!-- Monaco Editor for Python syntax highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
 
     <!-- Pyodide for Python execution (Python 3.x) -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
@@ -428,9 +423,9 @@
             margin-bottom: 0.5rem;
         }
 
-        .cm-specialchar {
-            color: #ff6b6b;
-            font-weight: 700;
+        #code-editor .monaco-editor {
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .task-description {
@@ -520,11 +515,10 @@
         .scoring-pending { background: #fff3cd; color: #856404; }
         .scoring-icon  { font-weight: 700; font-size: 1rem; min-width: 1.2rem; text-align: center; }
 
-        .CodeMirror {
+        #code-editor {
             border: 2px solid #ddd;
             border-radius: 8px;
             height: 100%;
-            font-size: 1rem;
         }
 
         .run-code-btn {
@@ -1021,10 +1015,9 @@
             border: 1px solid #1e3a5f;
         }
 
-        /* ── CodeMirror ── */
-        .CodeMirror {
+        /* ── Monaco (sötét téma módban) ── */
+        body.dark-mode #code-editor {
             border: 1px solid #1e3a5f !important;
-            border-radius: 8px;
         }
 
         /* ═══════════════════════════════════════════════════
@@ -1045,7 +1038,7 @@
         body.nagy-mod .scoring-list li { font-size: 1rem; padding: 0.4rem 0.6rem; }
         body.nagy-mod .page-topbar-title h1 { font-size: 1.2rem; }
         body.nagy-mod .code-label     { font-size: 1rem; }
-        body.nagy-mod .CodeMirror     { font-size: 1.1rem !important; }
+        body.nagy-mod #code-editor    { font-size: 1.1rem; }
     </style>
 </head>
 
@@ -1159,7 +1152,7 @@
                 <div class="quiz-right">
                     <div class="code-label"><i class="fas fa-code"></i> Írd be a Python kódod:</div>
                     <div class="code-editor-wrapper">
-                        <textarea id="code-editor"></textarea>
+                        <div id="code-editor"></div>
                     </div>
                     <button class="run-code-btn" id="run-code-btn"><i class="fas fa-play"></i> Kód futtatása</button>
                     <div class="terminal-container" id="terminal-container">
