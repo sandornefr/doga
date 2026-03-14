@@ -517,6 +517,18 @@
   <div class="ered-box">
     <button class="ered-close" onclick="closeEredmenyek()"><i class="fas fa-xmark"></i></button>
     <div class="ered-title"><i class="fas fa-medal"></i> Elért eredmények</div>
+    <!-- Oktató előnézet sor – csak tanulói nézetben látható -->
+    <div id="ered-preview-row" style="display:none; background:rgba(83,109,254,0.1); border:1px solid #536dfe; border-radius:10px; padding:10px 14px; margin-bottom:14px;">
+      <div style="color:#aaa; font-size:0.8rem; margin-bottom:6px;"><i class="fas fa-eye" style="color:#536dfe;"></i> Oktató előnézet – tanuló eredményeinek megtekintése</div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <input id="ered-preview-email" type="email" placeholder="tanuló@kkszki.hu"
+          style="flex:1; min-width:200px; padding:6px 12px; background:#0f3460; border:1px solid #536dfe; border-radius:8px; color:#e0e0e0; font-size:0.9rem;">
+        <button onclick="loadPreviewEredmenyek()"
+          style="padding:6px 14px; background:#536dfe; border:none; border-radius:8px; color:white; cursor:pointer; font-size:0.9rem; white-space:nowrap;">
+          <i class="fas fa-magnifying-glass"></i> Betöltés
+        </button>
+      </div>
+    </div>
     <div id="ered-content"><div class="ered-loading"><i class="fas fa-spinner fa-spin"></i> Adatok betöltése...</div></div>
   </div>
 </div>
@@ -560,22 +572,27 @@
     }
 
     let isTeacherView = true;
+    let isTeacherPreview = false; // oktató tanulói nézetben van
     function toggleView() {
         const btn = document.getElementById('toggle-view-btn');
         const teacher = document.getElementById('teacher-portal');
         const student = document.getElementById('student-portal');
         const sub = document.getElementById('portal-sub');
+        const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
         isTeacherView = !isTeacherView;
+        isTeacherPreview = !isTeacherView;
         if (isTeacherView) {
             teacher.style.display = 'block';
             student.style.display = 'none';
             sub.textContent = 'Mit szeretnél csinálni?';
             btn.textContent = 'Tanulói nézet';
+            if (eredmBtn) eredmBtn.style.display = 'none';
         } else {
             teacher.style.display = 'none';
             student.style.display = 'grid';
             sub.textContent = 'Válassz ágazati alapvizsga feladatot!';
             btn.textContent = 'Oktatói felület';
+            if (eredmBtn) eredmBtn.style.display = 'inline-block';
         }
     }
 
@@ -756,6 +773,15 @@
 
     async function openEredmenyek() {
         document.getElementById('ered-overlay').classList.add('open');
+        // Oktató előnézet sor megjelenítése ha tanulói nézetben van
+        const previewRow = document.getElementById('ered-preview-row');
+        if (isTeacherPreview) {
+            previewRow.style.display = 'block';
+            document.getElementById('ered-content').innerHTML = '<div class="ered-loading" style="color:#aaa;"><i class="fas fa-search"></i> Add meg egy tanuló email-jét a fenti mezőben az eredmények megtekintéséhez.</div>';
+            return;
+        } else {
+            previewRow.style.display = 'none';
+        }
         document.getElementById('ered-content').innerHTML = '<div class="ered-loading"><i class="fas fa-spinner fa-spin"></i> Adatok betöltése...</div>';
         try {
             const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
@@ -780,6 +806,30 @@
 
     function closeEredmenyek() {
         document.getElementById('ered-overlay').classList.remove('open');
+    }
+
+    async function loadPreviewEredmenyek() {
+        const rawEmail = document.getElementById('ered-preview-email').value.trim();
+        if (!rawEmail) return;
+        const email = rawEmail.replace('@kkszki.hu','');
+        const content = document.getElementById('ered-content');
+        content.innerHTML = '<div class="ered-loading"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>';
+        try {
+            const res = await fetch(`${API}/api/progress/${encodeURIComponent(email)}`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const p = await res.json();
+            const progress = {
+                web:    { sessions: p.web?.sessions ?? 0, avgPercent: p.web?.avgPercent ?? 0, bestPercent: p.web?.bestPercent ?? 0, lastSession: p.web?.lastSession ?? null },
+                python: { sessions: p.python?.sessions ?? 0, avgPercent: p.python?.avgPercent ?? 0, bestPercent: p.python?.bestPercent ?? 0, lastSession: p.python?.lastSession ?? null }
+            };
+            content.innerHTML =
+                `<div style="color:#536dfe;font-size:0.82rem;margin-bottom:8px;"><i class="fas fa-user"></i> Megjelenítve: ${rawEmail.includes('@') ? rawEmail : rawEmail + '@kkszki.hu'}</div>` +
+                renderSubject(progress.web,    '🌐 WEB dolgozat',    'ered-bar-web') +
+                renderSubject(progress.python, '🐍 Python dolgozat', 'ered-bar-python') +
+                renderAchievements(progress);
+        } catch(e) {
+            content.innerHTML = `<div class="ered-loading"><i class="fas fa-triangle-exclamation"></i> Nem található adat (${e.message}).</div>`;
+        }
     }
 
     function openBemutatasModal() {

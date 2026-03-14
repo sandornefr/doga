@@ -440,6 +440,7 @@
             <button class="tab-btn" onclick="switchTab('beadasok', this)"><i class="fas fa-clipboard-list"></i> Beadások</button>
             <button class="tab-btn" onclick="switchTab('javitas', this)"><i class="fas fa-pen-to-square"></i> Javítás</button>
             <button class="tab-btn" onclick="switchTab('felhasznalok', this)"><i class="fas fa-users"></i> Felhasználók</button>
+            <button class="tab-btn" onclick="switchTab('haladas', this)"><i class="fas fa-chart-line"></i> Haladás</button>
         </div>
 
         <!-- Config Panel -->
@@ -676,6 +677,50 @@
                     </thead>
                     <tbody id="users-tbody">
                         <tr><td colspan="7" class="loading">Nincs adat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Haladás panel -->
+        <div class="panel" id="haladas-panel" data-tab="haladas" style="display:none;">
+            <h2><i class="fas fa-chart-line"></i> Tanulói haladás</h2>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+                <button class="btn-refresh" onclick="loadProgress()"><i class="fas fa-rotate"></i> Frissítés</button>
+                <span style="color:#aaa;font-size:0.82rem;">
+                    <i class="fas fa-star" style="color:#ffd700;"></i> = szorgalmi jelölt (≥10 alkalom + ≥70% átlag)
+                </span>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+                    <label style="color:#aaa;font-size:0.85rem;">Szűrés:</label>
+                    <input id="haladas-filter" type="text" placeholder="Név vagy osztály…"
+                        oninput="filterProgress()"
+                        style="padding:5px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;width:180px;">
+                    <select id="haladas-szorgalmi" onchange="filterProgress()"
+                        style="padding:5px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                        <option value="">Mindenki</option>
+                        <option value="szorgalmi">Csak szorgalmik</option>
+                    </select>
+                </div>
+            </div>
+            <div id="haladas-loading" class="loading" style="display:none;">Betöltés...</div>
+            <div id="haladas-error" class="error" style="display:none;"></div>
+            <div class="table-wrapper">
+                <table class="submissions-table" id="haladas-table" style="min-width:860px;">
+                    <thead>
+                        <tr>
+                            <th>Tanuló</th>
+                            <th style="text-align:center;">Osztály</th>
+                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – alkalom</th>
+                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – átlag%</th>
+                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – legjobb%</th>
+                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – alkalom</th>
+                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – átlag%</th>
+                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – legjobb%</th>
+                            <th style="text-align:center;">Szorgalmi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="haladas-tbody">
+                        <tr><td colspan="9" class="loading">Nincs adat</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -932,6 +977,7 @@
                 if (activeBtn) activeBtn.classList.add('active');
             }
             sessionStorage.setItem('admin_tab', name);
+            if (name === 'haladas' && haladásData.length === 0) loadProgress();
         }
 
         // Check auth on page load
@@ -1615,6 +1661,104 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         function escHtml(s) {
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── Haladás tab ──────────────────────────────────────────────────────────
+        let haladásData = [];
+
+        async function loadProgress() {
+            document.getElementById('haladas-loading').style.display = 'block';
+            document.getElementById('haladas-error').style.display = 'none';
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/progress`, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                haladásData = await res.json();
+                filterProgress();
+            } catch(e) {
+                document.getElementById('haladas-error').textContent = 'Hiba a betöltés során: ' + e.message;
+                document.getElementById('haladas-error').style.display = 'block';
+            } finally {
+                document.getElementById('haladas-loading').style.display = 'none';
+            }
+        }
+
+        function filterProgress() {
+            const q = (document.getElementById('haladas-filter').value || '').toLowerCase();
+            const onlySzorgalmi = document.getElementById('haladas-szorgalmi').value === 'szorgalmi';
+            const filtered = haladásData.filter(p => {
+                const matchQ = !q || (p.nev||'').toLowerCase().includes(q) || (p.osztaly||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q);
+                const isSzorgalmi = isSzorgalmiJelolt(p);
+                return matchQ && (!onlySzorgalmi || isSzorgalmi);
+            });
+            renderProgress(filtered);
+        }
+
+        function isSzorgalmiJelolt(p) {
+            const webOk = p.web && p.web.sessions >= 10 && p.web.avgPercent >= 70;
+            const pyOk  = p.python && p.python.sessions >= 10 && p.python.avgPercent >= 70;
+            return webOk || pyOk;
+        }
+
+        function pctColor(pct) {
+            if (pct === null || pct === undefined || isNaN(pct)) return '#888';
+            if (pct >= 80) return '#4ade80';
+            if (pct >= 60) return '#ffd700';
+            if (pct >= 40) return '#ff9800';
+            return '#e94560';
+        }
+
+        function pctBar(pct) {
+            if (!pct && pct !== 0) return '–';
+            const color = pctColor(pct);
+            return `<div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                <div style="width:48px;height:7px;background:#1a1a2e;border-radius:4px;overflow:hidden;flex-shrink:0;">
+                    <div style="width:${Math.min(pct,100)}%;height:100%;background:${color};border-radius:4px;"></div>
+                </div>
+                <span style="color:${color};font-size:0.82rem;font-weight:600;">${Math.round(pct)}%</span>
+            </div>`;
+        }
+
+        function renderProgress(data) {
+            const tbody = document.getElementById('haladas-tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="loading">Nincs adat</td></tr>';
+                return;
+            }
+            // Rendezés: szorgalmik elöl, utána alkalom szerinti csökkenő
+            data.sort((a,b) => {
+                const as = isSzorgalmiJelolt(a) ? 1 : 0;
+                const bs = isSzorgalmiJelolt(b) ? 1 : 0;
+                if (bs !== as) return bs - as;
+                const aMax = Math.max((a.web?.sessions||0),(a.python?.sessions||0));
+                const bMax = Math.max((b.web?.sessions||0),(b.python?.sessions||0));
+                return bMax - aMax;
+            });
+
+            tbody.innerHTML = data.map(p => {
+                const szorgalmi = isSzorgalmiJelolt(p);
+                const w = p.web || { sessions:0, avgPercent:null, bestPercent:null };
+                const py = p.python || { sessions:0, avgPercent:null, bestPercent:null };
+                return `<tr style="${szorgalmi ? 'background:rgba(255,215,0,0.05);' : ''}">
+                    <td>
+                        <div style="font-weight:600;color:#e0e0e0;">${escHtml(p.nev || p.email)}</div>
+                        <div style="font-size:0.75rem;color:#888;">${escHtml(p.email)}</div>
+                    </td>
+                    <td style="text-align:center;color:#aaa;">${escHtml(p.osztaly || '–')}</td>
+                    <td style="text-align:center;color:${w.sessions>0?'#64b5f6':'#555'};">${w.sessions || 0}</td>
+                    <td>${pctBar(w.avgPercent)}</td>
+                    <td>${pctBar(w.bestPercent)}</td>
+                    <td style="text-align:center;color:${py.sessions>0?'#ffd54f':'#555'};">${py.sessions || 0}</td>
+                    <td>${pctBar(py.avgPercent)}</td>
+                    <td>${pctBar(py.bestPercent)}</td>
+                    <td style="text-align:center;">
+                        ${szorgalmi
+                            ? `<span title="Szorgalmi jelölt"><i class="fas fa-star" style="color:#ffd700;font-size:1.1rem;"></i></span>`
+                            : '<span style="color:#333;">–</span>'}
+                    </td>
+                </tr>`;
+            }).join('');
         }
     </script>
 <div style="position:fixed;bottom:8px;right:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard" style="color:rgba(255,255,255,0.22);"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
