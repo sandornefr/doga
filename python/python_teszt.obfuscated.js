@@ -555,6 +555,14 @@ async function startTest() {
         updateLiveScore();
         if (fitAddon) fitAddon.fit();
         logEvent('Entered fullscreen and started timers');
+
+        // Pyodide betöltési állapot jelzése a terminálban
+        if (!pyodideInstance) {
+            if (term) term.writeln('🐍 Python értelmező betöltése folyamatban...\r\n   (Kód futtatása amint kész – kb. 30-60 mp)');
+            getPyodide()
+                .then(() => { if (term) { term.clear(); term.writeln('✅ Python értelmező kész! Futtathatod a kódot.\r\n'); } })
+                .catch(() => { if (term) term.writeln('\r\n❌ Python értelmező betöltése sikertelen.\r\n   Frissítsd az oldalt (F5) és zárd be a többi fület.'); });
+        }
     }, 100);
 }
 
@@ -651,8 +659,10 @@ async function runCodeWithMockInputs(code, inputs) {
     const savedInput = globalThis.js_input;
     globalThis.js_input = mockInputFn;
 
+    let pyodideLoaded = false;
     try {
         const pyodide = await getPyodide();
+        pyodideLoaded = true;
 
         pyodide.runPython(`
 import sys
@@ -676,7 +686,7 @@ builtins.input = input
         const stdout = pyodide.runPython('sys.stdout.getvalue()');
         return { success: true, output: stdout || '' };
     } catch (error) {
-        return { success: false, output: '', error: error.message };
+        return { success: false, output: '', error: error.message, pyodideFailed: !pyodideLoaded };
     } finally {
         globalThis.js_input = savedInput;
     }
@@ -736,11 +746,14 @@ async function checkScoring() {
         const inputs = inputsStr.split(',');
 
         const result = await runCodeWithMockInputs(code, inputs);
-        const passed = result.success
-            ? result.output.toLowerCase().includes(expected.toLowerCase())
-            : false;
-
-        results[i] = { criterion, passed, pending: false };
+        if (result.pyodideFailed) {
+            results[i] = { criterion, passed: null, pyodideFailed: true, pending: false };
+        } else {
+            const passed = result.success
+                ? result.output.toLowerCase().includes(expected.toLowerCase())
+                : false;
+            results[i] = { criterion, passed, pending: false };
+        }
         updateScoringUI(results);
     }
 
@@ -789,15 +802,28 @@ function updateScoringUI(results) {
     const earned = results.filter(r => r.passed === true).length;
     const total = results.length;
 
+    const testable = results.filter(r => !r.pyodideFailed).length;
+    const scoreStr = testable < total
+        ? `${earned} / ${testable} pont <span style="font-size:0.8em;color:#fbbf24;">(${total - testable} nem tesztelhető)</span>`
+        : `${earned} / ${total} pont`;
+
     let html = `<div class="scoring-header-row">
         <span class="scoring-title">Pontozás</span>
-        <span class="scoring-score">${earned} / ${total} pont</span>
-    </div><ul class="scoring-list">`;
+        <span class="scoring-score">${scoreStr}</span>
+    </div>`;
 
+    const pyodideFailed = results.some(r => r.pyodideFailed);
+    if (pyodideFailed) {
+        html += `<div style="background:#2d2000;border:1px solid #f59e0b;border-radius:6px;padding:6px 10px;margin:4px 0 6px;font-size:0.82rem;color:#fcd34d;">⚠️ A Python értelmező nem elérhető – a futtatásos tesztek nem értékelhetők. Frissítsd az oldalt (F5) és várj 30-60 másodpercet.</div>`;
+    }
+
+    html += `<ul class="scoring-list">`;
     for (const r of results) {
         let icon, cls;
         if (r.pending) {
             icon = '⏳'; cls = 'scoring-pending';
+        } else if (r.pyodideFailed) {
+            icon = '?'; cls = 'scoring-pending';
         } else if (r.passed) {
             icon = '✓'; cls = 'scoring-pass';
         } else {
