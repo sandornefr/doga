@@ -1811,18 +1811,18 @@ function updateTestModeBadge() {
 
     const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
 
-    if (testMode === 'live' && !isTeacher) {
+    if ((testMode === 'live' || testMode === 'vizsga') && !isTeacher) {
         badge.style.display = 'block';
         badge.style.background = 'linear-gradient(135deg, #7a0000, #c0392b)';
         badge.style.color = 'white';
         badge.style.border = '2px solid #e94560';
-        text.textContent = '🔴 ÉLES TESZT MÓD – Az eredmények elküldésre kerülnek!';
+        text.textContent = '🔴 SZÁMONKÉRÉS MÓD – Az eredmények elküldésre kerülnek!';
     } else {
         badge.style.display = 'none';
     }
 
-    // Szabályok szöveg a popupban: csak éles módban
-    const isLive = testMode === 'live' && !isTeacher;
+    // Szabályok szöveg a popupban: számonkérés/vizsga módban
+    const isLive = (testMode === 'live' || testMode === 'vizsga') && !isTeacher;
     const rulesDiv = document.getElementById('start-live-rules');
     if (rulesDiv) rulesDiv.style.display = isLive ? 'block' : 'none';
 
