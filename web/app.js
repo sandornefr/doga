@@ -2577,7 +2577,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
     monaco.editor.defineTheme("vizsga-light", {
       base: "vs",
-      inherit: false,
+      inherit: true,
       semanticHighlighting: false,
       rules: [
         { token: "",                              foreground: "000000" },
@@ -2597,12 +2597,11 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
         { token: "string.html",                   foreground: "0000FF" },
         { token: "comment",                       foreground: "008000", fontStyle: "italic" },
         { token: "comment.html",                  foreground: "008000", fontStyle: "italic" },
-        // CSS tokenek – VS Code Light+ stílusban
+        // CSS tokenek
         { token: "selector.css",                  foreground: "800000", fontStyle: "bold" },
         { token: "keyword.css",                   foreground: "0070C1", fontStyle: "bold" },
         { token: "property",                      foreground: "0070C1" },
         { token: "property.css",                  foreground: "0070C1" },
-        { token: "attribute.value",               foreground: "0451A5" },
         { token: "attribute.value.css",           foreground: "0451A5" },
         { token: "attribute.value.number.css",    foreground: "098658", fontStyle: "bold" },
         { token: "attribute.value.unit.css",      foreground: "098658" },
