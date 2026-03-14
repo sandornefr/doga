@@ -427,14 +427,18 @@
                 <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #333;">
                     <div style="color:#fbbf24;font-weight:700;margin-bottom:0.7rem;">🎓 Vizsga Mód</div>
                     <div style="color:#aaa;font-size:0.85rem;margin-bottom:0.8rem;">Állítsd be a vizsga kezdési időpontját, majd kapcsold be a vizsga módot. A tanulók visszaszámlálót látnak a megadott időpontig.</div>
-                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem;">
+                    <div style="display:grid;grid-template-columns:auto auto;gap:8px 14px;align-items:center;margin-bottom:0.8rem;">
+                        <label style="color:#94a3b8;font-size:0.82rem;">Kezdés:</label>
                         <input type="datetime-local" id="vizsga-kezdes-input"
                             style="padding:6px 10px;background:#1a1a2e;border:1px solid #fbbf24;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
-                        <button onclick="setVizsgaMod()" style="padding:7px 16px;background:#92400e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-weight:700;cursor:pointer;font-size:0.9rem;">
-                            🎓 Vizsga Mód bekapcsolása
-                        </button>
+                        <label style="color:#94a3b8;font-size:0.82rem;">Vége (határidő):</label>
+                        <input type="datetime-local" id="vizsga-vege-input"
+                            style="padding:6px 10px;background:#1a1a2e;border:1px solid #e94560;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
                     </div>
-                    <div id="vizsga-kezdes-jelenlegi" style="color:#888;font-size:0.82rem;"></div>
+                    <button onclick="setVizsgaMod()" style="padding:7px 16px;background:#92400e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                        🎓 Vizsga Mód bekapcsolása
+                    </button>
+                    <div id="vizsga-kezdes-jelenlegi" style="color:#888;font-size:0.82rem;margin-top:0.6rem;"></div>
                 </div>
             </div>
         </div>
@@ -805,16 +809,29 @@
                 // Vizsga kezdés megjelenítése
                 const vkInput = document.getElementById('vizsga-kezdes-input');
                 const vkJelenlegi = document.getElementById('vizsga-kezdes-jelenlegi');
+                const pad = n => String(n).padStart(2,'0');
+                const vvegeInput = document.getElementById('vizsga-vege-input');
                 if (data.vizsga_kezdes) {
                     try {
                         const d = new Date(data.vizsga_kezdes);
-                        vkJelenlegi.textContent = 'Beállított kezdési idő: ' + d.toLocaleString('hu-HU');
-                        // Töltsük vissza az inputba (datetime-local formátum: YYYY-MM-DDTHH:mm)
                         const pad = n => String(n).padStart(2,'0');
                         vkInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
                     } catch {}
+                }
+                if (data.vizsga_vege) {
+                    try {
+                        const d = new Date(data.vizsga_vege);
+                        vvegeInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    } catch {}
+                }
+                if (data.vizsga_kezdes && data.vizsga_vege) {
+                    const dk = new Date(data.vizsga_kezdes);
+                    const dv = new Date(data.vizsga_vege);
+                    vkJelenlegi.textContent = `Kezdés: ${dk.toLocaleString('hu-HU')} → Vége: ${dv.toLocaleString('hu-HU')}`;
+                } else if (data.vizsga_kezdes) {
+                    vkJelenlegi.textContent = 'Kezdés beállítva, vége még hiányzik!';
                 } else {
-                    vkJelenlegi.textContent = 'Még nincs vizsga kezdési idő beállítva.';
+                    vkJelenlegi.textContent = 'Még nincs vizsga időpont beállítva.';
                 }
 
                 document.getElementById('config-loading').style.display = 'none';
@@ -849,22 +866,28 @@
         }
 
         async function setVizsgaMod() {
-            const input = document.getElementById('vizsga-kezdes-input');
-            if (!input.value) {
-                showError('Add meg a vizsga kezdési időpontját!');
+            const kezdesInput = document.getElementById('vizsga-kezdes-input');
+            const vegeInput   = document.getElementById('vizsga-vege-input');
+            if (!kezdesInput.value || !vegeInput.value) {
+                showError('Add meg a vizsga kezdési ÉS befejezési időpontját!');
                 return;
             }
-            const kezdes = new Date(input.value);
-            if (!confirm(`Vizsga mód bekapcsolása, kezdési idő: ${kezdes.toLocaleString('hu-HU')}?\n\nA tanulók ettől kezdve visszaszámlálót látnak.`)) return;
+            const kezdes = new Date(kezdesInput.value);
+            const vege   = new Date(vegeInput.value);
+            if (vege <= kezdes) {
+                showError('A befejezési idő nem lehet korábbi a kezdési időpontnál!');
+                return;
+            }
+            if (!confirm(`Vizsga mód bekapcsolása?\n\nKezdés: ${kezdes.toLocaleString('hu-HU')}\nHatáridő: ${vege.toLocaleString('hu-HU')}\n\nA tanulók visszaszámlálót látnak, a határidőnél auto-beadás történik.`)) return;
 
             try {
                 const response = await authFetch(`${RAILWAY_URL}/api/config`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ testMode: 'vizsga', vizsgaKezdes: kezdes.toISOString() })
+                    body: JSON.stringify({ testMode: 'vizsga', vizsgaKezdes: kezdes.toISOString(), vizsgaVege: vege.toISOString() })
                 });
                 if (response.ok) {
-                    showSuccess('Vizsga mód bekapcsolva! Kezdési idő: ' + kezdes.toLocaleString('hu-HU'));
+                    showSuccess(`Vizsga mód bekapcsolva! Kezdés: ${kezdes.toLocaleString('hu-HU')} → Határidő: ${vege.toLocaleString('hu-HU')}`);
                     loadConfig();
                 } else {
                     const txt = await response.text().catch(() => '');

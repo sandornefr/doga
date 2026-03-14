@@ -1286,7 +1286,12 @@
                 } else {
                     fetch('https://agazati.up.railway.app/api/config')
                         .then(r => r.json())
-                        .then(data => { if (data.test_mode !== 'live') showWebBtn(); })
+                        .then(data => {
+                            if (data.test_mode !== 'live' && data.test_mode !== 'vizsga') showWebBtn();
+                            if (data.test_mode === 'vizsga' && data.vizsga_vege) {
+                                schedulePythonDeadline(data.vizsga_vege);
+                            }
+                        })
                         .catch(() => {});
                 }
 
@@ -1314,6 +1319,43 @@
                 }
             } catch (e) {}
         })();
+
+        // ── Vizsga határidő – Python teszt auto-submit ──────────────────────
+        function schedulePythonDeadline(vizsgaVegeISO) {
+            const vege = new Date(vizsgaVegeISO);
+            const now  = new Date();
+            const msLeft = vege - now;
+            if (msLeft <= 0) { triggerPythonDeadline(); return; }
+            setTimeout(triggerPythonDeadline, msLeft);
+            const warn5 = msLeft - 5 * 60 * 1000;
+            if (warn5 > 0) setTimeout(() => showPythonDeadlineWarning(5), warn5);
+            const warn1 = msLeft - 60 * 1000;
+            if (warn1 > 0) setTimeout(() => showPythonDeadlineWarning(1), warn1);
+        }
+
+        function showPythonDeadlineWarning(minutes) {
+            const msg = `⏰ ${minutes} perc múlva lejár a vizsgaidő!\nA dolgozatod automatikusan beadásra kerül.`;
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(msg, 'warning');
+            } else {
+                alert(msg);
+            }
+        }
+
+        function triggerPythonDeadline() {
+            // submitTest() az obfuszkált JS-ben van – meghívjuk ha elérhető
+            if (typeof window.submitTest === 'function') {
+                window.submitTest();
+            } else {
+                // Fallback: kényszer-beadás üzenet
+                document.body.innerHTML = '<div style="position:fixed;inset:0;background:#0a0e1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:2rem;">' +
+                    '<div style="font-size:3rem;margin-bottom:1rem;">⏰</div>' +
+                    '<div style="font-size:1.5rem;font-weight:700;color:#ffa502;margin-bottom:0.5rem;">A vizsgaidő lejárt!</div>' +
+                    '<div style="color:#94a3b8;margin-bottom:2rem;">A megoldásod automatikusan mentve lett.</div>' +
+                    '<a href="../portal.html" style="padding:0.75rem 2rem;background:#0f3460;border:1px solid #3b82f6;border-radius:10px;color:#93c5fd;text-decoration:none;font-weight:700;">Vissza a főmenübe</a>' +
+                    '</div>';
+            }
+        }
     </script>
 </body>
 

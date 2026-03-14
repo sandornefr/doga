@@ -54,6 +54,7 @@ public class Database
             );
             INSERT OR IGNORE INTO config (key, value) VALUES ('test_mode', 'practice');
             INSERT OR IGNORE INTO config (key, value) VALUES ('vizsga_kezdes', '');
+            INSERT OR IGNORE INTO config (key, value) VALUES ('vizsga_vege', '');
             CREATE TABLE IF NOT EXISTS progress (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 email     TEXT NOT NULL,

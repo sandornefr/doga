@@ -1731,9 +1731,13 @@ function updateStudentDisplay() {
       fetch('https://agazati.up.railway.app/api/config')
         .then(r => r.json())
         .then(data => {
-          const isLive = data.test_mode === 'live';
+          const isVizsga = data.test_mode === 'vizsga';
+          const isLive   = data.test_mode === 'live' || isVizsga;
           if (!isLive && switchBtn) switchBtn.style.display = 'inline-block';
           setModeBadge(isLive);
+          if (isVizsga && data.vizsga_vege) {
+            scheduleVizsgaDeadline(data.vizsga_vege);
+          }
         })
         .catch(() => { setModeBadge(false); });
     }
@@ -2827,4 +2831,64 @@ function initAntiCheat(isLive) {
       devOpen = false;
     }
   }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════
+// VIZSGA HATÁRIDŐ – AUTO-BEADÁS
+// ═══════════════════════════════════════════════════════
+function scheduleVizsgaDeadline(vizsgaVegeISO) {
+  const vege = new Date(vizsgaVegeISO);
+  const now  = new Date();
+  const msLeft = vege - now;
+  if (msLeft <= 0) {
+    triggerVizsgaDeadline();
+    return;
+  }
+  setTimeout(triggerVizsgaDeadline, msLeft);
+  // 5 perces figyelmeztetés
+  const warn5 = msLeft - 5 * 60 * 1000;
+  if (warn5 > 0) setTimeout(() => showDeadlineWarning(5), warn5);
+  // 1 perces figyelmeztetés
+  const warn1 = msLeft - 60 * 1000;
+  if (warn1 > 0) setTimeout(() => showDeadlineWarning(1), warn1);
+}
+
+function showDeadlineWarning(minutes) {
+  const overlay = document.getElementById('ac-overlay');
+  const title   = document.getElementById('ac-title');
+  const text    = document.getElementById('ac-text');
+  const count   = document.getElementById('ac-count');
+  const btn     = document.getElementById('ac-close-btn');
+  if (!overlay) return;
+  title.textContent = `⏰ ${minutes} perc múlva lejár az idő!`;
+  title.style.color = '#ffa502';
+  text.textContent  = 'A dolgozatod a határidőnél automatikusan beadásra kerül.';
+  count.textContent = 'Az autosave folyamatosan menti a munkádat.';
+  btn.textContent   = 'Rendben, visszatérek';
+  btn.onclick       = function() { overlay.style.display = 'none'; title.style.color = '#e94560'; };
+  overlay.style.display = 'flex';
+}
+
+function triggerVizsgaDeadline() {
+  acLive = false;
+  // Utolsó mentés a backendbe
+  submitWebToBackend();
+  // Szerkesztők tiltása
+  if (typeof htmlEditor !== 'undefined' && htmlEditor) htmlEditor.updateOptions({ readOnly: true });
+  if (typeof cssEditor  !== 'undefined' && cssEditor)  cssEditor.updateOptions({ readOnly: true });
+  // Overlay megjelenítése
+  const overlay = document.getElementById('ac-overlay');
+  const title   = document.getElementById('ac-title');
+  const text    = document.getElementById('ac-text');
+  const count   = document.getElementById('ac-count');
+  const btn     = document.getElementById('ac-close-btn');
+  if (overlay) {
+    title.textContent = '⏰ A vizsgaidő lejárt!';
+    title.style.color = '#ffa502';
+    text.textContent  = 'A megoldásod automatikusan beadásra került. A szerkesztő zárolva.';
+    count.textContent = 'Lépj vissza a főmenübe.';
+    btn.textContent   = 'Vissza a főmenübe';
+    btn.onclick       = function() { location.replace('../portal.html'); };
+    overlay.style.display = 'flex';
+  }
 }
