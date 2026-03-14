@@ -763,10 +763,11 @@
                         <th style="text-align:center;">Python átlag</th>
                         <th style="text-align:center;">Összetett pont</th>
                         <th style="text-align:center;">Szint</th>
+                        <th style="text-align:center;"><i class="fas fa-fire" style="color:#f97316;"></i> Sorozat</th>
                     </tr>
                 </thead>
                 <tbody id="rangsor-tbody">
-                    <tr><td colspan="8" class="loading">Kattints a Frissítés gombra az adatok betöltéséhez</td></tr>
+                    <tr><td colspan="9" class="loading">Kattints a Frissítés gombra az adatok betöltéséhez</td></tr>
                 </tbody>
             </table>
         </div>
@@ -1795,7 +1796,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             else if (targy === 'python') data = [...data].sort((a,b) => b.pythonPont - a.pythonPont);
             else                    data = [...data].sort((a,b) => b.osszesPont - a.osszesPont);
             const tbody = document.getElementById('rangsor-tbody');
-            if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="loading">Nincs adat</td></tr>'; return; }
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" class="loading">Nincs adat</td></tr>'; return; }
             const rankMedals = ['🥇','🥈','🥉'];
             tbody.innerHTML = data.map((p, idx) => {
                 const rank = idx + 1;
@@ -1822,6 +1823,10 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     </td>
                     <td style="text-align:center;font-weight:700;color:#e0e0e0;">${targy === 'web' ? Math.round(p.webPont||0) : targy === 'python' ? Math.round(p.pythonPont||0) : Math.round(p.osszesPont||0)}</td>
                     <td style="text-align:center;">${showLv.icon} <span style="font-size:0.78rem;color:#aaa;">${escHtml(showLv.name)}</span></td>
+                    <td style="text-align:center;">${p.streak >= 3
+                        ? `<span style="color:#f97316;font-weight:700;"><i class="fas fa-fire"></i> ${p.streak}</span><br><span style="font-size:0.72rem;color:#888;">${p.streak>=30?'Élő Legenda':p.streak>=14?'Kitartó Harcos':p.streak>=7?'Heti Hős':'Ügyes Kezdő'}</span>`
+                        : `<span style="color:#444;">${p.streak > 0 ? p.streak : '–'}</span>`
+                    }</td>
                 </tr>`;
             }).join('');
         }

@@ -168,6 +168,7 @@ public class LeaderboardItem
     public double WebPont { get; set; }
     public double PythonPont { get; set; }
     public double OsszesPont { get; set; }
+    public int Streak { get; set; }
 }
 
 public record RankInfo(
@@ -179,5 +180,6 @@ public record RankInfo(
 
 public record StudentRankResult(
     RankInfo Web,
-    RankInfo Python
+    RankInfo Python,
+    int Streak
 );

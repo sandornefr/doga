@@ -308,6 +308,8 @@
             margin-top: 6px; line-height: 1.5;
         }
         .ered-rank-row { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; font-size: 0.85rem; color: #e0e0e0; }
+        .ered-streak-row { display: flex; align-items: center; gap: 4px; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); border-radius: 10px; padding: 8px 14px; margin-bottom: 12px; font-size: 0.9rem; color: #e0e0e0; }
+        .ered-streak-title { margin-left: 4px; font-style: italic; }
         .ered-divider { border: none; border-top: 1px solid #0f3460; margin: 18px 0; }
         .ered-ach-title { color: #fbbf24; font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; }
         .ered-ach-grid {
@@ -747,6 +749,24 @@
         { id:'both_ready',   icon:'🎓', name:'Teljes felkészültség',  check: p => p.web.avgPercent >= 75 && p.python.avgPercent >= 75 }
     ];
 
+    const STREAK_TITLES = [
+        { min: 30, icon: 'fa-fire-flame-curved', color: '#ff4500', name: 'Élő Legenda' },
+        { min: 14, icon: 'fa-fire',              color: '#f97316', name: 'Kitartó Harcos' },
+        { min:  7, icon: 'fa-fire',              color: '#fbbf24', name: 'Heti Hős' },
+        { min:  3, icon: 'fa-fire',              color: '#86efac', name: 'Ügyes Kezdő' },
+    ];
+
+    function streakHtml(streak) {
+        if (!streak || streak < 3) return '';
+        const t = STREAK_TITLES.find(s => streak >= s.min) || null;
+        if (!t) return '';
+        return `<div class="ered-streak-row">
+            <i class="fas ${t.icon}" style="color:${t.color};margin-right:6px;"></i>
+            <strong>${streak} napos sorozat</strong>
+            <span class="ered-streak-title" style="color:${t.color};">– ${t.name}</span>
+        </div>`;
+    }
+
     function calcLevel(avgPct, targy) {
         const levels = targy === 'python' ? PYTHON_LEVELS : WEB_LEVELS;
         let level = levels[0];
@@ -857,6 +877,7 @@
             };
             document.getElementById('ered-content').innerHTML =
                 examCountdown() +
+                streakHtml(rankData?.streak ?? 0) +
                 renderSubject(progress.web,    '🌐 WEB feladat',    'ered-bar-web',    'web',    rankData?.web) +
                 renderSubject(progress.python, '🐍 Python feladat', 'ered-bar-python', 'python', rankData?.python) +
                 renderAchievements(progress);

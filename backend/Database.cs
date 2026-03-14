@@ -613,6 +613,11 @@ public class Database
         }).OrderByDescending(x => x.OsszesPont).ToList();
 
         for (int i = 0; i < items.Count; i++) items[i].Rank = i + 1;
+
+        var streaks = GetAllStreaks();
+        foreach (var item in items)
+            if (streaks.TryGetValue(item.Email.ToLower(), out var s)) item.Streak = s;
+
         return items;
     }
 
@@ -666,12 +671,70 @@ public class Database
 
         return new StudentRankResult(
             new RankInfo(wi >= 0 ? wi + 1 : 0, web.Count, groupLabel, mw.avg),
-            new RankInfo(pi >= 0 ? pi + 1 : 0, py .Count, groupLabel, mp.avg)
+            new RankInfo(pi >= 0 ? pi + 1 : 0, py .Count, groupLabel, mp.avg),
+            GetStreak(email)
         );
     }
 
     private static double CompScore(double avgPct, int sessions) =>
         avgPct * 0.7 + Math.Min(sessions, 20) / 20.0 * 30.0;
+
+    public int GetStreak(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT DISTINCT datum FROM progress
+            WHERE LOWER(email) = $email AND datum IS NOT NULL AND datum != ''
+            ORDER BY datum DESC";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        var dates = new List<DateTime>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            if (DateTime.TryParse(r.GetString(0), out var d))
+                dates.Add(d.Date);
+        return CalcStreak(dates);
+    }
+
+    public Dictionary<string, int> GetAllStreaks()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT LOWER(email), datum FROM progress
+            WHERE datum IS NOT NULL AND datum != ''
+            ORDER BY email, datum DESC";
+        var byEmail = new Dictionary<string, List<DateTime>>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            var e = r.GetString(0);
+            if (DateTime.TryParse(r.GetString(1), out var d))
+            {
+                if (!byEmail.ContainsKey(e)) byEmail[e] = new();
+                byEmail[e].Add(d.Date);
+            }
+        }
+        return byEmail.ToDictionary(
+            kv => kv.Key,
+            kv => CalcStreak(kv.Value.Distinct().OrderByDescending(x => x).ToList())
+        );
+    }
+
+    private static int CalcStreak(List<DateTime> datesDesc)
+    {
+        if (datesDesc.Count == 0) return 0;
+        var today     = DateTime.Today;
+        var yesterday = today.AddDays(-1);
+        if (datesDesc[0] != today && datesDesc[0] != yesterday) return 0;
+        int streak = 1;
+        for (int i = 1; i < datesDesc.Count; i++)
+        {
+            if ((datesDesc[i - 1] - datesDesc[i]).TotalDays == 1) streak++;
+            else break;
+        }
+        return streak;
+    }
 
     public bool UpdatePassword(string email, string newHash)
     {
