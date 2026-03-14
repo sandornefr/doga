@@ -1100,7 +1100,11 @@ async function selectTask(taskId) {
   lastParsedHtml = null;
   cachedStudentDoc = null;
   if (btnStarter) btnStarter.disabled = false;
-  if (btnSources) btnSources.disabled = !task.sourceFiles || task.sourceFiles.length === 0;
+  if (btnSources) {
+    btnSources.disabled = !task.sourceFiles || task.sourceFiles.length === 0;
+    btnSources.textContent = 'Forrás';
+  }
+  sourcesVisible = false;
   if (btnPreviewNewTab) btnPreviewNewTab.disabled = false;
   if (btnSaveFile) btnSaveFile.disabled = false;
 
@@ -2093,124 +2097,96 @@ function openSampleImg() {
   window.open(currentTask.basePath + currentTask.sampleImage, '_blank');
 }
 
-function openSources() {
+let sourcesVisible = false;
+
+async function toggleSources() {
   if (!currentTask || !currentTask.sourceFiles) return;
-  // Források oldal megnyitása új lapon
-  const sourcesWindow = window.open('', '_blank');
-  sourcesWindow.document.write(`
-<!DOCTYPE html>
+
+  if (sourcesVisible) {
+    // Vissza a feladatleíráshoz
+    sourcesVisible = false;
+    btnSources.textContent = 'Forrás';
+    if (descFrame && currentTask.taskDescFile) {
+      descFrame.src = currentTask.basePath + currentTask.taskDescFile + '?v=3';
+    }
+    return;
+  }
+
+  // Forrás megjelenítése a leírás helyén
+  sourcesVisible = true;
+  btnSources.textContent = 'Feladatleírás';
+
+  // Fájlok betöltése a főablak kontextusában
+  const files = currentTask.sourceFiles;
+  const basePath = currentTask.basePath;
+  let blocksHtml = '';
+
+  for (const file of files) {
+    try {
+      const response = await fetch(basePath + file.name);
+      const text = response.ok ? await response.text() : '(Hiba a betöltéskor)';
+      const div = document.createElement('div');
+      div.textContent = text;
+      const escaped = div.innerHTML;
+      blocksHtml += `
+        <div class="source-block">
+          <h2>${file.label}</h2>
+          <pre class="source-text" onclick="copyText(this)">${escaped}</pre>
+          <small>Kattints a szövegre a másoláshoz!</small>
+        </div>`;
+    } catch (e) {
+      blocksHtml += `<div class="source-block"><h2>${file.label}</h2><p>Hiba a betöltéskor</p></div>`;
+    }
+  }
+
+  descFrame.srcdoc = `<!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Források - ${currentTask.name}</title>
   <style>
     * { box-sizing: border-box; }
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      margin: 0;
-      padding: 20px;
-      line-height: 1.6;
+      background: #0f172a; color: #e2e8f0;
+      margin: 0; padding: 16px; line-height: 1.6;
     }
-    h1 { color: #a78bfa; margin-bottom: 24px; }
     .source-block {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 12px; padding: 16px; margin-bottom: 16px;
     }
-    .source-block h2 {
-      color: #60a5fa;
-      margin: 0 0 12px 0;
-      font-size: 1.1rem;
-    }
+    h2 { color: #60a5fa; margin: 0 0 10px 0; font-size: 1rem; }
     .source-text {
-      background: #0f172a;
-      padding: 16px;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: monospace;
-      font-size: 0.95rem;
-      line-height: 1.8;
-      cursor: pointer;
-      border: 2px solid #334155;
-      transition: all 0.2s;
-      margin: 0;
+      background: #0f172a; padding: 14px; border-radius: 8px;
+      white-space: pre-wrap; word-break: break-word;
+      font-family: monospace; font-size: 0.92rem; line-height: 1.7;
+      cursor: pointer; border: 2px solid #334155; margin: 0;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .source-text:hover {
-      border-color: #60a5fa;
-      background: #1e293b;
-    }
-    .source-text.copied {
-      border-color: #22c55e;
-      background: rgba(34, 197, 94, 0.1);
-    }
-    small {
-      display: block;
-      margin-top: 8px;
-      color: #94a3b8;
-    }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 20px;
-      color: #60a5fa;
-      text-decoration: none;
-    }
-    .back-link:hover { text-decoration: underline; }
+    .source-text:hover { border-color: #60a5fa; background: #1e293b; }
+    .source-text.copied { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+    small { display: block; margin-top: 6px; color: #64748b; font-size: 0.8rem; }
   </style>
 </head>
 <body>
-  <h1>Források - ${currentTask.name}</h1>
-  <div id="sources">Betöltés...</div>
+  ${blocksHtml}
   <script>
-    async function loadSources() {
-      const files = ${JSON.stringify(currentTask.sourceFiles)};
-      const basePath = "${currentTask.basePath}";
-      let html = '';
-
-      for (const file of files) {
-        try {
-          const response = await fetch(basePath + file.name);
-          if (response.ok) {
-            const text = await response.text();
-            html += \`
-              <div class="source-block">
-                <h2>\${file.label}</h2>
-                <pre class="source-text" onclick="copyText(this)">\${escapeHtml(text)}</pre>
-                <small>Kattints a szövegre a másoláshoz!</small>
-              </div>
-            \`;
-          }
-        } catch (e) {
-          html += '<div class="source-block"><h2>' + file.label + '</h2><p>Hiba a betöltéskor</p></div>';
-        }
-      }
-      document.getElementById('sources').innerHTML = html;
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
     function copyText(el) {
       navigator.clipboard.writeText(el.textContent).then(() => {
         el.classList.add('copied');
-        setTimeout(() => el.classList.remove('copied'), 1000);
+        setTimeout(() => el.classList.remove('copied'), 1200);
+      }).catch(() => {
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(r);
+        document.execCommand('copy');
+        el.classList.add('copied');
+        setTimeout(() => el.classList.remove('copied'), 1200);
       });
     }
-
-    loadSources();
-  </script>
+  <\/script>
 </body>
-</html>
-  `);
-  sourcesWindow.document.close();
+</html>`;
 }
 
 // Előnézet új lapon megnyitása
@@ -2279,7 +2255,7 @@ taskSelector.addEventListener("change", (e) => {
 // Új lapon megnyitás eseménykezelők
 // btnTaskDesc.addEventListener("click", openTaskDesc);
 // btnSampleImg.addEventListener("click", openSampleImg);
-if (btnSources) btnSources.addEventListener("click", openSources);
+if (btnSources) btnSources.addEventListener("click", toggleSources);
 if (btnPreviewNewTab) btnPreviewNewTab.addEventListener("click", openPreviewInNewTab);
 
 // Időzítő eseménykezelők
