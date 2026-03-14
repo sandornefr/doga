@@ -2,7 +2,7 @@ namespace KandoTest;
 
 public record LoginRequest(string Username, string Password);
 
-public record ConfigRequest(string TestMode);
+public record ConfigRequest(string TestMode, string? VizsgaKezdes);
 
 public record SubmissionRequest(
     string Name,

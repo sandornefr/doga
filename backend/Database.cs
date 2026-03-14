@@ -53,6 +53,7 @@ public class Database
                 password_hash TEXT NOT NULL
             );
             INSERT OR IGNORE INTO config (key, value) VALUES ('test_mode', 'practice');
+            INSERT OR IGNORE INTO config (key, value) VALUES ('vizsga_kezdes', '');
             CREATE TABLE IF NOT EXISTS progress (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 email     TEXT NOT NULL,

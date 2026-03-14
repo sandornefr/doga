@@ -119,8 +119,9 @@ app.MapPost("/api/auth/login", (LoginRequest req, Database db) =>
 // Konfiguráció lekérése (mindenki)
 app.MapGet("/api/config", (Database db) =>
 {
-    var mode = db.GetConfig("test_mode") ?? "practice";
-    return Results.Ok(new { test_mode = mode });
+    var mode         = db.GetConfig("test_mode")     ?? "practice";
+    var vizsgaKezdes = db.GetConfig("vizsga_kezdes") ?? "";
+    return Results.Ok(new { test_mode = mode, vizsga_kezdes = vizsgaKezdes });
 });
 
 // Konfiguráció módosítása (csak admin)
@@ -128,6 +129,8 @@ app.MapPost("/api/config", (HttpContext ctx, ConfigRequest req, Database db) =>
 {
     if (!ValidateToken(ctx)) return Results.Unauthorized();
     db.SetConfig("test_mode", req.TestMode);
+    if (req.VizsgaKezdes != null)
+        db.SetConfig("vizsga_kezdes", req.VizsgaKezdes);
     return Results.Ok(new { success = true });
 });
 

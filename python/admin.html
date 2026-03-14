@@ -424,6 +424,18 @@
                         🔄 Frissítés
                     </button>
                 </div>
+                <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #333;">
+                    <div style="color:#fbbf24;font-weight:700;margin-bottom:0.7rem;">🎓 Vizsga Mód</div>
+                    <div style="color:#aaa;font-size:0.85rem;margin-bottom:0.8rem;">Állítsd be a vizsga kezdési időpontját, majd kapcsold be a vizsga módot. A tanulók visszaszámlálót látnak a megadott időpontig.</div>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem;">
+                        <input type="datetime-local" id="vizsga-kezdes-input"
+                            style="padding:6px 10px;background:#1a1a2e;border:1px solid #fbbf24;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                        <button onclick="setVizsgaMod()" style="padding:7px 16px;background:#92400e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                            🎓 Vizsga Mód bekapcsolása
+                        </button>
+                    </div>
+                    <div id="vizsga-kezdes-jelenlegi" style="color:#888;font-size:0.82rem;"></div>
+                </div>
             </div>
         </div>
 
@@ -786,8 +798,24 @@
 
                 const mode = data.test_mode || 'practice';
                 const badge = document.getElementById('current-mode-badge');
-                badge.textContent = mode === 'practice' ? 'Gyakorló' : 'Éles';
+                const modeLabel = mode === 'practice' ? 'Gyakorló' : mode === 'vizsga' ? 'Vizsga' : 'Éles';
+                badge.textContent = modeLabel;
                 badge.className = `mode-badge mode-${mode}`;
+
+                // Vizsga kezdés megjelenítése
+                const vkInput = document.getElementById('vizsga-kezdes-input');
+                const vkJelenlegi = document.getElementById('vizsga-kezdes-jelenlegi');
+                if (data.vizsga_kezdes) {
+                    try {
+                        const d = new Date(data.vizsga_kezdes);
+                        vkJelenlegi.textContent = 'Beállított kezdési idő: ' + d.toLocaleString('hu-HU');
+                        // Töltsük vissza az inputba (datetime-local formátum: YYYY-MM-DDTHH:mm)
+                        const pad = n => String(n).padStart(2,'0');
+                        vkInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    } catch {}
+                } else {
+                    vkJelenlegi.textContent = 'Még nincs vizsga kezdési idő beállítva.';
+                }
 
                 document.getElementById('config-loading').style.display = 'none';
                 document.getElementById('config-content').style.display = 'block';
@@ -798,7 +826,8 @@
         }
 
         async function setMode(mode) {
-            if (!confirm(`Biztosan átállítod ${mode === 'practice' ? 'gyakorló' : 'éles'} módra?`)) return;
+            const modeNames = { practice: 'Gyakorló', live: 'Éles', vizsga: 'Vizsga' };
+            if (!confirm(`Biztosan átállítod ${modeNames[mode] || mode} módra?`)) return;
 
             try {
                 const response = await authFetch(`${RAILWAY_URL}/api/config`, {
@@ -808,7 +837,7 @@
                 });
 
                 if (response.ok) {
-                    showSuccess(`Mód sikeresen átállítva: ${mode === 'practice' ? 'Gyakorló' : 'Éles'}`);
+                    showSuccess(`Mód sikeresen átállítva: ${modeNames[mode] || mode}`);
                     loadConfig();
                 } else {
                     const txt = await response.text().catch(() => '');
@@ -816,6 +845,33 @@
                 }
             } catch (error) {
                 showError('Hiba a mód átállításakor: ' + error.message);
+            }
+        }
+
+        async function setVizsgaMod() {
+            const input = document.getElementById('vizsga-kezdes-input');
+            if (!input.value) {
+                showError('Add meg a vizsga kezdési időpontját!');
+                return;
+            }
+            const kezdes = new Date(input.value);
+            if (!confirm(`Vizsga mód bekapcsolása, kezdési idő: ${kezdes.toLocaleString('hu-HU')}?\n\nA tanulók ettől kezdve visszaszámlálót látnak.`)) return;
+
+            try {
+                const response = await authFetch(`${RAILWAY_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testMode: 'vizsga', vizsgaKezdes: kezdes.toISOString() })
+                });
+                if (response.ok) {
+                    showSuccess('Vizsga mód bekapcsolva! Kezdési idő: ' + kezdes.toLocaleString('hu-HU'));
+                    loadConfig();
+                } else {
+                    const txt = await response.text().catch(() => '');
+                    throw new Error(`HTTP ${response.status}${txt ? ': ' + txt.substring(0,80) : ''}`);
+                }
+            } catch (error) {
+                showError('Hiba a vizsga mód beállításakor: ' + error.message);
             }
         }
 

@@ -318,6 +318,48 @@
         .ered-ach.locked .ered-ach-name { color: #555; }
         .ered-loading { color: #888; text-align: center; padding: 30px 0; }
         .ered-next-goal { color: #60a5fa; font-size: 0.8rem; margin-top: 4px; }
+
+        /* ── Vizsga visszaszámláló képernyő ──────────────────────────── */
+        #vizsga-countdown {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0a0e1a;
+            z-index: 500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        #vizsga-countdown .vc-logo { height: 56px; margin-bottom: 2rem; opacity: 0.85; }
+        #vizsga-countdown .vc-title { color: #94a3b8; font-size: 1rem; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+        #vizsga-countdown .vc-user  { color: #e0e0e0; font-size: 1.25rem; font-weight: 700; margin-bottom: 2.5rem; }
+        #vizsga-countdown .vc-label { color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.75rem; }
+        #vizsga-countdown .vc-timer {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #00d4ff;
+            letter-spacing: 6px;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 30px rgba(0,212,255,0.4);
+            margin-bottom: 0.5rem;
+        }
+        #vizsga-countdown .vc-timer.soon { color: #ffa502; text-shadow: 0 0 30px rgba(255,165,2,0.5); }
+        #vizsga-countdown .vc-sublabel { color: #64748b; font-size: 0.8rem; margin-bottom: 3rem; }
+        #vizsga-countdown .vc-hint { color: #334155; font-size: 0.78rem; max-width: 400px; }
+        #vizsga-badge {
+            display: none;
+            background: #7c2020;
+            border: 1px solid #e94560;
+            border-radius: 8px;
+            padding: 4px 12px;
+            color: #fca5a5;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
         .ered-countdown {
             background: #0f3460; border-radius: 10px; padding: 12px 16px;
             color: #e0e0e0; font-size: 0.92rem; margin-bottom: 18px; text-align: center;
@@ -342,6 +384,7 @@
             <strong id="user-name">–</strong>
             <span id="user-role">–</span>
         </div>
+        <div id="vizsga-badge">🔴 VIZSGA MÓD</div>
         <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
         <button class="eredmenyek-btn" id="btn-eredmenyek-topbar" onclick="openEredmenyek()" style="display:none" title="Elért eredmények">🏅 Eredmények</button>
         <button class="delete-btn" onclick="openDeleteModal()" title="Fiók törlése">Fiók törlése</button>
@@ -387,6 +430,17 @@
             </a>
         </div>
     </div>
+</div>
+
+<!-- Vizsga visszaszámláló képernyő -->
+<div id="vizsga-countdown">
+    <img src="kandologo2.png" alt="Kandó" class="vc-logo">
+    <div class="vc-title">Ágazati alapvizsga</div>
+    <div class="vc-user" id="vc-user-name"></div>
+    <div class="vc-label">A vizsga kezdéséig:</div>
+    <div class="vc-timer" id="vc-timer">--:--:--</div>
+    <div class="vc-sublabel" id="vc-sublabel"></div>
+    <div class="vc-hint">Kérlek várj türelemmel – a feladatok a kezdéskor automatikusan megjelennek.</div>
 </div>
 
 <!-- Bemutatás választó modal -->
@@ -475,8 +529,59 @@
         }
     }
 
-    // ── Eredmények modal ──────────────────────────────────────────────────────
+    // ── Vizsga mód ellenőrzés ─────────────────────────────────────────────────
     const API = 'https://agazati.up.railway.app';
+
+    (async function checkVizsgaMode() {
+        try {
+            const res = await fetch(API + '/api/config');
+            const cfg = await res.json();
+            if (cfg.test_mode !== 'vizsga') return;
+
+            const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            if (user.szerep === 'oktato') return; // oktatónak nem kell visszaszámláló
+
+            // Vizsga badge a topbarban (tanulóknak)
+            const badge = document.getElementById('vizsga-badge');
+            if (badge) badge.style.display = 'inline-block';
+
+            if (!cfg.vizsga_kezdes) return;
+
+            const kezdes = new Date(cfg.vizsga_kezdes);
+            const now = new Date();
+            if (now >= kezdes) return; // már elkezdődött
+
+            // Visszaszámláló megjelenítése
+            const overlay = document.getElementById('vizsga-countdown');
+            const timerEl = document.getElementById('vc-timer');
+            const sublabel = document.getElementById('vc-sublabel');
+            const userNameEl = document.getElementById('vc-user-name');
+
+            userNameEl.textContent = user.nev || user.email || '';
+            sublabel.textContent = 'Vizsga kezdete: ' + kezdes.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+            overlay.style.display = 'flex';
+
+            function tick() {
+                const diff = Math.max(0, kezdes - new Date());
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                const str = (h > 0 ? String(h).padStart(2,'0') + ':' : '') +
+                             String(m).padStart(2,'0') + ':' +
+                             String(s).padStart(2,'0');
+                timerEl.textContent = str;
+                if (diff <= 60000) timerEl.classList.add('soon');
+                if (diff <= 0) {
+                    overlay.style.display = 'none';
+                    clearInterval(iv);
+                }
+            }
+            tick();
+            const iv = setInterval(tick, 1000);
+        } catch {}
+    })();
+
+    // ── Eredmények modal ──────────────────────────────────────────────────────
 
     const LEVELS = [
         { min: 0,  sessMin: 0,  icon: '❓', name: 'Nincs adat' },
