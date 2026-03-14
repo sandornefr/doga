@@ -1700,8 +1700,11 @@ function updateStudentDisplay() {
   const btnLogoutEl = document.getElementById('btn-logout');
   if (btnLogoutEl) {
     if (sessionStorage.getItem('kandoUser') || isBemutato) {
-      btnLogoutEl.textContent = '🏠 Főmenü';
+      btnLogoutEl.innerHTML = '<i class="fas fa-house"></i> Főmenü';
       btnLogoutEl.title = 'Vissza a főmenübe';
+      btnLogoutEl.style.background = '#431407';
+      btnLogoutEl.style.color = '#f97316';
+      btnLogoutEl.style.borderColor = '#f97316';
     } else {
       btnLogoutEl.innerHTML = '<i class="fas fa-right-from-bracket"></i>';
       btnLogoutEl.title = 'Kijelentkezés';
@@ -1715,11 +1718,11 @@ function updateStudentDisplay() {
   function setModeBadge(isLive) {
     if (!modeBadge) return;
     if (isLive) {
-      modeBadge.textContent = '🔴 ÉLES MÓD';
-      modeBadge.style.cssText += ';display:inline-block;background:#2d0a0a;border:1px solid #e94560;color:#e94560;';
+      modeBadge.innerHTML = '<i class="fas fa-circle-dot" style="color:#e94560;"></i> ÉLES MÓD';
+      modeBadge.style.cssText += ';display:inline-block;background:#3d0a12;border:1.5px solid #e94560;color:#ff6b81;';
     } else {
-      modeBadge.textContent = '🎓 GYAKORLÓ MÓD';
-      modeBadge.style.cssText += ';display:inline-block;background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;';
+      modeBadge.innerHTML = '<i class="fas fa-graduation-cap" style="color:#2ed573;"></i> GYAKORLÓ MÓD';
+      modeBadge.style.cssText += ';display:inline-block;background:#0a3d1a;border:1.5px solid #2ed573;color:#4fffaa;';
     }
   }
 
