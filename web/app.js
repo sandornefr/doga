@@ -2107,6 +2107,7 @@ async function toggleSources() {
     sourcesVisible = false;
     btnSources.textContent = 'Feladatleírás';
     if (descFrame && currentTask.taskDescFile) {
+      descFrame.removeAttribute('srcdoc');
       descFrame.src = currentTask.basePath + currentTask.taskDescFile + '?v=3';
     }
     return;
