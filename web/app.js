@@ -1718,7 +1718,7 @@ function updateStudentDisplay() {
   function setModeBadge(isLive) {
     if (!modeBadge) return;
     if (isLive) {
-      modeBadge.innerHTML = '<i class="fas fa-circle-dot" style="color:#e94560;"></i> ÉLES MÓD';
+      modeBadge.innerHTML = '<i class="fas fa-circle-dot" style="color:#e94560;"></i> SZÁMONKÉRÉS';
       modeBadge.style.cssText += ';display:inline-block;background:#3d0a12;border:1.5px solid #e94560;color:#ff6b81;';
     } else {
       modeBadge.innerHTML = '<i class="fas fa-graduation-cap" style="color:#2ed573;"></i> GYAKORLÓ MÓD';
