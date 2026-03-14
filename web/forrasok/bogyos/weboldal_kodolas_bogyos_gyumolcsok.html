@@ -1,397 +1,176 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="hu">
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=utf-8">
-<meta name=Generator content="Microsoft Word 15 (filtered)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:Georgia;
-	panose-1:2 4 5 2 5 4 5 2 3 3;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-p.MsoTitle, li.MsoTitle, div.MsoTitle
-	{margin-top:3.75pt;
-	margin-right:0cm;
-	margin-bottom:0cm;
-	margin-left:5.8pt;
-	font-size:16.0pt;
-	font-family:"Times New Roman",serif;
-	font-weight:bold;}
-.MsoChpDefault
-	{font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
- /* Page Definitions */
- @page WordSection1
-	{size:595.5pt 842.0pt;
-	margin:78.0pt 60.0pt 46.0pt 65.0pt;}
-div.WordSection1
-	{page:WordSection1;}
- /* List Definitions */
- ol
-	{margin-bottom:0cm;}
-ul
-	{margin-bottom:0cm;}
--->
-</style>
-
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Calibri, 'Segoe UI', sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a1a;
+      margin: 12px 16px;
+      padding: 0;
+    }
+    .fejezet {
+      font-size: 10pt;
+      color: #555;
+      margin-bottom: 2px;
+    }
+    h1.feladat-cim {
+      font-size: 14pt;
+      font-weight: bold;
+      margin: 4px 0 10px 0;
+    }
+    p {
+      margin: 4px 0 6px 0;
+      text-align: justify;
+    }
+    p.utasitas {
+      margin: 4px 0 10px 0;
+    }
+    ol.fo {
+      margin: 6px 0 6px 0;
+      padding-left: 22px;
+    }
+    ol.fo > li {
+      margin: 5px 0;
+      padding-left: 2px;
+      text-align: justify;
+    }
+    ol.al {
+      list-style-type: lower-alpha;
+      margin: 4px 0 4px 0;
+      padding-left: 22px;
+    }
+    ol.al > li {
+      margin: 3px 0;
+      text-align: justify;
+    }
+    ul.al {
+      margin: 4px 0 4px 0;
+      padding-left: 22px;
+    }
+    ul.al > li {
+      margin: 3px 0;
+      text-align: justify;
+    }
+    b { font-weight: bold; }
+    i { font-style: italic; }
+    u { text-decoration: underline; }
+    hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 10px 0;
+    }
+  </style>
 </head>
+<body>
 
-<body lang=en-HU style='word-wrap:break-word'>
+  <p class="fejezet">A. Weboldalak kódolása</p>
+  <h1 class="feladat-cim">Bogyós gyümölcsök</h1>
 
-<div class=WordSection1>
+  <p>A következő feladatban egy weboldalt kell készítenie a bogyós gyümölcsök jótékony hatásának rövid bemutatására a feladatleírás és a minta szerint! Ahol a feladat másként nem kéri, a formázási beállításokat a <b>style.css</b> stílusállományban végezze el úgy, hogy az új szelektorokat az állomány végén helyezze el! A feladat szövegében található rész megnevezések a HTML fájlban találhatóak megjegyzés formában.</p>
 
-<p class=MsoNormal style='line-height:115%;border:none'><span lang=HU>&nbsp;</span></p>
+  <p>Nagyobb felbontású, színes mintát a kész weboldalról a <b>bogyós_gyümölcsök.png</b> fájlban találja.</p>
 
-<p class=MsoTitle style='margin-left:23.8pt;text-indent:-18.0pt'><span lang=HU>A.<span
-style='font:7.0pt "Times New Roman"'>&nbsp; </span></span><span lang=HU>Weboldalak
-</span></p>
+  <p>Az elkészült oldalt HTML-validáló eszközzel ellenőrizni kell!</p>
 
-<p class=MsoNormal style='margin-top:9.75pt;margin-right:0cm;margin-bottom:
-0cm;margin-left:5.05pt;margin-bottom:.0001pt'><b><span lang=HU
-style='font-size:13.0pt'>Bogyós gyümölcsök</span></b></p>
+  <p class="utasitas">Nyissa meg a <b>bogyos_gyumolcsok.html</b> és <b>css\style.css</b> állományokat és szerkessze azoknak a tartalmát az alábbiak szerint:</p>
 
-<p class=MsoNormal style='margin-top:0cm;margin-right:2.7pt;margin-bottom:0cm;
-margin-left:5.05pt;margin-bottom:.0001pt;text-align:justify;line-height:115%;
-border:none'><span lang=HU style='color:black'>&nbsp;</span></p>
+  <hr>
 
-<p class=MsoNormal style='margin-top:0cm;margin-right:2.7pt;margin-bottom:0cm;
-margin-left:5.05pt;margin-bottom:.0001pt;text-align:justify;line-height:115%;
-border:none'><span lang=HU style='color:black'>A következő feladatban egy
-weboldalt kell készítenie a bogyós gyümölcsök jótékony hatásának rövid
-bemutatására a feladatleírás és a minta szerint! Ahol a feladat másként nem
-kéri, a formázási beállításokat a style.css stílusállományban végezze el úgy,
-hogy az új szelektorokat az állomány végén helyezze el! A feladat szövegében
-található rész megnevezések a HTML fájlban találhatóak megjegyzés formában.</span></p>
+  <ol class="fo">
+    <li>A weboldal nyelvezete legyen <b>magyar</b>, a karakterkódolása pedig <b>UTF-8</b>!</li>
 
-<p class=MsoNormal style='margin-top:6.0pt;margin-right:2.85pt;margin-bottom:
-0cm;margin-left:5.1pt;margin-bottom:.0001pt;text-align:justify;line-height:
-115%;border:none'><span lang=HU style='color:black'>Nagyobb felbontású, színes
-mintát a kész weboldalról a <b>bogyós_gyümölcsök.png</b> fájlban találja.</span></p>
+    <li>A böngésző címsorában megjelenő cím „<b>Bogyós gyümölcsök</b>" legyen!</li>
 
-<p class=MsoNormal style='margin-top:6.0pt;margin-right:2.85pt;margin-bottom:
-6.0pt;margin-left:5.1pt;text-align:justify;line-height:115%;border:none'><span
-lang=HU style='color:black'>Az elkészült oldalt HTML-validáló eszközzel
-ellenőrizni kell!</span></p>
+    <li>A weboldal fejrészében helyezzen el hivatkozást a <b>css</b> könyvtárban található <b>style.css</b> stíluslapra a Bootstrap stíluslapra történő hivatkozása alá!</li>
 
-<p class=MsoNormal style='margin-top:0cm;margin-right:2.7pt;margin-bottom:0cm;
-margin-left:5.05pt;margin-bottom:.0001pt;text-align:justify;line-height:115%'><span
-lang=HU>Nyissa meg a <b>bogyos_gyumolcsok.html </b>és <b>css\style.css </b>állományokat
-és szerkessze azoknak a tartalmát az alábbiak szerint:</span></p>
+    <li><u>A <i>„Fejléc"</i> részben végezze el az alábbi feladatokat:</u>
+      <ol class="al">
+        <li>Hiányzik a fejléc képe, ezért helyezze a <b>fejlec.jpg-t</b> a megfelelő helyre!</li>
+        <li>Ha a kép nem jelenik meg, vagy ha a kép fölé visszük az egér kurzort, akkor a „<b>Bogyós gyümölcsök</b>" szöveg jelenjen meg!</li>
+        <li>A képnek állítson be egyedi azonosítót „<b>fejlec</b>" néven!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:.15pt;border:none'><span lang=HU
-style='font-size:8.5pt;color:black'>&nbsp;</span></p>
+    <li><u>A weboldalon készítsen egy új menüpontot az alábbi leírás és a minta alapján:</u>
+      <ol class="al">
+        <li>Az új menüpont a „Táblázat" menüpont <b>után</b> helyezkedjen el és „<b>Goji bogyó</b>" legyen a neve!</li>
+        <li>Az új menüpont a <b>https://hu.wikipedia.org/wiki/Goji_bogyó</b> weboldalra mutasson úgy, hogy a linkre kattintva az oldal, új lapon jelenjen meg a böngészőben!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>A weboldal nyelvezete
-legyen <b>magyar</b>, a karakterkódolása pedig <b>UTF-8</b>!</span></p>
+    <li>A <i>„Bogyós gyümölcsök főcím"</i> részben alakítson <b>a szövegből</b> <b>1-es szintű címsort</b>!</li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>A böngésző címsorában
-megjelenő cím „<b>Bogyós gyümölcsök</b>” legyen!</span></p>
+    <li><u>Az <i>„Erdei gyümölcsök"</i> részben végezze el az alábbi feladatokat a minta alapján:</u>
+      <ol class="al">
+        <li>Készítsen az <i>„Erdei gyümölcsök"</i> címsor és a <i>„Gyümölcsvadászatra fel!"</i> bekezdések között található szövegből <b>két bekezdést</b>!</li>
+        <li>Alkalmazza mindkét bekezdésre az <b>my-4</b> osztályjelölőt!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:5.85pt;margin-bottom:
-3.0pt;margin-left:27.15pt;text-align:justify;text-indent:-21.45pt;line-height:
-115%;border:none'><b><span lang=HU>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>A weboldal fejrészében
-helyezzen el hivatkozást a <b>css </b>könyvtárban található <b>style.css </b>stíluslapra
-a Bootstrap stíluslapra történő hivatkozása alá!</span></p>
+    <li><u>A <i>„Szeder"</i> részben végezze el az alábbi feladatokat:</u>
+      <ol class="al">
+        <li>Az <i>„5 legjobb szedres nyári finomság"</i> bekezdést alakítsa HTML tag segítségével <b>aláhúzottá</b>!</li>
+        <li>Az <i>„5 legjobb szedres nyári finomság"</i> bekezdés alatti szövegből készítsen <b>számozott felsorolást</b>!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><u><span lang=HU style='color:black'>A <i>„Fejléc”</i>
-részben végezze el az alábbi feladatokat:</span></u></p>
+    <li>Az <i>„Áfonya"</i> rész sajnos kimaradt a gyümölcsök közül. Alakítsa ki a tartalmat a minta alapján! A szükséges szövegek a <b>forras.txt</b> állományban találhatóak.
+      <ol class="al">
+        <li>A <b>címsort</b> a minta alapján alakítsa ki <b>hármas</b> szintűvé!</li>
+        <li>A szövegrész <b>bekezdéseit</b> a minta alapján alakítsa ki!</li>
+        <li>HTML tag-ek segítségével az első bekezdésben található „<b>áfonya</b>" szöveget emelje ki <b>félkövéren</b>, míg a hozzátartozó, zárójelben található latin kifejezését <b><i>dőlt</i></b> stílussal!</li>
+        <li>Állítsa be a kép tag forrását az <b>img</b> könyvtárban található <b>afonya.jpg</b>-re! Ha a kép nem jelenik meg, vagy ha a kép fölé visszük az egér kurzort, akkor a „<b>Áfonya</b>" szöveg jelenjen meg!</li>
+        <li>Alkalmazza a képaláírásoknál (6 helyen) az <b>fw-bold</b> és a <b>h5</b> osztályjelölőket!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:5.4pt;margin-bottom:
-3.0pt;margin-left:45.15pt;text-align:justify;text-indent:-18.3pt;line-height:
-115%;border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Hiányzik a fejléc képe, ezért
-helyezze a <b>fejlec.jpg-t </b>a megfelelő helyre!</span></p>
+    <li>A <i>„Málna"</i> részben <i>„A málna jótékony hatásai:"</i> bekezdés alatti szövegből készítsen <b>számozatlan felsorolást</b> és alkalmazza rá a <b>malna</b> egyedi azonosítót!</li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:5.4pt;margin-bottom:
-3.0pt;margin-left:45.15pt;text-align:justify;text-indent:-18.3pt;line-height:
-115%;border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Ha a kép nem jelenik meg, vagy
-ha a kép fölé visszük az egér kurzort, akkor a „<b>Bogyós gyümölcsök” </b>szöveg
-jelenjen meg!</span></p>
+    <li>Az <i>„Bogyós gyümölcsök"</i> részben található <i>„Eper"</i>, <i>„Áfonya"</i> és <i>„Málna"</i> oszlopelrendezését a <b>nagyméretű eszközöknél</b> állítsa 2 oszloposból <b>3 oszlopos</b> elrendezésűvé!</li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:5.4pt;margin-bottom:
-3.0pt;margin-left:45.15pt;text-align:justify;text-indent:-18.3pt;line-height:
-115%;border:none'><span lang=HU>c.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A képnek állítson be egyedi
-azonosítót „<b>fejlec</b>” néven!</span></p>
+    <li><u>A <i>„Táblázat"</i> részben végezze el az alábbi feladatokat:</u>
+      <ol class="al">
+        <li>Sajnos a táblázat fejlécének első sorából kimaradtak a <b>fejléc cellák</b>. A szükséges szöveg a „<b>tablazat.txt</b>" állományban található. Készítse el a táblázat fejlécében a hiányzó tartalmat a minta alapján!</li>
+        <li>Alkalmazza az elkészített fejléc cellák mindegyikére a <b>w-25</b> osztályjelölőt!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>5.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><u><span lang=HU style='color:black'>A weboldalon készítsen
-egy új menüpontot az alábbi leírás és a minta alapján:</span></u></p>
+    <li><u>Módosítsa a <i>„Lábléc"</i> beállításait az alábbi leírás alapján:</u>
+      <ol class="al">
+        <li>Készítsen egy hivatkozást, amely a weboldalon belül a „<b>leiras</b>" egyedi azonosítójú keretre hivatkozzon!</li>
+        <li>A hivatkozás szövege „<b>Ugrás az elejére</b>" legyen!</li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az új menüpont a „Táblázat”
-menüpont <b>után</b> helyezkedjen el és „<b>Goji bogyó</b>” legyen a neve!</span></p>
+    <li><u>A következő beállításokat, módosításokat a <b>style.css</b> külső stíluslap állományon végezze el:</u>
+      <ol class="al">
+        <li>Az <b>oldal</b> betűtípusa legyen <b>Verdana</b>!</li>
+        <li>Az <b>oldal magasságát</b> állítsa <b>400 képpont</b> nagyságúra!</li>
+        <li>Készítsen elemkijelölőt az <b>összes bekezdés</b>hez és állítsa be, hogy az <b>igazítás sorkizárt legyen</b>!</li>
+        <li>A <b>hobbi</b> osztályazonosítójú elemkijelölő <b>háttérszíne</b> legyen <b>255,207,207 RGB</b> kódú!</li>
+        <li>A <b>navigáció listaelemére</b> állítson be <b>3 képpont vastag, pontozott vonalú, piros színű</b> szegélyt!</li>
+        <li>A <b>lábléc hivatkozásához</b> állítsa be a stílusbeállítást úgy, hogy a hivatkozás <b>betűszíne fehér</b>, stílusa <b>félkövér</b> legyen!</li>
+        <li>Ha a <b>lábléc</b>ben lévő hivatkozás <b>fölé visszük az egér kurzort</b>, akkor a szöveg legyen <b>nagybetűs</b>!</li>
+        <li>A „<b>malna</b>" egyedi azonosítóhoz tartozó elemkijelölőben végezze el az alábbi beállításokat:
+          <ul class="al">
+            <li>Állítsa a <b>listaelem stílus képét</b> az <b>img</b> könyvtárban található <b>bogyo.png</b>-re!</li>
+            <li>Állítsa a <b>bal margót 25 képpont</b> nagyságúra!</li>
+            <li>A <b>betűméret 10%-kal kisebb</b> legyen, mint az alapértelmezett betűméret!</li>
+          </ul>
+        </li>
+      </ol>
+    </li>
 
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az új menüpont a <b>https://hu.wikipedia.org/wiki/Goji_bogyó</b>
-weboldalra mutasson úgy, hogy a linkre kattintva az oldal, új lapon jelenjen
-meg a böngészőben!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:2.7pt;margin-bottom:
-3.0pt;margin-left:27.15pt;text-align:justify;text-indent:-21.45pt;line-height:
-115%;border:none'><b><span lang=HU>6.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>A <i>„Bogyós gyümölcsök
-főcím”</i> részben alakítson <b>a szövegből</b> <b>1-es szintű címsort</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:2.7pt;margin-bottom:
-3.0pt;margin-left:27.15pt;text-align:justify;text-indent:-21.45pt;line-height:
-115%;border:none'><b><span lang=HU style='color:black'>7.<span
-style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></b><u><span
-lang=HU style='color:black'>Az <i>„Erdei gyümölcsök”</i> részben végezze el az
-alábbi feladatokat a minta alapján:</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Készítsen az <i>„Erdei
-gyümölcsök”</i> címsor és a <i>„Gyümölcsvadászatra fel!” </i>bekezdések között
-található szövegből <b>két bekezdést</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Alkalmazza mindkét bekezdésre
-az <b>my-4</b> osztályjelölőt!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:2.7pt;margin-bottom:
-3.0pt;margin-left:27.15pt;text-align:justify;text-indent:-21.45pt;line-height:
-115%;border:none'><b><span lang=HU style='color:black'>8.<span
-style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></b><u><span
-lang=HU style='color:black'>A <i>„Szeder”</i> részben végezze el az alábbi
-feladatokat:</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az <i>„5 legjobb szedres nyári
-finomság”</i> bekezdést alakítsa HTML tag segítségével <b>aláhúzottá</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az <i>„5 legjobb szedres nyári
-finomság”</i> bekezdés alatti szövegből készítsen <b>számozott felsorolást</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:2.7pt;margin-bottom:
-3.0pt;margin-left:27.15pt;text-align:justify;text-indent:-21.45pt;line-height:
-115%;border:none'><b><span lang=HU>9.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>Az <i>„Áfonya”</i> rész
-sajnos kimaradt a gyümölcsök közül. Alakítsa ki a tartalmat a minta alapján! A
-szükséges szövegek a forras.txt állományban találhatóak.</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A <b>címsort</b> a minta
-alapján alakítsa ki <b>hármas</b> szintűvé!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A szövegrész <b>bekezdéseit</b>
-a minta alapján alakítsa ki!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>c.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>HTML tag-ek segítségével, az
-első bekezdésben található „<b>áfonya</b>” szöveget emelje ki <b>félkövéren</b>,
-míg a hozzátartozó, zárójelben található latin kifejezését <b><i>dőlt</i></b>
-stílussal!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>d.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Állítsa be a kép tag <u>forrását</u>
-az <b>img</b> könyvtárban található <b>afonya.jpg</b>-re! Ha a kép nem jelenik
-meg, vagy ha a kép fölé visszük az egér kurzort, akkor a „<b>Áfonya</b>” szöveg
-jelenjen meg!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>e.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Alkalmazza a képaláírásoknál (6
-helyen) az <b>fw-bold</b> és a <b>h5</b> osztályjelölőket!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>10.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>A <i>„Málna”</i> részben <i>„A
-málna jótékony hatásai:”</i> bekezdés alatti szövegből készítsen <b>számozatlan
-felsorolást</b> és alkalmazza rá a <b>malna </b>egyedi azonosítót!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-align:justify;text-indent:-21.5pt;line-height:115%;
-border:none'><b><span lang=HU>11.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
-</span></span></b><span lang=HU style='color:black'>Az „<i>Bogyós gyümölcsök</i>”
-részben található „<i>Eper</i>”, „<i>Áfonya</i>” és „<i>Málna</i>”
-oszlopelrendezését, a <b>nagyméretű eszközöknél</b> állítsa 2 oszloposból<b> 3
-oszlopos</b> elrendezésűvé!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-indent:-21.5pt;line-height:115%;border:none'><b><span
-lang=HU>12.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp; </span></span></b><u><span
-lang=HU style='color:black'>A <i>„Táblázat”</i> részben végezze el az alábbi
-feladatokat:</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Sajnos a táblázat fejlécének
-első sorából kimaradtak a <b>fejléc cellák</b>. A szükséges szöveg a „<b>tablazat.txt</b>”
-állományban található. Készítse el a táblázat fejlécében a hiányzó tartalmat a
-minta alapján!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Alkalmazza az elkészített
-fejléc cellák mindegyikére a <b>w-25</b> osztályjelölőt!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-indent:-21.5pt;line-height:115%;border:none'><b><span
-lang=HU style='color:black'>13.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
-</span></span></b><u><span lang=HU style='color:black'>Módosítsa a <i>„Lábléc”</i>
-beállításait az alábbi leírás alapján:</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Készítsen egy hivatkozást,
-amely a weboldalon belül a „<b>leiras</b>” egyedi azonosítójú keretre
-hivatkozzon!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A hivatkozás szövege „<b>Ugrás
-az elejére</b>” legyen! </span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-indent:-21.5pt;line-height:115%;border:none'><b><span
-lang=HU style='color:black'>14.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
-</span></span></b><u><span lang=HU style='color:black'>A következő
-beállításokat, módosításokat a <b>style.css</b> külső stíluslap állományon
-végezze el:</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az <b>oldal</b> betűtípusa
-legyen <b>Verdana</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az <b>oldal magasságát</b>
-állítsa <b>400 képpont</b> nagyságúra!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>c.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Készítsen elemkijelölőt az <b>összes
-bekezdés</b>hez és állítsa be, hogy az<b> igazítás sorkizárt legyen</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>d.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Az <b>hobbi</b>
-osztályazonosítójú elemkijelölő <b>háttérszíne </b>legyen <b>255,207,207 RGB</b>
-kódú</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>e.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A <b>navigáció listaelemére</b>
-állítson be <b>3 képpont vastag, pontozott vonalú, piros színű </b>szegélyt!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>f.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A <b>lábléc hivatkozásához</b>
-állítsa be a stílusbeállítást úgy, hogy a hivatkozás<b> betűszíne fehér, </b>stílusa<b>
-félkövér</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>g.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><b><span lang=HU style='color:black'>Ha a lábléc</span></b><span
-lang=HU style='color:black'>ben lévő hivatkozás <b>fölé visszük az egér kurzort</b>,
-akkor a szöveg legyen <b>nagybetűs</b>!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:45.15pt;text-align:justify;text-indent:-18.05pt;line-height:115%;
-border:none'><span lang=HU>h.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A „<b>malna</b>” egyedi
-azonosítóhoz tartozó elemkijelölőben végezze el az alábbi beállításokat:</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:100.75pt;text-align:justify;text-indent:-18.0pt;line-height:115%;
-border:none'><span lang=HU>•<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Állítsa a<b> listaelem stílus
-képét</b> az <b>img</b> könyvtárban található <b>bogyo.png</b>-re!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:100.75pt;text-align:justify;text-indent:-18.0pt;line-height:115%;
-border:none'><span lang=HU>•<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>Állítsa<b> </b>a<b> bal margót
-25 képpont </b>nagyságúra!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:100.75pt;text-align:justify;text-indent:-18.0pt;line-height:115%;
-border:none'><span lang=HU>•<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A <b>betűméret 10%-kal kisebb</b>
-legyen, mint az alapértelmezett betűméret!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:0cm;margin-bottom:3.0pt;
-margin-left:27.15pt;text-indent:-21.5pt;line-height:115%;border:none'><b><span
-lang=HU style='color:black'>15.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
-</span></span></b><u><span lang=HU style='color:black'>Ellenőrizze munkáját!</span></u></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:10.6pt;margin-bottom:
-3.0pt;margin-left:41.8pt;text-align:justify;text-indent:-18.0pt;line-height:
-115%;border:none'><span lang=HU>a.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A HTML oldalt validálja a <b>https://validator.w3.org/
-</b>oldalon! Az eredményről készítsen pillanatképet, amelyet mentsen el <b><i>bogyosgyumolcsokValidalas</i></b>
-néven!</span></p>
-
-<p class=MsoNormal style='margin-top:3.0pt;margin-right:10.6pt;margin-bottom:
-3.0pt;margin-left:41.8pt;text-align:justify;text-indent:-18.0pt;line-height:
-115%;border:none'><span lang=HU>b.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span><span lang=HU style='color:black'>A stíluslapot ellenőrizze <b>https://jigsaw.w3.org/css-validator/
-</b>oldalon! Az eredményről készítsen pillanatképet és mentse el <b><i>styleValidalas</i></b>
-néven!</span></p>
-
-</div>
+    <li><u>Ellenőrizze munkáját!</u>
+      <ol class="al">
+        <li>A HTML oldalt validálja a <b>https://validator.w3.org/</b> oldalon! Az eredményről készítsen pillanatképet, amelyet mentsen el <b><i>bogyosgyumolcsokValidalas</i></b> néven!</li>
+        <li>A stíluslapot ellenőrizze <b>https://jigsaw.w3.org/css-validator/</b> oldalon! Az eredményről készítsen pillanatképet és mentse el <b><i>styleValidalas</i></b> néven!</li>
+      </ol>
+    </li>
+  </ol>
 
 </body>
-
 </html>
