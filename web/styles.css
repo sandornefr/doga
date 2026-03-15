@@ -196,7 +196,7 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 .exam-title {
@@ -231,16 +231,22 @@ body {
 }
 
 .btn-switch {
-  background: #1a3a6e;
+  background: transparent;
   color: #60a5fa;
-  border: 1.5px solid #3b82f6;
-  padding: 2px 8px;
-  border-radius: 4px;
+  border: 1px solid #3b82f6;
+  padding: 4px 12px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.8rem;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-switch:hover {
+  background: #3b82f6;
+  color: white;
 }
 
 /* Compact small buttons */

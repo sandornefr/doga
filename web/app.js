@@ -1694,8 +1694,7 @@ function saveStudentData() {
 
 function updateStudentDisplay() {
   if (studentData.name && studentData.class) {
-    const emailDisplay = studentData.email ? ` - ${studentData.email}` : '';
-    studentInfo.textContent = `${studentData.name} (${studentData.class})${emailDisplay}`;
+    studentInfo.textContent = studentData.name;
   } else {
     studentInfo.textContent = '';
   }
@@ -1706,9 +1705,12 @@ function updateStudentDisplay() {
     if (sessionStorage.getItem('kandoUser') || isBemutato) {
       btnLogoutEl.innerHTML = '<i class="fas fa-house"></i> Főmenü';
       btnLogoutEl.title = 'Vissza a főmenübe';
-      btnLogoutEl.style.background = '#431407';
-      btnLogoutEl.style.color = '#f97316';
-      btnLogoutEl.style.borderColor = '#f97316';
+      btnLogoutEl.style.background = 'transparent';
+      btnLogoutEl.style.color = '#9ca3af';
+      btnLogoutEl.style.borderColor = '#6b7280';
+      btnLogoutEl.style.borderRadius = '8px';
+      btnLogoutEl.style.padding = '4px 12px';
+      btnLogoutEl.style.fontWeight = '600';
     } else {
       btnLogoutEl.innerHTML = '<i class="fas fa-right-from-bracket"></i>';
       btnLogoutEl.title = 'Kijelentkezés';

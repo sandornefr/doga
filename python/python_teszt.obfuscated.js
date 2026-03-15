@@ -443,7 +443,7 @@ async function startTest() {
     };
 
     const userInfoEl = document.getElementById('quiz-user-info');
-    if (userInfoEl) userInfoEl.textContent = name + ' – ' + email;
+    if (userInfoEl) userInfoEl.textContent = name;
 
     testStartTime = new Date();
     testSubmitted = false;
