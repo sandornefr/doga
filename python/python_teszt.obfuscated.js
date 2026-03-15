@@ -833,10 +833,11 @@ function updateScoringUI(results) {
     }
 
     content.innerHTML = `
-        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-            <span style="font-size:1.5rem;font-weight:800;color:${scoreColor};white-space:nowrap;">${earned} / ${maxPts} <span style="font-size:0.85rem;font-weight:600;color:#888;">pont</span></span>
-            <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">${dots}</div>
-        </div>`;
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.4rem;">
+            <span style="font-size:1.5rem;font-weight:800;color:${scoreColor};white-space:nowrap;">${earned} / ${total} <span style="font-size:0.85rem;font-weight:600;color:#888;">kritérium</span></span>
+            <span style="font-size:0.8rem;font-weight:700;background:#e8f4fd;color:#1a6ea8;border:1px solid #b3d9f7;border-radius:12px;padding:2px 10px;white-space:nowrap;">Feladat értéke: ${maxPts} pont</span>
+        </div>
+        <div style="display:flex;gap:0.3rem;flex-wrap:wrap;align-items:center;">${dots}</div>`;
 
     if (!results.some(r => r.pending || r.needsRun) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
         taskAnswers[currentTaskIndex].earnedPoints = earned;
