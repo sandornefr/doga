@@ -48,7 +48,9 @@ let currentInputDisposable = null;
 async function getPyodide() {
     if (pyodideInstance) return pyodideInstance;
     if (!pyodideLoadingPromise) {
-        pyodideLoadingPromise = loadPyodide().catch(err => {
+        pyodideLoadingPromise = loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
+        }).catch(err => {
             pyodideLoadingPromise = null; // Sikertelen betöltés után újrapróbálható
             throw err;
         });
@@ -1180,15 +1182,12 @@ async function runPythonCode() {
     try {
         pyodide = await getPyodide();
     } catch (error) {
+        pythonCodeRunning = false;
+        if (runBtn) { runBtn.disabled = false; runBtn.textContent = '▶ Kód futtatása'; }
         await sleep(200);
         term.writeln('\r\n❌ Nem sikerült betölteni a Python értelmezőt!');
-        if (testMode === 'live') {
-            term.writeln('💡 Próbáld meg újra a "Kód futtatása" gombbal!');
-            term.writeln('   Ha ismételten nem működik, értesítsd a tanárt!');
-        } else {
-            term.writeln('💡 Zárd be a többi böngészőfület, majd frissítsd az oldalt (F5).');
-            term.writeln('   Ha ez sem segít, indítsd újra a böngészőt.');
-        }
+        term.writeln('💡 Kattints újra a "▶ Kód futtatása" gombra – automatikusan újrapróbálja.');
+        term.writeln('   Ha többször sem sikerül, zárd be a többi böngészőfület.');
         return;
     }
 
