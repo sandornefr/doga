@@ -822,44 +822,43 @@ function maybePostPythonProgress(task, earned, total) {
     }).catch(() => {});
 }
 
-// Pontozási eredmények megjelenítése
+// Pontozási eredmények megjelenítése – lámpa stílus
 function updateScoringUI(results) {
     const content = document.getElementById('scoring-content');
     const earned = results.filter(r => r.passed === true).length;
     const total = results.length;
-
-    const testable = results.filter(r => !r.pyodideFailed).length;
-    const scoreStr = testable < total
-        ? `${earned} / ${testable} pont <span style="font-size:0.8em;color:#fbbf24;">(${total - testable} nem tesztelhető)</span>`
-        : `${earned} / ${total} pont`;
-
-    let html = `<div class="scoring-header-row">
-        <span class="scoring-title">Pontozás</span>
-        <span class="scoring-score">${scoreStr}</span>
-    </div>`;
+    const task = selectedTasks[currentTaskIndex];
+    const maxPts = task ? task.points : total;
 
     const pyodideFailed = results.some(r => r.pyodideFailed);
-    if (pyodideFailed) {
-        html += `<div style="background:#2d2000;border:1px solid #f59e0b;border-radius:6px;padding:6px 10px;margin:4px 0 6px;font-size:0.82rem;color:#fcd34d;">⚠️ A Python értelmező nem elérhető – a futtatásos tesztek nem értékelhetők. Frissítsd az oldalt (F5) és várj 30-60 másodpercet.</div>`;
-    }
+    const scoreColor = earned === total ? '#27ae60' : earned > 0 ? '#e67e22' : '#e74c3c';
 
-    html += `<ul class="scoring-list">`;
+    let dots = '';
     for (const r of results) {
-        let icon, cls;
-        if (r.pending) {
-            icon = '⏳'; cls = 'scoring-pending';
-        } else if (r.pyodideFailed) {
-            icon = '?'; cls = 'scoring-pending';
+        let color, title;
+        if (r.pending || r.pyodideFailed) {
+            color = '#f59e0b';
+            title = r.pyodideFailed ? '⏳ ' + r.criterion.label + ' (futtatás szükséges)' : '⏳ ' + r.criterion.label;
         } else if (r.passed) {
-            icon = '✓'; cls = 'scoring-pass';
+            color = '#27ae60';
+            title = '✓ ' + r.criterion.label;
         } else {
-            icon = '✗'; cls = 'scoring-fail';
+            color = '#e74c3c';
+            title = '✗ ' + r.criterion.label;
         }
-        html += `<li class="${cls}"><span class="scoring-icon">${icon}</span>${r.criterion.label}</li>`;
+        dots += `<span title="${title.replace(/"/g, '&quot;')}" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:${color};flex-shrink:0;cursor:default;box-shadow:0 0 3px ${color}88;"></span>`;
     }
 
-    html += '</ul>';
-    content.innerHTML = html;
+    const pyodideWarn = pyodideFailed
+        ? `<span title="Futtatásos tesztek csak a ▶ Pontozás gombra értékelhetők" style="font-size:0.75rem;color:#f59e0b;margin-left:0.3rem;">⚠️ futtatás kell</span>`
+        : '';
+
+    content.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <span style="font-size:1.5rem;font-weight:800;color:${scoreColor};white-space:nowrap;">${earned} / ${maxPts} <span style="font-size:0.85rem;font-weight:600;color:#888;">pont</span></span>
+            <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">${dots}</div>
+            ${pyodideWarn}
+        </div>`;
 
     // Ha már nincs függőben lévő teszt, mentjük a pontokat és frissítjük a live score-t
     if (!results.some(r => r.pending) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
