@@ -2535,6 +2535,8 @@ tabHtml.addEventListener('click', () => switchToTab('html'));
 tabCss.addEventListener('click', () => switchToTab('css'));
 tabCssValidator.addEventListener('click', () => openRefPanel('css-validator'));
 btnW3schools.addEventListener('click', () => {
+  acPopupGrace = true;
+  setTimeout(() => { acPopupGrace = false; }, 4000);
   const cfg = REF_CONFIG['w3s'];
   const left = Math.round((screen.width - cfg.popupW) / 2);
   const top  = Math.round((screen.height - cfg.popupH) / 2);
