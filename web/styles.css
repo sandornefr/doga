@@ -1202,14 +1202,14 @@ iframe {
 .table-wrapper { overflow-x: auto; }
 .lamp-dots {
   display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
+  flex-wrap: nowrap;
+  gap: 2px;
   padding: 4px 0 2px;
 }
 .lamp-dot {
   display: inline-block;
-  width: 11px;
-  height: 11px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   cursor: default;
   flex-shrink: 0;
