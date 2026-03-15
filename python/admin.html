@@ -215,12 +215,14 @@
 
         .submissions-table tr:hover td { background: rgba(15,52,96,0.5); }
 
-        .submissions-table th:nth-child(1), .submissions-table td:nth-child(1) { width: 60px; }
-        .submissions-table th:nth-child(2), .submissions-table td:nth-child(2) { width: 210px; }
-        .submissions-table th:nth-child(5), .submissions-table td:nth-child(5) { width: 70px; }
-        .submissions-table th:nth-child(6), .submissions-table td:nth-child(6) { width: 90px; }
-        .submissions-table th:nth-child(7), .submissions-table td:nth-child(7) { width: 120px; }
-        .submissions-table th:nth-child(8), .submissions-table td:nth-child(8) { width: 100px; }
+        /* Beadások tábla oszlopszélességek */
+        #submissions-table th:nth-child(1), #submissions-table td:nth-child(1) { width: 45px; }
+        #submissions-table th:nth-child(2), #submissions-table td:nth-child(2) { width: 130px; }
+        #submissions-table th:nth-child(4), #submissions-table td:nth-child(4) { width: 150px; }
+        #submissions-table th:nth-child(5), #submissions-table td:nth-child(5) { width: 60px; }
+        #submissions-table th:nth-child(6), #submissions-table td:nth-child(6) { width: 75px; }
+        #submissions-table th:nth-child(7), #submissions-table td:nth-child(7) { width: 100px; }
+        #submissions-table th:nth-child(8), #submissions-table td:nth-child(8) { width: 90px; }
 
         .table-wrapper { overflow-x: auto; }
 
@@ -708,18 +710,18 @@
             <div id="haladas-loading" class="loading" style="display:none;">Betöltés...</div>
             <div id="haladas-error" class="error" style="display:none;"></div>
             <div class="table-wrapper">
-                <table class="submissions-table" id="haladas-table" style="min-width:860px;">
+                <table class="submissions-table" id="haladas-table" style="min-width:700px;">
                     <thead>
                         <tr>
                             <th>Tanuló</th>
-                            <th style="text-align:center;">Osztály</th>
-                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – alkalom</th>
-                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – átlag%</th>
-                            <th style="text-align:center;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB – legjobb%</th>
-                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – alkalom</th>
-                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – átlag%</th>
-                            <th style="text-align:center;"><i class="fab fa-python" style="color:#ffd54f;"></i> Python – legjobb%</th>
-                            <th style="text-align:center;">Szorgalmi</th>
+                            <th style="text-align:center;width:70px;">Osztály</th>
+                            <th style="text-align:center;width:70px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB alk.</th>
+                            <th style="text-align:center;width:80px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB átlag</th>
+                            <th style="text-align:center;width:80px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB max</th>
+                            <th style="text-align:center;width:70px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py alk.</th>
+                            <th style="text-align:center;width:80px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py átlag</th>
+                            <th style="text-align:center;width:80px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py max</th>
+                            <th style="text-align:center;width:80px;">Szorgalmi</th>
                         </tr>
                     </thead>
                     <tbody id="haladas-tbody">
@@ -754,18 +756,18 @@
             </div>
             <div id="rangsor-loading" style="display:none;text-align:center;padding:20px;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>
             <div id="rangsor-error" style="display:none;color:#e94560;padding:10px;background:rgba(233,69,96,0.1);border-radius:8px;margin-bottom:10px;"></div>
-            <table class="submissions-table" id="rangsor-table" style="width:100%;">
+            <table class="submissions-table" id="rangsor-table" style="width:100%;table-layout:fixed;">
                 <thead>
                     <tr>
-                        <th style="width:40px;">#</th>
+                        <th style="width:36px;">#</th>
                         <th>Tanuló</th>
-                        <th>Osztály</th>
-                        <th>Csoport</th>
-                        <th style="text-align:center;">WEB átlag</th>
-                        <th style="text-align:center;">Python átlag</th>
-                        <th style="text-align:center;">Összetett pont</th>
-                        <th style="text-align:center;">Szint</th>
-                        <th style="text-align:center;"><i class="fas fa-fire" style="color:#f97316;"></i> Sorozat</th>
+                        <th style="width:70px;text-align:center;">Osztály</th>
+                        <th style="width:65px;text-align:center;">Csoport</th>
+                        <th style="width:80px;text-align:center;">WEB átlag</th>
+                        <th style="width:80px;text-align:center;">Py átlag</th>
+                        <th style="width:65px;text-align:center;">Pont</th>
+                        <th style="width:100px;text-align:center;">Szint</th>
+                        <th style="width:70px;text-align:center;"><i class="fas fa-fire" style="color:#f97316;"></i></th>
                     </tr>
                 </thead>
                 <tbody id="rangsor-tbody">
@@ -1187,12 +1189,11 @@
 
             pageItems.forEach(sub => {
                 const row = document.createElement('tr');
-                const date = new Date(sub.submittedAt);
                 const duration = Math.round((sub.duration || 0) / 60);
 
                 row.innerHTML = `
                     <td>${sub.id}</td>
-                    <td>${date.toLocaleString('hu-HU')}</td>
+                    <td>${formatDate(sub.submittedAt)}</td>
                     <td>${sub.name}</td>
                     <td>${sub.email}</td>
                     <td>${sub.osztaly || ''}</td>
@@ -1272,7 +1273,7 @@
                 const override = cheatOverrides[s.id];
                 const deduct = override !== undefined ? override : hasCheat;
                 const finalGrade = typeof baseGrade === 'number' ? Math.max(1, baseGrade - (deduct ? 1 : 0)) : '-';
-                const date = s.submittedAt ? new Date(s.submittedAt).toLocaleString('hu-HU') : '-';
+                const date = formatDate(s.submittedAt);
                 const cheatBadge = (s.cheatWarnings > 0 || s.cheatPenalty)
                     ? `<span style="color:${s.cheatWarnings >= 3 || s.cheatPenalty ? '#e94560' : '#ffc107'};font-size:0.82rem;"><i class="fas fa-triangle-exclamation"></i> ${s.cheatWarnings || 0}/3</span>`
                     : '<span style="color:#555;font-size:0.82rem;"><i class="fas fa-minus"></i></span>';
@@ -1710,6 +1711,16 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         function escHtml(s) {
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function formatDate(val) {
+            if (!val) return '–';
+            const d = new Date(val);
+            if (isNaN(d.getTime())) return '–';
+            return d.toLocaleString('hu-HU', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
         }
 
         // ── Haladás tab ──────────────────────────────────────────────────────────

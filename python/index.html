@@ -591,8 +591,9 @@
         }
 
         .terminal-container {
-            flex: 2;
+            flex: 1;
             min-height: 0;
+            max-height: 180px;
             background: #0c0c0c;
             border: 1px solid #2b2b2b;
             border-radius: 6px;
@@ -615,8 +616,11 @@
             flex-shrink: 0;
         }
         .btn-submit-main {
-            flex: 1;
-            padding: 0.7rem 1.2rem;
+            display: block;
+            margin: 0.4rem auto;
+            padding: 0.7rem 2.5rem;
+            min-width: 260px;
+            width: auto;
             background: #e67e22;
             color: white;
             border: none;
@@ -626,18 +630,19 @@
             cursor: pointer;
             text-align: center;
             transition: background 0.2s;
+            flex-shrink: 0;
         }
         .btn-submit-main:hover { background: #d35400; }
-        .bottom-credits {
+        .quiz-right-footer {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
+            justify-content: space-between;
+            align-items: center;
             flex-shrink: 0;
+            padding: 2px 4px;
         }
         .credits-name {
             font-size: 0.65rem;
-            color: rgba(0,0,0,0.25);
+            color: rgba(255,255,255,0.2);
             white-space: nowrap;
         }
         .version-badge-bottom {
@@ -647,7 +652,7 @@
             padding: 1px 6px;
             border-radius: 4px;
             cursor: pointer;
-            border: 1px solid #ddd;
+            border: 1px solid #444;
             user-select: none;
         }
 
@@ -1239,12 +1244,10 @@
                     <div class="terminal-container" id="terminal-container">
                         <div id="terminal"></div>
                     </div>
-                    <div class="button-group">
-                        <button class="btn btn-submit-main" id="submit-btn"><i class="fas fa-triangle-exclamation"></i> <span id="submit-btn-label">Feladat beadása</span></button>
-                        <div class="bottom-credits">
-                            <span class="credits-name"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong>Sándorné Feke Réka</strong></span>
-                            <span class="version-badge-bottom" onclick="(function(){var p=document.getElementById('debug-panel');p.style.display=p.style.display==='none'?'block':'none';})()">v1.22</span>
-                        </div>
+                    <button class="btn btn-submit-main" id="submit-btn"><i class="fas fa-triangle-exclamation"></i> <span id="submit-btn-label">Feladat beadása</span></button>
+                    <div class="quiz-right-footer">
+                        <span class="credits-name"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong>Sándorné Feke Réka</strong></span>
+                        <span class="version-badge-bottom" onclick="(function(){var p=document.getElementById('debug-panel');p.style.display=p.style.display==='none'?'block':'none';})()">v1.22</span>
                     </div>
                 </div>
 
