@@ -304,8 +304,7 @@
 
         /* Felső sáv */
         .quiz-top-bar {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            display: flex;
             align-items: center;
             background: #f8f9fa;
             padding: 0.3rem 1rem;
@@ -318,11 +317,18 @@
             align-items: center;
             gap: 0.5rem;
         }
+        .qtb-pill {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         .qtb-center {
             display: flex;
             justify-content: center;
         }
         .qtb-right {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: flex-end;
@@ -939,7 +945,6 @@
         }
 
         .qtb-left a, .qtb-left span { color: #cbd5e1; }
-        #quiz-mode-pill { margin-left: 0.4rem; }
         #score-display { color: #e2e8f0; }
         .timer { color: #e2e8f0; }
 
@@ -1229,6 +1234,8 @@
                     <a id="btn-quiz-portal-back" href="../portal.html" style="display:none;margin-left:0.75rem;padding:4px 12px;background:transparent;border:1px solid #6b7280;border-radius:8px;color:#6b7280;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#6b7280';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#6b7280'">← Főmenü</a>
                     <a id="btn-quiz-switch-web" href="../web/index.html" style="display:none;padding:4px 12px;background:transparent;border:1px solid #e94560;border-radius:8px;color:#e94560;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#e94560';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e94560'"><i class="fas fa-globe"></i> WEB</a>
                 </div>
+                <!-- Pill: mód jelzés (középre, WEB és 1.feladat közt) -->
+                <div class="qtb-pill"></div>
                 <!-- Közép: feladat gombok -->
                 <div class="qtb-center">
                     <div class="task-navigation" id="task-navigation"></div>
