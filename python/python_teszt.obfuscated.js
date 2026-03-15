@@ -36,6 +36,8 @@ let fullscreenGraceUntil = 0;
 let suspiciousJumps = 0;
 let lastCodeLengths = [];
 let testSubmitted = false;
+let megoldasok = {}; // { "1": { solution, hints: [] }, ... }
+let tippIndex = []; // per task: how many hints shown
 
 // Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
 let pyodideInstance = null;
@@ -82,6 +84,20 @@ async function initializeApp() {
     await loadTasksFromFile();
     await loadTestMode();
     startFullscreenCheck();
+
+    // Megoldások és tippek betöltése (csak practice módban)
+    if (testMode === 'practice') {
+        fetch('https://script.google.com/macros/s/AKfycbw6c00BA-N3Lf3lWFg3Jm-uVJKrOKKmoRTI9vBUxk2xRdFBrNR_ztB9EoA_Uq2Kg-Ms/exec?action=getMegoldasok')
+            .then(r => r.json())
+            .then(d => { if (d.ok) megoldasok = d.data || {}; })
+            .catch(() => {}); // Csöndben fail - nem kritikus
+        // Practice gombok megjelenítése
+        const practiceButtons = document.getElementById('practice-buttons');
+        if (practiceButtons) practiceButtons.style.display = 'flex';
+        // Beadás gomb elrejtése practice módban
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.style.display = 'none';
+    }
 
     const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
 
@@ -577,6 +593,7 @@ function selectRandomTasks() {
 
     // Véletlenszerű sorrendbe keverjük a kiválasztott feladatokat
     selectedTasks = [...selected8, ...selected14].sort(() => 0.5 - Math.random());
+    tippIndex = selectedTasks.map(() => 0);
 
     logEvent('Tasks selected', {
         tasks: selectedTasks.map(t => ({ number: t.number, points: t.points }))
@@ -2151,4 +2168,91 @@ function formatDuration(totalSeconds) {
         return `${remainingSeconds} másodperc`;
     }
     return `${minutes} perc ${remainingSeconds} másodperc`;
+}
+
+// ==================== GYAKORLÓ MÓD FUNKCIÓK ====================
+
+function showNextHint() {
+    const task = selectedTasks[currentTaskIndex];
+    if (!task) return;
+    const taskId = String(task.id);
+    const data = megoldasok[taskId];
+
+    if (!data || !data.hints || data.hints.length === 0) {
+        showHintToast('ℹ️ Ehhez a feladathoz nincs tipp.', 0);
+        return;
+    }
+
+    if (!tippIndex[currentTaskIndex]) tippIndex[currentTaskIndex] = 0;
+    const idx = tippIndex[currentTaskIndex];
+
+    if (idx >= data.hints.length) {
+        showHintToast('Már az összes tippet láttad! 😊', 0);
+        return;
+    }
+
+    const hint = data.hints[idx];
+    const titles = ['1. Tipp (általános)', '2. Tipp (konkrétabb)', '3. Tipp (majdnem megoldás)'];
+    showHintToast(hint, idx, titles[idx] || `${idx+1}. Tipp`);
+    tippIndex[currentTaskIndex] = idx + 1;
+
+    // Gomb frissítése
+    const btn = document.getElementById('btn-hint');
+    if (btn) {
+        const remaining = data.hints.length - tippIndex[currentTaskIndex];
+        btn.textContent = remaining > 0 ? `💡 Tipp (${remaining} maradt)` : '💡 Nincs több tipp';
+    }
+}
+
+function showHintToast(text, level, title) {
+    // Remove existing toast
+    const existing = document.getElementById('hint-toast');
+    if (existing) existing.remove();
+
+    const colors = ['#f59e0b', '#f97316', '#ef4444'];
+    const toast = document.createElement('div');
+    toast.id = 'hint-toast';
+    toast.className = 'hint-toast';
+    toast.style.borderLeftColor = colors[level] || '#f59e0b';
+    toast.innerHTML = `
+        <div class="hint-toast-title" style="color:${colors[level] || '#f59e0b'}">${title || 'Tipp'}</div>
+        <div>${text}</div>
+        <div style="margin-top:0.5rem;text-align:right;">
+            <button onclick="document.getElementById('hint-toast').remove()" style="background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:4px;padding:2px 10px;cursor:pointer;font-size:0.8rem;">Bezár</button>
+        </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 12000);
+}
+
+function showSolution() {
+    const task = selectedTasks[currentTaskIndex];
+    if (!task) return;
+    const taskId = String(task.id);
+    const data = megoldasok[taskId];
+
+    if (!data || !data.solution) {
+        showHintToast('Ehhez a feladathoz nincs feltöltött megoldás.', 0, 'ℹ️ Megoldás');
+        return;
+    }
+
+    if (!confirm('Biztosan meg akarod nézni a megoldást? Ez betölti a kódszerkesztőbe.')) return;
+
+    if (codeEditor) {
+        codeEditor.setValue(data.solution);
+        codeEditor.setScrollPosition({ scrollTop: 0 });
+    }
+}
+
+function retryTask() {
+    if (!confirm('Biztosan újra akarod kezdeni ezt a feladatot? A kódod törlődik.')) return;
+    if (codeEditor) codeEditor.setValue('');
+    // Reset tipp index for this task
+    if (tippIndex[currentTaskIndex] !== undefined) tippIndex[currentTaskIndex] = 0;
+    const btn = document.getElementById('btn-hint');
+    const task = selectedTasks[currentTaskIndex];
+    if (btn && task) {
+        const data = megoldasok[String(task.id)];
+        const hintCount = data && data.hints ? data.hints.length : 0;
+        btn.textContent = hintCount > 0 ? `💡 Tipp (${hintCount} maradt)` : '💡 Tipp';
+    }
 }

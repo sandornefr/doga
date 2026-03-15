@@ -1135,6 +1135,30 @@
         body.nagy-mod .page-topbar-title h1 { font-size: 1.2rem; }
         body.nagy-mod .code-label     { font-size: 1rem; }
         body.nagy-mod #code-editor    { font-size: 1.1rem; }
+
+        .hint-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #f1f5f9;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            max-width: 500px;
+            width: 90%;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .hint-toast-title { font-weight: 700; margin-bottom: 0.3rem; color: #f59e0b; }
     </style>
 </head>
 
@@ -1256,6 +1280,12 @@
                         </div>
                     </div>
                     <div class="quiz-left-bottom">
+                        <!-- Gyakorló mód gombok (csak practice módban látható, JS mutatja) -->
+                        <div id="practice-buttons" style="display:none;gap:0.5rem;flex-wrap:wrap;">
+                            <button id="btn-hint" onclick="showNextHint()" style="padding:5px 14px;background:transparent;border:1px solid #f59e0b;border-radius:8px;color:#f59e0b;font-size:0.8rem;font-weight:600;cursor:pointer;" onmouseover="this.style.background='#f59e0b';this.style.color='#000'" onmouseout="this.style.background='transparent';this.style.color='#f59e0b'">💡 Tipp</button>
+                            <button id="btn-solution" onclick="showSolution()" style="padding:5px 14px;background:transparent;border:1px solid #27ae60;border-radius:8px;color:#27ae60;font-size:0.8rem;font-weight:600;cursor:pointer;" onmouseover="this.style.background='#27ae60';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#27ae60'">✅ Megoldás</button>
+                            <button id="btn-retry" onclick="retryTask()" style="padding:5px 14px;background:transparent;border:1px solid #6b7280;border-radius:8px;color:#6b7280;font-size:0.8rem;font-weight:600;cursor:pointer;" onmouseover="this.style.background='#6b7280';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#6b7280'">🔄 Újra</button>
+                        </div>
                         <div id="scoring-panel" class="hidden">
                             <div id="scoring-content"></div>
                         </div>
