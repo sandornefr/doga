@@ -509,6 +509,7 @@ async function startTest() {
     } catch (err) {
         debugLog('⚠️ xterm.js hiba: ' + err.message + ' – egyszerű terminál');
         initFallbackTerminal();
+        if (term) term.writeln('⚠️ Terminál: egyszerű mód (' + err.message + ')');
     }
 
     // Módjelzés a quiz top bar-ban
@@ -1475,11 +1476,28 @@ function customPythonInput(prompt) {
             return;
         }
 
-        // Fallback: ha az onData stub (nem valódi xterm.js), window.prompt()-ot használunk
+        // Fallback terminál: inline input mező a terminál aljára
         if (term._isFallback) {
-            const val = window.prompt(prompt ? String(prompt) : 'Input:') || '';
-            if (prompt) term.writeln(val);
-            resolve(val);
+            const termEl = document.getElementById('terminal');
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;padding:0 8px 4px;';
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.autocomplete = 'off';
+            inp.spellcheck = false;
+            inp.style.cssText = 'flex:1;background:transparent;border:none;border-bottom:1px solid #555;outline:none;color:#c0c0c0;font-family:Consolas,"Courier New",monospace;font-size:13px;padding:2px 0;';
+            row.appendChild(inp);
+            termEl.appendChild(row);
+            termEl.scrollTop = termEl.scrollHeight;
+            inp.focus();
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const val = inp.value;
+                    row.remove();
+                    term.writeln(val);
+                    resolve(val);
+                }
+            });
             return;
         }
 
