@@ -948,6 +948,7 @@ function initFallbackTerminal() {
         writeln: (text) => { if (pre) pre.textContent += text.replace(/\r\n/g, '\n').replace(/\r(?!\n)/g, '\n') + '\n'; terminalElement.scrollTop = terminalElement.scrollHeight; },
         loadAddon: () => {},
         onData: () => {},
+        _isFallback: true,
     };
     fitAddon = { fit: () => {} };
     terminalReady = true;
@@ -1473,6 +1474,17 @@ function customPythonInput(prompt) {
             resolve('');
             return;
         }
+
+        // Fallback: ha az onData stub (nem valódi xterm.js), window.prompt()-ot használunk
+        if (term._isFallback) {
+            const val = window.prompt(prompt ? String(prompt) : 'Input:') || '';
+            if (prompt) term.writeln(val);
+            resolve(val);
+            return;
+        }
+
+        // Xterm.js: fókusz szükséges a billentyűleütések fogadásához
+        if (typeof term.focus === 'function') term.focus();
 
         let inputBuffer = '';
         let disposable = null;
