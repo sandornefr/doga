@@ -30,11 +30,8 @@ var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in
 var adminEnvUser = app.Configuration["ADMIN_USERNAME"] ?? "admin";
 var adminEnvPass = app.Configuration["ADMIN_PASSWORD"] ?? "kandooktato";
 
-// Alapértelmezett admin létrehozása (ha még nincs a DB-ben)
-if (db.GetPasswordHash(adminEnvUser) == null)
-{
-    db.UpsertTeacher(adminEnvUser, BCrypt.Net.BCrypt.HashPassword(adminEnvPass));
-}
+// Admin létrehozása/frissítése – mindig az env változóból (jelszó reset lehetséges)
+db.UpsertTeacher(adminEnvUser, BCrypt.Net.BCrypt.HashPassword(adminEnvPass));
 
 // Alapértelmezett oktató felhasználó seed (Railway restart után is megmarad)
 // Env változók: SEED_OKTATO_EMAIL, SEED_OKTATO_JELSZO, SEED_OKTATO_VEZETEK, SEED_OKTATO_KERESZT
