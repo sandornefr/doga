@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Python Teszt</title>
+    <title>Kandó Teszt – Admin Panel</title>
+    <link rel="icon" href="../kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a2e;
             min-height: 100vh;
             padding: 20px;
+            color: #e0e0e0;
         }
 
         .container {
@@ -33,109 +33,110 @@
         }
 
         .login-box {
-            background: white;
-            border-radius: 15px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            max-width: 420px;
             width: 100%;
         }
 
         .login-box h1 {
-            color: #667eea;
+            color: #e94560;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
+            margin-bottom: 28px;
+            font-size: 1.6rem;
+            text-shadow: 0 0 12px rgba(233,69,96,0.4);
         }
 
-        .login-box .form-group {
-            margin-bottom: 20px;
-        }
+        .login-box .form-group { margin-bottom: 18px; }
 
         .login-box label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.88rem;
             font-weight: 600;
         }
 
         .login-box input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
+            padding: 11px 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
             border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .login-box input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+        .login-box input:focus { border-color: #e94560; }
 
         .login-box .btn-login {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 13px;
+            background: #e94560;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-top: 6px;
         }
-
         .login-box .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+            background: #c73652;
+            box-shadow: 0 0 16px rgba(233,69,96,0.4);
         }
 
         .login-error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+            background: rgba(233,69,96,0.15);
+            border: 1px solid #e94560;
+            color: #ff8fa3;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
             display: none;
             text-align: center;
+            font-size: 0.9rem;
         }
 
-        #admin-content {
-            display: none;
-        }
+        #admin-content { display: none; }
 
         .header {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 24px 28px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         h1 {
-            color: #667eea;
-            margin-bottom: 10px;
+            color: #e94560;
+            margin-bottom: 6px;
+            font-size: 1.4rem;
+            text-shadow: 0 0 10px rgba(233,69,96,0.3);
         }
 
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-        }
+        .subtitle { color: #666; font-size: 0.85rem; }
 
         .panel {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 24px 28px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .panel h2 {
-            color: #333;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #667eea;
+            color: #e0e0e0;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #0f3460;
             padding-bottom: 10px;
+            font-size: 1.1rem;
         }
 
         .config-section {
@@ -143,249 +144,278 @@
             align-items: center;
             gap: 20px;
             margin-bottom: 20px;
-            padding: 20px;
-            background: #f8f9fa;
+            padding: 16px 20px;
+            background: #0f3460;
             border-radius: 8px;
         }
 
-        .current-mode {
-            font-size: 18px;
-            font-weight: bold;
-        }
+        .current-mode { font-size: 1rem; font-weight: 600; color: #ccc; }
 
         .mode-badge {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 0.85rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .mode-practice {
-            background: #ffc107;
-            color: #fff;
-        }
+        .mode-practice { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .mode-live     { background: rgba(46,213,115,0.2); color: #2ed573; border: 1px solid #2ed573; }
 
-        .mode-live {
-            background: #28a745;
-            color: #fff;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 
         button {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
+        button:hover { transform: translateY(-2px); }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+        .btn-practice { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid #ffc107; }
+        .btn-practice:hover { background: #ffc107; color: #1a1a2e; box-shadow: 0 0 12px rgba(255,193,7,0.4); }
 
-        .btn-practice {
-            background: #ffc107;
-            color: white;
-        }
+        .btn-live { background: rgba(46,213,115,0.15); color: #2ed573; border: 1px solid #2ed573; }
+        .btn-live:hover { background: #2ed573; color: #1a1a2e; box-shadow: 0 0 12px rgba(46,213,115,0.4); }
 
-        .btn-live {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-refresh {
-            background: #007bff;
-            color: white;
-        }
+        .btn-refresh { background: rgba(83,109,254,0.15); color: #536dfe; border: 1px solid #536dfe; }
+        .btn-refresh:hover { background: #536dfe; color: white; box-shadow: 0 0 12px rgba(83,109,254,0.4); }
 
         .submissions-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 16px;
             table-layout: fixed;
             min-width: 840px;
         }
 
         .submissions-table th,
         .submissions-table td {
-            padding: 12px;
+            padding: 11px 12px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #0f3460;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-size: 0.88rem;
         }
 
         .submissions-table th {
-            background: #667eea;
-            color: white;
-            font-weight: bold;
+            background: #0f3460;
+            color: #e94560;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .submissions-table tr:hover {
-            background: #f8f9fa;
-        }
+        .submissions-table tr:hover td { background: rgba(15,52,96,0.5); }
 
-        .submissions-table th:nth-child(1),
-        .submissions-table td:nth-child(1) {
-            width: 60px;
-        }
+        /* Beadások tábla oszlopszélességek */
+        #submissions-table th:nth-child(1), #submissions-table td:nth-child(1) { width: 45px; }
+        #submissions-table th:nth-child(2), #submissions-table td:nth-child(2) { width: 130px; }
+        #submissions-table th:nth-child(4), #submissions-table td:nth-child(4) { width: 150px; }
+        #submissions-table th:nth-child(5), #submissions-table td:nth-child(5) { width: 60px; }
+        #submissions-table th:nth-child(6), #submissions-table td:nth-child(6) { width: 75px; }
+        #submissions-table th:nth-child(7), #submissions-table td:nth-child(7) { width: 100px; }
+        #submissions-table th:nth-child(8), #submissions-table td:nth-child(8) { width: 90px; }
 
-        .submissions-table th:nth-child(2),
-        .submissions-table td:nth-child(2) {
-            width: 210px;
-        }
+        .table-wrapper { overflow-x: auto; }
 
-        .submissions-table th:nth-child(5),
-        .submissions-table td:nth-child(5) {
-            width: 70px;
-        }
+        .loading { text-align: center; padding: 20px; color: #555; }
 
-        .submissions-table th:nth-child(6),
-        .submissions-table td:nth-child(6) {
-            width: 90px;
-        }
-
-        .submissions-table th:nth-child(7),
-        .submissions-table td:nth-child(7) {
-            width: 120px;
-        }
-
-        .submissions-table th:nth-child(8),
-        .submissions-table td:nth-child(8) {
-            width: 100px;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-
-        .submissions-panel {
-            position: relative;
-        }
+        .submissions-panel { position: relative; }
 
         #submissions-loading {
             position: absolute;
             top: 16px;
             right: 20px;
-            padding: 6px 10px;
-            background: #fff3cd;
+            padding: 5px 10px;
+            background: rgba(255,193,7,0.1);
             border: 1px solid #ffc107;
+            color: #ffc107;
             border-radius: 6px;
+            font-size: 0.8rem;
             z-index: 5;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+            background: rgba(233,69,96,0.1);
+            border: 1px solid #e94560;
+            color: #ff8fa3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
         }
 
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             z-index: 2000;
             align-items: center;
             justify-content: center;
         }
 
         .modal-content {
-            background: #fff;
+            background: #16213e;
+            border: 1px solid #0f3460;
             width: 90%;
             max-width: 900px;
             max-height: 85vh;
             overflow-y: auto;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 24px;
             position: relative;
+            color: #e0e0e0;
         }
 
         .modal-close {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            background: #f00;
-            color: #fff;
+            top: 12px; right: 12px;
+            background: #e94560;
+            color: white;
             border: none;
             padding: 4px 10px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-weight: 700;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+            background: rgba(46,213,115,0.1);
+            border: 1px solid #2ed573;
+            color: #7bed9f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
         }
 
         .api-url-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 6px;
+            margin-top: 16px;
+            padding: 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            border-radius: 8px;
         }
 
         .api-url-section input {
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 9px 12px;
+            margin-top: 8px;
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            color: #888;
             font-family: monospace;
+            font-size: 0.85rem;
         }
+
+        .api-url-section label { color: #aaa; font-size: 0.85rem; }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            gap: 16px;
+            margin-top: 16px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            color: #e0e0e0;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
         }
 
         .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 10px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 8px 0;
+            color: #e94560;
+            text-shadow: 0 0 10px rgba(233,69,96,0.4);
         }
 
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
+        .stat-label { font-size: 0.82rem; color: #888; }
+
+        /* Tab navigáció */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            flex-wrap: wrap;
         }
+
+        .tab-btn {
+            padding: 9px 18px;
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.18s, background 0.18s, border-color 0.18s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.07);
+            color: #e0e0e0;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab-btn.active {
+            background: #0f3460;
+            color: #e94560;
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .mode-vizsga { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+
+        /* Inline styles felülírás */
+        p[style*="color: #666"] { color: #666 !important; }
+        div[style*="background: #f0f0f0"] { background: #0f3460 !important; }
+        #grading-progress-bar { background: linear-gradient(90deg, #e94560, #536dfe) !important; }
     </style>
 </head>
 <body>
-    <!-- Login Screen (eltávolítva - auto bejelentkezés) -->
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1><i class="fas fa-lock"></i> Admin Bejelentkezés</h1>
+            <div class="login-error" id="login-error"></div>
+            <form id="login-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Felhasználónév:</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Jelszó:</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <p style="color: #666; font-size: 0.9rem; margin-top: -10px; margin-bottom: 15px;">
+                    A jelszó az admin funkciók eléréséhez szükséges.
+                </p>
+                <button type="submit" class="btn-login">Bejelentkezés</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Admin Content (hidden until login) -->
     <div id="admin-content">
@@ -393,30 +423,34 @@
         <div class="header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h1>🎓 Python Teszt - Admin Panel</h1>
-                    <p class="subtitle">Teszt konfiguráció és eredmények kezelése</p>
+                    <h1><i class="fas fa-graduation-cap"></i> Kandó Teszt – Admin Panel</h1>
+                    <p class="subtitle">Konfiguráció, feladatsorok és eredmények kezelése</p>
                 </div>
-                <button onclick="logout()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                    🚪 Kijelentkezés
-                </button>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <a href="../portal.html" style="padding: 8px 18px; background: transparent; color: #536dfe; border: 1px solid #536dfe; border-radius: 8px; cursor: pointer; font-weight: 700; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#536dfe';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#536dfe'"><i class="fas fa-arrow-left"></i> Portal</a>
+                    <button onclick="logout()" style="padding: 8px 18px; background: transparent; color: #e94560; border: 1px solid #e94560; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='#e94560';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e94560'">
+                        <i class="fas fa-right-from-bracket"></i> Kilépés
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- API URL Display (Read-only) -->
-        <div class="panel">
-            <h2>⚙️ API Információ</h2>
-            <div class="api-url-section">
-                <label for="api-url"><strong>Google Apps Script API URL:</strong></label>
-                <input type="text" id="api-url" readonly style="background: #f0f0f0; cursor: not-allowed;">
-                <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
-                    Ez az API URL mindenki számára ugyanaz. Az admin funkciók jelszóval védettek.
-                </p>
-            </div>
+        <input type="hidden" id="api-url">
+
+        <!-- Tab navigáció -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('vezerlot', this)"><i class="fas fa-gauge-high"></i> Vezérlőpult</button>
+            <button class="tab-btn" onclick="switchTab('feladatsor', this)"><i class="fas fa-folder-open"></i> Feladatsorok</button>
+            <button class="tab-btn" onclick="switchTab('beadasok', this)"><i class="fas fa-clipboard-list"></i> Beadások</button>
+            <button class="tab-btn" onclick="switchTab('javitas', this)"><i class="fas fa-pen-to-square"></i> Javítás</button>
+            <button class="tab-btn" onclick="switchTab('felhasznalok', this)"><i class="fas fa-users"></i> Felhasználók</button>
+            <button class="tab-btn" onclick="switchTab('haladas', this)"><i class="fas fa-chart-line"></i> Haladás</button>
+            <button class="tab-btn" onclick="switchTab('rangsor', this)"><i class="fas fa-ranking-star"></i> Rangsor</button>
         </div>
 
         <!-- Config Panel -->
-        <div class="panel">
-            <h2>🔧 Teszt Mód</h2>
+        <div class="panel" data-tab="vezerlot">
+            <h2><i class="fas fa-sliders"></i> Teszt Mód</h2>
             <div id="config-loading" class="loading">Betöltés...</div>
             <div id="config-error" class="error" style="display: none;"></div>
             <div id="config-success" class="success" style="display: none;"></div>
@@ -428,27 +462,166 @@
                 </div>
                 <div class="btn-group">
                     <button class="btn-practice" onclick="setMode('practice')">
-                        📝 Gyakorló Mód
+                        <i class="fas fa-pencil"></i> Gyakorló Mód
                     </button>
                     <button class="btn-live" onclick="setMode('live')">
-                        🔴 Éles Teszt
+                        <i class="fas fa-circle-dot"></i> Éles Teszt
                     </button>
                     <button class="btn-refresh" onclick="loadConfig()">
-                        🔄 Frissítés
+                        <i class="fas fa-rotate"></i> Frissítés
                     </button>
+                </div>
+                <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid #333;">
+                    <div style="color:#fbbf24;font-weight:700;margin-bottom:0.7rem;"><i class="fas fa-graduation-cap"></i> Vizsga Mód</div>
+                    <div style="color:#aaa;font-size:0.85rem;margin-bottom:0.8rem;">Állítsd be a vizsga kezdési időpontját, majd kapcsold be a vizsga módot. A tanulók visszaszámlálót látnak a megadott időpontig.</div>
+                    <div style="display:grid;grid-template-columns:auto auto;gap:8px 14px;align-items:center;margin-bottom:0.8rem;">
+                        <label style="color:#94a3b8;font-size:0.82rem;">Kezdés:</label>
+                        <input type="datetime-local" id="vizsga-kezdes-input"
+                            style="padding:6px 10px;background:#1a1a2e;border:1px solid #fbbf24;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                        <label style="color:#94a3b8;font-size:0.82rem;">Vége (határidő):</label>
+                        <input type="datetime-local" id="vizsga-vege-input"
+                            style="padding:6px 10px;background:#1a1a2e;border:1px solid #e94560;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                    </div>
+                    <button onclick="setVizsgaMod()" style="padding:7px 16px;background:#92400e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                        <i class="fas fa-graduation-cap"></i> Vizsga Mód bekapcsolása
+                    </button>
+                    <div id="vizsga-kezdes-jelenlegi" style="color:#888;font-size:0.82rem;margin-top:0.6rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feladatsor Feltöltés -->
+        <div class="panel" data-tab="feladatsor" style="display:none;">
+            <h2><i class="fas fa-upload"></i> Feladatsor Feltöltés</h2>
+            <div id="ts-msg" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:0.9rem;"></div>
+
+            <!-- Feltöltő form -->
+            <div style="background:#0d1b2e;border:1px solid #1a4a8a;border-radius:12px;padding:18px;margin-bottom:20px;">
+                <h3 style="color:#7dd3fc;margin-bottom:14px;font-size:1rem;"><i class="fas fa-plus"></i> Új feladatsor</h3>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">Feladatsor neve (pl. "Ágazati alapvizsga 2026"):</label>
+                    <input type="text" id="ts-nev"
+                        style="width:100%;padding:8px 12px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.9rem;"
+                        placeholder="Feladatsor neve...">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:6px;">Felhasználás típusa:</label>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="gyakorlo" style="accent-color:#4ade80;">
+                            <i class="fas fa-pencil" style="color:#4ade80;"></i> Gyakorló
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="live" style="accent-color:#f97316;">
+                            <i class="fas fa-circle-dot" style="color:#f97316;"></i> Órai számonkérés
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;background:#1a1a2e;border:1px solid #fbbf24;border-radius:8px;color:#fde68a;font-size:0.88rem;">
+                            <input type="radio" name="ts-tipus" value="vizsga" checked style="accent-color:#fbbf24;">
+                            <i class="fas fa-graduation-cap" style="color:#fbbf24;"></i> Vizsga
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">
+                        Python feladatok szövege (feladatok.txt formátum – csak a vizsgán szereplő feladatok):
+                    </label>
+                    <textarea id="ts-python" rows="12"
+                        style="width:100%;padding:8px 12px;background:#1a1a2e;border:1px solid #334155;border-radius:8px;color:#e0e0e0;font-size:0.82rem;font-family:monospace;resize:vertical;"
+                        placeholder="# 1. feladat – 8 pont&#10;Készíts programot, amely...&#10;input:1|Bekér egy számot&#10;if|if kulcsszó megléte&#10;..."></textarea>
+                    <div style="color:#64748b;font-size:0.78rem;margin-top:4px;">Ugyanolyan formátum, mint a feladatok.txt – minden feladat #N. feladat sorral kezdődik.</div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="display:block;color:#94a3b8;font-size:0.82rem;margin-bottom:5px;">WEB feladat (ZIP fájl – HTML, CSS, képek):</label>
+                    <input type="file" id="ts-web-zip" accept=".zip"
+                        style="color:#e0e0e0;font-size:0.88rem;">
+                    <div style="color:#64748b;font-size:0.78rem;margin-top:4px;">A ZIP-et a Drive mappából töltsd le, majd itt töltsd fel. Max ~20 MB.</div>
+                </div>
+                <button onclick="uploadTaskSet()"
+                    style="padding:9px 22px;background:#0f766e;border:1px solid #14b8a6;border-radius:8px;color:#ccfbf1;font-weight:700;cursor:pointer;font-size:0.9rem;">
+                    <i class="fas fa-floppy-disk"></i> Feladatsor Mentése
+                </button>
+            </div>
+
+            <!-- Meglévő feladatsorok listája -->
+            <h3 style="color:#7dd3fc;margin-bottom:12px;font-size:1rem;"><i class="fas fa-list"></i> Feltöltött feladatsorok</h3>
+            <div id="ts-loading" style="color:#888;font-size:0.9rem;display:none;">Betöltés...</div>
+            <div class="table-wrapper">
+                <table class="submissions-table" style="min-width:600px;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Név</th>
+                            <th>Típus</th>
+                            <th>Python</th>
+                            <th>WEB</th>
+                            <th>Létrehozva</th>
+                            <th>Státusz</th>
+                            <th>Műveletek</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ts-tbody">
+                        <tr><td colspan="8" class="loading">Nincs feltöltött feladatsor</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kézi Javítás -->
+        <div class="panel" data-tab="javitas" style="display:none;">
+            <h2><i class="fas fa-pen-to-square"></i> Kézi Javítás</h2>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                <label style="color:#aaa;font-weight:600;">Feladat száma:</label>
+                <select id="grading-task-select" onchange="renderGradingTable()" style="padding:8px 14px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.95rem;cursor:pointer;">
+                    <option value="">— Válassz feladatot —</option>
+                    <option value="1">1. feladat (8 pont)</option>
+                    <option value="2">2. feladat (8 pont)</option>
+                    <option value="3">3. feladat (8 pont)</option>
+                    <option value="4">4. feladat (8 pont)</option>
+                    <option value="5">5. feladat (8 pont)</option>
+                    <option value="6">6. feladat (8 pont)</option>
+                    <option value="7">7. feladat (8 pont)</option>
+                    <option value="8">8. feladat (8 pont)</option>
+                    <option value="9">9. feladat (8 pont)</option>
+                    <option value="10">10. feladat (8 pont)</option>
+                    <option value="11">11. feladat (8 pont)</option>
+                    <option value="12">12. feladat (8 pont)</option>
+                    <option value="13">13. feladat (14 pont)</option>
+                    <option value="14">14. feladat (14 pont)</option>
+                    <option value="15">15. feladat (14 pont)</option>
+                    <option value="16">16. feladat (14 pont)</option>
+                </select>
+                <span id="grading-count" style="color:#888;font-size:0.88rem;"></span>
+            </div>
+            <div id="grading-table-wrapper" style="display:none;">
+                <div class="table-wrapper">
+                    <table class="submissions-table" style="min-width:700px;">
+                        <thead>
+                            <tr>
+                                <th>Név</th>
+                                <th>Osztály</th>
+                                <th>Beadva</th>
+                                <th>Pontszám</th>
+                                <th>Jegy</th>
+                                <th>Figyelmeztetés</th>
+                                <th>Levonás</th>
+                                <th>Kód</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grading-tbody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <!-- AI Grading -->
-        <div class="panel">
-            <h2>🤖 Automatikus Javítás (AI)</h2>
+        <div class="panel" data-tab="javitas" style="display:none;">
+            <h2><i class="fas fa-robot"></i> Automatikus Javítás (AI)</h2>
             <div id="ai-grading-status" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
             <p style="margin-bottom: 15px; color: #666;">
                 A Gemini AI automatikusan kijavítja az összes beadott feladatot a Google Sheets Tasks lapján található kritériumok alapján.
             </p>
             <button class="btn-live" onclick="gradeAllSubmissions()">
-                🤖 Javítás Indítása
+                <i class="fas fa-robot"></i> Javítás Indítása
             </button>
             <div id="grading-progress" style="margin-top: 15px; display: none;">
                 <div style="background: #f0f0f0; border-radius: 10px; height: 20px; overflow: hidden;">
@@ -459,8 +632,8 @@
         </div>
 
         <!-- Statistics -->
-        <div class="panel">
-            <h2>📊 Statisztikák</h2>
+        <div class="panel" data-tab="vezerlot">
+            <h2><i class="fas fa-chart-bar"></i> Statisztikák</h2>
             <div class="stats">
                 <div class="stat-card">
                     <div class="stat-label">Összes beadás</div>
@@ -478,66 +651,153 @@
             </div>
         </div>
 
-        <!-- Megoldások és Tippek panel -->
-        <div class="panel">
-            <h2>📝 Megoldások és Tippek (Gyakorló mód)</h2>
-            <div id="megoldas-error" class="error" style="display:none;"></div>
-            <div id="megoldas-success" class="success" style="display:none;"></div>
+        <!-- Felhasználók -->
+        <div class="panel" id="users-panel" data-tab="felhasznalok" style="display:none;">
+            <h2><i class="fas fa-users"></i> Felhasználók kezelése</h2>
+            <div style="display:flex;gap:10px;margin-bottom:14px;">
+                <button class="btn-refresh" onclick="loadUsers()"><i class="fas fa-rotate"></i> Frissítés</button>
+            </div>
+            <div id="users-loading" class="loading" style="display:none;">Betöltés...</div>
+            <div class="table-wrapper">
+                <table class="submissions-table" id="users-table" style="min-width:700px;table-layout:fixed;">
+                    <colgroup>
+                        <col style="width:160px;">
+                        <col style="width:220px;">
+                        <col style="width:110px;">
+                        <col style="width:80px;">
+                        <col style="width:80px;">
+                        <col style="width:145px;">
+                        <col style="width:160px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Név</th>
+                            <th>Email</th>
+                            <th>Szerepkör</th>
+                            <th style="text-align:center;">Osztály</th>
+                            <th style="text-align:center;">Csoport</th>
+                            <th>Regisztrálva</th>
+                            <th>Műveletek</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="7" class="loading">Nincs adat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-            <div style="margin-bottom:1rem;">
-                <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Feladat kiválasztása:</label>
-                <select id="megoldas-task-select" style="padding:0.5rem 1rem;border-radius:6px;border:1px solid #ccc;font-size:0.95rem;width:100%;max-width:500px;">
-                    <option value="">-- Válassz feladatot --</option>
-                    <option value="1">1. feladat – Két szám összehasonlítása</option>
-                    <option value="2">2. feladat – Dobókocka játék</option>
-                    <option value="3">3. feladat – Mozijegy ár</option>
-                    <option value="4">4. feladat – Napszak köszöntés</option>
-                    <option value="5">5. feladat – Testhőmérséklet visszajelzés</option>
-                    <option value="6">6. feladat – Torony magassága</option>
-                    <option value="7">7. feladat – Bolt nyitvatartás</option>
-                    <option value="8">8. feladat – Évszak meghatározás</option>
-                    <option value="9">9. feladat – Életkori kategória</option>
-                    <option value="10">10. feladat – BMI számítás</option>
-                    <option value="11">11. feladat – Érdemjegy átlag</option>
-                    <option value="12">12. feladat – Víz halmazállapota</option>
+        <!-- Haladás panel -->
+        <div class="panel" id="haladas-panel" data-tab="haladas" style="display:none;">
+            <h2><i class="fas fa-chart-line"></i> Tanulói haladás</h2>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+                <button class="btn-refresh" onclick="loadProgress()"><i class="fas fa-rotate"></i> Frissítés</button>
+                <span style="color:#aaa;font-size:0.82rem;">
+                    <i class="fas fa-star" style="color:#ffd700;"></i> = szorgalmi jelölt (≥10 alkalom + ≥70% átlag)
+                </span>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+                    <label style="color:#aaa;font-size:0.85rem;">Szűrés:</label>
+                    <input id="haladas-filter" type="text" placeholder="Név vagy osztály…"
+                        oninput="filterProgress()"
+                        style="padding:5px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;width:180px;">
+                    <select id="haladas-szorgalmi" onchange="filterProgress()"
+                        style="padding:5px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                        <option value="">Mindenki</option>
+                        <option value="szorgalmi">Csak szorgalmik</option>
+                    </select>
+                </div>
+            </div>
+            <div id="haladas-loading" class="loading" style="display:none;">Betöltés...</div>
+            <div id="haladas-error" class="error" style="display:none;"></div>
+            <div class="table-wrapper">
+                <table class="submissions-table" id="haladas-table" style="min-width:700px;">
+                    <thead>
+                        <tr>
+                            <th>Tanuló</th>
+                            <th style="text-align:center;width:70px;">Osztály</th>
+                            <th style="text-align:center;width:70px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB alk.</th>
+                            <th style="text-align:center;width:80px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB átlag</th>
+                            <th style="text-align:center;width:80px;"><i class="fas fa-globe" style="color:#64b5f6;"></i> WEB max</th>
+                            <th style="text-align:center;width:70px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py alk.</th>
+                            <th style="text-align:center;width:80px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py átlag</th>
+                            <th style="text-align:center;width:80px;"><i class="fab fa-python" style="color:#ffd54f;"></i> Py max</th>
+                            <th style="text-align:center;width:80px;">Szorgalmi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="haladas-tbody">
+                        <tr><td colspan="9" class="loading">Nincs adat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel" id="rangsor-panel" data-tab="rangsor" style="display:none;">
+            <h2><i class="fas fa-ranking-star"></i> Tanulói rangsor</h2>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+                <button class="btn-refresh" onclick="loadLeaderboard()"><i class="fas fa-rotate"></i> Frissítés</button>
+                <select id="rangsor-mod" onchange="loadLeaderboard()" style="padding:6px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                    <option value="">Minden mód</option>
+                    <option value="gyakorlo">Csak gyakorlás</option>
+                    <option value="szamonkeres">Csak számonkérés</option>
                 </select>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                <div>
-                    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">💡 Megoldás kód:</label>
-                    <textarea id="megoldas-solution" rows="12" style="width:100%;font-family:monospace;font-size:0.85rem;padding:0.5rem;border:1px solid #ccc;border-radius:6px;resize:vertical;" placeholder="Ide írd be a mintamegoldást..."></textarea>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                    <div>
-                        <label style="font-weight:600;display:block;margin-bottom:0.3rem;">🟡 1. Tipp (általános irány):</label>
-                        <textarea id="megoldas-hint1" rows="3" style="width:100%;font-size:0.85rem;padding:0.5rem;border:1px solid #ccc;border-radius:6px;resize:vertical;" placeholder="pl. Gondolj arra, hogy..."></textarea>
-                    </div>
-                    <div>
-                        <label style="font-weight:600;display:block;margin-bottom:0.3rem;">🟠 2. Tipp (konkrétabb):</label>
-                        <textarea id="megoldas-hint2" rows="3" style="width:100%;font-size:0.85rem;padding:0.5rem;border:1px solid #ccc;border-radius:6px;resize:vertical;" placeholder="pl. Használj if/elif szerkezetet..."></textarea>
-                    </div>
-                    <div>
-                        <label style="font-weight:600;display:block;margin-bottom:0.3rem;">🔴 3. Tipp (majdnem megoldás):</label>
-                        <textarea id="megoldas-hint3" rows="3" style="width:100%;font-size:0.85rem;padding:0.5rem;border:1px solid #ccc;border-radius:6px;resize:vertical;" placeholder="pl. A struktúra: ..."></textarea>
-                    </div>
+                <select id="rangsor-targy" onchange="renderLeaderboard()" style="padding:6px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                    <option value="osszes">Összesített</option>
+                    <option value="web">WEB</option>
+                    <option value="python">Python</option>
+                </select>
+                <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+                    <select id="rangsor-osztaly" onchange="filterRangsorOsztaly()" style="padding:6px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                        <option value="">Minden osztály</option>
+                    </select>
+                    <select id="rangsor-csoport" onchange="renderLeaderboard()" style="padding:6px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
+                        <option value="">Minden csoport</option>
+                    </select>
                 </div>
             </div>
+            <div id="rangsor-loading" style="display:none;text-align:center;padding:20px;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>
+            <div id="rangsor-error" style="display:none;color:#e94560;padding:10px;background:rgba(233,69,96,0.1);border-radius:8px;margin-bottom:10px;"></div>
+            <table class="submissions-table" id="rangsor-table" style="width:100%;table-layout:fixed;">
+                <thead>
+                    <tr>
+                        <th style="width:36px;">#</th>
+                        <th>Tanuló</th>
+                        <th style="width:70px;text-align:center;">Osztály</th>
+                        <th style="width:65px;text-align:center;">Csoport</th>
+                        <th style="width:80px;text-align:center;">WEB átlag</th>
+                        <th style="width:80px;text-align:center;">Py átlag</th>
+                        <th style="width:65px;text-align:center;">Pont</th>
+                        <th style="width:100px;text-align:center;">Szint</th>
+                        <th style="width:70px;text-align:center;"><i class="fas fa-fire" style="color:#f97316;"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="rangsor-tbody">
+                    <tr><td colspan="9" class="loading">Kattints a Frissítés gombra az adatok betöltéséhez</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-            <div style="display:flex;gap:0.75rem;margin-top:1rem;align-items:center;">
-                <button onclick="saveMegoldasToApi()" style="padding:0.5rem 1.5rem;background:#2196F3;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾 Mentés</button>
-                <button onclick="loadMegoldasFromApi()" style="padding:0.5rem 1.5rem;background:#607D8B;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">📥 Betöltés</button>
-                <span id="megoldas-status" style="font-size:0.85rem;color:#666;"></span>
+        <!-- Jelszó visszaállítás modal -->
+        <div class="modal" id="reset-pw-modal" style="display:none;">
+            <div class="modal-content" style="max-width:400px;">
+                <h3 style="color:#ffc107;margin-bottom:1rem;"><i class="fas fa-key"></i> Jelszó visszaállítása</h3>
+                <p id="reset-pw-email-display" style="color:#aaa;margin-bottom:1rem;font-size:0.9rem;"></p>
+                <input type="password" id="reset-pw-new" placeholder="Új jelszó (min. 6 karakter)"
+                    style="width:100%;padding:8px 12px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.95rem;margin-bottom:0.8rem;">
+                <div id="reset-pw-error" style="color:#e94560;font-size:0.85rem;margin-bottom:0.8rem;display:none;"></div>
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <button class="btn-live" onclick="confirmResetPassword()">Visszaállítás</button>
+                    <button class="btn-refresh" onclick="document.getElementById('reset-pw-modal').style.display='none'">Mégse</button>
+                </div>
             </div>
         </div>
 
         <!-- Submissions -->
-        <div class="panel submissions-panel">
-            <h2>📋 Legutóbbi Beadások</h2>
+        <div class="panel submissions-panel" data-tab="beadasok" style="display:none;">
+            <h2><i class="fas fa-clipboard-list"></i> Legutóbbi Beadások</h2>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <button class="btn-refresh" onclick="loadSubmissions()">🔄 Frissítés</button>
-                <button class="btn-refresh" onclick="prevSubmissionsPage()">⬅️ Előző</button>
-                <button class="btn-refresh" onclick="nextSubmissionsPage()">Következő ➡️</button>
+                <button class="btn-refresh" onclick="loadSubmissions()"><i class="fas fa-rotate"></i> Frissítés</button>
+                <button class="btn-refresh" onclick="prevSubmissionsPage()"><i class="fas fa-chevron-left"></i> Előző</button>
+                <button class="btn-refresh" onclick="nextSubmissionsPage()">Következő <i class="fas fa-chevron-right"></i></button>
                 <span id="submissions-page-info" style="color: #666; font-size: 0.9rem;"></span>
             </div>
             <div id="submissions-loading" class="loading" style="display: none;">Betöltés...</div>
@@ -566,8 +826,8 @@
 
         <div class="modal" id="submission-modal">
             <div class="modal-content">
-                <button class="modal-close" id="submission-modal-close">X</button>
-                <h2>🧾 Részletek</h2>
+                <button class="modal-close" id="submission-modal-close"><i class="fas fa-xmark"></i></button>
+                <h2><i class="fas fa-file-lines"></i> Részletek</h2>
                 <div id="submission-details-content"></div>
             </div>
         </div>
@@ -576,49 +836,248 @@
     </div>
 
     <script>
-        // API URL - Same for everyone (students and admin)
-        let API_URL = 'https://script.google.com/macros/s/AKfycbw6c00BA-N3Lf3lWFg3Jm-uVJKrOKKmoRTI9vBUxk2xRdFBrNR_ztB9EoA_Uq2Kg-Ms/exec';
+        const RAILWAY_URL = 'https://agazati.up.railway.app';
+        let authToken = localStorage.getItem('admin_token') || '';
 
-        // Admin jelszó hardcodeolva (GAS Config sheet D2 oszlopával egyeznie kell)
-        const ADMIN_PASSWORD = atob('S2FuZG8xMjM0');
+        // Autentikált fetch – 401 esetén automatikusan visszaviszi a bejelentkezőre
+        async function authFetch(url, options = {}) {
+            const res = await fetch(url, {
+                ...options,
+                headers: { ...(options.headers || {}), 'Authorization': `Bearer ${authToken}` }
+            });
+            if (res.status === 401) {
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_authenticated');
+                authToken = '';
+                showError('A munkamenet lejárt – kérlek jelentkezz be újra.');
+                setTimeout(() => location.reload(), 2000);
+                throw new Error('Munkamenet lejárt');
+            }
+            return res;
+        }
 
-        // Logout function
+        // Login handling
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('login-error');
+
+            if (!username || !password) {
+                errorDiv.textContent = 'Kérlek töltsd ki mindkét mezőt!';
+                errorDiv.style.display = 'block';
+                return false;
+            }
+
+            // Show loading
+            errorDiv.style.display = 'none';
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Ellenőrzés...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${RAILWAY_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    localStorage.setItem('admin_token', authToken);
+                    localStorage.setItem('admin_authenticated', 'true');
+                    localStorage.setItem('admin_username', username);
+
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('admin-content').style.display = 'block';
+                    switchTab('vezerlot');
+                    loadConfig();
+                    loadSubmissions();
+                    loadUsers();
+                    loadTaskSets();
+                } else {
+                    errorDiv.textContent = 'Hibás felhasználónév vagy jelszó!';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Hiba a bejelentkezés során: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.textContent = 'Bejelentkezés';
+                submitBtn.disabled = false;
+            }
+
+            return false;
+        }
+
+        function checkAuth() {
+            const isAuthenticated = localStorage.getItem('admin_authenticated') === 'true';
+            authToken = localStorage.getItem('admin_token') || '';
+
+            if (isAuthenticated && authToken) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
+                switchTab(savedTab);
+                loadConfig();
+                loadSubmissions();
+                loadUsers();
+                loadTaskSets();
+            }
+        }
+
+        // ── Felhasználókezelés ─────────────────────────────────────────────
+        let resetPwTargetEmail = '';
+
+        async function loadUsers() {
+            document.getElementById('users-loading').style.display = 'block';
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/users`);
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
+                }
+                const users = await res.json();
+                const tbody = document.getElementById('users-tbody');
+                if (!Array.isArray(users) || !users.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="loading">Nincs regisztrált felhasználó</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = users.map(u => {
+                    const osztalyTeljes = [u.evfolyam, u.osztaly].filter(Boolean).join('') || '-';
+                    const isOktato = u.szerep === 'oktato';
+                    return `
+                    <tr>
+                        <td style="font-weight:600;">${u.nev || ''}</td>
+                        <td style="font-size:0.85rem;">${u.email}</td>
+                        <td><span style="color:${isOktato ? '#536dfe' : '#2ed573'};font-weight:700;">${isOktato ? 'Oktató' : 'Tanuló'}</span></td>
+                        <td style="text-align:center;">${osztalyTeljes}</td>
+                        <td style="text-align:center;">${u.csoport || '-'}</td>
+                        <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:nowrap;">
+                                <button onclick="openResetPassword('${u.email}')" style="padding:4px 8px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-key"></i> Jelszó</button>
+                                <button onclick="deleteUser('${u.email}')" style="padding:4px 8px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-trash"></i> Törlés</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
+            } finally {
+                document.getElementById('users-loading').style.display = 'none';
+            }
+        }
+
+        function openResetPassword(email) {
+            resetPwTargetEmail = email;
+            document.getElementById('reset-pw-email-display').textContent = 'Email: ' + email;
+            document.getElementById('reset-pw-new').value = '';
+            document.getElementById('reset-pw-error').style.display = 'none';
+            document.getElementById('reset-pw-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('reset-pw-new').focus(), 100);
+        }
+
+        async function confirmResetPassword() {
+            const newPw = document.getElementById('reset-pw-new').value;
+            const errEl = document.getElementById('reset-pw-error');
+            if (newPw.length < 6) { errEl.textContent = 'Minimum 6 karakter!'; errEl.style.display = 'block'; return; }
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/users/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ email: resetPwTargetEmail, newPassword: newPw })
+                });
+                if (res.ok) {
+                    document.getElementById('reset-pw-modal').style.display = 'none';
+                    alert('Jelszó sikeresen visszaállítva!');
+                } else {
+                    const d = await res.json();
+                    errEl.textContent = d.error || 'Hiba történt'; errEl.style.display = 'block';
+                }
+            } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+        }
+
+        async function deleteUser(email) {
+            if (!confirm(`Biztosan törlöd ezt a felhasználót?\n${email}`)) return;
+            const res = await fetch(`${RAILWAY_URL}/api/users/${encodeURIComponent(email)}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + authToken }
+            });
+            if (res.ok) { alert('Felhasználó törölve.'); loadUsers(); }
+            else alert('Hiba a törlés során.');
+        }
+
         function logout() {
+            localStorage.clear();
+            authToken = '';
             location.reload();
         }
 
-        // Auto bejelentkezés oldalletöltéskor
+        function switchTab(name, btn) {
+            document.querySelectorAll('[data-tab]').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`[data-tab="${name}"]`).forEach(el => el.style.display = 'block');
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                const activeBtn = document.querySelector(`.tab-btn[onclick*="'${name}'"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
+            localStorage.setItem('admin_tab', name);
+            if (name === 'haladas' && haladásData.length === 0) loadProgress();
+            if (name === 'rangsor' && leaderboardData.length === 0) loadLeaderboard();
+        }
+
+        // Check auth on page load
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('admin-content').style.display = 'block';
-            if (document.getElementById('api-url')) document.getElementById('api-url').value = API_URL;
-            loadConfig();
-            loadSubmissions();
+            checkAuth();
         });
 
 
-        // Load config
         async function loadConfig() {
-            if (!API_URL) {
-                showError('Kérlek add meg először az API URL-t!');
-                return;
-            }
-
             document.getElementById('config-loading').style.display = 'block';
             document.getElementById('config-content').style.display = 'none';
             document.getElementById('config-error').style.display = 'none';
 
             try {
-                const response = await fetch(`${API_URL}?action=getConfig&admin_password=${encodeURIComponent(ADMIN_PASSWORD)}`);
+                const response = await fetch(`${RAILWAY_URL}/api/config`);
                 const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
 
                 const mode = data.test_mode || 'practice';
                 const badge = document.getElementById('current-mode-badge');
-                badge.textContent = mode === 'practice' ? 'Gyakorló' : 'Éles';
+                const modeLabel = mode === 'practice' ? 'Gyakorló' : mode === 'vizsga' ? 'Vizsga' : 'Éles';
+                badge.textContent = modeLabel;
                 badge.className = `mode-badge mode-${mode}`;
+
+                // Vizsga kezdés megjelenítése
+                const vkInput = document.getElementById('vizsga-kezdes-input');
+                const vkJelenlegi = document.getElementById('vizsga-kezdes-jelenlegi');
+                const pad = n => String(n).padStart(2,'0');
+                const vvegeInput = document.getElementById('vizsga-vege-input');
+                if (data.vizsga_kezdes) {
+                    try {
+                        const d = new Date(data.vizsga_kezdes);
+                        vkInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    } catch {}
+                }
+                if (data.vizsga_vege) {
+                    try {
+                        const d = new Date(data.vizsga_vege);
+                        vvegeInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    } catch {}
+                }
+                if (data.vizsga_kezdes && data.vizsga_vege) {
+                    const dk = new Date(data.vizsga_kezdes);
+                    const dv = new Date(data.vizsga_vege);
+                    vkJelenlegi.textContent = `Kezdés: ${dk.toLocaleString('hu-HU')} → Vége: ${dv.toLocaleString('hu-HU')}`;
+                } else if (data.vizsga_kezdes) {
+                    vkJelenlegi.textContent = 'Kezdés beállítva, vége még hiányzik!';
+                } else {
+                    vkJelenlegi.textContent = 'Még nincs vizsga időpont beállítva.';
+                }
 
                 document.getElementById('config-loading').style.display = 'none';
                 document.getElementById('config-content').style.display = 'block';
@@ -628,55 +1087,76 @@
             }
         }
 
-        // Set mode
         async function setMode(mode) {
-            if (!API_URL) {
-                showError('Kérlek add meg először az API URL-t!');
-                return;
-            }
-
-            if (!confirm(`Biztosan átállítod ${mode === 'practice' ? 'gyakorló' : 'éles'} módra?`)) {
-                return;
-            }
+            const modeNames = { practice: 'Gyakorló', live: 'Éles', vizsga: 'Vizsga' };
+            if (!confirm(`Biztosan átállítod ${modeNames[mode] || mode} módra?`)) return;
 
             try {
-                // Use GET with admin password
-                const response = await fetch(`${API_URL}?action=setConfig&test_mode=${mode}&admin_password=${encodeURIComponent(ADMIN_PASSWORD)}`);
-                const data = await response.json();
+                const response = await authFetch(`${RAILWAY_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testMode: mode })
+                });
 
-                if (data.success) {
-                    showSuccess(`Mód sikeresen átállítva: ${mode === 'practice' ? 'Gyakorló' : 'Éles'}`);
+                if (response.ok) {
+                    showSuccess(`Mód sikeresen átállítva: ${modeNames[mode] || mode}`);
                     loadConfig();
                 } else {
-                    throw new Error(data.error || 'Ismeretlen hiba');
+                    const txt = await response.text().catch(() => '');
+                    throw new Error(`HTTP ${response.status}${txt ? ': ' + txt.substring(0,80) : ''}`);
                 }
             } catch (error) {
                 showError('Hiba a mód átállításakor: ' + error.message);
             }
         }
 
-        // Load submissions
+        async function setVizsgaMod() {
+            const kezdesInput = document.getElementById('vizsga-kezdes-input');
+            const vegeInput   = document.getElementById('vizsga-vege-input');
+            if (!kezdesInput.value || !vegeInput.value) {
+                showError('Add meg a vizsga kezdési ÉS befejezési időpontját!');
+                return;
+            }
+            const kezdes = new Date(kezdesInput.value);
+            const vege   = new Date(vegeInput.value);
+            if (vege <= kezdes) {
+                showError('A befejezési idő nem lehet korábbi a kezdési időpontnál!');
+                return;
+            }
+            if (!confirm(`Vizsga mód bekapcsolása?\n\nKezdés: ${kezdes.toLocaleString('hu-HU')}\nHatáridő: ${vege.toLocaleString('hu-HU')}\n\nA tanulók visszaszámlálót látnak, a határidőnél auto-beadás történik.`)) return;
+
+            try {
+                const response = await authFetch(`${RAILWAY_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testMode: 'vizsga', vizsgaKezdes: kezdes.toISOString(), vizsgaVege: vege.toISOString() })
+                });
+                if (response.ok) {
+                    showSuccess(`Vizsga mód bekapcsolva! Kezdés: ${kezdes.toLocaleString('hu-HU')} → Határidő: ${vege.toLocaleString('hu-HU')}`);
+                    loadConfig();
+                } else {
+                    const txt = await response.text().catch(() => '');
+                    throw new Error(`HTTP ${response.status}${txt ? ': ' + txt.substring(0,80) : ''}`);
+                }
+            } catch (error) {
+                showError('Hiba a vizsga mód beállításakor: ' + error.message);
+            }
+        }
+
         let submissionsCache = [];
         let submissionsPage = 0;
         const submissionsPageSize = 16;
 
         async function loadSubmissions() {
-            if (!API_URL) return;
-
             document.getElementById('submissions-loading').style.display = 'block';
 
             try {
-                const response = await fetch(`${API_URL}?action=getSubmissions&admin_password=${encodeURIComponent(ADMIN_PASSWORD)}`);
+                const response = await authFetch(`${RAILWAY_URL}/api/submissions`);
                 const data = await response.json();
 
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                submissionsCache = data.submissions || [];
+                submissionsCache = Array.isArray(data) ? data : [];
                 submissionsPage = 0;
                 renderSubmissionsPage();
-
                 document.getElementById('submissions-loading').style.display = 'none';
             } catch (error) {
                 document.getElementById('submissions-loading').style.display = 'none';
@@ -694,11 +1174,10 @@
                 return;
             }
 
-            // Calculate stats
             const total = submissionsCache.length;
             const today = new Date().toISOString().split('T')[0];
-            const todayCount = submissionsCache.filter(s => s.timestamp.startsWith(today)).length;
-            const avgTime = Math.round(submissionsCache.reduce((sum, s) => sum + (s.test_duration || 0), 0) / total / 60);
+            const todayCount = submissionsCache.filter(s => s.submittedAt && s.submittedAt.startsWith(today)).length;
+            const avgTime = Math.round(submissionsCache.reduce((sum, s) => sum + (s.duration || 0), 0) / total / 60);
 
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-today').textContent = todayCount;
@@ -710,23 +1189,20 @@
 
             pageItems.forEach(sub => {
                 const row = document.createElement('tr');
-                const date = new Date(sub.timestamp);
-                const duration = Math.round(sub.test_duration / 60);
+                const duration = Math.round((sub.duration || 0) / 60);
 
                 row.innerHTML = `
-                    <td>${sub.submission_id}</td>
-                    <td>${date.toLocaleString('hu-HU')}</td>
-                    <td>${sub.student_name}</td>
-                    <td>${sub.student_email}</td>
-                    <td>${sub.student_class || ''}</td>
+                    <td>${sub.id}</td>
+                    <td>${formatDate(sub.submittedAt)}</td>
+                    <td>${sub.name}</td>
+                    <td>${sub.email}</td>
+                    <td>${sub.osztaly || ''}</td>
                     <td>${duration} perc</td>
-                    <td>${sub.selected_tasks}</td>
-                    <td>${sub.status || ''}</td>
+                    <td>${sub.taskIds || ''}</td>
+                    <td>${sub.totalScore}/${sub.maxTotal} pont</td>
                 `;
                 row.style.cursor = 'pointer';
-                row.addEventListener('click', () => {
-                    loadSubmissionDetails(sub.submission_id);
-                });
+                row.addEventListener('click', () => { loadSubmissionDetails(sub.id); });
                 tbody.appendChild(row);
             });
 
@@ -737,107 +1213,189 @@
 
         function nextSubmissionsPage() {
             const totalPages = Math.ceil(submissionsCache.length / submissionsPageSize);
-            if (submissionsPage + 1 >= totalPages) {
-                return;
-            }
-            submissionsPage += 1;
-            renderSubmissionsPage();
+            if (submissionsPage + 1 < totalPages) { submissionsPage++; renderSubmissionsPage(); }
         }
 
         function prevSubmissionsPage() {
-            if (submissionsPage === 0) {
-                return;
-            }
-            submissionsPage -= 1;
-            renderSubmissionsPage();
+            if (submissionsPage > 0) { submissionsPage--; renderSubmissionsPage(); }
         }
 
-        // AI Grading - BACKEND VERSION (Google Apps Script handles Gemini)
+        // Jegy számítás (magyar 1-5 skála)
+        function calcGrade(score, max) {
+            if (!max) return '-';
+            const pct = score / max * 100;
+            if (pct >= 80) return 5;
+            if (pct >= 60) return 4;
+            if (pct >= 40) return 3;
+            if (pct >= 20) return 2;
+            return 1;
+        }
+
+        function gradeColor(g) {
+            if (g === 5) return '#2ed573';
+            if (g === 4) return '#7bed9f';
+            if (g === 3) return '#ffc107';
+            if (g === 2) return '#ff7675';
+            return '#e94560';
+        }
+
+        // Override tároló: { submissionId: true/false }
+        const cheatOverrides = {};
+
+        function renderGradingTable() {
+            const taskNum = parseInt(document.getElementById('grading-task-select').value);
+            const wrapper = document.getElementById('grading-table-wrapper');
+            const tbody = document.getElementById('grading-tbody');
+            const countEl = document.getElementById('grading-count');
+
+            if (!taskNum) { wrapper.style.display = 'none'; countEl.textContent = ''; return; }
+
+            const maxPts = taskNum <= 12 ? 8 : 14;
+            const matching = (submissionsCache || []).filter(s => {
+                const ids = (s.taskIds || '').split(',').map(Number);
+                return ids.includes(taskNum);
+            });
+
+            countEl.textContent = `${matching.length} beadás`;
+            if (!matching.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;padding:16px;">Nincs beadás erre a feladatra.</td></tr>';
+                wrapper.style.display = 'block';
+                return;
+            }
+
+            tbody.innerHTML = matching.slice().reverse().map(s => {
+                const ids = (s.taskIds || '').split(',').map(Number);
+                const scores = (s.scores || '').split(',').map(Number);
+                const idx = ids.indexOf(taskNum);
+                const score = idx >= 0 ? (scores[idx] || 0) : 0;
+                const baseGrade = calcGrade(score, maxPts);
+                const hasCheat = (s.cheatWarnings >= 3 || s.cheatPenalty);
+                const override = cheatOverrides[s.id];
+                const deduct = override !== undefined ? override : hasCheat;
+                const finalGrade = typeof baseGrade === 'number' ? Math.max(1, baseGrade - (deduct ? 1 : 0)) : '-';
+                const date = formatDate(s.submittedAt);
+                const cheatBadge = (s.cheatWarnings > 0 || s.cheatPenalty)
+                    ? `<span style="color:${s.cheatWarnings >= 3 || s.cheatPenalty ? '#e94560' : '#ffc107'};font-size:0.82rem;"><i class="fas fa-triangle-exclamation"></i> ${s.cheatWarnings || 0}/3</span>`
+                    : '<span style="color:#555;font-size:0.82rem;"><i class="fas fa-minus"></i></span>';
+
+                let snap = null;
+                try { snap = JSON.parse(s.codeSnapshot || ''); } catch(e) {}
+                const taskCode = snap && Array.isArray(snap.tasks) ? (snap.tasks.find(t => t.task === taskNum)?.code || '') : '';
+
+                return `<tr>
+                    <td style="font-weight:600">${escapeHtml(s.name || '')}</td>
+                    <td>${escapeHtml(s.osztaly || '-')}</td>
+                    <td style="font-size:0.82rem;color:#888">${date}</td>
+                    <td style="text-align:center"><strong>${score}/${maxPts}</strong></td>
+                    <td style="text-align:center">
+                        <span style="font-size:1.1rem;font-weight:700;color:${gradeColor(finalGrade)}">${finalGrade}</span>
+                        ${deduct ? '<span style="font-size:0.75rem;color:#e94560;margin-left:4px">(-1)</span>' : ''}
+                    </td>
+                    <td style="text-align:center">${cheatBadge}</td>
+                    <td style="text-align:center">
+                        <button onclick="toggleCheatDeduct(${s.id}, ${!deduct})" style="padding:3px 10px;border-radius:6px;border:1px solid ${deduct?'#e94560':'#555'};background:transparent;color:${deduct?'#e94560':'#aaa'};cursor:pointer;font-size:0.8rem;">
+                            ${deduct ? '<i class="fas fa-xmark"></i> Levon' : '<i class="fas fa-plus"></i> Levon'}
+                        </button>
+                    </td>
+                    <td style="text-align:center">
+                        ${taskCode ? `<button onclick="openCodeViewer(${JSON.stringify(escapeHtml(s.name||''))}, ${JSON.stringify(escapeHtml(taskCode))})" style="padding:3px 10px;border-radius:6px;border:1px solid #536dfe;background:transparent;color:#536dfe;cursor:pointer;font-size:0.8rem;"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#555;font-size:0.8rem;"><i class="fas fa-minus"></i></span>'}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            wrapper.style.display = 'block';
+        }
+
+        function toggleCheatDeduct(id, val) {
+            cheatOverrides[id] = val;
+            renderGradingTable();
+        }
+
+        function openCodeViewer(name, code) {
+            const content = document.getElementById('submission-details-content');
+            content.innerHTML = `<div style="font-weight:700;margin-bottom:8px">${name}</div>
+                <textarea readonly style="width:100%;min-height:340px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;">${code}</textarea>`;
+            openSubmissionModal();
+        }
+
         async function gradeAllSubmissions() {
-            if (!API_URL) {
-                showAIStatus('error', 'Kérlek add meg először az API URL-t!');
-                return;
-            }
-
-            if (!confirm('Biztosan elindítod az automatikus javítást? Ez időbe telhet.')) {
-                return;
-            }
-
-            // Show progress
-            document.getElementById('grading-progress').style.display = 'block';
-            document.getElementById('grading-progress-bar').style.width = '10%';
-            document.getElementById('grading-progress-text').textContent = 'Javítás folyamatban...';
-            showAIStatus('info', '🤖 AI javítás folyamatban... Kérlek várj!');
-
-            try {
-                document.getElementById('grading-progress-bar').style.width = '30%';
-
-                const response = await fetch(`${API_URL}?action=gradeWithAI&admin_password=${encodeURIComponent(ADMIN_PASSWORD)}`);
-                const text = await response.text();
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (parseError) {
-                    throw new Error('Nem sikerült értelmezni a választ: ' + parseError.message);
-                }
-
-                if (!response.ok || data.error) {
-                    throw new Error(data.error || `HTTP hiba: ${response.status}`);
-                }
-
-                document.getElementById('grading-progress-bar').style.width = '100%';
-
-                const gradedCount = data.graded_count || 0;
-                const errors = Array.isArray(data.errors) ? data.errors : [];
-                const message = `✅ Sikeres! ${gradedCount} feladat kijavítva.${errors.length > 0 ? ` (${errors.length} hiba)` : ''}`;
-                showAIStatus('success', message);
-                document.getElementById('grading-progress-text').textContent = message;
-
-                setTimeout(() => {
-                    document.getElementById('grading-progress').style.display = 'none';
-                }, 3000);
-
-                loadSubmissions();
-
-            } catch (error) {
-                document.getElementById('grading-progress').style.display = 'none';
-                showAIStatus('error', 'Hiba az AI javítás során: ' + error.message);
-            }
+            showAIStatus('info', 'Az AI javítás a részletes nézetből érhető el (kattints egy beadásra).');
         }
 
         async function loadSubmissionDetails(submissionId) {
-            if (!API_URL) return;
-
             try {
-                const response = await fetch(`${API_URL}?action=getSubmission&id=${encodeURIComponent(submissionId)}`);
+                const response = await fetch(`${RAILWAY_URL}/api/submissions/${submissionId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
                 const data = await response.json();
 
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
                 const content = document.getElementById('submission-details-content');
-                const tasksHtml = (data.tasks || []).map((t, idx) => {
-                    const taskNum = t.task_number !== undefined && t.task_number !== '' ? t.task_number : '-';
-                    const timeSpent = t.time_spent !== undefined && t.time_spent !== '' ? t.time_spent : 0;
-                    const answer = t.answer ? String(t.answer) : '';
+                const duration = Math.round((data.duration || 0) / 60);
+                const taskIds = (data.taskIds || '').split(',');
+                const scores = (data.scores || '').split(',');
+                const maxScores = (data.maxScores || '').split(',');
 
-                    return `
-                        <div style="margin-top: 12px;">
-                            <div><strong>${idx + 1}. feladat:</strong> ${taskNum} (${timeSpent} mp)</div>
-                            <div style="margin-top: 6px;">
-                                <textarea readonly style="width: 100%; min-height: 120px; font-family: monospace; white-space: pre; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">${answer}</textarea>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                const duration = Math.round((data.test_duration || 0) / 60);
+                const scoreHtml = taskIds.map((tid, i) =>
+                    `<div><strong>${i+1}. feladat (${tid.trim()}):</strong> ${scores[i] || 0} / ${maxScores[i] || 0} pont</div>`
+                ).join('');
 
                 content.innerHTML = `
-                    <div><strong>Név:</strong> ${data.student_name || ''}</div>
+                    <div><strong>Név:</strong> ${data.name || ''}</div>
+                    <div><strong>Email:</strong> ${data.email || ''}</div>
+                    <div><strong>Osztály:</strong> ${data.osztaly || ''}</div>
                     <div><strong>Időtartam:</strong> ${duration} perc</div>
-                    ${tasksHtml}
+                    <div><strong>Mód:</strong> ${data.mode === 'live' ? 'Éles' : 'Gyakorló'}</div>
+                    ${(() => {
+                        let snap = null;
+                        try { snap = JSON.parse(data.codeSnapshot || ''); } catch(e) {}
+                        const jumps = snap && typeof snap.suspiciousJumps === 'number' ? snap.suspiciousJumps : null;
+                        const warnings = data.cheatWarnings || 0;
+                        if (jumps === null && warnings === 0) return '';
+                        const flagColor = (jumps >= 2 || warnings >= 3) ? '#e94560' : '#ffc107';
+                        return `<div style="margin-top:8px;padding:6px 10px;border-radius:6px;border:1px solid ${flagColor};background:rgba(233,69,96,0.08);color:${flagColor};font-size:0.88rem;">
+                            <i class="fas fa-triangle-exclamation"></i> Figyelmeztetések: <strong>${warnings}/3</strong> &nbsp;|&nbsp; Gyanús kódugrás: <strong>${jumps ?? 0}</strong>
+                            ${(jumps >= 2 || warnings >= 3) ? ' &nbsp;<strong style="color:#e94560;"><i class="fas fa-ban"></i> GYANÚS BEADÁS</strong>' : ''}
+                        </div>`;
+                    })()}
+                    <div style="margin-top:10px"><strong>Pontok:</strong></div>
+                    ${scoreHtml}
+                    ${(() => {
+                        let snap = null;
+                        try { snap = JSON.parse(data.codeSnapshot || ''); } catch(e) {}
+                        const logs = snap && Array.isArray(snap.eventLog) ? snap.eventLog : null;
+                        if (!logs || logs.length === 0) return '';
+                        const cheatEvents = ['Cheat warning', 'Tab hidden', 'Window lost focus', 'Fullscreen exited', 'Paste blocked', 'Suspicious code jump', 'DevTools detected', 'Cheating detected'];
+                        const rows = logs.map(e => {
+                            const isCheat = cheatEvents.some(c => e.event && e.event.startsWith(c));
+                            const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('hu-HU') : '';
+                            const extra = Object.entries(e).filter(([k]) => !['timestamp','event'].includes(k)).map(([k,v]) => `${k}: ${v}`).join(' | ');
+                            return `<tr style="${isCheat ? 'background:rgba(233,69,96,0.12);color:#e94560;' : ''}">
+                                <td style="padding:3px 8px;font-size:0.8rem;white-space:nowrap">${time}</td>
+                                <td style="padding:3px 8px;font-size:0.8rem">${isCheat ? '<i class="fas fa-triangle-exclamation"></i> ' : ''}${escapeHtml(e.event || '')}</td>
+                                <td style="padding:3px 8px;font-size:0.8rem;color:#aaa">${escapeHtml(extra)}</td>
+                            </tr>`;
+                        }).join('');
+                        return `<div style="margin-top:12px"><strong>Eseménynapló:</strong></div>
+                        <div style="max-height:220px;overflow-y:auto;margin-top:6px;border:1px solid #333;border-radius:6px;">
+                            <table style="width:100%;border-collapse:collapse;">
+                                <thead><tr style="background:#1a1a2e;position:sticky;top:0">
+                                    <th style="padding:4px 8px;font-size:0.8rem;text-align:left;color:#aaa">Idő</th>
+                                    <th style="padding:4px 8px;font-size:0.8rem;text-align:left;color:#aaa">Esemény</th>
+                                    <th style="padding:4px 8px;font-size:0.8rem;text-align:left;color:#aaa">Részletek</th>
+                                </tr></thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>`;
+                    })()}
+                    <div style="margin-top:12px"><strong>Beadott kód:</strong></div>
+                    ${(() => {
+                        let snap = null;
+                        try { snap = JSON.parse(data.codeSnapshot || ''); } catch(e) {}
+                        const tasks = snap && Array.isArray(snap.tasks) ? snap.tasks : null;
+                        if (!tasks) return `<textarea readonly style="width:100%;min-height:200px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #ddd;white-space:pre;margin-top:6px">${escapeHtml(data.codeSnapshot || '')}</textarea>`;
+                        return tasks.map(t => `<div style="margin-top:8px;font-size:0.85rem;color:#aaa">Feladat ${t.task}:</div>
+                            <textarea readonly style="width:100%;min-height:120px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;margin-top:4px">${escapeHtml(t.code || '')}</textarea>`).join('');
+                    })()}
                 `;
 
                 openSubmissionModal();
@@ -956,14 +1514,17 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             statusDiv.textContent = message;
 
             if (type === 'success') {
-                statusDiv.style.background = '#d4edda';
-                statusDiv.style.color = '#155724';
+                statusDiv.style.background = 'rgba(46,213,115,0.1)';
+                statusDiv.style.border = '1px solid #2ed573';
+                statusDiv.style.color = '#7bed9f';
             } else if (type === 'error') {
-                statusDiv.style.background = '#f8d7da';
-                statusDiv.style.color = '#721c24';
+                statusDiv.style.background = 'rgba(233,69,96,0.1)';
+                statusDiv.style.border = '1px solid #e94560';
+                statusDiv.style.color = '#ff8fa3';
             } else {
-                statusDiv.style.background = '#d1ecf1';
-                statusDiv.style.color = '#0c5460';
+                statusDiv.style.background = 'rgba(83,109,254,0.1)';
+                statusDiv.style.border = '1px solid #536dfe';
+                statusDiv.style.color = '#7dd3fc';
             }
 
             setTimeout(() => {
@@ -992,97 +1553,392 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         // Auto-refresh submissions every 30 seconds
         setInterval(() => {
-            if (API_URL) {
-                loadSubmissions();
-            }
+            if (authToken) loadSubmissions();
         }, 30000);
 
-        // ==================== MEGOLDÁSOK ÉS TIPPEK ====================
+        // ── Feladatsor kezelés ─────────────────────────────────────────────
 
-        async function saveMegoldasToApi() {
-            const taskId = document.getElementById('megoldas-task-select').value;
-            if (!taskId) {
-                showMegoldasMsg('Válassz feladatot!', 'error');
-                return;
-            }
-            const solution = document.getElementById('megoldas-solution').value.trim();
-            const hint1 = document.getElementById('megoldas-hint1').value.trim();
-            const hint2 = document.getElementById('megoldas-hint2').value.trim();
-            const hint3 = document.getElementById('megoldas-hint3').value.trim();
-
-            if (!solution) {
-                showMegoldasMsg('A megoldás mező nem lehet üres!', 'error');
-                return;
-            }
-
-            document.getElementById('megoldas-status').textContent = 'Mentés...';
+        async function loadTaskSets() {
+            document.getElementById('ts-loading').style.display = 'block';
             try {
-                const resp = await fetch(API_URL + '?action=saveMegoldas', {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets`, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error('Hiba');
+                const list = await res.json();
+                renderTaskSets(list);
+            } catch(e) {
+                document.getElementById('ts-tbody').innerHTML =
+                    '<tr><td colspan="8" style="color:#e94560;">Betöltési hiba</td></tr>';
+            } finally {
+                document.getElementById('ts-loading').style.display = 'none';
+            }
+        }
+
+        const TIPUS_LABEL = {
+            gyakorlo: '<i class="fas fa-pencil"></i> Gyakorló',
+            live:     '<i class="fas fa-circle-dot"></i> Számonkérés',
+            vizsga:   '<i class="fas fa-graduation-cap"></i> Vizsga'
+        };
+        const TIPUS_COLOR = {
+            gyakorlo: '#4ade80',
+            live:     '#f97316',
+            vizsga:   '#fbbf24'
+        };
+
+        function renderTaskSets(list) {
+            const tbody = document.getElementById('ts-tbody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">Nincs feltöltött feladatsor</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(ts => {
+                const color = TIPUS_COLOR[ts.tipus] || '#aaa';
+                const label = TIPUS_LABEL[ts.tipus] || ts.tipus;
+                return `
+                <tr>
+                    <td>${ts.id}</td>
+                    <td style="font-weight:600;">${escHtml(ts.nev)}</td>
+                    <td><span style="color:${color};font-size:0.82rem;font-weight:600;">${label}</span></td>
+                    <td style="text-align:center;">${ts.hasPython ? '<i class="fas fa-check" style="color:#4ade80;"></i>' : '<i class="fas fa-minus" style="color:#444;"></i>'}</td>
+                    <td style="text-align:center;">${ts.hasWeb    ? '<i class="fas fa-check" style="color:#4ade80;"></i>' : '<i class="fas fa-minus" style="color:#444;"></i>'}</td>
+                    <td style="font-size:0.82rem;color:#888;">${ts.letrehozva || '–'}</td>
+                    <td>${ts.aktiv
+                        ? `<span style="color:${color};font-weight:700;"><i class="fas fa-circle" style="font-size:0.5rem;vertical-align:middle;margin-bottom:2px;"></i> AKTÍV</span>`
+                        : '<span style="color:#555;font-size:0.82rem;">inaktív</span>'}</td>
+                    <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                        ${!ts.aktiv ? `<button onclick="activateTaskSet(${ts.id})"
+                            style="padding:4px 10px;background:#1a3a1a;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.8rem;">
+                            <i class="fas fa-check"></i> Aktívvá</button>` : ''}
+                        <button onclick="deleteTaskSet(${ts.id}, '${escHtml(ts.nev)}')"
+                            style="padding:4px 10px;background:#3a1a1a;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.8rem;">
+                            <i class="fas fa-trash"></i> Törlés</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function uploadTaskSet() {
+            const nev = document.getElementById('ts-nev').value.trim();
+            const tipusEl = document.querySelector('input[name="ts-tipus"]:checked');
+            const tipus = tipusEl ? tipusEl.value : 'vizsga';
+            const pythonSzoveg = document.getElementById('ts-python').value.trim();
+            const zipFile = document.getElementById('ts-web-zip').files[0];
+
+            if (!nev) { showTsMsg('A feladatsor neve kötelező!', false); return; }
+            if (!pythonSzoveg && !zipFile) {
+                showTsMsg('Adj meg legalább Python szöveget vagy WEB ZIP-et!', false); return;
+            }
+
+            let webZipB64 = null;
+            if (zipFile) {
+                webZipB64 = await fileToBase64(zipFile);
+            }
+
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
                     body: JSON.stringify({
-                        admin_password: ADMIN_PASSWORD,
-                        feladatId: taskId,
-                        solution, hint1, hint2, hint3
+                        Nev: nev,
+                        Tipus: tipus,
+                        PythonSzoveg: pythonSzoveg || null,
+                        WebZipB64: webZipB64
                     })
                 });
-                const data = await resp.json();
-                if (data.ok) {
-                    showMegoldasMsg('✅ Sikeresen mentve!', 'success');
-                } else {
-                    showMegoldasMsg('❌ Hiba: ' + (data.error || 'ismeretlen'), 'error');
-                }
-            } catch (e) {
-                showMegoldasMsg('❌ Hálózati hiba: ' + e.message, 'error');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Hiba');
+                showTsMsg(`<i class="fas fa-check"></i> Feladatsor mentve (ID: ${data.id})`, true);
+                document.getElementById('ts-nev').value = '';
+                document.getElementById('ts-python').value = '';
+                document.getElementById('ts-web-zip').value = '';
+                loadTaskSets();
+            } catch(e) {
+                showTsMsg('Hiba: ' + e.message, false);
             }
-            document.getElementById('megoldas-status').textContent = '';
         }
 
-        async function loadMegoldasFromApi() {
-            const taskId = document.getElementById('megoldas-task-select').value;
-            document.getElementById('megoldas-status').textContent = 'Betöltés...';
+        async function activateTaskSet(id) {
             try {
-                const resp = await fetch(API_URL + '?action=getMegoldasok');
-                const data = await resp.json();
-                if (data.ok && data.data) {
-                    if (taskId && data.data[taskId]) {
-                        const d = data.data[taskId];
-                        document.getElementById('megoldas-solution').value = d.solution || '';
-                        document.getElementById('megoldas-hint1').value = d.hints[0] || '';
-                        document.getElementById('megoldas-hint2').value = d.hints[1] || '';
-                        document.getElementById('megoldas-hint3').value = d.hints[2] || '';
-                        showMegoldasMsg('✅ Betöltve: ' + Object.keys(data.data).length + ' feladathoz van adat', 'success');
-                    } else if (!taskId) {
-                        showMegoldasMsg('ℹ️ ' + Object.keys(data.data).length + ' feladathoz van mentett adat', 'success');
-                    } else {
-                        showMegoldasMsg('ℹ️ Ehhez a feladathoz még nincs mentett adat', 'success');
-                        document.getElementById('megoldas-solution').value = '';
-                        document.getElementById('megoldas-hint1').value = '';
-                        document.getElementById('megoldas-hint2').value = '';
-                        document.getElementById('megoldas-hint3').value = '';
-                    }
-                }
-            } catch (e) {
-                showMegoldasMsg('❌ Hiba: ' + e.message, 'error');
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets/${id}/aktiv`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error();
+                showTsMsg('<i class="fas fa-check"></i> Feladatsor aktívvá téve', true);
+                loadTaskSets();
+            } catch {
+                showTsMsg('Hiba az aktívvá tétel során', false);
             }
-            document.getElementById('megoldas-status').textContent = '';
         }
 
-        // Auto-betöltés feladat váltáskor
-        document.getElementById('megoldas-task-select')?.addEventListener('change', () => {
-            const taskId = document.getElementById('megoldas-task-select').value;
-            if (taskId) loadMegoldasFromApi();
-        });
+        async function deleteTaskSet(id, nev) {
+            if (!confirm(`Biztosan törlöd: "${nev}"?`)) return;
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/tasksets/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error();
+                showTsMsg('<i class="fas fa-check"></i> Törölve', true);
+                loadTaskSets();
+            } catch {
+                showTsMsg('Hiba a törlés során', false);
+            }
+        }
 
-        function showMegoldasMsg(msg, type) {
-            const errEl = document.getElementById('megoldas-error');
-            const sucEl = document.getElementById('megoldas-success');
-            errEl.style.display = 'none';
-            sucEl.style.display = 'none';
-            if (type === 'error') { errEl.textContent = msg; errEl.style.display = 'block'; }
-            else { sucEl.textContent = msg; sucEl.style.display = 'block'; }
-            setTimeout(() => { errEl.style.display = 'none'; sucEl.style.display = 'none'; }, 4000);
+        function showTsMsg(text, ok) {
+            const el = document.getElementById('ts-msg');
+            el.innerHTML = text;
+            el.style.display = 'block';
+            el.style.background = ok ? 'rgba(74,222,128,0.1)' : 'rgba(233,69,96,0.1)';
+            el.style.border = ok ? '1px solid #4ade80' : '1px solid #e94560';
+            el.style.color  = ok ? '#4ade80' : '#ff8fa3';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function formatDate(val) {
+            if (!val) return '–';
+            const d = new Date(val);
+            if (isNaN(d.getTime())) return '–';
+            return d.toLocaleString('hu-HU', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // ── Haladás tab ──────────────────────────────────────────────────────────
+        let haladásData = [];
+
+        // ── Rangsor tab ──────────────────────────────────────────────────────────
+        let leaderboardData = [];
+        const RANGSOR_PYTHON_LEVELS = [
+            { min: 0,  icon: '🎨', name: '"Syntax Error" Művész' },
+            { min: 25, icon: '📋', name: 'Copy-Paste Mester' },
+            { min: 45, icon: '⚔️', name: 'Kód Gladiátor' },
+            { min: 65, icon: '💎', name: 'Kódolók Gyöngye' },
+            { min: 80, icon: '🏫', name: 'Kandó Büszkesége' },
+            { min: 90, icon: '🐍', name: 'Python-Bűvölő Félisten' }
+        ];
+        const RANGSOR_WEB_LEVELS = [
+            { min: 0,  icon: '🔨', name: 'Junior Kódfaragó' },
+            { min: 25, icon: '🖌️', name: 'Webezgető Művész' },
+            { min: 45, icon: '🛡️', name: 'Böngésző-Bűvölő Harcos' },
+            { min: 65, icon: '⚙️', name: 'Webmester' },
+            { min: 80, icon: '🏫', name: 'Kandó Büszkesége' },
+            { min: 90, icon: '🌐', name: 'Webfejlesztő Félisten' }
+        ];
+        function getRangsorLevel(avgPct, targy) {
+            const levels = targy === 'python' ? RANGSOR_PYTHON_LEVELS : RANGSOR_WEB_LEVELS;
+            let lv = levels[0];
+            for (const l of levels) { if (avgPct >= l.min) lv = l; }
+            return lv;
+        }
+        async function loadLeaderboard() {
+            document.getElementById('rangsor-loading').style.display = 'block';
+            document.getElementById('rangsor-error').style.display = 'none';
+            const mod = document.getElementById('rangsor-mod').value;
+            try {
+                let url = `${RAILWAY_URL}/api/leaderboard`;
+                if (mod) url += `?mode=${encodeURIComponent(mod)}`;
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + authToken } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                leaderboardData = await res.json();
+                populateRangsorFilters();
+                renderLeaderboard();
+            } catch(e) {
+                document.getElementById('rangsor-error').textContent = 'Hiba: ' + e.message;
+                document.getElementById('rangsor-error').style.display = 'block';
+            } finally {
+                document.getElementById('rangsor-loading').style.display = 'none';
+            }
+        }
+        function populateRangsorFilters() {
+            const osztSet = new Set(leaderboardData.map(x => x.osztaly).filter(Boolean));
+            const sel = document.getElementById('rangsor-osztaly');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">Minden osztály</option>';
+            [...osztSet].sort().forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o; opt.textContent = o;
+                if (o === cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            filterRangsorOsztaly();
+        }
+        function filterRangsorOsztaly() {
+            const osz = document.getElementById('rangsor-osztaly').value;
+            const csopSel = document.getElementById('rangsor-csoport');
+            const csopSet = new Set(leaderboardData
+                .filter(x => !osz || x.osztaly === osz)
+                .map(x => x.csoport).filter(Boolean));
+            csopSel.innerHTML = '<option value="">Minden csoport</option>';
+            [...csopSet].sort().forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c + '. csoport';
+                csopSel.appendChild(opt);
+            });
+            renderLeaderboard();
+        }
+        function renderLeaderboard() {
+            const targy  = document.getElementById('rangsor-targy').value;
+            const osz    = document.getElementById('rangsor-osztaly').value;
+            const csop   = document.getElementById('rangsor-csoport').value;
+            let data = leaderboardData.filter(x =>
+                (!osz  || x.osztaly === osz) &&
+                (!csop || x.csoport === csop)
+            );
+            // Re-rank after filter
+            if (targy === 'web')    data = [...data].sort((a,b) => b.webPont - a.webPont);
+            else if (targy === 'python') data = [...data].sort((a,b) => b.pythonPont - a.pythonPont);
+            else                    data = [...data].sort((a,b) => b.osszesPont - a.osszesPont);
+            const tbody = document.getElementById('rangsor-tbody');
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" class="loading">Nincs adat</td></tr>'; return; }
+            const rankMedals = ['🥇','🥈','🥉'];
+            tbody.innerHTML = data.map((p, idx) => {
+                const rank = idx + 1;
+                const medal = rank <= 3 ? rankMedals[rank-1] : rank + '.';
+                const w  = p.web    || { sessions:0, avgPercent:0 };
+                const py = p.python || { sessions:0, avgPercent:0 };
+                const wLv  = getRangsorLevel(w.avgPercent  || 0, 'web');
+                const pyLv = getRangsorLevel(py.avgPercent || 0, 'python');
+                const showLv = targy === 'python' ? pyLv : (targy === 'web' ? wLv : (p.osszesPont >= p.webPont && p.osszesPont >= p.pythonPont ? wLv : pyLv));
+                const rowStyle = rank === 1 ? 'background:rgba(255,215,0,0.08);' : rank === 2 ? 'background:rgba(192,192,192,0.06);' : rank === 3 ? 'background:rgba(205,127,50,0.06);' : '';
+                return `<tr style="${rowStyle}">
+                    <td style="text-align:center;font-size:${rank<=3?'1.2rem':'0.9rem'};font-weight:700;">${medal}</td>
+                    <td>
+                        <div style="font-weight:600;color:#e0e0e0;">${escHtml(p.nev || p.email)}</div>
+                        <div style="font-size:0.75rem;color:#888;">${escHtml(p.email)}</div>
+                    </td>
+                    <td style="text-align:center;color:#aaa;">${escHtml(p.osztaly || '–')}</td>
+                    <td style="text-align:center;color:#aaa;">${p.csoport ? p.csoport + '. cs.' : '–'}</td>
+                    <td style="text-align:center;">
+                        ${w.sessions > 0 ? `<span style="color:#64b5f6;font-weight:600;">${Math.round(w.avgPercent || 0)}%</span><br><span style="color:#555;font-size:0.75rem;">${w.sessions} alk.</span>` : '<span style="color:#333;">–</span>'}
+                    </td>
+                    <td style="text-align:center;">
+                        ${py.sessions > 0 ? `<span style="color:#ffd54f;font-weight:600;">${Math.round(py.avgPercent || 0)}%</span><br><span style="color:#555;font-size:0.75rem;">${py.sessions} alk.</span>` : '<span style="color:#333;">–</span>'}
+                    </td>
+                    <td style="text-align:center;font-weight:700;color:#e0e0e0;">${targy === 'web' ? Math.round(p.webPont||0) : targy === 'python' ? Math.round(p.pythonPont||0) : Math.round(p.osszesPont||0)}</td>
+                    <td style="text-align:center;">${showLv.icon} <span style="font-size:0.78rem;color:#aaa;">${escHtml(showLv.name)}</span></td>
+                    <td style="text-align:center;">${p.streak >= 3
+                        ? `<span style="color:#f97316;font-weight:700;"><i class="fas fa-fire"></i> ${p.streak}</span><br><span style="font-size:0.72rem;color:#888;">${p.streak>=30?'Élő Legenda':p.streak>=14?'Kitartó Harcos':p.streak>=7?'Heti Hős':'Ügyes Kezdő'}</span>`
+                        : `<span style="color:#444;">${p.streak > 0 ? p.streak : '–'}</span>`
+                    }</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function loadProgress() {
+            document.getElementById('haladas-loading').style.display = 'block';
+            document.getElementById('haladas-error').style.display = 'none';
+            try {
+                const res = await fetch(`${RAILWAY_URL}/api/progress`, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                haladásData = await res.json();
+                filterProgress();
+            } catch(e) {
+                document.getElementById('haladas-error').textContent = 'Hiba a betöltés során: ' + e.message;
+                document.getElementById('haladas-error').style.display = 'block';
+            } finally {
+                document.getElementById('haladas-loading').style.display = 'none';
+            }
+        }
+
+        function filterProgress() {
+            const q = (document.getElementById('haladas-filter').value || '').toLowerCase();
+            const onlySzorgalmi = document.getElementById('haladas-szorgalmi').value === 'szorgalmi';
+            const filtered = haladásData.filter(p => {
+                const matchQ = !q || (p.nev||'').toLowerCase().includes(q) || (p.osztaly||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q);
+                const isSzorgalmi = isSzorgalmiJelolt(p);
+                return matchQ && (!onlySzorgalmi || isSzorgalmi);
+            });
+            renderProgress(filtered);
+        }
+
+        function isSzorgalmiJelolt(p) {
+            const webOk = p.web && p.web.sessions >= 10 && p.web.avgPercent >= 70;
+            const pyOk  = p.python && p.python.sessions >= 10 && p.python.avgPercent >= 70;
+            return webOk || pyOk;
+        }
+
+        function pctColor(pct) {
+            if (pct === null || pct === undefined || isNaN(pct)) return '#888';
+            if (pct >= 80) return '#4ade80';
+            if (pct >= 60) return '#ffd700';
+            if (pct >= 40) return '#ff9800';
+            return '#e94560';
+        }
+
+        function pctBar(pct) {
+            if (!pct && pct !== 0) return '–';
+            const color = pctColor(pct);
+            return `<div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                <div style="width:48px;height:7px;background:#1a1a2e;border-radius:4px;overflow:hidden;flex-shrink:0;">
+                    <div style="width:${Math.min(pct,100)}%;height:100%;background:${color};border-radius:4px;"></div>
+                </div>
+                <span style="color:${color};font-size:0.82rem;font-weight:600;">${Math.round(pct)}%</span>
+            </div>`;
+        }
+
+        function renderProgress(data) {
+            const tbody = document.getElementById('haladas-tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="loading">Nincs adat</td></tr>';
+                return;
+            }
+            // Rendezés: szorgalmik elöl, utána alkalom szerinti csökkenő
+            data.sort((a,b) => {
+                const as = isSzorgalmiJelolt(a) ? 1 : 0;
+                const bs = isSzorgalmiJelolt(b) ? 1 : 0;
+                if (bs !== as) return bs - as;
+                const aMax = Math.max((a.web?.sessions||0),(a.python?.sessions||0));
+                const bMax = Math.max((b.web?.sessions||0),(b.python?.sessions||0));
+                return bMax - aMax;
+            });
+
+            tbody.innerHTML = data.map(p => {
+                const szorgalmi = isSzorgalmiJelolt(p);
+                const w = p.web || { sessions:0, avgPercent:null, bestPercent:null };
+                const py = p.python || { sessions:0, avgPercent:null, bestPercent:null };
+                return `<tr style="${szorgalmi ? 'background:rgba(255,215,0,0.05);' : ''}">
+                    <td>
+                        <div style="font-weight:600;color:#e0e0e0;">${escHtml(p.nev || p.email)}</div>
+                        <div style="font-size:0.75rem;color:#888;">${escHtml(p.email)}</div>
+                    </td>
+                    <td style="text-align:center;color:#aaa;">${escHtml(p.osztaly || '–')}</td>
+                    <td style="text-align:center;color:${w.sessions>0?'#64b5f6':'#555'};">${w.sessions || 0}</td>
+                    <td>${pctBar(w.avgPercent)}</td>
+                    <td>${pctBar(w.bestPercent)}</td>
+                    <td style="text-align:center;color:${py.sessions>0?'#ffd54f':'#555'};">${py.sessions || 0}</td>
+                    <td>${pctBar(py.avgPercent)}</td>
+                    <td>${pctBar(py.bestPercent)}</td>
+                    <td style="text-align:center;">
+                        ${szorgalmi
+                            ? `<span title="Szorgalmi jelölt"><i class="fas fa-star" style="color:#ffd700;font-size:1.1rem;"></i></span>`
+                            : '<span style="color:#333;">–</span>'}
+                    </td>
+                </tr>`;
+            }).join('');
         }
     </script>
+<div style="position:fixed;bottom:8px;right:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard" style="color:rgba(255,255,255,0.22);"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
 </body>
 </html>
