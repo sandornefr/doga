@@ -88,7 +88,7 @@ const availableTasks = {
         label: "1. Weboldal nyelve magyar, karakterkódolása UTF-8",
         check: (doc) => {
           const meta = doc.querySelector('meta[charset]');
-          const hasUtf8 = meta && meta.getAttribute('charset').toLowerCase() === 'utf-8';
+          const hasUtf8 = meta && meta.getAttribute('charset').trim().toLowerCase() === 'utf-8';
           return doc.documentElement.lang === "hu" && hasUtf8;
         },
       },
@@ -450,7 +450,7 @@ humanoid: {
       label: "1. Weboldal nyelve magyar, karakterkódolása UTF-8",
       check: (doc) => {
         const meta = doc.querySelector('meta[charset]');
-        const hasUtf8 = meta && meta.getAttribute('charset').toLowerCase() === 'utf-8';
+        const hasUtf8 = meta && meta.getAttribute('charset').trim().toLowerCase() === 'utf-8';
         return doc.documentElement.lang === "hu" && hasUtf8;
       },
     },
@@ -1711,6 +1711,8 @@ function updateStudentDisplay() {
       btnLogoutEl.style.borderRadius = '8px';
       btnLogoutEl.style.padding = '4px 12px';
       btnLogoutEl.style.fontWeight = '600';
+      btnLogoutEl.onmouseover = () => { btnLogoutEl.style.background = '#6b7280'; btnLogoutEl.style.color = 'white'; };
+      btnLogoutEl.onmouseout  = () => { btnLogoutEl.style.background = 'transparent'; btnLogoutEl.style.color = '#9ca3af'; };
     } else {
       btnLogoutEl.innerHTML = '<i class="fas fa-right-from-bracket"></i>';
       btnLogoutEl.title = 'Kijelentkezés';
@@ -2445,6 +2447,9 @@ btnStarter.addEventListener("click", async () => {
   const files = await loadTaskFiles(currentTask);
 
   if (files) {
+    lastParsedHtml = null;
+    cachedStudentDoc = null;
+    updateProgressBar(0, currentTask ? currentTask.checks.length : 0);
     htmlEditor.setValue(files.html);
     cssEditor.setValue(files.css);
     statusEl.textContent = 'Kiindulási fájlok betöltve';
