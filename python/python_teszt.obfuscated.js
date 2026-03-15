@@ -227,7 +227,6 @@ async function autoSaveProgress() {
 // Event listener-ek beállítása
 function setupEventListeners() {
     document.getElementById('start-btn').addEventListener('click', startTest);
-    document.getElementById('skip-btn').addEventListener('click', skipTask);
     document.getElementById('submit-btn').addEventListener('click', showSubmitModal);
     document.getElementById('confirm-submit').addEventListener('click', submitTest);
     document.getElementById('cancel-submit').addEventListener('click', hideSubmitModal);
@@ -536,6 +535,16 @@ async function startTest() {
         }
     }
 
+    // Submit gomb felirat mód szerint
+    const submitLabel = document.getElementById('submit-btn-label');
+    if (submitLabel) {
+        if (testMode === 'live' || testMode === 'vizsga') {
+            submitLabel.textContent = 'Számonkérés beadása';
+        } else {
+            submitLabel.textContent = 'Feladat beadása';
+        }
+    }
+
     // Vízjel – tanuló neve + emailje (screenshothoz)
     if (!document.getElementById('test-watermark')) {
         const wm = document.createElement('div');
@@ -693,6 +702,20 @@ builtins.input = input
     } finally {
         globalThis.js_input = savedInput;
     }
+}
+
+function autoCheckStructural() {
+    const task = selectedTasks[currentTaskIndex];
+    if (!task || !task.criteria || task.criteria.length === 0) return;
+    const code = codeEditor ? codeEditor.getValue().trim() : '';
+    if (!code) return;
+    const panel = document.getElementById('scoring-panel');
+    if (panel) panel.classList.remove('hidden');
+    const results = task.criteria.map(criterion => {
+        if (criterion.type === 'teszt') return { criterion, passed: null, pending: true };
+        return { criterion, passed: evaluateCriterion(code, criterion), pending: false };
+    });
+    updateScoringUI(results);
 }
 
 // Pontozás ellenőrzése az aktuális feladatnál
@@ -885,6 +908,9 @@ async function initializeCodeEditor() {
                 taskAnswers[currentTaskIndex].answer = codeEditor.getValue();
             }
         });
+        codeEditor.onDidChangeModelContent(debounce(() => {
+            autoCheckStructural();
+        }, 400));
         debugLog('✅ Monaco editor kész');
     } catch (err) {
         debugLog('⚠️ Monaco nem töltődött be: ' + err.message + ' – textarea visszaváltás');
@@ -980,8 +1006,8 @@ function showTask(index) {
     if (task.criteria && task.criteria.length > 0) {
         scoringBtn.classList.remove('hidden');
         scoringPanel.classList.remove('hidden');
-        // Automatikus pontozás futtatása kis késleltetéssel (editor betöltés után)
-        setTimeout(checkScoring, 300);
+        // Automatikus strukturális pontozás kis késleltetéssel (editor betöltés után)
+        setTimeout(autoCheckStructural, 300);
     } else {
         scoringBtn.classList.add('hidden');
         scoringPanel.classList.add('hidden');
@@ -1462,6 +1488,11 @@ function isIdentChar(ch) {
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function debounce(fn, delay) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
 }
 
 // Custom Python input - terminál alapú
