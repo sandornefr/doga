@@ -177,6 +177,20 @@
         }
         .task-badge.pt8 { color: #2ed573; border: 1px solid #2ed573; }
         .task-badge.pt14 { color: #ffa502; border: 1px solid #ffa502; }
+        .task-type-btn {
+            padding: 0.35rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f1e35;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .task-type-btn:hover:not(:disabled) { border-color: #2ed573; color: #2ed573; }
+        .task-type-btn.active { border-color: #2ed573; color: #2ed573; background: #0a2918; }
+        .task-type-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .task-row-desc { color: #ccc; font-size: 0.9rem; }
         .task-row-time { color: #888; font-size: 0.82rem; margin-left: auto; white-space: nowrap; }
 
@@ -1185,20 +1199,33 @@
                     <span id="test-mode-text"></span>
                 </div>
 
+                <!-- Feladattípus választó (csak gyakorló módban látszik) -->
+                <div id="practice-task-type" style="display:none; margin-bottom:0.8rem;">
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Milyen feladatokat szeretnél gyakorolni?</p>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)">🎲 Vegyes</button>
+                        <button class="task-type-btn" data-type="csak8" onclick="setTaskType('csak8', this)">8 pontos × 3</button>
+                        <button class="task-type-btn" data-type="csak14" onclick="setTaskType('csak14', this)">14 pontos × 3</button>
+                        <button class="task-type-btn" disabled>18 pontos (hamarosan)</button>
+                    </div>
+                </div>
+
                 <!-- Feladat breakdown (mindig látszik) -->
-                <div class="task-breakdown">
-                    <p>Véletlenszerűen kiosztott feladatok:</p>
-                    <div class="task-row">
-                        <span class="task-badge pt8">8 pont × 2</span>
-                        <span class="task-row-desc">Egyszerűbb feladatok</span>
-                        <span class="task-row-time">8–15 perc/feladat</span>
+                <div class="task-breakdown" id="task-breakdown">
+                    <p id="task-breakdown-title">Véletlenszerűen kiosztott feladatok:</p>
+                    <div id="task-breakdown-rows">
+                        <div class="task-row">
+                            <span class="task-badge pt8">8 pont × 2</span>
+                            <span class="task-row-desc">Egyszerűbb feladatok</span>
+                            <span class="task-row-time">8–15 perc/feladat</span>
+                        </div>
+                        <div class="task-row">
+                            <span class="task-badge pt14">14 pont × 1</span>
+                            <span class="task-row-desc">Összetettebb feladat</span>
+                            <span class="task-row-time">~25 perc</span>
+                        </div>
                     </div>
-                    <div class="task-row">
-                        <span class="task-badge pt14">14 pont × 1</span>
-                        <span class="task-row-desc">Összetettebb feladat</span>
-                        <span class="task-row-time">~25 perc</span>
-                    </div>
-                    <div class="task-total">Összesen: <strong style="color:#e0e0e0;">30 pont</strong> &nbsp;|&nbsp; ~45 perc</div>
+                    <div class="task-total" id="task-breakdown-total">Összesen: <strong style="color:#e0e0e0;">30 pont</strong> &nbsp;|&nbsp; ~45 perc</div>
                 </div>
 
                 <!-- Practice time picker (csak gyakorló módban látszik) -->
