@@ -1205,14 +1205,16 @@ iframe {
   flex-wrap: nowrap;
   gap: 2px;
   padding: 4px 0 2px;
+  width: 100%;
+  align-items: center;
 }
 .lamp-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 12px;
+  aspect-ratio: 1;
   border-radius: 50%;
   cursor: default;
-  flex-shrink: 0;
 }
 .lamp-red   { background: #e74c3c; box-shadow: 0 0 3px #e74c3c88; }
 .lamp-green { background: #27ae60; box-shadow: 0 0 3px #27ae6088; }
