@@ -1204,12 +1204,13 @@
                     <div id="end-student-name"></div>
                     <p class="info-text" id="end-message">A válaszaidat elküldtük a tanárnak.</p>
                     <p class="info-text" id="final-time"></p>
-                    <div style="margin-top:1.4rem;display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;">
-                        <a href="index.html" style="display:inline-block;padding:0.6rem 1.4rem;background:#2d3748;color:#e2e8f0;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;border:1px solid #4a5568;"><i class="fas fa-house"></i> Főmenü</a>
-                        <div id="end-teacher-btn" style="display:none;">
-                            <a href="admin.html" style="display:inline-block;padding:0.6rem 1.4rem;background:#536dfe;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;"><i class="fas fa-gear"></i> Admin panel</a>
-                        </div>
+                    <p class="info-text" style="margin-top:1rem;font-size:0.9rem;color:#64748b;">Mit szeretnél ezután?</p>
+                    <div style="margin-top:0.7rem;display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+                        <a href="index.html" style="display:inline-block;padding:0.65rem 1.3rem;background:#1e3a5f;color:#e2e8f0;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;border:1px solid #2d5986;"><i class="fab fa-python"></i> Újra Python</a>
+                        <a href="../web/index.html" style="display:inline-block;padding:0.65rem 1.3rem;background:#1e3a5f;color:#e2e8f0;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;border:1px solid #2d5986;"><i class="fas fa-globe"></i> WEB feladat</a>
+                        <button id="btn-show-results" onclick="document.getElementById('end-results').style.display='block';this.style.display='none';" style="padding:0.65rem 1.3rem;background:#1e3a5f;color:#e2e8f0;border-radius:8px;border:1px solid #2d5986;font-weight:600;font-size:0.9rem;cursor:pointer;"><i class="fas fa-chart-bar"></i> Eredményeim</button>
                     </div>
+                    <div id="end-results" style="display:none;margin-top:1.2rem;text-align:left;background:#0f1b2d;border-radius:10px;padding:1rem 1.2rem;max-height:260px;overflow-y:auto;"></div>
                 </div>
             </div>
         </div>

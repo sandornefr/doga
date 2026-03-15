@@ -1587,13 +1587,26 @@ async function submitTest() {
         endStudentName.textContent = studentData.name;
     }
 
-    // Oktatói visszajutás gomb
+    // Eredmények összesítő az end-results divbe
     try {
-        const saved = sessionStorage.getItem('kandoUser');
-        const u = saved ? JSON.parse(saved) : null;
-        const teacherBtn = document.getElementById('end-teacher-btn');
-        if (teacherBtn && u && u.szerep === 'oktato') {
-            teacherBtn.style.display = 'block';
+        const resultsDiv = document.getElementById('end-results');
+        if (resultsDiv && selectedTasks && taskAnswers) {
+            let html = '';
+            selectedTasks.forEach((task, i) => {
+                const ans = taskAnswers[i] || {};
+                const earned = ans.score || 0;
+                const max = task.points || 0;
+                const pct = max > 0 ? Math.round(earned / max * 100) : 0;
+                const color = pct >= 80 ? '#2ed573' : pct >= 50 ? '#f59e0b' : '#e94560';
+                html += `<div style="margin-bottom:0.7rem;padding-bottom:0.7rem;border-bottom:1px solid #1e3a5f;">`;
+                html += `<div style="font-weight:600;color:#e2e8f0;font-size:0.88rem;">${i+1}. feladat (${max} pont)</div>`;
+                html += `<div style="color:${color};font-size:0.85rem;margin-top:2px;">Megszerzett pontok: <strong>${earned} / ${max}</strong></div>`;
+                html += `</div>`;
+            });
+            const totalEarned = taskAnswers.reduce((s, a) => s + (a.score || 0), 0);
+            const totalMax = selectedTasks.reduce((s, t) => s + (t.points || 0), 0);
+            html += `<div style="font-weight:700;color:#e2e8f0;font-size:0.95rem;">Összesen: ${totalEarned} / ${totalMax} pont</div>`;
+            resultsDiv.innerHTML = html;
         }
     } catch(e) {}
 
