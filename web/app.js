@@ -2534,7 +2534,13 @@ function switchToTab(tab) {
 tabHtml.addEventListener('click', () => switchToTab('html'));
 tabCss.addEventListener('click', () => switchToTab('css'));
 tabCssValidator.addEventListener('click', () => openRefPanel('css-validator'));
-btnW3schools.addEventListener('click', () => openRefPanel('w3s'));
+btnW3schools.addEventListener('click', () => {
+  const cfg = REF_CONFIG['w3s'];
+  const left = Math.round((screen.width - cfg.popupW) / 2);
+  const top  = Math.round((screen.height - cfg.popupH) / 2);
+  window.open(cfg.url, 'ref_popup',
+    `width=${cfg.popupW},height=${cfg.popupH},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+});
 btnHtmlValidator.addEventListener('click', () => openRefPanel('html-validator'));
 
 // Feladatok szekció összecsukása
