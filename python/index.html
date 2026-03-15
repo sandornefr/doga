@@ -353,7 +353,7 @@
 
         /* Bal panel – fix, nem görget */
         .quiz-left {
-            width: 42%;
+            width: 50%;
             overflow: hidden;
             padding: 0;
             border-right: 2px solid #dee2e6;
@@ -1323,7 +1323,14 @@
 
                 <!-- Jobb panel: kódszerkesztő + terminál + gombok -->
                 <div class="quiz-right">
-                    <div class="code-label"><i class="fas fa-code"></i> Írd be a Python kódod:</div>
+                    <div class="code-label" style="display:flex;align-items:center;justify-content:space-between;">
+                        <span><i class="fas fa-code"></i> Írd be a Python kódod:</span>
+                        <span style="display:flex;align-items:center;gap:4px;">
+                            <button onclick="changeFontSize(-1)" title="Kisebb betű" style="width:24px;height:24px;background:#1e3a5f;border:1px solid #334155;border-radius:4px;color:#94a3b8;font-size:14px;line-height:1;cursor:pointer;padding:0;">−</button>
+                            <span id="font-size-display" style="font-size:0.75rem;color:#64748b;min-width:28px;text-align:center;">20px</span>
+                            <button onclick="changeFontSize(1)" title="Nagyobb betű" style="width:24px;height:24px;background:#1e3a5f;border:1px solid #334155;border-radius:4px;color:#94a3b8;font-size:14px;line-height:1;cursor:pointer;padding:0;">+</button>
+                        </span>
+                    </div>
                     <div class="code-editor-wrapper">
                         <div id="code-editor"></div>
                     </div>
