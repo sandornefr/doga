@@ -1144,10 +1144,11 @@ function formatDuration(sec) {
 }
 
 function gradeFromPct(pct) {
-  if (pct >= 88) return 5;
-  if (pct >= 75) return 4;
-  if (pct >= 60) return 3;
-  if (pct >= 40) return 2;
+  // Ponthatárok: 80/60/40/20% (2026. május 1-ig, utána emelés)
+  if (pct >= 80) return 5;
+  if (pct >= 60) return 4;
+  if (pct >= 40) return 3;
+  if (pct >= 20) return 2;
   return 1;
 }
 
