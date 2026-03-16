@@ -494,7 +494,7 @@
             <span class="desc">Python programozási feladatok</span>
             <span class="vizsga-status" id="status-python"></span>
         </a>
-        <a class="option-card web" id="card-web" href="web/index.html" onclick="event.preventDefault(); location.replace('web/index.html')">
+        <a class="option-card web" id="card-web" href="web/index.html" onclick="event.preventDefault(); openWebExam()">
             <span class="icon"><i class="fas fa-globe"></i></span>
             <span class="label">WEB</span>
             <span class="desc">HTML, CSS, Bootstrap feladatok</span>
@@ -591,6 +591,38 @@
   </div>
 </div>
 
+<!-- WEB számonkérés figyelmeztetés modal -->
+<div id="web-exam-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.87); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#16213e; border:2px solid #e94560; border-radius:16px; padding:2rem 2.5rem; max-width:480px; width:90%; text-align:center; box-shadow:0 0 40px rgba(233,69,96,0.35);">
+    <div style="font-size:2.5rem; margin-bottom:0.5rem;"><i class="fas fa-triangle-exclamation" style="color:#e94560;"></i></div>
+    <h2 style="color:#e94560; font-size:1.3rem; margin-bottom:0.6rem;">Számonkérés – WEB feladat</h2>
+    <div style="display:inline-block; background:#3d0a12; border:1.5px solid #e94560; color:#ff6b81; border-radius:20px; padding:3px 14px; font-size:0.78rem; font-weight:700; margin-bottom:1.2rem; letter-spacing:0.3px;">
+      <i class="fas fa-circle-dot"></i> ÉLES MÓD – az eredmény elküldésre kerül
+    </div>
+    <div style="background:#1a0a0a; border:1.5px solid #c0392b; border-radius:10px; padding:1rem 1.1rem; text-align:left; margin-bottom:1rem;">
+      <div style="color:#e94560; font-weight:700; margin-bottom:0.5rem; font-size:0.9rem;"><i class="fas fa-ban"></i> Tiltott tevékenységek:</div>
+      <ul style="color:#ccc; font-size:0.87rem; line-height:1.75; margin-left:1.1rem; margin-bottom:0.6rem;">
+        <li>Másik fülre vagy programra váltás <span style="color:#666;">(Alt+Tab)</span></li>
+        <li>Kilépés a teljes képernyős módból</li>
+        <li>Fejlesztői eszközök megnyitása <span style="color:#666;">(F12)</span></li>
+        <li>Böngésző újratöltése</li>
+      </ul>
+      <div style="color:#ccc; font-size:0.85rem;"><strong style="color:#ffc107;">Következmény:</strong> Az első két alkalommal figyelmeztetést kapsz. A harmadik szabályszegés után a dolgozatod zárolva lesz.</div>
+    </div>
+    <div style="color:#64748b; font-size:0.82rem; margin-bottom:1.3rem;">
+      <i class="fas fa-floppy-disk"></i> A munkád 30 másodpercenként automatikusan mentésre kerül.
+    </div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button onclick="confirmWebExam()" style="flex:1; min-width:200px; padding:0.75rem 1.5rem; background:linear-gradient(135deg,#e94560,#c0392b); border:none; border-radius:10px; color:white; font-size:1rem; font-weight:700; cursor:pointer; letter-spacing:0.3px;">
+        <i class="fas fa-check"></i> Elfogadom – Feladat megnyitása
+      </button>
+      <button onclick="document.getElementById('web-exam-modal').style.display='none'" style="padding:0.75rem 1.2rem; background:transparent; border:1.5px solid #475569; border-radius:10px; color:#94a3b8; font-size:0.9rem; cursor:pointer;">
+        Mégse
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Fiók törlése modal -->
 <div class="delete-modal" id="delete-modal">
     <div class="delete-modal-box">
@@ -658,13 +690,34 @@
     // ── Vizsga mód ellenőrzés ─────────────────────────────────────────────────
     const API = 'https://agazati.up.railway.app';
 
+    let portalExamMode = false;
+
+    function openWebExam() {
+        if (portalExamMode) {
+            document.getElementById('web-exam-modal').style.display = 'flex';
+        } else {
+            location.replace('web/index.html');
+        }
+    }
+
+    function confirmWebExam() {
+        document.getElementById('web-exam-modal').style.display = 'none';
+        location.replace('web/index.html');
+    }
+
     (async function checkVizsgaMode() {
         try {
             const res = await fetch(API + '/api/config');
             const cfg = await res.json();
-            if (cfg.test_mode !== 'vizsga') return;
 
             const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            const isExam = cfg.test_mode === 'live' || cfg.test_mode === 'vizsga';
+            if (isExam && user.szerep !== 'oktato') {
+                portalExamMode = true;
+            }
+
+            if (cfg.test_mode !== 'vizsga') return;
+
             if (user.szerep === 'oktato') return; // oktatónak nem kell visszaszámláló
 
             // Vizsga badge a topbarban (tanulóknak)
