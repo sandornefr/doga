@@ -511,18 +511,6 @@ async function startTest() {
         globalTimeRemaining = 45 * 60;
     }
 
-    // Élő/vizsga módban ellenőrizzük, hogy a Python értelmező betöltődött-e
-    // (itt még fullscreen előtt vagyunk, tehát frissítés biztonságos)
-    if ((testMode === 'live' || testMode === 'vizsga') && !pyodideInstance) {
-        const continueAnyway = confirm(
-            '⚠️ A Python értelmező még nem töltődött be teljesen!\n\n' +
-            'Javasolt: Frissítsd az oldalt (F5), várj 10-15 másodpercet, majd próbáld újra.\n\n' +
-            'Ha most indítod el a tesztet, előfordulhat, hogy a kódot nem lehet futtatni.\n\n' +
-            'Nyomj OK-t ha mégis folytatni szeretnéd, Mégsét ha előbb frissítenél.'
-        );
-        if (!continueAnyway) return;
-    }
-
     fullscreenEnforced = false;
     fullscreenGraceUntil = 0;
 
