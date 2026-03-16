@@ -168,7 +168,7 @@ async function submitToBackend() {
 
         const taskIds = selectedTasks.map(t => t.number).join(',');
         const maxScores = selectedTasks.map(t => t.points || 0);
-        const scores = taskAnswers.map(a => a.score || 0);
+        const scores = taskAnswers.map(a => a.earnedPoints || 0);
         const totalScore = scores.reduce((s, v) => s + v, 0);
         const maxTotal = maxScores.reduce((s, v) => s + v, 0);
         const codeSnapshot = JSON.stringify({
@@ -1616,7 +1616,7 @@ async function submitTest() {
             let html = '';
             selectedTasks.forEach((task, i) => {
                 const ans = taskAnswers[i] || {};
-                const earned = ans.score || 0;
+                const earned = ans.earnedPoints || 0;
                 const max = task.points || 0;
                 const pct = max > 0 ? Math.round(earned / max * 100) : 0;
                 const color = pct >= 80 ? '#2ed573' : pct >= 50 ? '#f59e0b' : '#e94560';
@@ -1625,7 +1625,7 @@ async function submitTest() {
                 html += `<div style="color:${color};font-size:0.85rem;margin-top:2px;">Megszerzett pontok: <strong>${earned} / ${max}</strong></div>`;
                 html += `</div>`;
             });
-            const totalEarned = taskAnswers.reduce((s, a) => s + (a.score || 0), 0);
+            const totalEarned = taskAnswers.reduce((s, a) => s + (a.earnedPoints || 0), 0);
             const totalMax = selectedTasks.reduce((s, t) => s + (t.points || 0), 0);
             html += `<div style="font-weight:700;color:#e2e8f0;font-size:0.95rem;">Összesen: ${totalEarned} / ${totalMax} pont</div>`;
             resultsDiv.innerHTML = html;
