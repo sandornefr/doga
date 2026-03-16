@@ -161,6 +161,26 @@ app.MapGet("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db) =
     return sub != null ? Results.Ok(sub) : Results.NotFound();
 });
 
+// Egy beadás törlése (admin)
+app.MapDelete("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    db.DeleteSubmission(id);
+    return Results.Ok(new { success = true });
+});
+
+// Tömeges törlés szűrő alapján (admin) – ?osztaly=&csoport=&subject=&mode=
+app.MapDelete("/api/submissions", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var osztaly = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport = ctx.Request.Query["csoport"].FirstOrDefault();
+    var subject = ctx.Request.Query["subject"].FirstOrDefault();
+    var mode    = ctx.Request.Query["mode"].FirstOrDefault();
+    var count   = db.DeleteSubmissions(osztaly, csoport, subject, mode);
+    return Results.Ok(new { success = true, deleted = count });
+});
+
 // Statisztikák (admin)
 app.MapGet("/api/stats", (HttpContext ctx, Database db) =>
 {

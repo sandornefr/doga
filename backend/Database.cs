@@ -167,6 +167,28 @@ public class Database
         return ReadSubmissions(cmd, includeCode: true).FirstOrDefault();
     }
 
+    public void DeleteSubmission(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM submissions WHERE id = $id";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    public int DeleteSubmissions(string? osztaly, string? csoport, string? subject, string? mode)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        var where = new List<string>();
+        if (osztaly != null) { where.Add("osztaly = $osztaly"); cmd.Parameters.AddWithValue("$osztaly", osztaly); }
+        if (csoport != null) { where.Add("csoport = $csoport"); cmd.Parameters.AddWithValue("$csoport", csoport); }
+        if (subject != null) { where.Add("subject = $subject"); cmd.Parameters.AddWithValue("$subject", subject); }
+        if (mode    != null) { where.Add("mode = $mode");       cmd.Parameters.AddWithValue("$mode", mode); }
+        cmd.CommandText = $"DELETE FROM submissions {(where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "")}";
+        return cmd.ExecuteNonQuery();
+    }
+
     public Stats GetStats()
     {
         using var conn = Open();

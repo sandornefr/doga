@@ -866,6 +866,7 @@
                 <button class="btn-refresh" onclick="prevSubmissionsPage()"><i class="fas fa-chevron-left"></i> Előző</button>
                 <button class="btn-refresh" onclick="nextSubmissionsPage()">Következő <i class="fas fa-chevron-right"></i></button>
                 <span id="submissions-page-info" style="color:#666;font-size:0.9rem;"></span>
+                <button onclick="deleteFilteredSubmissions()" style="margin-left:auto;padding:6px 14px;background:rgba(239,68,68,0.15);border:1px solid #ef4444;border-radius:8px;color:#f87171;font-size:0.85rem;font-weight:600;cursor:pointer;" title="A szűrt lista összes beadásának törlése"><i class="fas fa-trash"></i> Szűrt törlése</button>
             </div>
             <div id="submissions-loading" class="loading" style="display:none;">Betöltés...</div>
             <div class="table-wrapper">
@@ -880,6 +881,7 @@
                             <th style="min-width:120px;">Feladat</th>
                             <th style="min-width:100px;text-align:center;">Elért pontszám</th>
                             <th style="min-width:90px;text-align:center;">Eltelt idő</th>
+                            <th style="width:44px;"></th>
                         </tr>
                     </thead>
                     <tbody id="submissions-tbody">
@@ -1298,6 +1300,7 @@
                     <td style="font-size:0.82rem;color:#94a3b8;">${sub.taskIds || '–'}</td>
                     <td style="text-align:center;color:${scoreColor};font-weight:700;">${sub.totalScore}/${sub.maxTotal} <span style="color:#64748b;font-weight:400;font-size:0.8rem;">(${pct}%)</span></td>
                     <td style="text-align:center;">${duration} perc</td>
+                    <td style="text-align:center;"><button onclick="deleteSubmission(event,${sub.id})" title="Törlés" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1rem;padding:2px 6px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'"><i class="fas fa-trash-can"></i></button></td>
                 `;
                 row.style.cursor = 'pointer';
                 row.addEventListener('click', () => { loadSubmissionDetails(sub.id); });
@@ -1316,6 +1319,33 @@
 
         function prevSubmissionsPage() {
             if (submissionsPage > 0) { submissionsPage--; renderSubmissionsPage(); }
+        }
+
+        async function deleteSubmission(e, id) {
+            e.stopPropagation();
+            if (!confirm('Biztosan törlöd ezt a beadást?')) return;
+            try {
+                await authFetch(`${RAILWAY_URL}/api/submissions/${id}`, { method: 'DELETE' });
+                submissionsRaw = submissionsRaw.filter(s => s.id !== id);
+                applySubmissionFilters();
+            } catch(err) { alert('Törlési hiba: ' + err.message); }
+        }
+
+        async function deleteFilteredSubmissions() {
+            const count = submissionsFiltered.length;
+            if (count === 0) { alert('Nincs megjeleníthető beadás.'); return; }
+            if (!confirm(`Biztosan törlöd mind a ${count} szűrt beadást? Ez nem visszavonható!`)) return;
+            const ids = submissionsFiltered.map(s => s.id);
+            let deleted = 0;
+            for (const id of ids) {
+                try {
+                    await authFetch(`${RAILWAY_URL}/api/submissions/${id}`, { method: 'DELETE' });
+                    deleted++;
+                } catch {}
+            }
+            submissionsRaw = submissionsRaw.filter(s => !ids.includes(s.id));
+            applySubmissionFilters();
+            alert(`${deleted} beadás törölve.`);
         }
 
         // Jegy számítás (magyar 1-5 skála)
