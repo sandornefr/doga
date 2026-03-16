@@ -881,6 +881,7 @@
                             <th style="min-width:100px;">Feladat</th>
                             <th style="width:120px;text-align:center;">Pontszám</th>
                             <th style="width:80px;text-align:center;">Idő</th>
+                            <th style="width:55px;text-align:center;">Jegy</th>
                             <th style="width:36px;"></th>
                         </tr>
                     </thead>
@@ -1300,6 +1301,7 @@
                     <td style="font-size:0.82rem;color:#94a3b8;">${sub.taskIds || '–'}</td>
                     <td style="text-align:center;color:${scoreColor};font-weight:700;">${sub.totalScore}/${sub.maxTotal} <span style="color:#64748b;font-weight:400;font-size:0.8rem;">(${pct}%)</span></td>
                     <td style="text-align:center;">${duration} perc</td>
+                    <td style="text-align:center;font-size:1.1rem;font-weight:700;color:${gradeColor(calcGrade(sub.totalScore, sub.maxTotal))};">${calcGrade(sub.totalScore, sub.maxTotal)}</td>
                     <td style="text-align:center;"><button onclick="deleteSubmission(event,${sub.id})" title="Törlés" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1rem;padding:2px 6px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'"><i class="fas fa-trash-can"></i></button></td>
                 `;
                 row.style.cursor = 'pointer';
