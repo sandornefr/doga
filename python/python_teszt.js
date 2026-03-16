@@ -1999,12 +1999,14 @@ function updateTestModeBadge() {
 
     const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
 
-    if ((testMode === 'live' || testMode === 'vizsga') && !isTeacher) {
+    if (testMode === 'live' || testMode === 'vizsga') {
         badge.style.display = 'block';
         badge.style.background = 'linear-gradient(135deg, #7a0000, #c0392b)';
         badge.style.color = 'white';
         badge.style.border = '2px solid #e94560';
-        text.textContent = '🔴 SZÁMONKÉRÉS MÓD – Az eredmények elküldésre kerülnek!';
+        text.textContent = isTeacher
+            ? '🔴 SZÁMONKÉRÉS MÓD aktív (oktatói nézet – anti-cheat kikapcsolva)'
+            : '🔴 SZÁMONKÉRÉS MÓD – Az eredmények elküldésre kerülnek!';
     } else {
         badge.style.display = 'none';
     }

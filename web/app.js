@@ -1782,7 +1782,11 @@ function updateStudentDisplay() {
   if (sessionStorage.getItem('kandoUser') && studentData.name) {
     if (kandoUser.szerep === 'oktato') {
       if (switchBtn) switchBtn.style.display = 'inline-block';
-      setModeBadge(false);
+      // Oktató is látja a valódi módot, de anti-cheat nem indul
+      fetch('https://agazati.up.railway.app/api/config')
+        .then(r => r.json())
+        .then(data => { setModeBadge(data.test_mode === 'live' || data.test_mode === 'vizsga'); })
+        .catch(() => { setModeBadge(false); });
     } else {
       fetch('https://agazati.up.railway.app/api/config')
         .then(r => r.json())
