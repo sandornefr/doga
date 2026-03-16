@@ -531,6 +531,24 @@
     <input type="file" id="file-input" accept=".txt,.json" hidden multiple>
 </header>
 
+<!-- Ponthatár értesítő -->
+<div id="grade-threshold-notice" style="display:none;padding:9px 20px;font-size:0.82rem;text-align:center;"></div>
+<script>
+(function() {
+  const el = document.getElementById('grade-threshold-notice');
+  if (!el) return;
+  const now = new Date(), switchDate = new Date('2026-05-01');
+  const daysLeft = Math.ceil((switchDate - now) / 864e5);
+  if (now >= switchDate) {
+    el.style.cssText += ';display:block;background:rgba(251,191,36,0.1);border-bottom:1px solid #d97706;color:#fbbf24;';
+    el.innerHTML = '⚠️ <strong>Ponthatárok (2026. május 1-től):</strong> Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%';
+  } else if (daysLeft <= 30) {
+    el.style.cssText += ';display:block;background:rgba(99,102,241,0.08);border-bottom:1px solid #6366f1;color:#a5b4fc;';
+    el.innerHTML = `🕐 <strong>${daysLeft} nap múlva</strong> a WEB ponthatárok emelkednek → Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%`;
+  }
+})();
+</script>
+
 <!-- Drop zóna -->
 <div id="drop-zone">
     <div class="drop-icon">📄</div>
@@ -1144,7 +1162,14 @@ function formatDuration(sec) {
 }
 
 function gradeFromPct(pct) {
-  // Ponthatárok: 80/60/40/20% (2026. május 1-ig, utána emelés)
+  const after = new Date() >= new Date('2026-05-01');
+  if (after) {
+    if (pct >= 85) return 5;
+    if (pct >= 70) return 4;
+    if (pct >= 55) return 3;
+    if (pct >= 40) return 2;
+    return 1;
+  }
   if (pct >= 80) return 5;
   if (pct >= 60) return 4;
   if (pct >= 40) return 3;

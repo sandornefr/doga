@@ -1154,18 +1154,33 @@ function renderTaskChecks() {
 }
 
 // Progress bar frissítése
+function getWebGradeThresholds() {
+  return new Date() >= new Date('2026-05-01')
+    ? { t5: 85, t4: 70, t3: 55, t2: 40 }   // 2026. május 1-től
+    : { t5: 80, t4: 60, t3: 40, t2: 20 };  // 2026. április 30-ig
+}
+
+function calcWebGrade(pct) {
+  const t = getWebGradeThresholds();
+  if (pct >= t.t5) return 5;
+  if (pct >= t.t4) return 4;
+  if (pct >= t.t3) return 3;
+  if (pct >= t.t2) return 2;
+  return 1;
+}
+
 function updateGradeBadge(score, max) {
   const badge = document.getElementById('grade-badge');
   if (!badge) return;
   if (!max || score === undefined) { badge.style.display = 'none'; return; }
   const pct = score / max * 100;
-  let grade, color, bg, border;
-  // Ponthatárok: 80/60/40/20% (2026. május 1-ig, utána emelés)
-  if      (pct >= 80) { grade = 5; color = '#4ade80'; bg = '#052e16'; border = '#16a34a'; }
-  else if (pct >= 60) { grade = 4; color = '#a3e635'; bg = '#1a2e05'; border = '#65a30d'; }
-  else if (pct >= 40) { grade = 3; color = '#fbbf24'; bg = '#2d1b00'; border = '#d97706'; }
-  else if (pct >= 20) { grade = 2; color = '#fb923c'; bg = '#2d1200'; border = '#ea580c'; }
-  else                { grade = 1; color = '#f87171'; bg = '#2d0a0a'; border = '#dc2626'; }
+  const grade = calcWebGrade(pct);
+  let color, bg, border;
+  if      (grade === 5) { color = '#4ade80'; bg = '#052e16'; border = '#16a34a'; }
+  else if (grade === 4) { color = '#a3e635'; bg = '#1a2e05'; border = '#65a30d'; }
+  else if (grade === 3) { color = '#fbbf24'; bg = '#2d1b00'; border = '#d97706'; }
+  else if (grade === 2) { color = '#fb923c'; bg = '#2d1200'; border = '#ea580c'; }
+  else                  { color = '#f87171'; bg = '#2d0a0a'; border = '#dc2626'; }
   badge.textContent = 'Érdemjegy: ' + grade;
   badge.style.color = color;
   badge.style.background = bg;
@@ -2873,7 +2888,7 @@ function getScoreSummaryText() {
   const s = parseInt(scoreCurrent?.textContent || '0') || 0;
   const m = 40;
   const pct = Math.round(s / m * 100);
-  const g = pct >= 80 ? 5 : pct >= 60 ? 4 : pct >= 40 ? 3 : pct >= 20 ? 2 : 1;
+  const g = calcWebGrade(pct);
   return `Elért pontszám: ${s} / ${m} pont — Érdemjegy: ${g}`;
 }
 
