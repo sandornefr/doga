@@ -790,29 +790,30 @@ public class Database
         using var r = cmd.ExecuteReader();
         while (r.Read())
         {
-            int i = 0;
             var s = new Submission
             {
-                Id          = r.GetInt32(i++),
-                Name        = r.GetString(i++),
-                Email       = r.GetString(i++),
-                Osztaly     = r.IsDBNull(i) ? "" : r.GetString(i++),
-                Csoport     = r.IsDBNull(i) ? null : r.GetString(i++),
-                TaskIds     = r.IsDBNull(i) ? "" : r.GetString(i++),
-                Scores      = r.IsDBNull(i) ? "" : r.GetString(i++),
-                MaxScores   = r.IsDBNull(i) ? "" : r.GetString(i++),
-                TotalScore  = r.IsDBNull(i) ? 0  : r.GetInt32(i++),
-                MaxTotal    = r.IsDBNull(i) ? 0  : r.GetInt32(i++),
-                Duration    = r.IsDBNull(i) ? 0  : r.GetInt32(i++),
-                Mode        = r.IsDBNull(i) ? "" : r.GetString(i++),
+                Id          = r.GetInt32(r.GetOrdinal("id")),
+                Name        = r.GetString(r.GetOrdinal("name")),
+                Email       = r.GetString(r.GetOrdinal("email")),
+                Osztaly     = r.IsDBNull(r.GetOrdinal("osztaly"))    ? "" : r.GetString(r.GetOrdinal("osztaly")),
+                Csoport     = r.IsDBNull(r.GetOrdinal("csoport"))    ? null : r.GetString(r.GetOrdinal("csoport")),
+                TaskIds     = r.IsDBNull(r.GetOrdinal("task_ids"))   ? "" : r.GetString(r.GetOrdinal("task_ids")),
+                Scores      = r.IsDBNull(r.GetOrdinal("scores"))     ? "" : r.GetString(r.GetOrdinal("scores")),
+                MaxScores   = r.IsDBNull(r.GetOrdinal("max_scores")) ? "" : r.GetString(r.GetOrdinal("max_scores")),
+                TotalScore  = r.IsDBNull(r.GetOrdinal("total_score"))? 0  : r.GetInt32(r.GetOrdinal("total_score")),
+                MaxTotal    = r.IsDBNull(r.GetOrdinal("max_total"))  ? 0  : r.GetInt32(r.GetOrdinal("max_total")),
+                Duration    = r.IsDBNull(r.GetOrdinal("duration"))   ? 0  : r.GetInt32(r.GetOrdinal("duration")),
+                Mode        = r.IsDBNull(r.GetOrdinal("mode"))       ? "" : r.GetString(r.GetOrdinal("mode")),
             };
-            s.Subject = r.IsDBNull(i) ? null : r.GetString(i++);
+            var subjectOrd = r.GetOrdinal("subject");
+            s.Subject = r.IsDBNull(subjectOrd) ? null : r.GetString(subjectOrd);
             if (includeCode)
             {
-                s.CodeSnapshot = r.IsDBNull(i) ? null : r.GetString(i++);
+                var codeOrd = r.GetOrdinal("code_snapshot");
+                s.CodeSnapshot = r.IsDBNull(codeOrd) ? null : r.GetString(codeOrd);
             }
-            else i++;
-            s.SubmittedAt = r.IsDBNull(i) ? "" : r.GetString(i);
+            var atOrd = r.GetOrdinal("submitted_at");
+            s.SubmittedAt = r.IsDBNull(atOrd) ? "" : r.GetString(atOrd);
             list.Add(s);
         }
         return list;

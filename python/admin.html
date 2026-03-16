@@ -1845,7 +1845,9 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         function formatDate(val) {
             if (!val) return '–';
-            const d = new Date(val);
+            // SQLite "YYYY-MM-DD HH:MM:SS" formátum UTC-ből → ISO-ra hozzuk a Z-vel
+            const iso = val.includes('T') ? val : val.replace(' ', 'T') + 'Z';
+            const d = new Date(iso);
             if (isNaN(d.getTime())) return '–';
             return d.toLocaleString('hu-HU', {
                 year: 'numeric', month: '2-digit', day: '2-digit',
