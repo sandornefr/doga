@@ -1756,6 +1756,11 @@ function handleFullscreenChange() {
         return;
     }
 
+    if (sessionStorage.getItem('kandTeacherMode') === 'true') {
+        fullscreenPrompt.style.display = 'none';
+        return;
+    }
+
     if (!isFullscreen && testActive) {
         // Azonnal feketére váltás – tartalom nem látható
         fullscreenPrompt.style.display = 'flex';
@@ -1774,6 +1779,7 @@ function handleVisibilityChange() {
     if (testMode !== 'live') {
         return;
     }
+    if (sessionStorage.getItem('kandTeacherMode') === 'true') return;
 
     if (document.hidden && !quizSection.classList.contains('hidden')) {
         logEvent('Tab hidden - potential cheating');
@@ -1787,6 +1793,7 @@ function handleWindowBlur() {
     if (testMode !== 'live') {
         return;
     }
+    if (sessionStorage.getItem('kandTeacherMode') === 'true') return;
 
     if (!quizSection.classList.contains('hidden')) {
         logEvent('Window lost focus');
