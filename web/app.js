@@ -1112,8 +1112,8 @@ async function selectTask(taskId) {
     descFrame.src = task.basePath + task.taskDescFile + '?v=3';
   }
 
-  // Ellenőrizzük, van-e mentett munka
-  const saved = loadFromLocalStorage(taskId);
+  // Éles módban mindig friss kiindulást töltünk (korábbi gyakorló munka nem töltődik be)
+  const saved = (acLive || liveModeDetected) ? null : loadFromLocalStorage(taskId);
 
   if (saved && (saved.html || saved.css)) {
     // Van mentett munka - betöltjük azt
@@ -1282,7 +1282,7 @@ function updatePreview() {
       done: task.check(cachedStudentDoc, html, css),
     }));
     renderTasks(results);
-    statusEl.textContent = `Frissítve: ${new Date().toLocaleTimeString("hu-HU")}`;
+    statusEl.textContent = (acLive || liveModeDetected) ? '✓ Mentve' : `Frissítve: ${new Date().toLocaleTimeString("hu-HU")}`;
   }
 
   saveToLocalStorage();
@@ -1785,7 +1785,20 @@ function updateStudentDisplay() {
       // Oktató is látja a valódi módot, de anti-cheat nem indul
       fetch('https://agazati.up.railway.app/api/config')
         .then(r => r.json())
-        .then(data => { setModeBadge(data.test_mode === 'live' || data.test_mode === 'vizsga'); })
+        .then(data => {
+          const isLive = data.test_mode === 'live' || data.test_mode === 'vizsga';
+          setModeBadge(isLive);
+          if (isLive) {
+            liveModeDetected = true;
+            Object.keys(availableTasks).forEach(id => clearLocalStorage(id));
+            const btnSubmitExam = document.getElementById('btn-submit-exam');
+            if (btnSubmitExam) btnSubmitExam.style.display = 'inline-block';
+            if (btnTimerToggle) btnTimerToggle.style.display = 'none';
+            if (btnTimerReset)  btnTimerReset.style.display  = 'none';
+            if (btnLoadFile)    btnLoadFile.style.display    = 'none';
+            if (btnSaveFile)    btnSaveFile.style.display    = 'none';
+          }
+        })
         .catch(() => { setModeBadge(false); });
     } else {
       fetch('https://agazati.up.railway.app/api/config')
@@ -1796,8 +1809,12 @@ function updateStudentDisplay() {
           if (!isLive && switchBtn) switchBtn.style.display = 'inline-block';
           setModeBadge(isLive);
           if (isLive) {
+            liveModeDetected = true;
+            Object.keys(availableTasks).forEach(id => clearLocalStorage(id));
             btnTimerToggle.style.display = 'none';
-            btnTimerReset.style.display = 'none';
+            btnTimerReset.style.display  = 'none';
+            if (btnLoadFile) btnLoadFile.style.display = 'none';
+            if (btnSaveFile) btnSaveFile.style.display = 'none';
             const btnSubmitExam = document.getElementById('btn-submit-exam');
             if (btnSubmitExam) btnSubmitExam.style.display = 'inline-block';
           }
@@ -2740,6 +2757,7 @@ async function submitWebToBackend() {
 // ANTI-CHEAT RENDSZER
 // ═══════════════════════════════════════════════════════
 let acLive = false;
+let liveModeDetected = false;
 let acWarnings = 0;
 const AC_MAX = 3;
 let acPopupGrace = false;  // W3S/validator popup nyitásakor igaz → blur ignorálva
