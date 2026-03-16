@@ -163,6 +163,12 @@ async function loadTestMode() {
 
 // Backend-re való beküldés
 async function submitToBackend() {
+    // Practice módban nincs szükség backend hívásra – lokálisan mentődik
+    if (testMode === 'practice') {
+        debugLog('🎓 Gyakorló mód – backend hívás kihagyva');
+        return { success: true, submission_id: null };
+    }
+
     try {
         const testDuration = Math.round((testEndTime - testStartTime) / 1000);
 
@@ -191,7 +197,7 @@ async function submitToBackend() {
             totalScore: totalScore,
             maxTotal: maxTotal,
             duration: testDuration,
-            mode: testMode === 'live' ? 'live' : 'practice',
+            mode: 'live',
             codeSnapshot: codeSnapshot,
             cheatPenalty: cheatPenalty,
             cheatWarnings: cheatWarningCount
@@ -199,11 +205,16 @@ async function submitToBackend() {
 
         debugLog('📦 Adat előkészítve');
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
         const response = await fetch(RAILWAY_URL + '/api/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         debugLog('📡 Backend válasz státusz: ' + response.status);
 
@@ -218,7 +229,7 @@ async function submitToBackend() {
         }
     } catch (error) {
         logEvent('Submission error', { error: error.message });
-        debugLog('❌ Backend hiba');
+        debugLog('❌ Backend hiba: ' + error.message);
         return null;
     }
 }
