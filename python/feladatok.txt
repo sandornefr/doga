@@ -894,3 +894,126 @@ for i in range(1, 7):
             legnagyobb = adat
 
 print(f"A legnagyobb próbálkozás: {legnagyobb} cm")
+
+17. feladat
+Pont: 14
+
+Készíts programot, amely egy italautomata működését szimulálja!
+
+Az automata három italt kínál: Cola (500 Ft), Tea (450 Ft), Víz (300 Ft).
+A program először kiírja a kínálatot, majd bekéri a választást kódszámmal.
+Ha érvénytelen kódot adnak meg, írja ki: „Nincs ilyen termék!" és fejezze be a programot.
+Ha érvényes a választás, az automata bekéri a pénzt. Az automata csak 50, 100, 200, 500, 1000 és 2000 Ft-os érméket/bankjegyeket fogad el – minden más esetén írja ki: „Ezt a címletet nem fogadom el!".
+A pénzbedobást addig kell ismételni, amíg a bedobott összeg el nem éri a termék árát. Minden elégtelen befizetés után írja ki, mennyi hiányzik még.
+Ha összegyűlt a szükséges összeg, írja ki a sikeres vásárlást és a visszajárót!
+
+Írj egy TermekAr nevű függvényt, amely megkapja a termék kódját (egész szám), és visszaadja az árat!
+Ha a kód érvénytelen (nem 1, 2 vagy 3), a függvény 0-t adjon vissza!
+
+Minta kód:
+
+```
+--- ITALAUTOMATA ---
+1: Cola (500), 2: Tea (450), 3: Víz (300)
+Válasszon (kód): 1
+Fizetendő: 500 Ft
+Dobja be a pénzt: 2000
+
+Sikeres vásárlás!
+Visszajáró: 1500 Ft
+Köszönjük, hogy nálunk vásárolt!
+
+--- ITALAUTOMATA ---
+1: Cola (500), 2: Tea (450), 3: Víz (300)
+Válasszon (kód): 0
+Nincs ilyen termék!
+
+--- ITALAUTOMATA ---
+1: Cola (500), 2: Tea (450), 3: Víz (300)
+Válasszon (kód): 2
+Fizetendő: 450 Ft
+Dobja be a pénzt: 5000
+Ezt a címletet nem fogadom el!
+Dobja be a pénzt: 1000
+
+Sikeres vásárlás!
+Visszajáró: 550 Ft
+Köszönjük, hogy nálunk vásárolt!
+
+--- ITALAUTOMATA ---
+1: Cola (500), 2: Tea (450), 3: Víz (300)
+Válasszon (kód): 1
+Fizetendő: 500 Ft
+Dobja be a pénzt: 50
+Még hiányzik: 450 Ft
+Dobja be a pénzt: 200
+Még hiányzik: 250 Ft
+Dobja be a pénzt: 100
+Még hiányzik: 150 Ft
+Dobja be a pénzt: 50
+Még hiányzik: 100 Ft
+Dobja be a pénzt: 100
+
+Sikeres vásárlás!
+Visszajáró: 0 Ft
+Köszönjük, hogy nálunk vásárolt!
+
+```
+
+Pontozas:
+def|Függvényt definiál (def)|Az automata árszámítóját függvényként kell megírni. Melyik kulcsszóval hozod létre? 🛠️|🛠️ A TermekAr függvény megalkotva – az automata tudja az árakat!
+return|Függvény visszatérési értéket ad (return)|A függvény visszaadja az árat – melyik kulcsszóval? 📤|📤 A return megvan – az ár visszaér a főprogramba!
+tartalmaz:TermekAr|TermekAr névvel írja a függvényt|A függvénynek pontosan "TermekAr" a neve – a T és A nagybetű! 🔤|🔤 A függvény neve tökéletesen egyezik!
+bekeres:Válasszon (kód): |Bekérés szövege: "Válasszon (kód): "|Pontosan kell a szöveg a zárójelekkel együtt! 🥤|✅ A termékválasztás bekérése tökéletesen egyezik!
+int_float:1|A kódot számmá alakítja|A kód szövegként érkezik – mivel alakítod számmá? 🔢|🔢 A kód számként vizsgálható – az automata tud dönteni!
+tartalmaz:Nincs ilyen termék|Érvénytelen kódra "Nincs ilyen termék!" üzenetet ír|Mit ír ki az automata, ha nem létező kódot nyomnak? Pontosan kell a szöveg! ❌|❌ Érvénytelen kód felismerve – nincs ilyen termék!
+bekeres:Dobja be a pénzt: |Bekérés szövege: "Dobja be a pénzt: "|Pontosan kell a szöveg kettősponttal és szóközzel! 💰|✅ A pénzbekérés szövege tökéletesen egyezik!
+while|While ciklust alkalmaz a pénzbekéréshez|A pénzbedobást addig kell ismételni, amíg nincs elég pénz. Melyik ciklus alkalmas erre? 🔄|🔄 A while ciklus forog – az automata türelmesen vár a pénzre!
+tartalmaz:elfogadott|Elfogadott címletek listáját tárolja|Az automata csak bizonyos érméket fogad el. Hogyan tárolod ezeket a számokat? 📋|📋 Az elfogadott címletek listája megvan!
+tartalmaz:Ezt a címletet|Érvénytelen érmére "Ezt a címletet nem fogadom el!" üzenetet ír|Mi történik ha valaki 5000 Ft-ost próbál bedobni? Van erre külön ágad? 🚫|🚫 Érvénytelen érmét nem fogad el – az automata határozott!
+tartalmaz:Még hiányzik|Elégtelen befizetés után "Még hiányzik: X Ft" kiírja|Ha kevés pénzt dobtak be, mit írjon ki az automata? A "Még hiányzik" szó benne van? 💸|💸 Hiányzó összeget is kiírja – a vásárló tudja mennyit kell még!
+tartalmaz:Sikeres vásárlás|Sikeres vásárláskor megfelelő üzenetet ír|Ha összegyűlt a pénz, mit ír ki az automata első sorként? 🎉|🎉 Sikeres vásárlás! Az automata elégedett!
+tartalmaz:Visszajáró|A visszajárót kiszámolja és kiírja|A bedobott összeg mínusz a termék ára – ez a visszajáró. Kiírja a programod? 🪙|🪙 A visszajáró is megjelenik – pontos az elszámolás!
+teszt:1,2000:1500 Ft|Cola vásárlásnál 2000-ből 1500 a visszajáró|1: Cola 500 Ft, 2000-et dobtak be. Mennyi a visszajáró? 🧮|🧮 2000 - 500 = 1500 Ft visszajáró – helyes!
+teszt:0:Nincs ilyen termék|Érvénytelen kódnál helyes hibaüzenet|0-s kód nem létezik – felismeri a programod? ❌|❌ 0-s kódra "Nincs ilyen termék!" – tökéletes!
+teszt:2,5000,1000:Ezt a címletet|5000 Ft-ost nem fogad el|5000 Ft-ost dobnak be – mit ír ki az automata? 🚫|🚫 5000 Ft-os visszautasítva – az automata tartja magát a szabályhoz!
+teszt:3,100,100,100:Visszajáró: 0 Ft|Víznél pontosan 300 Ft bedobva, 0 a visszajáró|3: Víz 300 Ft, pontosan 3×100 Ft-ot dobnak be. Mennyi a visszajáró? ⚖️|⚖️ Pontosan kifizetve – 0 Ft visszajáró, helyes!
+
+Tippek:
+
+Megoldas:
+def TermekAr(kod):
+    if kod == 1:
+        return 500
+    elif kod == 2:
+        return 450
+    elif kod == 3:
+        return 300
+    else:
+        return 0
+
+elfogadott = [50, 100, 200, 500, 1000, 2000]
+
+print("--- ITALAUTOMATA ---")
+print("1: Cola (500), 2: Tea (450), 3: Víz (300)")
+kod = int(input("Válasszon (kód): "))
+
+ar = TermekAr(kod)
+
+if ar == 0:
+    print("Nincs ilyen termék!")
+else:
+    print(f"Fizetendő: {ar} Ft")
+    befizetve = 0
+    while befizetve < ar:
+        ermek = int(input("Dobja be a pénzt: "))
+        if ermek not in elfogadott:
+            print("Ezt a címletet nem fogadom el!")
+        else:
+            befizetve += ermek
+            if befizetve < ar:
+                print(f"Még hiányzik: {ar - befizetve} Ft")
+    print()
+    print("Sikeres vásárlás!")
+    print(f"Visszajáró: {befizetve - ar} Ft")
+    print("Köszönjük, hogy nálunk vásárolt!")
