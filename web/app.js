@@ -4752,7 +4752,7 @@ async function submitWebToBackend() {
     maxTotal:     maxVal,
     duration:     Math.round((Date.now() - (window._webStartTime || Date.now())) / 1000),
     mode:         'live',
-    codeSnapshot: JSON.stringify({ html: htmlCode, css: cssCode, savedAt: new Date().toISOString() }),
+    codeSnapshot: JSON.stringify({ html: htmlCode, css: cssCode, savedAt: new Date().toISOString(), validationImages: { html: validationImages.html, css: validationImages.css } }),
     subject:      'web'
   };
   try {

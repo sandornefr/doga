@@ -1254,6 +1254,15 @@ async function openCodePanel(id) {
         const snap = JSON.parse(s.codeSnapshot);
         if (snap.html !== undefined) {
           // WEB beadás
+          const vi = snap.validationImages || {};
+          const valImgHtml = (vi.html || vi.css) ? `
+            <div style="margin-top:1.25rem;">
+              <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">Validálási képernyőképek:</div>
+              <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                ${vi.html ? `<div><div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">HTML validálás</div><img src="${vi.html}" alt="HTML validálás" style="max-width:480px;border-radius:6px;border:1px solid #1e3a5f;cursor:pointer;" onclick="window.open(this.src)"></div>` : '<div style="color:#ef4444;font-size:0.85rem;">⚠️ HTML validálás képernyőképe hiányzik</div>'}
+                ${vi.css  ? `<div><div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;">CSS validálás</div><img src="${vi.css}" alt="CSS validálás" style="max-width:480px;border-radius:6px;border:1px solid #1e3a5f;cursor:pointer;" onclick="window.open(this.src)"></div>` : '<div style="color:#ef4444;font-size:0.85rem;">⚠️ CSS validálás képernyőképe hiányzik</div>'}
+              </div>
+            </div>` : `<div style="margin-top:1.25rem;color:#ef4444;font-size:0.85rem;">⚠️ Validálási képernyőképek hiányoznak (HTML és CSS)</div>`;
           codeHtml = `
             <div style="margin-bottom:1rem;">
               <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">HTML kód:</div>
@@ -1262,7 +1271,8 @@ async function openCodePanel(id) {
             <div>
               <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">CSS kód:</div>
               <pre style="background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:1rem;overflow-x:auto;font-size:0.8rem;color:#e2e8f0;"><code>${esc2(snap.css||'')}</code></pre>
-            </div>`;
+            </div>
+            ${valImgHtml}`;
         } else if (snap.tasks) {
           // Python beadás
           codeHtml = snap.tasks.map(t => `
