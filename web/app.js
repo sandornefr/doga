@@ -4505,8 +4505,10 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     // Auto Close Tag beállítása
     setupAutoCloseTag(htmlEditor, monaco);
 
-    // Wrap gomb eseménykezelő
+    // Wrap gomb eseménykezelő + F1 billentyűparancs
     btnWrap.addEventListener('click', handleWrapButton);
+    htmlEditor.addCommand(monaco.KeyCode.F1, handleWrapButton);
+    cssEditor.addCommand(monaco.KeyCode.F1, handleWrapButton);
 
     // Formáz gomb eseménykezelő
     document.getElementById('btn-format').addEventListener('click', () => {
