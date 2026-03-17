@@ -1106,7 +1106,7 @@ int_float:1|A kódot számmá alakítja|A kód szövegként érkezik – mivel a
 for|For ciklust használ a vásárláshoz|A ciklus pontosan annyiszor fusson le, ahány terméket vesznek. Melyik ciklus alkalmas erre? 🔄|🔄 A for ciklus forog – minden termékre sor kerül!
 tartalmaz:kosar|Kosár listát hoz létre|Az árakat egy listában kell gyűjteni. Mi a lista neve a leírás szerint? 🛒|🛒 A kosár lista megvan – a vásárlás folyhat!
 tartalmaz:append|Az árakat hozzáfűzi a listához|Ha létező a termék, az árát hozzá kell adni a listához. Melyik lista metódust használod? ➕|➕ append() – az ár bekerült a kosárba!
-tartalmaz:sum|A végösszeget sum()-mal számolja|A lista összes elemét össze kell adni. Van erre egy beépített Python függvény – mi a neve? 🧮|🧮 sum() – a végösszeg egy sorban kész!
+tartalmaz:vegosszeg|A végösszeget változóban gyűjti|A lista elemeit össze kell adni és tárolni. Milyen nevű változóba gyűjtöd az összeget? 🧮|🧮 A végösszeg változó megvan – a számítás folyhat!
 tartalmaz:Hibás kód|Érvénytelen kódra "Hibás kód!" üzenetet ír|Ha valaki nem létező kódot ad meg, mit kell kiírni? ❌|❌ Hibás kód felismerve – a kassza nem engedi át!
 bekeres:Hány terméket veszel? |Bekérés szövege: "Hány terméket veszel? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🛍️|✅ A darabszám bekérése tökéletesen egyezik!
 tartalmaz:termék kódja: |A bekérés szövege tartalmazza: "termék kódja: "|A termékkód bekérésekor a szöveg tartalmazza a "termék kódja: " részt? 🔢|✅ A termékkód bekérése megvan!
@@ -1163,7 +1163,9 @@ for i in range(1, darab + 1):
     else:
         print("Hibás kód!")
 
-vegosszeg = sum(kosar)
+vegosszeg = 0
+for tetel in kosar:
+    vegosszeg = vegosszeg + tetel
 
 if vegosszeg >= 2500:
     print("Nagy bevásárlás, 10% kedvezmény jár!")
