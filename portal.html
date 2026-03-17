@@ -503,6 +503,49 @@
         </a>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         ÚJ FELADATOK POST-IT – HETENTE FRISSÍTSD!
+         Csak a <ul> tartalmát kell cserélni, a dátumot frissíteni.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="postit-uj-feladatok" style="
+        display:none;
+        margin: 18px auto 0;
+        max-width: 560px;
+        background: #fef08a;
+        color: #1c1917;
+        border-radius: 4px 14px 14px 4px;
+        padding: 16px 20px 14px 22px;
+        box-shadow: 4px 6px 18px rgba(0,0,0,0.45), -1px -1px 0 #d4b800 inset;
+        position: relative;
+        font-family: 'Segoe UI', sans-serif;
+        transform: rotate(-0.6deg);
+    ">
+        <!-- Tűs jelölés felül -->
+        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:18px;height:18px;background:#e94560;border-radius:50%;border:2px solid #c0392b;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>
+
+        <div style="font-weight:800;font-size:1rem;margin-bottom:6px;color:#92400e;letter-spacing:0.3px;">
+            🆕 Új feladatok ezen a héten
+        </div>
+
+        <!-- DÁTUM – hetente frissíteni -->
+        <div style="font-size:0.75rem;color:#a16207;margin-bottom:10px;font-weight:600;" id="postit-datum">
+            2026. március 17–21.
+        </div>
+
+        <!-- FELADATLISTA – hetente cserélni, naponta bővíthető -->
+        <ul style="margin:0;padding-left:18px;font-size:0.88rem;line-height:1.9;color:#292524;">
+            <li><strong>19.</strong> Mozijegy ára (korkedvezmény)</li>
+            <li><strong>20.</strong> Pizza rendelés (méret → ár)</li>
+            <li><strong>21.</strong> Dolgozat pontszám → érdemjegy</li>
+            <li><strong>22.</strong> Taxi ár (km-alapú + kedvezmény)</li>
+            <li><strong>23.</strong> Szállodai szoba (éjszakák × típus)</li>
+        </ul>
+
+        <div style="margin-top:10px;font-size:0.72rem;color:#a16207;font-style:italic;">
+            Jó gyakorlást! 🐍
+        </div>
+    </div>
+
     <!-- Oktatói nézet -->
     <div id="teacher-portal" style="display:none">
         <div class="options-grid">
@@ -656,6 +699,7 @@
             document.getElementById('toggle-view-btn').style.display = 'block';
         } else {
             document.getElementById('student-portal').style.display = 'grid';
+            document.getElementById('postit-uj-feladatok').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
