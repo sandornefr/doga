@@ -4591,10 +4591,17 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     // Auto Close Tag beállítása
     setupAutoCloseTag(htmlEditor, monaco);
 
-    // Wrap gomb eseménykezelő + F1 billentyűparancs
+    // Wrap gomb eseménykezelő
     btnWrap.addEventListener('click', handleWrapButton);
-    htmlEditor.addCommand(monaco.KeyCode.F1, handleWrapButton);
-    cssEditor.addCommand(monaco.KeyCode.F1, handleWrapButton);
+
+    // Wrap parancs a Monaco Command Palette-ben (F1 → "Wrap")
+    const wrapAction = {
+      id: 'wrap-with-abbreviation',
+      label: 'Wrap with Abbreviation',
+      run: handleWrapButton,
+    };
+    htmlEditor.addAction(wrapAction);
+    cssEditor.addAction(wrapAction);
 
     // Formáz gomb eseménykezelő
     document.getElementById('btn-format').addEventListener('click', () => {
