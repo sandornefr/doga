@@ -4740,6 +4740,20 @@ async function submitWebToBackend() {
   // Aktuális pontszám és max olvasása az UI-ból
   const scoreVal = parseInt(scoreCurrent?.textContent || '0') || 0;
   const maxVal   = 40;
+  // Check-eredmények kiszámítása beadáskor
+  let checkResults = [];
+  if (currentTask && currentTask.checks) {
+    const doc = parseStudentHtml(htmlCode);
+    checkResults = currentTask.checks.map(ch => {
+      let done = false;
+      try {
+        if (ch.id === 'html-validated') done = validationImages.html !== null;
+        else if (ch.id === 'css-validated') done = validationImages.css !== null;
+        else done = !!ch.check(doc, htmlCode, cssCode);
+      } catch {}
+      return { id: ch.id, label: ch.label, done };
+    });
+  }
   const payload = {
     name:         studentData.name,
     email:        studentData.email,
@@ -4752,7 +4766,7 @@ async function submitWebToBackend() {
     maxTotal:     maxVal,
     duration:     Math.round((Date.now() - (window._webStartTime || Date.now())) / 1000),
     mode:         'live',
-    codeSnapshot: JSON.stringify({ html: htmlCode, css: cssCode, savedAt: new Date().toISOString(), validationImages: { html: validationImages.html, css: validationImages.css } }),
+    codeSnapshot: JSON.stringify({ html: htmlCode, css: cssCode, savedAt: new Date().toISOString(), validationImages: { html: validationImages.html, css: validationImages.css }, checkResults }),
     subject:      'web'
   };
   try {

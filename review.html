@@ -1272,7 +1272,17 @@ async function openCodePanel(id) {
               <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">CSS kód:</div>
               <pre style="background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:1rem;overflow-x:auto;font-size:0.8rem;color:#e2e8f0;"><code>${esc2(snap.css||'')}</code></pre>
             </div>
-            ${valImgHtml}`;
+            ${valImgHtml}
+            ${snap.checkResults && snap.checkResults.length ? `
+            <div style="margin-top:1.25rem;">
+              <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">Pontozás részletezése:</div>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                ${snap.checkResults.map((r,i) => `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:${r.done?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.08)'};font-size:0.82rem;">
+                  <span style="font-weight:700;color:${r.done?'#10b981':'#ef4444'};min-width:16px;">${r.done?'✓':'✗'}</span>
+                  <span style="color:${r.done?'#d1fae5':'#fca5a5'};">${esc2(r.label||'')}</span>
+                </div>`).join('')}
+              </div>
+            </div>` : ''}`;
         } else if (snap.tasks) {
           // Python beadás
           codeHtml = snap.tasks.map(t => `
