@@ -2895,6 +2895,7 @@ async function selectTask(taskId) {
   if (!taskId) {
     currentTask = null;
     if (btnStarter) btnStarter.disabled = true;
+    if (btnSampleImg) btnSampleImg.disabled = true;
     if (btnSources) btnSources.disabled = true;
     if (btnPreviewNewTab) btnPreviewNewTab.disabled = true;
     if (htmlEditor) htmlEditor.setValue('');
@@ -2912,6 +2913,7 @@ async function selectTask(taskId) {
   lastParsedHtml = null;
   cachedStudentDoc = null;
   if (btnStarter) btnStarter.disabled = false;
+  if (btnSampleImg) btnSampleImg.disabled = !task.sampleImage;
   if (btnSources) {
     btnSources.disabled = !task.sourceFiles || task.sourceFiles.length === 0;
     btnSources.textContent = 'Forrás';
@@ -3712,6 +3714,7 @@ function logoutStudent() {
 
   // Gombok letiltása
   if (btnStarter) btnStarter.disabled = true;
+  if (btnSampleImg) btnSampleImg.disabled = true;
   if (btnSources) btnSources.disabled = true;
   if (btnPreviewNewTab) btnPreviewNewTab.disabled = true;
   if (btnSaveFile) btnSaveFile.disabled = true;
@@ -4176,7 +4179,7 @@ taskSelector.addEventListener("change", (e) => {
 
 // Új lapon megnyitás eseménykezelők
 // btnTaskDesc.addEventListener("click", openTaskDesc);
-// btnSampleImg.addEventListener("click", openSampleImg);
+if (btnSampleImg) btnSampleImg.addEventListener("click", openSampleImg);
 if (btnSources) btnSources.addEventListener("click", toggleSources);
 if (btnPreviewNewTab) btnPreviewNewTab.addEventListener("click", openPreviewInNewTab);
 
