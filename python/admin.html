@@ -466,7 +466,6 @@
             <button class="tab-btn active" onclick="switchTab('vezerlot', this)"><i class="fas fa-gauge-high"></i> Vezérlőpult</button>
             <button class="tab-btn" onclick="switchTab('feladatsor', this)"><i class="fas fa-folder-open"></i> Feladatsorok</button>
             <button class="tab-btn" onclick="switchTab('beadasok', this)"><i class="fas fa-clipboard-list"></i> Beadások</button>
-            <button class="tab-btn" onclick="switchTab('javitas', this)"><i class="fas fa-pen-to-square"></i> Javítás</button>
             <button class="tab-btn" onclick="switchTab('felhasznalok', this)"><i class="fas fa-users"></i> Felhasználók</button>
             <button class="tab-btn" onclick="switchTab('haladas', this)"><i class="fas fa-chart-line"></i> Haladás</button>
             <button class="tab-btn" onclick="switchTab('rangsor', this)"><i class="fas fa-ranking-star"></i> Rangsor</button>
@@ -591,77 +590,6 @@
             </div>
         </div>
 
-        <!-- Kézi Javítás -->
-        <div class="panel" data-tab="javitas" style="display:none;">
-            <h2><i class="fas fa-pen-to-square"></i> Kézi Javítás</h2>
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-                <label style="color:#aaa;font-weight:600;">Feladat száma:</label>
-                <select id="grading-task-select" onchange="renderGradingTable()" style="padding:8px 14px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.95rem;cursor:pointer;">
-                    <option value="">— Válassz feladatot —</option>
-                    <option value="1">1. feladat (8 pont)</option>
-                    <option value="2">2. feladat (8 pont)</option>
-                    <option value="3">3. feladat (8 pont)</option>
-                    <option value="4">4. feladat (8 pont)</option>
-                    <option value="5">5. feladat (8 pont)</option>
-                    <option value="6">6. feladat (8 pont)</option>
-                    <option value="7">7. feladat (8 pont)</option>
-                    <option value="8">8. feladat (8 pont)</option>
-                    <option value="9">9. feladat (8 pont)</option>
-                    <option value="10">10. feladat (8 pont)</option>
-                    <option value="11">11. feladat (8 pont)</option>
-                    <option value="12">12. feladat (8 pont)</option>
-                    <option value="13">13. feladat (14 pont)</option>
-                    <option value="14">14. feladat (14 pont)</option>
-                    <option value="15">15. feladat (14 pont)</option>
-                    <option value="16">16. feladat (14 pont)</option>
-                    <option value="17">17. feladat (14 pont)</option>
-                    <option value="18">18. feladat (14 pont)</option>
-                    <option value="19">19. feladat (8 pont)</option>
-                    <option value="20">20. feladat (8 pont)</option>
-                    <option value="21">21. feladat (8 pont)</option>
-                    <option value="22">22. feladat (8 pont)</option>
-                    <option value="23">23. feladat (8 pont)</option>
-                </select>
-                <span id="grading-count" style="color:#888;font-size:0.88rem;"></span>
-            </div>
-            <div id="grading-table-wrapper" style="display:none;">
-                <div class="table-wrapper">
-                    <table class="submissions-table" style="min-width:700px;">
-                        <thead>
-                            <tr>
-                                <th>Név</th>
-                                <th>Osztály</th>
-                                <th>Beadva</th>
-                                <th>Pontszám</th>
-                                <th>Jegy</th>
-                                <th>Figyelmeztetés</th>
-                                <th>Levonás</th>
-                                <th>Kód</th>
-                            </tr>
-                        </thead>
-                        <tbody id="grading-tbody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Grading -->
-        <div class="panel" data-tab="javitas" style="display:none;">
-            <h2><i class="fas fa-robot"></i> Automatikus Javítás (AI)</h2>
-            <div id="ai-grading-status" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
-            <p style="margin-bottom: 15px; color: #666;">
-                A Gemini AI automatikusan kijavítja az összes beadott feladatot a Google Sheets Tasks lapján található kritériumok alapján.
-            </p>
-            <button class="btn-live" onclick="gradeAllSubmissions()">
-                <i class="fas fa-robot"></i> Javítás Indítása
-            </button>
-            <div id="grading-progress" style="margin-top: 15px; display: none;">
-                <div style="background: #f0f0f0; border-radius: 10px; height: 20px; overflow: hidden;">
-                    <div id="grading-progress-bar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s;"></div>
-                </div>
-                <p id="grading-progress-text" style="margin-top: 10px; text-align: center; color: #666;">Javítás folyamatban...</p>
-            </div>
-        </div>
 
         <!-- Statistics -->
         <div class="panel" data-tab="vezerlot">
