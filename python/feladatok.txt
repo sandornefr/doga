@@ -1172,3 +1172,236 @@ if vegosszeg >= 2500:
     vegosszeg = int(vegosszeg * 0.9)
 
 print(f"Fizetendő összeg: {vegosszeg} Ft")
+
+19. feladat
+
+Írj programot, amely bekéri a mozilátogató életkorát, majd kiírja a jegy árát!
+Gyerekjegy (14 év alatt): 1200 Ft
+Felnőttjegy (14-65 év): 1800 Ft
+Nyugdíjasjegy (65 év felett): 900 Ft
+
+Minta kód:
+
+```
+Add meg az életkorodat! 10
+A jegy ára: 1200 Ft
+
+Add meg az életkorodat! 30
+A jegy ára: 1800 Ft
+
+Add meg az életkorodat! 70
+A jegy ára: 900 Ft
+
+```
+
+Pontozas:
+bekeres:Add meg az életkorodat! |Bekérés szövege: "Add meg az életkorodat! "|Pontosan kell a szöveg – figyelj a felkiáltójelre és a szóközre! 🎬|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Számmá alakítja az életkort|Az input() szöveget ad vissza – mivel alakítod számmá? 🔢|🔢 Az életkor számként vizsgálható!
+if|Elágazást használ|Három kategória van – melyik kulcsszóval kezded az elágazást? 🎟️|🎟️ Az elágazás megvan – a kassza dönt!
+elif|Több kategóriát kezel (elif)|Az if után mi jön a második feltételhez? 🔀|🔀 Mindhárom korcsoport saját ágat kapott!
+teszt:10:1200|10 éves gyerekjegyet kap|10 év – gyerekjegy. Mit ír ki a programod? 👦|👦 Helyes! 10 évesnek gyerekjegy jár!
+teszt:30:1800|30 éves felnőttjegyet kap|30 év – felnőttjegy. Melyik ágon fut át a program? 👨|👨 Felnőttjegy – a 30 éves is bekerülhet!
+teszt:70:900|70 éves nyugdíjasjegyet kap|70 év – nyugdíjas. Kijön a 900 Ft? 👴|👴 Nyugdíjasjegy – megérdemelt kedvezmény!
+tartalmaz:Ft|Ft-ban írja ki az árat|A minta szerint "Ft" szónak szerepelnie kell a kimenetben! 💰|💰 Az ár Ft-ban megjelenik – a kassza kész!
+
+Tippek:
+
+Megoldas:
+kor = int(input("Add meg az életkorodat! "))
+
+if kor < 14:
+    print("A jegy ára: 1200 Ft")
+elif kor <= 65:
+    print("A jegy ára: 1800 Ft")
+else:
+    print("A jegy ára: 900 Ft")
+
+20. feladat
+
+Írj programot, amely bekéri a megrendelt pizza méretét, majd kiírja az árat!
+kis méret: 1500 Ft
+közepes méret: 2200 Ft
+nagy méret: 3000 Ft
+Ha ismeretlen méretet ad meg: Ismeretlen méret!
+
+Minta kód:
+
+```
+Válassz méretet (kis/közepes/nagy): kis
+Az ár: 1500 Ft
+
+Válassz méretet (kis/közepes/nagy): nagy
+Az ár: 3000 Ft
+
+Válassz méretet (kis/közepes/nagy): óriás
+Ismeretlen méret!
+
+```
+
+Pontozas:
+bekeres:Válassz méretet (kis/közepes/nagy): |Bekérés szövege: "Válassz méretet (kis/közepes/nagy): "|Pontosan kell a szöveg a zárójelekkel és perjelekkel együtt! 🍕|✅ A bekérés szövege tökéletesen egyezik!
+if|Elágazást használ|Három méret + érvénytelen eset – melyik kulcsszóval indítod? 🍕|🍕 Az elágazás megvan – a pizzéria dönt!
+elif|Több méretet kezel (elif)|Az if után mi jön a következő mérethez? 🔀|🔀 Minden méretnek megvan a saját ága!
+teszt:kis:1500|Kis mérethez 1500 Ft-ot ír ki|"kis" méret → 1500 Ft. Kijön ez a programodból? 🍕|🍕 Kis pizza, helyes ár – 1500 Ft!
+teszt:közepes:2200|Közepes mérethez 2200 Ft-ot ír ki|"közepes" méret → 2200 Ft. Melyik ágon fut? 🍕|🍕 Közepes pizza – 2200 Ft, tökéletes!
+teszt:nagy:3000|Nagy mérethez 3000 Ft-ot ír ki|"nagy" méret → 3000 Ft. Kijön ez? 🍕|🍕 Nagy pizza – 3000 Ft! Jó étvágyat!
+tartalmaz:Ismeretlen méret|Ismeretlen méretre hibaüzenetet ír|Mi történik, ha valaki "óriás"-t ír be? Van erre külön ágad? ❓|❓ Ismeretlen méretet is kezeled – profi megoldás!
+tartalmaz:Ft|Ft-ban írja ki az árat|Az árnál "Ft"-nak szerepelnie kell! 💰|💰 Az ár Ft-ban megjelenik – a kassza elégedett!
+
+Tippek:
+
+Megoldas:
+meret = input("Válassz méretet (kis/közepes/nagy): ")
+
+if meret == "kis":
+    print("Az ár: 1500 Ft")
+elif meret == "közepes":
+    print("Az ár: 2200 Ft")
+elif meret == "nagy":
+    print("Az ár: 3000 Ft")
+else:
+    print("Ismeretlen méret!")
+
+21. feladat
+
+Írj programot, amely bekér egy dolgozat pontszámát (0-100 között), majd kiírja az érdemjegyet!
+0-39 pont: Elégtelen (1)
+40-54 pont: Elégséges (2)
+55-69 pont: Közepes (3)
+70-84 pont: Jó (4)
+85-100 pont: Jeles (5)
+
+Minta kód:
+
+```
+Add meg a pontszámot (0-100): 20
+Érdemjegy: Elégtelen (1)
+
+Add meg a pontszámot (0-100): 75
+Érdemjegy: Jó (4)
+
+Add meg a pontszámot (0-100): 90
+Érdemjegy: Jeles (5)
+
+```
+
+Pontozas:
+bekeres:Add meg a pontszámot (0-100): |Bekérés szövege: "Add meg a pontszámot (0-100): "|Pontosan kell a szöveg a zárójelekkel együtt! 📝|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Számmá alakítja a pontszámot|A pontszám szövegként érkezik – mivel alakítod számmá? 🔢|🔢 A pontszám számként vizsgálható!
+if|Elágazást használ|Öt kategória van – melyik kulcsszóval indítod az elágazást? 📚|📚 Az elágazás megvan – az osztályzó rendszer dolgozik!
+elif|Több kategóriát kezel (elif)|Az if után mi jön a következő ponthatárhoz? 🔀|🔀 Minden ponthatárnak megvan a saját ága!
+teszt:20:Elégtelen|0-39 pontnál Elégtelen|20 pont – elégtelen. Mit ír ki a programod? 😬|😬 Elégtelen! Többet kell tanulni!
+teszt:45:Elégséges|40-54 pontnál Elégséges|45 pont – elégséges. Melyik ágon fut? 😐|😐 Elégséges! Lehetett volna jobb is!
+teszt:75:Jó|70-84 pontnál Jó|75 pont – jó. Kijön ez a programodból? 😊|😊 Jó! Szép munka!
+teszt:90:Jeles|85-100 pontnál Jeles|90 pont – jeles. Megkapja a programod az ötöst? ⭐|⭐ Jeles! Gratulálok – a program is kitűnő!
+
+Tippek:
+
+Megoldas:
+pont = int(input("Add meg a pontszámot (0-100): "))
+
+if pont <= 39:
+    print("Érdemjegy: Elégtelen (1)")
+elif pont <= 54:
+    print("Érdemjegy: Elégséges (2)")
+elif pont <= 69:
+    print("Érdemjegy: Közepes (3)")
+elif pont <= 84:
+    print("Érdemjegy: Jó (4)")
+else:
+    print("Érdemjegy: Jeles (5)")
+
+22. feladat
+
+Írj programot, amely kiszámolja egy taxiút árát!
+Az alap díj: 500 Ft.
+Minden megtett kilométer után: 400 Ft/km.
+Ha az út hossza meghaladja a 20 km-t, 10% kedvezmény jár a teljes árból.
+Az árat egész számra kerekítve írd ki!
+
+Minta kód:
+
+```
+Hány kilométert utazol? 5
+Fizetendő: 2500 Ft
+
+Hány kilométert utazol? 25
+Fizetendő: 9450 Ft
+
+```
+
+Pontozas:
+bekeres:Hány kilométert utazol? |Bekérés szövege: "Hány kilométert utazol? "|Pontosan kell a szöveg – figyelj a kérdőjelre és a szóközre! 🚕|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Számmá alakítja a távolságot|A távolság szövegként érkezik – mivel alakítod számmá? 🔢|🔢 A kilométer számként mérhető!
+if|Elágazást használ a kedvezményhez|20 km felett kedvezmény jár – melyik kulcsszóval döntesz? 🚕|🚕 Az elágazás megvan – a taxióra kattog!
+tartalmaz:0.9|10% kedvezményt számít|A 10% kedvezmény azt jelenti, hogy az árból 90%-ot fizet. Mivel szorzod? 💡|💡 A 0.9-es szorzó megvan – a kedvezmény jár!
+teszt:5:2500|5 km-re 2500 Ft-ot számít|500 + 5×400 = 2500 Ft. Kijön ez a programodból? 🧮|🧮 5 km, 2500 Ft – pontos számítás!
+teszt:25:9450|25 km-re 9450 Ft-ot számít|(500 + 25×400) × 0.9 = 9450 Ft. A kedvezménnyel is helyes? 🧮|🧮 25 km, 9450 Ft – a kedvezmény is beleszámolt!
+tartalmaz:Fizetendő|Fizetendő szóval írja ki|A minta szerint "Fizetendő:" szóval kezdődik a kimenet! 💰|💰 A Fizetendő megjelenik – az utas tud fizetni!
+tartalmaz:Ft|Ft-ban írja ki az árat|Az összegnél "Ft"-nak szerepelnie kell! 💰|💰 Az ár Ft-ban megjelenik!
+
+Tippek:
+
+Megoldas:
+km = int(input("Hány kilométert utazol? "))
+
+ar = 500 + km * 400
+
+if km > 20:
+    ar = int(ar * 0.9)
+
+print(f"Fizetendő: {ar} Ft")
+
+23. feladat
+
+Írj programot, amely kiszámítja egy szállodai tartózkodás árát!
+Az éjszakák számát és a szoba típusát kérd be a felhasználótól!
+egyágyas szoba: 8000 Ft/éj
+kétágyas szoba: 12000 Ft/éj
+apartman: 25000 Ft/éj
+Ha ismeretlen szobatípust ad meg: Ismeretlen szobatípus!
+
+Minta kód:
+
+```
+Hány éjszakát töltesz? 3
+Milyen szobát kérsz (egyágyas/kétágyas/apartman)? egyágyas
+Fizetendő: 24000 Ft
+
+Hány éjszakát töltesz? 2
+Milyen szobát kérsz (egyágyas/kétágyas/apartman)? apartman
+Fizetendő: 50000 Ft
+
+Hány éjszakát töltesz? 1
+Milyen szobát kérsz (egyágyas/kétágyas/apartman)? suite
+Ismeretlen szobatípus!
+
+```
+
+Pontozas:
+bekeres:Hány éjszakát töltesz? |Bekérés szövege: "Hány éjszakát töltesz? "|Pontosan kell a szöveg – figyelj a kérdőjelre és a szóközre! 🏨|✅ Az éjszakák bekérése tökéletesen egyezik!
+int_float:1|Az éjszakák számát számmá alakítja|Az éjszakák száma szövegként érkezik – mivel alakítod számmá? 🔢|🔢 Az éjszakák száma számként mérhető!
+bekeres:Milyen szobát kérsz (egyágyas/kétágyas/apartman)? |Bekérés szövege: "Milyen szobát kérsz (egyágyas/kétágyas/apartman)? "|Pontosan kell a szöveg a zárójelekkel és perjelekkel együtt! 🏨|✅ A szobatípus bekérése is tökéletes!
+if|Elágazást használ|Három szobatípus + érvénytelen eset – melyik kulcsszóval indítod? 🏨|🏨 Az elágazás megvan – a recepciós dönt!
+elif|Több szobatípust kezel (elif)|Az if után mi jön a következő szobatípushoz? 🔀|🔀 Minden szobatípusnak megvan a saját ága!
+teszt:3,egyágyas:24000|3 éjszaka egyágyas szoba → 24000 Ft|3 × 8000 = 24000 Ft. Kijön ez a programodból? 🧮|🧮 3 éjszaka, egyágyas – 24000 Ft, helyes!
+teszt:2,apartman:50000|2 éjszaka apartman → 50000 Ft|2 × 25000 = 50000 Ft. Kijön ez? 🧮|🧮 2 éjszaka apartman – 50000 Ft, tökéletes!
+tartalmaz:Ismeretlen szobatípus|Ismeretlen szobatípusra hibaüzenetet ír|Mi történik, ha valaki "suite"-ot ír be? Van erre ágad? ❓|❓ Ismeretlen szobatípust is kezeled – profi recepciós!
+
+Tippek:
+
+Megoldas:
+ejszakak = int(input("Hány éjszakát töltesz? "))
+szoba = input("Milyen szobát kérsz (egyágyas/kétágyas/apartman)? ")
+
+if szoba == "egyágyas":
+    ar = ejszakak * 8000
+    print(f"Fizetendő: {ar} Ft")
+elif szoba == "kétágyas":
+    ar = ejszakak * 12000
+    print(f"Fizetendő: {ar} Ft")
+elif szoba == "apartman":
+    ar = ejszakak * 25000
+    print(f"Fizetendő: {ar} Ft")
+else:
+    print("Ismeretlen szobatípus!")
