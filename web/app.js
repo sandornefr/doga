@@ -268,7 +268,7 @@ const availableTasks = {
         id: "malna-list-id",
         label: "22. A számozatlan felsorolásra alkalmazta a \"malna\" egyedi azonosítót",
         check: (doc) => {
-          return doc.querySelector('ul#malna') !== null;
+          return doc.querySelector('ul#malna') !== null && doc.querySelector('ul#malna li') !== null;
         },
       },
       {
@@ -539,7 +539,7 @@ humanoid: {
     {
       id: "pepper-list-id",
       label: "13. A számozatlan felsorolásra alkalmazta a \"robotikon\" egyedi azonosítót",
-      check: (doc) => doc.querySelector('ul#robotikon') !== null,
+      check: (doc) => doc.querySelector('ul#robotikon') !== null && doc.querySelector('ul#robotikon li') !== null,
     },
     {
       id: "ameca-h2",
@@ -1380,13 +1380,13 @@ evmadarai: {
         const fbH2 = Array.from(h2s).find(h => h.textContent.includes('Erdei fülesbagoly'));
         if (!fbH2) return false;
         const container = fbH2.closest('.col');
-        return container && container.querySelector('ol') !== null;
+        return container && container.querySelector('ol li') !== null;
       },
     },
     {
       id: "ciganycsuk-ul",
       label: "11. A Cigánycsuk táplálékai számozatlan felsorolásban (ul#taplalek)",
-      check: (doc) => doc.querySelector('ul#taplalek') !== null,
+      check: (doc) => doc.querySelector('ul#taplalek') !== null && doc.querySelector('ul#taplalek li') !== null,
     },
     {
       id: "zoldkullo-h2",
@@ -1642,7 +1642,7 @@ gombak: {
     {
       id: "laskagomba-ul",
       label: "12. A laskagomba receptek számozatlan felsorolásban (ul#kaja)",
-      check: (doc) => doc.querySelector('ul#kaja') !== null,
+      check: (doc) => doc.querySelector('ul#kaja') !== null && doc.querySelector('ul#kaja li') !== null,
     },
     {
       id: "gyilkos-galoca-h3",
@@ -1685,7 +1685,7 @@ gombak: {
       check: (doc) => {
         const jotanacs = doc.querySelector('#jotanacs');
         if (!jotanacs) return false;
-        return jotanacs.querySelector('ol') !== null;
+        return jotanacs.querySelector('ol li') !== null;
       },
     },
     {
@@ -1859,7 +1859,7 @@ hobbiallatok: {
         const kutyaH3 = Array.from(h3s).find(h => h.textContent.trim() === 'Kutya');
         if (!kutyaH3) return false;
         const container = kutyaH3.closest('.col');
-        return container && container.querySelector('ul:not(.navbar-nav)') !== null;
+        return container && container.querySelector('ul:not(.navbar-nav) li') !== null;
       },
     },
     {
@@ -1870,7 +1870,7 @@ hobbiallatok: {
         const macH3 = Array.from(h3s).find(h => h.textContent.trim() === 'Macska');
         if (!macH3) return false;
         const container = macH3.closest('.col');
-        return container && container.querySelector('ol') !== null;
+        return container && container.querySelector('ol li') !== null;
       },
     },
     {
@@ -2131,7 +2131,7 @@ hullok: {
     {
       id: "aranyporos-ul",
       label: "11. A gekkó színei számozatlan felsorolásban (ul#gyik)",
-      check: (doc) => doc.querySelector('ul#gyik') !== null,
+      check: (doc) => doc.querySelector('ul#gyik') !== null && doc.querySelector('ul#gyik li') !== null,
     },
     {
       id: "leguan-bold-italic",
@@ -2152,7 +2152,7 @@ hullok: {
         const leguanH2 = Array.from(h2s).find(h => h.textContent.includes('Zöld leguán'));
         if (!leguanH2) return false;
         const container = leguanH2.closest('.col');
-        return container && container.querySelector('ol') !== null;
+        return container && container.querySelector('ol li') !== null;
       },
     },
     {
@@ -2411,7 +2411,7 @@ tropusi_gyumolcsok: {
     {
       id: "banan-ul",
       label: "11. A banán receptek számozatlan felsorolásban (ul#banan)",
-      check: (doc) => doc.querySelector('ul#banan') !== null,
+      check: (doc) => doc.querySelector('ul#banan') !== null && doc.querySelector('ul#banan li') !== null,
     },
     {
       id: "sarkanygyumolcs-h3",
@@ -2434,7 +2434,7 @@ tropusi_gyumolcsok: {
         const granatH3 = Array.from(h3s).find(h => h.textContent.includes('Gránátalma'));
         if (!granatH3) return false;
         const container = granatH3.closest('.col-sm-12');
-        return container && container.querySelector('ol') !== null;
+        return container && container.querySelector('ol li') !== null;
       },
     },
     {
