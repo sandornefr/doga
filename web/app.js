@@ -3441,26 +3441,27 @@ function showWrapWidget(editor, onConfirm) {
 
   const dom = document.createElement('div');
   dom.style.cssText = [
-    'display:flex;align-items:center;gap:6px',
+    'position:absolute;top:0;left:50%;transform:translateX(-50%)',
+    'display:flex;align-items:center;gap:10px',
     'background:#2d2d2d;border:1px solid #007acc',
-    'border-top:none;padding:5px 10px',
-    'font-family:Consolas,monospace;font-size:13px',
-    'box-shadow:0 2px 8px rgba(0,0,0,0.5)',
-    'min-width:340px',
+    'border-top:none;padding:8px 16px',
+    'font-family:Consolas,monospace;font-size:14px',
+    'box-shadow:0 4px 12px rgba(0,0,0,0.6)',
+    'z-index:100',
   ].join(';');
 
   const label = document.createElement('span');
   label.textContent = 'Wrap with Abbreviation:';
-  label.style.cssText = 'color:#cccccc;white-space:nowrap;';
+  label.style.cssText = 'color:#cccccc;white-space:nowrap;font-size:14px;';
 
   const input = document.createElement('input');
   input.type = 'text';
   input.value = 'div';
   input.style.cssText = [
-    'flex:1;background:#3c3c3c;border:1px solid #555',
-    'color:#d4d4d4;padding:2px 6px;font-size:13px',
+    'background:#3c3c3c;border:1px solid #555',
+    'color:#d4d4d4;padding:5px 10px;font-size:14px',
     'font-family:Consolas,monospace;outline:none',
-    'min-width:120px',
+    'width:220px',
   ].join(';');
 
   dom.appendChild(label);
@@ -3469,12 +3470,10 @@ function showWrapWidget(editor, onConfirm) {
   const widget = {
     getId: () => WIDGET_ID,
     getDomNode: () => dom,
-    getPosition: () => ({ preference: 0 }), // TOP_RIGHT_CORNER → editor teteje
+    getPosition: () => null,
   };
 
   editor.addOverlayWidget(widget);
-  // Középre igazítás CSS-sel
-  dom.parentElement && (dom.parentElement.style.cssText += ';left:0;right:0;display:flex;justify-content:center;');
 
   setTimeout(() => { input.focus(); input.select(); }, 50);
 
