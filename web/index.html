@@ -170,6 +170,11 @@
     <script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
     <script src="app.js?v=20"></script>
 
+<!-- Minta kép modal -->
+<div id="sample-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;align-items:center;justify-content:center;cursor:zoom-out;" onclick="closeSampleImgModal()">
+  <img id="sample-img-modal-img" src="" alt="Minta weboldal" style="max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.7);cursor:default;" onclick="event.stopPropagation()">
+</div>
+
 <!-- Anti-cheat figyelmeztetés overlay -->
 <div id="ac-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;">
   <div style="background:#1a1a2e;border:2px solid #e94560;border-radius:16px;padding:2rem 2.5rem;max-width:460px;text-align:center;box-shadow:0 0 40px rgba(233,69,96,0.4);">

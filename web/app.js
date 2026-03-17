@@ -4015,7 +4015,16 @@ function openTaskDesc() {
 
 function openSampleImg() {
   if (!currentTask || !currentTask.sampleImage) return;
-  window.open(currentTask.basePath + currentTask.sampleImage, '_blank');
+  const modal = document.getElementById('sample-img-modal');
+  const img = document.getElementById('sample-img-modal-img');
+  img.src = currentTask.basePath + currentTask.sampleImage;
+  modal.style.display = 'flex';
+}
+
+function closeSampleImgModal() {
+  const modal = document.getElementById('sample-img-modal');
+  modal.style.display = 'none';
+  document.getElementById('sample-img-modal-img').src = '';
 }
 
 let sourcesVisible = false;
@@ -4648,6 +4657,10 @@ function initAntiCheat(isLive) {
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && ['t', 'T', 'n', 'N'].includes(e.key)) {
       e.preventDefault();
+    }
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('sample-img-modal');
+      if (modal && modal.style.display === 'flex') closeSampleImgModal();
     }
   }, true);
 
