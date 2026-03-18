@@ -136,7 +136,7 @@
             border: 2px solid #0f3460;
             border-radius: 18px;
             padding: 1.2rem 1.6rem;
-            max-width: 740px;
+            max-width: 900px;
             width: 100%;
             max-height: 98vh;
             overflow-y: auto;
@@ -1638,94 +1638,13 @@
         // ── Feedback / visszajelzés rendszer ──────────────────────────────────
         const RAILWAY_URL_FB = 'https://agazati.up.railway.app';
 
-        // Szavazás állapot (session közbeni memória)
-        const _voteState = {};
-
-        // Vote gombok renderelése a friss feladatok boxban
-        (function initVoteButtons() {
-            const saved = sessionStorage.getItem('kandoUser');
-            if (!saved) return;
-            let userEmail = '';
-            let userToken = '';
-            try {
-                const u = JSON.parse(saved);
-                userEmail = u.email || '';
-                userToken = u.token || '';
-            } catch(e) { return; }
-
-            // Betöltjük a már leadott szavazatokat
-            function loadMyVotes() {
-                if (!userEmail || !userToken) return;
-                fetch(`${RAILWAY_URL_FB}/api/feedback/my?email=${encodeURIComponent(userEmail)}`, {
-                    headers: { 'Authorization': `Bearer ${userToken}` }
-                }).then(r => r.json()).then(data => {
-                    if (!Array.isArray(data)) return;
-                    data.forEach(item => {
-                        if (item.tipus === 'vote') {
-                            _voteState[item.feladatNev] = item.ertek;
-                            // Frissítjük a gombokat ha már renderelve vannak
-                            updateVoteButtons(item.feladatNev, item.ertek);
-                        }
-                    });
-                }).catch(() => {});
-            }
-
-            function updateVoteButtons(feladatNev, ertek) {
-                document.querySelectorAll(`.vote-btn[data-feladat="${CSS.escape(feladatNev)}"]`).forEach(btn => {
-                    const bErtek = parseInt(btn.dataset.ertek);
-                    if (bErtek === ertek) {
-                        btn.style.opacity = '1';
-                        btn.style.background = ertek === 1 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)';
-                        btn.style.borderColor = ertek === 1 ? '#22c55e' : '#ef4444';
-                    } else {
-                        btn.style.opacity = '0.35';
-                        btn.style.background = 'transparent';
-                        btn.style.borderColor = 'transparent';
-                    }
-                });
-            }
-
-            function sendVote(feladatNev, ertek) {
-                if (!userEmail || !userToken) return;
-                fetch(`${RAILWAY_URL_FB}/api/feedback`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userToken}`
-                    },
-                    body: JSON.stringify({ email: userEmail, feladatNev, tipus: 'vote', ertek })
-                }).catch(() => {});
-            }
-
-            // Render vote-task-list elemek
-            document.querySelectorAll('.vote-task-list').forEach(container => {
-                const tasks = (container.dataset.tasks || '').split(',').map(t => t.trim()).filter(Boolean);
-                container.innerHTML = tasks.map(task => {
-                    const escaped = task.replace(/"/g, '&quot;');
-                    return `<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(120,53,15,0.07);border:1px solid rgba(120,53,15,0.15);border-radius:20px;padding:2px 8px 2px 10px;white-space:nowrap;">` +
-                        `<span style="font-size:0.82rem;">${task}</span>` +
-                        `<button class="vote-btn" data-feladat="${escaped}" data-ertek="1" title="Tetszett" style="font-size:0.75rem;padding:1px 3px;background:transparent;border:none;border-radius:4px;cursor:pointer;line-height:1;transition:all 0.15s;opacity:0.6;">👍</button>` +
-                        `<button class="vote-btn" data-feladat="${escaped}" data-ertek="-1" title="Nem tetszett" style="font-size:0.75rem;padding:1px 3px;background:transparent;border:none;border-radius:4px;cursor:pointer;line-height:1;transition:all 0.15s;opacity:0.6;">👎</button>` +
-                        `</span>`;
-                }).join('');
-            });
-
-            // Kattintás kezelő (esemény delegálás)
-            const frissBox = document.getElementById('friss-feladatok-box');
-            if (frissBox) {
-                frissBox.addEventListener('click', function(e) {
-                    const btn = e.target.closest('.vote-btn');
-                    if (!btn) return;
-                    const feladatNev = btn.dataset.feladat;
-                    const ertek = parseInt(btn.dataset.ertek);
-                    _voteState[feladatNev] = ertek;
-                    updateVoteButtons(feladatNev, ertek);
-                    sendVote(feladatNev, ertek);
-                });
-            }
-
-            loadMyVotes();
-        })();
+        // Friss feladatok chip-ek renderelése (csak szöveg, gombok nélkül)
+        document.querySelectorAll('.vote-task-list').forEach(container => {
+            const tasks = (container.dataset.tasks || '').split(',').map(t => t.trim()).filter(Boolean);
+            container.innerHTML = tasks.map(task =>
+                `<span style="display:inline-flex;align-items:center;background:rgba(120,53,15,0.07);border:1px solid rgba(120,53,15,0.15);border-radius:20px;padding:2px 10px;white-space:nowrap;font-size:0.82rem;">${task}</span>`
+            ).join('');
+        });
 
         // Reaction popup megjelenítése beadás után – mind a 3 feladathoz
         window._showReactionPopup = function(taskNames) {
