@@ -1022,11 +1022,23 @@ function openW3Schools() {
 
 function showReactionToast(text) {
     const el = document.createElement('div');
+    // Pontozó panel jobb széléhez igazítva, felette jelenik meg
+    const scoring = document.getElementById('scoring-panel');
+    let posStyle;
+    if (scoring) {
+        const rect = scoring.getBoundingClientRect();
+        const toastW = 270;
+        const left = Math.max(8, rect.right - toastW - 12);
+        const bottom = window.innerHeight - rect.top + 10;
+        posStyle = `position:fixed;left:${left}px;bottom:${bottom}px;`;
+    } else {
+        posStyle = `position:fixed;bottom:5rem;right:1.5rem;`;
+    }
     el.style.cssText = `
-        position:fixed;bottom:5rem;right:1.5rem;z-index:9999;
+        ${posStyle}z-index:9999;
         background:linear-gradient(135deg,#064e3b,#065f46);
         border:1px solid #10b981;border-radius:12px;
-        padding:0.7rem 1.1rem;max-width:280px;
+        padding:0.7rem 1.1rem;width:270px;
         color:#d1fae5;font-size:0.9rem;font-weight:600;
         box-shadow:0 4px 20px rgba(16,185,129,0.35);
         animation:reactionPop 0.3s cubic-bezier(.175,.885,.32,1.275);`;
