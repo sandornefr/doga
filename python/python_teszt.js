@@ -828,15 +828,22 @@ builtins.input = input
 function autoCheckStructural() {
     const task = selectedTasks[currentTaskIndex];
     if (!task || !task.criteria || task.criteria.length === 0) return;
-    // Ha már van teljes mentett eredmény (nincs needsRun), ne írjuk felül
-    const saved = taskAnswers[currentTaskIndex] && taskAnswers[currentTaskIndex].scoringResults;
-    if (saved && saved.length > 0) return;
     const code = codeEditor ? codeEditor.getValue().trim() : '';
+    if (!code) return; // Üres kódon ne fusson
+    // Ha a teszt kritériumok már ki lettek értékelve (checkScoring lefutott), ne írjuk felül
+    const savedResults = taskAnswers[currentTaskIndex] && taskAnswers[currentTaskIndex].scoringResults;
+    if (savedResults) {
+        const hasRunTest = savedResults.some(r => {
+            const c = task.criteria.find(cr => cr.label === r.label);
+            return c && c.type === 'teszt' && r.passed !== null;
+        });
+        if (hasRunTest) return;
+    }
     const panel = document.getElementById('scoring-panel');
     if (panel) panel.classList.remove('hidden');
     const results = task.criteria.map(criterion => {
         if (criterion.type === 'teszt') {
-            return { criterion, passed: false, needsRun: code.length > 0 };
+            return { criterion, passed: false, needsRun: true };
         }
         return { criterion, passed: evaluateCriterion(code, criterion) };
     });
@@ -978,11 +985,12 @@ function updateScoringUI(results) {
             <div style="display:flex;gap:0.35rem;flex-wrap:wrap;align-items:center;">${dots}</div>
         </div>`;
 
-    if (!results.some(r => r.pending || r.needsRun) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
+    if (!results.some(r => r.pending) && currentTaskIndex >= 0 && taskAnswers[currentTaskIndex]) {
+        const hasNeedsRun = results.some(r => r.needsRun);
         // Újonnan megszerzett kritériumok reakciói
         const prevPassed = new Set(
             (taskAnswers[currentTaskIndex].scoringResults || [])
-                .filter(r => r.passed).map(r => r.label)
+                .filter(r => r.passed === true).map(r => r.label)
         );
         if (testMode === 'practice') {
             const newlyPassed = results.filter(r => r.passed === true && !prevPassed.has(r.criterion.label) && r.criterion.reaction);
@@ -990,13 +998,17 @@ function updateScoringUI(results) {
                 setTimeout(() => showReactionToast(r.criterion.reaction), i * 1600);
             });
         }
-
-        taskAnswers[currentTaskIndex].earnedPoints = earned;
+        // Mindig mentjük az eredményeket (prevPassed nyomon követéséhez gépelés közben is)
+        // needsRun esetén null = még nem futtatott teszt kritérium
         taskAnswers[currentTaskIndex].scoringResults = results.map(r => ({
             label: r.criterion.label,
-            passed: r.passed
+            passed: r.needsRun ? null : r.passed
         }));
-        updateLiveScore();
+        // Pontszámot és globális score-t csak teljesen kiértékelt esetben frissítjük
+        if (!hasNeedsRun) {
+            taskAnswers[currentTaskIndex].earnedPoints = earned;
+            updateLiveScore();
+        }
     }
 }
 
@@ -1192,6 +1204,7 @@ function showTask(index) {
             const restored = task.criteria.map((criterion, i) => {
                 const saved = savedResults.find(r => r.label === criterion.label) || savedResults[i];
                 if (!saved) return { criterion, passed: false, needsRun: true };
+                if (saved.passed === null) return { criterion, passed: false, needsRun: true };
                 return { criterion, passed: saved.passed };
             });
             updateScoringUI(restored);
