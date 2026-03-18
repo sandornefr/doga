@@ -2029,11 +2029,15 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
             try {
                 const res = await authFetch(`${RAILWAY_URL}/api/feedback/stats`);
-                if (!res.ok) throw new Error('Szerver hiba: ' + res.status);
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => '');
+                    throw new Error(`Szerver hiba: ${res.status} – ${txt.substring(0,200)}`);
+                }
                 const data = await res.json();
 
                 if (!data || data.length === 0) {
                     emptyEl.style.display = 'block';
+                    emptyEl.textContent = 'Még nincs visszajelzés. (API válasz: üres lista)';
                     return;
                 }
 

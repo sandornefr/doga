@@ -414,10 +414,9 @@ app.MapPost("/api/auth/change-own-password", (ChangeOwnPasswordRequest req, Data
 
 // ── Feedback / Task Ratings ────────────────────────────────────────────────
 
-// Visszajelzés mentése (bejelentkezett felhasználó)
-app.MapPost("/api/feedback", (HttpContext ctx, FeedbackRequest req, Database db) =>
+// Visszajelzés mentése (nem kell auth – értékelési adat, nem érzékeny)
+app.MapPost("/api/feedback", (FeedbackRequest req, Database db) =>
 {
-    if (!ValidateToken(ctx)) return Results.Unauthorized();
     if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.FeladatNev))
         return Results.BadRequest(new { error = "Hiányzó adat" });
     if (req.Tipus != "vote" && req.Tipus != "reaction")
