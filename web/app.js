@@ -2919,7 +2919,7 @@ async function selectTask(taskId) {
   if (btnSaveFile) btnSaveFile.disabled = false;
 
   if (descFrame && task.taskDescFile) {
-    descFrame.src = task.basePath + task.taskDescFile + '?v=3';
+    descFrame.src = task.basePath + task.taskDescFile + '?v=4';
   }
 
   // Éles módban mindig friss kiindulást töltünk (korábbi gyakorló munka nem töltődik be)
@@ -4184,7 +4184,7 @@ async function toggleSources() {
     btnSources.textContent = 'Forrás';
     if (descFrame && currentTask.taskDescFile) {
       descFrame.removeAttribute('srcdoc');
-      descFrame.src = currentTask.basePath + currentTask.taskDescFile + '?v=3';
+      descFrame.src = currentTask.basePath + currentTask.taskDescFile + '?v=4';
     }
     return;
   }
