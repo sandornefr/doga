@@ -3042,8 +3042,11 @@ function maybePostProgress() {
   const email = u.email;
   if (!email) return;
   const key = `${email}:web:${currentTask.id}`;
-  if (_progressPosted.has(key)) return;
+  // localStorage-ban is tároljuk – oldalfrissítés után sem postol újra
+  const lsKey = 'webDone_' + key;
+  if (_progressPosted.has(key) || localStorage.getItem(lsKey)) return;
   _progressPosted.add(key);
+  localStorage.setItem(lsKey, '1');
   fetch('https://agazati.up.railway.app/api/progress', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -3057,6 +3060,49 @@ function maybePostProgress() {
       maxPont: total
     })
   }).catch(() => {});
+}
+
+function markWebTaskDone() {
+  maybePostProgress();
+  updateKeszBtnState();
+}
+
+function updateKeszBtnState() {
+  const btn = document.getElementById('btn-kesz-web');
+  if (!btn || btn.style.display === 'none') return;
+  const kandoRaw = sessionStorage.getItem('kandoUser');
+  if (!kandoRaw || !currentTask) return;
+  let u;
+  try { u = JSON.parse(kandoRaw); } catch { return; }
+  const key = `${u.email}:web:${currentTask.id}`;
+  const done = _progressPosted.has(key) || !!localStorage.getItem('webDone_' + key);
+  if (done) {
+    btn.textContent = '✔ Beadva';
+    btn.disabled = true;
+    btn.style.background = '#374151';
+    btn.style.borderColor = '#4b5563';
+    btn.style.cursor = 'default';
+  } else {
+    btn.textContent = '✔ Kész';
+    btn.disabled = false;
+    btn.style.background = '#16a34a';
+    btn.style.borderColor = '#22c55e';
+    btn.style.cursor = 'pointer';
+  }
+}
+
+// Kész gomb megjelenítése ha portálosan van bejelentkezve (nem éles vizsga módban)
+function initKeszBtn() {
+  const kandoRaw = sessionStorage.getItem('kandoUser');
+  if (!kandoRaw) return;
+  let u;
+  try { u = JSON.parse(kandoRaw); } catch { return; }
+  if (!u.email) return;
+  if (typeof acLive !== 'undefined' && acLive) return;
+  const btn = document.getElementById('btn-kesz-web');
+  if (!btn) return;
+  btn.style.display = 'inline-block';
+  updateKeszBtnState();
 }
 
 function saveToLocalStorage() {
@@ -3172,6 +3218,7 @@ async function selectTask(taskId) {
   currentTask = task;
   lastParsedHtml = null;
   cachedStudentDoc = null;
+  updateKeszBtnState();
   if (btnStarter) btnStarter.disabled = false;
   if (btnSampleImg) btnSampleImg.disabled = !task.sampleImage;
   if (btnSources) {
@@ -3299,8 +3346,8 @@ function renderTasks(results) {
     }).join('');
   }
 
-  if (completed > 0) maybePostProgress();
 }
+
 
 function annotateHtmlWithSourceLines(html) {
   const lines = html.split("\n");
@@ -3951,6 +3998,7 @@ function updateStudentDisplay() {
         .then(data => {
           const isLive = data.test_mode === 'live' || data.test_mode === 'vizsga';
           setModeBadge(isLive);
+          if (!isLive) initKeszBtn();
           if (isLive) {
             liveModeDetected = true;
             Object.keys(availableTasks).forEach(id => clearLocalStorage(id));
@@ -3976,6 +4024,7 @@ function updateStudentDisplay() {
           const isLive   = data.test_mode === 'live' || isVizsga;
           if (!isLive && switchBtn) switchBtn.style.display = 'inline-block';
           setModeBadge(isLive);
+          if (!isLive) initKeszBtn();
           if (isLive) {
             liveModeDetected = true;
             Object.keys(availableTasks).forEach(id => clearLocalStorage(id));
