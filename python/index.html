@@ -1453,6 +1453,7 @@
         <div id="reaction-popup-content">
             <div style="color:#94a3b8; font-size:0.82rem; margin-bottom:0.7rem; text-align:center;">Hogy tetszettek a feladatok?</div>
             <div id="reaction-rows" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.8rem;"></div>
+            <div id="reaction-hint" style="display:none; color:#f59e0b; font-size:0.78rem; text-align:center; margin-bottom:4px;">Kérlek értékelj legalább egy feladatot!</div>
             <button id="reaction-send-btn" style="width:100%; padding:7px; background:#536dfe; border:none; border-radius:8px; color:white; font-weight:700; font-size:0.88rem; cursor:pointer;">Küldés</button>
         </div>
         <div id="reaction-thankyou" style="display:none; color:#4ade80; font-size:0.95rem; font-weight:600; padding:0.5rem 0; text-align:center;">Köszönjük! 🎉</div>
@@ -1705,18 +1706,31 @@
             });
 
             // Küldés
-            sendBtn.onclick = function() {
-                Object.entries(selections).forEach(([feladatNev, ertek]) => {
+            sendBtn.onclick = async function() {
+                const entries = Object.entries(selections);
+                if (entries.length === 0) {
+                    const hint = content.querySelector('#reaction-hint');
+                    if (hint) { hint.style.display = 'block'; }
+                    return;
+                }
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Küldés...';
+                let ok = true;
+                for (const [feladatNev, ertek] of entries) {
                     if (userEmail && userToken) {
-                        fetch(`${RAILWAY_URL_FB}/api/feedback`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
-                            body: JSON.stringify({ email: userEmail, feladatNev, tipus: 'reaction', ertek })
-                        }).catch(() => {});
+                        try {
+                            const res = await fetch(`${RAILWAY_URL_FB}/api/feedback`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
+                                body: JSON.stringify({ email: userEmail, feladatNev, tipus: 'reaction', ertek })
+                            });
+                            if (!res.ok) ok = false;
+                        } catch(e) { ok = false; }
                     }
-                });
+                }
                 content.style.display = 'none';
                 thankyou.style.display = 'block';
+                thankyou.textContent = ok ? 'Köszönjük! 🎉' : 'Elmentve (offline). 🎉';
                 setTimeout(() => { popup.style.display = 'none'; }, 2000);
             };
 
