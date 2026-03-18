@@ -412,6 +412,36 @@ app.MapPost("/api/auth/change-own-password", (ChangeOwnPasswordRequest req, Data
     return Results.Ok(new { success = true });
 });
 
+// ── Feedback / Task Ratings ────────────────────────────────────────────────
+
+// Visszajelzés mentése (bejelentkezett felhasználó)
+app.MapPost("/api/feedback", (HttpContext ctx, FeedbackRequest req, Database db) =>
+{
+    if (!ValidateToken(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.FeladatNev))
+        return Results.BadRequest(new { error = "Hiányzó adat" });
+    if (req.Tipus != "vote" && req.Tipus != "reaction")
+        return Results.BadRequest(new { error = "Érvénytelen tipus (vote vagy reaction)" });
+    db.SaveRating(req.Email, req.FeladatNev, req.Tipus, req.Ertek);
+    return Results.Ok(new { success = true });
+});
+
+// Visszajelzés statisztikák (csak oktató)
+app.MapGet("/api/feedback/stats", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetRatingStats());
+});
+
+// Saját visszajelzések lekérése (bejelentkezett felhasználó)
+app.MapGet("/api/feedback/my", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateToken(ctx)) return Results.Unauthorized();
+    var email = ctx.Request.Query["email"].FirstOrDefault() ?? "";
+    var list = db.GetMyRatings(email);
+    return Results.Ok(list.Select(x => new { feladatNev = x.FeladatNev, tipus = x.Tipus, ertek = x.Ertek }));
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 

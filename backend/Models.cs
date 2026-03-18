@@ -183,3 +183,14 @@ public record StudentRankResult(
     RankInfo Python,
     int Streak
 );
+
+// ── Task Ratings / Feedback ────────────────────────────────────────────────
+
+public record FeedbackRequest(string Email, string FeladatNev, string Tipus, int Ertek);
+
+public class TaskRatingStat {
+    public string FeladatNev { get; set; } = "";
+    public string Tipus { get; set; } = "";  // "vote" or "reaction"
+    public int Ertek { get; set; }
+    public int Db { get; set; }
+}

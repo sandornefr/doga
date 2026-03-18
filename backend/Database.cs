@@ -75,6 +75,15 @@ public class Database
                 max_pont  INTEGER NOT NULL,
                 datum     TEXT DEFAULT (date('now', 'localtime'))
             );
+            CREATE TABLE IF NOT EXISTS task_ratings (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                email        TEXT NOT NULL,
+                feladat_nev  TEXT NOT NULL,
+                tipus        TEXT NOT NULL,
+                ertek        INTEGER NOT NULL,
+                created_at   TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE(email, feladat_nev, tipus)
+            );
         ");
         try { Exec(conn, "ALTER TABLE submissions ADD COLUMN subject TEXT"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
@@ -766,6 +775,60 @@ public class Database
         cmd.Parameters.AddWithValue("$h", newHash);
         cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
         return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // ── Task Ratings ──────────────────────────────────────────────────────────
+
+    public void SaveRating(string email, string feladatNev, string tipus, int ertek)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO task_ratings (email, feladat_nev, tipus, ertek)
+            VALUES ($email, $feladat_nev, $tipus, $ertek)
+            ON CONFLICT(email, feladat_nev, tipus) DO UPDATE SET ertek = $ertek, created_at = datetime('now','localtime')";
+        cmd.Parameters.AddWithValue("$email",       email);
+        cmd.Parameters.AddWithValue("$feladat_nev", feladatNev);
+        cmd.Parameters.AddWithValue("$tipus",       tipus);
+        cmd.Parameters.AddWithValue("$ertek",       ertek);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<TaskRatingStat> GetRatingStats()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT feladat_nev, tipus, ertek, COUNT(*) as db
+            FROM task_ratings
+            GROUP BY feladat_nev, tipus, ertek
+            ORDER BY feladat_nev, tipus, ertek";
+        var list = new List<TaskRatingStat>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new TaskRatingStat
+            {
+                FeladatNev = r.GetString(0),
+                Tipus      = r.GetString(1),
+                Ertek      = r.GetInt32(2),
+                Db         = r.GetInt32(3)
+            });
+        return list;
+    }
+
+    public List<(string FeladatNev, string Tipus, int Ertek)> GetMyRatings(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT feladat_nev, tipus, ertek
+            FROM task_ratings WHERE email = $email";
+        cmd.Parameters.AddWithValue("$email", email);
+        var list = new List<(string, string, int)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add((r.GetString(0), r.GetString(1), r.GetInt32(2)));
+        return list;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

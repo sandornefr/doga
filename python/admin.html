@@ -533,6 +533,57 @@
             </div>
         </div>
 
+        <!-- Visszajelzések -->
+        <div class="panel" data-tab="vezerlot">
+            <h2><i class="fas fa-star"></i> Visszajelzések</h2>
+            <div style="margin-bottom:1rem;">
+                <button onclick="loadFeedbackStats()" style="padding:8px 18px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#1a4a8a'" onmouseout="this.style.background='#0f3460'">
+                    <i class="fas fa-rotate"></i> Visszajelzések betöltése
+                </button>
+            </div>
+            <div id="feedback-loading" style="display:none;color:#94a3b8;font-style:italic;margin-bottom:0.8rem;">Betöltés...</div>
+            <div id="feedback-error" style="display:none;background:rgba(233,69,96,0.15);border:1px solid #e94560;color:#ff8fa3;padding:8px 12px;border-radius:8px;margin-bottom:0.8rem;"></div>
+
+            <!-- Szavazások -->
+            <div id="feedback-votes-section" style="display:none;margin-bottom:1.5rem;">
+                <div style="color:#fbbf24;font-weight:700;margin-bottom:0.7rem;font-size:0.95rem;"><i class="fas fa-thumbs-up"></i> Szavazások (👍👎)</div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.87rem;">
+                        <thead>
+                            <tr style="border-bottom:1px solid #333;">
+                                <th style="text-align:left;padding:7px 10px;color:#94a3b8;font-weight:600;">Feladat neve</th>
+                                <th style="text-align:center;padding:7px 10px;color:#4ade80;font-weight:600;">👍</th>
+                                <th style="text-align:center;padding:7px 10px;color:#e94560;font-weight:600;">👎</th>
+                                <th style="text-align:center;padding:7px 10px;color:#94a3b8;font-weight:600;">Arány</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-votes-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reakciók -->
+            <div id="feedback-reactions-section" style="display:none;">
+                <div style="color:#a78bfa;font-weight:700;margin-bottom:0.7rem;font-size:0.95rem;"><i class="fas fa-face-smile"></i> Feladat értékelések (😍👍😐👎)</div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.87rem;">
+                        <thead>
+                            <tr style="border-bottom:1px solid #333;">
+                                <th style="text-align:left;padding:7px 10px;color:#94a3b8;font-weight:600;">Feladat neve</th>
+                                <th style="text-align:center;padding:7px 10px;color:#f9a8d4;font-weight:600;">😍</th>
+                                <th style="text-align:center;padding:7px 10px;color:#4ade80;font-weight:600;">👍</th>
+                                <th style="text-align:center;padding:7px 10px;color:#94a3b8;font-weight:600;">😐</th>
+                                <th style="text-align:center;padding:7px 10px;color:#e94560;font-weight:600;">👎</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-reactions-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="feedback-empty" style="display:none;color:#555;font-style:italic;font-size:0.9rem;">Még nincs visszajelzés.</div>
+        </div>
+
         <!-- Felhasználók -->
         <div class="panel" id="users-panel" data-tab="felhasznalok" style="display:none;">
             <h2><i class="fas fa-users"></i> Felhasználók kezelése</h2>
@@ -1957,6 +2008,93 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 }
             } catch(e) {
                 statusEl.textContent = 'Betöltési hiba.';
+            }
+        }
+
+        // ── Visszajelzések (feedback stats) ──────────────────────────────────
+        async function loadFeedbackStats() {
+            const loadingEl  = document.getElementById('feedback-loading');
+            const errorEl    = document.getElementById('feedback-error');
+            const votesSection    = document.getElementById('feedback-votes-section');
+            const reactionsSection = document.getElementById('feedback-reactions-section');
+            const emptyEl    = document.getElementById('feedback-empty');
+
+            loadingEl.style.display  = 'block';
+            errorEl.style.display    = 'none';
+            votesSection.style.display    = 'none';
+            reactionsSection.style.display = 'none';
+            emptyEl.style.display    = 'none';
+
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/feedback/stats`);
+                if (!res.ok) throw new Error('Szerver hiba: ' + res.status);
+                const data = await res.json();
+
+                if (!data || data.length === 0) {
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+
+                // Szétválasztjuk vote / reaction
+                const votes     = data.filter(d => d.tipus === 'vote');
+                const reactions = data.filter(d => d.tipus === 'reaction');
+
+                // ── Szavazások ──
+                if (votes.length > 0) {
+                    // Összesítés feladat-nevenként
+                    const vMap = {};
+                    votes.forEach(d => {
+                        if (!vMap[d.feladatNev]) vMap[d.feladatNev] = { up: 0, down: 0 };
+                        if (d.ertek === 1)  vMap[d.feladatNev].up   += d.db;
+                        if (d.ertek === -1) vMap[d.feladatNev].down += d.db;
+                    });
+                    const votesTbody = document.getElementById('feedback-votes-tbody');
+                    votesTbody.innerHTML = Object.entries(vMap).sort((a,b) => a[0].localeCompare(b[0], 'hu')).map(([nev, v]) => {
+                        const total = v.up + v.down;
+                        const pct = total > 0 ? Math.round(v.up / total * 100) : 0;
+                        const pctColor = pct >= 70 ? '#4ade80' : pct >= 40 ? '#fbbf24' : '#e94560';
+                        return `<tr style="border-bottom:1px solid #1e2a3a;">
+                            <td style="padding:7px 10px;color:#e0e0e0;">${escHtml(nev)}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#4ade80;font-weight:700;">${v.up}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#e94560;font-weight:700;">${v.down}</td>
+                            <td style="text-align:center;padding:7px 10px;">
+                                <span style="color:${pctColor};font-weight:600;">${pct}%</span>
+                                <span style="color:#555;font-size:0.75rem;margin-left:4px;">(${total} szavazat)</span>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                    votesSection.style.display = 'block';
+                }
+
+                // ── Reakciók ──
+                if (reactions.length > 0) {
+                    // Összesítés feladat-nevenként, érték (1-4) szerint
+                    const rMap = {};
+                    reactions.forEach(d => {
+                        if (!rMap[d.feladatNev]) rMap[d.feladatNev] = { 1:0, 2:0, 3:0, 4:0 };
+                        rMap[d.feladatNev][d.ertek] = (rMap[d.feladatNev][d.ertek] || 0) + d.db;
+                    });
+                    const reactionsTbody = document.getElementById('feedback-reactions-tbody');
+                    reactionsTbody.innerHTML = Object.entries(rMap).sort((a,b) => a[0].localeCompare(b[0], 'hu')).map(([nev, v]) => {
+                        return `<tr style="border-bottom:1px solid #1e2a3a;">
+                            <td style="padding:7px 10px;color:#e0e0e0;">${escHtml(nev)}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#f9a8d4;font-weight:700;">${v[4] || 0}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#4ade80;font-weight:700;">${v[3] || 0}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#94a3b8;font-weight:700;">${v[2] || 0}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#e94560;font-weight:700;">${v[1] || 0}</td>
+                        </tr>`;
+                    }).join('');
+                    reactionsSection.style.display = 'block';
+                }
+
+                if (votes.length === 0 && reactions.length === 0) {
+                    emptyEl.style.display = 'block';
+                }
+            } catch(e) {
+                errorEl.textContent = 'Hiba a betöltés során: ' + e.message;
+                errorEl.style.display = 'block';
+            } finally {
+                loadingEl.style.display = 'none';
             }
         }
     </script>
