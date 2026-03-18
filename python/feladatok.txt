@@ -395,16 +395,16 @@ Készíts programot, amely bekér egy dolgozat pontszámát (0-100), majd kiírj
 Minta kód:
 
 ```
-Add meg a pontszámot (0-100): 45
+Add meg a pontszámot (0-100): 17
 Elégtelen (1)
 
-Add meg a pontszámot (0-100): 55
+Add meg a pontszámot (0-100): 23
 Elégséges (2)
 
-Add meg a pontszámot (0-100): 70
+Add meg a pontszámot (0-100): 42
 Közepes (3)
 
-Add meg a pontszámot (0-100): 82
+Add meg a pontszámot (0-100): 74
 Jó (4)
 
 Add meg a pontszámot (0-100): 95
@@ -903,7 +903,7 @@ Készíts programot, amely egy italautomata működését szimulálja!
 Az automata három italt kínál: Cola (500 Ft), Tea (450 Ft), Víz (300 Ft).
 A program először kiírja a kínálatot, majd bekéri a választást kódszámmal.
 Ha érvénytelen kódot adnak meg, írja ki: „Nincs ilyen termék!" és fejezze be a programot.
-Ha érvényes a választás, az automata bekéri a pénzt. Az automata csak 50, 100, 200, 500, 1000 és 2000 Ft-os érméket/bankjegyeket fogad el – minden más esetén írja ki: „Ezt a címletet nem fogadom el!".
+Ha érvényes a választás, az automata bekéri a pénzt. Az automata csak 5, 10, 20, 50, 100, 200, 500, 1000 és 2000 Ft-os érméket/bankjegyeket fogad el – minden más esetén írja ki: „Ezt a címletet nem fogadom el!".
 A pénzbedobást addig kell ismételni, amíg a bedobott összeg el nem éri a termék árát. Minden elégtelen befizetés után írja ki, mennyi hiányzik még.
 Ha összegyűlt a szükséges összeg, írja ki a sikeres vásárlást és a visszajárót!
 
