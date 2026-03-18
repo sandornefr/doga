@@ -1,5 +1,5 @@
 1. feladat
-Cim: Két szám összehasonlítása
+Cim: Kisebb-nagyobb
 
 Írj programot, amelyben bekérsz a felhasználótól két egész számot, majd a program döntse el, hogy melyik a nagyobb.
 Ha a két szám egyenlő, írja ki, hogy: A két szám egyenlő!
@@ -283,7 +283,7 @@ else:
     print("Ki vagy te Villám McQueen?!")
 
 7. feladat
-Cim: Bolt nyitvatartás
+Cim: Nyitvatartás
 
 Egy bolt pontban reggel 8 órakor nyit, és pontban délután 16 órakor zár be – azaz 8:00-kor már nyitva van és 16:00-kor már nincs nyitva.
 Írj programot, amelyben bekérsz egy egész órát jelző számot a felhasználótól, majd írja ki a program, hogy a megadott időpontban nyitva van-e a bolt!
@@ -392,7 +392,7 @@ else:
     print("Nincs ilyen hónap!")
 
 9. feladat
-Cim: Jegyértékelő
+Cim: Dolgozat pontszám
 
 Készíts programot, amely bekér egy dolgozat pontszámát (0-100), majd kiírja a megfelelő érdemjegyet!
 0-19 pont: Elégtelen (1)
@@ -499,7 +499,7 @@ else:
     print("Elhízott vagy.")
 
 11. feladat
-Cim: Jegy átlag
+Cim: Jegyek átlaga
 
 Írj programot, amelyben bekérsz a felhasználótól 3 érdemjegyet 1 és 5 között, majd számíts átlagot két tizedesjegyre kerekítve, valamint írd ki azt, hogy megfelelt-e.
 (Megfelelt az átlag: 2.0 és afelett)!
@@ -605,7 +605,7 @@ else:
 
 13. feladat
 Pont: 14
-Cim: Posta kasszagép
+Cim: Csekkbefizetés
 
 Egy postahivatalban a csekkbefizetések után a rendszernek azonnal ki kell számolnia a kezelési költséget, és a nap végén összesítenie kell a posta ebből származó bevételét.
 
@@ -754,7 +754,7 @@ print(f"A teljes beszedett bírság: {bevetel} Ft")
 
 15. feladat
 Pont: 14
-Cim: Lépésszám tracker
+Cim: Lépésszámláló
 
 Egy okosóra adatait szeretnénk feldolgozni. A programnak nem kell eltárolnia az adatokat, csak értékelnie kell a napokat, és megszámolnia, hányszor sikerült a kitűzött cél.
 
@@ -834,7 +834,7 @@ print(f"A héten {sikeres_napok} napon sikerült a cél!")
 
 16. feladat
 Pont: 14
-Cim: Magasugrás verseny
+Cim: Magasugrás
 
 Egy magasugró versenyen vagyunk. A versenyző 6 kísérletet tesz. A te feladatod egy programot írni, ami értékeli az ugrásokat, és megjegyzi, mi volt a legnagyobb magasság, amivel a sportoló megpróbálkozott.
 
@@ -1192,7 +1192,7 @@ if vegosszeg >= 2500:
 print(f"Fizetendő összeg: {vegosszeg} Ft")
 
 19. feladat
-Cim: Mozijegy ára
+Cim: Mozijegy
 
 Írj programot, amely bekéri a mozilátogató életkorát, majd kiírja a jegy árát!
 Gyerekjegy (14 év alatt): 1200 Ft
@@ -1375,7 +1375,7 @@ if km > 20:
 print(f"Fizetendő: {ar} Ft")
 
 23. feladat
-Cim: Szálloda ár kalkulátor
+Cim: Szállodai szoba
 
 Írj programot, amely kiszámítja egy szállodai tartózkodás árát!
 Az éjszakák számát és a szoba típusát kérd be a felhasználótól!
