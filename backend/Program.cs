@@ -117,6 +117,9 @@ if (string.IsNullOrEmpty(teacherCode))
     Console.WriteLine($"[SECURITY] No TEACHER_CODE found. Generated temporary code: {teacherCode}");
 }
 
+// Cloudflare Turnstile Secret (env: SECRET_SITE)
+var turnstileSecret = app.Configuration["SECRET_SITE"];
+
 // ── Végpontok ─────────────────────────────────────────────────────────────────
 
 // Életjelzés
@@ -236,6 +239,32 @@ app.MapPost("/api/auth/register", (RegisterRequest req, Database db) =>
 
     if (req.Jelszo != req.JelszoMegerosites)
         return Results.BadRequest(new { error = "A két jelszó nem egyezik!" });
+
+    // Cloudflare Turnstile ellenőrzés
+    if (string.IsNullOrEmpty(req.CaptchaToken))
+        return Results.BadRequest(new { error = "Kérlek igazold vissza, hogy nem vagy robot!" });
+
+    if (!string.IsNullOrEmpty(turnstileSecret))
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var verifyRes = await httpClient.PostAsync("https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "secret", turnstileSecret },
+                    { "response", req.CaptchaToken }
+                }));
+
+            if (!verifyRes.IsSuccessStatusCode)
+                return Results.BadRequest(new { error = "Captcha ellenőrzési hiba!" });
+
+            var verifyData = await verifyRes.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            if (!verifyData.GetProperty("success").GetBoolean())
+                return Results.BadRequest(new { error = "Captcha érvénytelen. Próbáld újra!" });
+        }
+        catch { return Results.BadRequest(new { error = "Captcha szerver hiba!" }); }
+    }
 
     if (req.Szerep == "oktato")
     {

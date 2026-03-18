@@ -255,6 +255,7 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -389,6 +390,11 @@
                 <input type="password" id="reg-teacher-code" placeholder="••••••••">
                 <div class="hint">Az iskolától kapott kód szükséges.</div>
             </div>
+        </div>
+
+        <!-- Cloudflare Turnstile -->
+        <div class="form-group" style="display: flex; justify-content: center; margin: 20px 0;">
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAACsxIL7zw19MTSd9" data-theme="dark"></div>
         </div>
 
         <button class="btn-submit" id="register-btn" onclick="doRegister()">Regisztráció</button>
@@ -604,6 +610,9 @@
         if (jelszo.length < 6)          { showError('register-error', 'A jelszó legalább 6 karakter legyen!'); return; }
         if (jelszo !== jelszo2)         { showError('register-error', 'A két jelszó nem egyezik!'); return; }
 
+        const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+        if (!captchaToken) { showError('register-error', 'Kérlek igazold vissza, hogy nem vagy robot!'); return; }
+
         if (selectedRole === 'tanulo') {
             if (!document.getElementById('reg-osztaly').value)  { showError('register-error', 'Kérlek válassz osztályt!'); return; }
             if (!document.getElementById('reg-csoport').value)  { showError('register-error', 'Kérlek válassz csoportot!'); return; }
@@ -620,7 +629,8 @@
             oktatoiKod:  selectedRole === 'oktato' ? document.getElementById('reg-teacher-code').value : null,
             evfolyam:    selectedRole === 'tanulo'  ? document.getElementById('reg-evfolyam').value || null : null,
             osztaly:     selectedRole === 'tanulo'  ? document.getElementById('reg-osztaly').value || null : null,
-            csoport:     csoportVal === 'nincs' ? null : csoportVal
+            csoport:     csoportVal === 'nincs' ? null : csoportVal,
+            captchaToken: captchaToken
         };
 
         btn.disabled = true;

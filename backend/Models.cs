@@ -65,7 +65,8 @@ public record RegisterRequest(
     string? OktatoiKod,
     string? Evfolyam,
     string? Osztaly,
-    string? Csoport
+    string? Csoport,
+    string? CaptchaToken
 );
 
 public record UserLoginRequest(string Email, string Jelszo);
