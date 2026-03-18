@@ -1239,6 +1239,18 @@ function showTask(index) {
 
     codeEditor.setValue(answer.answer || '');
 
+    // Tipp gomb frissítése az aktuális feladat tipp-készlete alapján
+    const hintBtn = document.getElementById('btn-hint');
+    if (hintBtn) {
+        const passedNow = new Set(
+            (taskAnswers[index]?.scoringResults || []).filter(r => r.passed === true).map(r => r.label)
+        );
+        const availableHints = (task.criteria || []).filter(c => c.hint && !passedNow.has(c.label));
+        const seen = tippIndex[index] || 0;
+        const remaining = Math.max(0, availableHints.length - seen);
+        hintBtn.textContent = remaining > 0 ? `💡 Tipp (${remaining} maradt)` : '💡 Nincs több tipp';
+    }
+
     updateTaskNavigation();
 
     logEvent('Task shown', { taskIndex: index, taskNumber: task.number });
