@@ -2237,31 +2237,41 @@ hullok: {
       },
     },
     {
-      id: "title",
-      label: "2. Böngésző címsorában megjelenő cím \"Hüllők\"",
-      check: (doc, html) => doc.title === "Hüllők" && _ch.inHead(html, /<title[^>]*>/i),
-    },
-    {
       id: "style-link",
-      label: "3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
+      label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
       check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
     },
     {
+      id: "title",
+      label: "3. Böngésző címsorában megjelenő cím \"Hüllők\"",
+      check: (doc, html) => doc.title === "Hüllők" && _ch.inHead(html, /<title[^>]*>/i),
+    },
+    {
       id: "fejlec-img",
-      label: "4. A fejlec.jpg képet elhelyezte, alt és title szövege \"Hüllő\"",
+      label: "4. A fejlec.jpg képet elhelyezte",
+      check: (doc) => doc.querySelector('img[src*="fejlec"]') !== null,
+    },
+    {
+      id: "fejlec-alt-title",
+      label: "5. A fejléc kép alt és title szövege \"Hüllők\"",
       check: (doc) => {
-        const img = doc.querySelector('img#fejlec');
-        return img && img.alt === "Hüllő" && img.title === "Hüllő";
+        const img = doc.querySelector('img[src*="fejlec"]');
+        return img && img.alt === "Hüllők" && img.title === "Hüllők";
       },
     },
     {
+      id: "fejlec-id",
+      label: "6. A fejléc képre egyedi azonosítót állított fejlec néven",
+      check: (doc) => doc.querySelector('img#fejlec') !== null,
+    },
+    {
       id: "felirat-h1",
-      label: "5. A \"Hüllők\" szöveg 1-es szintű címsor (h1)",
+      label: "7. A \"Hüllők\" szöveg 1-es szintű címsor (h1#felirat)",
       check: (doc) => doc.querySelector('h1#felirat') !== null,
     },
     {
       id: "nav-4th-link",
-      label: "6. Elkészítette a \"További információ\" menüpontot",
+      label: "8. Elkészítette a \"További információ\" menüpontot",
       check: (doc) => {
         const links = doc.querySelectorAll('nav a, .navbar a');
         return Array.from(links).some(a =>
@@ -2271,7 +2281,7 @@ hullok: {
     },
     {
       id: "nav-4th-blank",
-      label: "7. A \"További információ\" link új lapon nyílik meg",
+      label: "9. A \"További információ\" link új lapon nyílik meg",
       check: (doc) => {
         const links = doc.querySelectorAll('nav a, .navbar a');
         return Array.from(links).some(a =>
@@ -2280,74 +2290,44 @@ hullok: {
       },
     },
     {
-      id: "parduc-kameleon-bold-italic",
-      label: "8. A párduc kaméleon neve félkövér, latin neve dőlt; szöveg bekezdésekbe kerültek",
+      id: "parduc-paragraphs",
+      label: "10. A Párduc kaméleon szövegrészei bekezdésbe kerültek (legalább 2 p)",
       check: (doc) => {
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasBold = Array.from(bolds).some(b => b.textContent.toLowerCase().includes('párduc kaméleon'));
-        const italics = doc.querySelectorAll('i, em');
-        const hasItalic = Array.from(italics).some(i => i.textContent.includes('Furcifer'));
-        return hasBold && hasItalic;
-      },
-    },
-    {
-      id: "aranyporos-bold-italic",
-      label: "9. Az aranyporos nappaligekkó neve félkövér, latin neve dőlt",
-      check: (doc) => {
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasBold = Array.from(bolds).some(b => b.textContent.toLowerCase().includes('aranyporos nappaligekkó'));
-        const italics = doc.querySelectorAll('i, em');
-        const hasItalic = Array.from(italics).some(i => i.textContent.includes('Phelsuma'));
-        return hasBold && hasItalic;
+        const h2s = doc.querySelectorAll('h2');
+        const pardH2 = Array.from(h2s).find(h => h.textContent.toLowerCase().includes('párduc'));
+        if (!pardH2) return false;
+        const container = pardH2.closest('.col');
+        if (!container) return false;
+        return container.querySelectorAll('p:not(.card-text)').length >= 2;
       },
     },
     {
       id: "aranyporos-underline",
-      label: "10. Az \"A gekkó színei:\" szöveg egyszerre félkövér és aláhúzott",
+      label: "11. Az \"A gekkó színei:\" szöveg aláhúzott",
       check: (doc) => {
         const underlines = doc.querySelectorAll('u');
-        const hasU = Array.from(underlines).some(u => u.textContent.includes('gekkó színei'));
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasB = Array.from(bolds).some(b => b.textContent.includes('gekkó színei') || b.querySelector('u'));
-        return hasU && hasB;
+        return Array.from(underlines).some(u => u.textContent.includes('gekkó színei') || u.textContent.includes('A gekkó'));
       },
     },
     {
       id: "aranyporos-ul",
-      label: "11. A gekkó színei számozatlan felsorolásban (ul#gyik)",
-      check: (doc) => doc.querySelector('ul#gyik') !== null && doc.querySelector('ul#gyik li') !== null,
+      label: "12. A gekkó színei számozatlan felsorolásban (ul, li elemekkel)",
+      check: (doc) => doc.querySelector('ul#gyik li') !== null,
     },
     {
-      id: "leguan-bold-italic",
-      label: "12. A zöld leguán neve félkövér, latin neve dőlt",
-      check: (doc) => {
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasBold = Array.from(bolds).some(b => b.textContent.toLowerCase().includes('zöld leguán'));
-        const italics = doc.querySelectorAll('i, em');
-        const hasItalic = Array.from(italics).some(i => i.textContent.includes('Iguana iguana'));
-        return hasBold && hasItalic;
-      },
+      id: "aranyporos-gyik-id",
+      label: "13. A gekkó színei ul egyedi azonosítója gyik",
+      check: (doc) => doc.querySelector('ul#gyik') !== null,
     },
     {
       id: "leguan-ol",
-      label: "13. A zöld leguán táplálékai számozott felsorolásban (ol)",
+      label: "14. A zöld leguán táplálékai számozott felsorolásban (ol)",
       check: (doc) => {
         const h2s = doc.querySelectorAll('h2');
         const leguanH2 = Array.from(h2s).find(h => h.textContent.includes('Zöld leguán'));
         if (!leguanH2) return false;
         const container = leguanH2.closest('.col');
         return container && container.querySelector('ol li') !== null;
-      },
-    },
-    {
-      id: "agama-bold-italic",
-      label: "14. A szakállas agáma neve félkövér, latin neve dőlt",
-      check: (doc) => {
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasBold = Array.from(bolds).some(b => b.textContent.toLowerCase().includes('szakállas agáma'));
-        const italics = doc.querySelectorAll('i, em');
-        const hasItalic = Array.from(italics).some(i => i.textContent.includes('Saxicola'));
-        return hasBold && hasItalic;
       },
     },
     {
@@ -2359,15 +2339,45 @@ hullok: {
       },
     },
     {
+      id: "pavaszem-paragraphs",
+      label: "16. A Pávaszemes gyík szövegrészei bekezdésbe kerültek (legalább 2 p)",
+      check: (doc) => {
+        const h2s = doc.querySelectorAll('h2');
+        const pvH2 = Array.from(h2s).find(h => h.textContent.includes('Pávaszemes gyík'));
+        if (!pvH2) return false;
+        const container = pvH2.closest('.col');
+        if (!container) return false;
+        return container.querySelectorAll('p:not(.card-text)').length >= 2;
+      },
+    },
+    {
       id: "pavaszem-img",
-      label: "16. A Pávaszemes gyík kép forrása img/pavaszem.jpg",
+      label: "17. A Pávaszemes gyík kép forrása img/pavaszem.jpg",
       check: (doc) => doc.querySelector('img[src*="pavaszem"]') !== null,
     },
     {
-      id: "table-classes",
-      label: "17. A táblázaton alkalmazza a table-bordered és text-center osztályokat",
+      id: "pavaszem-alt-title",
+      label: "18. A Pávaszemes gyík képnél alt és title szövege \"Pávaszemes gyík\"",
       check: (doc) => {
-        const table = doc.querySelector('.row.m-4.table-responsive-sm table, table.table-bordered');
+        const img = doc.querySelector('img[src*="pavaszem"]');
+        return img && img.alt === "Pávaszemes gyík" && img.title === "Pávaszemes gyík";
+      },
+    },
+    {
+      id: "bold-combined",
+      label: "19. A hüllőnevek félkövérek (legalább 6 helyen)",
+      check: (doc) => doc.querySelectorAll('b, strong').length >= 6,
+    },
+    {
+      id: "italic-combined",
+      label: "20. A latin nevek dőltek (legalább 6 helyen)",
+      check: (doc) => doc.querySelectorAll('i, em').length >= 6,
+    },
+    {
+      id: "table-classes",
+      label: "21. A táblázaton alkalmazza a table-bordered és text-center osztályokat",
+      check: (doc) => {
+        const table = doc.querySelector('table');
         return table &&
           table.classList.contains('table-bordered') &&
           table.classList.contains('text-center');
@@ -2375,7 +2385,7 @@ hullok: {
     },
     {
       id: "table-new-row",
-      label: "18. A táblázatba bekerült a Komodói varánusz sor",
+      label: "22. A táblázatba bekerült a Komodói varánusz sor",
       check: (doc) => {
         const tds = doc.querySelectorAll('tbody td');
         const text = Array.from(tds).map(td => td.textContent).join(' ');
@@ -2383,19 +2393,8 @@ hullok: {
       },
     },
     {
-      id: "varanusz-bold-italic",
-      label: "19. A komodói varánusz neve félkövér, latin neve dőlt",
-      check: (doc) => {
-        const bolds = doc.querySelectorAll('b, strong');
-        const hasBold = Array.from(bolds).some(b => b.textContent.toLowerCase().includes('komodói varánusz'));
-        const italics = doc.querySelectorAll('i, em');
-        const hasItalic = Array.from(italics).some(i => i.textContent.includes('Varanus komodoensis'));
-        return hasBold && hasItalic;
-      },
-    },
-    {
       id: "erdekes-col-md-6",
-      label: "20. A \"7+1 érdekes tény\" részben mindkét oszlop col-md-6 méretű",
+      label: "23. A \"7+1 érdekes tény\" részben mindkét oszlop col-md-6 méretű",
       check: (doc) => {
         const erdekes = doc.querySelector('#erdekes');
         if (!erdekes) return false;
@@ -2403,93 +2402,107 @@ hullok: {
       },
     },
     {
-      id: "footer-link",
-      label: "21. A láblécben van hivatkozás a \"leiras\" azonosítóra \"Ugrás az elejére\" szöveggel",
+      id: "erdekes-img-fluid",
+      label: "24. A \"7+1 érdekes tény\" részben a kép reszponzív (img-fluid)",
       check: (doc) => {
-        const link = doc.querySelector('.lablec a[href="#leiras"]');
+        const erdekes = doc.querySelector('#erdekes');
+        if (!erdekes) return false;
+        return erdekes.querySelector('img.img-fluid') !== null;
+      },
+    },
+    {
+      id: "footer-href",
+      label: "25. A láblécben van hivatkozás a \"leiras\" azonosítóra",
+      check: (doc) => doc.querySelector('.lablec a[href="#leiras"]') !== null,
+    },
+    {
+      id: "footer-text",
+      label: "26. A lábléc hivatkozás szövege \"Ugrás az elejére\"",
+      check: (doc) => {
+        const link = doc.querySelector('.lablec a');
         return link && link.textContent.includes('Ugrás az elejére');
       },
     },
     {
       id: "css-body-font",
-      label: "22. CSS: Az oldal betűtípusa Rubik",
+      label: "27. CSS: Az oldal betűtípusa Rubik",
       check: (doc, html, css) => css && /body\s*\{[^}]*font-family\s*:\s*[^;]*rubik/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-fejlec-width",
-      label: "23. CSS: A fejlec azonosítóra 100%-os szélesség van beállítva",
+      label: "28. CSS: A fejlec azonosítóra 100%-os szélesség van beállítva",
       check: (doc, html, css) => css && /#fejlec\s*\{[^}]*width\s*:\s*100%/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-felirat-bold",
-      label: "24. CSS: A felirat azonosítóra félkövér betűstílus van beállítva",
+      label: "29. CSS: A felirat azonosítóra félkövér betűstílus van beállítva",
       check: (doc, html, css) => css && /#felirat\s*\{[^}]*font-weight\s*:\s*bold/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-nav-border",
-      label: "25. CSS: A navigáció listaelemére 3px vastag, pontozott, #39FF14 színű jobb szegélyt állított",
+      label: "30. CSS: A navigáció listaelemére 3px vastag, pontozott, #39FF14 színű jobb szegélyt állított",
       check: (doc, html, css) => css && /nav\s+li\s*\{[^}]*border(-right)?\s*:[^;]*3px[^;]*dotted[^;]*#39FF14/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-nav-padding",
-      label: "26. CSS: A navigáció listaelemének vízszintes belső margója 15px",
+      label: "31. CSS: A navigáció listaelemének vízszintes belső margója 15px",
       check: (doc, html, css) => css && /nav\s+li\s*\{[^}]*padding\s*:\s*0\s*15px/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-dd-italic",
-      label: "27. CSS: A dd elemre dőlt betűstílus van beállítva",
+      label: "32. CSS: A dd elemre dőlt betűstílus van beállítva",
       check: (doc, html, css) => css && /dd\s*\{[^}]*font-style\s*:\s*italic/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-dd-fontsize",
-      label: "28. CSS: A dd elem betűmérete 0.9em",
+      label: "33. CSS: A dd elem betűmérete 0.9em",
       check: (doc, html, css) => css && /dd\s*\{[^}]*font-size\s*:\s*0\.9em/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-hullo-bg",
-      label: "29. CSS: A hullo osztály háttérszíne #d2ffad",
+      label: "34. CSS: A hullo osztály háttérszíne #d2ffad",
       check: (doc, html, css) => css && /\.hullo\s*\{[^}]*background(-color)?\s*:\s*#d2ffad/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-lablec-nodecor",
-      label: "30. CSS: A lablec osztály hivatkozásánál nincs aláhúzás",
+      label: "35. CSS: A lablec osztály hivatkozásánál nincs aláhúzás",
       check: (doc, html, css) => css && /\.lablec\s+a\s*\{[^}]*text-decoration\s*:\s*none/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-lablec-hover",
-      label: "31. CSS: Ha a lablec osztály hivatkozása fölé visszük az egeret, nagybetűs",
+      label: "36. CSS: Ha a lablec osztály hivatkozása fölé visszük az egeret, nagybetűs",
       check: (doc, html, css) => css && /\.lablec\s+a:hover\s*\{[^}]*text-transform\s*:\s*uppercase/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-gyik-image",
-      label: "32. CSS: A gyik azonosítóra gyik.png listaelem kép van beállítva",
+      label: "37. CSS: A gyik azonosítóra gyik.png listaelem kép van beállítva",
       check: (doc, html, css) => css && /#gyik\s*\{[^}]*list-style-image\s*:\s*url\([^)]*gyik\.png/i.test(css),
       cssCheck: true,
     },
     {
       id: "css-p-justify",
-      label: "33. CSS: A bekezdések sorkizártak",
+      label: "38. CSS: A bekezdések sorkizártak",
       check: (doc, html, css) => css && /p\s*\{[^}]*text-align\s*:\s*justify/i.test(css),
       cssCheck: true,
     },
     {
       id: "html-validated",
-      label: "34. HTML validálás képernyőképe feltöltve",
+      label: "39. HTML validálás képernyőképe feltöltve",
       check: () => validationImages.html !== null,
     },
     {
       id: "css-validated",
-      label: "35. CSS validálás képernyőképe feltöltve",
+      label: "40. CSS validálás képernyőképe feltöltve",
       check: () => validationImages.css !== null,
     },
   ],
