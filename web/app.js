@@ -783,7 +783,7 @@ baglyok: {
     },
     {
       id: "fejlec-alt-title",
-      label: "6. A fejléc képnél alt és title szövege \"Baglyok\"",
+      label: "6. Ha nem jeleníthető meg a kép vagy ha az egeret felé visszük a \"Baglyok\" szöveg jelenik meg",
       check: (doc) => {
         const img = doc.querySelector('img[src*="fejlec"]');
         return img && img.alt === "Baglyok" && img.title === "Baglyok";
@@ -816,7 +816,7 @@ baglyok: {
     },
     {
       id: "focim-uppercase",
-      label: "10. A főcím \"Baglyok\" szövegre alkalmazza a text-uppercase osztályjelölőt",
+      label: "10. A \"Baglyok\" szöveget nagybetűssé tette Bootstrap stílus segítségével",
       check: (doc) => {
         const focim = doc.querySelector('[id="főcím"]');
         if (focim) return focim.querySelector('span.text-uppercase') !== null;
@@ -825,7 +825,7 @@ baglyok: {
     },
     {
       id: "torpekuvik-paragraphs",
-      label: "11. A Törpekuvik szövegrészei bekezdésbe kerültek (legalább 2 p)",
+      label: "11. A Törpekuvik szövegrészei bekezdésbe kerültek (legalább 2)",
       check: (doc) => {
         const h2s = doc.querySelectorAll('h2');
         const torpekuvikH2 = Array.from(h2s).find(h => h.textContent.includes('Törpekuvik'));
@@ -845,7 +845,7 @@ baglyok: {
     },
     {
       id: "fulesbagoly-ol",
-      label: "13. Az Erdei fülesbagoly megjelenésének adatai számozott felsorolásban (ol)",
+      label: "13. Az Erdei fülesbagoly megjelenésének adatai számozott felsorolásban",
       check: (doc) => {
         const h2s = doc.querySelectorAll('h2');
         const fulesbH2 = Array.from(h2s).find(h => h.textContent.includes('Erdei fülesbagoly'));
@@ -858,7 +858,7 @@ baglyok: {
     },
     {
       id: "uhu-ul",
-      label: "14. Az Uhu táplálékai számozatlan felsorolásban (ul, li elemekkel)",
+      label: "14. Az Uhu táplálékai számozatlan felsorolásban",
       check: (doc) => {
         const h2s = doc.querySelectorAll('h2');
         const uhuH2 = Array.from(h2s).find(h => h.textContent.includes('Uhu'));
@@ -869,7 +869,7 @@ baglyok: {
     },
     {
       id: "uhu-taplalek-id",
-      label: "15. Az Uhu táplálékai ul egyedi azonosítója taplalek",
+      label: "15. Az Uhu táplálékai felsorolásnak egyedi azonosítót állított taplalek néven",
       check: (doc) => doc.querySelector('ul#taplalek') !== null,
     },
     {
@@ -882,7 +882,7 @@ baglyok: {
     },
     {
       id: "hobagoly-paragraphs",
-      label: "17. A Hóbagoly szövegrészei bekezdésbe kerültek (legalább 2 p)",
+      label: "17. A Hóbagoly szövegrészei bekezdésbe kerültek (legalább 2)",
       check: (doc) => {
         const h2s = doc.querySelectorAll('h2');
         const hobH2 = Array.from(h2s).find(h => h.textContent.includes('Hóbagoly'));
@@ -894,12 +894,12 @@ baglyok: {
     },
     {
       id: "hobagoly-img",
-      label: "18. A Hóbagoly kép forrása img/hobagoly.jpg",
+      label: "18. A Hóbagoly kép forrását jól állította be",
       check: (doc) => doc.querySelector('img[src*="hobagoly"]') !== null,
     },
     {
       id: "hobagoly-alt-title",
-      label: "19. A Hóbagoly képnél alt és title szövege \"Hóbagoly\"",
+      label: "19. A Hóbagoly képnél ha felé visszük az egeret vagy ha nem jeleníthető meg a \"Hóbagoly\" szöveg jelenik meg",
       check: (doc) => {
         const img = doc.querySelector('img[src*="hobagoly"]');
         return img && img.alt === "Hóbagoly" && img.title === "Hóbagoly";
@@ -927,7 +927,7 @@ baglyok: {
     },
     {
       id: "table-bordered-center",
-      label: "24. A táblázaton alkalmazza a table-bordered és text-center osztályjelölőket",
+      label: "24. A táblázatot Bootstrap stílus segítségével szegélyezetté tette valamint a szöveget középre helyezte",
       check: (doc) => {
         const table = doc.querySelector('table');
         return table &&
@@ -937,7 +937,7 @@ baglyok: {
     },
     {
       id: "nokturn-col-md-6",
-      label: "25. A Nokturnalitás részben mindkét oszlop col-md-6 méretű",
+      label: "25. A Nokturnalitás részben az oszlopelrendezés fele-fele",
       check: (doc) => {
         const nokturn = doc.querySelector('#nokturn');
         if (!nokturn) return false;
@@ -989,7 +989,7 @@ baglyok: {
     },
     {
       id: "css-h2-fontsize",
-      label: "33. CSS: A h2 betűmérete 2.5em",
+      label: "33. CSS: A h2 betűmérete 2.5-szer nagyobb",
       check: (doc, html, css) => css && /h2\s*\{[^}]*font-size\s*:\s*2\.5em/i.test(css),
       cssCheck: true,
     },
