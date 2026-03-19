@@ -964,6 +964,7 @@
                 fetch(`${API}/api/progress/${encodeURIComponent(email)}`, { headers: authHeader }),
                 fetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`, { headers: authHeader })
             ]);
+            if (res.status === 401) { handleSessionExpired(); return; }
             const p = await res.json();
             const rankData = rankRes.ok ? await rankRes.json() : null;
             // A JSON kulcsai camelCase (C# record)
@@ -982,6 +983,12 @@
         }
     }
 
+    function handleSessionExpired() {
+        sessionStorage.removeItem('kandoUser');
+        alert('A munkamenet lejárt, kérlek jelentkezz be újra!');
+        window.location.replace('login.html');
+    }
+
     function closeEredmenyek() {
         document.getElementById('ered-overlay').classList.remove('open');
     }
@@ -996,6 +1003,7 @@
             const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
             const authHeader = u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
             const res = await fetch(`${API}/api/progress/${encodeURIComponent(email)}`, { headers: authHeader });
+            if (res.status === 401) { handleSessionExpired(); return; }
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const p = await res.json();
             const progress = {
