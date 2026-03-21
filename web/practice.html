@@ -1585,7 +1585,7 @@ let _emmet = null;
   } catch(e) { console.warn('Emmet betöltési hiba:', e); }
 })();
 
-// Emmet Tab bővítés – kizárólag Monaco addCommand-dal, nem emmet-monaco-es-sel
+// Emmet Tab bővítés – onKeyDown-nal (addCommand nem tudja felülírni a Monaco Tab-ját)
 function emmetTab(editor) {
   const m   = window.monaco;
   const pos   = editor.getPosition();
@@ -1668,8 +1668,17 @@ require(['vs/editor/editor.main'], function() {
     scrollBeyondLastLine: false, tabSize: 2,
   });
 
-  // Tab → Emmet bővítés a HTML editorban
-  state.editors.html.addCommand(m.KeyCode.Tab, () => emmetTab(state.editors.html));
+  // Tab → Emmet bővítés (onKeyDown = DOM szint, megelőzi a Monaco belső Tab kezelését)
+  state.editors.html.onKeyDown(e => {
+    if (e.keyCode === m.KeyCode.Tab && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+      // Snippet módban (tabstop navigáció) hagyjuk a Monaco-t dolgozni
+      const sc = state.editors.html.getContribution('snippetController2');
+      if (sc && sc.isInSnippet && sc.isInSnippet()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      emmetTab(state.editors.html);
+    }
+  });
 
   state.editors.html.onDidChangeModelContent(() => schedulePreview());
   state.editors.css.onDidChangeModelContent(() => schedulePreview());
