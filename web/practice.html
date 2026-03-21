@@ -474,6 +474,7 @@
 
 <!-- MONACO LOADER -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script src="emmet-monaco.min.js"></script>
 
 <script>
 'use strict';
@@ -1576,128 +1577,55 @@ function initStreak() {
 }
 initStreak();
 
-// ── Beépített Emmet – nincs szükség külső CDN-re ────────────────────────────
-// Páros tagek – kurzosr a tagek KÖZÖTT lesz (${0})
-const PAIRED = ['div','p','h1','h2','h3','h4','h5','h6','span','a','ul','ol','li',
-  'nav','header','footer','section','article','main','aside','figure','figcaption',
-  'table','thead','tbody','tr','th','td','form','label','button','select','option',
-  'textarea','strong','em','b','i','u','s','small','blockquote','pre','code',
-  'caption','details','summary','dialog','template'];
-
-const EMMET = {};
-PAIRED.forEach(t => { EMMET[t] = `<${t}>\${0}</${t}>`; });
-
-// Speciális rövidítések
-Object.assign(EMMET, {
-  '!':       `<!DOCTYPE html>\n<html lang="hu">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>\${1:Dokumentum}</title>\n</head>\n<body>\n  \${0}\n</body>\n</html>`,
-  'html':    `<!DOCTYPE html>\n<html lang="hu">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>\${1:Dokumentum}</title>\n</head>\n<body>\n  \${0}\n</body>\n</html>`,
-  'img':     `<img src="\${1}" alt="\${2}">`,
-  'input':   `<input type="\${1:text}" name="\${2}" id="\${3}">`,
-  'link':    `<link rel="stylesheet" href="\${1}">`,
-  'script':  `<script src="\${1}"><\\/script>`,
-  'meta':    `<meta name="\${1}" content="\${2}">`,
-  'meta:utf':`<meta charset="UTF-8">`,
-  'meta:vp': `<meta name="viewport" content="width=device-width, initial-scale=1.0">`,
-  'br':      `<br>`,
-  'hr':      `<hr>`,
-  'html:5':  `<!DOCTYPE html>\n<html lang="hu">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>\${1:Dokumentum}</title>\n</head>\n<body>\n  \${0}\n</body>\n</html>`,
-});
-
-function expandEmmetAbbr(abbr) {
-  if (EMMET[abbr]) return EMMET[abbr];
-  // tag.osztaly  → <tag class="osztaly">|</tag>
-  const dotM = abbr.match(/^([a-z][a-z0-9]*)\.([a-zA-Z0-9_-]+)$/);
-  if (dotM) return `<${dotM[1]} class="${dotM[2]}">\${0}</${dotM[1]}>`;
-  // tag#azonosito → <tag id="azonosito">|</tag>
-  const idM  = abbr.match(/^([a-z][a-z0-9]*)#([a-zA-Z0-9_-]+)$/);
-  if (idM)  return `<${idM[1]} id="${idM[2]}">\${0}</${idM[1]}>`;
-  // ismeretlen rövidítés → semmi
-  return null;
-}
-
-function emmetTab(editor) {
-  const m      = window.monaco;
-  const pos    = editor.getPosition();
-  const model  = editor.getModel();
-  const line   = model.getLineContent(pos.lineNumber);
-  const before = line.substring(0, pos.column - 1);
-  const sel    = editor.getSelection();
-
-  // Kijelölés → behúzás
-  if (sel && !sel.isEmpty()) {
-    editor.getAction('editor.action.indentLines')?.run();
-    return;
-  }
-
-  // Üres / csak whitespace → 2 szóköz
-  if (/^\s*$/.test(before)) {
-    editor.trigger('keyboard', 'type', { text: '  ' });
-    return;
-  }
-
-  // Tagen BELÜL (pl. <div class="|") → 2 szóköz
-  if (before.lastIndexOf('<') > before.lastIndexOf('>')) {
-    editor.trigger('keyboard', 'type', { text: '  ' });
-    return;
-  }
-
-  // Rövidítés kinyerése a kurzor előtt
-  const match = before.match(/([^\s<>"'=\\/`]+)$/);
-  if (!match) { editor.trigger('keyboard', 'type', { text: '  ' }); return; }
-
-  const abbr     = match[1];
-  const expanded = expandEmmetAbbr(abbr);
-
-  if (!expanded) { editor.trigger('keyboard', 'type', { text: '  ' }); return; }
-
-  // Alapbehúzás hozzáadása a multiline kimenethez
-  const indent = (line.match(/^(\s*)/) || ['', ''])[1];
-  const indented = expanded.split('\n').map((l, i) => i === 0 ? l : indent + l).join('\n');
-
-  // Rövidítés kijelölése → snippet beillesztése (${0} = kurzor helye)
-  const startCol = pos.column - abbr.length;
-  editor.setSelection({
-    startLineNumber: pos.lineNumber, startColumn: startCol,
-    endLineNumber:   pos.lineNumber, endColumn:   pos.column,
-  });
-  editor.trigger('emmet', 'editor.action.insertSnippet', { snippet: indented });
-}
-
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 
 require(['vs/editor/editor.main'], function() {
-  const m = window.monaco;
+  require([
+    'vs/language/html/htmlMode',
+    'vs/language/css/cssMode',
+    'vs/basic-languages/html/html',
+    'vs/basic-languages/css/css',
+  ], function(htmlMode, cssMode, htmlBasic, cssBasic) {
+    const m = window.monaco;
 
-  state.editors.html = m.editor.create(document.getElementById('editor-html'), {
-    value: '', language: 'html', theme: 'vs-dark', fontSize: 15,
-    minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
-    scrollBeyondLastLine: false, tabSize: 2, quickSuggestions: false,
-  });
-
-  state.editors.css = m.editor.create(document.getElementById('editor-css'), {
-    value: '', language: 'css', theme: 'vs-dark', fontSize: 15,
-    minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
-    scrollBeyondLastLine: false, tabSize: 2,
-  });
-
-  // Tab → Emmet bővítés (onKeyDown = DOM szint, megelőzi a Monaco belső Tab kezelését)
-  state.editors.html.onKeyDown(e => {
-    if (e.keyCode === m.KeyCode.Tab && !e.shiftKey && !e.ctrlKey && !e.altKey) {
-      // Snippet módban (tabstop navigáció) hagyjuk a Monaco-t dolgozni
-      const sc = state.editors.html.getContribution('snippetController2');
-      if (sc && sc.isInSnippet && sc.isInSnippet()) return;
-      e.preventDefault();
-      e.stopPropagation();
-      emmetTab(state.editors.html);
+    // Nyelvi konfiguráció explicit beállítása (mint a web vizsgán)
+    const htmlDef = htmlBasic && htmlBasic.language ? htmlBasic : (htmlBasic && htmlBasic.default ? htmlBasic.default : null);
+    const cssDef  = cssBasic  && cssBasic.language  ? cssBasic  : (cssBasic  && cssBasic.default  ? cssBasic.default  : null);
+    if (htmlDef && htmlDef.conf && htmlDef.language) {
+      m.languages.setLanguageConfiguration('html', htmlDef.conf);
+      m.languages.setMonarchTokensProvider('html', htmlDef.language);
     }
+    if (cssDef && cssDef.conf && cssDef.language) {
+      m.languages.setLanguageConfiguration('css', cssDef.conf);
+      m.languages.setMonarchTokensProvider('css', cssDef.language);
+    }
+
+    state.editors.html = m.editor.create(document.getElementById('editor-html'), {
+      value: '', language: 'html', theme: 'vs-dark', fontSize: 15,
+      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+      scrollBeyondLastLine: false, tabSize: 2,
+      quickSuggestions: { other: true, comments: false, strings: true },
+      suggest: { showSnippets: true, showWords: true },
+    });
+
+    state.editors.css = m.editor.create(document.getElementById('editor-css'), {
+      value: '', language: 'css', theme: 'vs-dark', fontSize: 15,
+      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+      scrollBeyondLastLine: false, tabSize: 2,
+      quickSuggestions: { other: true, comments: false, strings: true },
+    });
+
+    if (window.emmetMonaco) {
+      window.emmetMonaco.emmetHTML(m);
+    }
+
+    state.editors.html.onDidChangeModelContent(() => schedulePreview());
+    state.editors.css.onDidChangeModelContent(() => schedulePreview());
+
+    buildPills();
+    buildRefPanel();
+    loadTask(0);
   });
-
-  state.editors.html.onDidChangeModelContent(() => schedulePreview());
-  state.editors.css.onDidChangeModelContent(() => schedulePreview());
-
-  buildPills();
-  buildRefPanel();
-  loadTask(0);
 });
 
 // =====================================================================
