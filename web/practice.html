@@ -469,7 +469,7 @@ const BASE_HTML = `<!DOCTYPE html>
 const tasks = [
   {
     id: 1, emoji: '🏷️', title: 'HTML alapok',
-    description: 'Minden weboldal ezzel kezdődik. Írd meg a HTML alap-struktúrát: DOCTYPE, html tag megfelelő beállítással, head a kötelező meta tagokkal és CSS hivatkozással.',
+    description: 'Készítsd el a weboldal alapját az alábbiak szerint:<ul><li>A weboldal nyelve legyen <b>magyar</b> – a <code>&lt;html&gt;</code> tagon: <code>lang="hu"</code></li><li>A karakterkódolás legyen <b>UTF-8</b></li><li>A <b>viewport</b> meta tag is kerüljön bele</li><li>A böngésző fülén ez jelenjen meg: <b>Bogyós gyümölcsök</b></li><li>Csatold be a <b>css/style.css</b> stíluslapot a <code>&lt;head&gt;</code>-be</li></ul>',
     starterHtml: '',
     starterCss: '',
     checks: [
@@ -482,7 +482,7 @@ const tasks = [
   },
   {
     id: 2, emoji: '🖼️', title: 'Fejléc kép',
-    description: 'A vizsgákon mindig van egy nagy fejléc kép. Helyezz el egy képet: forrás az img mappából, alt és title szöveg, egyedi azonosító.',
+    description: 'Helyezd el a fejléc képet a weboldalon!<ul><li>A kép forrása: <b>img/fejlec.jpg</b></li><li>Ha a kép nem jeleníthető meg, vagy ha az egeret felé visszük, a <b>„Bogyós gyümölcsök"</b> szöveg jelenjen meg (alt és title attribútum)</li><li>A képre állíts be <b>fejlec</b> egyedi azonosítót (<code>id="fejlec"</code>)</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <!-- Ide kerül a fejléc kép -->'),
     starterCss: '',
     checks: [
@@ -495,7 +495,7 @@ const tasks = [
   },
   {
     id: 3, emoji: '📝', title: 'Főcím és szövegek',
-    description: 'Az oldal szövegszerkezetének felépítése. Főcím (h1), alcímek (h2, h3) és bekezdések (p) helyes használata Bootstrap margó osztályokkal.',
+    description: 'Készítsd el az oldal szöveges tartalmát!<ul><li>A főcím (<b>1-es szintű címsor</b>) legyen: <b>Bogyós gyümölcsök</b></li><li>Legyen legalább egy <b>2-es vagy 3-as szintű alcím</b> is (pl. <b>Erdei gyümölcsök</b>)</li><li>Legalább <b>2 bekezdés</b> szöveg szerepeljen</li><li>A bekezdésekre alkalmazd a Bootstrap <b>my-3</b> vagy <b>my-4</b> margó osztályt</li></ul>',
     starterHtml: BASE_HTML,
     starterCss: '',
     checks: [
@@ -507,7 +507,7 @@ const tasks = [
   },
   {
     id: 4, emoji: '✏️', title: 'Szövegformázás',
-    description: 'A vizsgákon mindig kell szöveget formázni. Tegyél félkövér, dőlt és aláhúzott szöveget az oldalra, és használj sortörést is!',
+    description: 'Formázd meg az alábbi szövegrészeket a kódban!<ul><li>A <b>„Kandó"</b> szó legyen <b>félkövér</b> (<code>&lt;b&gt;</code> vagy <code>&lt;strong&gt;</code>)</li><li>A <b>„neves"</b> szó legyen <b>dőlt</b> (<code>&lt;em&gt;</code> vagy <code>&lt;i&gt;</code>)</li><li>A <b>„minőségi"</b> szó legyen <b>aláhúzott</b> (<code>&lt;u&gt;</code>)</li><li>Tégy be egy <b>sortörést</b> (<code>&lt;br&gt;</code>) valahova a szövegbe</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <p>A Kandó Kálmán Szakgimnázium és Szakközépiskola egy neves budapesti iskola.
     Az iskola elkötelezett a minőségi oktatás iránt.</p>
   <p>A diákok számos tantárgyat tanulnak az iskolában.
@@ -522,7 +522,7 @@ const tasks = [
   },
   {
     id: 5, emoji: '🔗', title: 'Menüpont és link',
-    description: 'Minden vizsgán kell egy menüpont, ami egy másik oldalra mutat és új lapon nyílik meg. Egészítsd ki a navigációt!',
+    description: 'Egészítsd ki a navigációt egy menüponttal!<ul><li>A menüpont szövege: <b>Goji bogyó</b></li><li>Hivatkozzon erre az oldalra: <b>goji.html</b></li><li>A link <b>új lapon</b> nyíljon meg (<code>target="_blank"</code>)</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <nav>
     <ul>
       <!-- Ide kerülnek a menüpontok -->
@@ -537,7 +537,7 @@ const tasks = [
   },
   {
     id: 6, emoji: '📋', title: 'Felsorolások',
-    description: 'A vizsgákon mindig van számozatlan (ul) és számozott (ol) felsorolás. Mindkettőnek legyen egyedi azonosítója (id)!',
+    description: 'Készítsd el az alábbi két felsorolást!<ul><li><b>Számozatlan lista</b> (<code>&lt;ul&gt;</code>) az egyedi azonosítóval: <code>id="gyumolcsok"</code> – legalább 3 gyümölcs neve (pl. Eper, Málna, Áfonya)</li><li><b>Számozott lista</b> (<code>&lt;ol&gt;</code>) az egyedi azonosítóval: <code>id="lepesek"</code> – pl. lekvár készítés lépései</li></ul>',
     starterHtml: BASE_HTML,
     starterCss: '',
     checks: [
@@ -550,7 +550,7 @@ const tasks = [
   },
   {
     id: 7, emoji: '📸', title: 'Képek tartalomban',
-    description: 'A tartalom közé is kerülnek képek. Fontos, hogy reszponzívak legyenek – ne nyúljanak ki a keretből mobilon sem!',
+    description: 'Helyezz el egy képet a tartalom közé!<ul><li>A kép forrása: <b>img/afonya.jpg</b></li><li>Ha a kép nem jeleníthető meg vagy egérrel fölé visszük, jelenjen meg: <b>„Áfonya"</b> (alt és title)</li><li>A kép legyen <b>reszponzív</b> – alkalmazd rá a Bootstrap <code>img-fluid</code> osztályt</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <!-- Ide kerülnek a tartalom képek -->'),
     starterCss: '',
     checks: [
@@ -562,7 +562,7 @@ const tasks = [
   },
   {
     id: 8, emoji: '🎨', title: 'Bootstrap szöveg osztályok',
-    description: 'A Bootstrap rengeteg kész CSS osztályt kínál szövegformázáshoz. Ezeket a vizsgákon rendszeresen kell alkalmazni!',
+    description: 'A képaláírásra és szövegekre alkalmazd a Bootstrap osztályokat!<ul><li>A <code>&lt;figcaption&gt;</code>-re add a <b>fw-bold</b> (félkövér) osztályt</li><li>A képaláírás legyen <b>középre igazítva</b> – <code>text-center</code></li><li>Valamelyik szövegen használd a <b>text-uppercase</b> (nagybetűs) osztályt</li><li>Egy bekezdésre alkalmazd a <b>my-3</b> vagy <b>my-4</b> margót</li><li>A képaláírás mérete legyen <b>h5</b> Bootstrap osztállyal</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <figure>
     <img src="img/kep.jpg" alt="Kép" title="Leírás">
     <!-- Ide jön a figcaption Bootstrap osztályokkal -->
@@ -578,7 +578,7 @@ const tasks = [
   },
   {
     id: 9, emoji: '🖼️', title: 'Kép középre + képaláírás',
-    description: 'A vizsgákon a képeket középre kell helyezni és képaláírást kell hozzáadni Bootstrap osztályokkal. Így néznek ki a kártyák is!',
+    description: 'Helyezz el egy képet képaláírással, középre igazítva!<ul><li>Használj <code>&lt;figure&gt;</code> és <code>&lt;figcaption&gt;</code> elemeket</li><li>A kép (<b>img/malna.jpg</b>) legyen <b>középre helyezve</b> Bootstrap-pel: <code>class="d-block mx-auto img-fluid"</code></li><li>A képaláírás szövege: <b>Málna</b> – legyen középre igazítva (<code>text-center</code>) és félkövér (<code>fw-bold</code>)</li></ul>',
     starterHtml: BASE_HTML,
     starterCss: '',
     checks: [
@@ -590,7 +590,7 @@ const tasks = [
   },
   {
     id: 10, emoji: '📐', title: 'Bootstrap Grid',
-    description: 'A Bootstrap grid rendszer (container → row → col) lehetővé teszi, hogy az oldal több oszlopos elrendezésű legyen. Ez az egyik legfontosabb Bootstrap tudnivaló!',
+    description: 'Készítsd el a 3 oszlopos részt Bootstrap grid-del!<ul><li>Legyen egy <code>container</code> div, azon belül egy <code>row</code></li><li>A row-on belül <b>3 egyforma oszlop</b> legyen: mindegyikre <code>col-md-4</code></li><li>Minden oszlopba írj valamit: pl. Eper, Málna, Áfonya – egy-egy képpel vagy szöveggel</li></ul><small>💡 3 × col-md-4 = 12 → pont elfér egy sorban!</small>',
     starterHtml: BASE_HTML,
     starterCss: '',
     checks: [
@@ -603,7 +603,7 @@ const tasks = [
   },
   {
     id: 11, emoji: '📊', title: 'Táblázat alap',
-    description: 'A táblázat a vizsgákon mindig szerepel. Tanuld meg a helyes HTML struktúrát: thead (fejléc), tbody (törzs), tr (sor), th (fejléc cella), td (adatcella).',
+    description: 'Egészítsd ki a táblázatot a hiányzó részekkel!<ul><li>A táblázatnak legyen <b>fejléc része</b> (<code>&lt;thead&gt;</code>) 3 fejléc cellával: <b>Gyümölcs | Szín | Szezon</b></li><li>Legyen <b>törzs része</b> (<code>&lt;tbody&gt;</code>) legalább 2 adatsorral (<code>&lt;tr&gt;</code> és <code>&lt;td&gt;</code>)</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <table>
     <!-- Ide jön a táblázat struktúra -->
   </table>`),
@@ -619,7 +619,7 @@ const tasks = [
   },
   {
     id: 12, emoji: '📊', title: 'Táblázat Bootstrap stílusok',
-    description: 'A Bootstrap táblázat-osztályokkal gyorsan szép stílust adhatsz a táblázatnak anélkül, hogy CSS-t írnál!',
+    description: 'Tedd szebbé a táblázatot Bootstrap osztályokkal!<ul><li>A <code>&lt;table&gt;</code> tagre add a <b>table</b> osztályt (ez az alap Bootstrap stílus)</li><li>Legyen <b>szegélyes</b> (<code>table-bordered</code>) vagy <b>csíkos</b> (<code>table-striped</code>)</li><li>A fejléc cellák (<code>&lt;th&gt;</code>) legyenek <b>nagybetűsek</b>: <code>text-uppercase</code></li><li>Alkalmazd a <b>text-center</b> vagy <b>align-middle</b> igazítást</li><li>A fejléc cellák szélessége legyen <b>egyforma</b>: <code>w-25</code> osztály</li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <table>
     <thead>
       <tr>
@@ -652,7 +652,7 @@ const tasks = [
   },
   {
     id: 13, emoji: '🔻', title: 'Lábléc link',
-    description: 'Minden vizsgán a lábléc tartalmaz egy "Ugrás az elejére" hivatkozást, ami az oldal tetejére visz.',
+    description: 'Készítsd el a lábléc hivatkozást!<ul><li>Tegyél egy <code>&lt;footer&gt;</code> elemet az oldal aljára</li><li>Benne legyen egy hivatkozás, ami az oldal elejére (<code>id="leiras"</code>) ugrik: <code>href="#leiras"</code></li><li>A hivatkozás szövege pontosan ennyi legyen: <b>Ugrás az elejére</b></li></ul><small>💡 A # jel azt jelenti: ugrik arra az elemre, aminek az id-je "leiras"</small>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <div id="leiras">
     <h1>Oldal teteje</h1>
     <p>Ez az oldal eleje. Görgess le és kattints a lábléc linkjére!</p>
@@ -668,7 +668,7 @@ const tasks = [
   },
   {
     id: 14, emoji: '🎨', title: 'CSS: Betűtípus és szöveg',
-    description: 'A CSS style.css fájlba kerül a vizuális formázás. Tanuld meg a leggyakoribb szöveges CSS tulajdonságokat!',
+    description: 'Írd meg a CSS stílusokat a jobb oldali CSS fülön!<ul><li>Az oldal betűtípusa legyen <b>Verdana</b>: <code>body { font-family: Verdana, sans-serif; }</code></li><li>A bekezdések legyenek <b>sorkizártak</b>: <code>p { text-align: justify; }</code></li><li>Valamelyik elemre állíts be betűméretet <b>em-ben vagy %-ban</b> (pl. <code>font-size: 1.2em</code> vagy <code>90%</code>)</li><li>A <code>.felirat</code> osztályra állíts be <b>kiskapitális</b> betűt: <code>font-variant: small-caps</code></li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <h1>Kandó KSZKI</h1>
   <p>A Kandó Kálmán Szakgimnázium és Szakközépiskola egy neves budapesti iskola. Az intézmény elkötelezett a minőségi szakmai oktatás iránt.</p>
   <p class="felirat">Ez egy kiskapitális felirat</p>`),
@@ -682,7 +682,7 @@ const tasks = [
   },
   {
     id: 15, emoji: '🎨', title: 'CSS: Navigáció stílus',
-    description: 'A vizsgákon a navigáció listaelemeit CSS-sel kell formázni: szegély, belső margó, hivatkozás szín.',
+    description: 'Formázd meg CSS-sel a navigáció listaelemeit! (A CSS fülön dolgozz!)<ul><li>A navigáció listaelemére (<code>nav li</code>) állíts be <b>jobb oldali szegélyt</b>: <code>border-right: 3px dotted red</code></li><li>Ugyanarra adj <b>belső margót</b>: <code>padding: 0 15px</code> (vízszintesen 15px, függőlegesen 0)</li><li>A navigáció hivatkozásainak (<code>nav a</code>) a <b>betűszíne</b> legyen fehér: <code>color: white</code></li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <nav>
     <ul>
       <li><a href="#">Kezdőlap</a></li>
@@ -699,7 +699,7 @@ const tasks = [
   },
   {
     id: 16, emoji: '🎨', title: 'CSS: Lablec osztály',
-    description: 'A vizsgákon a lábléc osztályos stílusait is el kell készíteni. Szín, félkövér, aláhúzás megszüntetése, hover hatás.',
+    description: 'Formázd meg CSS-sel a lábléc (<code>.lablec</code> osztály) hivatkozásait!<ul><li>A <code>.lablec a</code> hivatkozás <b>betűszíne</b> legyen fehér</li><li>Legyen <b>félkövér</b>: <code>font-weight: bold</code></li><li>Szüntesd meg az <b>aláhúzást</b>: <code>text-decoration: none</code></li><li>Ha <b>az egér fölé kerül</b> (<code>.lablec a:hover</code>), legyen <b>nagybetűs</b>: <code>text-transform: uppercase</code></li></ul>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <footer class="lablec">
     <a href="#leiras">Ugrás az elejére</a>
   </footer>`),
@@ -713,7 +713,7 @@ const tasks = [
   },
   {
     id: 17, emoji: '🎨', title: 'CSS: Listaelem kép',
-    description: 'A vizsgákon a felsorolás elé egyedi képet kell beállítani CSS-sel a list-style-image tulajdonsággal!',
+    description: 'Állíts be egyedi képet a lista jelölőjeként CSS-sel! (A CSS fülön dolgozz!)<ul><li>A <code>#lista</code> azonosítójú elemre állítsd be: <code>list-style-image: url(\'img/bogyo.png\')</code></li><li>Adj hozzá bal oldali margót is: <code>margin-left: 25px</code></li></ul><small>💡 Így a lista előtt egy kis kép fog megjelenni a pontok helyett!</small>',
     starterHtml: BASE_HTML.replace('  <!-- ide kerül a kód -->', `  <ul id="lista">
     <li>Alma</li>
     <li>Barack</li>
@@ -908,7 +908,7 @@ function loadTask(index) {
   state.editors.css.setValue(cssVal);
 
   document.getElementById('task-title').textContent = task.emoji + ' ' + task.id + '. ' + task.title;
-  document.getElementById('task-desc').textContent = task.description;
+  document.getElementById('task-desc').innerHTML = task.description;
 
   // Mark as started if idle
   if (state.taskStatus[index] === 'idle') state.taskStatus[index] = 'started';
