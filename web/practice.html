@@ -828,6 +828,9 @@ require(['vs/editor/editor.main'], function() {
       wordWrap: 'on',
       scrollBeyondLastLine: false,
       tabSize: 2,
+      acceptSuggestionOnCommitCharacter: false,
+      acceptSuggestionOnEnter: 'off',
+      tabCompletion: 'off',
     });
 
     state.editors.css = m.editor.create(document.getElementById('editor-css'), {
