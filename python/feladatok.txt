@@ -1428,3 +1428,326 @@ elif szoba == "apartman":
     print(f"Fizetendő: {ar} Ft")
 else:
     print("Ismeretlen szobatípus!")
+
+24. feladat
+Cim: Kutya életkor kalkulátor
+
+A kutyák életkora nem egyszerűen 7-tel szorzódik! A tudományos számítás szerint:
+Az 1. év pontosan 15 emberi évnek számít.
+A 2. év 9 emberi évnek számít (tehát egy 2 éves kutya 24 emberi éves).
+Minden további év után 5 emberi évet kell hozzáadni (pl. a 3. évnél 24 + 5 = 29).
+
+Írj programot, amely bekéri a kutya valós éveinek számát (egész számként), majd kiszámolja és kiírja, hány éves emberi években mérve! (A program kezelje a 0 éves kutyákat is: az ő koruk 0).
+
+Minta kód:
+
+```
+Hány éves a kutyád? 1
+A kutyád emberi években: 15 éves.
+
+Hány éves a kutyád? 2
+A kutyád emberi években: 24 éves.
+
+Hány éves a kutyád? 5
+A kutyád emberi években: 39 éves.
+
+```
+
+Pontozas:
+bekeres:Hány éves a kutyád? |Bekérés szövege: "Hány éves a kutyád? "|Pontosan másold a szöveget egy szóközzel a végén! 🐶|✅ A bekérés szövege tökéletes!
+int_float:1|Egész számmá alakítja az életkort|Az input szöveget ad, de nekünk számolni kell vele! 🔢|🔢 Az életkor már számként szerepel!
+if|Elágazást használ|Különböző életkorokra más a matek. Melyik kulcsszóval indítod? 🌿|🌿 Az elágazás elindult!
+elif|Több esetet kezel (elif)|Mi van a 2. évvel, vagy a többivel? 🔀|🔀 A többágú elágazás is bekerült!
+teszt:1:15|1 éves kutyát számol|1 év = 15 emberi év. Jól számolt a kódod? 🐕|🐕 1 éves kutya = 15 év, helyes!
+teszt:2:24|2 éves kutyát számol|2 év = 15 + 9 = 24 emberi év. Működik az összeadás? 🐕‍🦺|🐕‍🦺 2 éves kutya = 24 év, szuper!
+teszt:5:39|Idősebb kutyát számol|5 év = 24 + 3*5 = 39 év. Ezt a képletet is tudja a program? 🧮|🧮 A bonyolultabb matek is hibátlan!
+teszt:0:0|0 éves kutyát is kezel|Ha 0-t írunk, 0-t kell kapnunk. Gondoltál erre az ágra is? 🐾|🐾 A 0 éves kutyus is a helyén van!
+
+Tippek:
+
+Megoldas:
+kutya_ev = int(input("Hány éves a kutyád? "))
+
+if kutya_ev == 0:
+    emberi_ev = 0
+elif kutya_ev == 1:
+    emberi_ev = 15
+elif kutya_ev == 2:
+    emberi_ev = 24
+else:
+    # A 2. év utáni éveket szorozzuk 5-tel, és hozzáadjuk a bázis 24-et
+    emberi_ev = 24 + ((kutya_ev - 2) * 5)
+
+print(f"A kutyád emberi években: {emberi_ev} éves.")
+
+25. feladat
+Cim: Traffipax
+
+Készíts programot egy sebességmérő kamerának! A program kérje be az útszakaszon megengedett sebességet (km/h), majd a radar által mért tényleges sebességet (km/h)!
+A program számolja ki a különbséget, és döntse el a büntetést az alábbiak szerint:
+
+Ha a mért sebesség nem nagyobb, mint a megengedett: írja ki: "Szabályos közlekedés."
+
+Ha a túllépés 1 és 15 km/h között van (a 15-öt is beleértve): írja ki: "Figyelmeztetés: Kisebb sebességtúllépés!"
+
+Ha a túllépés nagyobb, mint 15 km/h: írja ki: "Büntetés: Gyorshajtás!"
+
+Minta kód:
+```
+Megengedett sebesség (km/h): 50
+Mért sebesség (km/h): 62
+Figyelmeztetés: Kisebb sebességtúllépés!
+
+Megengedett sebesség (km/h): 90
+Mért sebesség (km/h): 85
+Szabályos közlekedés.
+```
+
+Pontozas:
+bekeres:Megengedett sebesség (km/h): |Bekérés szövege 1|Pontosan másold a szöveget a szóközökkel együtt! 🛑|✅ A sebességhatár bekérése tökéletes!
+int_float:1|Sebességhatárt számmá alakítja|A bekért adatból számot kell csinálni a matekhoz. 🔢|✅ Sebességhatár számmá alakítva!
+bekeres:Mért sebesség (km/h): |Bekérés szövege 2|A mért sebességet is pontosan így kérd be! 📸|✅ A mért sebesség bekérése is megvan!
+int_float:2|Mért sebességet számmá alakítja|Ezt is át kell alakítani, különben nem tudsz kivonni! 🔢|✅ Mért adat számmá alakítva!
+if|Elágazást használ|El kell dönteni, történt-e gyorshajtás. 🌿|✅ Az elágazás elindult!
+elif|Több ágat használ (elif)|A figyelmeztetésnek külön ág kell! 🔀|✅ A többágú vizsgálat is működik!
+teszt:50,45:Szabályos|Szabályos esetet tesztel|Ha lassabban megy, nincs büntetés. Jó a matek? 🚗|✅ A szabályos közlekedést jól kezeli!
+teszt:50,70:Büntetés|Gyorshajtást tesztel|Nagy túllépésnél jön a büntetés. Működik az ágad? 🚓|✅ A durva gyorshajtást is elkapta a program!
+
+Tippek:
+
+Megoldas:
+hatar = int(input("Megengedett sebesség (km/h): "))
+mert = int(input("Mért sebesség (km/h): "))
+
+tullepes = mert - hatar
+
+if tullepes <= 0:
+    print("Szabályos közlekedés.")
+elif tullepes <= 15:
+    print("Figyelmeztetés: Kisebb sebességtúllépés!")
+else:
+    print("Büntetés: Gyorshajtás!")
+
+26. feladat
+Cim: Űrhajó Rakomány
+
+Egy teherűrhajó felszállás előtt ellenőrzi a berakodott konténerek súlyát, mert a hajó maximum 100 tonna extra súlyt bír el.
+
+Írj egy TargySuly nevű függvényt, ami a konténer kódja alapján visszaadja a súlyát tonnában:
+1 - Élelem (10 tonna)
+2 - Víz (20 tonna)
+3 - Üzemanyag (50 tonna)
+Bármilyen más kód esetén adjon vissza 0-t!
+
+A főprogramban hozz létre egy üres listát rakomany néven!
+Kérdezd meg: "Hány konténert pakolunk be? "
+Egy ciklus segítségével kérd be a kódokat (pl. "1. konténer kódja: "), hívd meg a függvényt! Ha a súly nagyobb mint 0, írd ki a kapott súlyt, és fűzd hozzá a listához! Ha 0, írd ki: "Érvénytelen kód!"
+A ciklus után összegezd a lista elemeit! Írd ki az összsúlyt.
+Ha az összsúly meghaladja a 100 tonnát, írd ki: "Túlterhelés! Felszállás megszakítva.", ellenkező esetben: "Súlyhatár rendben. Felszállás engedélyezve!"
+
+Minta kód:
+```
+Hány konténert pakolunk be? 3
+1. konténer kódja: 3
+Súly: 50 tonna
+2. konténer kódja: 3
+Súly: 50 tonna
+3. konténer kódja: 1
+Súly: 10 tonna
+----------------------
+Összsúly: 110 tonna
+Túlterhelés! Felszállás megszakítva.
+```
+
+Pontozas:
+def:TargySuly|Függvényt definiál|Megvan a TargySuly függvény a kódban? 🛠️|✅ A függvény definíciója megvan!
+return|Visszatérési értéket ad|A függvény visszaadja az értéket (return), nem printeli! 🔙|✅ A visszatérési érték használata helyes!
+tartalmaz:rakomany = []|Üres lista a főprogramban|Készítettél egy üres listát a súlyoknak? 📦|✅ A lista készen áll a konténerek fogadására!
+bekeres:Hány konténert pakolunk be? |Bekérés szövege|A darabszám bekérése pontosan egyezik? 🏗️|✅ A darabszám bekérése tökéletes!
+int_float:1|Darabszámot számmá alakítja|A bekért darabból számot kell csinálni. 🔢|✅ Darabszám számmá alakítva!
+for|Ciklust használ a bekéréshez|Annyiszor fut le, ahány konténert mondtunk? 🔄|✅ A pakoló ciklus elindult!
+tartalmaz:konténer kódja: |Kód bekérése|Az f-string segítségével bekéri a kódot? 🆔|✅ A konténer kód bekérése működik!
+int_float:2|Kódot számmá alakítja|A kódot is számmá kell alakítani! 🔢|✅ Kód számmá alakítva!
+tartalmaz:TargySuly(|Függvény hívása|A cikluson belül meghívod a függvényt? 📞|✅ A függvényhívás sikeres!
+tartalmaz:Súly:|Súly kiírása|Minden érvényes konténernél kiírja a súlyát? ⚖️|✅ A súly megjelenik a képernyőn!
+tartalmaz:append|Listához adás|A kapott súlyt hozzáadod a listához? ➕|✅ A lista szépen telik a súlyokkal!
+for|Ciklussal vagy sum-mal összegzi|Kiszámoltad a lista elemeinek összegét a végén? 🧮|✅ Az összsúly kiszámolása megtörtént!
+if|Elágazás a végén|Külön ág kell a sikeres felszállásnak és a túlterhelésnek! 🚀|✅ A végső ellenőrzés a helyén van!
+teszt:3,3,3,3:Túlterhelés|Súlyhatár tesztelése|3 db 50 tonnás konténer = 150 tonna. Leáll a felszállás? 💥|✅ A túlterhelést sikeresen megakadályozta a program!
+
+Tippek:
+
+Megoldas:
+def TargySuly(kod):
+    if kod == 1:
+        return 10
+    elif kod == 2:
+        return 20
+    elif kod == 3:
+        return 50
+    else:
+        return 0
+
+rakomany = []
+darab = int(input("Hány konténert pakolunk be? "))
+
+for i in range(darab):
+    kod = int(input(f"{i + 1}. konténer kódja: "))
+    suly = TargySuly(kod)
+    
+    if suly > 0:
+        print(f"Súly: {suly} tonna")
+        rakomany.append(suly)
+    else:
+        print("Érvénytelen kód!")
+
+print("----------------------")
+
+# Összegzés
+osszsuly = 0
+for t in rakomany:
+    osszsuly += t
+
+print(f"Összsúly: {osszsuly} tonna")
+
+# Felszállás ellenőrzése
+if osszsuly > 100:
+    print("Túlterhelés! Felszállás megszakítva.")
+else:
+    print("Súlyhatár rendben. Felszállás engedélyezve!")
+
+27. feladat
+Cim: Mobiladat Túllépés
+
+Egy mobilszolgáltató a havi 5 GB-os adatkeret felett extra díjat számol fel. Készíts programot, ami bekéri az adott hónapban felhasznált adatmennyiséget (egész GB-ban), majd kiszámolja a fizetendő túldíjat az alábbiak szerint:
+
+Ha a felhasználás 5 GB vagy annál kevesebb: írja ki: "Nincs fizetendő túldíj."
+
+Ha a felhasználás 6 és 10 GB között van (a 10-et is beleértve): minden extra GB után 1000 Ft-ot kell fizetni. (pl. 8 GB esetén a túllépés 3 GB, tehát 3000 Ft). Írja ki: "Kisebb túllépés. Fizetendő: [X] Ft"
+
+Ha a felhasználás több, mint 10 GB: az extra GB-ok díján felül (1000 Ft/GB) még egy 2000 Ft-os "Adatroham" büntetést is rászámol a rendszer. Írja ki: "Nagy túllépés! Fizetendő: [X] Ft"
+
+Minta kód:
+```
+Felhasznált adat (GB): 8
+Kisebb túllépés. Fizetendő: 3000 Ft
+
+Felhasznált adat (GB): 12
+Nagy túllépés! Fizetendő: 9000 Ft
+```
+
+Pontozas:
+bekeres:Felhasznált adat (GB): |Bekérés szövege|A szöveg végén a szóközre is figyelj! 📱|✅ A felhasznált adat bekérése tökéletes!
+int_float:1|Adatot számmá alakítja|Ebből matekozni fogunk, konvertálni kell! 🔢|✅ Az adatmennyiség már szám!
+if|Elágazást használ|El kell dönteni, túlléptük-e a keretet. 🌿|✅ Az elágazás elindult!
+elif|Több ágat használ (elif)|A kisebb és nagyobb túllépést külön kell kezelni! 🔀|✅ A többágú vizsgálat a helyén van!
+teszt:4:Nincs fizetendő|Kereten belüli adat|Ha 4-et írunk, nincs büntetés. Jó a feltétel? 📉|✅ A kereten belüli használatot jól kezeli!
+teszt:5:Nincs fizetendő|Pontosan a keret határa|Ha pontosan 5 GB, még mindig ingyenes! Erre is gondoltál? 🎯|✅ Az 5 GB-os határérték is hibátlan!
+teszt:8:3000|Kisebb túllépés számolása|8 GB = 3 GB extra = 3000 Ft. Jó a képlet? 💸|✅ A kisebb túllépés matekja stimmel!
+teszt:12:9000|Nagy túllépés és büntetés|12 GB = 7 GB extra (7000 Ft) + 2000 Ft büntetés = 9000 Ft. Szuperül számol! 🚨|✅ A durva túllépés büntetése is hibátlan!
+
+Tippek:
+
+Megoldas:
+adat = int(input("Felhasznált adat (GB): "))
+
+if adat <= 5:
+    print("Nincs fizetendő túldíj.")
+elif adat <= 10:
+    tullepes = adat - 5
+    fizetendo = tullepes * 1000
+    print(f"Kisebb túllépés. Fizetendő: {fizetendo} Ft")
+else:
+    tullepes = adat - 5
+    fizetendo = (tullepes * 1000) + 2000
+    print(f"Nagy túllépés! Fizetendő: {fizetendo} Ft")
+
+28. feladat
+Cim: Alkimista Varázsital
+
+Egy alkimista varázsitalt főz. Minden hozzávalónak van egy toxicitási (mérgezési) szintje. Ha az üstben lévő anyagok össz-toxicitása eléri a 100%-ot, az üst felrobban!
+
+Írj egy MeregSzint nevű függvényt, ami paraméterként megkapja az összetevő kódját, és visszaadja a toxicitását:
+
+1 - Békanyál: 15%
+2 - Sárkányvér: 40%
+3 - Éjifű: 30%
+Minden más kód esetén a függvény 0%-ot adjon vissza!
+
+A főprogramban hozz létre egy üres listát ust néven, amiben a bedobott anyagok toxicitását gyűjtöd!
+
+Kérdezd meg: "Hány összetevőt teszel az üstbe? "
+
+Egy ciklus segítségével kérd be a kódokat (pl. "1. összetevő kódja: "), majd hívd meg rá a függvényt!
+Ha az érték nagyobb, mint 0: írd ki a toxicitást, és fűzd hozzá a listához! Ha 0, írd ki: "Ismeretlen anyag!"
+A ciklus után összegezd a lista elemeit (az össz-toxicitást)!
+Ha a végösszeg eléri vagy meghaladja a 100%-ot, írd ki: "BUMM! Az üst felrobbant!", ellenkező esetben írd ki: "Sikeres főzet! Toxicitás: [X]%"
+
+Minta kód:
+```
+Hány összetevőt teszel az üstbe? 3
+1. összetevő kódja: 2
+Toxicitás: 40%
+2. összetevő kódja: 9
+Ismeretlen anyag!
+3. összetevő kódja: 3
+Toxicitás: 30%
+----------------------
+Sikeres főzet! Toxicitás: 70%
+```
+
+Pontozas:
+def:MeregSzint|Függvényt definiál|Megvan a MeregSzint függvény a kódban? 🧪|✅ A függvény definíciója megvan!
+return|Visszatérési értéket ad|A függvény visszaadja az értéket (return), nem printeli! 🔙|✅ A visszatérési érték használata helyes!
+tartalmaz:ust = []|Üres lista a főprogramban|Készítettél egy üres listát az összetevőknek? 🥣|✅ Az üst készen áll az anyagok fogadására!
+bekeres:Hány összetevőt teszel az üstbe? |Bekérés szövege|A darabszám bekérése pontosan egyezik a mintával? 🔢|✅ A darabszám bekérése tökéletes!
+int_float:1|Darabszámot számmá alakítja|A bekért darabból számot kell csinálni a ciklushoz. 🔢|✅ Darabszám számmá alakítva!
+for|Ciklust használ a bekéréshez|Annyiszor fut le, ahány összetevőt mondtunk? 🔄|✅ A keverő ciklus elindult!
+tartalmaz:összetevő kódja: |Kód bekérése|Az f-string segítségével bekéri a kódokat? 🆔|✅ A hozzávaló kódjának bekérése működik!
+int_float:2|Kódot számmá alakítja|A kódot is számmá kell alakítani a függvényhez! 🔢|✅ Kód számmá alakítva!
+tartalmaz:MeregSzint|Függvény hívása|A cikluson belül meghívod a függvényt az aktuális kódra? 📞|✅ A függvényhívás sikeres!
+tartalmaz:Toxicitás:|Toxicitás kiírása|Minden érvényes anyagnál kiírja a %-ot? ☢️|✅ A toxicitás szintje megjelenik a képernyőn!
+tartalmaz:append|Listához adás|A kapott értéket hozzáadod az ust listához? ➕|✅ Az üst szépen telik a mérgekkel!
+for|Ciklussal vagy sum-mal összegzi|Kiszámoltad a lista elemeinek összegét a végén? 🧮|✅ Az össz-toxicitás kiszámolása megtörtént!
+if|Elágazás a végén|Külön ág kell a robbanásnak és a sikernek! 🌿|✅ A végső ellenőrzés a helyén van!
+teszt:3,2,2,2:BUMM!|Robbanás tesztelése|3 db Sárkányvér (3*40) = 120%. Felrobban a labor? 💥|✅ A robbanást sikeresen lekezelte a program!
+
+Tippek:
+
+Megoldas:
+def MeregSzint(kod):
+    if kod == 1:
+        return 15
+    elif kod == 2:
+        return 40
+    elif kod == 3:
+        return 30
+    else:
+        return 0
+
+ust = []
+darab = int(input("Hány összetevőt teszel az üstbe? "))
+
+for i in range(darab):
+    kod = int(input(f"{i + 1}. összetevő kódja: "))
+    toxicitas = MeregSzint(kod)
+    
+    if toxicitas > 0:
+        print(f"Toxicitás: {toxicitas}%")
+        ust.append(toxicitas)
+    else:
+        print("Ismeretlen anyag!")
+
+print("----------------------")
+
+# Összegzés
+osszes_mereg = 0
+for t in ust:
+    osszes_mereg += t
+
+# Robbanás ellenőrzése
+if osszes_mereg >= 100:
+    print("BUMM! Az üst felrobbant!")
+else:
+    print(f"Sikeres főzet! Toxicitás: {osszes_mereg}%")
+
