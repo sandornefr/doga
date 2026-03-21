@@ -1294,6 +1294,9 @@
                     <button class="btn btn-primary" id="start-btn" style="width:100%; margin-top:0.4rem; background: linear-gradient(135deg, #e94560, #c0392b); border:none; border-radius:10px; padding:0.75rem; font-size:1rem; letter-spacing:0.5px;">
                         Elfogadom a szabályokat – Teszt indítása
                     </button>
+                    <button id="btn-open-custom-modal" type="button" onclick="openCustomModal()" style="display:none;width:100%;margin-top:0.5rem;padding:0.6rem;background:#0f3460;border:1px solid #536dfe;border-radius:10px;color:#a5b4fc;font-size:0.9rem;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
+                        🎯 Egyéni összeállítás
+                    </button>
 
                     <!-- Rejtett form mezők (JS-nek kellenek) -->
                     <input type="hidden" id="name">
@@ -1377,7 +1380,6 @@
                     <div class="terminal-container" id="terminal-container">
                         <div id="terminal"></div>
                     </div>
-                    <p id="submit-hint" style="display:none;text-align:center;font-size:0.78rem;color:#94a3b8;margin:0 0 4px 0;">Csak akkor nyomj rá, ha mindhárom feladattal készen vagy!</p>
                     <button class="btn btn-submit-main" id="submit-btn"><i class="fas fa-triangle-exclamation"></i> <span id="submit-btn-label">Feladat beadása</span></button>
                     <div class="quiz-right-footer">
                         <span class="credits-name"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong>Sándorné Feke Réka</strong></span>
@@ -1468,11 +1470,11 @@
     <div id="solution-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center;">
         <div style="background:#1e2d3d; border:1px solid #2d4a6b; border-radius:12px; max-width:720px; width:92%; max-height:80vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.6);">
             <div style="padding:0.9rem 1.2rem; border-bottom:1px solid #2d4a6b; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:#4ade80; font-weight:600; font-size:0.95rem;">📋 Megoldás <span style="font-weight:400; font-size:0.82rem; color:#94a3b8;">(csak olvasható)</span></span>
+                <span style="color:#4ade80; font-weight:600; font-size:0.95rem;">📋 Megoldás (csak olvasható)</span>
                 <button onclick="document.getElementById('solution-modal').style.display='none'" style="background:none; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; line-height:1;">✕</button>
             </div>
             <div style="padding:1rem 1.2rem; overflow-y:auto; flex:1;">
-                <pre id="solution-modal-code" style="margin:0; color:#e2e8f0; font-family:'Consolas','Courier New',monospace; font-size:14px; white-space:pre-wrap; word-break:break-word; line-height:1.6; user-select:none; -webkit-user-select:none;"></pre>
+                <pre id="solution-modal-code" style="margin:0; color:#e2e8f0; font-family:'Consolas','Courier New',monospace; font-size:14px; white-space:pre-wrap; word-break:break-word; line-height:1.6;"></pre>
             </div>
             <div style="padding:0.7rem 1.2rem; border-top:1px solid #2d4a6b; color:#fbbf24; font-size:0.8rem; text-align:center;">
                 ⚠️ A megoldókulcs megtekintése miatt ez a kör nem kerül a statisztikába.
@@ -1784,6 +1786,144 @@
             }
         }
     </script>
+
+<!-- ═══════════════════════════════════════════════════════
+     EGYÉNI FELADATVÁLASZTÓ MODAL
+     ═══════════════════════════════════════════════════════ -->
+<style>
+.custom-modal-overlay {
+    position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:8000;
+    display:flex;align-items:center;justify-content:center;padding:1rem;
+}
+.custom-modal-overlay.hidden { display:none; }
+.custom-modal-box {
+    background:#0f172a;border:1px solid #334155;border-radius:16px;
+    width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;
+}
+.custom-modal-header {
+    padding:1rem 1.25rem 0.75rem;border-bottom:1px solid #1e293b;
+    font-size:1.1rem;font-weight:700;color:#e2e8f0;flex-shrink:0;
+}
+.custom-modal-body {
+    padding:1rem 1.25rem;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:1rem;
+}
+.custom-section-title {
+    font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;
+    letter-spacing:0.8px;margin-bottom:0.5rem;
+}
+.custom-hist-badges { display:flex;flex-wrap:wrap;gap:5px; }
+.custom-hist-badge {
+    background:#1e293b;border:1px solid #334155;border-radius:20px;
+    padding:2px 10px;font-size:0.78rem;color:#94a3b8;
+}
+.custom-type-filters { display:flex;gap:6px;flex-wrap:wrap; }
+.custom-type-btn {
+    padding:5px 14px;border-radius:20px;border:1px solid #334155;
+    background:#1e293b;color:#94a3b8;font-size:0.82rem;font-weight:600;cursor:pointer;
+    transition:all 0.15s;
+}
+.custom-type-btn.active {
+    background:#1e3a5f;border-color:#3b82f6;color:#93c5fd;
+}
+.custom-composition-select {
+    width:100%;padding:8px 12px;background:#1e293b;border:1px solid #334155;
+    border-radius:8px;color:#e2e8f0;font-size:0.88rem;cursor:pointer;
+}
+.custom-group-title {
+    font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;
+    letter-spacing:0.6px;padding:6px 0 4px;border-top:1px solid #1e293b;margin-top:4px;
+}
+.custom-group-title:first-child { border-top:none;margin-top:0; }
+.custom-task-item {
+    display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;
+    cursor:pointer;transition:background 0.1s;
+}
+.custom-task-item:hover { background:#1e293b; }
+.custom-task-item.past { opacity:0.65; }
+.custom-task-item input[type=checkbox] { accent-color:#3b82f6;width:16px;height:16px;flex-shrink:0; }
+.custom-task-name { flex:1;font-size:0.88rem;color:#e2e8f0; }
+.custom-task-pts { font-size:0.75rem;color:#64748b;font-weight:700; }
+.custom-past-tag {
+    font-size:0.7rem;color:#22c55e;background:rgba(34,197,94,0.1);
+    border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:1px 7px;
+}
+.custom-count-label { font-size:0.8rem;margin-top:4px; }
+.custom-modal-footer {
+    padding:0.75rem 1.25rem;border-top:1px solid #1e293b;
+    display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;
+}
+.custom-modal-footer button {
+    padding:8px 16px;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;border:1px solid #334155;
+}
+#btn-custom-random { background:#1e293b;color:#94a3b8;flex:1; }
+#btn-custom-random:hover { background:#334155; }
+#btn-custom-cancel { background:transparent;color:#64748b; }
+#btn-custom-start {
+    background:#1d4ed8;border-color:#3b82f6;color:#fff;padding:8px 24px;
+}
+#btn-custom-start:disabled { opacity:0.4;cursor:not-allowed; }
+</style>
+
+<div id="custom-modal" class="custom-modal-overlay hidden">
+  <div class="custom-modal-box">
+    <div class="custom-modal-header">🎯 Egyéni feladatösszeállítás</div>
+    <div class="custom-modal-body">
+
+      <!-- Előzmények -->
+      <div>
+        <div class="custom-section-title">📋 Előzmények (utolsó 5 alkalom)</div>
+        <div class="custom-hist-badges" id="custom-history-badges"></div>
+      </div>
+
+      <!-- Összeállítás -->
+      <div>
+        <div class="custom-section-title">🔢 Összeállítás</div>
+        <select id="custom-composition" class="custom-composition-select" onchange="updateCustomCount()">
+          <option value="2+1">2× 8 pontos + 1× 14 pontos (alapértelmezett)</option>
+          <option value="3+0">3× 8 pontos</option>
+          <option value="2+0">2× 8 pontos</option>
+          <option value="1+1">1× 8 pontos + 1× 14 pontos</option>
+          <option value="0+2">2× 14 pontos</option>
+          <option value="1+0">1× 8 pontos</option>
+          <option value="0+1">1× 14 pontos</option>
+        </select>
+      </div>
+
+      <!-- Típus szűrő -->
+      <div>
+        <div class="custom-section-title">🏷️ Típus szűrő</div>
+        <div class="custom-type-filters" id="custom-type-filters">
+          <button class="custom-type-btn active" data-type="all" onclick="customTypeFilter(this)">Összes</button>
+          <button class="custom-type-btn" data-type="if" onclick="customTypeFilter(this)">if / elif</button>
+          <button class="custom-type-btn" data-type="ciklus" onclick="customTypeFilter(this)">Ciklus</button>
+          <button class="custom-type-btn" data-type="függvény" onclick="customTypeFilter(this)">Függvény</button>
+        </div>
+      </div>
+
+      <!-- Feladat lista -->
+      <div style="flex:1;">
+        <div class="custom-section-title">📝 Feladatok</div>
+        <div id="custom-task-list"></div>
+        <div id="custom-count-label" class="custom-count-label"></div>
+      </div>
+
+    </div>
+    <div class="custom-modal-footer">
+      <button id="btn-custom-random" onclick="customRandomFill()">🔄 Véletlenszerű kitöltés</button>
+      <button id="btn-custom-cancel" onclick="closeCustomModal()">Mégsem</button>
+      <button id="btn-custom-start" onclick="startCustomTest()" disabled>Kezdés →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function customTypeFilter(btn) {
+    document.querySelectorAll('.custom-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCustomTaskList();
+}
+</script>
 </body>
 
 </html>

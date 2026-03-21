@@ -44,6 +44,7 @@ let tippIndex = []; // per task: how many hints shown
 let selectedTaskType = 'random'; // 'random' | 'csak8' | 'csak14'
 let solutionViewedTasks = []; // taskIndex-ek ahol megoldást nézett ebben a körben
 let lastRoundTaskNumbers = new Set(); // előző kör feladatszámai – elkerüljük az ismétlést
+let customTaskHistory = []; // utolsó 5 kör feladatszámai [[n,n,n], ...]
 
 // Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
 let pyodideInstance = null;
@@ -473,6 +474,9 @@ function parseTasks(text) {
         const cimMatch = line.match(/^Cim:\s*(.+)/i);
         if (cimMatch && currentTask) { currentTask.cim = cimMatch[1].trim(); continue; }
 
+        const tipusMatch = line.match(/^Tipus:\s*(.+)/i);
+        if (tipusMatch && currentTask) { currentTask.tipus = tipusMatch[1].trim(); continue; }
+
         if (line.trim() === 'Pontozas:')  { resetSections(); inCriteria = true; continue; }
         if (line.trim() === 'Tippek:')    { resetSections(); inTippek   = true; continue; }
         if (line.trim() === 'Megoldas:')  { resetSections(); inMegoldas = true; continue; }
@@ -555,7 +559,7 @@ async function startTest() {
         }
     });
 
-    selectRandomTasks();
+    await selectRandomTasks();
 
     taskAnswers = selectedTasks.map(task => ({
         taskNumber: task.number,
@@ -661,16 +665,29 @@ async function startTest() {
 }
 
 // Véletlenszerű feladatok kiválasztása – előző kör feladatait kizárja ha lehet
-function selectRandomTasks() {
+async function selectRandomTasks() {
     const tasks8 = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
 
-    // Előző kör betöltése localStorage-ból (email alapján) – oldal újratöltés után is megmarad
-    const lsKey = 'kandoLastTasks_' + (studentData.email || 'anon');
+    // Előző kör betöltése: először backend (cross-device), fallback localStorage
+    const email = studentData.email || 'anon';
+    const lsKey = 'kandoLastTasks_' + email;
     try {
-        const saved = JSON.parse(localStorage.getItem(lsKey) || '[]');
-        if (saved.length > 0) lastRoundTaskNumbers = new Set(saved);
-    } catch(e) {}
+        const resp = await fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email.replace('@kkszki.hu','')) + '/lastTasks');
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.value) {
+                const nums = JSON.parse(data.value);
+                if (Array.isArray(nums) && nums.length > 0) lastRoundTaskNumbers = new Set(nums);
+            }
+        }
+    } catch(e) {
+        // fallback: localStorage
+        try {
+            const saved = JSON.parse(localStorage.getItem(lsKey) || '[]');
+            if (saved.length > 0) lastRoundTaskNumbers = new Set(saved);
+        } catch(e2) {}
+    }
 
     // Előző körben nem szereplő feladatok (ha van elég belőlük, azokat részesítjük előnyben)
     const fresh8 = tasks8.filter(t => !lastRoundTaskNumbers.has(t.number));
@@ -691,12 +708,17 @@ function selectRandomTasks() {
         selectedTasks = [...shuffle(pool8).slice(0, 2), ...shuffle(pool14).slice(0, 1)].sort(() => 0.5 - Math.random());
     }
 
-    // Aktuális kör feladatait eltároljuk a következő kör kizárásához (memóriában és localStorage-ban)
+    // Aktuális kör feladatait eltároljuk a következő kör kizárásához (backend + localStorage fallback)
     lastRoundTaskNumbers = new Set(selectedTasks.map(t => t.number));
+    const taskNums = JSON.stringify([...lastRoundTaskNumbers]);
     try {
-        const lsKey = 'kandoLastTasks_' + (studentData.email || 'anon');
-        localStorage.setItem(lsKey, JSON.stringify([...lastRoundTaskNumbers]));
+        localStorage.setItem(lsKey, taskNums);
     } catch(e) {}
+    fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email.replace('@kkszki.hu','')) + '/lastTasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: taskNums })
+    }).catch(() => {});
 
     tippIndex = selectedTasks.map(() => 0);
 
@@ -706,6 +728,159 @@ function selectRandomTasks() {
 
     // Feladatok elérhetővé tétele a visszajelzés popup számára
     window._kandoSelectedTasks = selectedTasks;
+
+    // History mentés
+    saveTasksToHistory(selectedTasks.map(t => t.number));
+}
+
+// ─── EGYÉNI FELADATVÁLASZTÓ ───────────────────────────────────────────────────
+
+async function loadCustomTaskHistory() {
+    const email = (studentData.email || 'anon').replace('@kkszki.hu', '');
+    const lsKey = 'kandoTaskHistory_' + email;
+    try {
+        const resp = await fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email) + '/lastTasksHistory');
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.value) {
+                const parsed = JSON.parse(data.value);
+                if (Array.isArray(parsed)) customTaskHistory = parsed;
+            }
+        }
+    } catch {
+        try { customTaskHistory = JSON.parse(localStorage.getItem(lsKey) || '[]'); } catch {}
+    }
+}
+
+function saveTasksToHistory(taskNumbers) {
+    const email = (studentData.email || 'anon').replace('@kkszki.hu', '');
+    const lsKey = 'kandoTaskHistory_' + email;
+    customTaskHistory = [...customTaskHistory, taskNumbers].slice(-5);
+    const value = JSON.stringify(customTaskHistory);
+    try { localStorage.setItem(lsKey, value); } catch {}
+    fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email) + '/lastTasksHistory', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value })
+    }).catch(() => {});
+}
+
+async function openCustomModal() {
+    await loadCustomTaskHistory();
+    renderCustomModal();
+    document.getElementById('custom-modal').classList.remove('hidden');
+}
+
+function closeCustomModal() {
+    document.getElementById('custom-modal').classList.add('hidden');
+}
+
+function renderCustomModal() {
+    // Előzmények
+    const allPastNums = new Set(customTaskHistory.flat());
+    const histEl = document.getElementById('custom-history-badges');
+    if (allPastNums.size === 0) {
+        histEl.innerHTML = '<span style="color:#666;font-size:0.82rem;">Még nincs előzmény.</span>';
+    } else {
+        histEl.innerHTML = [...allPastNums].map(n => {
+            const t = tasks.find(t => t.number === n);
+            return t ? `<span class="custom-hist-badge">${t.cim}</span>` : '';
+        }).join('');
+    }
+    renderCustomTaskList();
+}
+
+function renderCustomTaskList() {
+    const filterType = document.querySelector('.custom-type-btn.active')?.dataset.type || 'all';
+    const allPastNums = new Set(customTaskHistory.flat());
+    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks14 = tasks.filter(t => t.points === 14);
+
+    function matches(task) {
+        if (filterType === 'all') return true;
+        const types = (task.tipus || '').split(',').map(s => s.trim());
+        if (filterType === 'if') return types.includes('if');
+        if (filterType === 'ciklus') return types.some(t => t === 'for' || t === 'while');
+        if (filterType === 'függvény') return types.includes('függvény');
+        return true;
+    }
+
+    function renderGroup(list, title) {
+        const filtered = list.filter(matches);
+        if (!filtered.length) return '';
+        return `<div class="custom-group-title">${title}</div>` +
+            filtered.map(t => {
+                const past = allPastNums.has(t.number);
+                return `<label class="custom-task-item${past ? ' past' : ''}">
+                    <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
+                    <span class="custom-task-name">${t.cim}</span>
+                    <span class="custom-task-pts">${t.points}p</span>
+                    ${past ? '<span class="custom-past-tag">✓ volt már</span>' : ''}
+                </label>`;
+            }).join('');
+    }
+
+    document.getElementById('custom-task-list').innerHTML =
+        renderGroup(tasks8, '8 pontos feladatok') +
+        renderGroup(tasks14, '14 pontos feladatok');
+
+    document.querySelectorAll('.custom-cb').forEach(cb =>
+        cb.addEventListener('change', updateCustomCount));
+    updateCustomCount();
+}
+
+function updateCustomCount() {
+    const comp = document.getElementById('custom-composition').value;
+    const [need8, need14] = comp.split('+').map(Number);
+    const checked = [...document.querySelectorAll('.custom-cb:checked')];
+    const sel8  = checked.filter(c => c.dataset.points === '8').length;
+    const sel14 = checked.filter(c => c.dataset.points === '14').length;
+    const ok = sel8 === need8 && sel14 === need14;
+    const el = document.getElementById('custom-count-label');
+    el.textContent = `Kiválasztva: ${sel8} db 8p, ${sel14} db 14p — kell: ${need8} db 8p, ${need14} db 14p`;
+    el.style.color = ok ? '#4ade80' : '#fbbf24';
+    document.getElementById('btn-custom-start').disabled = !ok;
+}
+
+function customRandomFill() {
+    const comp = document.getElementById('custom-composition').value;
+    const [need8, need14] = comp.split('+').map(Number);
+    const allPastNums = new Set(customTaskHistory.flat());
+    document.querySelectorAll('.custom-cb').forEach(cb => cb.checked = false);
+
+    function pickRandom(cbs, n) {
+        if (n === 0) return;
+        const arr = [...cbs];
+        const fresh = arr.filter(c => !allPastNums.has(parseInt(c.value)));
+        const pool = fresh.length >= n ? fresh : arr;
+        pool.sort(() => 0.5 - Math.random()).slice(0, n).forEach(c => c.checked = true);
+    }
+
+    pickRandom([...document.querySelectorAll('.custom-cb[data-points="8"]')], need8);
+    pickRandom([...document.querySelectorAll('.custom-cb[data-points="14"]')], need14);
+    updateCustomCount();
+}
+
+function startCustomTest() {
+    const checked = [...document.querySelectorAll('.custom-cb:checked')];
+    const nums = checked.map(c => parseInt(c.value));
+    selectedTasks = nums.map(n => tasks.find(t => t.number === n)).filter(Boolean)
+        .sort(() => 0.5 - Math.random());
+
+    tippIndex = selectedTasks.map(() => 0);
+    window._kandoSelectedTasks = selectedTasks;
+
+    lastRoundTaskNumbers = new Set(nums);
+    saveTasksToHistory(nums);
+    const taskNums = JSON.stringify([...lastRoundTaskNumbers]);
+    const email = (studentData.email || 'anon').replace('@kkszki.hu', '');
+    try { localStorage.setItem('kandoLastTasks_' + email, taskNums); } catch {}
+    fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email) + '/lastTasks', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: taskNums })
+    }).catch(() => {});
+
+    closeCustomModal();
+    startTest();
 }
 
 // ─── PONTOZÓ MOTOR ────────────────────────────────────────────────────────────
@@ -925,11 +1100,22 @@ async function checkScoring() {
 const _pythonProgressPosted = new Set();
 
 function maybePostPythonProgress(task, earned, total) {
+    // Portálos bejelentkezés preferált, de ha nincs, a tesztkezdő adatokat használjuk
+    let email = '', nev = '', osztaly = '';
     const kandoRaw = sessionStorage.getItem('kandoUser');
-    if (!kandoRaw) return;
-    let u;
-    try { u = JSON.parse(kandoRaw); } catch { return; }
-    const email = u.email;
+    if (kandoRaw) {
+        try {
+            const u = JSON.parse(kandoRaw);
+            email   = u.email   || '';
+            nev     = u.nev     || '';
+            osztaly = u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '';
+        } catch { return; }
+    } else {
+        // Fallback: a teszt indulásakor megadott adatok
+        email   = studentData.email || '';
+        nev     = studentData.name  || '';
+        osztaly = studentData.class || '';
+    }
     if (!email) return;
     const taskId = String(task.number);
     const key = `${email}:python:${taskId}`;
@@ -940,8 +1126,8 @@ function maybePostPythonProgress(task, earned, total) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             email,
-            nev: u.nev || '',
-            osztaly: u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '',
+            nev,
+            osztaly,
             targy: 'python',
             feladat: taskId,
             pont: earned,
@@ -2351,6 +2537,12 @@ function updateTestModeBadge() {
     const taskTypePicker = document.getElementById('practice-task-type');
     if (taskTypePicker) {
         taskTypePicker.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+    }
+
+    // Egyéni összeállítás gomb: csak gyakorló módban, nem oktatónak
+    const customBtn = document.getElementById('btn-open-custom-modal');
+    if (customBtn) {
+        customBtn.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
     }
     updateTaskBreakdown();
 }
