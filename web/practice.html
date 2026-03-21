@@ -909,9 +909,6 @@ require(['vs/editor/editor.main'], function() {
   require(['vs/language/html/htmlMode', 'vs/language/css/cssMode'], function() {
     const m = window.monaco;
 
-    // Emmet aktiválás
-    if (window.emmetMonaco) window.emmetMonaco.emmetHTML(m);
-
     state.editors.html = m.editor.create(document.getElementById('editor-html'), {
       value: '',
       language: 'html',
@@ -923,8 +920,10 @@ require(['vs/editor/editor.main'], function() {
       scrollBeyondLastLine: false,
       tabSize: 2,
       quickSuggestions: false,
-      suggestOnTriggerCharacters: false,
     });
+
+    // Emmet aktiválás – editor létrehozása UTÁN kell hívni
+    if (window.emmetMonaco) window.emmetMonaco.emmetHTML(m);
 
     state.editors.css = m.editor.create(document.getElementById('editor-css'), {
       value: '',
