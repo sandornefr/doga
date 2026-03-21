@@ -218,6 +218,50 @@
             gap: 20px;
         }
 
+        .changelog-box {
+            margin-top: 28px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+        .changelog-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #536dfe;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .changelog-section {
+            margin-bottom: 10px;
+        }
+        .changelog-section:last-child { margin-bottom: 0; }
+        .changelog-section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 5px;
+        }
+        .changelog-section-label.python { color: #3776ab; }
+        .changelog-section-label.web    { color: #e44d26; }
+        .changelog-item {
+            display: flex;
+            align-items: baseline;
+            gap: 7px;
+            font-size: 0.82rem;
+            color: #b0b8c8;
+            line-height: 1.5;
+            padding: 2px 0;
+        }
+        .changelog-item::before {
+            content: '–';
+            color: #536dfe;
+            flex-shrink: 0;
+        }
+
         .option-card {
             background: #16213e;
             border: 2px solid #0f3460;
@@ -504,6 +548,21 @@
     </div>
 
 
+    <!-- Újdonságok (csak diákoknak) -->
+    <div id="changelog-box" class="changelog-box" style="display:none">
+        <div class="changelog-title">🆕 Újdonságok</div>
+        <div class="changelog-section">
+            <div class="changelog-section-label python"><i class="fab fa-python"></i> Python feladat</div>
+            <div class="changelog-item">Egyéni összeállítás – magad választhatod ki a feladataidat gyakorló módban</div>
+            <div class="changelog-item">6 új feladat érkezett (Ruhaméret, Kutya életkor, Traffipax, Mobiladat túllépés, Űrhajó rakomány, Alkimista varázsital)</div>
+            <div class="changelog-item">Véletlenszerű kitöltés gomb – ha nem tudod, melyiket válaszd</div>
+        </div>
+        <div class="changelog-section">
+            <div class="changelog-section-label web"><i class="fas fa-globe"></i> WEB feladat</div>
+            <div class="changelog-item">KÉSZ gomb a jobb felső sarokban – csak erre kattintva kerül be a feladat a statisztikába</div>
+        </div>
+    </div>
+
     <!-- Oktatói nézet -->
     <div id="teacher-portal" style="display:none">
         <div class="options-grid">
@@ -657,6 +716,7 @@
             document.getElementById('toggle-view-btn').style.display = 'block';
         } else {
             document.getElementById('student-portal').style.display = 'grid';
+            document.getElementById('changelog-box').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
