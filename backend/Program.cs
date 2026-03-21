@@ -670,6 +670,13 @@ app.MapGet("/api/teszteloi-uzenetek/my", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetTeszteloiUzenetek(email));
 });
 
+// Küldött üzenetek listája olvasottsági statisztikával (csak oktató)
+app.MapGet("/api/teszteloi-uzenetek/admin", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetTeszteloiUzenetekAdmin());
+});
+
 // Üzenet olvasottnak jelölése
 app.MapPost("/api/teszteloi-uzenetek/{id}/olvas", (int id, HttpContext ctx, Database db) =>
 {

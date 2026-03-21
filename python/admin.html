@@ -605,8 +605,21 @@
                 <div style="margin-top:16px;border-top:1px solid #1a3a5c;padding-top:14px;">
                     <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;margin-bottom:8px;">📨 Üzenet küldése tesztelőknek</div>
                     <textarea id="teszteloi-uzenet-input" rows="2" placeholder="pl. Kérlek teszteld az Ötlet Láda funkciót és jelezz vissza!" style="width:100%;background:#0a1628;border:1px solid #1f3460;border-radius:7px;color:#e0e0e0;padding:8px 12px;font-size:0.87rem;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
-                    <button onclick="sendTeszteloiUzenet()" style="padding:7px 18px;background:#6366f1;border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:0.87rem;">Küldés tesztelőknek</button>
-                    <span id="teszteloi-uzenet-ok" style="display:none;margin-left:10px;color:#4ade80;font-size:0.83rem;">✓ Elküldve</span>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <button onclick="sendTeszteloiUzenet()" style="padding:7px 18px;background:#6366f1;border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:0.87rem;">Küldés tesztelőknek</button>
+                        <span id="teszteloi-uzenet-ok" style="display:none;color:#4ade80;font-size:0.83rem;">✓ Elküldve</span>
+                    </div>
+                </div>
+
+                <!-- Küldött üzenetek / olvasottsági visszaigazolás -->
+                <div style="margin-top:16px;border-top:1px solid #1a3a5c;padding-top:14px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;">📬 Korábbi üzenetek</div>
+                        <button onclick="loadUzenetStatusz()" style="padding:3px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.78rem;"><i class="fas fa-rotate"></i></button>
+                    </div>
+                    <div id="uzenet-statusz-lista" style="display:flex;flex-direction:column;gap:8px;">
+                        <span style="color:#475569;font-size:0.82rem;font-style:italic;">Nincs betöltve – kattints a frissítésre</span>
+                    </div>
                 </div>
             </div>
 
@@ -1024,7 +1037,7 @@
             if (name === 'haladas' && haladásData.length === 0) loadProgress();
             if (name === 'rangsor' && leaderboardData.length === 0) loadLeaderboard();
             if (name === 'visszajelzesek') loadFeedbackStats();
-            if (name === 'otlet-lada') { loadOtletek(); loadTesztelők(); }
+            if (name === 'otlet-lada') { loadOtletek(); loadTesztelők(); loadUzenetStatusz(); }
         }
 
         // Check auth on page load
@@ -2514,6 +2527,45 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 document.getElementById('teszteloi-uzenet-input').value = '';
                 const okEl = document.getElementById('teszteloi-uzenet-ok');
                 if (okEl) { okEl.style.display = 'inline'; setTimeout(() => okEl.style.display = 'none', 3000); }
+                loadUzenetStatusz();
+            }
+        }
+
+        async function loadUzenetStatusz() {
+            const lista = document.getElementById('uzenet-statusz-lista');
+            if (!lista) return;
+            lista.innerHTML = '<span style="color:#475569;font-size:0.82rem;font-style:italic;">Betöltés...</span>';
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/teszteloi-uzenetek/admin`);
+                if (!res.ok) { lista.innerHTML = '<span style="color:#e94560;font-size:0.82rem;">Betöltési hiba</span>'; return; }
+                const data = await res.json();
+                if (!data || data.length === 0) {
+                    lista.innerHTML = '<span style="color:#475569;font-size:0.82rem;font-style:italic;">Még nincs küldött üzenet.</span>';
+                    return;
+                }
+                lista.innerHTML = data.map(u => {
+                    const ossz = u.osszTesztelő;
+                    const olv  = u.olvastak?.length ?? 0;
+                    const nem  = u.nemOlvastak ?? [];
+                    const olvPct = ossz > 0 ? Math.round(olv / ossz * 100) : 0;
+                    const barColor = olv === ossz && ossz > 0 ? '#4ade80' : olv > 0 ? '#fbbf24' : '#e94560';
+                    return `
+                    <div style="background:#0a1628;border:1px solid #1f3460;border-radius:8px;padding:10px 14px;">
+                        <div style="font-size:0.85rem;color:#e0e0e0;margin-bottom:6px;">${escHtml(u.szoveg)}</div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span style="font-size:0.75rem;color:#475569;">${u.createdAt}</span>
+                            <span style="font-size:0.78rem;font-weight:700;color:${barColor};">
+                                ${olv}/${ossz} olvasta
+                            </span>
+                            ${nem.length > 0 ? `<span style="font-size:0.75rem;color:#94a3b8;">– még nem olvasta: ${nem.map(e => escHtml(e)).join(', ')}</span>` : ''}
+                        </div>
+                        <div style="margin-top:6px;background:#1e3a5f;border-radius:4px;height:4px;overflow:hidden;">
+                            <div style="height:100%;width:${olvPct}%;background:${barColor};transition:width .4s;"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                lista.innerHTML = '<span style="color:#e94560;font-size:0.82rem;">Hálózati hiba</span>';
             }
         }
     </script>

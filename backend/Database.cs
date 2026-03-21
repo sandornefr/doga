@@ -1104,6 +1104,44 @@ public class Database
         return list;
     }
 
+    public List<AdminUzenetItem> GetTeszteloiUzenetekAdmin()
+    {
+        using var conn = Open();
+        // Összes üzenet + ki olvasta
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT u.id, u.szoveg, u.created_at,
+                   GROUP_CONCAT(o.email) as olvaso_emailek
+            FROM teszteloi_uzenetek u
+            LEFT JOIN teszteloi_uzenet_olvasott o ON o.uzenet_id = u.id
+            GROUP BY u.id ORDER BY u.created_at DESC";
+        var dict = new Dictionary<int, AdminUzenetItem>();
+        using (var r = cmd.ExecuteReader())
+            while (r.Read())
+            {
+                var item = new AdminUzenetItem {
+                    Id = r.GetInt32(0), Szoveg = r.GetString(1), CreatedAt = r.GetString(2)
+                };
+                var olvEmail = r.IsDBNull(3) ? "" : r.GetString(3);
+                item.Olvastak = olvEmail.Length > 0
+                    ? [.. olvEmail.Split(',').Select(e => e.Trim()).Where(e => e.Length > 0)]
+                    : [];
+                dict[item.Id] = item;
+            }
+        // Jelenlegi tesztelők
+        using var t = conn.CreateCommand();
+        t.CommandText = "SELECT email FROM tesztelok";
+        var tesztelok = new List<string>();
+        using (var r = t.ExecuteReader())
+            while (r.Read()) tesztelok.Add(r.GetString(0));
+        foreach (var item in dict.Values)
+        {
+            item.OsszTesztelő = tesztelok.Count;
+            item.NemOlvastak  = tesztelok.Where(e => !item.Olvastak.Contains(e)).ToList();
+        }
+        return [.. dict.Values];
+    }
+
     public void MarkTeszteloiUzenetOlvasott(int uzenetId, string email)
     {
         using var conn = Open();

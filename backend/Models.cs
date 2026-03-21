@@ -225,3 +225,12 @@ public class TeszteloiUzenetItem {
     public string CreatedAt { get; set; } = "";
     public bool Olvasott { get; set; }
 }
+
+public class AdminUzenetItem {
+    public int Id { get; set; }
+    public string Szoveg { get; set; } = "";
+    public string CreatedAt { get; set; } = "";
+    public int OsszTesztelő { get; set; }
+    public List<string> Olvastak { get; set; } = [];
+    public List<string> NemOlvastak { get; set; } = [];
+}
