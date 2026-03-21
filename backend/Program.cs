@@ -556,7 +556,7 @@ app.MapPost("/api/otlet", (IdeaRequest req, Database db) =>
     // Képméret limit: ~1.5 MB base64
     if (req.KepBase64 != null && req.KepBase64.Length > 2_000_000)
         return Results.BadRequest(new { error = "A kép túl nagy (max ~1.5 MB)" });
-    var id = db.SaveIdea(req.Email, req.Nev, req.Osztaly, req.Szoveg, req.KepBase64);
+    var id = db.SaveIdea(req.Email, req.Nev, req.Osztaly, req.Szoveg, req.KepBase64, req.Tipus ?? "otlet");
     return Results.Ok(new { success = true, id });
 });
 

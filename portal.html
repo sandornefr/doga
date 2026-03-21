@@ -677,9 +677,13 @@
         <div id="teszteloi-uzenetek-lista"></div>
     </div>
 
-    <!-- Ötlet Láda gomb (diákok és tanulói nézetben látható) -->
+    <!-- Ötlet Láda gomb (minden diáknak) -->
     <button class="otlet-btn" id="otlet-btn" style="display:none" onclick="openOtletModal()">
-        💡 Ötlet Láda – küldj javaslatot vagy hibajelentést
+        💡 Ötlet Láda – küldj fejlesztési javaslatot
+    </button>
+    <!-- Hibajelentés gomb (csak tesztelőknek) -->
+    <button class="otlet-btn" id="hiba-btn" style="display:none;border-color:#e94560;color:#fca5a5;" onclick="openHibaModal()">
+        🐛 Hibajelentés – tesztelési anomália beküldése
     </button>
 
     <!-- Oktatói nézet -->
@@ -816,22 +820,37 @@
     </div>
 </div>
 
-<!-- Ötlet Láda modal -->
+<!-- Ötlet Láda modal (minden diáknak, kép nélkül) -->
 <div class="otlet-modal-overlay" id="otlet-modal">
     <div class="otlet-modal-box">
         <h3>💡 Ötlet Láda</h3>
-        <p>Írj javaslatot, jelentj be hibát, vagy ossz meg fejlesztési ötletet! A jó ötletek megvalósulnak és a neved is megjelenik az oldalon.</p>
-        <textarea id="otlet-szoveg" placeholder="Írd le az ötletedet vagy a talált hibát..."></textarea>
-        <label class="otlet-file-label" for="otlet-kep-input">
-            <i class="fas fa-image"></i> Kép csatolása (opcionális – pl. screenshot)
-        </label>
-        <input type="file" id="otlet-kep-input" accept="image/*" style="display:none" onchange="otletKepSelected(this)">
-        <img id="otlet-kep-preview" class="otlet-file-preview" alt="Előnézet">
+        <p>Ossz meg fejlesztési javaslatot! A jó ötletek megvalósulnak és a neved is megjelenik az oldalon.</p>
+        <textarea id="otlet-szoveg" placeholder="Írd le az ötletedet vagy fejlesztési javaslatodat..."></textarea>
         <div id="otlet-error" style="color:#e94560;font-size:0.83rem;margin-bottom:10px;display:none;"></div>
         <div id="otlet-success" style="color:#4ade80;font-size:0.83rem;margin-bottom:10px;display:none;"></div>
         <div class="otlet-modal-btns">
             <button class="otlet-cancel-btn" onclick="closeOtletModal()">Mégse</button>
             <button class="otlet-send-btn" id="otlet-send-btn" onclick="sendOtlet()">Küldés</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hibajelentés modal (csak tesztelőknek, képpel) -->
+<div class="otlet-modal-overlay" id="hiba-modal">
+    <div class="otlet-modal-box" style="border-color:#e94560;">
+        <h3>🐛 Hibajelentés</h3>
+        <p>Írj le egy tesztelés közben talált anomáliát. Csatolhatsz képernyőképet is.</p>
+        <textarea id="hiba-szoveg" placeholder="Írd le a hibát, mit csináltál, mi történt..."></textarea>
+        <label class="otlet-file-label" for="hiba-kep-input">
+            <i class="fas fa-image"></i> Screenshot csatolása (opcionális)
+        </label>
+        <input type="file" id="hiba-kep-input" accept="image/*" style="display:none" onchange="hibaKepSelected(this)">
+        <img id="hiba-kep-preview" class="otlet-file-preview" alt="Előnézet">
+        <div id="hiba-error" style="color:#e94560;font-size:0.83rem;margin-bottom:10px;display:none;"></div>
+        <div id="hiba-success" style="color:#4ade80;font-size:0.83rem;margin-bottom:10px;display:none;"></div>
+        <div class="otlet-modal-btns">
+            <button class="otlet-cancel-btn" onclick="closeHibaModal()">Mégse</button>
+            <button class="otlet-send-btn" id="hiba-send-btn" style="background:#e94560;" onclick="sendHiba()">Beküldés</button>
         </div>
     </div>
 </div>
@@ -1329,39 +1348,50 @@
 
     // ── Ötlet Láda ────────────────────────────────────────────────────────────
     const API_BASE = 'https://agazati.up.railway.app';
-    let otletKepBase64 = null;
+    let hibaKepBase64 = null;
 
     function openOtletModal() {
         document.getElementById('otlet-szoveg').value = '';
-        document.getElementById('otlet-kep-preview').style.display = 'none';
-        document.getElementById('otlet-kep-input').value = '';
         document.getElementById('otlet-error').style.display = 'none';
         document.getElementById('otlet-success').style.display = 'none';
         document.getElementById('otlet-send-btn').disabled = false;
         document.getElementById('otlet-send-btn').textContent = 'Küldés';
-        otletKepBase64 = null;
         document.getElementById('otlet-modal').classList.add('open');
     }
-
     function closeOtletModal() {
         document.getElementById('otlet-modal').classList.remove('open');
     }
 
-    function otletKepSelected(input) {
+    function openHibaModal() {
+        document.getElementById('hiba-szoveg').value = '';
+        document.getElementById('hiba-kep-preview').style.display = 'none';
+        document.getElementById('hiba-kep-input').value = '';
+        document.getElementById('hiba-error').style.display = 'none';
+        document.getElementById('hiba-success').style.display = 'none';
+        document.getElementById('hiba-send-btn').disabled = false;
+        document.getElementById('hiba-send-btn').textContent = 'Beküldés';
+        hibaKepBase64 = null;
+        document.getElementById('hiba-modal').classList.add('open');
+    }
+    function closeHibaModal() {
+        document.getElementById('hiba-modal').classList.remove('open');
+    }
+
+    function hibaKepSelected(input) {
         const file = input.files[0];
         if (!file) return;
         if (file.size > 2_000_000) {
-            document.getElementById('otlet-error').textContent = 'A kép túl nagy! Max 2 MB.';
-            document.getElementById('otlet-error').style.display = 'block';
+            document.getElementById('hiba-error').textContent = 'A kép túl nagy! Max 2 MB.';
+            document.getElementById('hiba-error').style.display = 'block';
             return;
         }
         const reader = new FileReader();
         reader.onload = e => {
-            otletKepBase64 = e.target.result;
-            const preview = document.getElementById('otlet-kep-preview');
-            preview.src = otletKepBase64;
+            hibaKepBase64 = e.target.result;
+            const preview = document.getElementById('hiba-kep-preview');
+            preview.src = hibaKepBase64;
             preview.style.display = 'block';
-            document.getElementById('otlet-error').style.display = 'none';
+            document.getElementById('hiba-error').style.display = 'none';
         };
         reader.readAsDataURL(file);
     }
@@ -1387,7 +1417,8 @@
                     nev: user.nev || user.email || '',
                     osztaly: user.osztaly || null,
                     szoveg,
-                    kepBase64: otletKepBase64
+                    kepBase64: null,
+                    tipus: 'otlet'
                 })
             });
             if (res.ok) {
@@ -1405,6 +1436,49 @@
             errEl.textContent = 'Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot!';
             errEl.style.display = 'block';
             btn.disabled = false; btn.textContent = 'Küldés';
+        }
+    }
+
+    async function sendHiba() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const szoveg = document.getElementById('hiba-szoveg').value.trim();
+        const errEl  = document.getElementById('hiba-error');
+        const okEl   = document.getElementById('hiba-success');
+        errEl.style.display = 'none';
+        okEl.style.display  = 'none';
+        if (!szoveg) { errEl.textContent = 'Kérlek írj le valamit!'; errEl.style.display = 'block'; return; }
+
+        const btn = document.getElementById('hiba-send-btn');
+        btn.disabled = true; btn.textContent = 'Küldés...';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/otlet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email || '',
+                    nev: user.nev || user.email || '',
+                    osztaly: user.osztaly || null,
+                    szoveg,
+                    kepBase64: hibaKepBase64,
+                    tipus: 'hiba'
+                })
+            });
+            if (res.ok) {
+                okEl.textContent = '✅ Hibajelentés elküldve! Köszönjük.';
+                okEl.style.display = 'block';
+                btn.textContent = 'Elküldve ✓';
+                setTimeout(closeHibaModal, 2000);
+            } else {
+                const d = await res.json().catch(() => ({}));
+                errEl.textContent = 'Hiba: ' + (d.error || res.status);
+                errEl.style.display = 'block';
+                btn.disabled = false; btn.textContent = 'Beküldés';
+            }
+        } catch {
+            errEl.textContent = 'Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot!';
+            errEl.style.display = 'block';
+            btn.disabled = false; btn.textContent = 'Beküldés';
         }
     }
 
@@ -1439,6 +1513,9 @@
             if (nameEl && !nameEl.querySelector('.tesztelő-badge')) {
                 nameEl.insertAdjacentHTML('beforeend', '<span class="tesztelő-badge">🔬 Tesztelő</span>');
             }
+            // Hibajelentés gomb megjelenítése
+            const hibaBtn = document.getElementById('hiba-btn');
+            if (hibaBtn) hibaBtn.style.display = 'flex';
             // Tesztelői üzenetek betöltése
             const uRes = await fetch(`${API_BASE}/api/teszteloi-uzenetek/my`, {
                 headers: { 'Authorization': `Bearer ${user.token}` }

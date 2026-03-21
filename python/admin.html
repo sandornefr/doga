@@ -610,15 +610,17 @@
                 </div>
             </div>
 
-            <!-- Beküldött ötletek -->
-            <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+            <!-- Szekció váltó: Ötletek / Hibajelentések -->
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+                <button id="otlet-filter-otlet" onclick="setOtletFilter('otlet')" style="padding:6px 18px;background:#4f46e5;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer;font-size:0.85rem;">💡 Ötletek</button>
+                <button id="otlet-filter-hiba" onclick="setOtletFilter('hiba')" style="padding:6px 18px;background:#1e3a5f;border:1px solid #e94560;border-radius:20px;color:#fca5a5;font-weight:600;cursor:pointer;font-size:0.85rem;">🐛 Hibajelentések</button>
                 <button class="btn-refresh" onclick="loadOtletek()"><i class="fas fa-rotate"></i> Frissítés</button>
                 <span id="otlet-count-badge" style="background:#1e3a5f;border:1px solid #2a4a7f;border-radius:20px;padding:2px 12px;font-size:0.8rem;color:#94a3b8;"></span>
             </div>
             <div id="otlet-loading" style="display:none;color:#94a3b8;font-style:italic;margin-bottom:1rem;">Betöltés...</div>
             <div id="otlet-error-box" style="display:none;background:rgba(233,69,96,0.1);border:1px solid #e94560;color:#ff8fa3;padding:8px 12px;border-radius:8px;margin-bottom:1rem;"></div>
             <div id="otlet-lista"></div>
-            <div id="otlet-empty" style="display:none;color:#555;font-style:italic;font-size:0.9rem;">Még nincs beküldött ötlet.</div>
+            <div id="otlet-empty" style="display:none;color:#555;font-style:italic;font-size:0.9rem;">Még nincs beküldött elem.</div>
 
             <!-- Kép modal -->
             <div id="otlet-kep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;" onclick="this.style.display='none'">
@@ -2347,6 +2349,21 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         const STATUSZ_LABEL = { uj: '🆕 Új', olvasott: '👁 Olvasott', megvalasult: '✅ Megvalósult' };
         const STATUSZ_COLOR = { uj: '#fbbf24', olvasott: '#94a3b8', megvalasult: '#4ade80' };
+        let otletFilter = 'otlet';
+
+        function setOtletFilter(filter) {
+            otletFilter = filter;
+            const otletBtn = document.getElementById('otlet-filter-otlet');
+            const hibaBtn  = document.getElementById('otlet-filter-hiba');
+            if (filter === 'otlet') {
+                otletBtn.style.background = '#4f46e5'; otletBtn.style.color = '#fff'; otletBtn.style.border = 'none';
+                hibaBtn.style.background = '#1e3a5f'; hibaBtn.style.color = '#fca5a5'; hibaBtn.style.border = '1px solid #e94560';
+            } else {
+                hibaBtn.style.background = '#e94560'; hibaBtn.style.color = '#fff'; hibaBtn.style.border = 'none';
+                otletBtn.style.background = '#1e3a5f'; otletBtn.style.color = '#a5b4fc'; otletBtn.style.border = '1px solid #4f46e5';
+            }
+            loadOtletek();
+        }
 
         async function loadOtletek() {
             const loadEl = document.getElementById('otlet-loading');
@@ -2361,15 +2378,18 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             try {
                 const res = await authFetch(`${RAILWAY_URL}/api/otlet`);
                 if (!res.ok) throw new Error(res.status);
-                const data = await res.json();
+                const allData = await res.json();
+                const data = allData.filter(o => (o.tipus || 'otlet') === otletFilter);
                 loadEl.style.display = 'none';
                 const ujak = data.filter(d => d.statusz === 'uj').length;
                 badge.textContent = `${data.length} beküldés · ${ujak} új`;
                 if (data.length === 0) { emptyEl.style.display = 'block'; return; }
+                const isHiba = otletFilter === 'hiba';
                 lista.innerHTML = data.map(o => `
-                    <div id="otlet-card-${o.id}" style="background:#0f1e35;border:1px solid #1a3a5c;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+                    <div id="otlet-card-${o.id}" style="background:#0f1e35;border:1px solid ${isHiba ? '#7f1d1d' : '#1a3a5c'};border-radius:10px;padding:14px 16px;margin-bottom:12px;">
                         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
                             <div>
+                                ${isHiba ? '<span style="font-size:0.75rem;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:1px 8px;color:#fca5a5;margin-right:6px;">🐛 Hibajelentés</span>' : ''}
                                 <span style="font-weight:700;color:#e0e0e0;">${escHtml(o.nev)}</span>
                                 ${o.osztaly ? `<span style="color:#94a3b8;font-size:0.8rem;margin-left:6px;">${escHtml(o.osztaly)}</span>` : ''}
                                 <span style="color:#475569;font-size:0.75rem;margin-left:8px;">${o.createdAt}</span>
@@ -2378,17 +2398,17 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         </div>
                         <div style="color:#cbd5e1;font-size:0.88rem;margin:10px 0;white-space:pre-wrap;">${escHtml(o.szoveg)}</div>
                         ${o.hasKep ? `<button onclick="loadOtletKep(${o.id})" style="background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#93c5fd;padding:4px 12px;cursor:pointer;font-size:0.8rem;margin-bottom:10px;"><i class="fas fa-image"></i> Screenshot megtekintése</button>` : ''}
-                        ${o.adminValasz ? `<div style="background:rgba(79,70,229,.1);border:1px solid rgba(79,70,229,.3);border-radius:7px;padding:8px 12px;font-size:0.83rem;color:#c7d2fe;margin-bottom:10px;">💬 Válasz: ${escHtml(o.adminValasz)}</div>` : ''}
+                        ${o.adminValasz ? `<div style="background:rgba(79,70,229,.1);border:1px solid rgba(79,70,229,.3);border-radius:7px;padding:8px 12px;font-size:0.83rem;color:#c7d2fe;margin-bottom:10px;">💬 Megjegyzés: ${escHtml(o.adminValasz)}</div>` : ''}
                         <details style="margin-top:8px;">
-                            <summary style="color:#6366f1;font-size:0.82rem;cursor:pointer;user-select:none;">Kezelés / válasz</summary>
+                            <summary style="color:#6366f1;font-size:0.82rem;cursor:pointer;user-select:none;">Kezelés / megjegyzés</summary>
                             <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
                                 <select onchange="otletStatuszValtas(${o.id}, this.value)" style="background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:5px 8px;font-size:0.85rem;">
                                     <option value="uj"       ${o.statusz==='uj'?'selected':''}>🆕 Új</option>
                                     <option value="olvasott" ${o.statusz==='olvasott'?'selected':''}>👁 Olvasott</option>
-                                    <option value="megvalasult" ${o.statusz==='megvalasult'?'selected':''}>✅ Megvalósult</option>
+                                    ${!isHiba ? `<option value="megvalasult" ${o.statusz==='megvalasult'?'selected':''}>✅ Megvalósult</option>` : `<option value="megvalasult" ${o.statusz==='megvalasult'?'selected':''}>🔧 Javítva</option>`}
                                 </select>
-                                <input type="text" id="admin-valasz-${o.id}" value="${escHtml(o.adminValasz||'')}" placeholder="Válasz a tanulónak (nem publikus)..." style="background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:6px 10px;font-size:0.85rem;">
-                                <input type="text" id="megv-szoveg-${o.id}" value="${escHtml(o.megvalositvaSzoveg||'')}" placeholder="Megvalósult fejlesztés leírása (publikus lesz!)..." style="background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:6px 10px;font-size:0.85rem;">
+                                <input type="text" id="admin-valasz-${o.id}" value="${escHtml(o.adminValasz||'')}" placeholder="${isHiba ? 'Belső megjegyzés a hibáról...' : 'Válasz a tanulónak (nem publikus)...'}" style="background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:6px 10px;font-size:0.85rem;">
+                                ${!isHiba ? `<input type="text" id="megv-szoveg-${o.id}" value="${escHtml(o.megvalositvaSzoveg||'')}" placeholder="Megvalósult fejlesztés leírása (publikus lesz!)..." style="background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:6px 10px;font-size:0.85rem;">` : `<input type="hidden" id="megv-szoveg-${o.id}" value="">`}
                                 <div style="display:flex;gap:8px;">
                                     <button onclick="mentOtlet(${o.id})" style="padding:5px 14px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.83rem;cursor:pointer;font-weight:600;">Mentés</button>
                                     <button onclick="torloOtlet(${o.id})" style="padding:5px 12px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.83rem;cursor:pointer;">Törlés</button>

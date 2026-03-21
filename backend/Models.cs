@@ -200,7 +200,7 @@ public class TaskRatingStat {
 
 // ── Ötlet Láda ────────────────────────────────────────────────────────────
 
-public record IdeaRequest(string Email, string Nev, string? Osztaly, string Szoveg, string? KepBase64);
+public record IdeaRequest(string Email, string Nev, string? Osztaly, string Szoveg, string? KepBase64, string? Tipus);
 
 public record IdeaUpdateRequest(string Statusz, string? AdminValasz, string? MegvalositvaSzoveg);
 
@@ -210,6 +210,7 @@ public class IdeaItem {
     public string Nev { get; set; } = "";
     public string? Osztaly { get; set; }
     public string Szoveg { get; set; } = "";
+    public string Tipus { get; set; } = "otlet"; // otlet / hiba
     public bool HasKep { get; set; }
     public string? KepBase64 { get; set; }   // csak explicit kérésnél töltjük
     public string Statusz { get; set; } = "uj"; // uj / olvasott / megvalasult

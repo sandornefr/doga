@@ -97,6 +97,7 @@ public class Database
                 nev                 TEXT NOT NULL,
                 osztaly             TEXT,
                 szoveg              TEXT NOT NULL,
+                tipus               TEXT NOT NULL DEFAULT 'otlet',
                 kep_base64          TEXT,
                 statusz             TEXT NOT NULL DEFAULT 'uj',
                 admin_valasz        TEXT,
@@ -122,6 +123,7 @@ public class Database
         try { Exec(conn, "ALTER TABLE submissions ADD COLUMN subject TEXT"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
+        try { Exec(conn, "ALTER TABLE otlet_lada ADD COLUMN tipus TEXT NOT NULL DEFAULT 'otlet'"); } catch { }
     }
 
     // ── Config ────────────────────────────────────────────────────────────────
@@ -907,18 +909,19 @@ public class Database
 
     // ── Ötlet Láda ────────────────────────────────────────────────────────────
 
-    public int SaveIdea(string email, string nev, string? osztaly, string szoveg, string? kepBase64)
+    public int SaveIdea(string email, string nev, string? osztaly, string szoveg, string? kepBase64, string tipus = "otlet")
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO otlet_lada (email, nev, osztaly, szoveg, kep_base64)
-            VALUES ($email, $nev, $osztaly, $szoveg, $kep)
+            INSERT INTO otlet_lada (email, nev, osztaly, szoveg, tipus, kep_base64)
+            VALUES ($email, $nev, $osztaly, $szoveg, $tipus, $kep)
             RETURNING id";
         cmd.Parameters.AddWithValue("$email",   email.ToLower().Trim());
         cmd.Parameters.AddWithValue("$nev",     nev);
         cmd.Parameters.AddWithValue("$osztaly", (object?)osztaly ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$szoveg",  szoveg);
+        cmd.Parameters.AddWithValue("$tipus",   tipus == "hiba" ? "hiba" : "otlet");
         cmd.Parameters.AddWithValue("$kep",     (object?)kepBase64 ?? DBNull.Value);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
@@ -928,7 +931,7 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT id, email, nev, osztaly, szoveg,
+            SELECT id, email, nev, osztaly, szoveg, tipus,
                    (kep_base64 IS NOT NULL) as has_kep,
                    statusz, admin_valasz, megvalositva_szoveg, created_at
             FROM otlet_lada ORDER BY
@@ -940,11 +943,12 @@ public class Database
             list.Add(new IdeaItem {
                 Id = r.GetInt32(0), Email = r.GetString(1), Nev = r.GetString(2),
                 Osztaly = r.IsDBNull(3) ? null : r.GetString(3),
-                Szoveg = r.GetString(4), HasKep = r.GetInt32(5) == 1,
-                Statusz = r.GetString(6),
-                AdminValasz = r.IsDBNull(7) ? null : r.GetString(7),
-                MegvalositvaSzoveg = r.IsDBNull(8) ? null : r.GetString(8),
-                CreatedAt = r.GetString(9)
+                Szoveg = r.GetString(4), Tipus = r.GetString(5),
+                HasKep = r.GetInt32(6) == 1,
+                Statusz = r.GetString(7),
+                AdminValasz = r.IsDBNull(8) ? null : r.GetString(8),
+                MegvalositvaSzoveg = r.IsDBNull(9) ? null : r.GetString(9),
+                CreatedAt = r.GetString(10)
             });
         return list;
     }
