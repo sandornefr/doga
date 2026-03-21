@@ -1668,8 +1668,8 @@
             if (!taskNames || !taskNames.length) return;
             const saved = sessionStorage.getItem('kandoUser');
             if (!saved) return;
-            let userEmail = '', userToken = '';
-            try { const u = JSON.parse(saved); userEmail = u.email||''; userToken = u.token||''; } catch(e) { return; }
+            let userEmail = '';
+            try { const u = JSON.parse(saved); userEmail = u.email||''; } catch(e) { return; }
 
             const popup   = document.getElementById('reaction-popup');
             const rows    = document.getElementById('reaction-rows');
@@ -1715,11 +1715,11 @@
                 sendBtn.textContent = 'Küldés...';
                 let ok = true;
                 for (const [feladatNev, ertek] of entries) {
-                    if (userEmail && userToken) {
+                    if (userEmail) {
                         try {
                             const res = await fetch(`${RAILWAY_URL_FB}/api/feedback`, {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
+                                headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ email: userEmail, feladatNev, tipus: 'reaction', ertek })
                             });
                             if (!res.ok) ok = false;
