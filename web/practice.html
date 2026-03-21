@@ -143,8 +143,39 @@
       font-size: 0.77rem; color: var(--muted); margin-top: 4px;
       line-height: 1.5; display: none;
     }
-    .check-item.fail .check-exp { display: block; }
-    .check-item.pass .check-exp { display: none; }
+    .check-exp.visible { display: block; }
+
+    /* Hint button */
+    .btn-hint {
+      margin-top: 4px;
+      padding: 2px 10px;
+      background: #1e3a5f;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      color: #93c5fd;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-hint:hover { background: #1d4ed8; color: #fff; }
+
+    /* Solution button */
+    .btn-solution {
+      padding: 6px 14px;
+      background: #3b1f00;
+      border: 1.5px solid #f59e0b;
+      border-radius: 8px;
+      color: #fcd34d;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-solution:hover { background: #92400e; }
 
     .success-banner {
       display: none; margin-top: 12px;
@@ -358,6 +389,7 @@
   <a href="index.html" class="btn-back" title="Vissza a főoldalra">
     <i class="fas fa-arrow-left"></i> Vissza
   </a>
+  <div id="streak-counter" style="display:flex;align-items:center;gap:5px;padding:4px 12px;background:#1e293b;border:1px solid #374151;border-radius:20px;font-size:0.82rem;font-weight:700;color:#fb923c;margin-left:4px;"></div>
   <div class="pills-wrapper" id="pills-wrapper"></div>
   <div class="progress-label">Teljesítve: <span id="progress-count">0</span> / 17 feladat</div>
   <button class="btn-ref-toggle" id="btn-ref-toggle" title="Referencia panel">
@@ -416,6 +448,9 @@
     <i class="fas fa-check-circle"></i> Ellenőrzés
   </button>
   <div class="score-display" id="score-display">–</div>
+  <button class="btn-solution" id="btn-solution" onclick="showSolution()" style="display:none;">
+    <i class="fas fa-eye"></i> Megoldás
+  </button>
   <button class="btn-reset" id="btn-reset" onclick="resetTask()" title="Visszaállítás kiindulóra">
     <i class="fas fa-rotate-left"></i> Reset
   </button>
@@ -478,7 +513,9 @@ const tasks = [
       { label: 'Viewport meta tag megvan', explanation: 'A viewport meta tag nélkül mobilon az oldal kicsinyítve jelenik meg. Mindig legyen benne: <meta name="viewport" content="width=device-width, initial-scale=1.0">', fn: (html) => /<meta[^>]*name=["']viewport["']/i.test(html) },
       { label: 'Böngésző fülön megjelenő cím (<title>) megvan', explanation: 'A <title> tartalmát látja a felhasználó a böngésző fülön. Legyen értelmes, pl. <title>Bogyós gyümölcsök</title>', fn: (html) => /<title>[^<]+<\/title>/i.test(html) },
       { label: 'CSS stíluslap hivatkozás a head-ben', explanation: 'A CSS fájlt így kell becsatolni: <link rel="stylesheet" href="css/style.css"> – ez a sor a <head>-be kerül.', fn: (html, css, doc) => { const head = doc.querySelector('head'); return head ? /stylesheet/i.test(head.innerHTML) : false; } },
-    ]
+    ],
+    solution: `<!DOCTYPE html>\n<html lang="hu">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Bogyós gyümölcsök</title>\n  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">\n  <link rel="stylesheet" href="css/style.css">\n</head>\n<body>\n\n  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"><\/script>\n</body>\n</html>`,
+    solutionCss: '',
   },
   {
     id: 2, emoji: '🖼️', title: 'Fejléc kép',
@@ -491,7 +528,9 @@ const tasks = [
       { label: 'alt szöveg megadva', explanation: 'Az alt szöveg jelenik meg, ha a kép nem tölthető be. HTML validáláshoz kötelező!', fn: (html, css, doc) => { const img = doc.querySelector('img'); return img && img.hasAttribute('alt') && img.getAttribute('alt').trim().length > 0; } },
       { label: 'title szöveg megadva', explanation: 'A title szöveg az egér felé vitelkor (tooltip) jelenik meg a kép fölött.', fn: (html, css, doc) => { const img = doc.querySelector('img'); return img && img.hasAttribute('title') && img.getAttribute('title').trim().length > 0; } },
       { label: 'id="fejlec" beállítva a képen', explanation: 'Az egyedi azonosítóval a CSS-ben hivatkozhatsz a képre: #fejlec { width: 100%; }', fn: (html) => /id=["']fejlec["']/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <img src="img/fejlec.jpg" alt="Bogyós gyümölcsök" title="Bogyós gyümölcsök" id="fejlec">'),
+    solutionCss: '',
   },
   {
     id: 3, emoji: '📝', title: 'Főcím és szövegek',
@@ -503,7 +542,9 @@ const tasks = [
       { label: 'h2 vagy h3 alcím megvan', explanation: 'A h2 és h3 alcímek hierarchiát adnak az oldalnak – mint a könyvfejezetek és alfejezetek.', fn: (html, css, doc) => doc.querySelector('h2,h3') !== null },
       { label: 'Legalább 2 bekezdés (p tag)', explanation: 'A szövegeket bekezdés (<p>) elemekbe kell tagolni. Legalább 2 bekezdés szükséges.', fn: (html, css, doc) => doc.querySelectorAll('p').length >= 2 },
       { label: 'Bootstrap margó osztály (my-3 vagy my-4) alkalmazva bekezdésen', explanation: 'A Bootstrap my-3 / my-4 osztály függőleges margót ad – az oldal levegősebbnek tűnik tőle. Pl.: <p class="my-3">...', fn: (html, css, doc) => doc.querySelector('p.my-3, p.my-4, [class*="my-3"], [class*="my-4"]') !== null },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <h1>Bogyós gyümölcsök</h1>\n  <h2>Erdei gyümölcsök</h2>\n  <p class="my-3">Az erdei bogyós gyümölcsök rendkívül egészségesek és finomak.</p>\n  <p class="my-3">Magyarországon sokféle bogyós gyümölcs terem a természetben.</p>'),
+    solutionCss: '',
   },
   {
     id: 4, emoji: '✏️', title: 'Szövegformázás',
@@ -518,7 +559,9 @@ const tasks = [
       { label: 'Dőlt szöveg (<em> vagy <i>)', explanation: 'Dőlt szöveghez az <em> (kiemelés) vagy <i> (pl. latin nevek) tagot kell használni.', fn: (html, css, doc) => doc.querySelector('em,i') !== null },
       { label: 'Aláhúzott szöveg (<u>)', explanation: 'Az aláhúzott szöveghez az <u> tagot kell használni. Pl.: <u>aláhúzott rész</u>', fn: (html, css, doc) => doc.querySelector('u') !== null },
       { label: 'Sortörés (<br>)', explanation: 'A sortörés <br> taggel oldható meg – ez tördelés nélkül visz új sorba.', fn: (html) => /<br\s*\/?>/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <p>A <b>Kandó</b> Kálmán Szakgimnázium és Szakközépiskola egy <em>neves</em> budapesti iskola.\n    Az iskola elkötelezett a <u>minőségi</u> oktatás iránt.<br>\n    A diákok számos tantárgyat tanulnak az iskolában.</p>'),
+    solutionCss: '',
   },
   {
     id: 5, emoji: '🔗', title: 'Menüpont és link',
@@ -533,7 +576,9 @@ const tasks = [
       { label: 'nav elem megvan', explanation: 'A navigációt szemantikusan a <nav> elembe kell tenni – ez jelzi a böngészőknek és keresőknek, hogy navigáció.', fn: (html, css, doc) => doc.querySelector('nav') !== null },
       { label: 'Hivatkozás (a href) megvan', explanation: 'A linkek <a href="url">szöveg</a> formában készülnek. A href-ben az URL kerül.', fn: (html, css, doc) => doc.querySelector('a[href]') !== null },
       { label: 'Új lapon nyílik meg (target="_blank")', explanation: 'Ha a link új lapon kell megnyíljon, a target="_blank" attribútumot kell hozzáadni: <a href="..." target="_blank">', fn: (html) => /target=["']_blank["']/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <nav>\n    <ul>\n      <li><a href="goji.html" target="_blank">Goji bogyó</a></li>\n    </ul>\n  </nav>'),
+    solutionCss: '',
   },
   {
     id: 6, emoji: '📋', title: 'Felsorolások',
@@ -546,7 +591,9 @@ const tasks = [
       { label: 'Legalább 3 listaelem (li)', explanation: 'Tegyél legalább 3 <li> elemet a felsorolásba!', fn: (html, css, doc) => doc.querySelectorAll('li').length >= 3 },
       { label: 'ul-on van egyedi azonosító (id)', explanation: 'Az id attribútummal tudsz a CSS-ben hivatkozni az elemre: <ul id="etelek"> → CSS: #etelek { ... }', fn: (html, css, doc) => { const ul = doc.querySelector('ul'); return ul && ul.hasAttribute('id'); } },
       { label: 'ol-on van egyedi azonosító (id)', explanation: 'Az ol-ra is kell id – <ol id="lepesek"> → CSS: #lepesek { list-style-image: url(\'img/ikon.png\'); }', fn: (html, css, doc) => { const ol = doc.querySelector('ol'); return ol && ol.hasAttribute('id'); } },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <ul id="gyumolcsok">\n    <li>Eper</li>\n    <li>Málna</li>\n    <li>Áfonya</li>\n  </ul>\n  <ol id="lepesek">\n    <li>Gyümölcsöt megmosni</li>\n    <li>Cukorral összekeverni</li>\n    <li>Befőttesüvegbe tölteni</li>\n  </ol>'),
+    solutionCss: '',
   },
   {
     id: 7, emoji: '📸', title: 'Képek tartalomban',
@@ -558,7 +605,9 @@ const tasks = [
       { label: 'alt szöveg megadva', explanation: 'Az alt szöveg HTML validáláshoz kötelező! Ha hiányzik, hibát kapsz.', fn: (html, css, doc) => { const imgs = doc.querySelectorAll('img'); return imgs.length > 0 && [...imgs].every(img => img.hasAttribute('alt')); } },
       { label: 'title szöveg megadva', explanation: 'A title tooltip-ként jelenik meg az egér felé vitelkor.', fn: (html, css, doc) => doc.querySelector('img[title]') !== null },
       { label: 'img-fluid osztály alkalmazva (reszponzív kép)', explanation: 'A Bootstrap img-fluid osztály nélkül a kép kinyúlhat a konténeréből! Mindig add hozzá: <img class="img-fluid" ...>', fn: (html) => /class=["'][^"']*img-fluid/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <img src="img/afonya.jpg" alt="Áfonya" title="Áfonya" class="img-fluid">'),
+    solutionCss: '',
   },
   {
     id: 8, emoji: '🎨', title: 'Bootstrap szöveg osztályok',
@@ -574,7 +623,9 @@ const tasks = [
       { label: 'text-uppercase osztály alkalmazva', explanation: 'A text-uppercase nagybetűssé alakítja a szöveget CSS-sel – anélkül hogy kézzel NAGYBETŰKET kellene írni.', fn: (html) => /class=["'][^"']*text-uppercase/i.test(html) },
       { label: 'my-3 vagy my-4 margó osztály alkalmazva', explanation: 'A my-3 / my-4 osztályok felső és alsó margót adnak az elemnek. my-3 = 1rem, my-4 = 1.5rem.', fn: (html) => /class=["'][^"']*my-[34]/i.test(html) },
       { label: 'h5 osztály alkalmazva (figcaption vagy p elemen)', explanation: 'A Bootstrap h5 osztály h5-szintű betűméretet állít be bármely elemre – pl. <figcaption class="h5 fw-bold text-center">', fn: (html) => /class=["'][^"']*\bh5\b/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <figure>\n    <img src="img/kep.jpg" alt="Kép" title="Leírás">\n    <figcaption class="text-center fw-bold h5">Bogyós gyümölcs</figcaption>\n  </figure>\n  <p class="my-4 text-uppercase">Friss és egészséges</p>'),
+    solutionCss: '',
   },
   {
     id: 9, emoji: '🖼️', title: 'Kép középre + képaláírás',
@@ -586,7 +637,9 @@ const tasks = [
       { label: 'figcaption képaláírás megvan', explanation: 'A <figcaption> a képaláírás helye – ide kerül a kép neve/leírása.', fn: (html, css, doc) => doc.querySelector('figcaption') !== null },
       { label: 'Képaláírás: text-center és fw-bold osztályok', explanation: 'A képaláíráson alkalmazni kell: class="text-center fw-bold h5" – középre igazítja és félkövérré teszi.', fn: (html) => /figcaption[^>]*class=["'][^"']*(text-center|fw-bold)/i.test(html) },
       { label: 'Kép középre helyezve (d-block mx-auto vagy text-center szülőn)', explanation: 'Kép középre igazítása Bootstrap-pel: add az img-re a d-block és mx-auto osztályokat: <img class="d-block mx-auto img-fluid" ...> VAGY tedd a szülőre: <div class="text-center">', fn: (html) => /class=["'][^"']*(d-block[^"']*mx-auto|mx-auto[^"']*d-block)/i.test(html) || /<div[^>]*text-center[^>]*>[\s\S]*?<img/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <figure>\n    <img src="img/malna.jpg" alt="Málna" title="Málna" class="d-block mx-auto img-fluid">\n    <figcaption class="text-center fw-bold h5">Málna</figcaption>\n  </figure>'),
+    solutionCss: '',
   },
   {
     id: 10, emoji: '📐', title: 'Bootstrap Grid',
@@ -599,7 +652,9 @@ const tasks = [
       { label: 'Legalább 2 col-* osztályú div', explanation: 'Az oszlopokat col-* osztályú div-ek alkotják: <div class="col-md-4">. Az összes oszlop szélességeinek 12-t kell kiadnia (3×4=12, 2×6=12 stb.)', fn: (html, css, doc) => doc.querySelectorAll('[class*="col-"]').length >= 2 },
       { label: 'col-md vagy col-lg méretspecifikus osztály', explanation: 'A col-md-* (medium) és col-lg-* (large) osztályok csak adott képernyőméreten lépnek életbe. Kisebb képernyőn az elemek egymás alá kerülnek.', fn: (html) => /class=["'][^"']*col-(md|lg)-\d/i.test(html) },
       { label: 'Legalább 3 tartalom az oszlopokban', explanation: 'A grid akkor hasznos, ha legalább 2-3 oszlop van tartalommal egymás mellett.', fn: (html, css, doc) => doc.querySelectorAll('[class*="col-"]').length >= 3 },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <div class="container">\n    <div class="row">\n      <div class="col-md-4"><h3>Eper</h3><p>Piros, édes bogyó.</p></div>\n      <div class="col-md-4"><h3>Málna</h3><p>Lédús, illatos gyümölcs.</p></div>\n      <div class="col-md-4"><h3>Áfonya</h3><p>Kék, antioxidáns gazdag.</p></div>\n    </div>\n  </div>'),
+    solutionCss: '',
   },
   {
     id: 11, emoji: '📊', title: 'Táblázat alap',
@@ -615,7 +670,9 @@ const tasks = [
       { label: 'tr (táblázat sor) megvan', explanation: 'Minden sor <tr> (table row) elembe kerül, a thead-ben és tbody-ban egyaránt.', fn: (html, css, doc) => doc.querySelector('tr') !== null },
       { label: 'th (fejléc cella) megvan a thead-ben', explanation: 'A fejléc cellák <th> elemek – ezek alapból félkövérek és középre igazítottak.', fn: (html, css, doc) => doc.querySelector('thead th') !== null },
       { label: 'td (adatcella) megvan a tbody-ban', explanation: 'Az adatcellák <td> (table data) elemek a tbody sorokban.', fn: (html, css, doc) => doc.querySelector('tbody td') !== null },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <table>\n    <thead>\n      <tr>\n        <th>Gyümölcs</th>\n        <th>Szín</th>\n        <th>Szezon</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>Eper</td>\n        <td>Piros</td>\n        <td>Június</td>\n      </tr>\n      <tr>\n        <td>Áfonya</td>\n        <td>Kék</td>\n        <td>Augusztus</td>\n      </tr>\n    </tbody>\n  </table>'),
+    solutionCss: '',
   },
   {
     id: 12, emoji: '📊', title: 'Táblázat Bootstrap stílusok',
@@ -648,7 +705,9 @@ const tasks = [
       { label: 'text-uppercase a fejléc cellákon', explanation: 'A thead th elemekre alkalmazva: <th class="text-uppercase"> – így nagybetűs lesz a táblázat fejléce.', fn: (html) => /class=["'][^"']*text-uppercase/i.test(html) },
       { label: 'text-center vagy align-middle igazítás', explanation: 'text-center = vízszintesen középre, align-middle = függőlegesen középre. Pl.: <td class="text-center align-middle">', fn: (html) => /class=["'][^"']*(text-center|align-middle)/i.test(html) },
       { label: 'w-25 osztály a fejléc cellákon', explanation: 'A w-25 Bootstrap osztály 25%-os szélességet állít be – ezzel egyforma szélességű oszlopok hozhatók létre: <th class="w-25">', fn: (html) => /class=["'][^"']*\bw-25\b/i.test(html) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <table class="table table-bordered">\n    <thead>\n      <tr>\n        <th class="text-uppercase w-25 text-center">Neve</th>\n        <th class="text-uppercase w-25 text-center">Kora</th>\n        <th class="text-uppercase w-25 text-center">Városa</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td class="align-middle text-center">Kovács Péter</td>\n        <td class="align-middle text-center">17</td>\n        <td class="align-middle text-center">Budapest</td>\n      </tr>\n      <tr>\n        <td class="align-middle text-center">Nagy Anna</td>\n        <td class="align-middle text-center">16</td>\n        <td class="align-middle text-center">Debrecen</td>\n      </tr>\n    </tbody>\n  </table>'),
+    solutionCss: '',
   },
   {
     id: 13, emoji: '🔻', title: 'Lábléc link',
@@ -664,7 +723,9 @@ const tasks = [
       { label: 'footer elem megvan', explanation: 'A weboldal láblécét <footer> elembe kell tenni – szemantikus HTML5, jelzi a böngészőknek és keresőknek.', fn: (html, css, doc) => doc.querySelector('footer') !== null },
       { label: 'Oldalon belüli hivatkozás (a href="#azonosito")', explanation: 'Az oldalon belüli ugráshoz # jelet kell a href elé írni: <a href="#leiras"> – az id="leiras" elemre ugrik.', fn: (html) => /href=["']#\w+["']/i.test(html) },
       { label: 'Hivatkozás szövege "Ugrás az elejére"', explanation: 'A lábléc hivatkozás szövege legyen pontosan: Ugrás az elejére (ezt kérik a vizsgán).', fn: (html, css, doc) => { const links = doc.querySelectorAll('footer a'); return [...links].some(a => a.textContent.includes('Ugrás az elejére')); } },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <div id="leiras">\n    <h1>Oldal teteje</h1>\n    <p>Ez az oldal eleje. Görgess le és kattints a lábléc linkjére!</p>\n  </div>\n  <br><br><br><br><br><br><br><br><br><br>\n  <footer>\n    <a href="#leiras">Ugrás az elejére</a>\n  </footer>'),
+    solutionCss: '',
   },
   {
     id: 14, emoji: '🎨', title: 'CSS: Betűtípus és szöveg',
@@ -678,7 +739,9 @@ const tasks = [
       { label: 'text-align: justify (sorkizárt szöveg)', explanation: 'A sorkizárt szöveg mindkét oldalt egyenesen zárul: p { text-align: justify; } – ezt szinte minden vizsgán kérik.', fn: (html, css) => /text-align\s*:\s*justify/i.test(css) },
       { label: 'font-size em-ben vagy %-ban', explanation: 'A betűméretet megadhatod em-ben (1.2em = 20%-kal nagyobb) vagy %-ban (90% = 10%-kal kisebb az alapértelmezettől).', fn: (html, css) => /font-size\s*:\s*[\d.]+\s*(em|%)/i.test(css) },
       { label: 'font-variant: small-caps (kiskapitális)', explanation: 'A kiskapitális betű: a kisbetűk úgy néznek ki mint a nagyok, de kisebbek. CSS: .felirat { font-variant: small-caps; }', fn: (html, css) => /font-variant\s*:\s*small-caps/i.test(css) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <h1>Kandó KSZKI</h1>\n  <p>A Kandó Kálmán Szakgimnázium és Szakközépiskola egy neves budapesti iskola. Az intézmény elkötelezett a minőségi szakmai oktatás iránt.</p>\n  <p class="felirat">Ez egy kiskapitális felirat</p>'),
+    solutionCss: 'body {\n  font-family: Verdana, sans-serif;\n}\np {\n  text-align: justify;\n  font-size: 1.1em;\n}\n.felirat {\n  font-variant: small-caps;\n}',
   },
   {
     id: 15, emoji: '🎨', title: 'CSS: Navigáció stílus',
@@ -695,7 +758,9 @@ const tasks = [
       { label: 'nav li szegély (border) beállítva', explanation: 'A navigáció listaelemére szegélyt kell beállítani. Pl.: nav li { border-right: 3px dotted red; } – általában jobb oldali szegély kell.', fn: (html, css) => /nav\s+li[^{]*\{[^}]*border/i.test(css) },
       { label: 'nav li belső margó (padding) beállítva', explanation: 'A padding a tartalom és a szegély közötti távolság. Pl.: nav li { padding: 0 15px; } – vízszintesen 15px, függőlegesen 0.', fn: (html, css) => /nav\s+li[^{]*\{[^}]*padding/i.test(css) },
       { label: 'nav a (link) színe beállítva', explanation: 'A navigáció hivatkozásainak színét CSS-sel állítsd be: nav a { color: white; } – különben marad az alapértelmezett kék.', fn: (html, css) => /nav\s+a[^{]*\{[^}]*color/i.test(css) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <nav>\n    <ul>\n      <li><a href="#">Kezdőlap</a></li>\n      <li><a href="#">Rólunk</a></li>\n      <li><a href="#">Kapcsolat</a></li>\n    </ul>\n  </nav>'),
+    solutionCss: 'nav li {\n  border-right: 3px dotted red;\n  padding: 0 15px;\n  list-style: none;\n  display: inline-block;\n}\nnav a {\n  color: white;\n  text-decoration: none;\n}',
   },
   {
     id: 16, emoji: '🎨', title: 'CSS: Lablec osztály',
@@ -709,7 +774,9 @@ const tasks = [
       { label: '.lablec a félkövér (font-weight: bold)', explanation: 'A lábléc link félkövér: .lablec a { font-weight: bold; }', fn: (html, css) => /\.lablec[^{]*a[^{]*\{[^}]*font-weight\s*:\s*bold/i.test(css) || /\.lablec\s+a[^{]*\{[^}]*font-weight\s*:\s*bold/i.test(css) },
       { label: '.lablec a aláhúzás megszüntetve (text-decoration: none)', explanation: 'Alapból a hivatkozások alá vannak húzva. A lábléc linkjénél ezt meg kell szüntetni: .lablec a { text-decoration: none; }', fn: (html, css) => /\.lablec[^{]*a[^{]*\{[^}]*text-decoration\s*:\s*none/i.test(css) || /\.lablec\s+a[^{]*\{[^}]*text-decoration\s*:\s*none/i.test(css) },
       { label: '.lablec a:hover nagybetűs (text-transform: uppercase)', explanation: 'A hover hatás: amikor az egér fölé kerül, nagybetűssé válik. .lablec a:hover { text-transform: uppercase; }', fn: (html, css) => /\.lablec\s+a\s*:\s*hover[^{]*\{[^}]*text-transform\s*:\s*uppercase/i.test(css) },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <footer class="lablec">\n    <a href="#leiras">Ugrás az elejére</a>\n  </footer>'),
+    solutionCss: '.lablec a {\n  color: white;\n  font-weight: bold;\n  text-decoration: none;\n}\n.lablec a:hover {\n  text-transform: uppercase;\n}',
   },
   {
     id: 17, emoji: '🎨', title: 'CSS: Listaelem kép',
@@ -725,7 +792,9 @@ const tasks = [
       { label: 'list-style-image beállítva', explanation: "Egyedi képet állíthatsz listaelem jelölőnek: #lista { list-style-image: url('img/ikon.png'); }", fn: (html, css) => /list-style-image\s*:/i.test(css) },
       { label: 'url() függvény használva', explanation: "A kép elérési útját url() függvénybe kell írni: list-style-image: url('img/ikon.png') – a (' és ') közé kerül az útvonal.", fn: (html, css) => /list-style-image\s*:\s*url\s*\(/i.test(css) },
       { label: 'margin-left beállítva az elemkijelölőre', explanation: 'A listaelem balra is be kell igazítani: #lista { margin-left: 25px; } – ezt általában mindig kérik a list-style-image mellett.', fn: (html, css) => { const idMatch = css.match(/#\w+\s*\{([^}]+)\}/g); if (!idMatch) return false; return idMatch.some(rule => /list-style-image/i.test(rule) && /margin-left/i.test(rule)); } },
-    ]
+    ],
+    solution: BASE_HTML.replace('  <!-- ide kerül a kód -->', '  <ul id="lista">\n    <li>Alma</li>\n    <li>Barack</li>\n    <li>Cseresznye</li>\n    <li>Dió</li>\n  </ul>'),
+    solutionCss: '#lista {\n  list-style-image: url(\'img/bogyo.png\');\n  margin-left: 25px;\n}',
   },
 ];
 
@@ -803,11 +872,36 @@ const state = {
   editors: { html: null, css: null },
   previewTimeout: null,
   completedOnce: Array(17).fill(false),
+  hintShown: Array(17).fill(null).map(() => new Set()),
+  failedAttempts: Array(17).fill(0),
 };
 
 // =====================================================================
 // INIT
 // =====================================================================
+
+// =====================================================================
+// STREAK
+// =====================================================================
+
+function initStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  let data = JSON.parse(localStorage.getItem('practice_streak') || '{"date":"","streak":0}');
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  if (data.date === today) {
+    // already today, keep
+  } else if (data.date === yesterday) {
+    data.streak += 1;
+    data.date = today;
+  } else {
+    data.streak = 1;
+    data.date = today;
+  }
+  localStorage.setItem('practice_streak', JSON.stringify(data));
+  const el = document.getElementById('streak-counter');
+  if (el) el.textContent = '🔥 ' + data.streak + ' nap';
+}
+initStreak();
 
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 
@@ -897,6 +991,11 @@ function saveCurrentEditors() {
 }
 
 function loadTask(index) {
+  // Reset per-task UI state
+  if (!state.hintShown[index]) state.hintShown[index] = new Set();
+  const solBtn = document.getElementById('btn-solution');
+  if (solBtn) solBtn.style.display = 'none';
+
   saveCurrentEditors();
   state.currentTask = index;
   const task = tasks[index];
@@ -994,6 +1093,7 @@ function updatePreview() {
 
   const frame = document.getElementById('preview-frame');
   frame.srcdoc = html;
+  runChecksLive();
 }
 
 // =====================================================================
@@ -1024,6 +1124,14 @@ function runChecks() {
   const total  = results.length;
   const allPass = passed === total;
 
+  if (!allPass) {
+    state.failedAttempts[state.currentTask] = (state.failedAttempts[state.currentTask] || 0) + 1;
+    if (state.failedAttempts[state.currentTask] >= 3) {
+      const solBtn = document.getElementById('btn-solution');
+      if (solBtn) solBtn.style.display = 'inline-flex';
+    }
+  }
+
   if (allPass && state.taskStatus[state.currentTask] !== 'done') {
     state.taskStatus[state.currentTask] = 'done';
     if (!state.completedOnce[state.currentTask]) {
@@ -1045,6 +1153,7 @@ function runChecks() {
 
 function renderChecklist(results) {
   const task = tasks[state.currentTask];
+  const taskIdx = state.currentTask;
   const list = document.getElementById('checklist');
   list.innerHTML = '';
 
@@ -1052,22 +1161,42 @@ function renderChecklist(results) {
     const res = results ? results[i] : null;
     const div = document.createElement('div');
     div.className = 'check-item' + (res === true ? ' pass' : res === false ? ' fail' : '');
+    div.id = 'check-item-' + i;
 
     const icon = document.createElement('span');
     icon.className = 'check-icon';
+    icon.id = 'check-icon-' + i;
     icon.textContent = res === true ? '✅' : res === false ? '❌' : '⬜';
 
     const textWrap = document.createElement('div');
+    textWrap.style.flex = '1';
     const label = document.createElement('div');
     label.className = 'check-text';
     label.textContent = ch.label;
 
-    const exp = document.createElement('div');
-    exp.className = 'check-exp';
-    exp.textContent = ch.explanation;
-
     textWrap.appendChild(label);
-    textWrap.appendChild(exp);
+
+    // Show hint button for failed checks
+    if (res === false) {
+      const hintShownForThis = state.hintShown[taskIdx] && state.hintShown[taskIdx].has(i);
+      if (!hintShownForThis) {
+        const hintBtn = document.createElement('button');
+        hintBtn.className = 'btn-hint';
+        hintBtn.innerHTML = '💡 Tipp';
+        hintBtn.onclick = () => {
+          if (!state.hintShown[taskIdx]) state.hintShown[taskIdx] = new Set();
+          state.hintShown[taskIdx].add(i);
+          renderChecklist(state.taskResults[state.currentTask]);
+        };
+        textWrap.appendChild(hintBtn);
+      } else {
+        const exp = document.createElement('div');
+        exp.className = 'check-exp visible';
+        exp.innerHTML = ch.explanation;
+        textWrap.appendChild(exp);
+      }
+    }
+
     div.appendChild(icon);
     div.appendChild(textWrap);
     list.appendChild(div);
@@ -1087,6 +1216,67 @@ function renderChecklist(results) {
   } else {
     banner.className = 'success-banner';
   }
+}
+
+// =====================================================================
+// LIVE CHECKS (silent, no failedAttempts increment, no score-display)
+// =====================================================================
+
+function runChecksLive() {
+  if (!state.editors.html) return;
+  const task = tasks[state.currentTask];
+  const html = state.editors.html.getValue();
+  const css  = state.editors.css.getValue();
+  let doc;
+  try { doc = new DOMParser().parseFromString(html, 'text/html'); }
+  catch(e) { doc = document.implementation.createHTMLDocument(''); }
+
+  const results = task.checks.map(ch => {
+    try { return !!ch.fn(html, css, doc); } catch(e) { return false; }
+  });
+
+  state.taskResults[state.currentTask] = results;
+  const passed = results.filter(Boolean).length;
+  const total  = results.length;
+  const allPass = passed === total;
+
+  if (allPass && state.taskStatus[state.currentTask] !== 'done') {
+    state.taskStatus[state.currentTask] = 'done';
+    if (!state.completedOnce[state.currentTask]) {
+      state.completedOnce[state.currentTask] = true;
+      triggerConfetti();
+      document.getElementById('score-display').innerHTML =
+        '<span style="color:#22c55e">🎉 ' + passed + ' / ' + total + '</span> – minden teljesítve!';
+    }
+  } else if (!allPass && state.taskStatus[state.currentTask] !== 'done') {
+    state.taskStatus[state.currentTask] = state.taskStatus[state.currentTask] === 'idle' ? 'idle' : 'started';
+  }
+
+  // Update icons only (don't re-render full checklist)
+  results.forEach((res, i) => {
+    const iconEl = document.getElementById('check-icon-' + i);
+    if (iconEl) iconEl.textContent = res ? '✅' : (state.taskResults[state.currentTask] === null ? '⬜' : '❌');
+    const itemEl = document.getElementById('check-item-' + i);
+    if (itemEl) {
+      itemEl.className = 'check-item' + (res ? ' pass' : ' fail');
+    }
+  });
+
+  updatePills();
+}
+
+// =====================================================================
+// SOLUTION VIEWER
+// =====================================================================
+
+function showSolution() {
+  const task = tasks[state.currentTask];
+  if (!task.solution) { alert('Ehhez a feladathoz nincs minta megoldás.'); return; }
+  if (!confirm('Biztosan meg szeretnéd nézni a megoldást? A tanulás szempontjából jobb ha még egyszer próbálkozol! 😊')) return;
+  state.editors.html.setValue(task.solution);
+  if (task.solutionCss && state.editors.css) state.editors.css.setValue(task.solutionCss);
+  document.getElementById('btn-solution').style.display = 'none';
+  state.failedAttempts[state.currentTask] = 0;
 }
 
 // =====================================================================
