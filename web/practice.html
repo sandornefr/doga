@@ -474,7 +474,6 @@
 
 <!-- MONACO LOADER -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es@5.1.2/dist/emmet-monaco.min.js"></script>
 
 <script>
 'use strict';
@@ -1577,48 +1576,108 @@ function initStreak() {
 }
 initStreak();
 
+// Emmet betöltése aszinkron módon (emmet-monaco-es helyett direkt emmet csomag)
+let _emmet = null;
+(async () => {
+  try {
+    const mod = await import('https://esm.sh/emmet@2.4.11');
+    _emmet = mod.default;
+  } catch(e) { console.warn('Emmet betöltési hiba:', e); }
+})();
+
+// Emmet Tab bővítés – kizárólag Monaco addCommand-dal, nem emmet-monaco-es-sel
+function emmetTab(editor) {
+  const m   = window.monaco;
+  const pos   = editor.getPosition();
+  const model = editor.getModel();
+  const line  = model.getLineContent(pos.lineNumber);
+  const before = line.substring(0, pos.column - 1);
+  const sel   = editor.getSelection();
+
+  // Kijelölés esetén behúzás
+  if (sel && !sel.isEmpty()) {
+    editor.getAction('editor.action.indentLines')?.run();
+    return;
+  }
+
+  // Üres / csak whitespace: 2 szóköz beillesztése
+  if (/^\s*$/.test(before)) {
+    editor.trigger('keyboard', 'type', { text: '  ' });
+    return;
+  }
+
+  // Tagen BELÜL vagyunk (pl. <div class="|") → ne bővíts
+  if (before.lastIndexOf('<') > before.lastIndexOf('>')) {
+    editor.trigger('keyboard', 'type', { text: '  ' });
+    return;
+  }
+
+  // Rövidítés kinyerése (az utolsó szóköz / tag után)
+  const match = before.match(/([^\s<>"'=\\/`]+)$/);
+  if (!match || !_emmet) {
+    editor.trigger('keyboard', 'type', { text: '  ' });
+    return;
+  }
+
+  const abbr       = match[1];
+  const baseIndent = (line.match(/^(\s*)/) || ['', ''])[1];
+  let expanded;
+  try {
+    expanded = _emmet(abbr, {
+      syntax: 'html',
+      options: {
+        'output.baseIndent': baseIndent,
+        'output.indent':     '  ',
+        // snippet stílusú kurzorjelölők → Monaco insertSnippet kezeli
+        'output.field': (i, p) => `\${${i}${p ? ':' + p : ''}}`,
+      },
+    });
+  } catch(e) {
+    editor.trigger('keyboard', 'type', { text: '  ' });
+    return;
+  }
+
+  if (!expanded || expanded === abbr) {
+    editor.trigger('keyboard', 'type', { text: '  ' });
+    return;
+  }
+
+  // Rövidítés kijelölése, majd snippet beillesztése (kurzor a ${0} helyére kerül)
+  const startCol = pos.column - abbr.length;
+  editor.setSelection({
+    startLineNumber: pos.lineNumber, startColumn: startCol,
+    endLineNumber:   pos.lineNumber, endColumn:   pos.column,
+  });
+  editor.trigger('emmet', 'editor.action.insertSnippet', { snippet: expanded });
+}
+
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 
 require(['vs/editor/editor.main'], function() {
-  require(['vs/language/html/htmlMode', 'vs/language/css/cssMode'], function() {
-    const m = window.monaco;
+  const m = window.monaco;
 
-    // Emmet aktiválás – editor létrehozása ELŐTT kell, hogy az onDidCreateEditor event elkapja
-    if (window.emmetMonaco) window.emmetMonaco.emmetHTML(m);
+  state.editors.html = m.editor.create(document.getElementById('editor-html'), {
+    value: '', language: 'html', theme: 'vs-dark', fontSize: 15,
+    minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+    scrollBeyondLastLine: false, tabSize: 2, quickSuggestions: false,
+  });
 
-    state.editors.html = m.editor.create(document.getElementById('editor-html'), {
-      value: '',
-      language: 'html',
-      theme: 'vs-dark',
-      fontSize: 15,
-      minimap: { enabled: false },
-      automaticLayout: true,
-      wordWrap: 'on',
-      scrollBeyondLastLine: false,
-      tabSize: 2,
-      quickSuggestions: false,
-    });
+  state.editors.css = m.editor.create(document.getElementById('editor-css'), {
+    value: '', language: 'css', theme: 'vs-dark', fontSize: 15,
+    minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+    scrollBeyondLastLine: false, tabSize: 2,
+  });
 
-    state.editors.css = m.editor.create(document.getElementById('editor-css'), {
-      value: '',
-      language: 'css',
-      theme: 'vs-dark',
-      fontSize: 15,
-      minimap: { enabled: false },
-      automaticLayout: true,
-      wordWrap: 'on',
-      scrollBeyondLastLine: false,
-      tabSize: 2,
-    });
+  // Tab → Emmet bővítés a HTML editorban
+  state.editors.html.addCommand(m.KeyCode.Tab, () => emmetTab(state.editors.html));
 
-    state.editors.html.onDidChangeModelContent(() => schedulePreview());
-    state.editors.css.onDidChangeModelContent(() => schedulePreview());
+  state.editors.html.onDidChangeModelContent(() => schedulePreview());
+  state.editors.css.onDidChangeModelContent(() => schedulePreview());
 
-    buildPills();
-    buildRefPanel();
-    loadTask(0);
-  }); // require htmlMode/cssMode vége
-}); // require editor.main vége
+  buildPills();
+  buildRefPanel();
+  loadTask(0);
+});
 
 // =====================================================================
 // PILLS
