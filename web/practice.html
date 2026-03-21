@@ -1624,7 +1624,8 @@ require(['vs/editor/editor.main'], function() {
       minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
       scrollBeyondLastLine: false, tabSize: 2,
       quickSuggestions: { other: true, comments: false, strings: true },
-      suggest: { showSnippets: true, showWords: true },
+      suggest: { showSnippets: true, showWords: false },
+      inlineSuggest: { enabled: false },
     });
 
     state.editors.css = m.editor.create(document.getElementById('editor-css'), {
