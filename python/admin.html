@@ -595,13 +595,24 @@
 
             <!-- Tesztelők kezelése -->
             <div style="background:#0f1e35;border:1px solid #1a3a5c;border-radius:10px;padding:16px 18px;margin-bottom:22px;">
-                <div style="font-weight:700;color:#a5b4fc;margin-bottom:12px;font-size:0.92rem;"><i class="fas fa-flask"></i> 🔬 Tesztelők kezelése</div>
-                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-                    <input type="text" id="tesztelő-email-input" placeholder="tanuló@kkszki.hu" style="flex:1;min-width:200px;background:#0a1628;border:1px solid #1f3460;border-radius:7px;color:#e0e0e0;padding:7px 12px;font-size:0.88rem;">
-                    <button onclick="addTesztelő()" style="padding:7px 16px;background:#4f46e5;border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:0.88rem;">+ Hozzáadás</button>
-                    <button onclick="loadTesztelők()" style="padding:7px 14px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:7px;color:#94a3b8;cursor:pointer;font-size:0.85rem;"><i class="fas fa-rotate"></i></button>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="font-weight:700;color:#a5b4fc;font-size:0.92rem;"><i class="fas fa-flask"></i> 🔬 Tesztelők kezelése</div>
+                    <button onclick="loadTesztelők()" style="padding:4px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.8rem;"><i class="fas fa-rotate"></i> Frissítés</button>
                 </div>
-                <div id="tesztelők-lista" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+
+                <!-- Aktív tesztelők -->
+                <div id="tesztelők-lista" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+
+                <!-- Tanuló kereső -->
+                <div style="border:1px solid #1f3460;border-radius:8px;overflow:hidden;">
+                    <div style="background:#0a1628;padding:8px 10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <select id="tesztelő-osztaly-filter" onchange="szurTanulok()" style="background:#0f1e35;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:5px 8px;font-size:0.83rem;cursor:pointer;">
+                            <option value="">Összes osztály</option>
+                        </select>
+                        <input type="text" id="tesztelő-nev-filter" oninput="szurTanulok()" placeholder="Névkeresés..." style="flex:1;min-width:120px;background:#0f1e35;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:5px 10px;font-size:0.83rem;">
+                    </div>
+                    <div id="tanuló-valaszto-lista" style="max-height:220px;overflow-y:auto;"></div>
+                </div>
                 <div style="margin-top:16px;border-top:1px solid #1a3a5c;padding-top:14px;">
                     <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;margin-bottom:8px;">📨 Üzenet küldése tesztelőknek</div>
                     <textarea id="teszteloi-uzenet-input" rows="2" placeholder="pl. Kérlek teszteld az Ötlet Láda funkciót és jelezz vissza!" style="width:100%;background:#0a1628;border:1px solid #1f3460;border-radius:7px;color:#e0e0e0;padding:8px 12px;font-size:0.87rem;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
@@ -2484,30 +2495,91 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         // ── Tesztelők ─────────────────────────────────────────────────────────
 
+        let _allTanulok = [];      // összes tanuló cache
+        let _tesztelokSet = new Set(); // aktuális tesztelők email setje
+
         async function loadTesztelők() {
-            const res = await authFetch(`${RAILWAY_URL}/api/tesztelok`);
-            if (!res.ok) return;
-            const lista = await res.json();
+            // Párhuzamosan tölti be a tanulókat és a tesztelőket
+            const [tRes, uRes] = await Promise.all([
+                authFetch(`${RAILWAY_URL}/api/tesztelok`),
+                authFetch(`${RAILWAY_URL}/api/users`)
+            ]);
+            if (!tRes.ok || !uRes.ok) return;
+
+            const tesztelokLista = await tRes.json();
+            const allUsers       = await uRes.json();
+
+            _tesztelokSet = new Set(tesztelokLista.map(e => e.toLowerCase()));
+            _allTanulok   = allUsers.filter(u => u.szerep === 'tanulo');
+
+            // Aktív tesztelők megjelenítése névvel
             const el = document.getElementById('tesztelők-lista');
-            if (!el) return;
-            el.innerHTML = lista.length === 0
-                ? '<span style="color:#555;font-size:0.83rem;">Még nincs tesztelő hozzáadva.</span>'
-                : lista.map(email => `
-                    <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#c7d2fe;">
-                        🔬 ${escHtml(email)}
-                        <button onclick="removeTesztelő('${escHtml(email)}')" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;">✕</button>
-                    </span>`).join('');
+            if (el) {
+                if (_tesztelokSet.size === 0) {
+                    el.innerHTML = '<span style="color:#555;font-size:0.83rem;">Még nincs tesztelő hozzáadva.</span>';
+                } else {
+                    el.innerHTML = [..._tesztelokSet].map(email => {
+                        const u = _allTanulok.find(x => x.email.toLowerCase() === email);
+                        const nev = u ? escHtml(u.nev) : escHtml(email);
+                        const info = u?.osztaly ? ` <span style="color:#6366f1;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
+                        return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#c7d2fe;">
+                            🔬 ${nev}${info}
+                            <button onclick="removeTesztelő('${escHtml(email)}')" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
+                        </span>`;
+                    }).join('');
+                }
+            }
+
+            // Osztályok a szűrőhöz
+            const osztalyok = [...new Set(_allTanulok.map(u => u.osztaly).filter(Boolean))].sort();
+            const sel = document.getElementById('tesztelő-osztaly-filter');
+            if (sel) {
+                sel.innerHTML = '<option value="">Összes osztály</option>' +
+                    osztalyok.map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('');
+            }
+
+            szurTanulok();
         }
 
-        async function addTesztelő() {
-            const email = document.getElementById('tesztelő-email-input')?.value.trim();
-            if (!email) return;
+        function szurTanulok() {
+            const osztaly = document.getElementById('tesztelő-osztaly-filter')?.value || '';
+            const nev     = (document.getElementById('tesztelő-nev-filter')?.value || '').toLowerCase();
+            const lista   = document.getElementById('tanuló-valaszto-lista');
+            if (!lista) return;
+
+            const szurt = _allTanulok.filter(u =>
+                (!osztaly || u.osztaly === osztaly) &&
+                (!nev || u.nev.toLowerCase().includes(nev))
+            );
+
+            if (szurt.length === 0) {
+                lista.innerHTML = '<div style="padding:10px 14px;color:#475569;font-size:0.82rem;font-style:italic;">Nincs találat.</div>';
+                return;
+            }
+
+            lista.innerHTML = szurt.map(u => {
+                const isTesztelő = _tesztelokSet.has(u.email.toLowerCase());
+                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #0f1e35;gap:8px;">
+                    <div>
+                        <span style="color:#e0e0e0;font-size:0.85rem;">${escHtml(u.nev)}</span>
+                        ${u.osztaly ? `<span style="color:#6366f1;font-size:0.75rem;margin-left:6px;">${escHtml(u.osztaly)}</span>` : ''}
+                        <span style="color:#475569;font-size:0.72rem;margin-left:6px;">${escHtml(u.email)}</span>
+                    </div>
+                    ${isTesztelő
+                        ? `<button onclick="removeTesztelő('${escHtml(u.email)}')" style="padding:3px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.78rem;cursor:pointer;white-space:nowrap;">✕ Eltávolítás</button>`
+                        : `<button onclick="addTesztelőEmail('${escHtml(u.email)}')" style="padding:3px 10px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.78rem;cursor:pointer;font-weight:600;white-space:nowrap;">+ Tesztelő</button>`
+                    }
+                </div>`;
+            }).join('');
+        }
+
+        async function addTesztelőEmail(email) {
             const res = await authFetch(`${RAILWAY_URL}/api/tesztelok`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
             });
-            if (res.ok) { document.getElementById('tesztelő-email-input').value = ''; loadTesztelők(); }
+            if (res.ok) loadTesztelők();
         }
 
         async function removeTesztelő(email) {
@@ -2557,7 +2629,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                             <span style="font-size:0.78rem;font-weight:700;color:${barColor};">
                                 ${olv}/${ossz} olvasta
                             </span>
-                            ${nem.length > 0 ? `<span style="font-size:0.75rem;color:#94a3b8;">– még nem olvasta: ${nem.map(e => escHtml(e)).join(', ')}</span>` : ''}
+                            ${nem.length > 0 ? `<span style="font-size:0.75rem;color:#94a3b8;">– még nem olvasta: ${nem.map(e => { const u = _allTanulok.find(x => x.email.toLowerCase() === e.toLowerCase()); return escHtml(u ? u.nev : e); }).join(', ')}</span>` : ''}
                         </div>
                         <div style="margin-top:6px;background:#1e3a5f;border-radius:4px;height:4px;overflow:hidden;">
                             <div style="height:100%;width:${olvPct}%;background:${barColor};transition:width .4s;"></div>
