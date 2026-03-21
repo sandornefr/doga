@@ -439,6 +439,7 @@
 
 <!-- MONACO LOADER -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
 
 <script>
 'use strict';
@@ -811,35 +812,44 @@ const state = {
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 
 require(['vs/editor/editor.main'], function() {
-  state.editors.html = monaco.editor.create(document.getElementById('editor-html'), {
-    value: '',
-    language: 'html',
-    theme: 'vs-dark',
-    fontSize: 15,
-    minimap: { enabled: false },
-    automaticLayout: true,
-    wordWrap: 'on',
-    scrollBeyondLastLine: false,
-  });
+  require(['vs/language/html/htmlMode', 'vs/language/css/cssMode'], function() {
+    const m = window.monaco;
 
-  state.editors.css = monaco.editor.create(document.getElementById('editor-css'), {
-    value: '',
-    language: 'css',
-    theme: 'vs-dark',
-    fontSize: 15,
-    minimap: { enabled: false },
-    automaticLayout: true,
-    wordWrap: 'on',
-    scrollBeyondLastLine: false,
-  });
+    // Emmet aktiválás
+    if (window.emmetMonaco) window.emmetMonaco.emmetHTML(m);
 
-  state.editors.html.onDidChangeModelContent(() => schedulePreview());
-  state.editors.css.onDidChangeModelContent(() => schedulePreview());
+    state.editors.html = m.editor.create(document.getElementById('editor-html'), {
+      value: '',
+      language: 'html',
+      theme: 'vs-dark',
+      fontSize: 15,
+      minimap: { enabled: false },
+      automaticLayout: true,
+      wordWrap: 'on',
+      scrollBeyondLastLine: false,
+      tabSize: 2,
+    });
 
-  buildPills();
-  buildRefPanel();
-  loadTask(0);
-});
+    state.editors.css = m.editor.create(document.getElementById('editor-css'), {
+      value: '',
+      language: 'css',
+      theme: 'vs-dark',
+      fontSize: 15,
+      minimap: { enabled: false },
+      automaticLayout: true,
+      wordWrap: 'on',
+      scrollBeyondLastLine: false,
+      tabSize: 2,
+    });
+
+    state.editors.html.onDidChangeModelContent(() => schedulePreview());
+    state.editors.css.onDidChangeModelContent(() => schedulePreview());
+
+    buildPills();
+    buildRefPanel();
+    loadTask(0);
+  }); // require htmlMode/cssMode vége
+}); // require editor.main vége
 
 // =====================================================================
 // PILLS
