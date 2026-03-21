@@ -79,13 +79,13 @@
     .progress-label span { color: var(--accent); font-weight: 700; }
 
     .btn-ref-toggle {
-      display: flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 8px;
-      background: rgba(34,197,94,.1); border: 1.5px solid rgba(34,197,94,.3);
-      color: var(--accent); font-size: 0.82rem; cursor: pointer;
-      white-space: nowrap; transition: all .2s;
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 16px; border-radius: 8px;
+      background: var(--accent); border: 1.5px solid var(--accent);
+      color: #052e16; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: all .2s; flex-shrink: 0;
     }
-    .btn-ref-toggle:hover { background: rgba(34,197,94,.2); border-color: var(--accent); }
+    .btn-ref-toggle:hover { background: var(--accent2); border-color: var(--accent2); }
 
     /* ===== MAIN LAYOUT ===== */
     .layout {
@@ -392,8 +392,8 @@
   <div id="streak-counter" style="display:flex;align-items:center;gap:5px;padding:4px 12px;background:#1e293b;border:1px solid #374151;border-radius:20px;font-size:0.82rem;font-weight:700;color:#fb923c;margin-left:4px;"></div>
   <div class="pills-wrapper" id="pills-wrapper"></div>
   <div class="progress-label">Teljesítve: <span id="progress-count">0</span> / 17 feladat</div>
-  <button class="btn-ref-toggle" id="btn-ref-toggle" title="Referencia panel">
-    <i class="fas fa-book-open"></i> Referencia
+  <button class="btn-ref-toggle" id="btn-ref-toggle" title="Tanulási segédlet – kódpéldák és magyarázatok">
+    <i class="fas fa-book-open"></i> 📖 Segédlet
   </button>
 </header>
 
