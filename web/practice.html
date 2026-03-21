@@ -1560,11 +1560,11 @@ const refSections = [
 
 const state = {
   currentTask: 0,
-  taskStatus: Array(17).fill('idle'),
+  taskStatus: JSON.parse(localStorage.getItem('practice_taskStatus') || 'null') || Array(17).fill('idle'),
   taskResults: Array(17).fill(null),
   editors: { html: null, css: null },
   previewTimeout: null,
-  completedOnce: Array(17).fill(false),
+  completedOnce: JSON.parse(localStorage.getItem('practice_completedOnce') || 'null') || Array(17).fill(false),
   hintShown: Array(17).fill(null).map(() => new Set()),
   failedAttempts: Array(17).fill(0),
 };
@@ -1686,8 +1686,10 @@ function updatePills() {
 function saveCurrentEditors() {
   const i = state.currentTask;
   if (!state.editors.html) return;
-  sessionStorage.setItem('practice_task_' + i + '_html', state.editors.html.getValue());
-  sessionStorage.setItem('practice_task_' + i + '_css', state.editors.css.getValue());
+  localStorage.setItem('practice_task_' + i + '_html', state.editors.html.getValue());
+  localStorage.setItem('practice_task_' + i + '_css', state.editors.css.getValue());
+  localStorage.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
+  localStorage.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
 }
 
 function loadTask(index) {
@@ -1700,8 +1702,8 @@ function loadTask(index) {
   state.currentTask = index;
   const task = tasks[index];
 
-  const savedHtml = sessionStorage.getItem('practice_task_' + index + '_html');
-  const savedCss  = sessionStorage.getItem('practice_task_' + index + '_css');
+  const savedHtml = localStorage.getItem('practice_task_' + index + '_html');
+  const savedCss  = localStorage.getItem('practice_task_' + index + '_css');
 
   const htmlVal = (savedHtml !== null) ? savedHtml : task.starterHtml;
   const cssVal  = (savedCss  !== null) ? savedCss  : task.starterCss;
@@ -1737,8 +1739,12 @@ function goNext() {
 
 function resetTask() {
   const i = state.currentTask;
-  sessionStorage.removeItem('practice_task_' + i + '_html');
-  sessionStorage.removeItem('practice_task_' + i + '_css');
+  localStorage.removeItem('practice_task_' + i + '_html');
+  localStorage.removeItem('practice_task_' + i + '_css');
+  state.taskStatus[i] = 'idle';
+  state.completedOnce[i] = false;
+  localStorage.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
+  localStorage.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
   const task = tasks[i];
   state.editors.html.setValue(task.starterHtml);
   state.editors.css.setValue(task.starterCss);
