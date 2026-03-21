@@ -3998,7 +3998,7 @@ function updateStudentDisplay() {
         .then(data => {
           const isLive = data.test_mode === 'live' || data.test_mode === 'vizsga';
           setModeBadge(isLive);
-          if (!isLive) initKeszBtn();
+          if (!isLive) { initKeszBtn(); showModeSelector(); }
           if (isLive) {
             liveModeDetected = true;
             Object.keys(availableTasks).forEach(id => clearLocalStorage(id));
