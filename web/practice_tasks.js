@@ -99,7 +99,7 @@ const S5 = _H + `<div id="leiras">
 
 <div class="container">
   <h1 id="felirat"><span class="text-uppercase">Espresso</span> Sarok Kávézó</h1>
-  <p class="my-3">Üdvözlünk az Espresso Sarok Kávézóban! Nálunk minden csésze kávé.</p>
+  <p class="my-3">Üdvözlünk az Espresso Sarok Kávézóban! Nálunk minden csésze egyedi élmény.</p>
   <p class="my-3">Kávézónk 2010 óta várja vendégeit a belváros szívében. Gondosan válogatott arabica szemekből készítjük italainkat.</p>
 </div>
 
