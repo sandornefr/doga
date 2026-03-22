@@ -844,14 +844,12 @@ const tasks = [
       { label: 'meta charset="UTF-8"', explanation: '<meta charset="UTF-8"> a head-ben', fn: (h,c,d) => !!d.querySelector('meta[charset="UTF-8"]') },
       { label: 'meta viewport', explanation: '<meta name="viewport" content="width=device-width, initial-scale=1.0">', fn: (h,c,d) => !!d.querySelector('meta[name="viewport"]') },
       { label: 'title: Espresso Sarok Kávézó', explanation: 'A title tartalma pontosan: Espresso Sarok Kávézó', fn: (h,c,d) => (d.querySelector('title')||{}).textContent === 'Espresso Sarok Kávézó' },
-      { label: 'Bootstrap CSS link', explanation: '<link href="...bootstrap...min.css"> a head-ben', fn: (h,c,d) => !!d.querySelector('link[href*="bootstrap"]') },
-      { label: 'style.css link Bootstrap után', explanation: 'A style.css link a Bootstrap link UTÁN kell', fn: (h) => /bootstrap[\s\S]*?href=["']style\.css["']/i.test(h) },
     ],
     solution: S1,
   },
   {
     id: 2, emoji: '🧭', title: 'Navigáció',
-    description: 'Készítsd el a navigációs sávot!<br><br><ul><li><code>&lt;nav&gt;</code> elem</li><li>Benne <code>&lt;ul&gt;</code> lista legalább 4 <code>&lt;li&gt;</code>-vel</li><li>Hivatkozások: <code>#kaveink</code>, <code>#galeria</code>, <code>#arlista</code></li><li>Egy <strong>külső link</strong>: <code>&lt;a href="https://..." target="_blank"&gt;</code> – ez új fülön nyílik meg</li></ul>',
+    description: 'Készítsd el a navigációs sávot!<br><br><ul><li><code>&lt;nav&gt;</code> elem</li><li>Benne <code>&lt;ul&gt;</code> lista legalább 4 <code>&lt;li&gt;</code>-vel</li><li>Hivatkozások: <code>#kaveink</code>, <code>#galeria</code>, <code>#arlista</code></li><li>Egy <strong>külső link</strong>: <code>&lt;a href="https://maps.google.com/maps?q=Budapest" target="_blank"&gt;</code> – ez új fülön nyílik meg</li></ul>',
     starterHtml: S1, starterCss: '',
     checks: [
       { label: '<nav> elem', explanation: 'Kell egy <nav> elem', fn: (h,c,d) => !!d.querySelector('nav') },
@@ -863,7 +861,7 @@ const tasks = [
   },
   {
     id: 3, emoji: '🖼️', title: 'Fejléc kép',
-    description: 'Add hozzá a fejléc képet!<br><br>A <code>&lt;nav&gt;</code> után:<br><code>&lt;img id="fejlec" src="img/kavezobanner.jpg" alt="Espresso Sarok Kávézó" title="Espresso Sarok Kávézó"&gt;</code><br><br>⚠️ <strong>Vizsga-csapda:</strong> az <code>alt</code> és <code>title</code> attribútum értéke <em>azonos</em> szöveg, és <strong>mindkettő kötelező</strong>!',
+    description: 'Add hozzá a fejléc képet!<br><br>A <code>&lt;nav&gt;</code> után:<br><code>&lt;img id="fejlec" src="img/kavezobanner.jpg" alt="Espresso Sarok Kávézó" title="Espresso Sarok Kávézó"&gt;</code><br><br>💡 <strong>Emmet tipp:</strong> írd be: <code>img</code> majd nyomj <kbd>Tab</kbd> gombot – automatikusan kitölti az attribútumokat!<br><br>⚠️ <strong>Vizsga-csapda:</strong> az <code>alt</code> és <code>title</code> attribútum értéke <em>azonos</em> szöveg, és <strong>mindkettő kötelező</strong>!',
     starterHtml: S2, starterCss: '',
     checks: [
       { label: '<img id="fejlec">', explanation: 'Kell: <img id="fejlec" ...>', fn: (h,c,d) => !!d.querySelector('img#fejlec') },
