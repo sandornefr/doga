@@ -894,7 +894,7 @@ const tasks = [
   },
   {
     id: 6, emoji: '📐', title: 'Aláhúzás',
-    description: 'Jelölj meg szövegrészt aláhúzással!<br><br>Az egyik <code>&lt;p&gt;</code>-ben:<br><code>&lt;u&gt;egyedi élmény&lt;/u&gt;</code><br><br>📌 A <code>&lt;u&gt;</code> az aláhúzott szöveg HTML jelölője. A vizsgán ezt kérik (nem <code>&lt;ins&gt;</code>-t).',
+    description: 'Jelölj meg szövegrészt aláhúzással!<br><br>Az egyik <code>&lt;p&gt;</code>-ben:<br><code>&lt;u&gt;egyedi élmény&lt;/u&gt;</code><br><br>📌 A <code>&lt;u&gt;</code> az aláhúzott szöveg HTML jelölője. A <code>&lt;ins&gt;</code> tag is ugyanezt csinálja és elfogadott, de a vizsgákon a <code>&lt;u&gt;</code>-t kérjük.',
     starterHtml: S5, starterCss: '',
     checks: [
       { label: '<u> elem', explanation: 'Kell egy <u> elem a HTML-ben', fn: (h,c,d) => !!d.querySelector('u') },
