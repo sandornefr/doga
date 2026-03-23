@@ -857,6 +857,18 @@
     </div>
 </div>
 
+<!-- Lebegő Ötlet Láda / Hibajelentés gombok (jobb alsó sarok) -->
+<div class="otlet-fab-wrap">
+    <button class="otlet-btn" id="hiba-btn" onclick="openHibaModal()">
+        🐛 Hibajelentés
+    </button>
+    <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()">
+        💡 Ötlet Láda
+    </button>
+</div>
+
+<div style="position:fixed;bottom:8px;left:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
+
 <script>
     const stored = sessionStorage.getItem('kandoUser');
     if (!stored) {
@@ -1583,16 +1595,5 @@
     </div>
 </div>
 
-<!-- Lebegő Ötlet Láda / Hibajelentés gombok (jobb alsó sarok) -->
-<div class="otlet-fab-wrap">
-    <button class="otlet-btn" id="hiba-btn" onclick="openHibaModal()">
-        🐛 Hibajelentés
-    </button>
-    <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()">
-        💡 Ötlet Láda
-    </button>
-</div>
-
-<div style="position:fixed;bottom:8px;left:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
 </body>
 </html>
