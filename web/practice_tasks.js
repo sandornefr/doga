@@ -343,7 +343,7 @@ const S12 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
 </div>
 
 </div>
@@ -388,8 +388,8 @@ const S13 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 </div>
 
 </div>
@@ -434,8 +434,8 @@ const S14 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 
   <div class="row my-3">
     <div class="col-md-6">
@@ -490,8 +490,8 @@ const S15 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 
   <div class="row my-3">
     <div class="col-md-6">
@@ -557,8 +557,8 @@ const S16 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 
   <div class="row my-3">
     <div class="col-md-6">
@@ -641,8 +641,8 @@ const S17 = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 
   <div class="row my-3">
     <div class="col-md-6">
@@ -725,8 +725,8 @@ const S_FINAL = _H + `<div id="leiras">
   <p>Belső terünket <strong>barna</strong> és <strong>bézs</strong> tónusok jellemzik, amelyek <em>otthonos</em> légkört teremtenek.</p>
   <p>Gépeinket az olasz <strong>La Marzocco</strong> gyártótól szereztük be, hogy az <u>espresso</u> mindig tökéletes legyen.</p>
 
-  <img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid">
-  <p class="text-center fw-bold">Baristánk munkájában</p>
+  <img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid">
+  <p class="text-center fw-bold">Baristánk munka közben</p>
 
   <div class="row my-3">
     <div class="col-md-6">
@@ -957,7 +957,7 @@ const tasks = [
   },
   {
     id: 12, emoji: '📷', title: 'Második kép',
-    description: 'Adj hozzá egy második képet!<br><br>Az alcím bekezdései után:<br><code>&lt;img src="img/barista.jpg" alt="Baristánk munkájában" title="Baristánk munkájában" class="mx-auto d-block img-fluid"&gt;</code><br><br>⚠️ <strong>Vizsga-követelmény:</strong> az img-nek kell <code>src</code>, <code>alt</code> ÉS <code>title</code> – mindhárom egyszerre!',
+    description: 'Adj hozzá egy második képet!<br><br>Az alcím bekezdései után:<br><code>&lt;img src="img/barista.jpg" alt="Baristánk munka közben" title="Baristánk munka közben" class="mx-auto d-block img-fluid"&gt;</code><br><br>⚠️ <strong>Vizsga-követelmény:</strong> az img-nek kell <code>src</code>, <code>alt</code> ÉS <code>title</code> – mindhárom egyszerre!',
     starterHtml: S11, starterCss: '',
     checks: [
       { label: 'Második img (nem #fejlec)', explanation: 'Kell egy második img, ami nem az #fejlec', fn: (h,c,d) => d.querySelectorAll('img').length >= 2 },
@@ -968,7 +968,7 @@ const tasks = [
   },
   {
     id: 13, emoji: '🎯', title: 'Kép középre + felirat',
-    description: 'Helyezd középre a képet és adj képfeliratot!<br><br>A képhez add: <code>class="mx-auto d-block img-fluid"</code><br>A kép után: <code>&lt;p class="text-center fw-bold"&gt;Baristánk munkájában&lt;/p&gt;</code><br><br>📌 <code>mx-auto d-block</code> = Bootstrap képközpontosítás. A vizsgán <strong>nem</strong> figure/figcaption, hanem <code>&lt;p class="text-center fw-bold"&gt;</code> kell!',
+    description: 'Helyezd középre a képet és adj képfeliratot!<br><br>A képhez add: <code>class="mx-auto d-block img-fluid"</code><br>A kép után: <code>&lt;p class="text-center fw-bold"&gt;Baristánk munka közben&lt;/p&gt;</code><br><br>📌 <code>mx-auto d-block</code> = Bootstrap képközpontosítás. A vizsgán <strong>nem</strong> figure/figcaption, hanem <code>&lt;p class="text-center fw-bold"&gt;</code> kell!',
     starterHtml: S12, starterCss: '',
     checks: [
       { label: 'img.mx-auto.d-block', explanation: 'A képnek legyen class="... mx-auto d-block ..."', fn: (h,c,d) => !!d.querySelector('img.mx-auto.d-block') },
