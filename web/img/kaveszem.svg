@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 22" width="16" height="20">
+  <!-- Kávébab test -->
+  <ellipse cx="9" cy="11" rx="7.5" ry="10" fill="#7B4A2A"/>
+  <!-- Középső barázda -->
+  <path d="M9 2 C9 2 14.5 7 14.5 11 C14.5 15 9 20 9 20"
+        stroke="#4a2210" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <!-- Fényvisszaverés -->
+  <ellipse cx="6" cy="6.5" rx="1.8" ry="3" fill="#a8693a" opacity="0.55" transform="rotate(-18 6 6.5)"/>
+</svg>

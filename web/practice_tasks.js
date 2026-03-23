@@ -825,7 +825,7 @@ const Css6 = Css5 + `
 const Css7 = Css6 + `
 
 #italok {
-  list-style-image: url('img/kaveszem.png');
+  list-style-image: url('img/kaveszem.svg');
   margin-left: 25px;
 }
 p {
@@ -1097,7 +1097,7 @@ const tasks = [
   },
   {
     id: 25, emoji: '🏁', title: 'CSS – Lista ikon és szöveg',
-    description: '🎉 Az utolsó feladat!<br><br><pre><code>#italok {\n  list-style-image: url(\'img/kaveszem.png\');\n  margin-left: 25px;\n}\np {\n  text-align: justify;\n}</code></pre>📌 <code>list-style-image</code> = a bullet pont helyett egyedi kép. <code>text-align: justify</code> = sorkizárt szöveg.<br><br>🎉 <strong>Gratulálunk! Az Espresso Sarok Kávézó weboldal elkészült!</strong>',
+    description: '🎉 Az utolsó feladat!<br><br><pre><code>#italok {\n  list-style-image: url(\'img/kaveszem.svg\');\n  margin-left: 25px;\n}\np {\n  text-align: justify;\n}</code></pre>📌 <code>list-style-image</code> = a bullet pont helyett egyedi kép. <code>text-align: justify</code> = sorkizárt szöveg.<br><br>🎉 <strong>Gratulálunk! Az Espresso Sarok Kávézó weboldal elkészült!</strong>',
     starterHtml: S_FINAL, starterCss: Css6,
     checks: [
       { label: '#italok: list-style-image', explanation: "#italok { list-style-image: url('img/...'); }", fn: _cssHas('#italok', 'list-style-image') },
@@ -1159,5 +1159,5 @@ const refSections = [
   { title: 'CSS – nav li', code: 'nav li {\n  border-right: 3px dotted #7a4a1e;\n  padding: 0 15px;\n}' },
   { title: 'CSS – .alcim', code: '.alcim {\n  font-size: 2.5em;\n  background-color: #fdf6ee;\n}' },
   { title: 'CSS – .lablec a hover', code: '.lablec a {\n  color: white;\n  text-decoration: none;\n}\n.lablec a:hover {\n  text-transform: uppercase;\n}' },
-  { title: 'CSS – list-style-image + justify', code: "#italok {\n  list-style-image: url('img/kaveszem.png');\n  margin-left: 25px;\n}\np {\n  text-align: justify;\n}" },
+  { title: 'CSS – list-style-image + justify', code: "#italok {\n  list-style-image: url('img/kaveszem.svg');\n  margin-left: 25px;\n}\np {\n  text-align: justify;\n}" },
 ];
