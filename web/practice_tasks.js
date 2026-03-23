@@ -836,7 +836,7 @@ p {
 const tasks = [
   {
     id: 1, emoji: '🏗️', title: 'HTML váz',
-    description: 'Hozd létre az oldal alapszerkezetét!<br><br><ul><li><code>&lt;!DOCTYPE html&gt;</code> – böngészőnek szól: "ez HTML5"</li><li><code>&lt;html lang="hu"&gt;</code> – a magyar nyelv jelzése</li><li><code>&lt;meta charset="UTF-8"&gt;</code> – magyar karakterek helyes megjelenítéséhez</li><li><code>&lt;meta name="viewport"&gt;</code> – mobil reszponzivitás</li><li><code>&lt;title&gt;Espresso Sarok Kávézó&lt;/title&gt;</code></li><li>Bootstrap CSS CDN link:<br><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"&gt;</code></li><li><code>&lt;link rel="stylesheet" href="style.css"&gt;</code> – Bootstrap <strong>után</strong>!</li></ul>',
+    description: 'Hozd létre az oldal alapszerkezetét!<br><br>💡 Nyomd meg a <strong>! + Tab</strong> billentyűt – az Emmet azonnal legenerálja a HTML vázat.<br><br><ul><li>Állítsd be a nyelvet magyarra: <code>lang="hu"</code></li><li>A weboldal címe legyen: <strong>Espresso Sarok Kávézó</strong></li><li>Bootstrap CSS CDN link:<br><code>&lt;link rel="stylesheet"<br>&nbsp;&nbsp;href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"&gt;</code></li><li>Bootstrap <strong>után</strong> csatold a saját stíluslapot: <code>&lt;link rel="stylesheet" href="style.css"&gt;</code></li></ul>⚠️ A Bootstrap és a <code>style.css</code> csatolásáért nem jár pont, de a feladat része!',
     starterHtml: '', starterCss: '',
     checks: [
       { label: '<!DOCTYPE html>', explanation: 'Az első sor: <!DOCTYPE html>', fn: (h) => /<!DOCTYPE\s+html>/i.test(h) },
