@@ -848,7 +848,7 @@ const tasks = [
   },
   {
     id: 2, emoji: '🧭', title: 'Navigáció',
-    description: 'Készítsd el a navigációs sávot! A <code>&lt;nav&gt;</code> taget a <code>&lt;div id="leiras"&gt;</code> belsejébe tedd!<br><br><ul><li><code>&lt;nav&gt;</code> elem, benne <code>&lt;ul&gt;</code> lista legalább 4 db <code>&lt;li&gt;</code>-vel</li><li>Az első három <code>&lt;a&gt;</code> tag hivatkozzon az oldal részeire:<ul><li><code>href="#kavek"</code></li><li><code>href="#galeria"</code></li><li><code>href="#arlista"</code></li></ul></li><li>A 4. <code>&lt;a&gt;</code> taghez add hozzá a külső linket:<br><code>&lt;a href="https://maps.google.com/maps?q=Budapest" target="_blank"&gt;</code><br>– a <code>target="_blank"</code> gondoskodik arról, hogy új fülön nyíljon meg</li></ul>',
+    description: 'Készítsd el a navigációs sávot! A <code>&lt;nav&gt;</code> taget a <code>&lt;div id="leiras"&gt;</code> belsejébe tedd!<br><br><ul><li><code>&lt;nav&gt;</code> elem, benne <code>&lt;ul&gt;</code> lista legalább 4 db <code>&lt;li&gt;</code>-vel</li><li>Az első három <code>&lt;a&gt;</code> tag hivatkozzon az oldal részeire:<ul><li><code>href="#kavek"</code></li><li><code>href="#galeria"</code></li><li><code>href="#arlista"</code></li></ul></li><li>A 4. <code>&lt;a&gt;</code> taghez add hozzá a külső linket:<br><code>https://maps.google.com/maps?q=Budapest</code><br>– az oldal új lapon nyíljon meg, alkalmazd rá a <code>target="_blank"</code>-et</li></ul>',
     starterHtml: S1, starterCss: '',
     checks: [
       { label: '<nav> elem', explanation: 'Kell egy <nav> elem', fn: (h,c,d) => !!d.querySelector('nav') },
