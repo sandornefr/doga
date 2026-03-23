@@ -219,6 +219,28 @@ public class IdeaItem {
     public string CreatedAt { get; set; } = "";
 }
 
+// ── Sessions ──────────────────────────────────────────────────────────────
+
+public record SessionStartRequest(string Email, string Page);
+public record HeartbeatRequest(int SessionId);
+public record SessionEndRequest(int SessionId);
+
+public class SessionPageStat
+{
+    public string Page         { get; set; } = "";
+    public int    TotalSec     { get; set; }
+    public int    SessionCount { get; set; }
+}
+
+public class UserSessionStat
+{
+    public string  Email    { get; set; } = "";
+    public string? Nev      { get; set; }
+    public string? Osztaly  { get; set; }
+    public int     TotalSec { get; set; }
+    public List<SessionPageStat> Pages { get; set; } = new();
+}
+
 public class TeszteloiUzenetItem {
     public int Id { get; set; }
     public string Szoveg { get; set; } = "";

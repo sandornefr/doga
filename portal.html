@@ -580,6 +580,11 @@
         .ered-countdown strong { color: #fbbf24; font-size: 1.1rem; }
         .ered-countdown-sub { color: #888; font-size: 0.78rem; display: block; margin-top: 3px; }
         .ered-countdown-done { color: #2ed573; font-weight: 700; }
+        .ered-session-time {
+            background: #0f172a; border-radius: 10px; padding: 11px 16px;
+            color: #cbd5e1; font-size: 0.9rem; margin-bottom: 14px; text-align: center;
+            border: 1px solid #1e3a5f;
+        }
 
         /* Kötelező jelszócsere modal */
         .pw-change-overlay {
@@ -897,6 +902,30 @@
 <script>
     const API      = 'https://agazati.up.railway.app';
     const API_BASE = 'https://agazati.up.railway.app';
+
+    // ── Session tracking ──────────────────────────────────────────────────────
+    let _sessionId = null;
+    async function startSessionTracking(email, page) {
+        try {
+            const r = await fetch(`${API}/api/session/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, page })
+            });
+            const d = await r.json();
+            _sessionId = d.sessionId;
+            setInterval(() => {
+                if (_sessionId) navigator.sendBeacon(`${API}/api/session/heartbeat`,
+                    new Blob([JSON.stringify({ sessionId: _sessionId })], { type: 'application/json' }));
+            }, 30000);
+        } catch {}
+    }
+    window.addEventListener('beforeunload', () => {
+        if (_sessionId) navigator.sendBeacon(`${API}/api/session/end`,
+            new Blob([JSON.stringify({ sessionId: _sessionId })], { type: 'application/json' }));
+    });
+    // ──────────────────────────────────────────────────────────────────────────
+
     const stored = sessionStorage.getItem('kandoUser');
     if (!stored) {
         window.location.replace('login.html');
@@ -923,6 +952,8 @@
             document.getElementById('otlet-btn').style.display = 'flex';
             loadMegvalasultOtletek();
             loadTeszteloInfo(user);
+            // Session tracking indítása
+            startSessionTracking(user.email, 'portal');
         }
     }
 
@@ -1212,6 +1243,28 @@
         return html;
     }
 
+    function formatSeconds(sec) {
+        if (!sec || sec <= 0) return '0 perc';
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        if (h > 0) return `${h} óra ${m} perc`;
+        return `${m} perc`;
+    }
+
+    function sessionTimeHtml(pages) {
+        if (!pages || pages.length === 0) return '';
+        const labels = { portal: 'Portál', practice: 'WEB gyakorló', web: 'WEB vizsga', python: 'Python vizsga' };
+        const total = pages.reduce((s, p) => s + (p.totalSec || 0), 0);
+        const rows = pages.map(p =>
+            `<span style="color:#94a3b8">${labels[p.page] || p.page}:</span> <strong>${formatSeconds(p.totalSec)}</strong>`
+        ).join(' &nbsp;·&nbsp; ');
+        return `<div class="ered-session-time">
+            <i class="fas fa-clock" style="color:#60a5fa;margin-right:6px;"></i>
+            Összesen <strong>${formatSeconds(total)}</strong> töltöttél a rendszerben
+            <div style="font-size:0.78em;color:#64748b;margin-top:3px;">${rows}</div>
+        </div>`;
+    }
+
     function examCountdown() {
         const deadline = new Date('2026-05-31T00:00:00');
         const now = new Date();
@@ -1237,13 +1290,15 @@
             const email = (u.email || '').replace('@kkszki.hu','');
             if (!email) { document.getElementById('ered-content').innerHTML = '<div class="ered-loading">Nem találhatók adatok.</div>'; return; }
             const authHeader = u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
-            const [res, rankRes] = await Promise.all([
+            const [res, rankRes, sessRes] = await Promise.all([
                 fetch(`${API}/api/progress/${encodeURIComponent(email)}`, { headers: authHeader }),
-                fetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`, { headers: authHeader })
+                fetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`, { headers: authHeader }),
+                fetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`, { headers: authHeader })
             ]);
             if (res.status === 401) { handleSessionExpired(); return; }
             const p = await res.json();
             const rankData = rankRes.ok ? await rankRes.json() : null;
+            const sessData = sessRes.ok ? await sessRes.json() : [];
             // A JSON kulcsai camelCase (C# record)
             const progress = {
                 web:    { sessions: p.web?.sessions ?? 0, avgPercent: p.web?.avgPercent ?? 0, bestPercent: p.web?.bestPercent ?? 0, lastSession: p.web?.lastSession ?? null },
@@ -1251,6 +1306,7 @@
             };
             document.getElementById('ered-content').innerHTML =
                 examCountdown() +
+                sessionTimeHtml(sessData) +
                 streakHtml(rankData?.streak ?? 0) +
                 renderSubject(progress.web,    '🌐 WEB feladat',    'ered-bar-web',    'web',    rankData?.web) +
                 renderSubject(progress.python, '🐍 Python feladat', 'ered-bar-python', 'python', rankData?.python) +

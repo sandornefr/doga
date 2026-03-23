@@ -4940,6 +4940,29 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     // Azonnal mutatjuk a módválasztót ha portálról jöttünk (ne várjunk Monaco-ra)
     if (sessionStorage.getItem('kandoUser')) showModeSelector();
 
+    // Session tracking indítása (nem blokkolja az init-et)
+    (function() {
+      const API_S = 'https://agazati.up.railway.app';
+      const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+      if (!u.email) return;
+      let sessionId = null;
+      fetch(`${API_S}/api/session/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: u.email, page: 'web' })
+      }).then(r => r.json()).then(d => {
+        sessionId = d.sessionId;
+        setInterval(() => {
+          if (sessionId) navigator.sendBeacon(`${API_S}/api/session/heartbeat`,
+            new Blob([JSON.stringify({ sessionId })], { type: 'application/json' }));
+        }, 30000);
+      }).catch(() => {});
+      window.addEventListener('beforeunload', () => {
+        if (sessionId) navigator.sendBeacon(`${API_S}/api/session/end`,
+          new Blob([JSON.stringify({ sessionId })], { type: 'application/json' }));
+      });
+    })();
+
     statusEl.textContent = "Monaco inicializálása...";
     const monaco = await loadMonaco();
 

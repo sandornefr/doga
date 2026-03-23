@@ -689,6 +689,55 @@ app.MapPost("/api/teszteloi-uzenetek/{id}/olvas", (int id, HttpContext ctx, Data
     return Results.Ok(new { success = true });
 });
 
+// ── Session tracking ──────────────────────────────────────────────────────
+
+// Session indítása (oldal betöltésekor)
+app.MapPost("/api/session/start", (SessionStartRequest req, Database db) =>
+{
+    if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Page))
+        return Results.BadRequest(new { error = "email és page kötelező" });
+    var validPages = new[] { "portal", "practice", "web", "python" };
+    var page = validPages.Contains(req.Page) ? req.Page : "portal";
+    var id = db.StartSession(req.Email, page);
+    return Results.Ok(new { sessionId = id });
+});
+
+// Heartbeat (30 másodpercenként)
+app.MapPost("/api/session/heartbeat", (HeartbeatRequest req, Database db) =>
+{
+    db.UpdateHeartbeat(req.SessionId);
+    return Results.Ok(new { ok = true });
+});
+
+// Session lezárása (tab bezárásakor)
+app.MapPost("/api/session/end", (SessionEndRequest req, Database db) =>
+{
+    db.EndSession(req.SessionId);
+    return Results.Ok(new { ok = true });
+});
+
+// Tanuló session statisztikái (bejelentkezett felhasználó)
+app.MapGet("/api/session/stats/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    var (valid, payload) = InspectToken(ctx);
+    if (!valid) return Results.Unauthorized();
+    var tokenEmail = payload.Split(':')[0];
+    if (tokenEmail.Contains('|')) tokenEmail = tokenEmail.Split('|')[0];
+    // Tanuló csak saját adatait láthatja, oktató bárkit
+    var isOktato = payload.Contains("|oktato") || payload.Contains("|admin");
+    if (!isOktato && !tokenEmail.Equals(email, StringComparison.OrdinalIgnoreCase))
+        return Results.Forbid();
+    var stats = db.GetSessionStats(email);
+    return Results.Ok(stats);
+});
+
+// Összes tanuló session statisztikája (csak oktató)
+app.MapGet("/api/session/all", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetAllSessionStats());
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 

@@ -119,6 +119,15 @@ public class Database
                 email      TEXT NOT NULL,
                 PRIMARY KEY (uzenet_id, email)
             );
+            CREATE TABLE IF NOT EXISTS sessions (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_email     TEXT NOT NULL,
+                page           TEXT NOT NULL,
+                login_at       TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                last_heartbeat TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                logout_at      TEXT,
+                duration_sec   INTEGER NOT NULL DEFAULT 0
+            );
         ");
         try { Exec(conn, "ALTER TABLE submissions ADD COLUMN subject TEXT"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
@@ -1203,5 +1212,120 @@ public class Database
             list.Add(s);
         }
         return list;
+    }
+
+    // ── Sessions ──────────────────────────────────────────────────────────────
+
+    public int StartSession(string email, string page)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO sessions (user_email, page, login_at, last_heartbeat, duration_sec)
+            VALUES ($email, $page, datetime('now','localtime'), datetime('now','localtime'), 0)
+            RETURNING id";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$page",  page);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public void UpdateHeartbeat(int sessionId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE sessions
+            SET last_heartbeat = datetime('now','localtime'),
+                duration_sec   = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+            WHERE id = $id AND logout_at IS NULL";
+        cmd.Parameters.AddWithValue("$id", sessionId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void EndSession(int sessionId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE sessions
+            SET logout_at    = datetime('now','localtime'),
+                duration_sec = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+            WHERE id = $id AND logout_at IS NULL";
+        cmd.Parameters.AddWithValue("$id", sessionId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<SessionPageStat> GetSessionStats(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        // Befejezett sessionök duration_sec-je + folyamatban lévő (legfeljebb 120 mp régi heartbeat)
+        cmd.CommandText = @"
+            SELECT page,
+                   SUM(CASE
+                       WHEN logout_at IS NOT NULL THEN duration_sec
+                       WHEN (julianday('now') - julianday(last_heartbeat)) * 86400 < 120
+                            THEN CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                       ELSE duration_sec
+                   END) as total_sec,
+                   COUNT(*) as session_count
+            FROM sessions
+            WHERE LOWER(user_email) = LOWER($email)
+            GROUP BY page";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        var list = new List<SessionPageStat>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new SessionPageStat
+            {
+                Page         = r.GetString(0),
+                TotalSec     = r.IsDBNull(1) ? 0 : (int)(double)r.GetDouble(1),
+                SessionCount = r.GetInt32(2)
+            });
+        return list;
+    }
+
+    public List<UserSessionStat> GetAllSessionStats()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT s.user_email, u.vezeteknev || ' ' || u.keresztnev as nev, u.osztaly, s.page,
+                   SUM(CASE
+                       WHEN s.logout_at IS NOT NULL THEN s.duration_sec
+                       WHEN (julianday('now') - julianday(s.last_heartbeat)) * 86400 < 120
+                            THEN CAST((julianday('now') - julianday(s.login_at)) * 86400 AS INTEGER)
+                       ELSE s.duration_sec
+                   END) as total_sec,
+                   COUNT(*) as session_count
+            FROM sessions s
+            LEFT JOIN users u ON LOWER(s.user_email) = LOWER(u.email)
+            GROUP BY s.user_email, s.page
+            ORDER BY s.user_email, s.page";
+        var rows = new List<(string email, string? nev, string? osztaly, string page, int totalSec, int count)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            rows.Add((
+                r.GetString(0),
+                r.IsDBNull(1) ? null : r.GetString(1),
+                r.IsDBNull(2) ? null : r.GetString(2),
+                r.GetString(3),
+                r.IsDBNull(4) ? 0 : (int)r.GetDouble(4),
+                r.GetInt32(5)
+            ));
+
+        // Csoportosítás email szerint
+        var byEmail = new Dictionary<string, UserSessionStat>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in rows)
+        {
+            if (!byEmail.TryGetValue(row.email, out var stat))
+            {
+                stat = new UserSessionStat { Email = row.email, Nev = row.nev, Osztaly = row.osztaly };
+                byEmail[row.email] = stat;
+            }
+            stat.Pages.Add(new SessionPageStat { Page = row.page, TotalSec = row.totalSec, SessionCount = row.count });
+            stat.TotalSec += row.totalSec;
+        }
+        return byEmail.Values.OrderByDescending(x => x.TotalSec).ToList();
     }
 }
