@@ -836,14 +836,13 @@ p {
 const tasks = [
   {
     id: 1, emoji: '🏗️', title: 'HTML váz',
-    description: 'Hozd létre az oldal alapszerkezetét!<br><br>💡 Nyomd meg a <strong>! + Tab</strong> billentyűt – az Emmet azonnal legenerálja a HTML vázat.<br><br><ul><li>Állítsd be a nyelvet magyarra: <code>lang="hu"</code></li><li>📌 Jegyezd meg: <code>&lt;meta charset="UTF-8"&gt;</code> – az ágazati vizsgán ezt a sort neked kell beírni!</li><li>A weboldal címe legyen: <strong>Espresso Sarok Kávézó</strong></li><li>Bootstrap CSS CDN link:<br><code>&lt;link rel="stylesheet"<br>&nbsp;&nbsp;href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"&gt;</code></li><li>Bootstrap <strong>után</strong> csatold a saját stíluslapot: <code>&lt;link rel="stylesheet" href="style.css"&gt;</code></li></ul>⚠️ A Bootstrap és a <code>style.css</code> csatolásáért nem jár pont, de a feladat része!',
+    description: 'Hozd létre az oldal alapszerkezetét!<br><br>💡 Nyomd meg a <strong>! + Tab</strong> billentyűt – az Emmet azonnal legenerálja a HTML vázat.<br><br><ul><li>Állítsd be a nyelvet magyarra: <code>lang="hu"</code></li><li>📌 Jegyezd meg: <code>&lt;meta charset="UTF-8"&gt;</code> – az ágazati vizsgán ezt a sort neked kell beírni!</li><li>A weboldal címe legyen: <strong>Espresso Sarok Kávézó</strong></li><li>Bootstrap CSS CDN link:<br><code>&lt;link rel="stylesheet"<br>&nbsp;&nbsp;href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"&gt;</code></li><li>Bootstrap <strong>után</strong> csatold a saját stíluslapot: <code>&lt;link rel="stylesheet" href="style.css"&gt;</code></li></ul>',
     starterHtml: '', starterCss: '',
     checks: [
-      { label: '<!DOCTYPE html>', explanation: 'Az első sor: <!DOCTYPE html>', fn: (h) => /<!DOCTYPE\s+html>/i.test(h) },
-      { label: '<html lang="hu">', explanation: 'Az html elemnek legyen lang="hu" attribútuma', fn: (h,c,d) => !!d.querySelector('html[lang="hu"]') },
-      { label: 'meta charset="UTF-8"', explanation: '<meta charset="UTF-8"> a head-ben', fn: (h,c,d) => !!d.querySelector('meta[charset="UTF-8"]') },
-      { label: 'meta viewport', explanation: '<meta name="viewport" content="width=device-width, initial-scale=1.0">', fn: (h,c,d) => !!d.querySelector('meta[name="viewport"]') },
+      { label: 'lang="hu"', explanation: 'Az html elemnek legyen lang="hu" attribútuma', fn: (h,c,d) => !!d.querySelector('html[lang="hu"]') },
       { label: 'title: Espresso Sarok Kávézó', explanation: 'A title tartalma pontosan: Espresso Sarok Kávézó', fn: (h,c,d) => (d.querySelector('title')||{}).textContent === 'Espresso Sarok Kávézó' },
+      { label: 'Bootstrap CSS linkelve', explanation: 'A head-ben legyen Bootstrap CDN link (cdn.jsdelivr.net/npm/bootstrap)', fn: (h) => /cdn\.jsdelivr\.net\/npm\/bootstrap/i.test(h) },
+      { label: 'style.css linkelve', explanation: '<link rel="stylesheet" href="style.css"> a head-ben', fn: (h,c,d) => !!d.querySelector('link[href="style.css"]') },
     ],
     solution: S1,
   },
