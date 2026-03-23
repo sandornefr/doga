@@ -848,23 +848,15 @@ function updatePreview() {
   let html = state.editors.html.getValue();
   const css = state.editors.css.getValue();
 
-  // Helyi képek → picsum placeholder (hogy az előnézetben valódi képek legyenek)
-  html = html.replace(/src=["']img\/([^"']+)["']/gi, (match, filename) => {
-    const seed = filename.replace(/\.[^.]+$/, ''); // kiterjesztés nélküli név = seed
-    const isHeader = /fejlec|header|banner/i.test(seed);
-    const w = isHeader ? 900 : 400;
-    const h = isHeader ? 220 : 280;
-    return `src="https://picsum.photos/seed/${seed}/${w}/${h}"`;
-  });
+  // base href → relatív útvonalak (img/, style.css) feloldása az iframe srcdoc-ban
+  const base = location.href.replace(/\/[^\/]*$/, '/');
+  if (!html.includes('<base')) {
+    html = html.replace('<head>', `<head>\n  <base href="${base}">`);
+  }
 
   if (css.trim()) {
-    // CSS-ben is cseréljük a helyi képeket (pl. list-style-image, background)
-    const patchedCss = css.replace(/url\(['"]?img\/([^'")\s]+)['"]?\)/gi, (match, filename) => {
-      const seed = filename.replace(/\.[^.]+$/, '');
-      return `url('https://picsum.photos/seed/${seed}/32/32')`;
-    });
-    html = html.replace('</head>', '<style>' + patchedCss + '</style>\n</head>');
-    if (!html.includes('</head>')) html = '<style>' + patchedCss + '</style>\n' + html;
+    html = html.replace('</head>', '<style>' + css + '</style>\n</head>');
+    if (!html.includes('</head>')) html = '<style>' + css + '</style>\n' + html;
   }
 
   const frame = document.getElementById('preview-frame');
@@ -1209,16 +1201,9 @@ document.getElementById('btn-ref-toggle').addEventListener('click', () => {
 function setupWelcomePreview() {
   if (typeof S_FINAL === 'undefined' || typeof Css7 === 'undefined') return;
   let html = S_FINAL;
-  html = html.replace(/src=["']img\/([^"']+)["']/gi, (m, fn) => {
-    const seed = fn.replace(/\.[^.]+$/, '');
-    const isHeader = /fejlec|header|banner/i.test(seed);
-    return `src="https://picsum.photos/seed/${seed}/${isHeader ? 900 : 400}/${isHeader ? 220 : 280}"`;
-  });
-  const patchedCss = Css7.replace(/url\(['"]?img\/([^'")\s]+)['"]?\)/gi, (m, fn) => {
-    const seed = fn.replace(/\.[^.]+$/, '');
-    return `url('https://picsum.photos/seed/${seed}/32/32')`;
-  });
-  html = html.replace('</head>', '<style>' + patchedCss + '</style>\n</head>');
+  const base = location.href.replace(/\/[^\/]*$/, '/');
+  html = html.replace('<head>', `<head>\n  <base href="${base}">`);
+  html = html.replace('</head>', '<style>' + Css7 + '</style>\n</head>');
   document.getElementById('welcome-iframe').srcdoc = html;
 }
 
