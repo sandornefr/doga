@@ -4937,6 +4937,9 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
 (async function init() {
   try {
+    // Azonnal mutatjuk a módválasztót ha portálról jöttünk (ne várjunk Monaco-ra)
+    if (sessionStorage.getItem('kandoUser')) showModeSelector();
+
     statusEl.textContent = "Monaco inicializálása...";
     const monaco = await loadMonaco();
 
