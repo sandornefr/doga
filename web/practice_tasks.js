@@ -38,7 +38,7 @@ const S2 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -52,7 +52,7 @@ const S3 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -68,7 +68,7 @@ const S4 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -88,7 +88,7 @@ const S5 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -110,7 +110,7 @@ const S6 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -132,7 +132,7 @@ const S7 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -154,7 +154,7 @@ const S8 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -168,7 +168,7 @@ const S8 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -185,7 +185,7 @@ const S9 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -199,7 +199,7 @@ const S9 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -224,7 +224,7 @@ const S10 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -238,7 +238,7 @@ const S10 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -265,7 +265,7 @@ const S11 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -279,7 +279,7 @@ const S11 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -308,7 +308,7 @@ const S12 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -322,7 +322,7 @@ const S12 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -353,7 +353,7 @@ const S13 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -367,7 +367,7 @@ const S13 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -399,7 +399,7 @@ const S14 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -413,7 +413,7 @@ const S14 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -455,7 +455,7 @@ const S15 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -469,7 +469,7 @@ const S15 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -522,7 +522,7 @@ const S16 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -536,7 +536,7 @@ const S16 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -606,7 +606,7 @@ const S17 = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -620,7 +620,7 @@ const S17 = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -690,7 +690,7 @@ const S_FINAL = _H + `<div id="leiras">
 
 <nav>
   <ul>
-    <li><a href="#kaveink">Kávék</a></li>
+    <li><a href="#kavek">Kávék</a></li>
     <li><a href="#galeria">Galéria</a></li>
     <li><a href="#arlista">Árlista</a></li>
     <li><a href="https://maps.google.com/maps?q=Budapest" target="_blank">Térkép</a></li>
@@ -704,7 +704,7 @@ const S_FINAL = _H + `<div id="leiras">
   <p class="my-3">Üdvözlünk az <strong>Espresso Sarok Kávézóban</strong>! Nálunk minden csésze <u>egyedi élmény</u>.</p>
   <p class="my-3">Kávézónk <strong>2010</strong> óta várja vendégeit a belváros szívében. Gondosan válogatott <em>arabica</em> szemekből készítjük <strong>kézműves</strong> italainkat.</p>
 
-  <h2 id="kaveink">Kávéitalok</h2>
+  <h2 id="kavek">Kávéitalok</h2>
   <ul id="italok">
     <li><em>Coffea arabica</em> – Espresso</li>
     <li><em>Coffea arabica</em> – Cappuccino</li>
@@ -848,7 +848,7 @@ const tasks = [
   },
   {
     id: 2, emoji: '🧭', title: 'Navigáció',
-    description: 'Készítsd el a navigációs sávot! A <code>&lt;nav&gt;</code> taget a <code>&lt;div id="leiras"&gt;</code> belsejébe tedd!<br><br><ul><li><code>&lt;nav&gt;</code> elem, benne <code>&lt;ul&gt;</code> lista legalább 4 db <code>&lt;li&gt;</code>-vel</li><li>Az első három <code>&lt;a&gt;</code> tag hivatkozzon az oldal részeire:<ul><li><code>href="#kaveink"</code></li><li><code>href="#galeria"</code></li><li><code>href="#arlista"</code></li></ul></li><li>A 4. <code>&lt;a&gt;</code> taghez add hozzá a külső linket:<br><code>&lt;a href="https://maps.google.com/maps?q=Budapest" target="_blank"&gt;</code><br>– a <code>target="_blank"</code> gondoskodik arról, hogy új fülön nyíljon meg</li></ul>',
+    description: 'Készítsd el a navigációs sávot! A <code>&lt;nav&gt;</code> taget a <code>&lt;div id="leiras"&gt;</code> belsejébe tedd!<br><br><ul><li><code>&lt;nav&gt;</code> elem, benne <code>&lt;ul&gt;</code> lista legalább 4 db <code>&lt;li&gt;</code>-vel</li><li>Az első három <code>&lt;a&gt;</code> tag hivatkozzon az oldal részeire:<ul><li><code>href="#kavek"</code></li><li><code>href="#galeria"</code></li><li><code>href="#arlista"</code></li></ul></li><li>A 4. <code>&lt;a&gt;</code> taghez add hozzá a külső linket:<br><code>&lt;a href="https://maps.google.com/maps?q=Budapest" target="_blank"&gt;</code><br>– a <code>target="_blank"</code> gondoskodik arról, hogy új fülön nyíljon meg</li></ul>',
     starterHtml: S1, starterCss: '',
     checks: [
       { label: '<nav> elem', explanation: 'Kell egy <nav> elem', fn: (h,c,d) => !!d.querySelector('nav') },
@@ -914,7 +914,7 @@ const tasks = [
   },
   {
     id: 8, emoji: '☕', title: 'Felsorolás – ul',
-    description: 'Adj hozzá felsorolást!<br><br>A bekezdések után:<ul><li><code>&lt;h2 id="kaveink"&gt;Kávéitalok&lt;/h2&gt;</code></li><li><code>&lt;ul id="italok"&gt;</code> legalább 5 <code>&lt;li&gt;</code>-vel</li><li>Minden <code>&lt;li&gt;</code>-ben a latin növénynév <code>&lt;em&gt;</code>-mel jelölve</li></ul>Példa: <code>&lt;li&gt;&lt;em&gt;Coffea arabica&lt;/em&gt; – Espresso&lt;/li&gt;</code>',
+    description: 'Adj hozzá felsorolást!<br><br>A bekezdések után:<ul><li><code>&lt;h2 id="kavek"&gt;Kávéitalok&lt;/h2&gt;</code></li><li><code>&lt;ul id="italok"&gt;</code> legalább 5 <code>&lt;li&gt;</code>-vel</li><li>Minden <code>&lt;li&gt;</code>-ben a latin növénynév <code>&lt;em&gt;</code>-mel jelölve</li></ul>Példa: <code>&lt;li&gt;&lt;em&gt;Coffea arabica&lt;/em&gt; – Espresso&lt;/li&gt;</code>',
     starterHtml: S7, starterCss: '',
     checks: [
       { label: '<ul id="italok">', explanation: 'Kell: <ul id="italok"> (ez az id kell a CSS list-style-image-hez)', fn: (h,c,d) => !!d.querySelector('ul#italok') },
@@ -1110,7 +1110,7 @@ const tasks = [
 // ─── Feladatonkénti tananyag (segéd panel) ────────────────────────────────────
 const taskTutors = {
   1: `<p>A <strong>HTML</strong> egy jelölőnyelv – megmondja a böngészőnek, hogyan épüljön fel az oldal. A <code>&lt;head&gt;</code>-ben lévő meta adatok <em>nem láthatók az oldalon</em>, de nagyon fontosak:</p><ul><li><code>charset="UTF-8"</code> – nélküle az ékezetes betűk (á, é, ő…) hibásan jelennek meg</li><li><code>viewport</code> – nélküle mobilon kicsinyített verziót lát a látogató</li><li><code>&lt;title&gt;</code> – a böngésző fülén megjelenő szöveg</li></ul><p>A <strong>Bootstrap</strong> egy CSS keretrendszer: rengeteg előre megírt stílust tartalmaz. CDN-ről töltjük be (nincs letöltés), a saját <code>style.css</code> mindig <em>Bootstrap után</em> linkelendő, hogy felülírhassa azt.</p>`,
-  2: `<p>A <code>&lt;nav&gt;</code> <strong>szemantikus HTML elem</strong> – jelzi a böngészőnek és a keresőmotoroknak, hogy ez az oldal navigációs sávja. Kétféle link létezik a navigációban:</p><ul><li><strong>Belső hivatkozás:</strong> <code>href="#kaveink"</code> – az oldalon belüli <code>id="kaveink"</code> elemhez ugrik</li><li><strong>Külső hivatkozás:</strong> <code>href="https://..."</code> – másik weboldalra mutat. A <code>target="_blank"</code> gondoskodik arról, hogy új fülön nyíljon meg, így a látogató nem hagyja el az oldalunkat.</li></ul>`,
+  2: `<p>A <code>&lt;nav&gt;</code> <strong>szemantikus HTML elem</strong> – jelzi a böngészőnek és a keresőmotoroknak, hogy ez az oldal navigációs sávja. Kétféle link létezik a navigációban:</p><ul><li><strong>Belső hivatkozás:</strong> <code>href="#kavek"</code> – az oldalon belüli <code>id="kavek"</code> elemhez ugrik</li><li><strong>Külső hivatkozás:</strong> <code>href="https://..."</code> – másik weboldalra mutat. A <code>target="_blank"</code> gondoskodik arról, hogy új fülön nyíljon meg, így a látogató nem hagyja el az oldalunkat.</li></ul>`,
   3: `<p>Az <code>&lt;img&gt;</code> tag <strong>önzáró</strong> – nincs záró tagje. Két fontos attribútuma van:</p><ul><li><code>alt</code> – szöveges leírás: ha a kép nem tölt be, ezt jeleníti meg a böngésző; a képernyőolvasók (vakok segédeszközei) ezt olvassák fel</li><li><code>title</code> – tooltip: az egeret a kép fölé húzva jelenik meg</li></ul><p>⚠️ <strong>Vizsgán mindkettő kötelező</strong>, és értékük <em>azonos szöveg</em> legyen! Ez tipikus vizsga-csapda.</p>`,
   4: `<p>A <code>&lt;h1&gt;</code> az oldal legfontosabb főcíme – egy oldalon <strong>csak egy</strong> legyen. A Bootstrap <code>.container</code> osztályú div automatikusan középre rendezi és megfelelő szélességre korlátozza a tartalmat.</p><p>A <code>&lt;span&gt;</code> egy <em>inline elem</em> – a szöveg egy részét jelöli ki anélkül, hogy sortörést okozna. A <code>text-uppercase</code> Bootstrap osztály CSS-sel írja nagybetűssé a szöveget – nem kell hozzá külön CSS szabály.</p>`,
   5: `<p>A <code>&lt;p&gt;</code> elem egy bekezdést jelöl. A Bootstrap <code>my-3</code> osztály egységes felső és alsó margót ad:</p><ul><li><code>m</code> = margin (margó)</li><li><code>y</code> = Y-tengely (fent és lent egyszerre)</li><li><code>3</code> = 3 egységnyi méret (≈ 1rem ≈ 16px)</li></ul><p>Más Bootstrap margó osztályok: <code>mt-3</code> (csak fent), <code>mb-3</code> (csak lent), <code>mx-3</code> (bal és jobb).</p>`,
@@ -1139,7 +1139,7 @@ const taskTutors = {
 // ─── Referencia szekciók ──────────────────────────────────────────────────────
 const refSections = [
   { title: 'HTML váz', code: '<!DOCTYPE html>\n<html lang="hu">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Cím</title>\n  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n\n</body>\n</html>' },
-  { title: 'Navigáció (target="_blank")', code: '<nav>\n  <ul>\n    <li><a href="#kaveink">Kávék</a></li>\n    <li><a href="https://maps.google.com" target="_blank">Térkép</a></li>\n  </ul>\n</nav>' },
+  { title: 'Navigáció (target="_blank")', code: '<nav>\n  <ul>\n    <li><a href="#kavek">Kávék</a></li>\n    <li><a href="https://maps.google.com" target="_blank">Térkép</a></li>\n  </ul>\n</nav>' },
   { title: 'img#fejlec (alt + title)', code: '<img id="fejlec" src="img/banner.jpg" alt="Oldal neve" title="Oldal neve">' },
   { title: 'h1#felirat + span.text-uppercase', code: '<h1 id="felirat"><span class="text-uppercase">Első szó</span> többi szó</h1>' },
   { title: 'Bekezdés (p.my-3)', code: '<p class="my-3">Szöveg itt.</p>' },
