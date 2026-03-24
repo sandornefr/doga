@@ -208,6 +208,9 @@
       </span>
     </div>
     <div style="flex:1;position:relative;overflow:hidden;">
+      <div id="editor-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1e1e1e;color:#4b5563;font-size:0.85rem;gap:8px;z-index:1;pointer-events:none;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Szerkesztő betöltése...
+      </div>
       <div id="editor-python" style="width:100%;height:100%;"></div>
     </div>
   </div>
@@ -1764,6 +1767,10 @@ function triggerConfetti(){
 // ═══════════════════════════════════════════════════════════════════════════
 // MONACO
 // ═══════════════════════════════════════════════════════════════════════════
+// Azonnali UI betöltés – nem várja meg Monaco-t
+buildPills();
+loadTask(Math.min(parseInt(localStorage.getItem('py_basics_last')||'0'), TASK_COUNT-1));
+
 require.config({paths:{vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs'}});
 require(['vs/editor/editor.main'],function(){
   st.editor=window.monaco.editor.create(document.getElementById('editor-python'),{
@@ -1772,9 +1779,12 @@ require(['vs/editor/editor.main'],function(){
     scrollBeyondLastLine:false,tabSize:4,insertSpaces:true,
   });
   st.editor.addCommand(window.monaco.KeyMod.CtrlCmd|window.monaco.KeyCode.Enter,()=>runCode());
-  buildPills();
-  const last=parseInt(localStorage.getItem('py_basics_last')||'0');
-  loadTask(Math.min(last,TASK_COUNT-1));
+  // Editor értékének beállítása az aktuális feladathoz
+  const saved=localStorage.getItem('py_basics_code_'+st.cur);
+  st.editor.setValue((saved!==null&&saved!=='') ? saved : tasks[st.cur].starterCode);
+  const loading=document.getElementById('editor-loading');
+  if(loading) loading.style.display='none';
+  st.editor.focus();
 });
 
 const pyScript=document.createElement('script');
