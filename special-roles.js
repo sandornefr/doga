@@ -301,14 +301,8 @@
     async function init() {
         const user = getUser();
         if (!user.email) return;
-        // Oktató: mindkét gomb látható (előnézet / tesztelés)
-        if (user.szerep === 'oktato') {
-            injectCSS();
-            injectHTML();
-            if (isPortal()) document.getElementById('sr-hiba-fab').style.display    = 'flex';
-            if (isPortal()) document.getElementById('sr-feladat-fab').style.display = 'flex';
-            return;
-        }
+        // Oktató: nincs sr FAB gomb (a portálon külön UI van számára)
+        if (user.szerep === 'oktato') return;
         if (user.szerep !== 'tanulo') return;
         try {
             const [tRes, fRes] = await Promise.all([
