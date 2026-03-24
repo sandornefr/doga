@@ -601,6 +601,12 @@
                     <button onclick="loadTesztelők()" style="padding:4px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.8rem;"><i class="fas fa-rotate"></i> Frissítés</button>
                 </div>
 
+                <!-- Beérkező kérvények -->
+                <div id="teszteloi-kervenyok-wrap" style="margin-bottom:14px;display:none;">
+                    <div style="font-weight:600;color:#fbbf24;font-size:0.85rem;margin-bottom:8px;">📥 Beérkező csatlakozási kérelmek</div>
+                    <div id="teszteloi-kervenyok-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+                </div>
+
                 <!-- Aktív tesztelők -->
                 <div id="tesztelők-lista" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
 
@@ -2545,11 +2551,36 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         let _tesztelokSet = new Set(); // aktuális tesztelők email setje
 
         async function loadTesztelők() {
-            // Párhuzamosan tölti be a tanulókat és a tesztelőket
-            const [tRes, uRes] = await Promise.all([
+            // Párhuzamosan tölti be a tanulókat, tesztelőket és kérvényeket
+            const [tRes, uRes, kRes] = await Promise.all([
                 authFetch(`${RAILWAY_URL}/api/tesztelok`),
-                authFetch(`${RAILWAY_URL}/api/users`)
+                authFetch(`${RAILWAY_URL}/api/users`),
+                authFetch(`${RAILWAY_URL}/api/tesztelok/kervenyok`)
             ]);
+            // Kérvények megjelenítése
+            if (kRes.ok) {
+                const kervenyok = await kRes.json();
+                const wrap = document.getElementById('teszteloi-kervenyok-wrap');
+                const lista = document.getElementById('teszteloi-kervenyok-lista');
+                if (kervenyok.length > 0 && wrap && lista) {
+                    wrap.style.display = 'block';
+                    lista.innerHTML = kervenyok.map(k => `
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:#0a1628;border:1px solid #2a3a5c;border-radius:8px;padding:8px 12px;gap:10px;">
+                            <div>
+                                <span style="color:#e0e0e0;font-size:0.86rem;font-weight:600;">${escHtml(k.nev || k.email)}</span>
+                                ${k.osztaly ? `<span style="color:#6366f1;font-size:0.76rem;margin-left:6px;">${escHtml(k.osztaly)}</span>` : ''}
+                                <span style="color:#475569;font-size:0.72rem;margin-left:6px;">${escHtml(k.email)}</span>
+                                <span style="color:#475569;font-size:0.72rem;margin-left:6px;">${escHtml(k.createdAt)}</span>
+                            </div>
+                            <div style="display:flex;gap:6px;">
+                                <button onclick="approveTeszteloKervenyt('${escHtml(k.email)}')" style="padding:4px 12px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.8rem;cursor:pointer;font-weight:600;">✓ Jóváhagy</button>
+                                <button onclick="rejectTeszteloKervenyt('${escHtml(k.email)}')" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.8rem;cursor:pointer;">✕</button>
+                            </div>
+                        </div>`).join('');
+                } else if (wrap) {
+                    wrap.style.display = 'none';
+                }
+            }
             if (!tRes.ok || !uRes.ok) return;
 
             const tesztelokLista = await tRes.json();
@@ -2644,6 +2675,24 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         async function removeTesztelő(email) {
             const res = await authFetch(`${RAILWAY_URL}/api/tesztelok/${encodeURIComponent(email)}`, { method: 'DELETE' });
             if (res.ok) loadTesztelők();
+        }
+
+        async function approveTeszteloKervenyt(email) {
+            // Hozzáadja tesztelőként + törli a kérvényt
+            const addRes = await authFetch(`${RAILWAY_URL}/api/tesztelok`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            if (addRes.ok) {
+                await authFetch(`${RAILWAY_URL}/api/tesztelok/kervenyok/${encodeURIComponent(email)}`, { method: 'DELETE' });
+                loadTesztelők();
+            }
+        }
+
+        async function rejectTeszteloKervenyt(email) {
+            await authFetch(`${RAILWAY_URL}/api/tesztelok/kervenyok/${encodeURIComponent(email)}`, { method: 'DELETE' });
+            loadTesztelők();
         }
 
         async function sendTeszteloiUzenet() {

@@ -645,6 +645,38 @@ app.MapGet("/api/tesztelok/check", (string email, Database db) =>
     Results.Ok(new { isTesztelő = db.IsTesztelő(email) })
 );
 
+// Tesztelő jelentkezés (tanuló, token kell)
+app.MapPost("/api/tesztelok/jelentes", async (HttpContext ctx, Database db) =>
+{
+    var (valid, payload) = InspectToken(ctx);
+    if (!valid || payload == null) return Results.Unauthorized();
+    using var reader = new System.IO.StreamReader(ctx.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body);
+    var email = payload.TryGetValue("email", out var em) ? em : "";
+    if (string.IsNullOrWhiteSpace(email)) return Results.BadRequest(new { error = "email hiányzik" });
+    if (db.IsTesztelő(email)) return Results.BadRequest(new { error = "Már tesztelő vagy." });
+    string? nev = json.TryGetProperty("nev", out var np) ? np.GetString() : null;
+    string? osztaly = json.TryGetProperty("osztaly", out var op) ? op.GetString() : null;
+    db.SaveTeszteloiKervenyt(email, nev ?? "", osztaly);
+    return Results.Ok(new { success = true });
+});
+
+// Tesztelő kérvények listája (csak oktató)
+app.MapGet("/api/tesztelok/kervenyok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetTeszteloiKervenyok());
+});
+
+// Tesztelő kérvény törlése (elutasítás, csak oktató)
+app.MapDelete("/api/tesztelok/kervenyok/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    db.DeleteTeszteloiKervenyt(email);
+    return Results.Ok(new { success = true });
+});
+
 // ── Tesztelői üzenetek ────────────────────────────────────────────────────
 
 // Üzenet küldése tesztelőknek (csak oktató)

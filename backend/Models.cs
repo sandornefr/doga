@@ -292,3 +292,7 @@ public class FeladatKeszitőStat {
     public int Megvalositva { get; set; }
     public Dictionary<string, int> TypusDb { get; set; } = new();
 }
+
+public record TeszteloiKervenyek(string Email, string Nev, string? Osztaly, string CreatedAt);
+
+public record TeszteloJelentkezesRequest(string Email, string? Nev, string? Osztaly);

@@ -984,16 +984,10 @@
     </div>
 </div>
 
-<!-- Lebegő Ötlet Láda / Hibajelentés gombok (jobb alsó sarok) -->
+<!-- Lebegő gombok (jobb alsó sarok) -->
 <div class="otlet-fab-wrap">
-    <button class="otlet-btn" id="hiba-btn" onclick="openHibaModal()">
-        🐛 Hibajelentés
-    </button>
-    <button class="otlet-btn" id="feladatkeszito-submit-btn" onclick="openFeladatModal()" style="display:none; background:#0d9488; box-shadow:0 4px 18px rgba(13,148,136,.45);">
-        ✏️ Feladat küldése
-    </button>
-    <button class="otlet-btn" id="feladatkeszito-join-btn" onclick="joinFeladatkeszito()" style="display:none; background:#0f766e; box-shadow:0 4px 18px rgba(13,148,136,.35);">
-        ✏️ Feladatkészítő leszek
+    <button class="otlet-btn" id="csatlakozas-btn" onclick="openCsatlakozasModal()" style="display:none; background:#4f46e5; box-shadow:0 4px 18px rgba(79,70,229,.45);">
+        🤝 Csatlakozás
     </button>
     <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()">
         💡 Ötlet Láda
@@ -1002,6 +996,40 @@
 
 <div style="position:fixed;bottom:8px;left:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
 
+
+<!-- Csatlakozás modal (tesztelő / feladatkészítő jelentkezés) -->
+<div class="otlet-modal-overlay" id="csatlakozas-modal">
+    <div class="otlet-modal-box" style="border-color:#4f46e5; max-width:480px;">
+        <h3 style="color:#a5b4fc; margin-bottom:6px;">🤝 Csatlakozás a fejlesztői csapathoz</h3>
+        <p style="color:#94a3b8; font-size:0.84rem; margin-bottom:18px; line-height:1.5;">Válassz szerepkört, amellyel hozzájárulhatsz a rendszer fejlesztéséhez!</p>
+
+        <!-- Tesztelő kártya -->
+        <div id="csatl-tesztelő-card" style="background:#0f1e3c; border:1.5px solid #1f3460; border-radius:12px; padding:16px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span style="font-size:1.4rem;">🔬</span>
+                <strong style="color:#e0e0e0; font-size:0.95rem;">Tesztelő</strong>
+            </div>
+            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Segítesz megtalálni a hibákat! Ha valahol nem úgy működik a rendszer ahogy kellene, beküldöd nekem és én kijavítom. Egy 🐛 gomb jelenik meg az oldalakon.</p>
+            <div id="csatl-tesztelő-msg" style="font-size:0.8rem; min-height:16px; margin-bottom:8px;"></div>
+            <button onclick="csatlakozasTesztelő()" id="csatl-tesztelő-btn" style="padding:8px 18px; background:#1e40af; border:none; border-radius:8px; color:#fff; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit;">Jelentkezem Tesztelőnek</button>
+        </div>
+
+        <!-- Feladatkészítő kártya -->
+        <div id="csatl-feladatkeszito-card" style="background:#0f1e3c; border:1.5px solid #1f3460; border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span style="font-size:1.4rem;">✏️</span>
+                <strong style="color:#e0e0e0; font-size:0.95rem;">Feladatkészítő</strong>
+            </div>
+            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Feladatötleteket küldesz be a dolgozathoz! Ha megvalósul az ötleted, a neved megjelenik a Megvalósult ötletek között. Egy ✏️ gomb jelenik meg az oldalakon.</p>
+            <div id="csatl-fk-msg" style="font-size:0.8rem; min-height:16px; margin-bottom:8px;"></div>
+            <button onclick="csatlakozasFeladatkeszito()" id="csatl-fk-btn" style="padding:8px 18px; background:#0f766e; border:none; border-radius:8px; color:#fff; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit;">Feladatkészítő leszek</button>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+            <button class="otlet-cancel-btn" onclick="closeCsatlakozasModal()">Bezárás</button>
+        </div>
+    </div>
+</div>
 
 <!-- Kötelező jelszócsere modal (ideiglenes jelszó után) -->
 <div class="pw-change-overlay" id="pw-change-overlay">
@@ -1100,7 +1128,6 @@
         const clPython = document.getElementById('changelog-python');
         const clWeb    = document.getElementById('changelog-web');
         const otletBtn = document.getElementById('otlet-btn');
-        const hibaBtn2 = document.getElementById('hiba-btn');
         const megvBox  = document.getElementById('megvalasult-box');
         if (isTeacherView) {
             teacher.style.display = 'block';
@@ -1108,7 +1135,6 @@
             if (clPython) clPython.style.display = 'none';
             if (clWeb)    clWeb.style.display    = 'none';
             if (otletBtn) otletBtn.style.display = 'none';
-            if (hibaBtn2) hibaBtn2.style.display = 'none';
             if (megvBox)  megvBox.style.display  = 'none';
             sub.textContent = 'Mit szeretnél csinálni?';
             btn.textContent = 'Tanulói nézet';
@@ -1725,26 +1751,82 @@
             const res = await fetch(`${API_BASE}/api/feladatkeszito/check?email=${encodeURIComponent(user.email)}`);
             if (!res.ok) return;
             const data = await res.json();
-            const joinBtn   = document.getElementById('feladatkeszito-join-btn');
-            const submitBtn = document.getElementById('feladatkeszito-submit-btn');
             if (data.isFeladatkeszito) {
-                // Badge a névnél
                 const nameEl = document.getElementById('user-name');
                 if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
                     nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
-                if (submitBtn) submitBtn.style.display = 'flex';
-                if (joinBtn)   joinBtn.style.display   = 'none';
-            } else {
-                if (joinBtn)   joinBtn.style.display   = 'flex';
-                if (submitBtn) submitBtn.style.display = 'none';
+            }
+            // Csatlakozás gomb: csak ha még egyik szerepkörben sincs
+            updateCsatlakozasBtn(user);
+        } catch {}
+    }
+
+    // ── Csatlakozás modal ─────────────────────────────────────────────────────
+
+    async function updateCsatlakozasBtn(user) {
+        if (!user || !user.token) return;
+        try {
+            const [tRes, fRes] = await Promise.all([
+                fetch(`${API_BASE}/api/tesztelok/check?email=${encodeURIComponent(user.email)}`),
+                fetch(`${API_BASE}/api/feladatkeszito/check?email=${encodeURIComponent(user.email)}`)
+            ]);
+            const isTesztelő      = tRes.ok  && (await tRes.json()).isTesztelő;
+            const isFeladatkeszito= fRes.ok  && (await fRes.json()).isFeladatkeszito;
+            const btn = document.getElementById('csatlakozas-btn');
+            if (btn && !isTesztelő && !isFeladatkeszito) btn.style.display = 'flex';
+            // Kártyák állapota a modalban
+            if (isTesztelő) {
+                const card = document.getElementById('csatl-tesztelő-card');
+                if (card) card.innerHTML = '<p style="color:#86efac; font-size:0.85rem;">✅ Már Tesztelő vagy!</p>';
+            }
+            if (isFeladatkeszito) {
+                const card = document.getElementById('csatl-feladatkeszito-card');
+                if (card) card.innerHTML = '<p style="color:#86efac; font-size:0.85rem;">✅ Már Feladatkészítő vagy!</p>';
             }
         } catch {}
     }
 
-    async function joinFeladatkeszito() {
+    function openCsatlakozasModal() {
+        document.getElementById('csatlakozas-modal').classList.add('open');
+    }
+    function closeCsatlakozasModal() {
+        document.getElementById('csatlakozas-modal').classList.remove('open');
+    }
+
+    async function csatlakozasTesztelő() {
         const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const msgEl = document.getElementById('csatl-tesztelő-msg');
+        const btn   = document.getElementById('csatl-tesztelő-btn');
         if (!user.token) return;
-        const btn = document.getElementById('feladatkeszito-join-btn');
+        btn.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/api/tesztelok/jelentes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                body: JSON.stringify({ nev: user.nev || '', osztaly: user.osztaly || null })
+            });
+            if (res.ok) {
+                msgEl.style.color = '#86efac';
+                msgEl.textContent = '✅ Jelentkezésed beérkezett! A tanár jóváhagyja, és értesítést kapsz.';
+                btn.style.display = 'none';
+            } else {
+                const d = await res.json().catch(() => ({}));
+                msgEl.style.color = '#e94560';
+                msgEl.textContent = d.error || 'Hiba a jelentkezésnél.';
+                btn.disabled = false;
+            }
+        } catch {
+            msgEl.style.color = '#e94560';
+            msgEl.textContent = 'Hálózati hiba!';
+            btn.disabled = false;
+        }
+    }
+
+    async function csatlakozasFeladatkeszito() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const msgEl = document.getElementById('csatl-fk-msg');
+        const btn   = document.getElementById('csatl-fk-btn');
+        if (!user.token) return;
         btn.disabled = true;
         try {
             const res = await fetch(`${API_BASE}/api/feladatkeszito/join`, {
@@ -1752,15 +1834,26 @@
                 headers: { 'Authorization': `Bearer ${user.token}` }
             });
             if (res.ok) {
-                btn.style.display = 'none';
-                const submitBtn = document.getElementById('feladatkeszito-submit-btn');
-                if (submitBtn) submitBtn.style.display = 'flex';
                 const nameEl = document.getElementById('user-name');
                 if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
                     nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
+                msgEl.style.color = '#86efac';
+                msgEl.textContent = '✅ Mostantól Feladatkészítő vagy! ✏️ gomb jelenik meg az oldalakon.';
+                btn.style.display = 'none';
+                // Csatlakozás gomb elrejtése
+                const csBtn = document.getElementById('csatlakozas-btn');
+                if (csBtn) csBtn.style.display = 'none';
+            } else {
+                const d = await res.json().catch(() => ({}));
+                msgEl.style.color = '#e94560';
+                msgEl.textContent = d.error || 'Hiba.';
+                btn.disabled = false;
             }
-        } catch {}
-        btn.disabled = false;
+        } catch {
+            msgEl.style.color = '#e94560';
+            msgEl.textContent = 'Hálózati hiba!';
+            btn.disabled = false;
+        }
     }
 
     function openFeladatModal() {
@@ -1851,9 +1944,6 @@
             if (nameEl && !nameEl.querySelector('.tesztelő-badge')) {
                 nameEl.insertAdjacentHTML('beforeend', '<span class="tesztelő-badge">🔬 Tesztelő</span>');
             }
-            // Hibajelentés gomb megjelenítése
-            const hibaBtn = document.getElementById('hiba-btn');
-            if (hibaBtn) hibaBtn.style.display = 'flex';
             // Tesztelői üzenetek betöltése
             const uRes = await fetch(`${API_BASE}/api/teszteloi-uzenetek/my`, {
                 headers: { 'Authorization': `Bearer ${user.token}` }
@@ -1886,5 +1976,6 @@
         return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 </script>
+<script src="special-roles.js"></script>
 </body>
 </html>

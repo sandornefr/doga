@@ -138,6 +138,12 @@ public class Database
                 email      TEXT NOT NULL,
                 PRIMARY KEY (uzenet_id, email)
             );
+            CREATE TABLE IF NOT EXISTS teszteloi_kervenyok (
+                email      TEXT PRIMARY KEY,
+                nev        TEXT NOT NULL DEFAULT '',
+                osztaly    TEXT,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
             CREATE TABLE IF NOT EXISTS sessions (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_email     TEXT NOT NULL,
@@ -1114,6 +1120,38 @@ public class Database
         cmd.CommandText = "SELECT COUNT(*) FROM tesztelok WHERE email = $email";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+    }
+
+    public void SaveTeszteloiKervenyt(string email, string nev, string? osztaly)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT OR REPLACE INTO teszteloi_kervenyok (email, nev, osztaly) VALUES ($email, $nev, $osztaly)";
+        cmd.Parameters.AddWithValue("$email",   email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$nev",     nev);
+        cmd.Parameters.AddWithValue("$osztaly", (object?)osztaly ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<TeszteloiKervenyek> GetTeszteloiKervenyok()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT email, nev, osztaly, created_at FROM teszteloi_kervenyok ORDER BY created_at DESC";
+        var list = new List<TeszteloiKervenyek>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new TeszteloiKervenyek(r.GetString(0), r.GetString(1), r.IsDBNull(2) ? null : r.GetString(2), r.GetString(3)));
+        return list;
+    }
+
+    public void DeleteTeszteloiKervenyt(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM teszteloi_kervenyok WHERE email = $email";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.ExecuteNonQuery();
     }
 
     // ── Tesztelői üzenetek ────────────────────────────────────────────────────
