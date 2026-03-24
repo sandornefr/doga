@@ -691,6 +691,99 @@ app.MapPost("/api/teszteloi-uzenetek/{id}/olvas", (int id, HttpContext ctx, Data
     return Results.Ok(new { success = true });
 });
 
+// ── Feladatkészítők ───────────────────────────────────────────────────────
+
+// Automatikus csatlakozás (bármely bejelentkezett tanuló)
+app.MapPost("/api/feladatkeszito/join", (HttpContext ctx, Database db) =>
+{
+    var (valid, payload) = InspectToken(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = payload.Split(':')[0];
+    if (email.Contains('|')) email = email.Split('|')[0];
+    db.AddFeladatkeszito(email);
+    return Results.Ok(new { success = true });
+});
+
+// Státusz ellenőrzés
+app.MapGet("/api/feladatkeszito/check", (string email, Database db) =>
+    Results.Ok(new { isFeladatkeszito = db.IsFeladatkeszito(email) })
+);
+
+// Lista (csak oktató)
+app.MapGet("/api/feladatkeszitok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetFeladatkeszitok());
+});
+
+// Eltávolítás (csak oktató)
+app.MapDelete("/api/feladatkeszitok/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    db.RemoveFeladatkeszito(email);
+    return Results.Ok(new { success = true });
+});
+
+// Feladat javaslat beküldése (csak feladatkészítő)
+app.MapPost("/api/feladat-javaslatok", (HttpContext ctx, Database db) =>
+{
+    var (valid, payload) = InspectToken(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = payload.Split(':')[0];
+    if (email.Contains('|')) email = email.Split('|')[0];
+    if (!db.IsFeladatkeszito(email)) return Results.Forbid();
+    using var reader = new System.IO.StreamReader(ctx.Request.Body);
+    var body = reader.ReadToEndAsync().Result;
+    var req = System.Text.Json.JsonSerializer.Deserialize<FeladatJavaslatRequest>(body,
+        new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    if (req == null || string.IsNullOrWhiteSpace(req.Cim) || string.IsNullOrWhiteSpace(req.Szoveg))
+        return Results.BadRequest(new { error = "Cím és szöveg kötelező" });
+    var id = db.SaveFeladatJavaslat(req);
+    return Results.Ok(new { success = true, id });
+});
+
+// Javaslatok listája (csak oktató)
+app.MapGet("/api/feladat-javaslatok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetFeladatJavaslatok());
+});
+
+// Javaslat frissítése (csak oktató)
+app.MapPut("/api/feladat-javaslatok/{id}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    using var reader = new System.IO.StreamReader(ctx.Request.Body);
+    var body = reader.ReadToEndAsync().Result;
+    var req = System.Text.Json.JsonSerializer.Deserialize<FeladatJavaslatUpdateRequest>(body,
+        new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    if (req == null) return Results.BadRequest(new { error = "Hibás kérés" });
+    db.UpdateFeladatJavaslat(id, req);
+    return Results.Ok(new { success = true });
+});
+
+// Statisztika (csak oktató)
+app.MapGet("/api/feladat-javaslatok/stats", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetFeladatKeszitokStats());
+});
+
+// Megvalósult ötlet mentése a portálra (csak oktató, feladat javaslat megvalósításakor)
+app.MapPost("/api/megvalasult", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    using var reader = new System.IO.StreamReader(ctx.Request.Body);
+    var body = reader.ReadToEndAsync().Result;
+    var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body);
+    var nev    = json.TryGetProperty("nev",    out var n) ? n.GetString() ?? "" : "";
+    var osztaly= json.TryGetProperty("osztaly",out var o) ? o.GetString() : null;
+    var szoveg = json.TryGetProperty("szoveg", out var s) ? s.GetString() ?? "" : "";
+    if (string.IsNullOrWhiteSpace(szoveg)) return Results.BadRequest(new { error = "szoveg kötelező" });
+    db.SaveMegvalasultOtlet(nev, osztaly, szoveg);
+    return Results.Ok(new { success = true });
+});
+
 // ── Session tracking ──────────────────────────────────────────────────────
 
 // Session indítása (oldal betöltésekor)

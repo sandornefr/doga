@@ -109,6 +109,25 @@ public class Database
                 email      TEXT PRIMARY KEY,
                 added_at   TEXT DEFAULT (datetime('now','localtime'))
             );
+            CREATE TABLE IF NOT EXISTS feladatkeszitok (
+                email      TEXT PRIMARY KEY,
+                added_at   TEXT DEFAULT (datetime('now','localtime'))
+            );
+            CREATE TABLE IF NOT EXISTS feladat_javaslatok (
+                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                email               TEXT NOT NULL,
+                nev                 TEXT NOT NULL DEFAULT '',
+                osztaly             TEXT,
+                cim                 TEXT NOT NULL,
+                pont                INTEGER NOT NULL,
+                tipus               TEXT NOT NULL,
+                szoveg              TEXT NOT NULL,
+                megoldas            TEXT,
+                statusz             TEXT NOT NULL DEFAULT 'uj',
+                visszajelzes        TEXT,
+                megvalositva_szoveg TEXT,
+                created_at          TEXT DEFAULT (datetime('now','localtime'))
+            );
             CREATE TABLE IF NOT EXISTS teszteloi_uzenetek (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 szoveg     TEXT NOT NULL,
@@ -1025,6 +1044,18 @@ public class Database
         return list;
     }
 
+    public void SaveMegvalasultOtlet(string nev, string? osztaly, string szoveg)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO otlet_lada (email, nev, osztaly, szoveg, statusz, megvalositva_szoveg, updated_at)
+            VALUES ('', $nev, $osztaly, $szoveg, 'megvalasult', $szoveg, datetime('now','localtime'))";
+        cmd.Parameters.AddWithValue("$nev",     nev);
+        cmd.Parameters.AddWithValue("$osztaly", (object?)osztaly ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$szoveg",  szoveg);
+        cmd.ExecuteNonQuery();
+    }
+
     public List<object> GetPublicIdeas()
     {
         using var conn = Open();
@@ -1167,6 +1198,117 @@ public class Database
         cmd.Parameters.AddWithValue("$uid",   uzenetId);
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         cmd.ExecuteNonQuery();
+    }
+
+    // ── Feladatkészítők ───────────────────────────────────────────────────────
+
+    public void AddFeladatkeszito(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT OR IGNORE INTO feladatkeszitok (email) VALUES ($email)";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.ExecuteNonQuery();
+    }
+
+    public bool IsFeladatkeszito(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM feladatkeszitok WHERE email = $email";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+    }
+
+    public List<string> GetFeladatkeszitok()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT email FROM feladatkeszitok ORDER BY added_at DESC";
+        var list = new List<string>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(r.GetString(0));
+        return list;
+    }
+
+    public void RemoveFeladatkeszito(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM feladatkeszitok WHERE email = $email";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.ExecuteNonQuery();
+    }
+
+    public int SaveFeladatJavaslat(FeladatJavaslatRequest req)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO feladat_javaslatok (email, nev, osztaly, cim, pont, tipus, szoveg, megoldas)
+            VALUES ($email, $nev, $osztaly, $cim, $pont, $tipus, $szoveg, $megoldas) RETURNING id";
+        cmd.Parameters.AddWithValue("$email",   req.Email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$nev",     req.Nev);
+        cmd.Parameters.AddWithValue("$osztaly", (object?)req.Osztaly ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$cim",     req.Cim);
+        cmd.Parameters.AddWithValue("$pont",    req.Pont);
+        cmd.Parameters.AddWithValue("$tipus",   req.Tipus);
+        cmd.Parameters.AddWithValue("$szoveg",  req.Szoveg);
+        cmd.Parameters.AddWithValue("$megoldas",(object?)req.Megoldas ?? DBNull.Value);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public List<FeladatJavaslatItem> GetFeladatJavaslatok()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT id, email, nev, osztaly, cim, pont, tipus, szoveg, megoldas,
+            statusz, visszajelzes, megvalositva_szoveg, created_at
+            FROM feladat_javaslatok ORDER BY created_at DESC";
+        var list = new List<FeladatJavaslatItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new FeladatJavaslatItem {
+                Id = r.GetInt32(0), Email = r.GetString(1), Nev = r.GetString(2),
+                Osztaly = r.IsDBNull(3) ? null : r.GetString(3),
+                Cim = r.GetString(4), Pont = r.GetInt32(5), Tipus = r.GetString(6),
+                Szoveg = r.GetString(7), Megoldas = r.IsDBNull(8) ? null : r.GetString(8),
+                Statusz = r.GetString(9),
+                Visszajelzes = r.IsDBNull(10) ? null : r.GetString(10),
+                MegvalositvaSzoveg = r.IsDBNull(11) ? null : r.GetString(11),
+                CreatedAt = r.GetString(12)
+            });
+        return list;
+    }
+
+    public void UpdateFeladatJavaslat(int id, FeladatJavaslatUpdateRequest req)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE feladat_javaslatok
+            SET statusz=$s, visszajelzes=$v, megvalositva_szoveg=$m WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$s",  req.Statusz);
+        cmd.Parameters.AddWithValue("$v",  (object?)req.Visszajelzes ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$m",  (object?)req.MegvalositvaSzoveg ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<FeladatKeszitőStat> GetFeladatKeszitokStats()
+    {
+        var javaslatok = GetFeladatJavaslatok();
+        return javaslatok
+            .GroupBy(j => j.Email)
+            .Select(g => new FeladatKeszitőStat {
+                Email       = g.Key,
+                Nev         = g.First().Nev,
+                Osztaly     = g.First().Osztaly,
+                Osszes      = g.Count(),
+                Elfogadva   = g.Count(j => j.Statusz == "elfogadva"),
+                Megvalositva= g.Count(j => j.Statusz == "megvalositva"),
+                TypusDb     = g.GroupBy(j => j.Tipus).ToDictionary(t => t.Key, t => t.Count())
+            })
+            .OrderByDescending(s => s.Osszes)
+            .ToList();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

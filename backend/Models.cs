@@ -256,3 +256,39 @@ public class AdminUzenetItem {
     public List<string> Olvastak { get; set; } = new List<string>();
     public List<string> NemOlvastak { get; set; } = new List<string>();
 }
+
+// ── Feladatkészítők ────────────────────────────────────────────────────────
+
+public record FeladatJavaslatRequest(
+    string Email, string Nev, string? Osztaly,
+    string Cim, int Pont, string Tipus,
+    string Szoveg, string? Megoldas
+);
+
+public record FeladatJavaslatUpdateRequest(string Statusz, string? Visszajelzes, string? MegvalositvaSzoveg);
+
+public class FeladatJavaslatItem {
+    public int Id { get; set; }
+    public string Email { get; set; } = "";
+    public string Nev { get; set; } = "";
+    public string? Osztaly { get; set; }
+    public string Cim { get; set; } = "";
+    public int Pont { get; set; }
+    public string Tipus { get; set; } = "";
+    public string Szoveg { get; set; } = "";
+    public string? Megoldas { get; set; }
+    public string Statusz { get; set; } = "uj";
+    public string? Visszajelzes { get; set; }
+    public string? MegvalositvaSzoveg { get; set; }
+    public string CreatedAt { get; set; } = "";
+}
+
+public class FeladatKeszitőStat {
+    public string Email { get; set; } = "";
+    public string? Nev { get; set; }
+    public string? Osztaly { get; set; }
+    public int Osszes { get; set; }
+    public int Elfogadva { get; set; }
+    public int Megvalositva { get; set; }
+    public Dictionary<string, int> TypusDb { get; set; } = new();
+}

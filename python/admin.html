@@ -470,6 +470,7 @@
             <button class="tab-btn" onclick="switchTab('rangsor', this)"><i class="fas fa-ranking-star"></i> Rangsor</button>
             <button class="tab-btn" onclick="switchTab('visszajelzesek', this)"><i class="fas fa-face-smile"></i> Visszajelzések</button>
             <button class="tab-btn" onclick="switchTab('otlet-lada', this)"><i class="fas fa-lightbulb"></i> Ötlet Láda</button>
+            <button class="tab-btn" id="feladatok-tab-btn" onclick="switchTab('feladatok', this)"><i class="fas fa-pencil"></i> Feladatkészítők</button>
         </div>
 
         <!-- Config Panel -->
@@ -652,6 +653,47 @@
             <!-- Kép modal -->
             <div id="otlet-kep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;" onclick="this.style.display='none'">
                 <img id="otlet-kep-modal-img" style="max-width:90vw;max-height:90vh;border-radius:8px;" alt="Screenshot">
+            </div>
+        </div>
+
+        <!-- Feladatkészítők panel -->
+        <div class="panel" data-tab="feladatok" style="display:none;">
+            <h2><i class="fas fa-pencil"></i> Feladatkészítők</h2>
+
+            <!-- Aktív feladatkészítők -->
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;">✏️ Regisztrált feladatkészítők</div>
+                    <button onclick="loadFeladatkeszitok()" style="padding:3px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.78rem;"><i class="fas fa-rotate"></i></button>
+                </div>
+                <div id="feladatkeszitok-lista" style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <span style="color:#555;font-size:0.83rem;font-style:italic;">Betöltés...</span>
+                </div>
+            </div>
+
+            <!-- Statisztika -->
+            <div style="margin-bottom:20px;border-top:1px solid #1a3a5c;padding-top:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;">📊 Statisztika</div>
+                    <button onclick="loadFeladatStats()" style="padding:3px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.78rem;"><i class="fas fa-rotate"></i></button>
+                </div>
+                <div id="feladat-stats-lista"></div>
+            </div>
+
+            <!-- Beérkezett javaslatok -->
+            <div style="border-top:1px solid #1a3a5c;padding-top:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;">📬 Beérkezett feladat javaslatok</div>
+                    <button onclick="loadFeladatJavaslatok()" style="padding:3px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.78rem;"><i class="fas fa-rotate"></i> Frissítés</button>
+                    <select id="feladat-filter-statusz" onchange="renderFeladatJavaslatok()" style="padding:4px 8px;background:#0a1628;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;font-size:0.82rem;">
+                        <option value="">Összes</option>
+                        <option value="uj">Új</option>
+                        <option value="elfogadva">Elfogadva</option>
+                        <option value="elutasitva">Elutasítva</option>
+                        <option value="megvalositva">Megvalósítva</option>
+                    </select>
+                </div>
+                <div id="feladat-javaslatok-lista"></div>
             </div>
         </div>
 
@@ -1052,6 +1094,7 @@
             if (name === 'rangsor' && leaderboardData.length === 0) loadLeaderboard();
             if (name === 'visszajelzesek') loadFeedbackStats();
             if (name === 'otlet-lada') { loadOtletek(); loadTesztelők(); loadUzenetStatusz(); }
+            if (name === 'feladatok')  { loadFeladatkeszitok(); loadFeladatStats(); loadFeladatJavaslatok(); }
         }
 
         // Check auth on page load
@@ -2659,7 +2702,149 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 lista.innerHTML = '<span style="color:#e94560;font-size:0.82rem;">Hálózati hiba</span>';
             }
         }
+        // ── Feladatkészítők ─────────────────────────────────────────────────
+
+        let _feladatJavaslatok = [];
+
+        async function loadFeladatkeszitok() {
+            const el = document.getElementById('feladatkeszitok-lista');
+            if (!el) return;
+            const [fRes, uRes] = await Promise.all([
+                authFetch(`${RAILWAY_URL}/api/feladatkeszitok`),
+                authFetch(`${RAILWAY_URL}/api/users`)
+            ]);
+            if (!fRes.ok || !uRes.ok) return;
+            const emails = await fRes.json();
+            const users  = await uRes.json();
+            if (!emails.length) { el.innerHTML = '<span style="color:#555;font-size:0.83rem;font-style:italic;">Még nincs feladatkészítő.</span>'; return; }
+            el.innerHTML = emails.map(email => {
+                const u = users.find(x => x.email?.toLowerCase() === email.toLowerCase());
+                const nev = u ? escHtml(u.nev) : escHtml(email);
+                const info = u?.osztaly ? ` <span style="color:#0d9488;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
+                return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#2dd4bf;">
+                    ✏️ ${nev}${info}
+                    <button onclick="removeFeladatkeszito('${escHtml(email)}')" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
+                </span>`;
+            }).join('');
+        }
+
+        async function removeFeladatkeszito(email) {
+            const res = await authFetch(`${RAILWAY_URL}/api/feladatkeszitok/${encodeURIComponent(email)}`, { method: 'DELETE' });
+            if (res.ok) loadFeladatkeszitok();
+        }
+
+        async function loadFeladatStats() {
+            const el = document.getElementById('feladat-stats-lista');
+            if (!el) return;
+            const res = await authFetch(`${RAILWAY_URL}/api/feladat-javaslatok/stats`);
+            if (!res.ok) { el.innerHTML = '<span style="color:#e94560;font-size:0.82rem;">Hiba</span>'; return; }
+            const stats = await res.json();
+            if (!stats.length) { el.innerHTML = '<span style="color:#555;font-size:0.83rem;font-style:italic;">Még nincs beküldött feladat.</span>'; return; }
+            el.innerHTML = stats.map(s => {
+                const tipusok = Object.entries(s.typusDb||{}).map(([k,v])=>`${k}: ${v}`).join(', ');
+                return `<div style="background:#0a1628;border:1px solid #1a3a5c;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:0.83rem;">
+                    <span style="color:#2dd4bf;font-weight:700;">✏️ ${escHtml(s.nev||s.email)}</span>
+                    ${s.osztaly ? `<span style="color:#0d9488;margin-left:6px;font-size:0.75rem;">${escHtml(s.osztaly)}</span>` : ''}
+                    <span style="float:right;color:#94a3b8;">Összes: <strong style="color:#e0e0e0;">${s.osszes}</strong> &nbsp;|&nbsp; Elfogadva: <strong style="color:#4ade80;">${s.elfogadva}</strong> &nbsp;|&nbsp; Megvalósítva: <strong style="color:#fbbf24;">${s.megvalositva}</strong></span>
+                    ${tipusok ? `<div style="color:#64748b;margin-top:4px;">${tipusok}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function loadFeladatJavaslatok() {
+            const res = await authFetch(`${RAILWAY_URL}/api/feladat-javaslatok`);
+            if (!res.ok) return;
+            _feladatJavaslatok = await res.json();
+            renderFeladatJavaslatok();
+        }
+
+        function renderFeladatJavaslatok() {
+            const el     = document.getElementById('feladat-javaslatok-lista');
+            const filter = document.getElementById('feladat-filter-statusz')?.value || '';
+            const lista  = filter ? _feladatJavaslatok.filter(j => j.statusz === filter) : _feladatJavaslatok;
+            if (!lista.length) { el.innerHTML = '<span style="color:#555;font-size:0.83rem;font-style:italic;">Nincs találat.</span>'; return; }
+            const statuszBadge = {
+                uj:           '<span style="background:rgba(99,102,241,.15);border:1px solid #6366f1;color:#a5b4fc;border-radius:20px;padding:1px 10px;font-size:0.72rem;font-weight:700;">ÚJ</span>',
+                elfogadva:    '<span style="background:rgba(74,222,128,.1);border:1px solid #4ade80;color:#4ade80;border-radius:20px;padding:1px 10px;font-size:0.72rem;font-weight:700;">ELFOGADVA</span>',
+                elutasitva:   '<span style="background:rgba(233,69,96,.1);border:1px solid #e94560;color:#fca5a5;border-radius:20px;padding:1px 10px;font-size:0.72rem;font-weight:700;">ELUTASÍTVA</span>',
+                megvalositva: '<span style="background:rgba(251,191,36,.1);border:1px solid #fbbf24;color:#fbbf24;border-radius:20px;padding:1px 10px;font-size:0.72rem;font-weight:700;">MEGVALÓSÍTVA</span>',
+            };
+            el.innerHTML = lista.map(j => `
+                <div style="background:#0a1628;border:1px solid #1a3a5c;border-radius:10px;padding:14px 16px;margin-bottom:12px;" id="fj-${j.id}">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                        ${statuszBadge[j.statusz]||''}
+                        <strong style="color:#e0e0e0;">${escHtml(j.cim)}</strong>
+                        <span style="color:#64748b;font-size:0.78rem;">${j.pont} pont · ${escHtml(j.tipus)}</span>
+                        <span style="color:#94a3b8;font-size:0.75rem;margin-left:auto;">${escHtml(j.nev||j.email)} ${j.osztaly?'('+escHtml(j.osztaly)+')':''} · ${j.createdAt}</span>
+                    </div>
+                    <div style="color:#b0b8c8;font-size:0.85rem;white-space:pre-wrap;background:#0f1e3c;border-radius:6px;padding:8px 12px;margin-bottom:6px;">${escHtml(j.szoveg)}</div>
+                    ${j.megoldas ? `<details style="margin-bottom:8px;"><summary style="color:#6366f1;font-size:0.8rem;cursor:pointer;">Beküldött megoldás megtekintése</summary><pre style="color:#94a3b8;font-size:0.82rem;background:#0f1e3c;border-radius:6px;padding:8px 12px;margin-top:6px;overflow-x:auto;">${escHtml(j.megoldas)}</pre></details>` : ''}
+                    ${j.visszajelzes ? `<div style="color:#4ade80;font-size:0.82rem;margin-bottom:8px;">💬 ${escHtml(j.visszajelzes)}</div>` : ''}
+                    ${j.megvalositvaSzoveg ? `<div style="color:#fbbf24;font-size:0.82rem;margin-bottom:8px;">🏆 ${escHtml(j.megvalositvaSzoveg)}</div>` : ''}
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;" id="fj-actions-${j.id}">
+                        <textarea placeholder="Visszajelzés a beküldőnek (opcionális)..." id="fj-valasz-${j.id}" rows="1" style="flex:1;min-width:200px;background:#0f1e3c;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;font-size:0.82rem;padding:5px 10px;font-family:inherit;resize:vertical;"></textarea>
+                        <button onclick="frissitFeladat(${j.id},'elfogadva')"    style="padding:5px 12px;background:rgba(74,222,128,.15);border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.8rem;cursor:pointer;">✓ Elfogad</button>
+                        <button onclick="frissitFeladat(${j.id},'elutasitva')"   style="padding:5px 12px;background:rgba(233,69,96,.12);border:1px solid #e94560;border-radius:6px;color:#fca5a5;font-size:0.8rem;cursor:pointer;">✗ Elutasít</button>
+                        <button onclick="openMegvalositModal(${j.id})"           style="padding:5px 12px;background:rgba(251,191,36,.12);border:1px solid #fbbf24;border-radius:6px;color:#fbbf24;font-size:0.8rem;cursor:pointer;">🏆 Megvalósítva</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function frissitFeladat(id, statusz) {
+            const valasz = document.getElementById(`fj-valasz-${id}`)?.value.trim() || null;
+            const res = await authFetch(`${RAILWAY_URL}/api/feladat-javaslatok/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ statusz, visszajelzes: valasz, megvalositvaSzoveg: null })
+            });
+            if (res.ok) loadFeladatJavaslatok();
+        }
+
+        let _megvalositModalId = null;
+        function openMegvalositModal(id) {
+            _megvalositModalId = id;
+            const j = _feladatJavaslatok.find(x => x.id === id);
+            const szoveg = j ? `${escHtml(j.nev||j.email)} javaslatára új ${j.pont} pontos feladat: ${escHtml(j.cim)}` : '';
+            const modal = document.getElementById('megvalositva-modal');
+            document.getElementById('megvalositva-szoveg').value = szoveg;
+            if (modal) modal.style.display = 'flex';
+        }
+
+        async function saveMegvalositva() {
+            const szoveg = document.getElementById('megvalositva-szoveg')?.value.trim();
+            const valasz = document.getElementById(`fj-valasz-${_megvalositModalId}`)?.value.trim() || null;
+            const j = _feladatJavaslatok.find(x => x.id === _megvalositModalId);
+            const res = await authFetch(`${RAILWAY_URL}/api/feladat-javaslatok/${_megvalositModalId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ statusz: 'megvalositva', visszajelzes: valasz, megvalositvaSzoveg: szoveg||null })
+            });
+            if (res.ok && szoveg) {
+                await authFetch(`${RAILWAY_URL}/api/megvalasult`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nev: j?.nev||j?.email||'', osztaly: j?.osztaly||null, szoveg })
+                });
+            }
+            document.getElementById('megvalositva-modal').style.display = 'none';
+            loadFeladatJavaslatok();
+            loadFeladatStats();
+        }
+
     </script>
+<!-- Megvalósítva modal -->
+<div id="megvalositva-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#16213e;border:1.5px solid #fbbf24;border-radius:14px;padding:22px;max-width:500px;width:100%;">
+        <h3 style="color:#fbbf24;margin-bottom:8px;">🏆 Megvalósult ötlet szövege</h3>
+        <p style="color:#888;font-size:0.83rem;margin-bottom:12px;">Ez fog megjelenni a portál <strong>Megvalósult ötletek</strong> dobozában a beküldő neve alatt.</p>
+        <textarea id="megvalositva-szoveg" rows="3" style="width:100%;background:#0f1e3c;border:1px solid #1f3460;border-radius:8px;color:#e0e0e0;font-size:0.9rem;padding:8px 12px;font-family:inherit;resize:vertical;margin-bottom:12px;"></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="document.getElementById('megvalositva-modal').style.display='none'" style="padding:7px 16px;background:transparent;border:1px solid #374151;border-radius:8px;color:#9ca3af;cursor:pointer;">Mégse</button>
+            <button onclick="saveMegvalositva()" style="padding:7px 18px;background:#fbbf24;border:none;border-radius:8px;color:#1a1a2e;font-weight:700;cursor:pointer;">Mentés és megjelenik a portálon</button>
+        </div>
+    </div>
+</div>
+
 <div style="position:fixed;bottom:8px;right:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard" style="color:rgba(255,255,255,0.22);"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
 </body>
 </html>

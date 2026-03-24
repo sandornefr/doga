@@ -312,6 +312,56 @@
             font-size: 0.7rem; font-weight: 700; color: #fbbf24;
             vertical-align: middle; margin-left: 6px;
         }
+        .feladatkeszito-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(13,148,136,.12); border: 1px solid rgba(13,148,136,.4);
+            border-radius: 20px; padding: 1px 8px;
+            font-size: 0.7rem; font-weight: 700; color: #2dd4bf;
+            vertical-align: middle; margin-left: 6px;
+        }
+        /* Feladatkészítő modal */
+        .fk-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.75); z-index: 1000;
+            align-items: center; justify-content: center; padding: 16px;
+        }
+        .fk-modal-overlay.open { display: flex; }
+        .fk-modal-box {
+            background: #16213e; border: 1.5px solid #0d9488;
+            border-radius: 16px; padding: 26px 26px 22px;
+            width: 90%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+        }
+        .fk-modal-box h3 { color: #2dd4bf; font-size: 1.1rem; margin-bottom: 6px; }
+        .fk-modal-box p  { color: #888; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
+        .fk-form-group { margin-bottom: 12px; }
+        .fk-form-group label { display: block; color: #94a3b8; font-size: 0.82rem; margin-bottom: 4px; }
+        .fk-form-group input, .fk-form-group select, .fk-form-group textarea {
+            width: 100%; background: #0f1e3c; border: 1px solid #1f3460;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.9rem;
+            padding: 8px 12px; font-family: inherit;
+        }
+        .fk-form-group input:focus, .fk-form-group select:focus, .fk-form-group textarea:focus {
+            outline: none; border-color: #0d9488;
+        }
+        .fk-form-group textarea { min-height: 90px; resize: vertical; }
+        .fk-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fk-modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+        .fk-send-btn {
+            padding: 8px 20px; background: #0d9488; border: none;
+            border-radius: 8px; color: #fff; font-size: 0.9rem;
+            font-weight: 600; cursor: pointer; transition: background .2s;
+        }
+        .fk-send-btn:hover { background: #0f766e; }
+        .fk-send-btn:disabled { opacity: .5; cursor: default; }
+        .fk-more-btn {
+            padding: 8px 20px; background: transparent; border: 1px solid #0d9488;
+            border-radius: 8px; color: #2dd4bf; font-size: 0.9rem;
+            font-weight: 600; cursor: pointer;
+        }
+        .fk-cancel-btn {
+            padding: 8px 16px; background: transparent; border: 1px solid #374151;
+            border-radius: 8px; color: #9ca3af; font-size: 0.9rem; cursor: pointer;
+        }
 
         .megvalasult-box {
             background: #16213e; border: 1px solid #1e3a5f;
@@ -889,10 +939,61 @@
     </div>
 </div>
 
+<!-- Feladat beküldő modal (feladatkészítőknek) -->
+<div class="fk-modal-overlay" id="feladat-modal">
+    <div class="fk-modal-box">
+        <h3>✏️ Feladat beküldése</h3>
+        <p>Töltsd ki az alábbi mezőket. A beküldött feladatot a tanár ellenőrzi, és ha bekerül a rendszerbe, a neved megjelenik a megvalósult ötletek között!</p>
+        <div class="fk-form-group">
+            <label>Feladat címe *</label>
+            <input type="text" id="fk-cim" placeholder="pl. Okosotthon hőmérséklet figyelő">
+        </div>
+        <div class="fk-form-row">
+            <div class="fk-form-group">
+                <label>Pontszám *</label>
+                <select id="fk-pont">
+                    <option value="8">8 pont</option>
+                    <option value="14">14 pont</option>
+                </select>
+            </div>
+            <div class="fk-form-group">
+                <label>Típus *</label>
+                <select id="fk-tipus">
+                    <option value="if">if / elágazás</option>
+                    <option value="ciklus">ciklus (for / while)</option>
+                    <option value="függvény">függvény</option>
+                    <option value="vegyes">vegyes</option>
+                </select>
+            </div>
+        </div>
+        <div class="fk-form-group">
+            <label>Feladat szövege *</label>
+            <textarea id="fk-szoveg" placeholder="Írd le pontosan mit kell megcsinálnia a programnak, milyen bemeneteket kér be, milyen kimenetet ad..."></textarea>
+        </div>
+        <div class="fk-form-group">
+            <label>Esetleges megoldás (opcionális)</label>
+            <textarea id="fk-megoldas" style="min-height:70px;" placeholder="Ha tudod, írd be a Python kód megoldást..."></textarea>
+        </div>
+        <div id="fk-error"   style="color:#e94560;font-size:0.83rem;margin-top:6px;display:none;"></div>
+        <div id="fk-success" style="color:#4ade80;font-size:0.83rem;margin-top:6px;display:none;"></div>
+        <div class="fk-modal-btns">
+            <button class="fk-cancel-btn" onclick="closeFeladatModal()">Mégse</button>
+            <button class="fk-more-btn"   id="fk-more-btn" onclick="sendFeladat(true)">+ Még küldök feladatot</button>
+            <button class="fk-send-btn"   id="fk-send-btn" onclick="sendFeladat(false)">Beküldés</button>
+        </div>
+    </div>
+</div>
+
 <!-- Lebegő Ötlet Láda / Hibajelentés gombok (jobb alsó sarok) -->
 <div class="otlet-fab-wrap">
     <button class="otlet-btn" id="hiba-btn" onclick="openHibaModal()">
         🐛 Hibajelentés
+    </button>
+    <button class="otlet-btn" id="feladatkeszito-submit-btn" onclick="openFeladatModal()" style="display:none; background:#0d9488; box-shadow:0 4px 18px rgba(13,148,136,.45);">
+        ✏️ Feladat küldése
+    </button>
+    <button class="otlet-btn" id="feladatkeszito-join-btn" onclick="joinFeladatkeszito()" style="display:none; background:#0f766e; box-shadow:0 4px 18px rgba(13,148,136,.35);">
+        ✏️ Feladatkészítő leszek
     </button>
     <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()">
         💡 Ötlet Láda
@@ -980,6 +1081,7 @@
             document.getElementById('otlet-btn').style.display = 'flex';
             loadMegvalasultOtletek();
             loadTeszteloInfo(user);
+            loadFeladatkeszitoInfo(user);
             // Session tracking indítása
             startSessionTracking(user.email, 'portal');
         }
@@ -1613,6 +1715,109 @@
             errEl.style.display = 'block';
             btn.disabled = false; btn.textContent = 'Beküldés';
         }
+    }
+
+    // ── Feladatkészítő ────────────────────────────────────────────────────────
+
+    async function loadFeladatkeszitoInfo(user) {
+        if (!user.token) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/feladatkeszito/check?email=${encodeURIComponent(user.email)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const joinBtn   = document.getElementById('feladatkeszito-join-btn');
+            const submitBtn = document.getElementById('feladatkeszito-submit-btn');
+            if (data.isFeladatkeszito) {
+                // Badge a névnél
+                const nameEl = document.getElementById('user-name');
+                if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
+                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
+                if (submitBtn) submitBtn.style.display = 'flex';
+                if (joinBtn)   joinBtn.style.display   = 'none';
+            } else {
+                if (joinBtn)   joinBtn.style.display   = 'flex';
+                if (submitBtn) submitBtn.style.display = 'none';
+            }
+        } catch {}
+    }
+
+    async function joinFeladatkeszito() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        if (!user.token) return;
+        const btn = document.getElementById('feladatkeszito-join-btn');
+        btn.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/api/feladatkeszito/join`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${user.token}` }
+            });
+            if (res.ok) {
+                btn.style.display = 'none';
+                const submitBtn = document.getElementById('feladatkeszito-submit-btn');
+                if (submitBtn) submitBtn.style.display = 'flex';
+                const nameEl = document.getElementById('user-name');
+                if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
+                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
+            }
+        } catch {}
+        btn.disabled = false;
+    }
+
+    function openFeladatModal() {
+        document.getElementById('feladat-modal').classList.add('open');
+        document.getElementById('fk-error').style.display   = 'none';
+        document.getElementById('fk-success').style.display = 'none';
+    }
+
+    function closeFeladatModal() {
+        document.getElementById('feladat-modal').classList.remove('open');
+        document.getElementById('fk-cim').value     = '';
+        document.getElementById('fk-szoveg').value  = '';
+        document.getElementById('fk-megoldas').value= '';
+        document.getElementById('fk-pont').value    = '8';
+        document.getElementById('fk-tipus').value   = 'if';
+    }
+
+    async function sendFeladat(maradjon) {
+        const user  = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const cim   = document.getElementById('fk-cim').value.trim();
+        const szoveg= document.getElementById('fk-szoveg').value.trim();
+        const pont  = parseInt(document.getElementById('fk-pont').value);
+        const tipus = document.getElementById('fk-tipus').value;
+        const megoldas = document.getElementById('fk-megoldas').value.trim();
+        const errEl = document.getElementById('fk-error');
+        const okEl  = document.getElementById('fk-success');
+        errEl.style.display = 'none'; okEl.style.display = 'none';
+        if (!cim || !szoveg) { errEl.textContent = 'A cím és a feladat szövege kötelező!'; errEl.style.display='block'; return; }
+        const sendBtn = document.getElementById('fk-send-btn');
+        const moreBtn = document.getElementById('fk-more-btn');
+        sendBtn.disabled = true; moreBtn.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/api/feladat-javaslatok`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                body: JSON.stringify({ email: user.email, nev: user.nev||'', osztaly: user.osztaly||null, cim, pont, tipus, szoveg, megoldas: megoldas||null })
+            });
+            if (res.ok) {
+                if (maradjon) {
+                    okEl.textContent = '✅ Feladat beküldve! Küldhetsz másikat.';
+                    okEl.style.display = 'block';
+                    document.getElementById('fk-cim').value     = '';
+                    document.getElementById('fk-szoveg').value  = '';
+                    document.getElementById('fk-megoldas').value= '';
+                } else {
+                    closeFeladatModal();
+                }
+            } else {
+                const d = await res.json().catch(()=>({}));
+                errEl.textContent = 'Hiba: ' + (d.error || res.status);
+                errEl.style.display = 'block';
+            }
+        } catch {
+            errEl.textContent = 'Nem sikerült elküldeni. Ellenőrizd az internetkapcsolatot!';
+            errEl.style.display = 'block';
+        }
+        sendBtn.disabled = false; moreBtn.disabled = false;
     }
 
     async function loadMegvalasultOtletek() {
