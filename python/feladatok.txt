@@ -1892,3 +1892,53 @@ elif marado < 70:
 else:
     print("Még bőven van tartalékod.")
 
+31. feladat
+Pont: 8
+Cim: Töri évszám kvíz
+Tipus: if
+
+Írj programot, amely véletlenszerűen feltesz egy történelmi évszám kérdést, majd ellenőrzi a választ!
+A programban legalább 3 kérdés-válasz párt tárolj el (lista segítségével)!
+A program véletlenszerűen válasszon egyet, tegye fel a kérdést, kérje be a tanuló válaszát, majd döntse el, helyes-e!
+Ha helyes: "Helyes!"
+Ha nem: "Sajnos nem, a helyes válasz X." (ahol X a valódi évszám)
+
+Minta kód:
+```
+Mikor volt a mohácsi vész? 1526
+Helyes!
+
+Mikor volt a honfoglalás? 1000
+Sajnos nem, a helyes válasz 896.
+```
+
+Pontozas:
+import:random|Importálja a random modult|A véletlenszerű választáshoz szükséges egy beépített modul. Melyik? 📦|📦 A random modul megvan – a gép már tud véletlenszerűen választani!
+tartalmaz:choice|random.choice()-t használ|Hogyan lehet egy listából véletlenszerűen választani? Van erre egy random függvény... 🎲|🎲 random.choice() – a kvíz motor beindul!
+tartalmaz:1526|Tartalmaz legalább egy évszámot|Legalább egy valódi történelmi évszámnak szerepelnie kell a listában. 📅|📅 Történelmi adat megtalálható a kódban!
+if|Elágazást használ az ellenőrzéshez|A bevitt választ összehasonlítja a helyessel – melyik kulcsszóval döntöd el?|✅ Az elágazás megvan – a program ítélkezni tud!
+tartalmaz:Helyes|A helyes választ jelzi|Mit ír ki, ha a tanuló jól tudta? Pontosan: "Helyes!"|🏆 A helyes válasz visszajelzése megvan!
+tartalmaz:Sajnos nem|A hibás választ jelzi|Mi a visszajelzés ha rosszul tudta? "Sajnos nem..."|📚 A hibás válasz visszajelzése is megvan!
+tartalmaz:a helyes válasz|Kiírja a helyes évszámot|Hiba esetén a helyes választ is közölni kell a tanulóval!|💡 A helyes évszám is megjelenik – a tanuló tanulhat belőle!
+
+Tippek:
+
+Megoldas:
+import random
+
+kerdesek = [
+    ("Mikor volt a mohácsi vész?", "1526"),
+    ("Mikor volt a honfoglalás?", "896"),
+    ("Mikor volt az 1848-as forradalom kitörése?", "1848"),
+    ("Mikor ért véget a második világháború?", "1945"),
+]
+
+feladat = random.choice(kerdesek)
+kerdes, helyes = feladat
+
+valasz = input(kerdes + " ")
+if valasz == helyes:
+    print("Helyes!")
+else:
+    print("Sajnos nem, a helyes válasz " + helyes + ".")
+
