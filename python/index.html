@@ -1223,7 +1223,7 @@
                     <div id="practice-task-type" style="display:none; margin-bottom:0.8rem;">
                         <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Milyen feladatokat szeretnél gyakorolni?</p>
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                            <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)">🎲 Vegyes</button>
+                            <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)"><i class="fa-solid fa-shuffle"></i> Vegyes</button>
                             <button class="task-type-btn" data-type="csak8" onclick="setTaskType('csak8', this)">8 pontos × 3</button>
                             <button class="task-type-btn" data-type="csak14" onclick="setTaskType('csak14', this)">14 pontos × 3</button>
                             <button class="task-type-btn" disabled>18 pontos (hamarosan)</button>
@@ -1266,7 +1266,7 @@
 
                     <!-- Practice time picker (csak gyakorló módban látszik) -->
                     <div id="practice-time-picker" style="display:none; background:#0a1a0a; border:1px solid #2ed573; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1rem;">
-                        <label style="font-weight:600; color:#2ed573; margin-right:12px;">⏱ Saját időkorlát:</label>
+                        <label style="font-weight:600; color:#2ed573; margin-right:12px;"><i class="fa-solid fa-clock"></i> Saját időkorlát:</label>
                         <input type="number" id="custom-time-input" value="45" min="5" max="120" style="width:72px; padding:5px 8px; background:#16213e; border:1px solid #2ed573; border-radius:6px; color:#e0e0e0; font-size:1rem;">
                         <span style="color:#888; margin-left:8px; font-size:0.85rem;">perc</span>
                     </div>
@@ -1292,7 +1292,7 @@
                     <div id="user-info-card"></div>
 
                     <button id="btn-open-custom-modal" type="button" onclick="openCustomModal()" style="display:none;width:100%;margin-top:0.4rem;padding:0.75rem;background:#0f3460;border:1px solid #536dfe;border-radius:10px;color:#a5b4fc;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
-                        🎯 Egyéni összeállítás
+                        <i class="fa-solid fa-filter" style="color: #2ed573;"></i> Egyéni összeállítás
                     </button>
                     <button class="btn btn-primary" id="start-btn" style="width:100%; margin-top:0.5rem; background: linear-gradient(135deg, #e94560, #c0392b); border:none; border-radius:10px; padding:0.75rem; font-size:1rem; letter-spacing:0.5px;">
                         Elfogadom a szabályokat – Teszt indítása
@@ -1421,7 +1421,7 @@
                     <div id="end-practice-restart" style="display:none;margin-top:1.2rem;">
                         <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:0.6rem;">Szeretnél még gyakorolni?</p>
                         <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1rem;">
-                            <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)">🎲 Vegyes</button>
+                            <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)"><i class="fa-solid fa-shuffle"></i> Vegyes</button>
                             <button class="task-type-btn" data-type="csak8" onclick="setTaskType('csak8', this)">8 pontos × 3</button>
                             <button class="task-type-btn" data-type="csak14" onclick="setTaskType('csak14', this)">14 pontos × 3</button>
                             <button class="task-type-btn" disabled>18 pontos (hamarosan)</button>
@@ -1636,7 +1636,7 @@
                         card.innerHTML = '<span><i class="fas fa-film"></i></span><span>Bemutató / oktatói mód – nincs fullscreen, nincs beadás</span>';
                     } else {
                         card.style.cssText = 'background:#0f1e3a;border:1px solid #536dfe;color:#93c5fd;padding:0.75rem 1rem;border-radius:8px;font-size:0.88rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem;';
-                        card.innerHTML = '<span style="color:#2ed573;font-weight:700;">✓</span>'
+                        card.innerHTML = '<span style="color:#2ed573;font-weight:700;"><i class="fa-solid fa-user"></i></span>'
                             + '<span><strong style="color:#e0e0e0;">' + (u.nev || '') + '</strong>'
                             + ' &nbsp;·&nbsp; ' + (u.email || '')
                             + (u.osztaly ? ' &nbsp;·&nbsp; ' + u.osztaly + ' osztály' : '') + '</span>';
@@ -1958,18 +1958,18 @@
 
 <div id="custom-modal" class="custom-modal-overlay hidden">
   <div class="custom-modal-box">
-    <div class="custom-modal-header">🎯 Egyéni feladatösszeállítás</div>
+    <div class="custom-modal-header"><i class="fa-solid fa-filter" style="color: #2ed573;"></i> Egyéni feladatösszeállítás</div>
     <div class="custom-modal-body">
 
       <!-- Előzmények -->
       <div>
-        <div class="custom-section-title">📋 Előzmények (utolsó 5 alkalom)</div>
+        <div class="custom-section-title"><i class="fa-solid fa-clock-rotate-left" style="color: #3b82f6;"></i> Előzmények (utolsó 5 alkalom)</div>
         <div class="custom-hist-badges" id="custom-history-badges"></div>
       </div>
 
       <!-- Összeállítás -->
       <div>
-        <div class="custom-section-title">🔢 Összeállítás</div>
+        <div class="custom-section-title"><i class="fa-solid fa-layer-group" style="color: #3b82f6;"></i> Összeállítás</div>
         <select id="custom-composition" class="custom-composition-select" onchange="updateCustomCount()">
           <option value="2+1">2× 8 pontos + 1× 14 pontos (alapértelmezett)</option>
           <option value="3+0">3× 8 pontos</option>
@@ -1983,7 +1983,7 @@
 
       <!-- Típus szűrő -->
       <div>
-        <div class="custom-section-title">🏷️ Típus szűrő</div>
+        <div class="custom-section-title"><i class="fa-solid fa-filter" style="color: #3b82f6;"></i> Típus szűrő</div>
         <div class="custom-type-filters" id="custom-type-filters">
           <button class="custom-type-btn active" data-type="all" onclick="customTypeFilter(this)">Összes</button>
           <button class="custom-type-btn" data-type="if" onclick="customTypeFilter(this)">if / elif</button>
@@ -1994,16 +1994,16 @@
 
       <!-- Feladat lista -->
       <div style="flex:1;">
-        <div class="custom-section-title">📝 Feladatok</div>
+        <div class="custom-section-title"><i class="fa-solid fa-list-check" style="color: #3b82f6;"></i> Feladatok</div>
         <div id="custom-task-list"></div>
         <div id="custom-count-label" class="custom-count-label"></div>
       </div>
 
     </div>
     <div class="custom-modal-footer">
-      <button id="btn-custom-random" onclick="customRandomFill()">🔄 Véletlenszerű kitöltés</button>
+      <button id="btn-custom-random" onclick="customRandomFill()"><i class="fa-solid fa-shuffle" style="color: #3b82f6;"></i> Véletlenszerű kitöltés</button>
       <button id="btn-custom-cancel" onclick="closeCustomModal()">Mégsem</button>
-      <button id="btn-custom-start" onclick="startCustomTest()" disabled>Kezdés →</button>
+      <button id="btn-custom-start" onclick="startCustomTest()" disabled><i class="fa-solid fa-play"></i> Kezdés</button>
     </div>
   </div>
 </div>
