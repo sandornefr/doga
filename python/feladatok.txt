@@ -1833,3 +1833,62 @@ else:
     else:
         print("Turbó fűtés indítása!")
 
+30. feladat
+Pont: 8
+Cim: Hiányzás kalkulátor
+Tipus: if
+
+Írj programot, amely segít nyomon követni, mennyire állsz közel a 250 órás hiányzási határhoz – ami felett osztályozó vizsgát kell tenni!
+A program kérje be az eddigi hiányzások számát (egész óra), majd számolja ki, hány óra maradt még!
+Írja ki: "Még X órát hiányozhatsz osztályozó vizsga nélkül." (ahol X a maradék)
+Ezután figyelmeztessen a helyzet súlyosságától függően:
+Ha a maradék negatív (már túllépte): "Sajnos már túllépted a határt! Osztályozó vizsgát kell tenned."
+Ha a maradék kevesebb mint 30: "Figyelem! Nagyon kevés hiányzásod maradt!"
+Ha a maradék kevesebb mint 70: "Kezdj vigyázni, fogy az időd!"
+Egyébként: "Még bőven van tartalékod."
+
+Minta kód:
+```
+Eddigi hiányzásaid (óra): 60
+Még 190 órát hiányozhatsz osztályozó vizsga nélkül.
+Még bőven van tartalékod.
+
+Eddigi hiányzásaid (óra): 190
+Még 60 órát hiányozhatsz osztályozó vizsga nélkül.
+Kezdj vigyázni, fogy az időd!
+
+Eddigi hiányzásaid (óra): 230
+Még 20 órát hiányozhatsz osztályozó vizsga nélkül.
+Figyelem! Nagyon kevés hiányzásod maradt!
+
+Eddigi hiányzásaid (óra): 260
+Még -10 órát hiányozhatsz osztályozó vizsga nélkül.
+Sajnos már túllépted a határt! Osztályozó vizsgát kell tenned.
+```
+
+Pontozas:
+bekeres:Eddigi hiányzásaid (óra): |Bekérés szövege|Pontosan így kell a szöveg, szóközökkel együtt! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Hiányzást számmá alakítja|A számoláshoz egész számmá kell alakítani az input()-ot. 🔢|🔢 Az óra szám készen áll a számoláshoz!
+tartalmaz:250|A 250 órás határt tartalmazza|A 250-es határértéknek valahol szerepelnie kell a kódban. Megvan? 🎯|✅ A 250 órás határ megtalálható a kódban!
+if|Elágazást használ|Több szint van – valamelyiknél if kulcsszóval kell dönteni. 🌿|✅ Az elágazás elindul – a program már dönteni tud!
+elif|elif ágat alkalmaz|Ha if után még más eset is van, az elif a barátod! 🔀|🔀 Az elif megvan – több szint is le van kezelve!
+teszt:60:190|190 maradék 60 hiányzásnál|60 hiányzás után 250-60=190 marad. A te programod is ezt írja?|✅ Helyes! 190 óra maradt – még bőven van tartalék!
+teszt:230:Figyelem|Figyelmeztető szint működik|230 után csak 20 óra marad. Megjelenik a figyelmeztetés?|⚠️ A program figyelmeztet – ideje komolyan venni!
+teszt:260:túllépted|Határátlépést jelzi|260 óránál már túl van a határon. Ezt felismeri a programod?|🚨 A határátlépést is észrevette – teljes a kalkulátor!
+
+Tippek:
+
+Megoldas:
+hianyzas = int(input("Eddigi hiányzásaid (óra): "))
+hatarido = 250
+marado = hatarido - hianyzas
+print(f"Még {marado} órát hiányozhatsz osztályozó vizsga nélkül.")
+if marado < 0:
+    print("Sajnos már túllépted a határt! Osztályozó vizsgát kell tenned.")
+elif marado < 30:
+    print("Figyelem! Nagyon kevés hiányzásod maradt!")
+elif marado < 70:
+    print("Kezdj vigyázni, fogy az időd!")
+else:
+    print("Még bőven van tartalékod.")
+
