@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Gyakorló – Kandó</title>
+  <link rel="icon" href="../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f172a;
+      --bg2:      #111827;
+      --bg3:      #1e293b;
+      --border:   #1f2937;
+      --accent:   #22c55e;
+      --accent2:  #16a34a;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --blue:     #3b82f6;
+      --blue2:    #1d4ed8;
+      --yellow:   #f59e0b;
+      --red:      #ef4444;
+      --font:     'Segoe UI', system-ui, sans-serif;
+      --topbar-h: 54px;
+      --bottom-h: 52px;
+      --left-w:   270px;
+      --right-w:  330px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .topbar {
+      height: var(--topbar-h); background: var(--bg2);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; padding: 0 12px; gap: 8px;
+      flex-shrink: 0; z-index: 100;
+    }
+    .topbar-logo { height: 30px; margin-right: 4px; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 8px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; cursor: pointer;
+      text-decoration: none; white-space: nowrap;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    .pills-wrapper {
+      display: flex; align-items: center; gap: 4px;
+      overflow-x: auto; flex: 1; padding: 4px 0;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .pill-group-label {
+      flex-shrink: 0; font-size: 0.7rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; padding: 0 6px; color: var(--muted); white-space: nowrap;
+    }
+    .pill-group-label.dict  { color: #60a5fa; }
+    .pill-group-label.class { color: #a78bfa; }
+    .pill-group-label.file  { color: #34d399; }
+    .pill {
+      flex-shrink: 0; width: 30px; height: 26px;
+      border-radius: 6px; border: 1.5px solid #374151;
+      background: transparent; color: var(--muted);
+      font-size: 0.76rem; font-weight: 600; cursor: pointer;
+      transition: all .18s; display: flex; align-items: center; justify-content: center;
+    }
+    .pill:hover { border-color: var(--blue); color: #93c5fd; }
+    .pill.active { border-color: var(--blue); background: rgba(59,130,246,.15); color: #93c5fd; }
+    .pill.done { border-color: var(--accent); background: var(--accent); color: #052e16; font-weight: 700; }
+    .pill.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+    .progress-label {
+      white-space: nowrap; font-size: 0.78rem; color: var(--muted);
+      padding: 0 8px; border-left: 1.5px solid var(--border);
+    }
+    .progress-label span { color: var(--accent); font-weight: 700; }
+    .btn-restart {
+      padding: 4px 10px; background: transparent; border: 1px solid var(--border);
+      border-radius: 6px; color: var(--muted); font-size: 0.75rem; cursor: pointer;
+      display: flex; align-items: center; gap: 4px; transition: all .2s; white-space: nowrap;
+    }
+    .btn-restart:hover { border-color: var(--red); color: #fca5a5; }
+    .btn-ref-toggle {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 16px; border-radius: 8px;
+      background: var(--accent); border: 1.5px solid var(--accent);
+      color: #052e16; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: all .2s; flex-shrink: 0;
+    }
+    .btn-ref-toggle:hover { background: var(--accent2); border-color: var(--accent2); }
+
+    /* MAIN LAYOUT */
+    .layout {
+      display: flex; flex: 1; overflow: hidden;
+      height: calc(100vh - var(--topbar-h) - var(--bottom-h));
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      width: var(--left-w); flex-shrink: 0; background: var(--bg2);
+      border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .left-panel-inner {
+      flex: 1; overflow-y: auto; padding: 16px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .topic-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
+    }
+    .topic-badge.dict  { background: rgba(96,165,250,.15); color: #60a5fa; border: 1px solid rgba(96,165,250,.3); }
+    .topic-badge.class { background: rgba(167,139,250,.15); color: #a78bfa; border: 1px solid rgba(167,139,250,.3); }
+    .topic-badge.file  { background: rgba(52,211,153,.15);  color: #34d399; border: 1px solid rgba(52,211,153,.3); }
+    .task-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
+    .task-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.65; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .task-desc code { background: #1e293b; color: #93c5fd; padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; }
+    .task-desc strong { color: var(--text); }
+    .checklist-title { font-size: 0.72rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 10px; border-radius: 7px; margin-bottom: 5px;
+      background: var(--bg3); border: 1px solid var(--border);
+      font-size: 0.81rem; transition: border-color .2s;
+    }
+    .check-item.pass { border-color: rgba(34,197,94,.4); }
+    .check-item.fail { border-color: rgba(239,68,68,.3); }
+    .check-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+    .check-text { color: var(--text); line-height: 1.4; }
+    .success-banner {
+      display: none; margin-top: 12px;
+      background: rgba(34,197,94,.12); border: 1.5px solid rgba(34,197,94,.4);
+      border-radius: 10px; padding: 12px 14px; text-align: center;
+      font-size: 0.88rem; color: var(--accent); font-weight: 600;
+    }
+    .success-banner.visible { display: block; }
+
+    /* CENTER */
+    .center-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .editor-header {
+      padding: 8px 14px; background: var(--bg3); border-bottom: 1.5px solid var(--border);
+      font-size: 0.78rem; font-weight: 700; color: #60a5fa; letter-spacing: .06em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .editor-area { flex: 1; position: relative; overflow: hidden; }
+
+    /* RIGHT: Terminal */
+    .right-panel {
+      width: var(--right-w); flex-shrink: 0;
+      border-left: 1.5px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .terminal-header {
+      padding: 8px 14px; background: var(--bg3); border-bottom: 1.5px solid var(--border);
+      font-size: 0.78rem; font-weight: 600; color: var(--muted);
+      letter-spacing: .06em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .terminal-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; display: inline-block; }
+    #pyodide-status {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;
+      background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.3);
+    }
+    #pyodide-status.ready { background: rgba(34,197,94,.1); color: #86efac; border-color: rgba(34,197,94,.3); }
+    #pyodide-status.error { background: rgba(239,68,68,.1); color: #fca5a5; border-color: rgba(239,68,68,.3); }
+    #terminal {
+      flex: 1; overflow-y: auto; padding: 14px 16px;
+      font-family: 'Consolas', 'Courier New', monospace; font-size: 0.82rem;
+      background: #060d1a; color: #a3e635; white-space: pre-wrap; word-break: break-word;
+      line-height: 1.55;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    #terminal.has-error { color: #f87171; }
+    #terminal.empty { color: #475569; font-style: italic; }
+
+    /* BOTTOM BAR */
+    .bottom-bar {
+      height: var(--bottom-h); background: var(--bg2); border-top: 1.5px solid var(--border);
+      display: flex; align-items: center; padding: 0 14px; gap: 10px; flex-shrink: 0;
+    }
+    .btn-run {
+      padding: 9px 20px; border-radius: 9px;
+      background: #1d4ed8; border: 1.5px solid var(--blue);
+      color: #fff; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background .18s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-run:hover { background: var(--blue); }
+    .btn-run:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-check {
+      padding: 9px 20px; border-radius: 9px;
+      background: var(--accent2); border: 1.5px solid var(--accent);
+      color: #fff; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background .18s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-check:hover { background: var(--accent); }
+    .score-display { font-size: 0.88rem; color: var(--muted); }
+    .score-display span { color: var(--text); font-weight: 700; }
+    .btn-solution {
+      padding: 7px 12px; background: #3b1f00; border: 1.5px solid var(--yellow);
+      border-radius: 8px; color: #fcd34d; font-size: 0.83rem; font-weight: 600;
+      cursor: pointer; display: none; align-items: center; gap: 6px;
+    }
+    .btn-solution:hover { background: #92400e; }
+    .btn-reset {
+      padding: 9px 12px; border-radius: 9px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.85rem;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-reset:hover { border-color: var(--red); color: #fca5a5; }
+    .btn-next {
+      margin-left: auto; padding: 9px 18px; border-radius: 9px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-next:hover { border-color: var(--blue); color: #93c5fd; }
+
+    /* REFERENCE PANEL */
+    .ref-overlay { position: fixed; inset: 0; z-index: 199; background: rgba(0,0,0,.5); display: none; }
+    .ref-overlay.open { display: block; }
+    .ref-panel {
+      position: fixed; top: 0; right: -400px; bottom: 0;
+      width: 390px; z-index: 200; background: var(--bg2);
+      border-left: 1.5px solid var(--border);
+      display: flex; flex-direction: column;
+      transition: right .28s cubic-bezier(.4,0,.2,1); overflow: hidden;
+    }
+    .ref-panel.open { right: 0; }
+    .ref-header {
+      padding: 14px 16px; border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-weight: 700; font-size: 1.05rem;
+    }
+    .btn-close-ref { background: transparent; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 5px; transition: color .15s; }
+    .btn-close-ref:hover { color: var(--text); }
+    .ref-body { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .tutor-section { padding: 14px 16px; border-bottom: 1.5px solid var(--border); background: #0f172a; }
+    .tutor-section h3 { margin: 0 0 8px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+    .tutor-section p { margin: 0 0 8px; font-size: 0.84rem; color: #cbd5e1; line-height: 1.65; }
+    .tutor-section p:last-child { margin: 0; }
+    .tutor-section ul { margin: 4px 0 8px; padding-left: 18px; }
+    .tutor-section ul li { font-size: 0.84rem; color: #cbd5e1; line-height: 1.7; }
+    .tutor-section code { background: #1e293b; color: #93c5fd; padding: 1px 5px; border-radius: 3px; font-size: 0.81rem; font-family: Consolas, monospace; }
+    .tutor-section strong { color: #f1f5f9; }
+    .ref-section { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .ref-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; background: var(--bg3);
+      cursor: pointer; font-size: 0.84rem; font-weight: 600;
+      user-select: none; transition: background .15s;
+    }
+    .ref-section-header:hover { background: #243044; }
+    .ref-section.open .chevron { transform: rotate(90deg); }
+    .chevron { transition: transform .2s; font-size: 0.75rem; color: var(--muted); }
+    .ref-section-body { display: none; padding: 10px; background: var(--bg); }
+    .ref-section.open .ref-section-body { display: block; }
+    .ref-code {
+      font-family: 'Consolas', monospace; font-size: 0.78rem;
+      color: #a3e635; background: #020617;
+      border-radius: 6px; padding: 10px 12px;
+      white-space: pre-wrap; margin-bottom: 6px; border: 1px solid #0f1f3a;
+    }
+    .ref-code .cm { color: #6b7280; }
+    .btn-copy {
+      padding: 4px 10px; border-radius: 5px; background: transparent;
+      border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem;
+      cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all .15s;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
+    .ref-sections-label { padding: 8px 16px 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; }
+
+    /* COMPLETION MODAL */
+    .completion-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .completion-overlay.visible { display: flex; }
+    .completion-box {
+      background: var(--bg2); border: 1px solid #22c55e;
+      border-radius: 12px; padding: 36px 32px; max-width: 440px; width: 94%;
+      text-align: center;
+    }
+    .completion-box h2 { margin: 0 0 10px; font-size: 1.3rem; color: #22c55e; }
+    .completion-box p { margin: 0 0 24px; font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; }
+    .completion-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-comp { padding: 10px 18px; background: var(--accent); color: #000; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-comp:hover { background: #facc15; }
+    .btn-comp-sec { padding: 10px 18px; background: transparent; color: #94a3b8; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-comp-sec:hover { color: #f1f5f9; border-color: #64748b; }
+
+    /* CONFETTI */
+    .confetti-flash { position: fixed; inset: 0; z-index: 9999; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 5rem; opacity: 0; animation: none; }
+    .confetti-flash.animate { animation: confettiPop .7s ease-out forwards; }
+    @keyframes confettiPop { 0%{opacity:0;transform:scale(.5)} 30%{opacity:1;transform:scale(1.2)} 70%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.1)} }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Auth check -->
+<script>
+  if (!sessionStorage.getItem('kandoUser')) location.replace('../login.html');
+</script>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="../portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó" class="topbar-logo" style="cursor:pointer;"></a>
+  <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <div class="pills-wrapper" id="pills-wrapper"></div>
+  <div class="progress-label">Teljesítve: <span id="progress-count">0</span> / 15</div>
+  <button class="btn-restart" onclick="restartPractice()" title="Összes feladat törlése és újrakezdés"><i class="fa-solid fa-arrow-rotate-right"></i> Újrakezd</button>
+  <button class="btn-ref-toggle" id="btn-ref-toggle" onclick="toggleRef()"><i class="fa-solid fa-book"></i> Segédlet</button>
+</header>
+
+<!-- COMPLETION MODAL -->
+<div class="completion-overlay" id="completion-modal">
+  <div class="completion-box">
+    <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+    <h2>Mind a 15 feladat kész!</h2>
+    <p>Felkészültél a dict szótárra, az osztályokra és a fájlkezelésre – készen állsz a 18 pontos feladatokra!</p>
+    <div class="completion-buttons">
+      <button class="btn-comp" onclick="restartPractice()"><i class="fa-solid fa-arrow-rotate-right"></i> Újra</button>
+      <a class="btn-comp" href="index.html"><i class="fa-solid fa-list-check"></i> Vizsga feladatok</a>
+      <a class="btn-comp-sec" href="../portal.html">Főmenü</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <aside class="left-panel">
+    <div class="left-panel-inner">
+      <div id="topic-badge" class="topic-badge dict"></div>
+      <div class="task-title" id="task-title">1. feladat</div>
+      <div class="task-desc" id="task-desc">Töltés...</div>
+      <div class="checklist-title">Ellenőrzési szempontok</div>
+      <div id="checklist"></div>
+      <div class="success-banner" id="success-banner"></div>
+    </div>
+  </aside>
+
+  <!-- CENTER: Monaco editor -->
+  <div class="center-panel">
+    <div class="editor-header">
+      <i class="fa-brands fa-python"></i> Python
+      <span id="run-spinner" style="display:none;margin-left:8px;font-size:0.75rem;color:var(--muted);font-weight:400;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Futtatás...
+      </span>
+    </div>
+    <div class="editor-area">
+      <div id="editor-python" style="width:100%;height:100%;"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Terminal -->
+  <div class="right-panel">
+    <div class="terminal-header">
+      <div><span class="terminal-dot"></span>Kimenet</div>
+      <div id="pyodide-status">Pyodide betölt...</div>
+    </div>
+    <div id="terminal" class="empty">Nyomd meg a Futtatás gombot a kód végrehajtásához.</div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn-run" id="btn-run" onclick="runCode()">
+    <i class="fas fa-play"></i> Futtatás
+  </button>
+  <button class="btn-check" onclick="runChecks()">
+    <i class="fas fa-check-circle"></i> Ellenőrzés
+  </button>
+  <div class="score-display" id="score-display">–</div>
+  <button class="btn-solution" id="btn-solution" onclick="showSolution()">
+    <i class="fas fa-eye"></i> Megoldás
+  </button>
+  <button class="btn-reset" onclick="resetTask()">
+    <i class="fas fa-rotate-left"></i> Reset
+  </button>
+  <button class="btn-next" onclick="goNext()">
+    Következő <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+
+<!-- REFERENCE PANEL -->
+<div class="ref-overlay" id="ref-overlay" onclick="closeRef()"></div>
+<div class="ref-panel" id="ref-panel">
+  <div class="ref-header">
+    <span><i class="fa-solid fa-book"></i> Segédlet</span>
+    <button class="btn-close-ref" onclick="closeRef()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="ref-body" id="ref-body"></div>
+</div>
+
+<!-- CONFETTI -->
+<div class="confetti-flash" id="confetti">🎉</div>
+
+<!-- MONACO -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+
+<script>
+'use strict';
+
+// ─── Session tracking ─────────────────────────────────────────────────────
+(function() {
+  const API = 'https://agazati.up.railway.app';
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (!u.email) return;
+  let sid = null;
+  fetch(`${API}/api/session/start`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: u.email, page: 'py-practice' })
+  }).then(r => r.json()).then(d => {
+    sid = d.sessionId;
+    setInterval(() => {
+      if (sid) navigator.sendBeacon(`${API}/api/session/heartbeat`,
+        new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' }));
+    }, 30000);
+  }).catch(() => {});
+  window.addEventListener('beforeunload', () => {
+    if (sid) navigator.sendBeacon(`${API}/api/session/end`,
+      new Blob([JSON.stringify({ sessionId: sid })], { type: 'application/json' }));
+  });
+})();
+// ─────────────────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FELADATOK
+// ═══════════════════════════════════════════════════════════════════════════
+const tasks = [
+
+// ═══════════ DICT (1–6) ═══════════
+
+{
+  id: 1, emoji: '📘', topicGroup: 'dict',
+  title: 'Szótár létrehozása',
+  description: `<p>A szótár (<code>dict</code>) <strong>kulcs–érték párokat</strong> tárol.<br>
+Például: <code>{"alma": 450, "körte": 380}</code></p>
+<p>Hozz létre egy <code>gyumolcsok</code> nevű szótárat legalább <strong>3 gyümölcs–ár párral</strong>,
+majd írd ki a szótárat a <code>print()</code> paranccsal!</p>`,
+  starterCode: `# 1. feladat: Szótár létrehozása
+# Hozz létre egy szótárat: kulcs = gyümölcs neve, érték = ár forintban
+# Legalább 3 gyümölcsöt adj hozzá!
+
+gyumolcsok =
+
+# Írd ki a szótárat:
+`,
+  solution: `gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
+print(gyumolcsok)`,
+  mockInputs: [],
+  checks: [
+    { label: 'Kapcsos zárójel {} szintaxis', fn: (c, o) => /\{[^}]+:[^}]+\}/.test(c) },
+    { label: '"gyumolcsok" változónév', fn: (c, o) => /gyumolcsok/.test(c) },
+    { label: 'Legalább 3 kulcs-érték pár (3 db kettőspont)', fn: (c, o) => (c.match(/:/g) || []).length >= 3 },
+    { label: 'print() megtalálható', fn: (c, o) => /print\s*\(/.test(c) },
+    { label: 'Kimenet tartalmaz szótárat ({})', fn: (c, o) => /\{/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Mi az a szótár (dict)?</h3>
+<p>A szótár (<strong>dict</strong>) kulcs–érték párokat tárol. Gondolj rá mint egy telefonkönyvre: a kulcs a név, az érték a szám.</p>
+<p>A kulcsok általában <strong>string</strong>-ek, az értékek bármilyen típus lehetnek (szám, szöveg, lista).</p>
+<p>A szótárban minden kulcs <strong>egyedi</strong> – nem lehet két azonos kulcs.</p>`,
+    examples: [
+      { title: 'Dict létrehozása', code: `# Üres szótár
+d = {}
+
+# Szótár kezdeti értékekkel
+gyumolcsok = {
+    "alma":   450,
+    "körte":  380,
+    "szilva": 520
+}
+
+print(gyumolcsok)
+# {'alma': 450, 'körte': 380, 'szilva': 520}` },
+    ]
+  }
+},
+
+{
+  id: 2, emoji: '🔍', topicGroup: 'dict',
+  title: 'Elem elérése []',
+  description: `<p>Szótár elemeihez a <strong>kulccsal</strong> férhetsz hozzá: <code>d["kulcs"]</code></p>
+<p>Adott a szótár:<br>
+<code>gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}</code></p>
+<p>Írd ki külön sorban az <strong>alma</strong> és a <strong>szilva</strong> árát!</p>`,
+  starterCode: `# 2. feladat: Elem elérése
+gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
+
+# Írd ki az alma árát:
+
+# Írd ki a szilva árát:
+`,
+  solution: `gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
+print(gyumolcsok["alma"])
+print(gyumolcsok["szilva"])`,
+  mockInputs: [],
+  checks: [
+    { label: '"alma" kulcs elérése []', fn: (c, o) => /\["alma"\]|'alma'/.test(c) },
+    { label: '"szilva" kulcs elérése []', fn: (c, o) => /\["szilva"\]|'szilva'/.test(c) },
+    { label: 'Kimenet: 450', fn: (c, o) => /450/.test(o) },
+    { label: 'Kimenet: 520', fn: (c, o) => /520/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Elem elérése szótárból</h3>
+<p>Szögletes zárójelbe írd a <strong>kulcsot</strong>, és megkapod az értéket:</p>
+<p>Ha olyan kulcsot adsz meg, ami <strong>nincs</strong> a szótárban, <code>KeyError</code> hibát kapsz. Ellenőrizd a kulcs meglétét: <code>"kulcs" in d</code></p>`,
+    examples: [
+      { title: 'Elem elérése', code: `nap = {"h": "Hétfő", "k": "Kedd", "sz": "Szerda"}
+
+print(nap["h"])    # Hétfő
+print(nap["sz"])   # Szerda
+
+# Biztonságos elérés (.get):
+print(nap.get("cs", "Nincs ilyen"))  # Nincs ilyen` },
+    ]
+  }
+},
+
+{
+  id: 3, emoji: '✏️', topicGroup: 'dict',
+  title: 'Módosítás és hozzáadás',
+  description: `<p>Meglévő elemet így módosíthatsz: <code>d["kulcs"] = új_érték</code><br>
+Új elemet így adhatsz hozzá: <code>d["új_kulcs"] = érték</code></p>
+<p>Adott: <code>gyumolcsok = {"alma": 450, "körte": 380}</code></p>
+<ol>
+<li>Változtasd az <strong>alma</strong> árát <strong>500</strong>-ra!</li>
+<li>Add hozzá a <strong>"banán": 299</strong> párt!</li>
+<li>Írd ki a módosított szótárat!</li>
+</ol>`,
+  starterCode: `# 3. feladat: Módosítás és hozzáadás
+gyumolcsok = {"alma": 450, "körte": 380}
+
+# 1. Módosítsd az alma árát 500-ra:
+
+# 2. Add hozzá a banánt 299 Ft-ért:
+
+# 3. Írd ki a szótárat:
+`,
+  solution: `gyumolcsok = {"alma": 450, "körte": 380}
+gyumolcsok["alma"] = 500
+gyumolcsok["banán"] = 299
+print(gyumolcsok)`,
+  mockInputs: [],
+  checks: [
+    { label: 'Alma ára módosítva 500-ra', fn: (c, o) => /\["alma"\]\s*=\s*500|'alma'\s*\]\s*=\s*500/.test(c) },
+    { label: 'Banán hozzáadva', fn: (c, o) => /ban/.test(c) && /299/.test(c) },
+    { label: 'Kimenet: 500', fn: (c, o) => /500/.test(o) },
+    { label: 'Kimenet: 299', fn: (c, o) => /299/.test(o) },
+    { label: 'print() megtalálható', fn: (c, o) => /print\s*\(/.test(c) },
+  ],
+  tutorial: {
+    intro: `<h3>Szótár módosítása</h3>
+<p>A szótár <strong>módosítható</strong> (mutable) – tetszőleges elem megváltoztatható, és új elem hozzáadható.</p>
+<p>Elem törlése: <code>del d["kulcs"]</code></p>`,
+    examples: [
+      { title: 'Módosítás és hozzáadás', code: `pontok = {"Anna": 85, "Béla": 70}
+
+# Módosítás
+pontok["Béla"] = 90
+print(pontok)  # {'Anna': 85, 'Béla': 90}
+
+# Hozzáadás
+pontok["Csaba"] = 75
+print(pontok)  # {'Anna': 85, 'Béla': 90, 'Csaba': 75}
+
+# Törlés
+del pontok["Anna"]
+print(pontok)  # {'Béla': 90, 'Csaba': 75}` },
+    ]
+  }
+},
+
+{
+  id: 4, emoji: '🔄', topicGroup: 'dict',
+  title: 'for ciklus dict-en',
+  description: `<p>A szótár kulcsait bejárhatod <code>for</code> ciklussal.</p>
+<p>Adott:<br>
+<code>osztalyzatok = {"Anna": 5, "Béla": 4, "Csaba": 3}</code></p>
+<p>Írd ki minden tanuló nevét és jegyét ilyen formában:<br>
+<code>Anna: 5</code><br>
+<code>Béla: 4</code> ...</p>`,
+  starterCode: `# 4. feladat: for ciklus dict-en
+osztalyzatok = {"Anna": 5, "Béla": 4, "Csaba": 3}
+
+# Járd be a szótárt és írd ki: "Név: jegy"
+for nev in osztalyzatok:
+
+`,
+  solution: `osztalyzatok = {"Anna": 5, "Béla": 4, "Csaba": 3}
+for nev in osztalyzatok:
+    print(nev + ": " + str(osztalyzatok[nev]))`,
+  mockInputs: [],
+  checks: [
+    { label: 'for ciklus megtalálható', fn: (c, o) => /for\s+\w+\s+in/.test(c) },
+    { label: 'print() a cikluson belül', fn: (c, o) => /for[\s\S]*?print/.test(c) },
+    { label: 'Kimenet: "Anna"', fn: (c, o) => /Anna/.test(o) },
+    { label: 'Kimenet: "Béla"', fn: (c, o) => /B[eé]la/.test(o) },
+    { label: 'Kimenet: "Csaba"', fn: (c, o) => /Csaba/.test(o) },
+    { label: 'Kimenet: jegyek is megjelennek', fn: (c, o) => /5/.test(o) && /4/.test(o) && /3/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Bejárás for ciklussal</h3>
+<p><code>for kulcs in d:</code> – iterál az összes kulcson.<br>
+<code>for kulcs, ertek in d.items():</code> – kulcs és érték egyszerre.<br>
+<code>for ertek in d.values():</code> – csak az értékek.</p>`,
+    examples: [
+      { title: 'Dict bejárása', code: `arak = {"kávé": 450, "tea": 350, "víz": 200}
+
+# Csak kulcsok
+for termek in arak:
+    print(termek)
+
+# Kulcs és érték egyszerre (.items())
+for termek, ar in arak.items():
+    print(f"{termek}: {ar} Ft")
+
+# Csak értékek
+for ar in arak.values():
+    print(ar)` },
+    ]
+  }
+},
+
+{
+  id: 5, emoji: '🎲', topicGroup: 'dict',
+  title: '.keys() és random.choice',
+  description: `<p>A <code>.keys()</code> metódus visszaadja a szótár összes kulcsát.<br>
+A <code>random.choice(list(d.keys()))</code> véletlenszerű kulcsot választ.</p>
+<p>Adott egy kvíz szótár (kérdés → válasz).<br>
+Írj programot, amely:</p>
+<ol>
+<li>Véletlenszerű kulcsot (kérdést) választ</li>
+<li>Kiírja a kérdést</li>
+<li>Kiírja a helyes választ</li>
+</ol>`,
+  starterCode: `# 5. feladat: random.choice szótárral
+import random
+
+kviz = {
+    "Mi a Python?": "Programozási nyelv",
+    "Mi a bool?": "Igaz/Hamis típus",
+    "Mi a lista?": "Elemek sorozata"
+}
+
+# Válassz véletlenszerű kulcsot:
+kerdes = random.choice(list(kviz.keys()))
+
+# Írd ki a kérdést és a választ:
+
+`,
+  solution: `import random
+kviz = {
+    "Mi a Python?": "Programozási nyelv",
+    "Mi a bool?": "Igaz/Hamis típus",
+    "Mi a lista?": "Elemek sorozata"
+}
+kerdes = random.choice(list(kviz.keys()))
+print("Kérdés:", kerdes)
+print("Válasz:", kviz[kerdes])`,
+  mockInputs: [],
+  checks: [
+    { label: 'import random megtalálható', fn: (c, o) => /import\s+random/.test(c) },
+    { label: 'random.choice() használva', fn: (c, o) => /random\.choice/.test(c) },
+    { label: 'list(kviz.keys()) vagy list(kviz)', fn: (c, o) => /\.keys\(\)/.test(c) || /list\(kviz\)/.test(c) },
+    { label: 'Kérdés kiírva (print)', fn: (c, o) => /print/.test(c) },
+    { label: 'Kimenet: kérdés szöveg megjelenik', fn: (c, o) => /Python|bool|lista/.test(o) },
+    { label: 'Kimenet: válasz szöveg megjelenik', fn: (c, o) => /nyelv|t[ií]pus|sorozata/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Véletlenszerű kulcs választása</h3>
+<p>A <code>random.choice()</code> egy listából választ véletlenszerűen.<br>
+A szótár kulcsai <strong>nem lista</strong>, ezért <code>list()</code>-tel kell átalakítani.</p>`,
+    examples: [
+      { title: 'random.choice dict-tel', code: `import random
+
+szinek = {"piros": "#FF0000", "kék": "#0000FF", "zöld": "#00FF00"}
+
+# Véletlenszerű kulcs
+szin = random.choice(list(szinek.keys()))
+print(szin)           # pl.: kék
+print(szinek[szin])   # pl.: #0000FF
+
+# Rövídebb forma:
+szin = random.choice(list(szinek))
+print(szin)` },
+    ]
+  }
+},
+
+{
+  id: 6, emoji: '🏆', topicGroup: 'dict',
+  title: 'Mini kvíz program',
+  description: `<p>Hozz létre egy <strong>kvíz programot</strong> dict szótárral!</p>
+<p>A szótárban legalább <strong>3 kérdés–válasz pár</strong> legyen (te találod ki a témát).<br>
+A program:</p>
+<ol>
+<li>Véletlenszerűen választ egy kérdést</li>
+<li>Kiírja a kérdést és a helyes választ</li>
+<li>Megszámolja, mennyi kérdés van összesen</li>
+<li>Kiírja: <code>Összesen X kérdés van a kvízben.</code></li>
+</ol>`,
+  starterCode: `# 6. feladat: Saját kvíz program
+import random
+
+# Hozz létre egy kvíz szótárt (min. 3 kérdés-válasz):
+kviz = {
+
+}
+
+# 1. Véletlenszerű kérdés:
+
+
+# 2. Kérdés és válasz kiírása:
+
+
+# 3. Kérdések száma és kiírása:
+
+`,
+  solution: `import random
+kviz = {
+    "Mi a főváros?": "Budapest",
+    "Hány hónap van egy évben?": "12",
+    "Mi a vizsgánk nyelve?": "Python"
+}
+kerdes = random.choice(list(kviz.keys()))
+print("Kérdés:", kerdes)
+print("Válasz:", kviz[kerdes])
+db = len(kviz)
+print("Összesen", db, "kérdés van a kvízben.")`,
+  mockInputs: [],
+  checks: [
+    { label: 'import random', fn: (c, o) => /import\s+random/.test(c) },
+    { label: 'Szótár létrehozva ({...})', fn: (c, o) => /\{[^}]+:[^}]+\}/.test(c) },
+    { label: 'Legalább 3 kérdés-válasz pár', fn: (c, o) => (c.match(/:/g) || []).length >= 4 },
+    { label: 'random.choice() és .keys()', fn: (c, o) => /random\.choice/.test(c) },
+    { label: 'len() a db megszámlálásához', fn: (c, o) => /len\s*\(/.test(c) },
+    { label: 'Kimenet: "Összesen" megjelenik', fn: (c, o) => /[Öö]sszesen/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Hasznos dict műveletek</h3>
+<p><code>len(d)</code> – elemek száma<br>
+<code>"kulcs" in d</code> – kulcs létezik-e?<br>
+<code>d.get("kulcs", alapértelmezett)</code> – biztonságos elérés</p>`,
+    examples: [
+      { title: 'Kvíz program', code: `import random
+
+kviz = {
+    "Mi az f-string?": "Formázott szöveg",
+    "Mi a while?": "Ciklus",
+    "Mi a def?": "Függvény"
+}
+
+k = random.choice(list(kviz.keys()))
+print("Kérdés:", k)
+print("Válasz:", kviz[k])
+print(f"Összes kérdés: {len(kviz)} db")` },
+    ]
+  }
+},
+
+// ═══════════ CLASS (7–12) ═══════════
+
+{
+  id: 7, emoji: '🏗️', topicGroup: 'class',
+  title: 'Első osztály',
+  description: `<p>Az <strong>osztály (class)</strong> egy tervrajz – leírja, milyenek az objektumok.<br>
+Az <strong>objektum</strong> az osztály alapján létrehozott konkrét példány.</p>
+<p>Hozz létre egy <code>Kutya</code> nevű osztályt, majd hozz létre belőle egy objektumot és írd ki!</p>`,
+  starterCode: `# 7. feladat: Első osztály
+# Hozz létre egy üres Kutya osztályt:
+class Kutya:
+    pass
+
+# Hozz létre egy objektumot:
+rex =
+
+# Írd ki az objektumot:
+print(rex)
+`,
+  solution: `class Kutya:
+    pass
+
+rex = Kutya()
+print(rex)`,
+  mockInputs: [],
+  checks: [
+    { label: '"class Kutya:" megtalálható', fn: (c, o) => /class\s+Kutya\s*:/.test(c) },
+    { label: 'Objektum létrehozása Kutya()', fn: (c, o) => /Kutya\s*\(\s*\)/.test(c) },
+    { label: 'print() megtalálható', fn: (c, o) => /print\s*\(/.test(c) },
+    { label: 'Kimenet: Kutya objektum kiírva', fn: (c, o) => /Kutya/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Mi az az osztály?</h3>
+<p>Az <strong>osztály</strong> (<code>class</code>) egy <strong>sablon/tervrajz</strong>, amiből objektumokat hozunk létre.<br>
+Például: <code>class Kutya</code> a tervrajz, <code>rex = Kutya()</code> az objektum.</p>
+<p>Az <code>__init__</code> metódus fut le az objektum létrehozásakor (konstruktor).<br>
+A <code>self</code> az objektumra mutat.</p>`,
+    examples: [
+      { title: 'Egyszerű osztály', code: `class Auto:
+    pass   # üres osztály
+
+# Objektum létrehozása
+audi = Auto()
+print(audi)       # <__main__.Auto object at 0x...>
+print(type(audi)) # <class '__main__.Auto'>` },
+    ]
+  }
+},
+
+{
+  id: 8, emoji: '⚙️', topicGroup: 'class',
+  title: '__init__ és self',
+  description: `<p>A <code>__init__</code> metódus az <strong>inicializáló</strong> – itt adjuk meg az osztály attribútumait.<br>
+A <code>self</code> az aktuális objektumra mutat.</p>
+<p>Bővítsd a <code>Kutya</code> osztályt: legyen <strong>neve</strong> és <strong>kora</strong> attribútuma!<br>
+Hozd létre <code>rex</code>-et (Rex, 3 éves) és <code>fifi</code>-t (Fifi, 1 éves), és írd ki mindkettőt!</p>`,
+  starterCode: `# 8. feladat: __init__ és self
+class Kutya:
+    def __init__(self, nev, kor):
+        self.nev = nev
+        self.kor = kor
+
+# Hozz létre két Kutya objektumot:
+rex  = Kutya("Rex", 3)
+fifi =
+
+# Írd ki rex nevét és korát:
+print(rex.nev, rex.kor)
+
+# Írd ki fifi nevét és korát:
+
+`,
+  solution: `class Kutya:
+    def __init__(self, nev, kor):
+        self.nev = nev
+        self.kor = kor
+
+rex  = Kutya("Rex", 3)
+fifi = Kutya("Fifi", 1)
+print(rex.nev, rex.kor)
+print(fifi.nev, fifi.kor)`,
+  mockInputs: [],
+  checks: [
+    { label: '__init__ megtalálható', fn: (c, o) => /__init__/.test(c) },
+    { label: 'self.nev és self.kor attribútumok', fn: (c, o) => /self\.nev/.test(c) && /self\.kor/.test(c) },
+    { label: 'Két objektum létrehozva', fn: (c, o) => (c.match(/Kutya\s*\(/g) || []).length >= 2 },
+    { label: 'Kimenet: Rex', fn: (c, o) => /Rex/.test(o) },
+    { label: 'Kimenet: Fifi', fn: (c, o) => /Fifi/.test(o) },
+    { label: 'Kimenet: 3 és 1', fn: (c, o) => /3/.test(o) && /1/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>__init__ és self</h3>
+<p><strong>__init__</strong>: automatikusan lefut, amikor <code>Kutya("Rex", 3)</code>-at írsz.<br>
+<strong>self</strong>: mindig az első paraméter, az objektumra mutat. Nem kell megadni híváskor.<br>
+<strong>self.nev</strong>: az objektum attribútuma – minden objektumnak saját értéke van.</p>`,
+    examples: [
+      { title: '__init__ példa', code: `class Tanulo:
+    def __init__(self, nev, osztaly):
+        self.nev    = nev
+        self.osztaly = osztaly
+
+anna = Tanulo("Anna", "11B")
+bela = Tanulo("Béla", "12A")
+
+print(anna.nev)     # Anna
+print(bela.osztaly) # 12A` },
+    ]
+  }
+},
+
+{
+  id: 9, emoji: '🔧', topicGroup: 'class',
+  title: 'Metódusok',
+  description: `<p>A <strong>metódus</strong> egy függvény, amely az osztályon belül van definiálva.<br>
+Az első paramétere mindig <code>self</code>.</p>
+<p>Adj egy <code>bemutatkozik()</code> metódust a <code>Kutya</code> osztályhoz!<br>
+A metódus írja ki: <code>Szia! Én Rex vagyok és 3 éves.</code></p>`,
+  starterCode: `# 9. feladat: Metódus
+class Kutya:
+    def __init__(self, nev, kor):
+        self.nev = nev
+        self.kor = kor
+
+    def bemutatkozik(self):
+        # Írd ki: "Szia! Én [nev] vagyok és [kor] éves."
+
+
+rex = Kutya("Rex", 3)
+rex.bemutatkozik()
+`,
+  solution: `class Kutya:
+    def __init__(self, nev, kor):
+        self.nev = nev
+        self.kor = kor
+
+    def bemutatkozik(self):
+        print(f"Szia! Én {self.nev} vagyok és {self.kor} éves.")
+
+rex = Kutya("Rex", 3)
+rex.bemutatkozik()`,
+  mockInputs: [],
+  checks: [
+    { label: 'def bemutatkozik(self):', fn: (c, o) => /def\s+bemutatkozik\s*\(\s*self/.test(c) },
+    { label: 'self.nev és self.kor a metódusban', fn: (c, o) => /self\.nev/.test(c) && /self\.kor/.test(c) },
+    { label: 'rex.bemutatkozik() hívás', fn: (c, o) => /rex\.bemutatkozik/.test(c) },
+    { label: 'Kimenet: "Rex"', fn: (c, o) => /Rex/.test(o) },
+    { label: 'Kimenet: "3"', fn: (c, o) => /3/.test(o) },
+    { label: 'Kimenet: "Szia" vagy "vagyok"', fn: (c, o) => /szia|vagyok/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Metódusok az osztályban</h3>
+<p>A metódus egy <strong>osztályon belüli függvény</strong>.<br>
+Hívása: <code>objektum.metodus()</code><br>
+A metódus eléri az objektum attribútumait <code>self.attribútum</code> formában.</p>`,
+    examples: [
+      { title: 'Osztály metódussal', code: `class Termek:
+    def __init__(self, nev, ar):
+        self.nev = nev
+        self.ar  = ar
+
+    def kiir(self):
+        print(f"{self.nev}: {self.ar} Ft")
+
+    def kedvezmeny(self, szazalek):
+        uj_ar = self.ar * (1 - szazalek / 100)
+        print(f"Akciós ár: {uj_ar:.0f} Ft")
+
+alma = Termek("Alma", 450)
+alma.kiir()           # Alma: 450 Ft
+alma.kedvezmeny(20)   # Akciós ár: 360 Ft` },
+    ]
+  }
+},
+
+{
+  id: 10, emoji: '📦', topicGroup: 'class',
+  title: 'Lista objektumokból',
+  description: `<p>Objektumokat <strong>listában</strong> is tárolhatunk, és for ciklussal járhatjuk be őket.</p>
+<p>Hozz létre 3 <code>Tanulo</code> objektumot (névvel és jeggyel), tárold őket egy listában,
+majd írd ki mindegyik bemutatkozását: <code>Anna jegye: 5</code></p>`,
+  starterCode: `# 10. feladat: Lista objektumokból
+class Tanulo:
+    def __init__(self, nev, jegy):
+        self.nev   = nev
+        self.jegy  = jegy
+
+    def bemutatkozik(self):
+        print(f"{self.nev} jegye: {self.jegy}")
+
+# Hozz létre 3 tanulót és add egy listába:
+tanulok = [
+    Tanulo("Anna", 5),
+
+
+]
+
+# For ciklussal hívd meg mindegyik bemutatkozik() metódusát:
+`,
+  solution: `class Tanulo:
+    def __init__(self, nev, jegy):
+        self.nev  = nev
+        self.jegy = jegy
+
+    def bemutatkozik(self):
+        print(f"{self.nev} jegye: {self.jegy}")
+
+tanulok = [
+    Tanulo("Anna", 5),
+    Tanulo("Béla", 4),
+    Tanulo("Csaba", 3)
+]
+
+for t in tanulok:
+    t.bemutatkozik()`,
+  mockInputs: [],
+  checks: [
+    { label: 'Tanulo osztály __init__-tel', fn: (c, o) => /class\s+Tanulo/.test(c) && /__init__/.test(c) },
+    { label: 'Lista legalább 3 Tanulo()-val', fn: (c, o) => (c.match(/Tanulo\s*\(/g) || []).length >= 3 },
+    { label: 'for ciklus a listán', fn: (c, o) => /for\s+\w+\s+in\s+tanulok/.test(c) },
+    { label: 'bemutatkozik() hívás a ciklusban', fn: (c, o) => /\.bemutatkozik\s*\(\s*\)/.test(c) },
+    { label: 'Kimenet: 3 sor', fn: (c, o) => (o.trim().split('\n')).length >= 3 },
+    { label: 'Kimenet: "jegye"', fn: (c, o) => /jegye/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Objektumok listában</h3>
+<p>Objektumok listában tárolhatók, és for ciklussal bejárhatók.</p>
+<p>Ez nagyon hasznos, ha sok hasonló objektumot kell kezelni (tanulók, termékek, stb.).</p>`,
+    examples: [
+      { title: 'Objektumok bejárása', code: `class Auto:
+    def __init__(self, marka, ev):
+        self.marka = marka
+        self.ev    = ev
+
+autok = [Auto("BMW", 2020), Auto("Audi", 2019), Auto("Ford", 2021)]
+
+for auto in autok:
+    print(f"{auto.marka} ({auto.ev})")
+# BMW (2020)
+# Audi (2019)
+# Ford (2021)` },
+    ]
+  }
+},
+
+{
+  id: 11, emoji: '🧬', topicGroup: 'class',
+  title: 'Öröklés',
+  description: `<p>Az <strong>öröklés</strong> (inheritance) lehetővé teszi, hogy egy osztály átvegye egy másik osztály tulajdonságait.</p>
+<p>Szintaxis: <code>class Gyerek(Szulo):</code></p>
+<p>Adott az <code>Allat</code> alaposztály. Hozz létre belőle egy <code>Kutya</code> alosztályt,
+amely örökli az <code>Allat</code> tulajdonságait, és adj hozzá egy <code>ugat()</code> metódust!</p>`,
+  starterCode: `# 11. feladat: Öröklés
+class Allat:
+    def __init__(self, nev):
+        self.nev = nev
+
+    def eszik(self):
+        print(f"{self.nev} eszik.")
+
+# Kutya örökli az Allat osztályt:
+class Kutya(Allat):
+    def ugat(self):
+        # Írd ki: "[nev] ugat: Vau!"
+
+
+rex = Kutya("Rex")
+rex.eszik()    # örökölt metódus
+rex.ugat()     # saját metódus
+`,
+  solution: `class Allat:
+    def __init__(self, nev):
+        self.nev = nev
+
+    def eszik(self):
+        print(f"{self.nev} eszik.")
+
+class Kutya(Allat):
+    def ugat(self):
+        print(f"{self.nev} ugat: Vau!")
+
+rex = Kutya("Rex")
+rex.eszik()
+rex.ugat()`,
+  mockInputs: [],
+  checks: [
+    { label: 'class Kutya(Allat): örökli az Allat-ot', fn: (c, o) => /class\s+Kutya\s*\(\s*Allat\s*\)/.test(c) },
+    { label: 'def ugat(self):', fn: (c, o) => /def\s+ugat\s*\(\s*self/.test(c) },
+    { label: 'rex.eszik() és rex.ugat() hívások', fn: (c, o) => /rex\.eszik/.test(c) && /rex\.ugat/.test(c) },
+    { label: 'Kimenet: "eszik"', fn: (c, o) => /eszik/.test(o) },
+    { label: 'Kimenet: "ugat" vagy "Vau"', fn: (c, o) => /ugat|[Vv]au/.test(o) },
+    { label: 'Kimenet: "Rex" megjelenik', fn: (c, o) => /Rex/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Öröklés (inheritance)</h3>
+<p>Az alosztály (<strong>gyerek</strong>) átveszi a szülőosztály összes metódusát és attribútumát.<br>
+Felülírhatja (<strong>override</strong>) a szülő metódusát, ha saját verziót definiál ugyanolyan névvel.</p>
+<p><code>super()</code>-rel meghívhatod a szülő metódusát.</p>`,
+    examples: [
+      { title: 'Öröklés és override', code: `class Jarmu:
+    def __init__(self, marka):
+        self.marka = marka
+
+    def indit(self):
+        print(f"{self.marka} elindul.")
+
+class Elektromos(Jarmu):
+    def indit(self):
+        print(f"{self.marka} csendesen elindul.")
+
+auto = Jarmu("BMW")
+tesla = Elektromos("Tesla")
+
+auto.indit()   # BMW elindul.
+tesla.indit()  # Tesla csendesen elindul.` },
+    ]
+  }
+},
+
+{
+  id: 12, emoji: '🛒', topicGroup: 'class',
+  title: 'Termék osztály (mini projekt)',
+  description: `<p>Hozz létre egy <code>Termek</code> osztályt a következő tulajdonságokkal:</p>
+<ul>
+<li><strong>Attribútumok:</strong> <code>nev</code>, <code>ar</code>, <code>keszlet</code></li>
+<li><strong>kiir()</strong> metódus: <code>Alma - 450 Ft (10 db)</code></li>
+<li><strong>vasarol(db)</strong> metódus: csökkentse a készletet, írja ki az összárat</li>
+</ul>
+<p>Hozz létre 2 terméket, hívd meg a <code>kiir()</code>-t, majd vásárolj az egyikből!</p>`,
+  starterCode: `# 12. feladat: Termék osztály
+class Termek:
+    def __init__(self, nev, ar, keszlet):
+        self.nev     = nev
+        self.ar      = ar
+        self.keszlet = keszlet
+
+    def kiir(self):
+        # Pl.: "Alma - 450 Ft (10 db)"
+
+
+    def vasarol(self, db):
+        # Csökkentsd a keszletet db-vel
+        # Írd ki: "X db [nev] vásárolva, összesen Y Ft"
+
+
+# Hozz létre 2 terméket:
+alma  = Termek("Alma", 450, 10)
+korte = Termek("Körte", 380, 7)
+
+# Írd ki mindkettőt:
+alma.kiir()
+korte.kiir()
+
+# Vásárolj 3 db almát:
+alma.vasarol(3)
+`,
+  solution: `class Termek:
+    def __init__(self, nev, ar, keszlet):
+        self.nev     = nev
+        self.ar      = ar
+        self.keszlet = keszlet
+
+    def kiir(self):
+        print(f"{self.nev} - {self.ar} Ft ({self.keszlet} db)")
+
+    def vasarol(self, db):
+        self.keszlet -= db
+        print(f"{db} db {self.nev} vásárolva, összesen {db * self.ar} Ft")
+
+alma  = Termek("Alma", 450, 10)
+korte = Termek("Körte", 380, 7)
+alma.kiir()
+korte.kiir()
+alma.vasarol(3)`,
+  mockInputs: [],
+  checks: [
+    { label: 'class Termek __init__-tel (nev, ar, keszlet)', fn: (c, o) => /class\s+Termek/.test(c) && /keszlet/.test(c) },
+    { label: 'def kiir(self):', fn: (c, o) => /def\s+kiir\s*\(\s*self/.test(c) },
+    { label: 'def vasarol(self, db):', fn: (c, o) => /def\s+vasarol\s*\(\s*self.*db/.test(c) },
+    { label: 'Készlet csökkentése a vasarol()-ban', fn: (c, o) => /keszlet\s*-=/.test(c) || /keszlet\s*=\s*self\.keszlet\s*-/.test(c) },
+    { label: 'Kimenet: "Alma" és "Körte"', fn: (c, o) => /Alma/.test(o) && /K[öo]rte/i.test(o) },
+    { label: 'Kimenet: "Ft" megjelenik', fn: (c, o) => /Ft/.test(o) },
+    { label: 'Kimenet: vásárlás megjelenik', fn: (c, o) => /v[áa]s[áa]rolva|[Öö]sszesen/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>OOP összefoglaló</h3>
+<p>Eddig megtanultuk:</p>
+<ul>
+<li><code>class Nev:</code> – osztály definíció</li>
+<li><code>__init__(self, ...)</code> – konstruktor</li>
+<li><code>self.attrb</code> – attribútum</li>
+<li><code>def metodus(self):</code> – metódus</li>
+<li><code>class Gyerek(Szulo):</code> – öröklés</li>
+</ul>`,
+    examples: [
+      { title: 'Teljes Termek osztály', code: `class Termek:
+    def __init__(self, nev, ar, keszlet):
+        self.nev     = nev
+        self.ar      = ar
+        self.keszlet = keszlet
+
+    def kiir(self):
+        print(f"{self.nev} - {self.ar} Ft ({self.keszlet} db)")
+
+    def vasarol(self, db):
+        if db > self.keszlet:
+            print("Nincs elég készlet!")
+            return
+        self.keszlet -= db
+        print(f"Összesen: {db * self.ar} Ft")
+
+t = Termek("Kávé", 350, 5)
+t.kiir()
+t.vasarol(2)` },
+    ]
+  }
+},
+
+// ═══════════ FILE I/O (13–15) ═══════════
+
+{
+  id: 13, emoji: '📝', topicGroup: 'file',
+  title: 'Fájl írása',
+  description: `<p>A <code>open("fajl.txt", "w")</code> megnyitja a fájlt <strong>írásra</strong>.<br>
+A <code>write()</code> metódus szöveget ír bele.<br>
+A <code>close()</code> lezárja a fájlt – ezt <strong>mindig</strong> meg kell hívni!</p>
+<p>Írj programot, amely létrehozza a <code>naplo.txt</code> fájlt, és beleírja a következő 3 sort:<br>
+<code>Ma sokat tanultam.</code><br>
+<code>Python fájlkezelést tanultam.</code><br>
+<code>Holnap folytatom.</code></p>
+<p>Végül írd ki: <code>Fájl mentve!</code></p>`,
+  starterCode: `# 13. feladat: Fájl írása
+# Nyisd meg a "naplo.txt" fájlt írásra ("w" módban):
+f = open("naplo.txt", "w", encoding="utf-8")
+
+# Írj bele 3 sort (\\n = új sor):
+
+
+# Zárd le a fájlt:
+f.close()
+
+print("Fájl mentve!")
+`,
+  solution: `f = open("naplo.txt", "w", encoding="utf-8")
+f.write("Ma sokat tanultam.\\n")
+f.write("Python fájlkezelést tanultam.\\n")
+f.write("Holnap folytatom.\\n")
+f.close()
+print("Fájl mentve!")`,
+  mockInputs: [],
+  fileSetup: '',
+  checks: [
+    { label: 'open() "w" módban', fn: (c, o) => /open\s*\(.*["\']w["\']/.test(c) },
+    { label: 'write() legalább 3x', fn: (c, o) => (c.match(/\.write\s*\(/g) || []).length >= 3 },
+    { label: 'close() megtalálható', fn: (c, o) => /\.close\s*\(\s*\)/.test(c) },
+    { label: 'encoding="utf-8"', fn: (c, o) => /encoding\s*=\s*["\']utf-8["\']/.test(c) },
+    { label: 'Kimenet: "Fájl mentve"', fn: (c, o) => /F[áa]jl.*mentve|mentve/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Fájlírás Pythonban</h3>
+<p>A <code>open()</code> függvény megnyitja a fájlt.<br>
+<strong>Módok:</strong></p>
+<ul>
+<li><code>"w"</code> – írás (felülírja a meglévőt)</li>
+<li><code>"a"</code> – hozzáírás (az elejéhez fűz)</li>
+<li><code>"r"</code> – olvasás</li>
+<li><code>"x"</code> – csak új fájl (ha létezik → hiba)</li>
+</ul>
+<p><strong>Mindig add meg az encoding-ot!</strong><br>
+<code>encoding="utf-8"</code> – hogy az ékezetek is jól jelenjenek meg.</p>`,
+    examples: [
+      { title: 'Fájl írása', code: `# Megnyitás és írás
+f = open("adatok.txt", "w", encoding="utf-8")
+f.write("Első sor\\n")
+f.write("Második sor\\n")
+f.close()
+
+# Hozzáírás (append)
+f = open("adatok.txt", "a", encoding="utf-8")
+f.write("Harmadik sor\\n")
+f.close()` },
+    ]
+  }
+},
+
+{
+  id: 14, emoji: '📖', topicGroup: 'file',
+  title: 'Fájl olvasása',
+  description: `<p>A <code>open("fajl.txt", "r")</code> megnyitja a fájlt <strong>olvasásra</strong>.<br>
+<code>read()</code> – az egész tartalmat egyszerre.<br>
+<code>readlines()</code> – listát ad vissza, minden sor egy elem.</p>
+<p>A program először megírja a <code>lista.txt</code> fájlt, majd beolvassa és kiírja soronként a tartalmat.</p>`,
+  starterCode: `# 14. feladat: Fájl olvasása
+
+# Előbb megírjuk a fájlt:
+f = open("lista.txt", "w", encoding="utf-8")
+f.write("alma\\n")
+f.write("körte\\n")
+f.write("szilva\\n")
+f.close()
+
+# Most olvassuk be és írjuk ki soronként:
+f = open("lista.txt", "r", encoding="utf-8")
+sorok = f.readlines()
+f.close()
+
+# Járd be a sorokat for ciklussal és írd ki:
+
+`,
+  solution: `f = open("lista.txt", "w", encoding="utf-8")
+f.write("alma\\n")
+f.write("körte\\n")
+f.write("szilva\\n")
+f.close()
+
+f = open("lista.txt", "r", encoding="utf-8")
+sorok = f.readlines()
+f.close()
+
+for sor in sorok:
+    print(sor.strip())`,
+  mockInputs: [],
+  checks: [
+    { label: 'open() "r" módban', fn: (c, o) => /open\s*\(.*["\']r["\']/.test(c) },
+    { label: 'readlines() vagy read()', fn: (c, o) => /\.readlines\s*\(\s*\)|\.read\s*\(\s*\)/.test(c) },
+    { label: 'for ciklus a sorokon', fn: (c, o) => /for\s+\w+\s+in\s+sorok/.test(c) },
+    { label: 'print() a ciklusban', fn: (c, o) => /for[\s\S]*?print/.test(c) },
+    { label: 'Kimenet: "alma"', fn: (c, o) => /alma/.test(o) },
+    { label: 'Kimenet: "körte" és "szilva"', fn: (c, o) => /k[öo]rte/i.test(o) && /szilva/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Fájl olvasása</h3>
+<p><code>read()</code> – az egész fájl egy stringként.<br>
+<code>readline()</code> – egy sort olvas.<br>
+<code>readlines()</code> – listát ad, minden sor egy elem (sortörés: <code>\\n</code>).</p>
+<p>Soronként olvasáskor a <code>strip()</code> eltávolítja a <code>\\n</code> karaktert!</p>`,
+    examples: [
+      { title: 'Olvasási módszerek', code: `# read() - egész tartalom
+f = open("fajl.txt", "r", encoding="utf-8")
+tartalom = f.read()
+print(tartalom)
+f.close()
+
+# readlines() - soronként
+f = open("fajl.txt", "r", encoding="utf-8")
+sorok = f.readlines()
+for sor in sorok:
+    print(sor.strip())  # strip() eltávolítja a \\n-t
+f.close()` },
+    ]
+  }
+},
+
+{
+  id: 15, emoji: '🛡️', topicGroup: 'file',
+  title: 'with utasítás',
+  description: `<p>A <code>with</code> utasítás <strong>automatikusan lezárja</strong> a fájlt – nem kell <code>close()</code>!<br>
+Ez a <strong>helyes és ajánlott</strong> módszer.</p>
+<p>Írj programot, amely <code>with</code>-szel:</p>
+<ol>
+<li>Létrehozza a <code>naplo.txt</code> fájlt 3 sorral</li>
+<li>Visszaolvassa és kiírja a tartalmát</li>
+<li>Kiírja, hány sor van a fájlban</li>
+</ol>`,
+  starterCode: `# 15. feladat: with utasítás (a profi módszer)
+
+# 1. Fájl írása with-szel:
+with open("naplo.txt", "w", encoding="utf-8") as f:
+    f.write("Sor 1\\n")
+    f.write("Sor 2\\n")
+    f.write("Sor 3\\n")
+
+# 2. Fájl olvasása with-szel:
+with open("naplo.txt", "r", encoding="utf-8") as f:
+    sorok = f.readlines()
+
+# 3. Sorok kiírása és száma:
+
+`,
+  solution: `with open("naplo.txt", "w", encoding="utf-8") as f:
+    f.write("Sor 1\\n")
+    f.write("Sor 2\\n")
+    f.write("Sor 3\\n")
+
+with open("naplo.txt", "r", encoding="utf-8") as f:
+    sorok = f.readlines()
+
+for sor in sorok:
+    print(sor.strip())
+print(f"A fájlban {len(sorok)} sor van.")`,
+  mockInputs: [],
+  checks: [
+    { label: 'with open(..., "w") as f:', fn: (c, o) => /with\s+open\s*\(.*["\']w["\'].*\)\s+as/.test(c) },
+    { label: 'with open(..., "r") as f:', fn: (c, o) => /with\s+open\s*\(.*["\']r["\'].*\)\s+as/.test(c) },
+    { label: 'sorok kiírása (for vagy print)', fn: (c, o) => /for\s+\w+\s+in\s+sorok|print\s*\(sorok/.test(c) },
+    { label: 'len(sorok) – sorok száma', fn: (c, o) => /len\s*\(\s*sorok\s*\)/.test(c) },
+    { label: 'Kimenet: "Sor 1"', fn: (c, o) => /Sor\s*1/.test(o) },
+    { label: 'Kimenet: "3 sor" vagy "3"', fn: (c, o) => /3/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>with utasítás – a helyes módszer</h3>
+<p>A <code>with</code> <strong>automatikusan lezárja</strong> a fájlt, még hiba esetén is.<br>
+Ezért mindig ezt használd fájlkezeléskor!</p>
+<p>A <code>as f</code> rész ad nevet a fájl objektumnak.</p>`,
+    examples: [
+      { title: 'with – helyes fájlkezelés', code: `# Írás with-szel
+with open("eredmeny.txt", "w", encoding="utf-8") as f:
+    f.write("Anna: 85 pont\\n")
+    f.write("Béla: 72 pont\\n")
+# itt már automatikusan le van zárva
+
+# Olvasás with-szel
+with open("eredmeny.txt", "r", encoding="utf-8") as f:
+    for sor in f:
+        print(sor.strip())
+
+# Hozzáírás with-szel
+with open("eredmeny.txt", "a", encoding="utf-8") as f:
+    f.write("Csaba: 91 pont\\n")` },
+    ]
+  }
+},
+
+]; // end tasks
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const TASK_COUNT = tasks.length;
+const st = {
+  cur: 0,
+  status: JSON.parse(localStorage.getItem('py_practice_status') || 'null') || Array(TASK_COUNT).fill('idle'),
+  completedOnce: JSON.parse(localStorage.getItem('py_practice_done') || 'null') || Array(TASK_COUNT).fill(false),
+  failedAttempts: Array(TASK_COUNT).fill(0),
+  editor: null,
+  lastOutput: '',
+  pyodide: null,
+  pyodideReady: false,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PYODIDE
+// ═══════════════════════════════════════════════════════════════════════════
+let pyodideLoading = false;
+
+function setPyStatus(msg, cls = '') {
+  const el = document.getElementById('pyodide-status');
+  el.textContent = msg;
+  el.className = cls;
+}
+
+async function ensurePyodide() {
+  if (st.pyodide) return st.pyodide;
+  if (pyodideLoading) {
+    return new Promise(resolve => {
+      const chk = setInterval(() => {
+        if (st.pyodide) { clearInterval(chk); resolve(st.pyodide); }
+      }, 150);
+    });
+  }
+  pyodideLoading = true;
+  setPyStatus('Betöltés... (~10 mp)', '');
+  try {
+    st.pyodide = await loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/'
+    });
+    st.pyodideReady = true;
+    setPyStatus('Kész ✓', 'ready');
+  } catch(e) {
+    setPyStatus('Hiba', 'error');
+    pyodideLoading = false;
+    throw e;
+  }
+  return st.pyodide;
+}
+
+// Load Pyodide in background when page loads
+window.addEventListener('load', () => {
+  if (window.loadPyodide) ensurePyodide().catch(() => {});
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RUN CODE
+// ═══════════════════════════════════════════════════════════════════════════
+async function runCode() {
+  if (!st.editor) return;
+  const btn = document.getElementById('btn-run');
+  const spinner = document.getElementById('run-spinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline';
+  const term = document.getElementById('terminal');
+  term.className = 'empty';
+  term.textContent = 'Futtatás...';
+
+  try {
+    const pyodide = await ensurePyodide();
+    const code = st.editor.getValue();
+    const task = tasks[st.cur];
+    const mockInputs = task.mockInputs || [];
+
+    let output = '';
+    let hasError = false;
+
+    pyodide.setStdout({ batched: t => { output += t + '\n'; } });
+    pyodide.setStderr({ batched: t => { output += t + '\n'; hasError = true; } });
+
+    const setup = `
+import builtins, sys
+_mock_iter = iter(${JSON.stringify(mockInputs)})
+def _mock_input(prompt=''):
+    val = str(next(_mock_iter, ''))
+    sys.stdout.write(str(prompt))
+    sys.stdout.write(val + '\\n')
+    return val
+builtins.input = _mock_input
+`;
+
+    try {
+      await pyodide.runPythonAsync(setup + '\n' + code);
+    } catch(e) {
+      output += e.message + '\n';
+      hasError = true;
+    }
+
+    st.lastOutput = output.trim();
+    term.textContent = st.lastOutput || '(Nincs kimenet)';
+    term.className = hasError ? 'has-error' : '';
+
+  } catch(e) {
+    const term = document.getElementById('terminal');
+    term.textContent = 'Pyodide betöltési hiba: ' + e.message;
+    term.className = 'has-error';
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHECKS
+// ═══════════════════════════════════════════════════════════════════════════
+function runChecks() {
+  const task = tasks[st.cur];
+  const code = st.editor ? st.editor.getValue() : '';
+  const output = st.lastOutput;
+
+  const results = task.checks.map(ch => {
+    try { return !!ch.fn(code, output); }
+    catch(e) { return false; }
+  });
+
+  const passed = results.filter(Boolean).length;
+  const total  = results.length;
+  const allPass = passed === total;
+
+  if (!allPass) {
+    st.failedAttempts[st.cur] = (st.failedAttempts[st.cur] || 0) + 1;
+    if (st.failedAttempts[st.cur] >= 3) {
+      document.getElementById('btn-solution').style.display = 'inline-flex';
+    }
+  }
+
+  if (allPass && st.status[st.cur] !== 'done') {
+    st.status[st.cur] = 'done';
+    st.completedOnce[st.cur] = true;
+    saveState();
+    triggerConfetti();
+    const banner = document.getElementById('success-banner');
+    banner.textContent = '✓ Kiváló! Lépj tovább!';
+    banner.classList.add('visible');
+    if (st.status.every(s => s === 'done')) {
+      setTimeout(() => document.getElementById('completion-modal').classList.add('visible'), 800);
+    }
+  }
+
+  renderChecklist(results);
+  document.getElementById('score-display').innerHTML =
+    `Teljesítve: <span>${passed} / ${total}</span>`;
+  updatePills();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHECKLIST RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+function renderChecklist(results) {
+  const task = tasks[st.cur];
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+  task.checks.forEach((ch, i) => {
+    const pass = results ? results[i] : null;
+    const div = document.createElement('div');
+    div.className = 'check-item' + (pass === true ? ' pass' : pass === false ? ' fail' : '');
+    const icon = pass === true ? '<i class="fas fa-check-circle check-icon" style="color:#22c55e"></i>'
+               : pass === false ? '<i class="fas fa-times-circle check-icon" style="color:#ef4444"></i>'
+               : '<i class="far fa-circle check-icon" style="color:#4b5563"></i>';
+    div.innerHTML = icon + '<span class="check-text">' + esc(ch.label) + '</span>';
+    container.appendChild(div);
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOAD / SAVE
+// ═══════════════════════════════════════════════════════════════════════════
+function saveState() {
+  localStorage.setItem('py_practice_status', JSON.stringify(st.status));
+  localStorage.setItem('py_practice_done', JSON.stringify(st.completedOnce));
+}
+
+function saveCurrentCode() {
+  if (!st.editor) return;
+  localStorage.setItem('py_practice_code_' + st.cur, st.editor.getValue());
+  saveState();
+}
+
+function loadTask(index) {
+  saveCurrentCode();
+  st.cur = index;
+  localStorage.setItem('py_practice_last', index);
+  const task = tasks[index];
+  const saved = localStorage.getItem('py_practice_code_' + index);
+  const code = (saved !== null && saved !== '') ? saved : task.starterCode;
+
+  if (st.editor) st.editor.setValue(code);
+
+  // Topic badge
+  const badge = document.getElementById('topic-badge');
+  const labels = { dict: 'Szótár (dict)', class: 'Osztály (class)', file: 'Fájlkezelés' };
+  badge.className = 'topic-badge ' + task.topicGroup;
+  badge.textContent = labels[task.topicGroup] || task.topicGroup;
+
+  document.getElementById('task-title').textContent = task.emoji + ' ' + task.id + '. ' + task.title;
+  document.getElementById('task-desc').innerHTML = task.description;
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('btn-solution').style.display = 'none';
+  document.getElementById('score-display').textContent = '–';
+
+  // Clear terminal
+  const term = document.getElementById('terminal');
+  term.textContent = 'Nyomd meg a Futtatás gombot a kód végrehajtásához.';
+  term.className = 'empty';
+  st.lastOutput = '';
+
+  if (st.status[index] === 'idle') st.status[index] = 'started';
+
+  renderChecklist(null);
+  updatePills();
+  updateRefPanel(index);
+  if (st.editor) st.editor.focus();
+}
+
+function switchTask(i) {
+  if (i === st.cur) return;
+  loadTask(i);
+}
+
+function goNext() {
+  if (st.cur < TASK_COUNT - 1) switchTask(st.cur + 1);
+}
+
+function resetTask() {
+  const i = st.cur;
+  localStorage.removeItem('py_practice_code_' + i);
+  st.status[i] = 'idle';
+  st.completedOnce[i] = false;
+  st.failedAttempts[i] = 0;
+  saveState();
+  if (st.editor) st.editor.setValue(tasks[i].starterCode);
+  renderChecklist(null);
+  document.getElementById('score-display').textContent = '–';
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('btn-solution').style.display = 'none';
+  const term = document.getElementById('terminal');
+  term.textContent = 'Nyomd meg a Futtatás gombot a kód végrehajtásához.';
+  term.className = 'empty';
+  st.lastOutput = '';
+}
+
+function showSolution() {
+  const task = tasks[st.cur];
+  if (st.editor && task.solution) st.editor.setValue(task.solution);
+}
+
+function restartPractice() {
+  if (!confirm('Biztosan törlöd az összes előrehaladást?')) return;
+  for (let i = 0; i < TASK_COUNT; i++) {
+    localStorage.removeItem('py_practice_code_' + i);
+  }
+  st.status = Array(TASK_COUNT).fill('idle');
+  st.completedOnce = Array(TASK_COUNT).fill(false);
+  st.failedAttempts = Array(TASK_COUNT).fill(0);
+  saveState();
+  document.getElementById('completion-modal').classList.remove('visible');
+  loadTask(0);
+  buildPills();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PILLS
+// ═══════════════════════════════════════════════════════════════════════════
+const GROUP_ORDER = ['dict', 'class', 'file'];
+const GROUP_LABEL = { dict: 'Dict', class: 'Class', file: 'Fájl' };
+
+function buildPills() {
+  const wrapper = document.getElementById('pills-wrapper');
+  wrapper.innerHTML = '';
+  let lastGroup = null;
+  tasks.forEach((t, i) => {
+    if (t.topicGroup !== lastGroup) {
+      lastGroup = t.topicGroup;
+      const lbl = document.createElement('span');
+      lbl.className = 'pill-group-label ' + t.topicGroup;
+      lbl.textContent = GROUP_LABEL[t.topicGroup];
+      wrapper.appendChild(lbl);
+    }
+    const btn = document.createElement('button');
+    btn.id = 'pill-' + i;
+    btn.className = 'pill' + (i === st.cur ? ' active' : '');
+    btn.textContent = t.id;
+    btn.title = t.emoji + ' ' + t.title;
+    btn.onclick = () => switchTask(i);
+    wrapper.appendChild(btn);
+  });
+  updatePills();
+}
+
+function updatePills() {
+  const done = st.status.filter(s => s === 'done').length;
+  document.getElementById('progress-count').textContent = done;
+  tasks.forEach((t, i) => {
+    const pill = document.getElementById('pill-' + i);
+    if (!pill) return;
+    pill.className = 'pill';
+    if (i === st.cur) pill.classList.add('active');
+    else if (st.status[i] === 'done') pill.classList.add('done');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REFERENCE PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleRef() {
+  const panel = document.getElementById('ref-panel');
+  const overlay = document.getElementById('ref-overlay');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+}
+
+function closeRef() {
+  document.getElementById('ref-panel').classList.remove('open');
+  document.getElementById('ref-overlay').classList.remove('open');
+}
+
+document.getElementById('btn-ref-toggle').addEventListener('click', toggleRef);
+
+function updateRefPanel(index) {
+  const task = tasks[index];
+  const tut = task.tutorial;
+  const body = document.getElementById('ref-body');
+
+  let html = '';
+
+  // Tutor section
+  if (tut && tut.intro) {
+    html += `<div class="tutor-section">${tut.intro}</div>`;
+  }
+
+  // Hint
+  if (task.hint) {
+    html += `<div class="tutor-section" style="background:#0f1f0f;border-bottom:1.5px solid #1a3a1a;">
+      <h3 style="color:#86efac;">💡 Tipp</h3><p>${esc(task.hint)}</p></div>`;
+  }
+
+  // Code examples
+  if (tut && tut.examples && tut.examples.length) {
+    html += `<div class="ref-sections-label">Kódpéldák</div>`;
+    tut.examples.forEach((ex, ei) => {
+      html += `<div class="ref-section open" id="rse-${ei}">
+        <div class="ref-section-header" onclick="toggleRefSection('rse-${ei}')">
+          <span>${esc(ex.title)}</span>
+          <i class="fas fa-chevron-right chevron"></i>
+        </div>
+        <div class="ref-section-body">
+          <div class="ref-code">${esc(ex.code)}</div>
+          <button class="btn-copy" onclick="copyCode(this, ${ei})">
+            <i class="fas fa-copy"></i> Másolás
+          </button>
+        </div>
+      </div>`;
+    });
+  }
+
+  body.innerHTML = html;
+  // Store examples for copy
+  body._examples = tut && tut.examples ? tut.examples : [];
+}
+
+function toggleRefSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function copyCode(btn, idx) {
+  const body = document.getElementById('ref-body');
+  const examples = body._examples || [];
+  if (examples[idx]) {
+    navigator.clipboard.writeText(examples[idx].code).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = '<i class="fas fa-check"></i> Másolva';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="fas fa-copy"></i> Másolás'; }, 2000);
+    }).catch(() => {});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════════════════════════════
+function triggerConfetti() {
+  const el = document.getElementById('confetti');
+  el.classList.remove('animate');
+  void el.offsetWidth;
+  el.classList.add('animate');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONACO
+// ═══════════════════════════════════════════════════════════════════════════
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+
+require(['vs/editor/editor.main'], function() {
+  st.editor = window.monaco.editor.create(document.getElementById('editor-python'), {
+    value: '',
+    language: 'python',
+    theme: 'vs-dark',
+    fontSize: 15,
+    minimap: { enabled: false },
+    automaticLayout: true,
+    wordWrap: 'on',
+    scrollBeyondLastLine: false,
+    tabSize: 4,
+    insertSpaces: true,
+    quickSuggestions: { other: true, comments: false, strings: false },
+    suggestOnTriggerCharacters: true,
+  });
+
+  // Ctrl+Enter → run
+  st.editor.addCommand(
+    window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.Enter,
+    () => runCode()
+  );
+
+  buildPills();
+  const last = parseInt(localStorage.getItem('py_practice_last') || '0');
+  loadTask(Math.min(last, TASK_COUNT - 1));
+});
+
+// Pyodide CDN loader
+const pyScript = document.createElement('script');
+pyScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js';
+document.head.appendChild(pyScript);
+
+</script>
+</body>
+</html>
