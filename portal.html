@@ -198,35 +198,30 @@
             padding: 20px 20px;
         }
 
-        /* ── Kétoszlopos elrendezés diákoknak ── */
+        /* ── Tanulói elrendezés ── */
         .student-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 20px;
-            align-items: start;
-            min-height: calc(100vh - 96px);
-        }
-        .student-left {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
-        .student-right {
+        /* Kártyák + changelog: kétoszlopos rács */
+        .student-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        .student-col {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            position: sticky;
-            top: 76px;
-            max-height: calc(100vh - 96px);
-            overflow-y: auto;
+            gap: 12px;
         }
-        .student-right::-webkit-scrollbar { width: 5px; }
-        .student-right::-webkit-scrollbar-track { background: transparent; }
-        .student-right::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 4px; }
+        /* Changelog egy oszlophoz igazítva */
+        .changelog-box.python-col { border-color: rgba(55,118,171,0.4); }
+        .changelog-box.web-col    { border-color: rgba(228,77,38,0.4); }
 
-        @media (max-width: 700px) {
-            .student-layout { grid-template-columns: 1fr; }
-            .student-right { position: static; max-height: none; }
+        @media (max-width: 600px) {
+            .student-two-col { grid-template-columns: 1fr; }
         }
 
         .portal-title {
@@ -672,56 +667,56 @@
     <div class="portal-sub" id="portal-sub" style="text-align:center; margin-bottom:20px;">Válassz az alábbi lehetőségek közül:</div>
     <div id="grade-threshold-notice" style="display:none;margin:0 auto 14px;max-width:960px;padding:10px 18px;border-radius:10px;font-size:0.85rem;text-align:center;"></div>
 
-    <!-- Tanulói kétoszlopos elrendezés -->
+    <!-- Tanulói elrendezés -->
     <div id="student-layout-wrap" class="student-layout" style="display:none">
-        <!-- Bal oszlop: vizsgakártyák + tesztelői üzenetek -->
-        <div class="student-left">
-            <!-- Tanulói nézet kártyák -->
-            <div id="student-portal" class="options-grid">
+
+        <!-- Sor 1+2: kártyák és changelog kétoszloposan -->
+        <div class="student-two-col">
+            <!-- Python oszlop -->
+            <div class="student-col">
                 <a class="option-card python" id="card-python" href="python/index.html" onclick="event.preventDefault(); location.replace('python/index.html')">
                     <span class="icon"><i class="fab fa-python"></i></span>
                     <span class="label">PYTHON</span>
                     <span class="desc">Python programozási feladatok</span>
                     <span class="vizsga-status" id="status-python"></span>
                 </a>
+                <div id="changelog-python" class="changelog-box python-col" style="display:none">
+                    <div class="changelog-title"><i class="fab fa-python" style="color:#3776ab"></i> Python újdonságok</div>
+                    <div class="changelog-item">Új feladat: <strong style="color:#fbbf24;">Okosotthon fűtés</strong> (8 pont) – <span style="color:#fbbf24;font-weight:700;">ÚJ!</span> jelöléssel a feladatválasztóban</div>
+                    <div class="changelog-item">Egyéni összeállítás – magad választhatod ki a feladataidat gyakorló módban</div>
+                    <div class="changelog-item">6 korábbi új feladat (Ruhaméret, Kutya életkor, Traffipax, Mobiladat túllépés, Űrhajó rakomány, Alkimista varázsital)</div>
+                    <div class="changelog-item">Véletlenszerű kitöltés gomb – ha nem tudod, melyiket válaszd</div>
+                </div>
+            </div>
+            <!-- WEB oszlop -->
+            <div class="student-col">
                 <a class="option-card web" id="card-web" href="web/index.html" onclick="event.preventDefault(); location.replace('web/index.html')">
                     <span class="icon"><i class="fas fa-globe"></i></span>
                     <span class="label">WEB</span>
                     <span class="desc">HTML, CSS, Bootstrap feladatok</span>
                     <span class="vizsga-status" id="status-web"></span>
                 </a>
-            </div>
-            <!-- Tesztelői üzenetek (csak tesztelőknek) -->
-            <div id="teszteloi-uzenetek-box" class="teszteloi-uzenet-box" style="display:none">
-                <div class="teszteloi-uzenet-title">🔬 Tesztelői üzenetek</div>
-                <div id="teszteloi-uzenetek-lista"></div>
-            </div>
-        </div>
-        <!-- Jobb oszlop: tájékoztató panel -->
-        <div class="student-right">
-            <!-- Megvalósult ötletek doboz -->
-            <div id="megvalasult-box" class="megvalasult-box" style="display:none">
-                <div class="megvalasult-title">🏆 Megvalósult ötletek</div>
-                <div id="megvalasult-lista"></div>
-            </div>
-            <!-- Újdonságok -->
-            <div id="changelog-box" class="changelog-box" style="display:none">
-                <div class="changelog-title">🆕 Újdonságok</div>
-                <div class="changelog-section">
-                    <div class="changelog-section-label python"><i class="fab fa-python"></i> Python feladat</div>
-                    <div class="changelog-item">Új feladat érkezett: <strong style="color:#fbbf24;">Okosotthon fűtés</strong> (8 pont) – a feladatválasztóban <span style="color:#fbbf24;font-weight:700;">ÚJ!</span> jelöléssel</div>
-                    <div class="changelog-item">Egyéni összeállítás – magad választhatod ki a feladataidat gyakorló módban</div>
-                    <div class="changelog-item">6 korábbi új feladat (Ruhaméret, Kutya életkor, Traffipax, Mobiladat túllépés, Űrhajó rakomány, Alkimista varázsital)</div>
-                    <div class="changelog-item">Véletlenszerű kitöltés gomb – ha nem tudod, melyiket válaszd</div>
-                </div>
-                <div class="changelog-section">
-                    <div class="changelog-section-label web"><i class="fas fa-globe"></i> WEB feladat</div>
+                <div id="changelog-web" class="changelog-box web-col" style="display:none">
+                    <div class="changelog-title"><i class="fas fa-globe" style="color:#e44d26"></i> WEB újdonságok</div>
                     <div class="changelog-item">KÉSZ gomb a jobb felső sarokban – csak erre kattintva kerül be a feladat a statisztikába</div>
                     <div class="changelog-item">Új: Gyakorló mód – 17 mini feladat lépésről lépésre (Bootstrap, képek, táblázat, űrlap és még sok más)</div>
                     <div class="changelog-item">Élő előnézet, tipp rendszer és megoldásmegtekintő ha elakadnál</div>
                 </div>
             </div>
         </div>
+
+        <!-- Sor 3: Megvalósult ötletek – teljes szélesség -->
+        <div id="megvalasult-box" class="megvalasult-box" style="display:none">
+            <div class="megvalasult-title">🏆 Megvalósult ötletek</div>
+            <div id="megvalasult-lista"></div>
+        </div>
+
+        <!-- Tesztelői üzenetek (csak tesztelőknek) -->
+        <div id="teszteloi-uzenetek-box" class="teszteloi-uzenet-box" style="display:none">
+            <div class="teszteloi-uzenet-title">🔬 Tesztelői üzenetek</div>
+            <div id="teszteloi-uzenetek-lista"></div>
+        </div>
+
     </div>
 
 
@@ -975,8 +970,9 @@
             document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
             document.getElementById('toggle-view-btn').style.display = 'block';
         } else {
-            document.getElementById('student-layout-wrap').style.display = 'grid';
-            document.getElementById('changelog-box').style.display = 'block';
+            document.getElementById('student-layout-wrap').style.display = 'flex';
+            document.getElementById('changelog-python').style.display = 'block';
+            document.getElementById('changelog-web').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
@@ -999,24 +995,27 @@
         const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
         isTeacherView = !isTeacherView;
         isTeacherPreview = !isTeacherView;
-        const changelog = document.getElementById('changelog-box');
-        const otletBtn  = document.getElementById('otlet-btn');
-        const hibaBtn2  = document.getElementById('hiba-btn');
-        const megvBox   = document.getElementById('megvalasult-box');
+        const clPython = document.getElementById('changelog-python');
+        const clWeb    = document.getElementById('changelog-web');
+        const otletBtn = document.getElementById('otlet-btn');
+        const hibaBtn2 = document.getElementById('hiba-btn');
+        const megvBox  = document.getElementById('megvalasult-box');
         if (isTeacherView) {
             teacher.style.display = 'block';
             studentWrap.style.display = 'none';
-            if (changelog) changelog.style.display = 'none';
+            if (clPython) clPython.style.display = 'none';
+            if (clWeb)    clWeb.style.display    = 'none';
             if (otletBtn) otletBtn.style.display = 'none';
             if (hibaBtn2) hibaBtn2.style.display = 'none';
-            if (megvBox) megvBox.style.display = 'none';
+            if (megvBox)  megvBox.style.display  = 'none';
             sub.textContent = 'Mit szeretnél csinálni?';
             btn.textContent = 'Tanulói nézet';
             if (eredmBtn) eredmBtn.style.display = 'none';
         } else {
             teacher.style.display = 'none';
-            studentWrap.style.display = 'grid';
-            if (changelog) changelog.style.display = 'block';
+            studentWrap.style.display = 'flex';
+            if (clPython) clPython.style.display = 'block';
+            if (clWeb)    clWeb.style.display    = 'block';
             if (otletBtn) otletBtn.style.display = 'flex';
             loadMegvalasultOtletek();
             sub.textContent = 'Válassz ágazati alapvizsga feladatot!';
