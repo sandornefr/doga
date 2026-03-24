@@ -194,6 +194,8 @@ public class Database
         using var cmd = conn.CreateCommand();
 
         var where = new List<string>();
+        // 0 pontos gyakorló beadások sosem hasznosak – ezeket kizárjuk
+        where.Add("NOT (mode = 'practice' AND total_score = 0)");
         if (osztaly != null) { where.Add("osztaly = $osztaly"); cmd.Parameters.AddWithValue("$osztaly", osztaly); }
         if (csoport != null) { where.Add("csoport = $csoport"); cmd.Parameters.AddWithValue("$csoport", csoport); }
         if (subject != null) { where.Add("subject = $subject"); cmd.Parameters.AddWithValue("$subject", subject); }
