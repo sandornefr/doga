@@ -528,7 +528,7 @@
         .ered-close:hover { color: #e94560; }
         .ered-title { color: #fbbf24; font-size: 1.3rem; font-weight: 700; }
         .ered-subject { margin-bottom: 22px; }
-        .ered-subject-title { color: #e0e0e0; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .ered-subject-title { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         .ered-level-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
         .ered-level-icon { font-size: 1.6rem; }
         .ered-level-name { color: #e0e0e0; font-size: 1rem; font-weight: 600; }
@@ -1375,9 +1375,14 @@
                 A <strong>${rankInfo.groupLabel}</strong>ban <strong>${rankInfo.rank}. helyen</strong> állsz (${rankInfo.groupSize} főből)
                </div>`
             : '';
+        const titleColor = targy === 'python' ? '#3b82f6' : '#fb923c';
+        const titleIcon  = targy === 'python' ? 'fab fa-python' : 'fas fa-globe';
+        const titleText  = targy === 'python' ? 'Python feladat' : 'WEB feladat';
         return `
         <div class="ered-subject">
-          <div class="ered-subject-title">${label}</div>
+          <div class="ered-subject-title" style="color:${titleColor};">
+            <i class="${titleIcon}"></i> ${titleText.toUpperCase()}
+          </div>
           <div class="ered-level-row">
             <span class="ered-level-icon">${lv.icon}</span>
             <div>
@@ -1388,8 +1393,8 @@
           ${rankHtml}
           <div class="ered-bar-bg"><div class="ered-bar-fill ${barClass}" style="width:${barPct}%"></div></div>
           <div class="ered-stats">Átlag: ${avg}% · Legjobb: ${best}%</div>
-          <div class="ered-next-goal">${nextGoal(avg, targy, label.replace(/[🌐🐍]/g,'').trim())}</div>
-          <div class="ered-feedback">${feedback(avg, label.replace(/[🌐🐍]/g,'').trim())}</div>
+          <div class="ered-next-goal">${nextGoal(avg, targy, titleText)}</div>
+          <div class="ered-feedback">${feedback(avg, titleText)}</div>
         </div>`;
     }
 
