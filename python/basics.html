@@ -1109,7 +1109,7 @@ print("1-100 összege:", osszeg)`,
   mockInputs:[],
   checks:[
     {label:'while megtalálható (legalább 2x)', fn:(c,o)=>(c.match(/\bwhile\b/g)||[]).length>=2},
-    {label:'szam += 1 vagy i += 1 (számláló növelés)', fn:(c,o)=/\+=\s*1/.test(c)},
+    {label:'szam += 1 vagy i += 1 (számláló növelés)', fn:(c,o)=>(/\+=\s*1/.test(c))},
     {label:'Kimenet: 1-10-ig számsort tartalmaz', fn:(c,o)=>/1/.test(o)&&/5/.test(o)&&/10/.test(o)},
     {label:'Kimenet: 5050 (1-100 összege)', fn:(c,o)=>/5050/.test(o)},
   ],
