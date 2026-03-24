@@ -614,10 +614,13 @@
                     <div id="tanuló-valaszto-lista" style="max-height:220px;overflow-y:auto;"></div>
                 </div>
                 <div style="margin-top:16px;border-top:1px solid #1a3a5c;padding-top:14px;">
-                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;margin-bottom:8px;">📨 Üzenet küldése tesztelőknek</div>
+                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;margin-bottom:8px;">📨 Üzenet küldése</div>
                     <textarea id="teszteloi-uzenet-input" rows="2" placeholder="pl. Kérlek teszteld az Ötlet Láda funkciót és jelezz vissza!" style="width:100%;background:#0a1628;border:1px solid #1f3460;border-radius:7px;color:#e0e0e0;padding:8px 12px;font-size:0.87rem;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                        <button onclick="sendTeszteloiUzenet()" style="padding:7px 18px;background:#6366f1;border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:0.87rem;">Küldés tesztelőknek</button>
+                        <select id="teszteloi-uzenet-cel" style="padding:6px 10px;background:#0a1628;border:1px solid #1f3460;border-radius:7px;color:#e0e0e0;font-size:0.87rem;cursor:pointer;">
+                            <option value="">📢 Összes tesztelőnek</option>
+                        </select>
+                        <button onclick="sendTeszteloiUzenet()" style="padding:7px 18px;background:#6366f1;border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:0.87rem;">Küldés</button>
                         <span id="teszteloi-uzenet-ok" style="display:none;color:#4ade80;font-size:0.83rem;">✓ Elküldve</span>
                     </div>
                 </div>
@@ -2538,6 +2541,19 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     osztalyok.map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('');
             }
 
+            // Dropdown frissítése az üzenetküldőhöz
+            const celSel = document.getElementById('teszteloi-uzenet-cel');
+            if (celSel) {
+                const prev = celSel.value;
+                celSel.innerHTML = '<option value="">📢 Összes tesztelőnek</option>' +
+                    [..._tesztelokSet].map(email => {
+                        const u = _allTanulok.find(x => x.email.toLowerCase() === email);
+                        const nev = u ? escHtml(u.nev) : escHtml(email);
+                        return `<option value="${escHtml(email)}">👤 ${nev}</option>`;
+                    }).join('');
+                celSel.value = prev; // visszaállítja ha még létezik
+            }
+
             szurTanulok();
         }
 
@@ -2590,10 +2606,13 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         async function sendTeszteloiUzenet() {
             const szoveg = document.getElementById('teszteloi-uzenet-input')?.value.trim();
             if (!szoveg) return;
+            const recipient = document.getElementById('teszteloi-uzenet-cel')?.value || '';
+            const body = { szoveg };
+            if (recipient) body.recipient_email = recipient;
             const res = await authFetch(`${RAILWAY_URL}/api/teszteloi-uzenetek`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ szoveg })
+                body: JSON.stringify(body)
             });
             if (res.ok) {
                 document.getElementById('teszteloi-uzenet-input').value = '';

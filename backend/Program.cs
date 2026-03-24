@@ -628,7 +628,7 @@ app.MapPost("/api/tesztelok", (HttpContext ctx, Database db) =>
         .GetProperty("email").GetString() ?? "";
     if (string.IsNullOrWhiteSpace(email)) return Results.BadRequest(new { error = "email kötelező" });
     db.AddTesztelő(email);
-    db.SaveTeszteloiUzenet($"🔬 Üdvözlünk a tesztelők között! Felkértek, hogy segíts a rendszer fejlesztésében. Köszönjük a részvételt! Ha hibát találsz, használd a 🐛 Hibajelentés gombot a portálon.");
+    db.SaveTeszteloiUzenet("🔬 Üdvözlünk a tesztelők között! Felkértek, hogy segíts a rendszer fejlesztésében. Köszönjük a részvételt! Ha hibát találsz, használd a 🐛 Hibajelentés gombot a portálon.", email);
     return Results.Ok(new { success = true });
 });
 
@@ -653,10 +653,12 @@ app.MapPost("/api/teszteloi-uzenetek", (HttpContext ctx, Database db) =>
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     using var reader = new System.IO.StreamReader(ctx.Request.Body);
     var body = reader.ReadToEndAsync().Result;
-    var szoveg = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body)
-        .GetProperty("szoveg").GetString() ?? "";
+    var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body);
+    var szoveg = json.GetProperty("szoveg").GetString() ?? "";
     if (string.IsNullOrWhiteSpace(szoveg)) return Results.BadRequest(new { error = "szoveg kötelező" });
-    var id = db.SaveTeszteloiUzenet(szoveg);
+    string? recipient = null;
+    if (json.TryGetProperty("recipient_email", out var rProp)) recipient = rProp.GetString();
+    var id = db.SaveTeszteloiUzenet(szoveg, string.IsNullOrWhiteSpace(recipient) ? null : recipient);
     return Results.Ok(new { success = true, id });
 });
 

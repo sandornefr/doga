@@ -133,6 +133,7 @@ public class Database
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE otlet_lada ADD COLUMN tipus TEXT NOT NULL DEFAULT 'otlet'"); } catch { }
+        try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
     }
 
     // ── Config ────────────────────────────────────────────────────────────────
@@ -1086,12 +1087,13 @@ public class Database
 
     // ── Tesztelői üzenetek ────────────────────────────────────────────────────
 
-    public int SaveTeszteloiUzenet(string szoveg)
+    public int SaveTeszteloiUzenet(string szoveg, string? recipient = null)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO teszteloi_uzenetek (szoveg) VALUES ($szoveg) RETURNING id";
+        cmd.CommandText = "INSERT INTO teszteloi_uzenetek (szoveg, recipient_email) VALUES ($szoveg, $r) RETURNING id";
         cmd.Parameters.AddWithValue("$szoveg", szoveg);
+        cmd.Parameters.AddWithValue("$r", (object?)recipient?.ToLower().Trim() ?? DBNull.Value);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
@@ -1103,7 +1105,9 @@ public class Database
             SELECT u.id, u.szoveg, u.created_at,
                    (SELECT COUNT(*) FROM teszteloi_uzenet_olvasott o
                     WHERE o.uzenet_id = u.id AND o.email = $email) as olvasott
-            FROM teszteloi_uzenetek u ORDER BY u.created_at DESC";
+            FROM teszteloi_uzenetek u
+            WHERE u.recipient_email IS NULL OR u.recipient_email = $email
+            ORDER BY u.created_at DESC";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         var list = new List<TeszteloiUzenetItem>();
         using var r = cmd.ExecuteReader();
