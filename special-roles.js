@@ -272,7 +272,16 @@
     // ── Init ─────────────────────────────────────────────────────────────────
     async function init() {
         const user = getUser();
-        if (!user.email || user.szerep !== 'tanulo') return;
+        if (!user.email) return;
+        // Oktató: mindkét gomb látható (előnézet / tesztelés)
+        if (user.szerep === 'oktato') {
+            injectCSS();
+            injectHTML();
+            document.getElementById('sr-hiba-fab').style.display   = 'flex';
+            document.getElementById('sr-feladat-fab').style.display = 'flex';
+            return;
+        }
+        if (user.szerep !== 'tanulo') return;
         try {
             const [tRes, fRes] = await Promise.all([
                 fetch(`${API}/api/tesztelok/check?email=${encodeURIComponent(user.email)}`),

@@ -1149,6 +1149,9 @@
             sub.textContent = 'Válassz ágazati alapvizsga feladatot!';
             btn.textContent = 'Oktatói felület';
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
+            // Oktató tanulói előnézetben látja a Csatlakozás gombot is
+            const csBtn = document.getElementById('csatlakozas-btn');
+            if (csBtn) csBtn.style.display = 'flex';
         }
     }
 
