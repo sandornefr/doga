@@ -1193,10 +1193,10 @@
 
 <body>
     <!-- Teszt mód banner (csak Teszt Elek / _tesztMod esetén) -->
-    <div id="teszt-mod-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#92400e;color:#fef3c7;padding:8px 20px;font-size:0.85rem;font-weight:600;align-items:center;justify-content:center;gap:14px;border-bottom:2px solid #d97706;">
+    <div id="teszt-mod-banner" style="display:none;background:#92400e;color:#fef3c7;padding:6px 20px;font-size:0.82rem;font-weight:600;align-items:center;justify-content:center;gap:14px;border-bottom:2px solid #d97706;">
         <i class="fas fa-user-graduate"></i>
         <span>Diák teszt mód – <strong>Teszt Elek</strong> nézetében vagy</span>
-        <a href="../portal.html" style="padding:4px 14px;background:#d97706;border:none;border-radius:6px;color:#fff;font-size:0.82rem;font-weight:700;text-decoration:none;">&#8592; Vissza a portálra</a>
+        <a href="../portal.html" style="padding:3px 12px;background:#d97706;border:none;border-radius:6px;color:#fff;font-size:0.8rem;font-weight:700;text-decoration:none;">&#8592; Vissza a portálra</a>
     </div>
 
     <!-- Módválasztó modal -->
@@ -1611,11 +1611,11 @@
                 // Teszt mód banner
                 if (u._tesztMod) {
                     const b = document.getElementById('teszt-mod-banner');
-                    if (b) { b.style.display = 'flex'; document.body.style.paddingTop = '42px'; }
+                    if (b) b.style.display = 'flex';
                 }
 
-                // Módválasztó modal – tanulóknak (nem bemutató, nem teszt mód)
-                if (u.szerep !== 'oktato' && !isBemutato && !u._tesztMod) {
+                // Módválasztó modal – tanulóknak (nem bemutató, oktató kivéve)
+                if (u.szerep !== 'oktato' && !isBemutato) {
                     document.getElementById('py-mode-selector').style.display = 'flex';
                 }
 
