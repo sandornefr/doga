@@ -657,9 +657,11 @@
                 setTimeout(() => switchTab('login'), 2000);
             } else {
                 showError('register-error', data.error || 'Hiba a regisztráció során.');
+                if (window.turnstile) turnstile.reset();
             }
         } catch (e) {
             showError('register-error', 'Kapcsolati hiba: ' + e.message);
+            if (window.turnstile) turnstile.reset();
         } finally {
             btn.disabled = false;
             btn.textContent = 'Regisztráció';
