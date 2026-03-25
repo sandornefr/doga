@@ -620,7 +620,7 @@ for nev in osztalyzatok:
     { label: 'Kimenet: "Anna"', fn: (c, o) => /Anna/.test(o) },
     { label: 'Kimenet: "Béla"', fn: (c, o) => /B[eé]la/.test(o) },
     { label: 'Kimenet: "Csaba"', fn: (c, o) => /Csaba/.test(o) },
-    { label: 'Kimenet: jegyek is megjelennek', fn: (c, o) => /5/.test(o) && /4/.test(o) && /3/.test(o) },
+    { label: 'Kimenet: jegyek is megjelennek', fn: (c, o) => /\b5\b/.test(o) && /\b4\b/.test(o) && /\b3\b/.test(o) },
   ],
   tutorial: {
     intro: `<h3>Bejárás for ciklussal</h3>
@@ -870,7 +870,7 @@ print(fifi.nev, fifi.kor)`,
     { label: 'Két objektum létrehozva', fn: (c, o) => (c.match(/Kutya\s*\(/g) || []).length >= 2 },
     { label: 'Kimenet: Rex', fn: (c, o) => /Rex/.test(o) },
     { label: 'Kimenet: Fifi', fn: (c, o) => /Fifi/.test(o) },
-    { label: 'Kimenet: 3 és 1', fn: (c, o) => /3/.test(o) && /1/.test(o) },
+    { label: 'Kimenet: 3 és 1', fn: (c, o) => /\b3\b/.test(o) && /\b1\b/.test(o) },
   ],
   tutorial: {
     intro: `<h3>__init__ és self</h3>
@@ -928,7 +928,7 @@ rex.bemutatkozik()`,
     { label: 'self.nev és self.kor a metódusban', fn: (c, o) => /self\.nev/.test(c) && /self\.kor/.test(c) },
     { label: 'rex.bemutatkozik() hívás', fn: (c, o) => /rex\.bemutatkozik/.test(c) },
     { label: 'Kimenet: "Rex"', fn: (c, o) => /Rex/.test(o) },
-    { label: 'Kimenet: "3"', fn: (c, o) => /3/.test(o) },
+    { label: 'Kimenet: "3"', fn: (c, o) => /\b3\b/.test(o) },
     { label: 'Kimenet: "Szia" vagy "vagyok"', fn: (c, o) => /szia|vagyok/i.test(o) },
   ],
   tutorial: {
@@ -1378,7 +1378,7 @@ print(f"A fájlban {len(sorok)} sor van.")`,
     { label: 'sorok kiírása (for vagy print)', fn: (c, o) => /for\s+\w+\s+in\s+sorok|print\s*\(sorok/.test(c) },
     { label: 'len(sorok) – sorok száma', fn: (c, o) => /len\s*\(\s*sorok\s*\)/.test(c) },
     { label: 'Kimenet: "Sor 1"', fn: (c, o) => /Sor\s*1/.test(o) },
-    { label: 'Kimenet: "3 sor" vagy "3"', fn: (c, o) => /3/.test(o) },
+    { label: 'Kimenet: "3 sor" vagy "3"', fn: (c, o) => /\b3\b/.test(o) },
   ],
   tutorial: {
     intro: `<h3>with utasítás – a helyes módszer</h3>
