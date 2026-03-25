@@ -39,8 +39,6 @@
     .progress-label span{color:var(--accent);font-weight:700;}
     .btn-restart{padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s;white-space:nowrap;}
     .btn-restart:hover{border-color:var(--red);color:#fca5a5;}
-    .btn-ref-toggle{display:flex;align-items:center;gap:7px;padding:6px 16px;border-radius:8px;background:var(--accent);border:1.5px solid var(--accent);color:#052e16;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
-    .btn-ref-toggle:hover{background:var(--accent2);border-color:var(--accent2);}
 
     /* LAYOUT */
     .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - var(--topbar-h) - var(--bottom-h));}
@@ -99,14 +97,11 @@
     .btn-next{margin-left:auto;padding:9px 18px;border-radius:9px;background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:7px;}
     .btn-next:hover{border-color:var(--blue);color:#93c5fd;}
 
-    /* REFERENCE PANEL */
-    .ref-overlay{position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5);display:none;}
-    .ref-overlay.open{display:block;}
-    .ref-panel{position:fixed;top:0;right:-420px;bottom:0;width:410px;z-index:200;background:var(--bg2);border-left:1.5px solid var(--border);display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);overflow:hidden;}
-    .ref-panel.open{right:0;}
-    .ref-header{padding:14px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:1.05rem;}
-    .btn-close-ref{background:transparent;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:5px;transition:color .15s;}
-    .btn-close-ref:hover{color:var(--text);}
+    /* TANANYAG PANEL (right, always visible) */
+    .ref-header{padding:10px 14px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:8px;font-weight:700;font-size:0.88rem;color:var(--accent);flex-shrink:0;}
+
+    /* TERMINAL WRAPPER (inside center-panel, bottom) */
+    .terminal-wrapper{height:185px;flex-shrink:0;display:flex;flex-direction:column;border-top:1.5px solid var(--border);}
     .ref-body{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
     .tutor-section{padding:14px 16px;border-bottom:1.5px solid var(--border);background:#0f172a;}
     .tutor-section h3{margin:0 0 8px;font-size:0.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);}
@@ -169,7 +164,6 @@
   <div class="pills-wrapper" id="pills-wrapper"></div>
   <div class="progress-label">Teljesítve: <span id="progress-count">0</span> / 20</div>
   <button class="btn-restart" onclick="restartPractice()"><i class="fa-solid fa-arrow-rotate-right"></i> Újrakezd</button>
-  <button class="btn-ref-toggle" onclick="toggleRef()"><i class="fa-solid fa-book"></i> Segédlet</button>
 </header>
 
 <!-- COMPLETION MODAL -->
@@ -213,14 +207,21 @@
       </div>
       <div id="editor-python" style="width:100%;height:100%;"></div>
     </div>
+    <div class="terminal-wrapper">
+      <div class="terminal-header">
+        <div><span class="terminal-dot"></span>Kimenet</div>
+        <div id="pyodide-status">Pyodide betölt...</div>
+      </div>
+      <div id="terminal" class="empty">Nyomd meg a Futtatás gombot a kód végrehajtásához.</div>
+    </div>
   </div>
 
-  <div class="right-panel">
-    <div class="terminal-header">
-      <div><span class="terminal-dot"></span>Kimenet</div>
-      <div id="pyodide-status">Pyodide betölt...</div>
+  <!-- TANANYAG PANEL -->
+  <div class="right-panel" id="ref-panel">
+    <div class="ref-header">
+      <i class="fa-solid fa-book-open"></i> Tananyag
     </div>
-    <div id="terminal" class="empty">Nyomd meg a Futtatás gombot a kód végrehajtásához.</div>
+    <div class="ref-body" id="ref-body"></div>
   </div>
 </div>
 
@@ -232,16 +233,6 @@
   <button class="btn-solution" id="btn-solution" onclick="showSolution()"><i class="fas fa-eye"></i> Megoldás</button>
   <button class="btn-reset" onclick="resetTask()"><i class="fas fa-rotate-left"></i> Reset</button>
   <button class="btn-next" onclick="goNext()">Következő <i class="fas fa-arrow-right"></i></button>
-</div>
-
-<!-- REFERENCE PANEL -->
-<div class="ref-overlay" id="ref-overlay" onclick="closeRef()"></div>
-<div class="ref-panel" id="ref-panel">
-  <div class="ref-header">
-    <span><i class="fa-solid fa-book"></i> Segédlet</span>
-    <button class="btn-close-ref" onclick="closeRef()"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="ref-body" id="ref-body"></div>
 </div>
 
 <div class="confetti-flash" id="confetti">🎉</div>
@@ -1700,17 +1691,8 @@ function updatePills(){
 // ═══════════════════════════════════════════════════════════════════════════
 // REFERENCE PANEL
 // ═══════════════════════════════════════════════════════════════════════════
-function toggleRef(){
-  const panel=document.getElementById('ref-panel');
-  const overlay=document.getElementById('ref-overlay');
-  const isOpen=panel.classList.contains('open');
-  panel.classList.toggle('open',!isOpen);
-  overlay.classList.toggle('open',!isOpen);
-}
-function closeRef(){
-  document.getElementById('ref-panel').classList.remove('open');
-  document.getElementById('ref-overlay').classList.remove('open');
-}
+function toggleRef(){}
+function closeRef(){}
 function updateRefPanel(index){
   const task=tasks[index];
   const tut=task.tutorial;
