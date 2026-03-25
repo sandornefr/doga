@@ -90,8 +90,17 @@
     .btn-check:hover{background:var(--accent);}
     .score-display{font-size:0.88rem;color:var(--muted);}
     .score-display span{color:var(--text);font-weight:700;}
-    .btn-solution{padding:7px 12px;background:#3b1f00;border:1.5px solid var(--yellow);border-radius:8px;color:#fcd34d;font-size:0.83rem;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px;}
-    .btn-solution:hover{background:#92400e;}
+    .btn-hint{padding:7px 12px;border-radius:8px;font-size:0.83rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;}
+    .btn-hint[data-level="0"]{background:rgba(59,130,246,.12);border:1.5px solid #3b82f6;color:#93c5fd;}
+    .btn-hint[data-level="0"]:hover{background:rgba(59,130,246,.25);}
+    .btn-hint[data-level="1"]{background:rgba(234,179,8,.1);border:1.5px solid #ca8a04;color:#fcd34d;}
+    .btn-hint[data-level="1"]:hover{background:rgba(234,179,8,.22);}
+    .btn-hint[data-level="2"]{background:rgba(249,115,22,.1);border:1.5px solid #ea580c;color:#fdba74;}
+    .btn-hint[data-level="2"]:hover{background:rgba(249,115,22,.22);}
+    #hint-banner{display:none;padding:5px 14px;font-size:0.76rem;text-align:center;border-bottom:1.5px solid;}
+    #hint-banner.level1{display:block;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#93c5fd;}
+    #hint-banner.level2{display:block;background:rgba(234,179,8,.1);border-color:rgba(234,179,8,.3);color:#fcd34d;}
+    #hint-banner.level3{display:block;background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.3);color:#fdba74;}
     .btn-reset{padding:9px 12px;border-radius:9px;background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:0.85rem;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:6px;}
     .btn-reset:hover{border-color:var(--red);color:#fca5a5;}
     .btn-next{margin-left:auto;padding:9px 18px;border-radius:9px;background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:7px;}
@@ -201,6 +210,7 @@
         <i class="fa-solid fa-spinner fa-spin"></i> Futtatás...
       </span>
     </div>
+    <div id="hint-banner"></div>
     <div style="flex:1;position:relative;overflow:hidden;">
       <div id="editor-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1e1e1e;color:#4b5563;font-size:0.85rem;gap:8px;z-index:1;pointer-events:none;">
         <i class="fa-solid fa-spinner fa-spin"></i> Szerkesztő betöltése...
@@ -230,7 +240,7 @@
   <button class="btn-run" id="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Futtatás</button>
   <button class="btn-check" onclick="runChecks()"><i class="fas fa-check-circle"></i> Ellenőrzés</button>
   <div class="score-display" id="score-display">–</div>
-  <button class="btn-solution" id="btn-solution" onclick="showSolution()"><i class="fas fa-eye"></i> Megoldás</button>
+  <button class="btn-hint" id="btn-hint" data-level="0" onclick="showHint()"><i class="fas fa-lightbulb"></i> Segítség</button>
   <button class="btn-reset" onclick="resetTask()"><i class="fas fa-rotate-left"></i> Reset</button>
   <button class="btn-next" onclick="goNext()">Következő <i class="fas fa-arrow-right"></i></button>
 </div>
@@ -285,6 +295,10 @@ print("Helló, világ!")
   solution:`print("Helló, világ!")
 print("Python a legjobb!")
 print("2 + 3 =", 2+3)`,
+  hint:`# Három sort kell kiírni:
+___("Helló, ___!")       # ← print() kell!
+___("___ a legjobb!")
+___(2 + ___)             # ← mi a 2 + 3 eredménye?`,
   mockInputs:[],
   checks:[
     {label:'print() legalább 3x megtalálható', fn:(c,o)=>(c.match(/print\s*\(/g)||[]).length>=3},
@@ -328,6 +342,10 @@ print(nev, kor, varos)
 kor   = 16
 varos = "Miskolc"
 print(nev, kor, varos)`,
+  hint:`nev   = "___"      # ← a te neved
+kor   = ___          # ← hány éves vagy?
+varos = "___"        # ← melyik városban laksz?
+print(___, ___, ___)  # ← írd ki mindhármat!`,
   mockInputs:[],
   checks:[
     {label:'nev változó értékadás', fn:(c,o)=>/nev\s*=/.test(c)},
@@ -396,6 +414,14 @@ print(type(egesz))
 print(type(tizedes))
 print(type(szoveg))
 print(type(logikai))`,
+  hint:`egesz   = ___       # ← egész szám (pl. 42)
+tizedes = ___       # ← tizedes szám (pl. 3.14)
+szoveg  = "___"     # ← bármilyen szöveg
+logikai = ___       # ← True vagy False
+print(___(egesz))   # ← type() kell ide!
+print(___(tizedes))
+print(___(szoveg))
+print(___(logikai))`,
   mockInputs:[],
   checks:[
     {label:'int változó (egész szám)', fn:(c,o)=>/=\s*\d+\b/.test(c)},
@@ -446,6 +472,8 @@ print("Szia,", nev + "!")
 `,
   solution:`nev = input("Add meg a neved: ")
 print("Szia,", nev + "!")`,
+  hint:`nev = ___("Add meg a neved: ")  # ← input() kell!
+print("Szia,", ___ + "!")           # ← melyik változó kerül ide?`,
   mockInputs:['Anna'],
   checks:[
     {label:'input() megtalálható', fn:(c,o)=>/input\s*\(/.test(c)},
@@ -493,6 +521,9 @@ print("Duplája:", szam * 2)
   solution:`szam = int(input("Adj meg egy számot: "))
 print("Duplája:", szam * 2)
 print("Négyzete:", szam ** 2)`,
+  hint:`szam = ___(input("Adj meg egy számot: "))  # ← int() kell!
+print("Duplája:", szam ___ ___)                # ← szorzás: * 2
+print("Négyzete:", szam ___ ___)              # ← hatványozás: ** 2`,
   mockInputs:['7'],
   checks:[
     {label:'int() konverzió', fn:(c,o)=>/int\s*\(/.test(c)},
@@ -554,6 +585,12 @@ print(f"{a} - {b} = {a - b}")
 print(f"{a} * {b} = {a * b}")
 print(f"{a} // {b} = {a // b}")
 print(f"{a} % {b} = {a % b}")`,
+  hint:`a = int(input("Első szám: "))
+b = int(input("Második szám: "))
+print(f"{a} + {b} = {___ + ___}")   # ← a + b
+print(f"{a} - {b} = {___}")         # ← a - b
+print(f"{a} * {b} = {___}")         # ← a * b
+print(f"{a} // {b} = {___}")        # ← egészosztás: a // b`,
   mockInputs:['10','3'],
   checks:[
     {label:'f-string használata (f"...")', fn:(c,o)=>/f["']/.test(c)},
@@ -608,6 +645,12 @@ if szam > 0:
     print("Pozitív szám.")
 else:
     print("Nulla vagy negatív.")`,
+  hint:`szam = int(input("___"))    # ← mit kérdezzen?
+
+if szam ___ ___:            # ← feltétel (pl. > 0)
+    print("___")            # ← pozitív eset
+else:
+    print("___")            # ← nulla vagy negatív eset`,
   mockInputs:['5'],
   checks:[
     {label:'if megtalálható', fn:(c,o)=>/\bif\b/.test(c)},
@@ -666,6 +709,18 @@ elif jegy == 2:
     print("Elégséges")
 else:
     print("Elégtelen")`,
+  hint:`jegy = int(input("___"))
+
+if jegy == ___:       # ← 5-ös jegy
+    print("___")      # ← "Jeles"
+elif jegy == ___:     # ← 4-es
+    print("___")      # ← "Jó"
+elif jegy == ___:     # ← 3-as
+    print("___")      # ← "Közepes"
+elif jegy == ___:     # ← 2-es
+    print("___")      # ← "Elégséges"
+else:                 # ← 1-es
+    print("___")      # ← "Elégtelen"`,
   mockInputs:['4'],
   checks:[
     {label:'if megtalálható', fn:(c,o)=>/\bif\b/.test(c)},
@@ -724,6 +779,14 @@ elif kor < 18 or kor > 65:
     print("Kedvezményes jegy")
 else:
     print("Teljes árú jegy")`,
+  hint:`kor = int(input("___"))
+
+if ___ <= kor <= ___:        # ← 10 és 18 között (and helyett lánc!)
+    print("___")             # ← "Tanuló (10-18)"
+elif kor < ___ or kor > ___: # ← 18 alatti VAGY 65 feletti
+    print("___")             # ← "Kedvezményes jegy"
+else:
+    print("___")             # ← "Teljes árú jegy"`,
   mockInputs:['15'],
   checks:[
     {label:'and vagy chained comparison (x <= y <= z)', fn:(c,o)=>/\band\b|<=\s*\w+\s*<=/.test(c)},
@@ -787,6 +850,19 @@ elif bmi < 30:
     print("Túlsúlyos")
 else:
     print("Elhízott")`,
+  hint:`suly = ___(input("Súly (kg): "))    # ← float() kell!
+mag  = ___(input("Magasság (m): "))
+bmi = suly ___ mag ___ ___           # ← suly / mag ** 2
+print(f"BMI: {bmi:___}")             # ← .1f formátum
+
+if bmi ___ ___:     # ← < 18.5 → "Sovány"
+    print("___")
+elif bmi ___ ___:   # ← < 25 → "Normális"
+    print("___")
+elif bmi ___ ___:   # ← < 30 → "Túlsúlyos"
+    print("___")
+else:               # ← "Elhízott"
+    print("___")`,
   mockInputs:['70','1.75'],
   checks:[
     {label:'float() konverzió', fn:(c,o)=>/float\s*\(/.test(c)},
@@ -836,6 +912,12 @@ koszon("Béla")
 koszon("Anna")
 koszon("Béla")
 koszon("Csaba")`,
+  hint:`def koszon(___):                       # ← mi a paraméter neve?
+    print(f"___, {___}! ___")          # ← f-string, töltsd ki!
+
+koszon("___")    # ← hívd meg háromszor különböző névvel!
+koszon("___")
+koszon("___")`,
   mockInputs:[],
   checks:[
     {label:'def koszon(nev):', fn:(c,o)=>/def\s+koszon\s*\(\s*nev\s*\)/.test(c)},
@@ -888,6 +970,13 @@ t1 = terulet(5, 3)
 print(f"5 × 3 téglalap területe: {t1}")
 t2 = terulet(4, 6)
 print(f"4 × 6 téglalap területe: {t2}")`,
+  hint:`def terulet(a, b):
+    return ___ ___ ___       # ← a szorozva b-vel: a * b
+
+t1 = terulet(___, ___)       # ← 5 és 3
+print(f"5 × 3 téglalap területe: {___}")   # ← t1 ide
+t2 = terulet(___, ___)       # ← 4 és 6
+print(f"4 × 6 téglalap területe: {___}")   # ← t2 ide`,
   mockInputs:[],
   checks:[
     {label:'def terulet(a, b):', fn:(c,o)=>/def\s+terulet\s*\(\s*a\s*,\s*b\s*\)/.test(c)},
@@ -956,6 +1045,19 @@ print(evszak(1))
 print(evszak(4))
 print(evszak(7))
 print(evszak(10))`,
+  hint:`def evszak(honap):
+    if honap in [___, ___, ___]:    # ← 12, 1, 2 (Tél)
+        return "___"
+    elif honap in [___, ___, ___]:  # ← 3, 4, 5 (Tavasz)
+        return "___"
+    elif honap in [___, ___, ___]:  # ← 6, 7, 8 (Nyár)
+        return "___"
+    else:                           # ← 9, 10, 11 (Ősz)
+        return "___"
+
+print(evszak(___))   # ← teszteld mind a 4 évszakot!
+print(evszak(___))
+print(evszak(___))`,
   mockInputs:[],
   checks:[
     {label:'def evszak(honap):', fn:(c,o)=>/def\s+evszak\s*\(\s*honap\s*\)/.test(c)},
@@ -1019,6 +1121,14 @@ for i in range(1, 11):
 print("\\n5× tábla:")
 for i in range(1, 11):
     print(f"5 × {i} = {5 * i}")`,
+  hint:`print("___")                # ← "Páros számok:"
+for i in range(___, ___):    # ← 1-től 11-ig
+    if i ___ ___ == ___:     # ← páros: i % 2 == 0
+        print(i)
+
+print("\\n___")                # ← "5× tábla:"
+for i in range(___, ___):    # ← 1-től 11-ig
+    print(f"___ × {i} = {___ * i}")   # ← 5 × i`,
   mockInputs:[],
   checks:[
     {label:'for ciklus megtalálható', fn:(c,o)=>/\bfor\b/.test(c)},
@@ -1084,6 +1194,17 @@ while i <= 100:
     osszeg += i
     i += 1
 print("1-100 összege:", osszeg)`,
+  hint:`szam = ___              # ← 1-ről indulj
+while szam ___ ___:      # ← szam <= 10
+    print(szam)
+    szam ___ ___          # ← szam += 1
+
+i      = ___              # ← 1
+osszeg = ___              # ← 0-ról indul
+while i ___ ___:         # ← i <= 100
+    osszeg ___ ___        # ← osszeg += i
+    i ___ ___             # ← i += 1
+print("1-100 összege:", ___)  # ← osszeg változó`,
   mockInputs:[],
   checks:[
     {label:'while megtalálható (legalább 2x)', fn:(c,o)=>(c.match(/\bwhile\b/g)||[]).length>=2},
@@ -1148,6 +1269,17 @@ print("\\n1-20, kivéve a 3 többszörösei:")
 for i in range(1, 21):
     if i % 3 == 0:
         continue
+    print(i)`,
+  hint:`print("___")
+for i in range(___, ___):    # ← 1-től 21-ig
+    if i ___ ___ == ___:     # ← 13-mal osztható: % 13 == 0
+        ___                  # ← break!
+    print(i)
+
+print("\\n___")
+for i in range(___, ___):    # ← 1-től 21-ig
+    if i ___ ___ == ___:     # ← 3-mal osztható: % 3 == 0
+        ___                  # ← continue!
     print(i)`,
   mockInputs:[],
   checks:[
@@ -1216,6 +1348,15 @@ print("Legjobb pontszám:", max(pontok))
 print("Leggyengébb:", min(pontok))
 atlag = sum(pontok) / len(pontok)
 print(f"Átlag: {atlag:.1f}")`,
+  hint:`pontok = [85, 72, 90, 61, 78, 95, 43, 88]
+
+print("Tanulók száma:", ___(pontok))       # ← len()
+print("Összpontszám:", ___(pontok))        # ← sum()
+print("Legjobb pontszám:", ___(pontok))    # ← max()
+print("Leggyengébb:", ___(pontok))         # ← min()
+
+atlag = ___(pontok) / ___(pontok)          # ← sum / len
+print(f"Átlag: {atlag:___}")              # ← .1f formátum`,
   mockInputs:[],
   checks:[
     {label:'len() megtalálható', fn:(c,o)=>/\blen\s*\(/.test(c)},
@@ -1276,6 +1417,16 @@ for i in range(5):
     print(f"{i+1}. dobás: {dobas}")
 print(f"Összeg: {sum(dobások)}")
 print(f"Legjobb: {max(dobások)}")`,
+  hint:`import ___             # ← random
+
+dobások = ___           # ← üres lista: []
+for i in range(___):    # ← 5-ször
+    dobas = random.___(1, 6)   # ← randint
+    dobások.___(dobas)         # ← .append()
+    print(f"{i+1}. dobás: {dobas}")
+
+print(f"Összeg: {___(dobások)}")    # ← sum()
+print(f"Legjobb: {___(dobások)}")   # ← max()`,
   mockInputs:[],
   checks:[
     {label:'import random megtalálható', fn:(c,o)=>/import\s+random/.test(c)},
@@ -1354,6 +1505,21 @@ szamok.sort()
 print("Rendezve:", szamok)
 print("Első:", szamok[0])
 print("Utolsó:", szamok[-1])`,
+  hint:`szamok = ___           # ← üres lista: []
+
+szamok.___(42)         # ← .append()
+szamok.___(7)
+szamok.___(19)
+szamok.___(3)
+szamok.___(55)
+
+print("Lista:", szamok)
+print("Elemek száma:", ___(szamok))    # ← len()
+
+szamok.___()           # ← .sort()
+print("Rendezve:", szamok)
+print("Első:", szamok[___])    # ← [0] = első elem
+print("Utolsó:", szamok[___])  # ← [-1] = utolsó elem`,
   mockInputs:[],
   checks:[
     {label:'.append() legalább 4x', fn:(c,o)=>(c.match(/\.append\s*\(/g)||[]).length>=4},
@@ -1430,6 +1596,24 @@ while True:
     else:
         print(f"Eltaláltad! {tippek} tipp kellett.")
         break`,
+  hint:`import random
+
+titkos = 18
+tippek = ___            # ← 0-ról indul
+
+print("___")            # ← bevezető szöveg
+
+while ___:              # ← while True:
+    tipp = int(input("Tipped: "))
+    tippek ___ ___      # ← tippek += 1
+
+    if tipp ___ titkos:      # ← kisebb (<)
+        print("___")         # ← "Túl kicsi!"
+    elif tipp ___ titkos:    # ← nagyobb (>)
+        print("___")         # ← "Túl nagy!"
+    else:
+        print(f"___ {tippek} ___")   # ← "Eltaláltad! X tipp kellett."
+        ___              # ← break`,
   mockInputs:['10','15','18'],
   checks:[
     {label:'import random megtalálható', fn:(c,o)=>/import\s+random/.test(c)},
@@ -1473,6 +1657,7 @@ const st = {
   status: JSON.parse(localStorage.getItem('py_basics_status')||'null') || Array(TASK_COUNT).fill('idle'),
   completedOnce: JSON.parse(localStorage.getItem('py_basics_done')||'null') || Array(TASK_COUNT).fill(false),
   failedAttempts: Array(TASK_COUNT).fill(0),
+  hintLevel: Array(TASK_COUNT).fill(0),
   editor: null,
   lastOutput: '',
   pyodide: null,
@@ -1549,7 +1734,6 @@ function runChecks(){
   const allPass=passed===total;
   if(!allPass){
     st.failedAttempts[st.cur]=(st.failedAttempts[st.cur]||0)+1;
-    if(st.failedAttempts[st.cur]>=3) document.getElementById('btn-solution').style.display='inline-flex';
   }
   if(allPass && st.status[st.cur]!=='done'){
     st.status[st.cur]='done'; st.completedOnce[st.cur]=true; saveState();
@@ -1609,7 +1793,6 @@ function loadTask(index){
   document.getElementById('task-title').textContent=task.emoji+' '+task.id+'. '+task.title;
   document.getElementById('task-desc').innerHTML=task.description;
   document.getElementById('success-banner').classList.remove('visible');
-  document.getElementById('btn-solution').style.display='none';
   document.getElementById('score-display').textContent='–';
 
   // Mock hint
@@ -1622,6 +1805,8 @@ function loadTask(index){
   st.lastOutput='';
 
   if(st.status[index]==='idle') st.status[index]='started';
+  st.hintLevel[index]=0; updateHintBtn();
+  document.getElementById('hint-banner').className='';
   renderChecklist(null); updatePills(); updateRefPanel(index);
   if(st.editor) st.editor.focus();
 }
@@ -1630,23 +1815,64 @@ function goNext(){ if(st.cur<TASK_COUNT-1) loadTask(st.cur+1); }
 function resetTask(){
   const i=st.cur;
   localStorage.removeItem('py_basics_code_'+i);
-  st.status[i]='idle'; st.completedOnce[i]=false; st.failedAttempts[i]=0; saveState();
+  st.status[i]='idle'; st.completedOnce[i]=false; st.failedAttempts[i]=0; st.hintLevel[i]=0; saveState();
   if(st.editor) st.editor.setValue(tasks[i].starterCode);
   renderChecklist(null);
   document.getElementById('score-display').textContent='–';
   document.getElementById('success-banner').classList.remove('visible');
-  document.getElementById('btn-solution').style.display='none';
+  document.getElementById('hint-banner').className='';
+  updateHintBtn();
   const term=document.getElementById('terminal');
   term.textContent='Nyomd meg a Futtatás gombot a kód végrehajtásához.';
   term.className='empty'; st.lastOutput='';
 }
-function showSolution(){ if(st.editor&&tasks[st.cur].solution) st.editor.setValue(tasks[st.cur].solution); }
+
+function updateHintBtn(){
+  const btn=document.getElementById('btn-hint');
+  const lvl=st.hintLevel[st.cur]||0;
+  btn.dataset.level=Math.min(lvl,2);
+  if(lvl===0){ btn.innerHTML='<i class="fas fa-lightbulb"></i> Segítség'; btn.disabled=false; }
+  else if(lvl===1){ btn.innerHTML='<i class="fas fa-code"></i> Vázlat'; btn.disabled=false; }
+  else if(lvl===2){ btn.innerHTML='<i class="fas fa-eye"></i> Megoldás'; btn.disabled=false; }
+  else { btn.innerHTML='<i class="fas fa-check"></i> Kész'; btn.disabled=true; btn.dataset.level=2; }
+}
+
+function showHint(){
+  const task=tasks[st.cur];
+  const lvl=st.hintLevel[st.cur]||0;
+  const banner=document.getElementById('hint-banner');
+  if(lvl===0){
+    // 1. szint: Tananyag kiemelése
+    const rp=document.getElementById('ref-panel');
+    rp.style.transition='box-shadow .15s';
+    rp.style.boxShadow='0 0 0 3px #3b82f6';
+    setTimeout(()=>{ rp.style.boxShadow=''; },900);
+    banner.className='level1';
+    banner.textContent='👉 Nézd meg a jobb oldali Tananyag példáját – segít!';
+    st.hintLevel[st.cur]=1;
+  } else if(lvl===1){
+    // 2. szint: vázlat betöltése
+    if(st.editor&&task.hint) st.editor.setValue(task.hint);
+    banner.className='level2';
+    banner.textContent='📝 Vázlat betöltve – töltsd ki a ___ helyeket!';
+    st.hintLevel[st.cur]=2;
+  } else if(lvl===2){
+    // 3. szint: teljes megoldás
+    if(st.editor&&task.solution) st.editor.setValue(task.solution);
+    banner.className='level3';
+    banner.textContent='👁 Megoldás betöltve – legközelebb próbáld a vázlattal!';
+    st.hintLevel[st.cur]=3;
+  }
+  updateHintBtn();
+}
+
 function restartPractice(){
   if(!confirm('Biztosan törlöd az összes előrehaladást?')) return;
   for(let i=0;i<TASK_COUNT;i++) localStorage.removeItem('py_basics_code_'+i);
   st.status=Array(TASK_COUNT).fill('idle');
   st.completedOnce=Array(TASK_COUNT).fill(false);
   st.failedAttempts=Array(TASK_COUNT).fill(0);
+  st.hintLevel=Array(TASK_COUNT).fill(0);
   saveState();
   document.getElementById('completion-modal').classList.remove('visible');
   loadTask(0); buildPills();
