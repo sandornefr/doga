@@ -283,14 +283,6 @@ const tasks = [
 <code>Python a legjobb!</code><br>
 <code>2 + 3 = 5</code></p>`,
   starterCode:`# 1. feladat: print() – szöveg és érték kiírása
-
-# Írd ki: "Helló, világ!"
-print("Helló, világ!")
-
-# Írd ki: "Python a legjobb!"
-
-
-# Írd ki: "2 + 3 = 5"  (számítsd ki: print("2 + 3 =", 2+3))
 `,
   solution:`print("Helló, világ!")
 print("Python a legjobb!")
@@ -330,13 +322,6 @@ Szintaxis: <code>nev = érték</code></p>
 – <code>varos</code> = a te városod (szöveg)<br>
 Majd írd ki mindhármat egy sorban!</p>`,
   starterCode:`# 2. feladat: Változók
-# Hozz létre 3 változót:
-nev   = "Anna"
-kor   =
-varos =
-
-# Írd ki mindhármat:
-print(nev, kor, varos)
 `,
   solution:`nev   = "Anna"
 kor   = 16
@@ -390,20 +375,6 @@ MAX_PONT = 100`},
 </ul>
 <p>Hozz létre egy-egy változót minden típusból, majd írd ki a <code>type()</code> függvénnyel a típusukat!</p>`,
   starterCode:`# 3. feladat: Adattípusok
-egesz  = 42
-tizedes = 3.14
-szoveg = "Python"
-logikai = True
-
-# Írd ki az értékeket:
-print(egesz, tizedes, szoveg, logikai)
-
-# Írd ki a típusokat:
-print(type(egesz))
-print(type(tizedes))
-
-# Írd ki a másik kettőt is:
-
 `,
   solution:`egesz   = 42
 tizedes = 3.14
@@ -464,11 +435,6 @@ Amit visszaad, az <strong>mindig string</strong> – még ha számot adsz is meg
 <code>Szia, Anna!</code> → kiírás</p>
 <div class="mock-hint" style="margin-top:8px;"><strong>Teszt bemenet:</strong> <code>Anna</code></div>`,
   starterCode:`# 4. feladat: input() – bekérés
-# Kérd be a nevet:
-nev = input("Add meg a neved: ")
-
-# Írd ki: "Szia, [nev]!"
-print("Szia,", nev + "!")
 `,
   solution:`nev = input("Add meg a neved: ")
 print("Szia,", nev + "!")`,
@@ -510,13 +476,6 @@ Ha számolni akarsz, át kell alakítani: <code>int()</code> vagy <code>float()<
 <p>A program bekér egy számot, majd kiírja a duplájátés négyzetét:</p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>7</code></div>`,
   starterCode:`# 5. feladat: Típuskonverzió
-szam = int(input("Adj meg egy számot: "))
-
-# Írd ki a dupláját:
-print("Duplája:", szam * 2)
-
-# Írd ki a négyzetét (szam ** 2):
-
 `,
   solution:`szam = int(input("Adj meg egy számot: "))
 print("Duplája:", szam * 2)
@@ -566,17 +525,6 @@ Az <strong>f-string</strong> (formázott szöveg) szövegbe ágyaz változókat:
 <p>Bekérsz két számot, majd f-string-gel kiírod az összeget, különbséget, szorzatot és hányadost:</p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>10</code> és <code>3</code></div>`,
   starterCode:`# 6. feladat: Műveletek és f-string
-a = int(input("Első szám: "))
-b = int(input("Második szám: "))
-
-# Írd ki f-string-gel:
-print(f"{a} + {b} = {a + b}")
-print(f"{a} - {b} = {a - b}")
-print(f"{a} * {b} = {a * b}")
-
-# Egész osztás (//) és maradék (%):
-print(f"{a} // {b} = {a // b}")
-
 `,
   solution:`a = int(input("Első szám: "))
 b = int(input("Második szám: "))
@@ -633,12 +581,6 @@ print(f"Átlag: {pont / 100 * 100:.1f}%")`},
 Ha <strong>nem pozitív</strong>, írja ki: <code>Nulla vagy negatív.</code></p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>5</code></div>`,
   starterCode:`# 7. feladat: if / else
-szam = int(input("Adj meg egy számot: "))
-
-if szam > 0:
-    print("Pozitív szám.")
-else:
-
 `,
   solution:`szam = int(input("Adj meg egy számot: "))
 if szam > 0:
@@ -685,18 +627,6 @@ else:
 <code>5</code> → <code>Jeles</code></p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>4</code></div>`,
   starterCode:`# 8. feladat: elif – több feltétel
-jegy = int(input("Add meg a jegyet (1-5): "))
-
-if jegy == 5:
-    print("Jeles")
-elif jegy == 4:
-    print("Jó")
-elif jegy == 3:
-
-elif jegy == 2:
-
-else:
-
 `,
   solution:`jegy = int(input("Add meg a jegyet (1-5): "))
 if jegy == 5:
@@ -763,14 +693,6 @@ else:
 </ul>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>15</code></div>`,
   starterCode:`# 9. feladat: and, or, not
-kor = int(input("Kor: "))
-
-if 10 <= kor <= 18:
-    print("Tanuló (10-18)")
-elif kor < 18 or kor > 65:
-    print("Kedvezményes jegy")
-else:
-    print("Teljes árú jegy")
 `,
   solution:`kor = int(input("Kor: "))
 if 10 <= kor <= 18:
@@ -823,20 +745,6 @@ print(1 <= a <= 5)       # True`},
 <code>≥ 30</code> → <code>Elhízott</code></p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>70</code> és <code>1.75</code></div>`,
   starterCode:`# 10. feladat: BMI kalkulátor
-suly = float(input("Súly (kg): "))
-mag  = float(input("Magasság (m): "))
-
-bmi = suly / mag ** 2
-print(f"BMI: {bmi:.1f}")
-
-if bmi < 18.5:
-    print("Sovány")
-elif bmi < 25:
-
-elif bmi < 30:
-
-else:
-
 `,
   solution:`suly = float(input("Súly (kg): "))
 mag  = float(input("Magasság (m): "))
@@ -898,13 +806,6 @@ print(f"{szam:,}")      # 1,234,567`},
 <code>Szia, [nev]! Üdv a Python világában!</code></p>
 <p>Hívd meg 3 különböző névvel!</p>`,
   starterCode:`# 11. feladat: def – saját függvény
-def koszon(nev):
-    print(f"Szia, {nev}! Üdv a Python világában!")
-
-# Hívd meg 3-szor:
-koszon("Anna")
-koszon("Béla")
-
 `,
   solution:`def koszon(nev):
     print(f"Szia, {nev}! Üdv a Python világában!")
@@ -952,16 +853,6 @@ osszead(3, 5)   # 8`},
 <p>Írj egy <code>terulet(a, b)</code> függvényt, amely visszaadja egy téglalap területét (<code>a * b</code>).<br>
 Majd hívd meg több értékkel, és írd ki az eredményeket!</p>`,
   starterCode:`# 12. feladat: return
-def terulet(a, b):
-    return a * b
-
-# Hívd meg és tárold el az eredményt:
-t1 = terulet(5, 3)
-print(f"5 × 3 téglalap területe: {t1}")
-
-# Hívd meg 4×6-tal is:
-t2 = terulet(4, 6)
-
 `,
   solution:`def terulet(a, b):
     return a * b
@@ -1015,21 +906,6 @@ print(eredmeny * 2)      # 14  (tovább számolható!)`},
 <code>12, 1, 2</code> → <code>Tél</code> · <code>3, 4, 5</code> → <code>Tavasz</code><br>
 <code>6, 7, 8</code> → <code>Nyár</code> · <code>9, 10, 11</code> → <code>Ősz</code></p>`,
   starterCode:`# 13. feladat: Függvény if-fel
-def evszak(honap):
-    if honap in [12, 1, 2]:
-        return "Tél"
-    elif honap in [3, 4, 5]:
-        return "Tavasz"
-    elif honap in [6, 7, 8]:
-        return "Nyár"
-    else:
-        return "Ősz"
-
-# Teszteld le az összes évszakot:
-print(evszak(1))
-print(evszak(4))
-print(evszak(7))
-
 `,
   solution:`def evszak(honap):
     if honap in [12, 1, 2]:
@@ -1101,17 +977,6 @@ A <code>range(a, b)</code> a-tól b-1-ig.</p>
 <li>Kiírja az 5× tábláját (1–10)</li>
 </ol>`,
   starterCode:`# 14. feladat: for + range()
-
-# 1. Páros számok 1-10 között:
-print("Páros számok:")
-for i in range(1, 11):
-    if i % 2 == 0:
-        print(i)
-
-# 2. 5-ös szorzótábla:
-print("\\n5× tábla:")
-for i in range(1, 11):
-
 `,
   solution:`print("Páros számok:")
 for i in range(1, 11):
@@ -1167,21 +1032,6 @@ for i, nev in enumerate(nevek):
 <p>Írj programot, amely 1-től kezdve kiírja a számokat, amíg el nem éri a <strong>10-et</strong>.<br>
 Majd írj egy második while-t, amely összegzi az 1–100 közötti számokat és kiírja az összeget.</p>`,
   starterCode:`# 15. feladat: while ciklus
-
-# 1. Számok 1-től 10-ig:
-szam = 1
-while szam <= 10:
-    print(szam)
-    szam += 1
-
-# 2. 1-100 összege:
-i     = 1
-osszeg = 0
-while i <= 100:
-    osszeg += i
-    i += 1
-
-print("1-100 összege:", osszeg)
 `,
   solution:`szam = 1
 while szam <= 10:
@@ -1244,20 +1094,6 @@ print(osszeg)  # 55`},
 <li>Ciklus 1–20-ig, de <strong>ugorja át</strong> a 3-mal osztható számokat</li>
 </ol>`,
   starterCode:`# 16. feladat: break és continue
-
-# 1. break: állj meg 13 előtt
-print("Számok (megáll 13-nál):")
-for i in range(1, 21):
-    if i % 13 == 0:
-        break
-    print(i)
-
-# 2. continue: 3-mal oszthatókat ugord át
-print("\\n1-20, kivéve a 3 többszörösei:")
-for i in range(1, 21):
-    if i % 3 == 0:
-        continue
-    print(i)
 `,
   solution:`print("Számok (megáll 13-nál):")
 for i in range(1, 21):
@@ -1331,15 +1167,6 @@ for i in range(1, 11):
 <p>Adott egy pontszámlista. Írd ki az összeset!</p>`,
   starterCode:`# 17. feladat: len, sum, min, max
 pontok = [85, 72, 90, 61, 78, 95, 43, 88]
-
-print("Tanulók száma:", len(pontok))
-print("Összpontszám:", sum(pontok))
-print("Legjobb pontszám:", max(pontok))
-print("Leggyengébb:", min(pontok))
-
-# Átlag (sum / len):
-atlag = sum(pontok) / len(pontok)
-print(f"Átlag: {atlag:.1f}")
 `,
   solution:`pontok = [85, 72, 90, 61, 78, 95, 43, 88]
 print("Tanulók száma:", len(pontok))
@@ -1399,15 +1226,6 @@ print(abs(-7))          # 7`},
 <p>Írj egy kockadobó programot, amely 5-ször dob, majd kiírja a dobásokat és az összeget!</p>`,
   starterCode:`# 18. feladat: import random
 import random
-
-dobások = []
-for i in range(5):
-    dobas = random.randint(1, 6)
-    dobások.append(dobas)
-    print(f"{i+1}. dobás: {dobas}")
-
-print(f"Összeg: {sum(dobások)}")
-print(f"Legjobb: {max(dobások)}")
 `,
   solution:`import random
 dobások = []
@@ -1475,23 +1293,6 @@ print(random.sample(szamok, 3)) # 3 véletlenszerű elem`},
 </ul>
 <p>Hozz létre egy üres listát, adj hozzá 5 számot, rendezd, majd írd ki az első és utolsó elemet!</p>`,
   starterCode:`# 19. feladat: Lista műveletek
-szamok = []
-
-# Adj hozzá 5 számot:
-szamok.append(42)
-szamok.append(7)
-szamok.append(19)
-szamok.append(3)
-szamok.append(55)
-
-print("Lista:", szamok)
-print("Elemek száma:", len(szamok))
-
-# Rendezd és írd ki:
-szamok.sort()
-print("Rendezve:", szamok)
-print("Első:", szamok[0])
-print("Utolsó:", szamok[-1])
 `,
   solution:`szamok = []
 szamok.append(42)
@@ -1565,22 +1366,7 @@ A felhasználó tippel. A program:</p>
   starterCode:`# 20. feladat: Szám kitaláló – mini projekt
 import random
 
-titkos = 18  # teszt miatt rögzített (normál esetben: random.randint(1, 20))
-tippek = 0
-
-print("Gondoltam egy számra 1 és 20 között. Találd ki!")
-
-while True:
-    tipp = int(input("Tipped: "))
-    tippek += 1
-
-    if tipp < titkos:
-        print("Túl kicsi!")
-    elif tipp > titkos:
-        print("Túl nagy!")
-    else:
-        print(f"Eltaláltad! {tippek} tipp kellett.")
-        break
+titkos = 18  # teszt miatt rögzített
 `,
   solution:`import random
 titkos = 18
