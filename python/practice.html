@@ -760,10 +760,10 @@ print(rex)`,
   ],
   tutorial: {
     intro: `<h3>Mi az az osztály?</h3>
-<p>Az <strong>osztály</strong> (<code>class</code>) egy <strong>sablon/tervrajz</strong>, amiből objektumokat hozunk létre.<br>
-Például: <code>class Kutya</code> a tervrajz, <code>rex = Kutya()</code> az objektum.</p>
-<p>Az <code>__init__</code> metódus fut le az objektum létrehozásakor (konstruktor).<br>
-A <code>self</code> az objektumra mutat.</p>`,
+<p>Képzeld el, hogy egy <strong>kutyatenyésztő nyilvántartást</strong> vezet. Minden kutyáról ugyanazokat az adatokat tárolja: név, kor, fajta. Az osztály (<code>class</code>) pont ez: egy <strong>sablon</strong>, ami meghatározza, milyen adatai lesznek minden kutyának.</p>
+<p>A <code>class Kutya:</code> csak a sablon – maga nem egy kutya. A <code>rex = Kutya()</code> sor hoz létre egy <strong>konkrét kutyát</strong> a sablon alapján.</p>
+<p>A <code>__init__</code> az a kód, ami <strong>automatikusan lefut</strong>, amikor új kutyát hozol létre – itt töltöd fel az adatait.<br>
+A <code>self</code> mindig magát az éppen létrehozott objektumot jelenti – így tudja a Python, hogy <em>melyik</em> kutya adatait írja be.</p>`,
     examples: [
       { title: 'Egyszerű osztály', code: `class Auto:
     pass   # üres osztály
