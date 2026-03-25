@@ -1174,10 +1174,14 @@ for i in range(1, 21):
     {label:'break megtalálható', fn:(c,o)=>/\bbreak\b/.test(c)},
     {label:'continue megtalálható', fn:(c,o)=>/\bcontinue\b/.test(c)},
     {label:'Kimenet: 12 megjelenik (break előtt)', fn:(c,o)=>/12/.test(o)},
-    {label:'Kimenet: 13 NEM jelenik meg (break után)', fn:(c,o)=>!/(^|\s)13(\s|$)/.test(o.replace(/13-n[aá]l/,''))},
+    {label:'Kimenet: 13 NEM jelenik meg (break után)', fn:(c,o)=>{
+      const first=(o.split(/\n\s*\n/)[0]||o).replace(/13-n[aá]l/g,'');
+      return !/(^|\n)13(\n|$)/.test(first);
+    }},
     {label:'Kimenet: 3 többszörösei hiányoznak (pl. 3 nincs)', fn:(c,o)=>{
-      const lines=o.split('\n').map(l=>l.trim()).filter(Boolean);
-      return !lines.includes('3');
+      const parts=o.split(/\n\s*\n/);
+      const second=parts.slice(1).join('\n')||o;
+      return !second.split('\n').map(l=>l.trim()).includes('3');
     }},
   ],
   tutorial:{
