@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Profi – Kandó</title>
+  <link rel="icon" href="../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f172a;
+      --bg2:      #111827;
+      --bg3:      #1e293b;
+      --border:   #1f2937;
+      --accent:   #22c55e;
+      --accent2:  #16a34a;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --blue:     #3b82f6;
+      --blue2:    #1d4ed8;
+      --yellow:   #f59e0b;
+      --red:      #ef4444;
+      --font:     'Segoe UI', system-ui, sans-serif;
+      --topbar-h: 54px;
+      --pillbar-h: 38px;
+      --bottom-h: 52px;
+      --left-w:   270px;
+      --right-w:  330px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .topbar {
+      height: var(--topbar-h); background: var(--bg2);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; padding: 0 12px; gap: 8px;
+      flex-shrink: 0; z-index: 100;
+    }
+    .topbar-logo { height: 30px; margin-right: 4px; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 8px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; cursor: pointer;
+      text-decoration: none; white-space: nowrap;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    .topbar-spacer{flex:1;}
+
+    /* PILLS BAR */
+    .pills-bar{height:var(--pillbar-h);background:var(--bg2);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 12px;flex-shrink:0;gap:0;}
+    .pills-wrapper{display:flex;align-items:center;gap:4px;overflow-x:auto;flex:1;padding:2px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+    .pill-group-label{flex-shrink:0;font-size:0.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:0 6px;color:var(--muted);white-space:nowrap;}
+    .pill-group-label.algoritmus{color:#f472b6;}
+    .pill-group-label.listakif{color:#34d399;}
+    .pill-group-label.lambda_f{color:#fb923c;}
+    .pill {
+      flex-shrink: 0; width: 30px; height: 26px;
+      border-radius: 6px; border: 1.5px solid #374151;
+      background: transparent; color: var(--muted);
+      font-size: 0.76rem; font-weight: 600; cursor: pointer;
+      transition: all .18s; display: flex; align-items: center; justify-content: center;
+    }
+    .pill:hover { border-color: var(--blue); color: #93c5fd; }
+    .pill.active { border-color: var(--blue); background: rgba(59,130,246,.15); color: #93c5fd; }
+    .pill.done { border-color: var(--accent); background: var(--accent); color: #052e16; font-weight: 700; }
+    .pill.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+    .progress-label {
+      white-space: nowrap; font-size: 0.78rem; color: var(--muted);
+      padding: 0 8px; border-left: 1.5px solid var(--border);
+    }
+    .progress-label span { color: var(--accent); font-weight: 700; }
+    .btn-restart {
+      padding: 4px 10px; background: transparent; border: 1px solid var(--border);
+      border-radius: 6px; color: var(--muted); font-size: 0.75rem; cursor: pointer;
+      display: flex; align-items: center; gap: 4px; transition: all .2s; white-space: nowrap;
+    }
+    .btn-restart:hover { border-color: var(--red); color: #fca5a5; }
+
+    /* LAYOUT */
+    .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - var(--topbar-h) - var(--pillbar-h) - var(--bottom-h));}
+
+    /* LEFT PANEL */
+    .left-panel {
+      width: var(--left-w); flex-shrink: 0; background: var(--bg2);
+      border-right: 1.5px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .left-panel-inner {
+      flex: 1; overflow-y: auto; padding: 16px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .topic-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
+    }
+    .topic-badge.algoritmus{background:rgba(244,114,182,.15);color:#f472b6;border:1px solid rgba(244,114,182,.3);}
+    .topic-badge.listakif{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+    .topic-badge.lambda_f{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3);}
+    .task-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
+    .task-desc { font-size: 0.84rem; color: var(--muted); line-height: 1.65; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .task-desc code { background: #1e293b; color: #93c5fd; padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; }
+    .task-desc strong { color: var(--text); }
+    .checklist-title { font-size: 0.72rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 10px; border-radius: 7px; margin-bottom: 5px;
+      background: var(--bg3); border: 1px solid var(--border);
+      font-size: 0.81rem; transition: border-color .2s;
+    }
+    .check-item.pass { border-color: rgba(34,197,94,.4); }
+    .check-item.fail { border-color: rgba(239,68,68,.3); }
+    .check-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+    .check-text { color: var(--text); line-height: 1.4; }
+    .success-banner {
+      display: none; margin-top: 12px;
+      background: rgba(34,197,94,.12); border: 1.5px solid rgba(34,197,94,.4);
+      border-radius: 10px; padding: 12px 14px; text-align: center;
+      font-size: 0.88rem; color: var(--accent); font-weight: 600;
+    }
+    .success-banner.visible { display: block; }
+
+    /* CENTER */
+    .center-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    .editor-header {
+      padding: 8px 14px; background: var(--bg3); border-bottom: 1.5px solid var(--border);
+      font-size: 0.78rem; font-weight: 700; color: #60a5fa; letter-spacing: .06em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .editor-area { flex: 1; position: relative; overflow: hidden; }
+
+    /* TERMINAL WRAPPER (inside center-panel, bottom) */
+    .terminal-wrapper{height:185px;flex-shrink:0;display:flex;flex-direction:column;border-top:1.5px solid var(--border);}
+    .terminal-header{padding:8px 14px;background:var(--bg3);border-bottom:1.5px solid var(--border);font-size:0.78rem;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .terminal-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;display:inline-block;}
+    #pyodide-status{font-size:0.72rem;padding:2px 8px;border-radius:4px;background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.3);}
+    #pyodide-status.ready{background:rgba(34,197,94,.1);color:#86efac;border-color:rgba(34,197,94,.3);}
+    #pyodide-status.error{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+    #terminal{flex:1;overflow-y:auto;padding:14px 16px;font-family:'Consolas','Courier New',monospace;font-size:0.82rem;background:#060d1a;color:#a3e635;white-space:pre-wrap;word-break:break-word;line-height:1.55;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+    #terminal.has-error{color:#f87171;}
+    #terminal.empty{color:#475569;font-style:italic;}
+
+    /* BOTTOM BAR */
+    .bottom-bar {
+      height: var(--bottom-h); background: var(--bg2); border-top: 1.5px solid var(--border);
+      display: flex; align-items: center; padding: 0 14px; gap: 10px; flex-shrink: 0;
+    }
+    .btn-run {
+      padding: 9px 20px; border-radius: 9px;
+      background: #1d4ed8; border: 1.5px solid var(--blue);
+      color: #fff; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background .18s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-run:hover { background: var(--blue); }
+    .btn-run:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-check {
+      padding: 9px 20px; border-radius: 9px;
+      background: var(--accent2); border: 1.5px solid var(--accent);
+      color: #fff; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background .18s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-check:hover { background: var(--accent); }
+    .score-display { font-size: 0.88rem; color: var(--muted); }
+    .score-display span { color: var(--text); font-weight: 700; }
+    .btn-hint{padding:7px 14px;border-radius:8px;font-size:0.83rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
+    .btn-hint[data-level="0"]{background:rgba(59,130,246,.12);border:1.5px solid #3b82f6;color:#93c5fd;}
+    .btn-hint[data-level="1"]{background:rgba(234,179,8,.1);border:1.5px solid #ca8a04;color:#fcd34d;}
+    .btn-hint[data-level="2"]{background:rgba(249,115,22,.1);border:1.5px solid #ea580c;color:#fdba74;}
+    #hint-banner{display:none;padding:5px 14px;font-size:0.76rem;text-align:center;border-bottom:1.5px solid;}
+    #hint-banner.level1{display:block;background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.25);color:#93c5fd;}
+    #hint-banner.level2{display:block;background:rgba(234,179,8,.07);border-color:rgba(234,179,8,.25);color:#fcd34d;}
+    #hint-banner.level3{display:block;background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.25);color:#fdba74;}
+    .btn-reset {
+      padding: 9px 12px; border-radius: 9px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.85rem;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-reset:hover { border-color: var(--red); color: #fca5a5; }
+    .btn-next {
+      margin-left: auto; padding: 9px 18px; border-radius: 9px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-next:hover { border-color: var(--blue); color: #93c5fd; }
+
+    /* RIGHT PANEL: Tananyag (mindig látható) */
+    .right-panel{width:var(--right-w);flex-shrink:0;background:var(--bg2);border-left:1.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+    .ref-header{padding:12px 16px;border-bottom:1.5px solid var(--border);font-weight:700;font-size:0.92rem;color:var(--text);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    .ref-body{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+    .tutor-section { padding: 14px 16px; border-bottom: 1.5px solid var(--border); background: #0f172a; }
+    .tutor-section h3 { margin: 0 0 8px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+    .tutor-section p { margin: 0 0 8px; font-size: 0.84rem; color: #cbd5e1; line-height: 1.65; }
+    .tutor-section p:last-child { margin: 0; }
+    .tutor-section ul { margin: 4px 0 8px; padding-left: 18px; }
+    .tutor-section ul li { font-size: 0.84rem; color: #cbd5e1; line-height: 1.7; }
+    .tutor-section code { background: #1e293b; color: #93c5fd; padding: 1px 5px; border-radius: 3px; font-size: 0.81rem; font-family: Consolas, monospace; }
+    .tutor-section strong { color: #f1f5f9; }
+    .ref-section { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .ref-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; background: var(--bg3);
+      cursor: pointer; font-size: 0.84rem; font-weight: 600;
+      user-select: none; transition: background .15s;
+    }
+    .ref-section-header:hover { background: #243044; }
+    .ref-section.open .chevron { transform: rotate(90deg); }
+    .chevron { transition: transform .2s; font-size: 0.75rem; color: var(--muted); }
+    .ref-section-body { display: none; padding: 10px; background: var(--bg); }
+    .ref-section.open .ref-section-body { display: block; }
+    .ref-code {
+      font-family: 'Consolas', monospace; font-size: 0.78rem;
+      color: #a3e635; background: #020617;
+      border-radius: 6px; padding: 10px 12px;
+      white-space: pre-wrap; margin-bottom: 6px; border: 1px solid #0f1f3a;
+    }
+    .ref-code .cm { color: #6b7280; }
+    .btn-copy {
+      padding: 4px 10px; border-radius: 5px; background: transparent;
+      border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem;
+      cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all .15s;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-copy.copied { color: var(--accent); border-color: var(--accent); }
+    .ref-sections-label { padding: 8px 16px 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; }
+
+    /* COMPLETION MODAL */
+    .completion-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .completion-overlay.visible { display: flex; }
+    .completion-box {
+      background: var(--bg2); border: 1px solid #22c55e;
+      border-radius: 12px; padding: 36px 32px; max-width: 440px; width: 94%;
+      text-align: center;
+    }
+    .completion-box h2 { margin: 0 0 10px; font-size: 1.3rem; color: #22c55e; }
+    .completion-box p { margin: 0 0 24px; font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; }
+    .completion-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn-comp { padding: 10px 18px; background: var(--accent); color: #000; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-comp:hover { background: #facc15; }
+    .btn-comp-sec { padding: 10px 18px; background: transparent; color: #94a3b8; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-comp-sec:hover { color: #f1f5f9; border-color: #64748b; }
+
+    /* CONFETTI */
+    .confetti-flash { position: fixed; inset: 0; z-index: 9999; pointer-events: none; display: flex; align-items: center; justify-content: center; font-size: 5rem; opacity: 0; animation: none; }
+    .confetti-flash.animate { animation: confettiPop .7s ease-out forwards; }
+    @keyframes confettiPop { 0%{opacity:0;transform:scale(.5)} 30%{opacity:1;transform:scale(1.2)} 70%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(1.1)} }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Auth check -->
+<script>
+  if (!sessionStorage.getItem('kandoUser')) location.replace('../login.html');
+</script>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="../portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó" class="topbar-logo" style="cursor:pointer;"></a>
+  <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <a href="basics.html" class="btn-back" style="border-color:#fb923c;color:#fb923c;"><i class="fas fa-book-open"></i> Alapok</a>
+  <a href="practice.html" class="btn-back" style="border-color:#22c55e;color:#22c55e;"><i class="fas fa-graduation-cap"></i> Haladó</a>
+  <div class="topbar-spacer"></div>
+  <div class="progress-label">Teljesítve: <span id="progress-count">0</span> / 11</div>
+  <button class="btn-restart" onclick="restartPractice()" title="Összes feladat törlése és újrakezdés"><i class="fa-solid fa-arrow-rotate-right"></i> Újrakezd</button>
+</header>
+<!-- PILLS BAR -->
+<div class="pills-bar">
+  <div class="pills-wrapper" id="pills-wrapper"></div>
+</div>
+
+<!-- COMPLETION MODAL -->
+<div class="completion-overlay" id="completion-modal">
+  <div class="completion-box">
+    <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+    <h2>Mind a 11 feladat kész!</h2>
+    <p>Felkészültél az emelt szintű kérdésekre – és a Python vizsgára is!</p>
+    <div class="completion-buttons">
+      <button class="btn-comp" onclick="restartPractice()"><i class="fa-solid fa-arrow-rotate-right"></i> Újra</button>
+      <a class="btn-comp" href="index.html"><i class="fa-solid fa-list-check"></i> Vizsga feladatok</a>
+      <a class="btn-comp-sec" href="../portal.html">Főmenü</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <aside class="left-panel">
+    <div class="left-panel-inner">
+      <div id="topic-badge" class="topic-badge algoritmus"></div>
+      <div class="task-title" id="task-title">1. feladat</div>
+      <div class="task-desc" id="task-desc">Töltés...</div>
+      <div class="checklist-title">Ellenőrzési szempontok</div>
+      <div id="checklist"></div>
+      <div class="success-banner" id="success-banner"></div>
+    </div>
+  </aside>
+
+  <!-- CENTER: Monaco + terminal -->
+  <div class="center-panel">
+    <div class="editor-header">
+      <i class="fa-brands fa-python"></i> Python
+      <span id="run-spinner" style="display:none;margin-left:8px;font-size:0.75rem;color:var(--muted);font-weight:400;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Futtatás...
+      </span>
+    </div>
+    <div id="hint-banner"></div>
+    <div class="editor-area">
+      <div id="editor-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1e1e1e;color:#4b5563;font-size:0.85rem;gap:8px;z-index:1;pointer-events:none;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Szerkesztő betöltése...
+      </div>
+      <div id="editor-python" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="terminal-wrapper">
+      <div class="terminal-header">
+        <div><span class="terminal-dot"></span>Kimenet</div>
+        <div id="pyodide-status">Pyodide betölt...</div>
+      </div>
+      <div id="terminal" class="empty">Nyomd meg a Futtatás gombot a kód végrehajtásához.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Tananyag (mindig látható) -->
+  <div class="right-panel" id="ref-panel">
+    <div class="ref-header"><i class="fa-solid fa-book"></i> Tananyag</div>
+    <div class="ref-body" id="ref-body"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn-run" id="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Futtatás</button>
+  <button class="btn-check" onclick="runChecks()"><i class="fas fa-check-circle"></i> Ellenőrzés</button>
+  <div class="score-display" id="score-display">–</div>
+  <button class="btn-hint" id="btn-hint" data-level="0" onclick="showHint()"><i class="fas fa-lightbulb"></i> Segítség</button>
+  <button class="btn-reset" onclick="resetTask()"><i class="fas fa-rotate-left"></i> Reset</button>
+  <button class="btn-next" onclick="goNext()">Következő <i class="fas fa-arrow-right"></i></button>
+</div>
+
+<!-- CONFETTI -->
+<div class="confetti-flash" id="confetti">🎉</div>
+
+<!-- MONACO -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+
+<script>
+'use strict';
+
+// ─── Session tracking ─────────────────────────────────────────────────────
+(function() {
+  const API = 'https://agazati.up.railway.app';
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (!u.email) return;
+  let sid = null;
+  fetch(`${API}/api/session/start`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: u.email, page: 'py-pro' })
+  }).then(r => r.json()).then(d => {
+    sid = d.sessionId;
+    setInterval(() => {
+      if (sid) fetch(`${API}/api/session/heartbeat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {});
+    }, 30000);
+  }).catch(() => {});
+  window.addEventListener('beforeunload', () => {
+    if (sid) fetch(`${API}/api/session/end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {});
+  });
+})();
+// ─────────────────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FELADATOK
+// ═══════════════════════════════════════════════════════════════════════════
+const tasks = [
+
+// ═══════════ ALGORITMUSOK (1–5) ═══════════
+
+{
+  id: 1, emoji: '🔍', topicGroup: 'algoritmus',
+  title: 'Lineáris keresés',
+  description: `<p>A lineáris keresés azt jelenti: <strong>végigmész a listán elemről elemre</strong>, és megállsz, ha megtalálod amit keresel.</p>
+<p>Adott egy számlista. Keresd meg az első <strong>páros számot</strong> for ciklussal (ne a beépített függvényeket használd)!<br>
+Ha találtál, írd ki: <code>Első páros: 8</code>. Ha nincs páros, írd ki: <code>Nincs páros szám.</code></p>`,
+  starterCode: `# 1. feladat: Lineáris keresés
+szamok = [3, 7, 11, 8, 5, 2, 9]
+
+talalt = False
+
+for szam in szamok:
+    # Ha szam páros (szam % 2 == 0):
+    # írd ki és állítsd talalt = True-ra, majd törd meg a ciklust
+
+`,
+  solution: `szamok = [3, 7, 11, 8, 5, 2, 9]
+talalt = False
+for szam in szamok:
+    if szam % 2 == 0:
+        print("Első páros:", szam)
+        talalt = True
+        break
+if not talalt:
+    print("Nincs páros szám.")`,
+  mockInputs: [],
+  checks: [
+    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+szamok/.test(c) },
+    { label: 'párosság vizsgálat (% 2)', fn: (c,o) => /\%\s*2/.test(c) },
+    { label: 'break megtalálható', fn: (c,o) => /\bbreak\b/.test(c) },
+    { label: 'talalt változó használva', fn: (c,o) => /talalt/.test(c) },
+    { label: 'Kimenet: "Első páros: 8"', fn: (c,o) => /[Ee]ls[oő]\s+p[aá]ros.*8|8.*p[aá]ros/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Lineáris keresés</h3>
+<p>A lineáris keresés a legegyszerűbb keresési módszer: végigmész a listán elejétől a végéig, és megállsz, ha megtalálod amit keresel.</p>
+<p>Tipikus felépítése: egy <code>talalt = False</code> jelzővel indul, a ciklusban ha megtalálod a keresett elemet, <code>talalt = True</code>-ra állítod és <code>break</code>-kel kilépsz. A ciklus után megnézed, volt-e találat.</p>
+<p>Mikor nem működik a beépített <code>in</code> operátor? Ha nem pontos egyezést keresel, hanem valamilyen feltételt (pl. "első páros szám", "első negatív érték").</p>`,
+    examples: [
+      { title: 'Lineáris keresés minta', code: `# Keressük az első negatív számot
+szamok = [5, 3, -2, 8, -7, 1]
+
+talalt = False
+for szam in szamok:
+    if szam < 0:
+        print("Első negatív:", szam)
+        talalt = True
+        break
+
+if not talalt:
+    print("Nincs negatív szám.")` }
+    ]
+  }
+},
+
+{
+  id: 2, emoji: '➕', topicGroup: 'algoritmus',
+  title: 'Összegzés tétele',
+  description: `<p>Az összegzés tétele: <strong>végigmész a listán, és összeadod azokat az elemeket, amik megfelelnek egy feltételnek</strong>.</p>
+<p>Adott egy számlista. Számítsd ki a <strong>pozitív számok összegét</strong> for ciklussal (ne a beépített <code>sum()</code>-ot használd)!<br>
+Írd ki: <code>Pozitív számok összege: 25</code></p>`,
+  starterCode: `# 2. feladat: Összegzés tétele
+szamok = [4, -3, 7, -1, 8, -5, 6]
+
+osszeg = 0   # itt gyűjtjük az összeget
+
+for szam in szamok:
+    # Ha szam pozitív, add hozzá az összeghez:
+
+print("Pozitív számok összege:", osszeg)
+`,
+  solution: `szamok = [4, -3, 7, -1, 8, -5, 6]
+osszeg = 0
+for szam in szamok:
+    if szam > 0:
+        osszeg += szam
+print("Pozitív számok összege:", osszeg)`,
+  mockInputs: [],
+  checks: [
+    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+szamok/.test(c) },
+    { label: 'osszeg = 0 kezdőérték', fn: (c,o) => /osszeg\s*=\s*0/.test(c) },
+    { label: 'feltétel: szam > 0', fn: (c,o) => /szam\s*>\s*0/.test(c) },
+    { label: 'összeadás (osszeg +=)', fn: (c,o) => /osszeg\s*\+=/.test(c) },
+    { label: 'Kimenet: 25', fn: (c,o) => /\b25\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Összegzés tétele</h3>
+<p>Az összegzés tétele egy alapvető algoritmikus gondolat: van egy "gyűjtő" változód (általában 0-ra állítod), és a ciklusban mindig hozzáadod az aktuális elemet – de csak ha teljesít egy feltételt.</p>
+<p>A minta mindig ugyanez: <code>osszeg = 0</code> → for ciklus → <code>if feltétel: osszeg += szam</code> → ciklus után kiírod az eredményt.</p>
+<p>Érettségin és vizsgákon nagyon gyakran kérik: "összegezd a páros/pozitív/ötösnél nagyobb elemeket".</p>`,
+    examples: [
+      { title: 'Összegzés tétele minta', code: `# Páros számok összege
+szamok = [1, 2, 3, 4, 5, 6, 7, 8]
+osszeg = 0
+for szam in szamok:
+    if szam % 2 == 0:
+        osszeg += szam
+print("Páros összeg:", osszeg)  # 20` }
+    ]
+  }
+},
+
+{
+  id: 3, emoji: '🔢', topicGroup: 'algoritmus',
+  title: 'Megszámlálás tétele',
+  description: `<p>A megszámlálás tétele: <strong>végigmész a listán, és megszámlálod, hány elem teljesít egy feltételt</strong>.</p>
+<p>Adott egy jegylista. Számold meg, hány tanuló kapott <strong>ötöst</strong> for ciklussal (ne a beépített <code>count()</code>-ot használd)!<br>
+Írd ki: <code>Ötösök száma: 3</code></p>`,
+  starterCode: `# 3. feladat: Megszámlálás tétele
+jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+
+db = 0   # a számláló
+
+for jegy in jegyek:
+    # Ha jegy == 5, növeld db-t 1-gyel:
+
+print("Ötösök száma:", db)
+`,
+  solution: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+db = 0
+for jegy in jegyek:
+    if jegy == 5:
+        db += 1
+print("Ötösök száma:", db)`,
+  mockInputs: [],
+  checks: [
+    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+jegyek/.test(c) },
+    { label: 'db = 0 számláló', fn: (c,o) => /db\s*=\s*0/.test(c) },
+    { label: 'feltétel: jegy == 5', fn: (c,o) => /jegy\s*==\s*5/.test(c) },
+    { label: 'számlálás (db += 1)', fn: (c,o) => /db\s*\+=\s*1/.test(c) },
+    { label: 'Kimenet: 4', fn: (c,o) => /\b4\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Megszámlálás tétele</h3>
+<p>A megszámlálás tétele hasonló az összegzéshez, de itt nem összeadunk – hanem megszámolunk. A "gyűjtő" változó neve általában <code>db</code> (darab), és mindig 0-ról indul.</p>
+<p>A minta: <code>db = 0</code> → for ciklus → <code>if feltétel: db += 1</code> → ciklus után kiírod az eredményt.</p>
+<p>Tipikus feladatok: "hány páros szám van", "hány tanuló bukott", "hány szó hosszabb 5 karakternél".</p>`,
+    examples: [
+      { title: 'Megszámlálás tétele minta', code: `# Hány szó hosszabb 4 karakternél?
+szavak = ["alma", "körte", "eper", "szilva", "bor"]
+db = 0
+for szo in szavak:
+    if len(szo) > 4:
+        db += 1
+print("Hosszú szavak:", db)  # 2` }
+    ]
+  }
+},
+
+{
+  id: 4, emoji: '🏆', topicGroup: 'algoritmus',
+  title: 'Maximum kiválasztás',
+  description: `<p>A maximum kiválasztása: <strong>végigmész a listán, és nyomon követed a legnagyobb értéket</strong> – a beépített <code>max()</code> nélkül.</p>
+<p>Adott egy pontszámlista. Keresd meg a legnagyobb pontszámot for ciklussal!<br>
+Írd ki: <code>Legjobb eredmény: 95</code></p>`,
+  starterCode: `# 4. feladat: Maximum kiválasztás
+pontok = [72, 88, 65, 95, 71, 83, 90]
+
+maximum = pontok[0]   # kezdetben az első az "eddigi legjobb"
+
+for pont in pontok:
+    # Ha pont nagyobb mint a jelenlegi maximum:
+    # frissítsd a maximumot
+
+print("Legjobb eredmény:", maximum)
+`,
+  solution: `pontok = [72, 88, 65, 95, 71, 83, 90]
+maximum = pontok[0]
+for pont in pontok:
+    if pont > maximum:
+        maximum = pont
+print("Legjobb eredmény:", maximum)`,
+  mockInputs: [],
+  checks: [
+    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+pontok/.test(c) },
+    { label: 'maximum = pontok[0] kezdőérték', fn: (c,o) => /maximum\s*=\s*pontok\s*\[\s*0\s*\]/.test(c) },
+    { label: 'feltétel: pont > maximum', fn: (c,o) => /pont\s*>\s*maximum/.test(c) },
+    { label: 'maximum frissítése', fn: (c,o) => /maximum\s*=\s*pont/.test(c) },
+    { label: 'Kimenet: 95', fn: (c,o) => /\b95\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Maximum kiválasztás</h3>
+<p>A maximum keresésének trükkje: az első elemmel kezded mint "eddigi legjobb", majd végigjárod a listát. Ha találsz valami nagyobbat, frissíted az "eddigi legjobb" értéket.</p>
+<p>Miért <code>pontok[0]</code>-ról indulsz és nem 0-ról? Mert ha minden szám negatív, a 0-ról induló téves eredményt adna.</p>
+<p>Ugyanez a gondolat működik minimumnál is – csak a feltétel megfordul: <code>if szam &lt; minimum</code>.</p>`,
+    examples: [
+      { title: 'Maximum és minimum keresés', code: `szamok = [34, 12, 78, 56, 23, 89, 11]
+
+maximum = szamok[0]
+minimum = szamok[0]
+
+for szam in szamok:
+    if szam > maximum:
+        maximum = szam
+    if szam < minimum:
+        minimum = szam
+
+print("Max:", maximum)  # 89
+print("Min:", minimum)  # 11` }
+    ]
+  }
+},
+
+{
+  id: 5, emoji: '🔄', topicGroup: 'algoritmus',
+  title: 'Buborékrendezés',
+  description: `<p>A buborékrendezés a legismertebb kézi rendezési algoritmus: <strong>párokat hasonlít össze és cserél fel</strong>, amíg a lista rendezett nem lesz.</p>
+<p>A neve onnan ered, hogy a nagy elemek "felbuborékolnak" a lista végére – körülbelül úgy, ahogy a buborékok felfelé szállnak a vízben.</p>
+<p>Rendezd növekvő sorba a <code>szamok</code> listát buborékrendezéssel!</p>`,
+  starterCode: `# 5. feladat: Buborékrendezés
+szamok = [64, 34, 25, 12, 22, 11, 90]
+
+n = len(szamok)
+
+for i in range(n - 1):
+    for j in range(n - 1 - i):
+        # Ha a szomszéd nagyobb, cseréljük fel:
+        if szamok[j] > szamok[j + 1]:
+            # Csere: ideiglenes változóval
+            csere = szamok[j]
+            szamok[j] = szamok[j + 1]
+            szamok[j + 1] = csere
+
+print(szamok)
+`,
+  solution: `szamok = [64, 34, 25, 12, 22, 11, 90]
+n = len(szamok)
+for i in range(n - 1):
+    for j in range(n - 1 - i):
+        if szamok[j] > szamok[j + 1]:
+            csere = szamok[j]
+            szamok[j] = szamok[j + 1]
+            szamok[j + 1] = csere
+print(szamok)`,
+  mockInputs: [],
+  checks: [
+    { label: 'két egymásba ágyazott for ciklus', fn: (c,o) => (c.match(/\bfor\b/g)||[]).length >= 2 },
+    { label: 'szomszéd összehasonlítás ([j] > [j+1])', fn: (c,o) => /szamok\s*\[\s*j\s*\]\s*>\s*szamok\s*\[\s*j\s*\+\s*1\s*\]/.test(c) },
+    { label: 'csere ideiglenes változóval', fn: (c,o) => /csere\s*=\s*szamok/.test(c) },
+    { label: 'Kimenet: rendezett lista', fn: (c,o) => /11.*12.*22.*25.*34.*64.*90/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Buborékrendezés</h3>
+<p>A buborékrendezés minden menetben végigmegy a listán, és ha két szomszédos elem rossz sorrendben van, felcseréli őket. Ez addig ismétlődik, amíg már nincs mit cserélni.</p>
+<p>A csere trükkje: kell egy ideiglenes változó, különben az egyik érték elvész:<br>
+<code>csere = a</code> → <code>a = b</code> → <code>b = csere</code></p>
+<p>Pythonban van egy elegánsabb módszer is: <code>a, b = b, a</code> – de vizsgákon a kézi módszert is tudni kell.</p>`,
+    examples: [
+      { title: 'Buborékrendezés és csere', code: `# Csere Python módra (tuple unpacking)
+a = 5
+b = 3
+a, b = b, a
+print(a, b)  # 3 5
+
+# Buborékrendezés röviden
+lista = [3, 1, 4, 1, 5]
+for i in range(len(lista) - 1):
+    for j in range(len(lista) - 1 - i):
+        if lista[j] > lista[j+1]:
+            lista[j], lista[j+1] = lista[j+1], lista[j]
+print(lista)  # [1, 1, 3, 4, 5]` }
+    ]
+  }
+},
+
+// ═══════════ LIST COMPREHENSION (6–8) ═══════════
+
+{
+  id: 6, emoji: '⚡', topicGroup: 'listakif',
+  title: 'List comprehension – alap',
+  description: `<p>A list comprehension egy tömörebb módja egy lista létrehozásának. Ahelyett hogy for ciklussal és <code>.append()</code>-pel töltöd fel, egy sorban megírhatod.</p>
+<p>Hozz létre egy listát, ami az 1–10 számok <strong>négyzeteit</strong> tartalmazza list comprehension-nel!<br>
+Írd ki az eredményt: <code>[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</code></p>`,
+  starterCode: `# 6. feladat: List comprehension alap
+# Hagyományos módszer (ezt már tudod):
+negyzetek_regi = []
+for x in range(1, 11):
+    negyzetek_regi.append(x**2)
+
+# List comprehension (ugyanez egy sorban):
+negyzetek = [x**2 for x in range(1, 11)]
+
+print(negyzetek)
+`,
+  solution: `negyzetek = [x**2 for x in range(1, 11)]
+print(negyzetek)`,
+  mockInputs: [],
+  checks: [
+    { label: 'list comprehension szintaxis [ ... for ... in ...]', fn: (c,o) => /\[.+for\s+\w+\s+in\s+.+\]/.test(c) },
+    { label: 'x**2 négyzetszám', fn: (c,o) => /x\s*\*\*\s*2/.test(c) },
+    { label: 'range(1, 11)', fn: (c,o) => /range\s*\(\s*1\s*,\s*11\s*\)/.test(c) },
+    { label: 'Kimenet: [1, 4, 9, ...]', fn: (c,o) => /\[1,?\s*4,?\s*9/.test(o) },
+    { label: 'Kimenet: 100 is szerepel', fn: (c,o) => /\b100\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>List comprehension</h3>
+<p>A list comprehension egy Pythonos rövidítés listák létrehozásához. A szerkezete: <code>[kifejezés for változó in sorozat]</code></p>
+<p>Olvasd így: "adjál nekem <em>x négyzetét</em>, minden <em>x</em>-re, ami a <em>range(1,11)</em>-ben van".</p>
+<p>Nem kötelező, de a Python kódokban nagyon gyakran látni – és vizsgán is előkerülhet. Ha megérted, sokkal tömörebb és olvashatóbb kódot tudsz írni.</p>`,
+    examples: [
+      { title: 'List comprehension példák', code: `# Négyzetszámok
+negyzetek = [x**2 for x in range(1, 6)]
+print(negyzetek)  # [1, 4, 9, 16, 25]
+
+# Szavak nagybetűsítése
+szavak = ["alma", "körte", "szilva"]
+nagybetus = [szo.upper() for szo in szavak]
+print(nagybetus)  # ['ALMA', 'KÖRTE', 'SZILVA']
+
+# Csak páros számok (feltételes)
+parosak = [x for x in range(1, 11) if x % 2 == 0]
+print(parosak)  # [2, 4, 6, 8, 10]` }
+    ]
+  }
+},
+
+{
+  id: 7, emoji: '🔍', topicGroup: 'listakif',
+  title: 'List comprehension – feltétellel',
+  description: `<p>A list comprehension végére tehetsz egy <code>if</code> feltételt – így csak azok az elemek kerülnek bele, amik megfelelnek a feltételnek.</p>
+<p>Szintaxis: <code>[kifejezés for elem in lista if feltétel]</code></p>
+<p>Adott egy számlista. Hozz létre belőle egy új listát, ami csak a <strong>páros számokat</strong> tartalmazza, és egyet amelyik csak a <strong>10-nél nagyobb elemeket</strong>!</p>`,
+  starterCode: `# 7. feladat: Feltételes list comprehension
+szamok = [3, 8, 15, 4, 22, 7, 12, 1, 18]
+
+# Csak páros számok:
+parosak = [x for x in szamok if x % 2 == 0]
+print("Párosak:", parosak)
+
+# Csak a 10-nél nagyobb számok:
+nagyok =
+
+print("Nagyok:", nagyok)
+`,
+  solution: `szamok = [3, 8, 15, 4, 22, 7, 12, 1, 18]
+parosak = [x for x in szamok if x % 2 == 0]
+print("Párosak:", parosak)
+nagyok = [x for x in szamok if x > 10]
+print("Nagyok:", nagyok)`,
+  mockInputs: [],
+  checks: [
+    { label: 'két list comprehension', fn: (c,o) => (c.match(/\[.+for\s+\w+\s+in\s+szamok\s+if/g)||[]).length >= 2 },
+    { label: 'páros feltétel: % 2 == 0', fn: (c,o) => /\%\s*2\s*==\s*0/.test(c) },
+    { label: '>10 feltétel', fn: (c,o) => />\s*10/.test(c) },
+    { label: 'Kimenet: [8, 4, 22, 12, 18]', fn: (c,o) => /8.*4.*22.*12.*18|P[aá]rosak.*8/.test(o) },
+    { label: 'Kimenet: [15, 22, 12, 18]', fn: (c,o) => /15.*22.*12.*18|Nagy.*15/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Feltételes list comprehension</h3>
+<p>Az <code>if</code> a list comprehension végén szűrőként működik: csak azok az elemek kerülnek az új listába, amikre a feltétel igaz.</p>
+<p>Ez nagyon hasznos, ha egy listából csak bizonyos elemeket akarsz kiszedni – sokkal rövidebb mint egy for ciklus + if + append.</p>
+<p>Ha az <code>if</code>-et a <em>kifejezés részbe</em> teszed (nem a végére), az feltételes értékadás: <code>[a if feltétel else b for x in lista]</code> – ez kicsit más, erről is érdemes tudni.</p>`,
+    examples: [
+      { title: 'Szűrés list comprehension-nel', code: `jegyek = [3, 5, 4, 2, 5, 1, 4, 5]
+
+# Csak az ötösök
+otosok = [j for j in jegyek if j == 5]
+print(otosok)  # [5, 5, 5]
+
+# Csak az átmenő jegyek (>= 2)
+atmeno = [j for j in jegyek if j >= 2]
+print(atmeno)  # [3, 5, 4, 2, 5, 4, 5]
+
+# Szavak szűrése hossz alapján
+szavak = ["hi", "helló", "ok", "sziasztok", "hey"]
+hosszuk = [s for s in szavak if len(s) > 3]
+print(hosszuk)  # ['helló', 'sziasztok']` }
+    ]
+  }
+},
+
+{
+  id: 8, emoji: '📖', topicGroup: 'listakif',
+  title: 'Dict comprehension',
+  description: `<p>Ugyanúgy ahogy listát lehet egy sorban létrehozni, szótárat is lehet: ez a dict comprehension.</p>
+<p>Szintaxis: <code>{kulcs: érték for elem in lista}</code></p>
+<p>Adott egy névlista. Hozz létre belőle egy szótárat, ahol a kulcs a név, az érték a név hossza!<br>
+Pl: <code>{"Anna": 4, "Béla": 4, "Csaba": 5}</code></p>`,
+  starterCode: `# 8. feladat: Dict comprehension
+nevek = ["Anna", "Béla", "Csaba", "Dóra", "Erik"]
+
+# Dict comprehension: {nev: len(nev) for nev in nevek}
+nev_hosszak = {nev: len(nev) for nev in nevek}
+
+print(nev_hosszak)
+
+# Szótárból csak az 5-nél hosszabb neveket:
+hosszu_nevek = {nev: hossz for nev, hossz in nev_hosszak.items() if hossz > 4}
+print(hosszu_nevek)
+`,
+  solution: `nevek = ["Anna", "Béla", "Csaba", "Dóra", "Erik"]
+nev_hosszak = {nev: len(nev) for nev in nevek}
+print(nev_hosszak)
+hosszu_nevek = {nev: hossz for nev, hossz in nev_hosszak.items() if hossz > 4}
+print(hosszu_nevek)`,
+  mockInputs: [],
+  checks: [
+    { label: 'dict comprehension szintaxis {k: v for ...}', fn: (c,o) => /\{.+:.+for\s+\w+\s+in\s+/.test(c) },
+    { label: 'len(nev) a hosszhoz', fn: (c,o) => /len\s*\(\s*nev\s*\)/.test(c) },
+    { label: '.items() használva', fn: (c,o) => /\.items\s*\(\s*\)/.test(c) },
+    { label: 'Kimenet: Anna', fn: (c,o) => /Anna/.test(o) },
+    { label: 'Kimenet: Csaba (5 betűs)', fn: (c,o) => /Csaba/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Dict comprehension</h3>
+<p>A dict comprehension ugyanolyan logikájú mint a list comprehension, csak szótárat hoz létre. A formája: <code>{kulcs: érték for elem in sorozat}</code></p>
+<p>Nagyon hasznos, ha egy listából szótárat akarsz csinálni, vagy egy meglévő szótárat át akarsz alakítani.</p>
+<p>Feltételt is tehetsz a végére: <code>{k: v for k, v in d.items() if feltétel}</code> – ezzel szűrheted a szótár elemeit.</p>`,
+    examples: [
+      { title: 'Dict comprehension példák', code: `# Lista → szótár (szó: hossza)
+szavak = ["alma", "körte", "eper"]
+hosszak = {szo: len(szo) for szo in szavak}
+print(hosszak)  # {'alma': 4, 'körte': 5, 'eper': 4}
+
+# Szótár értékeinek megduplázása
+arak = {"kávé": 400, "tea": 300, "víz": 150}
+dupla = {k: v * 2 for k, v in arak.items()}
+print(dupla)  # {'kávé': 800, 'tea': 600, 'víz': 300}` }
+    ]
+  }
+},
+
+// ═══════════ LAMBDA & MAP/FILTER (9–11) ═══════════
+
+{
+  id: 9, emoji: 'λ', topicGroup: 'lambda_f',
+  title: 'lambda – névtelen függvény',
+  description: `<p>A <code>lambda</code> egy kis, névtelen függvény – egyetlen kifejezés, amit nem kell <code>def</code>-fel megírni.</p>
+<p>Szintaxis: <code>lambda paraméter: kifejezés</code></p>
+<p>Hozz létre lambda függvényeket, és próbáld ki őket! Írd meg: négyzetszám, duplázás, és egy összehasonlítás (a szám nagyobb-e 10-nél)!</p>`,
+  starterCode: `# 9. feladat: lambda
+# Négyzetszám lambda:
+negyze = lambda x: x ** 2
+print(negyze(5))   # 25
+
+# Duplázó lambda:
+dupla = lambda x: x * 2
+print(dupla(7))
+
+# Igaz/hamis: x > 10
+nagy_e = lambda x: x > 10
+print(nagy_e(15))
+print(nagy_e(3))
+`,
+  solution: `negyze = lambda x: x ** 2
+print(negyze(5))
+dupla = lambda x: x * 2
+print(dupla(7))
+nagy_e = lambda x: x > 10
+print(nagy_e(15))
+print(nagy_e(3))`,
+  mockInputs: [],
+  checks: [
+    { label: 'lambda kulcsszó legalább 2x', fn: (c,o) => (c.match(/\blambda\b/g)||[]).length >= 2 },
+    { label: 'x ** 2 négyzetszám', fn: (c,o) => /x\s*\*\*\s*2/.test(c) },
+    { label: 'Kimenet: 25', fn: (c,o) => /\b25\b/.test(o) },
+    { label: 'Kimenet: 14', fn: (c,o) => /\b14\b/.test(o) },
+    { label: 'Kimenet: True és False', fn: (c,o) => /True/.test(o) && /False/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>lambda – névtelen függvény</h3>
+<p>A lambda egy "dobható" kis függvény – akkor használod, amikor kell egy függvény, de nem érdemes külön <code>def</code>-fel megírni.</p>
+<p>A <code>lambda x: x**2</code> pontosan ugyanaz mint:<br>
+<code>def negyze(x): return x**2</code> – csak rövidebb.</p>
+<p>Önmagában ritkán látni, de <code>sorted()</code>, <code>map()</code> és <code>filter()</code> mellé nagyon gyakran párosítják.</p>`,
+    examples: [
+      { title: 'lambda példák', code: `# Egy paraméteres
+ketto = lambda x: x * 2
+print(ketto(5))   # 10
+
+# Két paraméteres
+osszead = lambda x, y: x + y
+print(osszead(3, 4))  # 7
+
+# sorted()-del: rendezés hossz szerint
+szavak = ["alma", "eper", "körte", "bor"]
+rendezett = sorted(szavak, key=lambda s: len(s))
+print(rendezett)  # ['bor', 'alma', 'eper', 'körte']` }
+    ]
+  }
+},
+
+{
+  id: 10, emoji: '🗺️', topicGroup: 'lambda_f',
+  title: 'map() – minden elemre alkalmaz',
+  description: `<p>A <code>map()</code> egy függvényt alkalmaz a lista <strong>minden elemére</strong> – nem kell for ciklus.</p>
+<p>Szintaxis: <code>list(map(függvény, lista))</code></p>
+<p>Adott egy számlista. Duplázd meg az összes elemet <code>map()</code>-pel, majd alakítsd át a neveket csupa nagybetűssé!</p>`,
+  starterCode: `# 10. feladat: map()
+szamok = [1, 2, 3, 4, 5]
+
+# Duplázás map()-pel:
+duplak = list(map(lambda x: x * 2, szamok))
+print(duplak)   # [2, 4, 6, 8, 10]
+
+# Nevek nagybetűsítése:
+nevek = ["anna", "béla", "csaba"]
+nagybetus = list(map(lambda nev: nev.upper(), nevek))
+print(nagybetus)
+`,
+  solution: `szamok = [1, 2, 3, 4, 5]
+duplak = list(map(lambda x: x * 2, szamok))
+print(duplak)
+nevek = ["anna", "béla", "csaba"]
+nagybetus = list(map(lambda nev: nev.upper(), nevek))
+print(nagybetus)`,
+  mockInputs: [],
+  checks: [
+    { label: 'map() használva', fn: (c,o) => /\bmap\s*\(/.test(c) },
+    { label: 'lambda a map()-ben', fn: (c,o) => /map\s*\(\s*lambda/.test(c) },
+    { label: 'list() a map() köré', fn: (c,o) => /list\s*\(\s*map/.test(c) },
+    { label: 'Kimenet: [2, 4, 6, 8, 10]', fn: (c,o) => /2.*4.*6.*8.*10/.test(o) },
+    { label: 'Kimenet: ANNA (nagybetű)', fn: (c,o) => /ANNA/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>map() – minden elemre alkalmaz</h3>
+<p>A <code>map()</code> egy függvényt végigfuttat egy lista összes elemén, és visszaadja az eredményeket. Gondolj rá úgy, mint egy "gyár" – bejön egy lista, kijön egy átalakított lista.</p>
+<p>A <code>list()</code> azért kell köré, mert a <code>map()</code> önmagában nem listát ad vissza, hanem egy "generátort" – a <code>list()</code> alakítja át igazi listává.</p>
+<p>Ugyanezt megteheted list comprehension-nel is: <code>[x*2 for x in szamok]</code> – mindkét megoldás helyes.</p>`,
+    examples: [
+      { title: 'map() példák', code: `szamok = [1, 4, 9, 16, 25]
+
+# Négyzetgyök minden elemre (math kell hozzá)
+import math
+gyokök = list(map(math.sqrt, szamok))
+print(gyokök)  # [1.0, 2.0, 3.0, 4.0, 5.0]
+
+# Stringek hossza
+szavak = ["Python", "alma", "programozás"]
+hosszak = list(map(len, szavak))
+print(hosszak)  # [6, 4, 11]` }
+    ]
+  }
+},
+
+{
+  id: 11, emoji: '🔽', topicGroup: 'lambda_f',
+  title: 'filter() – szűrés',
+  description: `<p>A <code>filter()</code> kiszűri a lista azon elemeit, amelyekre a megadott feltétel igaz.</p>
+<p>Szintaxis: <code>list(filter(feltétel_fv, lista))</code></p>
+<p>Adott egy számlista. Szűrd ki belőle a <strong>páros számokat</strong>, majd egy névlistából azokat, akiknek a neve <strong>hosszabb 4 karakternél</strong>!</p>`,
+  starterCode: `# 11. feladat: filter()
+szamok = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# Csak a páros számok:
+parosak = list(filter(lambda x: x % 2 == 0, szamok))
+print("Párosak:", parosak)
+
+# Hosszú nevek (> 4 karakter):
+nevek = ["Ági", "Balázs", "Éva", "Kristóf", "Bea"]
+hosszu = list(filter(lambda nev: len(nev) > 4, nevek))
+print("Hosszú nevek:", hosszu)
+`,
+  solution: `szamok = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+parosak = list(filter(lambda x: x % 2 == 0, szamok))
+print("Párosak:", parosak)
+nevek = ["Ági", "Balázs", "Éva", "Kristóf", "Bea"]
+hosszu = list(filter(lambda nev: len(nev) > 4, nevek))
+print("Hosszú nevek:", hosszu)`,
+  mockInputs: [],
+  checks: [
+    { label: 'filter() használva', fn: (c,o) => /\bfilter\s*\(/.test(c) },
+    { label: 'lambda a filter()-ben', fn: (c,o) => /filter\s*\(\s*lambda/.test(c) },
+    { label: 'list() a filter() köré', fn: (c,o) => /list\s*\(\s*filter/.test(c) },
+    { label: 'Kimenet: [2, 4, 6, 8, 10]', fn: (c,o) => /2.*4.*6.*8.*10/.test(o) },
+    { label: 'Kimenet: Balázs és Kristóf', fn: (c,o) => /Bal[aá]zs/.test(o) && /Krist[oó]f/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>filter() – szűrés</h3>
+<p>A <code>filter()</code> csak azokat az elemeket tartja meg, amikre a megadott függvény <code>True</code>-t ad vissza. Gondolj rá mint egy szitára – ami átmegy a lyukon, az marad.</p>
+<p>A <code>list()</code> ugyanúgy szükséges köré mint <code>map()</code>-nél.</p>
+<p>A <code>filter()</code> és a feltételes list comprehension ugyanazt csinálja – <code>[x for x in lista if feltétel]</code>. Mindkét megoldás elfogadott.</p>`,
+    examples: [
+      { title: 'filter() vs list comprehension', code: `szamok = range(1, 11)
+
+# filter() módszer
+parosak_f = list(filter(lambda x: x % 2 == 0, szamok))
+
+# list comprehension módszer (ugyanaz)
+parosak_lc = [x for x in szamok if x % 2 == 0]
+
+print(parosak_f)   # [2, 4, 6, 8, 10]
+print(parosak_lc)  # [2, 4, 6, 8, 10]` }
+    ]
+  }
+},
+
+]; // end tasks
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const TASK_COUNT = tasks.length;
+function _loadArr(key, def, len){
+  const raw=JSON.parse(localStorage.getItem(key)||'null');
+  const arr=(raw&&Array.isArray(raw))?raw:def.slice();
+  while(arr.length<len) arr.push(def[0]);
+  return arr;
+}
+const st = {
+  cur: 0,
+  status: _loadArr('py_pro_status', Array(TASK_COUNT).fill('idle'), TASK_COUNT),
+  completedOnce: _loadArr('py_pro_done', Array(TASK_COUNT).fill(false), TASK_COUNT),
+  failedAttempts: Array(TASK_COUNT).fill(0),
+  hintLevel: Array(TASK_COUNT).fill(0),
+  editor: null,
+  lastOutput: '',
+  pyodide: null,
+  pyodideReady: false,
+};
+for(let i=0;i<TASK_COUNT;i++){ if(st.completedOnce[i]&&st.status[i]!=='done') st.status[i]='done'; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PYODIDE
+// ═══════════════════════════════════════════════════════════════════════════
+let pyodideLoading = false;
+
+function setPyStatus(msg, cls = '') {
+  const el = document.getElementById('pyodide-status');
+  el.textContent = msg;
+  el.className = cls;
+}
+
+async function ensurePyodide() {
+  if (st.pyodide) return st.pyodide;
+  if (pyodideLoading) {
+    return new Promise(resolve => {
+      const chk = setInterval(() => {
+        if (st.pyodide) { clearInterval(chk); resolve(st.pyodide); }
+      }, 150);
+    });
+  }
+  pyodideLoading = true;
+  setPyStatus('Betöltés... (~10 mp)', '');
+  try {
+    st.pyodide = await loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/'
+    });
+    st.pyodideReady = true;
+    setPyStatus('Kész ✓', 'ready');
+  } catch(e) {
+    setPyStatus('Hiba', 'error');
+    pyodideLoading = false;
+    throw e;
+  }
+  return st.pyodide;
+}
+
+// Load Pyodide in background when page loads
+window.addEventListener('load', () => {
+  if (window.loadPyodide) ensurePyodide().catch(() => {});
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RUN CODE
+// ═══════════════════════════════════════════════════════════════════════════
+async function runCode() {
+  if (!st.editor) return;
+  const btn = document.getElementById('btn-run');
+  const spinner = document.getElementById('run-spinner');
+  btn.disabled = true;
+  spinner.style.display = 'inline';
+  const term = document.getElementById('terminal');
+  term.className = 'empty';
+  term.textContent = 'Futtatás...';
+
+  try {
+    const pyodide = await ensurePyodide();
+    const code = st.editor.getValue();
+    const task = tasks[st.cur];
+    const mockInputs = task.mockInputs || [];
+
+    let output = '';
+    let hasError = false;
+
+    pyodide.setStdout({ batched: t => { output += t + '\n'; } });
+    pyodide.setStderr({ batched: t => { output += t + '\n'; hasError = true; } });
+
+    const setup = `
+import builtins, sys
+_mock_iter = iter(${JSON.stringify(mockInputs)})
+def _mock_input(prompt=''):
+    val = str(next(_mock_iter, ''))
+    sys.stdout.write(str(prompt))
+    sys.stdout.write(val + '\\n')
+    return val
+builtins.input = _mock_input
+`;
+
+    try {
+      await pyodide.runPythonAsync(setup + '\n' + code);
+    } catch(e) {
+      output += e.message + '\n';
+      hasError = true;
+    }
+
+    st.lastOutput = output.trim();
+    term.textContent = st.lastOutput || '(Nincs kimenet)';
+    term.className = hasError ? 'has-error' : '';
+
+  } catch(e) {
+    const term = document.getElementById('terminal');
+    term.textContent = 'Pyodide betöltési hiba: ' + e.message;
+    term.className = 'has-error';
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHECKS
+// ═══════════════════════════════════════════════════════════════════════════
+function runChecks() {
+  const task = tasks[st.cur];
+  const code = st.editor ? st.editor.getValue() : '';
+  const output = st.lastOutput;
+
+  const results = task.checks.map(ch => {
+    try { return !!ch.fn(code, output); }
+    catch(e) { return false; }
+  });
+
+  const passed = results.filter(Boolean).length;
+  const total  = results.length;
+  const allPass = passed === total;
+
+  if (allPass && st.status[st.cur] !== 'done') {
+    st.status[st.cur] = 'done';
+    st.completedOnce[st.cur] = true;
+    saveState();
+    triggerConfetti();
+    const banner = document.getElementById('success-banner');
+    banner.textContent = '✓ Kiváló! Lépj tovább!';
+    banner.classList.add('visible');
+    if (st.status.every(s => s === 'done')) {
+      setTimeout(() => document.getElementById('completion-modal').classList.add('visible'), 800);
+    }
+  }
+
+  renderChecklist(results);
+  document.getElementById('score-display').innerHTML =
+    `Teljesítve: <span>${passed} / ${total}</span>`;
+  updatePills();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHECKLIST RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+function renderChecklist(results) {
+  const task = tasks[st.cur];
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+  task.checks.forEach((ch, i) => {
+    const pass = results ? results[i] : null;
+    const div = document.createElement('div');
+    div.className = 'check-item' + (pass === true ? ' pass' : pass === false ? ' fail' : '');
+    const icon = pass === true ? '<i class="fas fa-check-circle check-icon" style="color:#22c55e"></i>'
+               : pass === false ? '<i class="fas fa-times-circle check-icon" style="color:#ef4444"></i>'
+               : '<i class="far fa-circle check-icon" style="color:#4b5563"></i>';
+    div.innerHTML = icon + '<span class="check-text">' + esc(ch.label) + '</span>';
+    container.appendChild(div);
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOAD / SAVE
+// ═══════════════════════════════════════════════════════════════════════════
+function saveState() {
+  localStorage.setItem('py_pro_status', JSON.stringify(st.status));
+  localStorage.setItem('py_pro_done', JSON.stringify(st.completedOnce));
+}
+
+function saveCurrentCode() {
+  if (!st.editor) return;
+  localStorage.setItem('py_pro_code_' + st.cur, st.editor.getValue());
+  saveState();
+}
+
+function loadTask(index) {
+  saveCurrentCode();
+  st.cur = index;
+  localStorage.setItem('py_pro_last', index);
+  const task = tasks[index];
+  const saved = localStorage.getItem('py_pro_code_' + index);
+  const code = (saved !== null && saved !== '') ? saved : task.starterCode;
+
+  if (st.editor) st.editor.setValue(code);
+
+  // Topic badge
+  const badge = document.getElementById('topic-badge');
+  const labels = { algoritmus: 'Algoritmusok', listakif: 'List comprehension', lambda_f: 'Lambda & map/filter' };
+  badge.className = 'topic-badge ' + task.topicGroup;
+  badge.textContent = labels[task.topicGroup] || task.topicGroup;
+
+  document.getElementById('task-title').textContent = task.emoji + ' ' + task.id + '. ' + task.title;
+  document.getElementById('task-desc').innerHTML = task.description;
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('score-display').textContent = '–';
+
+  // Clear terminal
+  const term = document.getElementById('terminal');
+  term.textContent = 'Nyomd meg a Futtatás gombot a kód végrehajtásához.';
+  term.className = 'empty';
+  st.lastOutput = '';
+
+  if (st.status[index] === 'idle') st.status[index] = 'started';
+  st.hintLevel[index] = 0; updateHintBtn();
+  document.getElementById('hint-banner').className = '';
+
+  renderChecklist(null);
+  updatePills();
+  updateRefPanel(index);
+  if (st.editor) st.editor.focus();
+}
+
+function switchTask(i) {
+  if (i === st.cur) return;
+  loadTask(i);
+}
+
+function goNext() {
+  if (st.cur < TASK_COUNT - 1) switchTask(st.cur + 1);
+}
+
+function resetTask() {
+  const i = st.cur;
+  localStorage.removeItem('py_pro_code_' + i);
+  st.status[i] = 'idle';
+  st.completedOnce[i] = false;
+  st.failedAttempts[i] = 0;
+  st.hintLevel[i] = 0;
+  saveState();
+  if (st.editor) st.editor.setValue(tasks[i].starterCode);
+  renderChecklist(null);
+  document.getElementById('score-display').textContent = '–';
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('hint-banner').className = ''; updateHintBtn();
+  const term = document.getElementById('terminal');
+  term.textContent = 'Nyomd meg a Futtatás gombot a kód végrehajtásához.';
+  term.className = 'empty';
+  st.lastOutput = '';
+}
+
+function restartPractice() {
+  if (!confirm('Biztosan törlöd az összes előrehaladást?')) return;
+  for (let i = 0; i < TASK_COUNT; i++) {
+    localStorage.removeItem('py_pro_code_' + i);
+  }
+  st.status = Array(TASK_COUNT).fill('idle');
+  st.completedOnce = Array(TASK_COUNT).fill(false);
+  st.failedAttempts = Array(TASK_COUNT).fill(0);
+  st.hintLevel = Array(TASK_COUNT).fill(0);
+  saveState();
+  document.getElementById('completion-modal').classList.remove('visible');
+  loadTask(0);
+  buildPills();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PILLS
+// ═══════════════════════════════════════════════════════════════════════════
+const GROUP_ORDER = ['algoritmus', 'listakif', 'lambda_f'];
+const GROUP_LABEL = { algoritmus: 'Algoritmusok', listakif: 'Comprehension', lambda_f: 'Lambda' };
+
+function buildPills() {
+  const wrapper = document.getElementById('pills-wrapper');
+  wrapper.innerHTML = '';
+  let lastGroup = null;
+  tasks.forEach((t, i) => {
+    if (t.topicGroup !== lastGroup) {
+      lastGroup = t.topicGroup;
+      const lbl = document.createElement('span');
+      lbl.className = 'pill-group-label ' + t.topicGroup;
+      lbl.textContent = GROUP_LABEL[t.topicGroup];
+      wrapper.appendChild(lbl);
+    }
+    const btn = document.createElement('button');
+    btn.id = 'pill-' + i;
+    btn.className = 'pill' + (i === st.cur ? ' active' : '');
+    btn.textContent = t.id;
+    btn.title = t.emoji + ' ' + t.title;
+    btn.onclick = () => switchTask(i);
+    wrapper.appendChild(btn);
+  });
+  updatePills();
+}
+
+function updatePills() {
+  const done = st.status.filter(s => s === 'done').length;
+  document.getElementById('progress-count').textContent = done;
+  tasks.forEach((t, i) => {
+    const pill = document.getElementById('pill-' + i);
+    if (!pill) return;
+    pill.className = 'pill';
+    if (i === st.cur) pill.classList.add('active');
+    else if (st.status[i] === 'done') pill.classList.add('done');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HINT RENDSZER
+// ═══════════════════════════════════════════════════════════════════════════
+function updateHintBtn(){
+  const btn=document.getElementById('btn-hint');
+  const lvl=st.hintLevel[st.cur]||0;
+  btn.dataset.level=Math.min(lvl,2);
+  if(lvl===0){ btn.innerHTML='<i class="fas fa-lightbulb"></i> Segítség'; btn.disabled=false; }
+  else if(lvl===1){ btn.innerHTML='<i class="fas fa-code"></i> Vázlat'; btn.disabled=false; }
+  else if(lvl===2){ btn.innerHTML='<i class="fas fa-eye"></i> Megoldás'; btn.disabled=false; }
+  else { btn.innerHTML='<i class="fas fa-check"></i> Kész'; btn.disabled=true; btn.dataset.level=2; }
+}
+
+function showHint(){
+  const task=tasks[st.cur];
+  const lvl=st.hintLevel[st.cur]||0;
+  const banner=document.getElementById('hint-banner');
+  if(lvl===0){
+    const rp=document.getElementById('ref-panel');
+    rp.style.boxShadow='0 0 0 3px #3b82f6';
+    setTimeout(()=>{ rp.style.boxShadow=''; },900);
+    banner.className='level1';
+    banner.textContent='👉 Nézd meg a jobb oldali Tananyag példáját – segít!';
+    st.hintLevel[st.cur]=1;
+  } else if(lvl===1){
+    if(st.editor&&task.starterCode) st.editor.setValue(task.starterCode);
+    banner.className='level2';
+    banner.textContent='📝 Vázlat betöltve – töltsd ki a hiányzó részeket!';
+    st.hintLevel[st.cur]=2;
+  } else if(lvl===2){
+    if(st.editor&&task.solution) st.editor.setValue(task.solution);
+    banner.className='level3';
+    banner.textContent='👁 Megoldás betöltve – legközelebb próbáld önállóan!';
+    st.hintLevel[st.cur]=3;
+  }
+  updateHintBtn();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REFERENCE PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleRef(){}
+function closeRef(){}
+
+function updateRefPanel(index) {
+  const task = tasks[index];
+  const tut = task.tutorial;
+  const body = document.getElementById('ref-body');
+
+  let html = '';
+
+  // Tutor section
+  if (tut && tut.intro) {
+    html += `<div class="tutor-section">${tut.intro}</div>`;
+  }
+
+  // Hint
+  if (task.hint) {
+    html += `<div class="tutor-section" style="background:#0f1f0f;border-bottom:1.5px solid #1a3a1a;">
+      <h3 style="color:#86efac;">💡 Tipp</h3><p>${esc(task.hint)}</p></div>`;
+  }
+
+  // Code examples
+  if (tut && tut.examples && tut.examples.length) {
+    html += `<div class="ref-sections-label">Kódpéldák</div>`;
+    tut.examples.forEach((ex, ei) => {
+      html += `<div class="ref-section open" id="rse-${ei}">
+        <div class="ref-section-header" onclick="toggleRefSection('rse-${ei}')">
+          <span>${esc(ex.title)}</span>
+          <i class="fas fa-chevron-right chevron"></i>
+        </div>
+        <div class="ref-section-body">
+          <div class="ref-code">${esc(ex.code)}</div>
+          <button class="btn-copy" onclick="copyCode(this, ${ei})">
+            <i class="fas fa-copy"></i> Másolás
+          </button>
+        </div>
+      </div>`;
+    });
+  }
+
+  body.innerHTML = html;
+  // Store examples for copy
+  body._examples = tut && tut.examples ? tut.examples : [];
+}
+
+function toggleRefSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function copyCode(btn, idx) {
+  const body = document.getElementById('ref-body');
+  const examples = body._examples || [];
+  if (examples[idx]) {
+    navigator.clipboard.writeText(examples[idx].code).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = '<i class="fas fa-check"></i> Másolva';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="fas fa-copy"></i> Másolás'; }, 2000);
+    }).catch(() => {});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════════════════════════════
+function triggerConfetti() {
+  const el = document.getElementById('confetti');
+  el.classList.remove('animate');
+  void el.offsetWidth;
+  el.classList.add('animate');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONACO
+// ═══════════════════════════════════════════════════════════════════════════
+// Azonnali UI betöltés – nem várja meg Monaco-t
+buildPills();
+loadTask(Math.min(parseInt(localStorage.getItem('py_pro_last') || '0'), TASK_COUNT - 1));
+
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+
+require(['vs/editor/editor.main'], function() {
+  st.editor = window.monaco.editor.create(document.getElementById('editor-python'), {
+    value: '',
+    language: 'python',
+    theme: 'vs-dark',
+    fontSize: 15,
+    minimap: { enabled: false },
+    automaticLayout: true,
+    wordWrap: 'on',
+    scrollBeyondLastLine: false,
+    tabSize: 4,
+    insertSpaces: true,
+    quickSuggestions: { other: true, comments: false, strings: false },
+    suggestOnTriggerCharacters: true,
+  });
+
+  // Ctrl+Enter → run
+  st.editor.addCommand(
+    window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.Enter,
+    () => runCode()
+  );
+
+  // Editor értékének beállítása az aktuális feladathoz
+  const saved = localStorage.getItem('py_pro_code_' + st.cur);
+  st.editor.setValue((saved !== null && saved !== '') ? saved : tasks[st.cur].starterCode);
+  const loading = document.getElementById('editor-loading');
+  if (loading) loading.style.display = 'none';
+  st.editor.focus();
+});
+
+// Pyodide CDN loader
+const pyScript = document.createElement('script');
+pyScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js';
+document.head.appendChild(pyScript);
+
+</script>
+</body>
+</html>
