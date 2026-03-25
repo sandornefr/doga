@@ -1700,6 +1700,26 @@
             } catch (e) {}
         })();
 
+        // ── Session tracking ────────────────────────────────────────────────
+        (function() {
+            const API_S = 'https://agazati.up.railway.app';
+            const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            if (!u.email || u.szerep === 'vendeg') return;
+            let sid = null;
+            fetch(`${API_S}/api/session/start`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: u.email, page: 'python' })
+            }).then(r => r.json()).then(d => {
+                sid = d.sessionId;
+                setInterval(() => {
+                    if (sid) fetch(`${API_S}/api/session/heartbeat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {});
+                }, 30000);
+            }).catch(() => {});
+            window.addEventListener('beforeunload', () => {
+                if (sid) fetch(`${API_S}/api/session/end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {});
+            });
+        })();
+
         // ── Vizsga határidő – Python teszt auto-submit ──────────────────────
         function schedulePythonDeadline(vizsgaVegeISO) {
             const vege = new Date(vizsgaVegeISO);

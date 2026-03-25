@@ -1602,7 +1602,7 @@
 
     function sessionTimeHtml(pages) {
         if (!pages || pages.length === 0) return '';
-        const labels = { portal: 'Portál', practice: 'WEB gyakorló', 'py-practice': 'Python gyakorló', web: 'WEB vizsga', python: 'Python vizsga' };
+        const labels = { portal: 'Portál', practice: 'WEB gyakorló', web: 'WEB vizsga', python: 'Python vizsga', 'py-basics': 'Python Kezdő', 'py-practice': 'Python Haladó', 'py-pro': 'Python Profi' };
         const total = pages.reduce((s, p) => s + (p.totalSec || 0), 0);
         const rows = pages.map(p =>
             `<span style="color:#94a3b8">${labels[p.page] || p.page}:</span> <strong>${formatSeconds(p.totalSec)}</strong>`

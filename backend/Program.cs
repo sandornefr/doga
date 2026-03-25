@@ -823,7 +823,7 @@ app.MapPost("/api/session/start", (SessionStartRequest req, Database db) =>
 {
     if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Page))
         return Results.BadRequest(new { error = "email és page kötelező" });
-    var validPages = new[] { "portal", "practice", "web", "python" };
+    var validPages = new[] { "portal", "practice", "web", "python", "py-basics", "py-practice", "py-pro" };
     var page = validPages.Contains(req.Page) ? req.Page : "portal";
     var id = db.StartSession(req.Email, page);
     return Results.Ok(new { sessionId = id });
