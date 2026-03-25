@@ -425,6 +425,15 @@ for szam in szamok:
         break
 if not talalt:
     print("Nincs páros szám.")`,
+  hintCode: `szamok = [3, 7, 11, 8, 5, 2, 9]
+talalt = False
+for szam in szamok:
+    if szam ___ 2 == 0:
+        print("Első páros:", szam)
+        talalt = True
+        ___
+if not talalt:
+    print("Nincs páros szám.")`,
   mockInputs: [],
   checks: [
     { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+szamok/.test(c) },
@@ -477,6 +486,12 @@ for szam in szamok:
     if szam > 0:
         osszeg += szam
 print("Pozitív számok összege:", osszeg)`,
+  hintCode: `szamok = [4, -3, 7, -1, 8, -5, 6]
+osszeg = 0
+for szam in szamok:
+    if szam ___ 0:
+        osszeg ___ szam
+print("Pozitív számok összege:", osszeg)`,
   mockInputs: [],
   checks: [
     { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+szamok/.test(c) },
@@ -523,6 +538,12 @@ db = 0
 for jegy in jegyek:
     if jegy == 5:
         db += 1
+print("Ötösök száma:", db)`,
+  hintCode: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+db = 0
+for jegy in jegyek:
+    if jegy ___ 5:
+        db ___ 1
 print("Ötösök száma:", db)`,
   mockInputs: [],
   checks: [
@@ -571,6 +592,12 @@ maximum = pontok[0]
 for pont in pontok:
     if pont > maximum:
         maximum = pont
+print("Legjobb eredmény:", maximum)`,
+  hintCode: `pontok = [72, 88, 65, 95, 71, 83, 90]
+maximum = pontok[0]
+for pont in pontok:
+    if pont ___ maximum:
+        maximum = ___
 print("Legjobb eredmény:", maximum)`,
   mockInputs: [],
   checks: [
@@ -634,6 +661,15 @@ for i in range(n - 1):
             szamok[j] = szamok[j + 1]
             szamok[j + 1] = csere
 print(szamok)`,
+  hintCode: `szamok = [64, 34, 25, 12, 22, 11, 90]
+n = len(szamok)
+for i in range(n - 1):
+    for j in range(n - 1 - i):
+        if szamok[j] > szamok[j + 1]:
+            csere = szamok[j]
+            szamok[j] = szamok[j + 1]
+            szamok[j + 1] = ___
+print(szamok)`,
   mockInputs: [],
   checks: [
     { label: 'két egymásba ágyazott for ciklus', fn: (c,o) => (c.match(/\bfor\b/g)||[]).length >= 2 },
@@ -693,6 +729,14 @@ for i in range(len(arak)):
     if arak[i] < minimum:
         minimum = arak[i]
         min_i = i
+print(f"Legolcsóbb: {minimum} Ft ({min_i + 1}. termék)")`,
+  hintCode: `arak = [850, 320, 1200, 450, 290, 780, 560]
+minimum = arak[0]
+min_i = 0
+for i in range(len(arak)):
+    if arak[i] ___ minimum:
+        minimum = ___
+        min_i = ___
 print(f"Legolcsóbb: {minimum} Ft ({min_i + 1}. termék)")`,
   mockInputs: [],
   checks: [
@@ -772,6 +816,26 @@ if van_jeles:
     print("Van jeles!")
 else:
     print("Nincs jeles.")`,
+  hintCode: `jegyek = [4, 3, 5, 2, 4, 5, 3, 1, 4]
+van_elegelen = False
+for jegy in jegyek:
+    if jegy == 1:
+        van_elegelen = True
+        ___
+if van_elegelen:
+    print("Van elégtelen!")
+else:
+    print("Nincs elégtelen.")
+
+van_jeles = False
+for jegy in jegyek:
+    if jegy == ___:
+        van_jeles = True
+        break
+if van_jeles:
+    print("Van jeles!")
+else:
+    print("Nincs jeles.")`,
   mockInputs: [],
   checks: [
     { label: 'van_elegelen = False (jelző változó)', fn: (c,o) => /van_elegelen\s*=\s*False/.test(c) },
@@ -843,6 +907,19 @@ for pont in pontszamok:
     if pont <= 60:
         bukottak.append(pont)
 print("Bukottak:", bukottak)`,
+  hintCode: `pontszamok = [45, 72, 88, 31, 95, 60, 77, 42, 83, 55]
+atmentek = []
+for pont in pontszamok:
+    if pont > 60:
+        atmentek.___(pont)
+print("Átmentek:", atmentek)
+print("Átmentek száma:", len(atmentek))
+
+bukottak = []
+for pont in pontszamok:
+    if pont ___ 60:
+        bukottak.append(pont)
+print("Bukottak:", bukottak)`,
   mockInputs: [],
   checks: [
     { label: 'atmentek = [] (üres lista)', fn: (c,o) => /atmentek\s*=\s*\[\]/.test(c) },
@@ -898,6 +975,13 @@ fahrenheit = []
 for c in celsius:
     f = c * 9/5 + 32
     fahrenheit.append(f)
+print("Fahrenheit értékek:", fahrenheit)
+print("0°C =", fahrenheit[0], "°F")`,
+  hintCode: `celsius = [0, 20, 37, 100, -10, 25]
+fahrenheit = []
+for c in celsius:
+    f = c ___ 9/5 ___ 32
+    fahrenheit.___(f)
 print("Fahrenheit értékek:", fahrenheit)
 print("0°C =", fahrenheit[0], "°F")`,
   mockInputs: [],
@@ -980,6 +1064,24 @@ if talalat != -1:
     print(f"Megtalálva: {talalat}. indexen")
 else:
     print("Nem található")`,
+  hintCode: `szamok = [2, 5, 8, 12, 16, 23, 38, 45, 72, 91]
+keresett = 23
+bal = 0
+jobb = len(szamok) - 1
+talalat = -1
+while ___ <= ___:
+    kozep = (bal + jobb) ___ 2
+    if szamok[kozep] == keresett:
+        talalat = kozep
+        break
+    elif szamok[kozep] < keresett:
+        bal = kozep + 1
+    else:
+        jobb = kozep - 1
+if talalat != -1:
+    print(f"Megtalálva: {talalat}. indexen")
+else:
+    print("Nem található")`,
   mockInputs: [],
   checks: [
     { label: 'bal és jobb változók (keresési határok)', fn: (c,o) => /\bbal\b/.test(c) && /\bjobb\b/.test(c) },
@@ -1034,6 +1136,8 @@ print(negyzetek)
 `,
   solution: `negyzetek = [x**2 for x in range(1, 11)]
 print(negyzetek)`,
+  hintCode: `negyzetek = [x___ for x in range(___, ___)]
+print(negyzetek)`,
   mockInputs: [],
   checks: [
     { label: 'egysoros lista-lerövidítés szintaxisa [ ... for ... in ...]', fn: (c,o) => /\[.+for\s+\w+\s+in\s+.+\]/.test(c) },
@@ -1086,6 +1190,11 @@ print("Nagyok:", nagyok)
 parosak = [x for x in szamok if x % 2 == 0]
 print("Párosak:", parosak)
 nagyok = [x for x in szamok if x > 10]
+print("Nagyok:", nagyok)`,
+  hintCode: `szamok = [3, 8, 15, 4, 22, 7, 12, 1, 18]
+parosak = [x for x in szamok if x ___ 2 == 0]
+print("Párosak:", parosak)
+nagyok = [x for x in szamok if x ___ 10]
 print("Nagyok:", nagyok)`,
   mockInputs: [],
   checks: [
@@ -1143,6 +1252,11 @@ nev_hosszak = {nev: len(nev) for nev in nevek}
 print(nev_hosszak)
 hosszu_nevek = {nev: hossz for nev, hossz in nev_hosszak.items() if hossz > 4}
 print(hosszu_nevek)`,
+  hintCode: `nevek = ["Anna", "Béla", "Csaba", "Dóra", "Erik"]
+nev_hosszak = {nev: ___(nev) for nev in nevek}
+print(nev_hosszak)
+hosszu_nevek = {nev: hossz for nev, hossz in nev_hosszak.___() if hossz > 4}
+print(hosszu_nevek)`,
   mockInputs: [],
   checks: [
     { label: 'dict comprehension szintaxis {k: v for ...}', fn: (c,o) => /\{.+:.+for\s+\w+\s+in\s+/.test(c) },
@@ -1197,6 +1311,13 @@ print(negyze(5))
 dupla = lambda x: x * 2
 print(dupla(7))
 nagy_e = lambda x: x > 10
+print(nagy_e(15))
+print(nagy_e(3))`,
+  hintCode: `negyze = lambda x: x ___ 2
+print(negyze(5))
+dupla = lambda x: x ___ 2
+print(dupla(7))
+nagy_e = lambda x: x ___ 10
 print(nagy_e(15))
 print(nagy_e(3))`,
   mockInputs: [],
@@ -1254,6 +1375,12 @@ print(duplak)
 nevek = ["anna", "béla", "csaba"]
 nagybetus = list(map(lambda nev: nev.upper(), nevek))
 print(nagybetus)`,
+  hintCode: `szamok = [1, 2, 3, 4, 5]
+duplak = list(___(lambda x: x * 2, szamok))
+print(duplak)
+nevek = ["anna", "béla", "csaba"]
+nagybetus = list(map(lambda nev: nev.___(), nevek))
+print(nagybetus)`,
   mockInputs: [],
   checks: [
     { label: 'map() használva', fn: (c,o) => /\bmap\s*\(/.test(c) },
@@ -1306,6 +1433,12 @@ parosak = list(filter(lambda x: x % 2 == 0, szamok))
 print("Párosak:", parosak)
 nevek = ["Ági", "Balázs", "Éva", "Kristóf", "Bea"]
 hosszu = list(filter(lambda nev: len(nev) > 4, nevek))
+print("Hosszú nevek:", hosszu)`,
+  hintCode: `szamok = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+parosak = list(___(lambda x: x % 2 == 0, szamok))
+print("Párosak:", parosak)
+nevek = ["Ági", "Balázs", "Éva", "Kristóf", "Bea"]
+hosszu = list(filter(lambda nev: len(nev) ___ 4, nevek))
 print("Hosszú nevek:", hosszu)`,
   mockInputs: [],
   checks: [
@@ -1370,6 +1503,20 @@ def prim_e(n):
         if n % i == 0:
             return False
     return True
+
+print(prim_e(7))
+print(prim_e(12))
+print(prim_e(97))
+print(prim_e(100))`,
+  hintCode: `import math
+
+def prim_e(n):
+    if n < 2:
+        return False
+    for i in range(2, int(math.sqrt(n)) + 1):
+        if n ___ i == 0:
+            return False
+    return ___
 
 print(prim_e(7))
 print(prim_e(12))
@@ -1449,6 +1596,20 @@ def faktorial_rekurzio(n):
 print(faktorial_ciklus(5))
 print(faktorial_rekurzio(5))
 print(faktorial_rekurzio(10))`,
+  hintCode: `def faktorial_ciklus(n):
+    eredmeny = 1
+    for i in range(1, n + 1):
+        eredmeny ___ i
+    return eredmeny
+
+def faktorial_rekurzio(n):
+    if n == 0 or n == 1:
+        return 1
+    return n * faktorial_rekurzio(___)
+
+print(faktorial_ciklus(5))
+print(faktorial_rekurzio(5))
+print(faktorial_rekurzio(10))`,
   mockInputs: [],
   checks: [
     { label: 'def faktorial_ciklus(n)', fn: (c,o) => /def\s+faktorial_ciklus\s*\(/.test(c) },
@@ -1520,6 +1681,21 @@ def fibonacci_rekurzio(n):
     if n == 0: return 0
     if n == 1: return 1
     return fibonacci_rekurzio(n - 1) + fibonacci_rekurzio(n - 2)
+
+print(fibonacci_lista(10))
+print(fibonacci_rekurzio(9))`,
+  hintCode: `def fibonacci_lista(n):
+    if n <= 0: return []
+    if n == 1: return [0]
+    sor = [0, 1]
+    for i in range(2, n):
+        sor.append(sor[___] + sor[___])
+    return sor
+
+def fibonacci_rekurzio(n):
+    if n == 0: return 0
+    if n == 1: return 1
+    return fibonacci_rekurzio(___) + fibonacci_rekurzio(___)
 
 print(fibonacci_lista(10))
 print(fibonacci_rekurzio(9))`,
@@ -1900,9 +2076,9 @@ function showHint(){
     banner.textContent='👉 Nézd meg a jobb oldali Tananyag példáját – segít!';
     st.hintLevel[st.cur]=1;
   } else if(lvl===1){
-    if(st.editor&&task.starterCode) st.editor.setValue(task.starterCode);
+    if(st.editor&&(task.hintCode||task.solution)) st.editor.setValue(task.hintCode||task.solution);
     banner.className='level2';
-    banner.textContent='📝 Vázlat betöltve – töltsd ki a hiányzó részeket!';
+    banner.textContent='📝 Vázlat betöltve – töltsd ki a ___ helyeket!';
     st.hintLevel[st.cur]=2;
   } else if(lvl===2){
     if(st.editor&&task.solution) st.editor.setValue(task.solution);

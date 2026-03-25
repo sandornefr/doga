@@ -422,6 +422,12 @@ gyumolcsok =
 `,
   solution: `gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
 print(gyumolcsok)`,
+  hintCode: `gyumolcsok = {
+    "___": ___,
+    "___": ___,
+    "___": ___
+}
+print(___)`,
   mockInputs: [],
   checks: [
     { label: 'Kapcsos zárójel {} szintaxis', fn: (c, o) => /\{[^}]+:[^}]+\}/.test(c) },
@@ -469,6 +475,9 @@ gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
   solution: `gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
 print(gyumolcsok["alma"])
 print(gyumolcsok["szilva"])`,
+  hintCode: `gyumolcsok = {"alma": 450, "körte": 380, "szilva": 520}
+print(gyumolcsok[___])
+print(gyumolcsok[___])`,
   mockInputs: [],
   checks: [
     { label: '"alma" kulcs elérése []', fn: (c, o) => /\["alma"\]|'alma'/.test(c) },
@@ -515,6 +524,10 @@ gyumolcsok = {"alma": 450, "körte": 380}
   solution: `gyumolcsok = {"alma": 450, "körte": 380}
 gyumolcsok["alma"] = 500
 gyumolcsok["banán"] = 299
+print(gyumolcsok)`,
+  hintCode: `gyumolcsok = {"alma": 450, "körte": 380}
+gyumolcsok[___] = ___
+gyumolcsok[___] = ___
 print(gyumolcsok)`,
   mockInputs: [],
   checks: [
@@ -565,6 +578,9 @@ for nev in osztalyzatok:
   solution: `osztalyzatok = {"Anna": 5, "Béla": 4, "Csaba": 3}
 for nev in osztalyzatok:
     print(nev + ": " + str(osztalyzatok[nev]))`,
+  hintCode: `osztalyzatok = {"Anna": 5, "Béla": 4, "Csaba": 3}
+for nev in osztalyzatok:
+    print(nev + ": " + str(osztalyzatok[___]))`,
   mockInputs: [],
   checks: [
     { label: 'for ciklus megtalálható', fn: (c, o) => /for\s+\w+\s+in/.test(c) },
@@ -634,6 +650,15 @@ kviz = {
 kerdes = random.choice(list(kviz.keys()))
 print("Kérdés:", kerdes)
 print("Válasz:", kviz[kerdes])`,
+  hintCode: `import random
+kviz = {
+    "Mi a Python?": "Programozási nyelv",
+    "Mi a bool?": "Igaz/Hamis típus",
+    "Mi a lista?": "Elemek sorozata"
+}
+kerdes = random.choice(list(kviz.___()))
+print("Kérdés:", ___)
+print("Válasz:", kviz[___])`,
   mockInputs: [],
   checks: [
     { label: 'import random megtalálható', fn: (c, o) => /import\s+random/.test(c) },
@@ -704,6 +729,17 @@ print("Kérdés:", kerdes)
 print("Válasz:", kviz[kerdes])
 db = len(kviz)
 print("Összesen", db, "kérdés van a kvízben.")`,
+  hintCode: `import random
+kviz = {
+    "___": "___",
+    "___": "___",
+    "___": "___"
+}
+kerdes = random.choice(list(kviz.keys()))
+print("Kérdés:", kerdes)
+print("Válasz:", kviz[___])
+db = ___(kviz)
+print("Összesen", db, "kérdés van a kvízben.")`,
   mockInputs: [],
   checks: [
     { label: 'import random', fn: (c, o) => /import\s+random/.test(c) },
@@ -758,6 +794,11 @@ print(rex)
     pass
 
 rex = Kutya()
+print(rex)`,
+  hintCode: `class Kutya:
+    pass
+
+rex = ___()
 print(rex)`,
   mockInputs: [],
   checks: [
@@ -816,6 +857,15 @@ rex  = Kutya("Rex", 3)
 fifi = Kutya("Fifi", 1)
 print(rex.nev, rex.kor)
 print(fifi.nev, fifi.kor)`,
+  hintCode: `class Kutya:
+    def __init__(self, nev, kor):
+        self.___ = nev
+        self.___ = kor
+
+rex  = Kutya("Rex", 3)
+fifi = Kutya(___, ___)
+print(rex.___, rex.___)
+print(fifi.___, fifi.___)`,
   mockInputs: [],
   checks: [
     { label: '__init__ megtalálható', fn: (c, o) => /__init__/.test(c) },
@@ -876,6 +926,16 @@ rex.bemutatkozik()
 
 rex = Kutya("Rex", 3)
 rex.bemutatkozik()`,
+  hintCode: `class Kutya:
+    def __init__(self, nev, kor):
+        self.nev = nev
+        self.kor = kor
+
+    def bemutatkozik(self):
+        print(f"Szia! Én {self.___} vagyok és {self.___} éves.")
+
+rex = Kutya("Rex", 3)
+rex.___()`,
   mockInputs: [],
   checks: [
     { label: 'def bemutatkozik(self):', fn: (c, o) => /def\s+bemutatkozik\s*\(\s*self/.test(c) },
@@ -949,6 +1009,22 @@ tanulok = [
 
 for t in tanulok:
     t.bemutatkozik()`,
+  hintCode: `class Tanulo:
+    def __init__(self, nev, jegy):
+        self.nev  = nev
+        self.jegy = jegy
+
+    def bemutatkozik(self):
+        print(f"{self.nev} jegye: {self.jegy}")
+
+tanulok = [
+    Tanulo("Anna", 5),
+    Tanulo(___, ___),
+    Tanulo(___, ___)
+]
+
+for t in tanulok:
+    t.___()`,
   mockInputs: [],
   checks: [
     { label: 'Tanulo osztály __init__-tel', fn: (c, o) => /class\s+Tanulo/.test(c) && /__init__/.test(c) },
@@ -1017,6 +1093,20 @@ class Kutya(Allat):
 rex = Kutya("Rex")
 rex.eszik()
 rex.ugat()`,
+  hintCode: `class Allat:
+    def __init__(self, nev):
+        self.nev = nev
+
+    def eszik(self):
+        print(f"{self.nev} eszik.")
+
+class Kutya(___):
+    def ugat(self):
+        print(f"{self.nev} ugat: ___")
+
+rex = Kutya("Rex")
+rex.eszik()
+rex.___()`,
   mockInputs: [],
   checks: [
     { label: 'class Kutya(Allat): örökli az Allat-ot', fn: (c, o) => /class\s+Kutya\s*\(\s*Allat\s*\)/.test(c) },
@@ -1106,6 +1196,24 @@ korte = Termek("Körte", 380, 7)
 alma.kiir()
 korte.kiir()
 alma.vasarol(3)`,
+  hintCode: `class Termek:
+    def __init__(self, nev, ar, keszlet):
+        self.nev     = nev
+        self.ar      = ar
+        self.keszlet = keszlet
+
+    def kiir(self):
+        print(f"{self.nev} - {self.ar} Ft ({self.keszlet} db)")
+
+    def vasarol(self, db):
+        self.keszlet ___ db
+        print(f"{db} db {self.nev} vásárolva, összesen {db ___ self.ar} Ft")
+
+alma  = Termek("Alma", 450, 10)
+korte = Termek("Körte", 380, 7)
+alma.___()
+korte.___()
+alma.___(3)`,
   mockInputs: [],
   checks: [
     { label: 'class Termek __init__-tel (nev, ar, keszlet)', fn: (c, o) => /class\s+Termek/.test(c) && /keszlet/.test(c) },
@@ -1179,6 +1287,12 @@ f.write("Ma sokat tanultam.\\n")
 f.write("Python fájlkezelést tanultam.\\n")
 f.write("Holnap folytatom.\\n")
 f.close()
+print("Fájl mentve!")`,
+  hintCode: `f = open("naplo.txt", "w", encoding="utf-8")
+f.___("Ma sokat tanultam.\\n")
+f.___("Python fájlkezelést tanultam.\\n")
+f.___("Holnap folytatom.\\n")
+f.___()
 print("Fájl mentve!")`,
   mockInputs: [],
   fileSetup: '',
@@ -1256,6 +1370,18 @@ f.close()
 
 for sor in sorok:
     print(sor.strip())`,
+  hintCode: `f = open("lista.txt", "w", encoding="utf-8")
+f.write("alma\\n")
+f.write("körte\\n")
+f.write("szilva\\n")
+f.close()
+
+f = open("lista.txt", "r", encoding="utf-8")
+sorok = f.___()
+f.close()
+
+for sor in sorok:
+    print(sor.___())`,
   mockInputs: [],
   checks: [
     { label: 'open() "r" módban', fn: (c, o) => /open\s*\(.*["\']r["\']/.test(c) },
@@ -1329,6 +1455,17 @@ with open("naplo.txt", "r", encoding="utf-8") as f:
 for sor in sorok:
     print(sor.strip())
 print(f"A fájlban {len(sorok)} sor van.")`,
+  hintCode: `with open("naplo.txt", "w", encoding="utf-8") as f:
+    f.write("Sor 1\\n")
+    f.write("Sor 2\\n")
+    f.write("Sor 3\\n")
+
+with open("naplo.txt", "r", encoding="utf-8") as f:
+    sorok = f.readlines()
+
+for sor in sorok:
+    print(sor.___())
+print(f"A fájlban {___(sorok)} sor van.")`,
   mockInputs: [],
   checks: [
     { label: 'with open(..., "w") as f:', fn: (c, o) => /with\s+open\s*\(.*["\']w["\'].*\)\s+as/.test(c) },
@@ -1382,6 +1519,11 @@ except ValueError:
     print("A szám duplája:", szam * 2)
 except ValueError:
     print("Hiba! Nem számot adtál meg.")`,
+  hintCode: `try:
+    szam = int(input("Adj meg egy számot: "))
+    print("A szám duplája:", szam * 2)
+except ValueError:
+    print("___")`,
   mockInputs: ['alma'],
   checks: [
     { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
@@ -1428,6 +1570,12 @@ except FileNotFoundError:
     print(tartalom)
 except FileNotFoundError:
     print("A fájl nem található!")`,
+  hintCode: `try:
+    with open("titok.txt", "r", encoding="utf-8") as f:
+        tartalom = f.read()
+    print(tartalom)
+except FileNotFoundError:
+    print("___")`,
   mockInputs: [],
   checks: [
     { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
@@ -1475,6 +1623,10 @@ print("x:", pont[0])
 print("x:", pont[0])
 print("y:", pont[1])
 print("Hossz:", len(pont))`,
+  hintCode: `pont = (3, 7)
+print("x:", pont[___])
+print("y:", pont[___])
+print("Hossz:", ___(pont))`,
   mockInputs: [],
   checks: [
     { label: 'tuple létrehozva zárójelekkel pl. (3, 7)', fn: (c,o) => /\(\s*\d+\s*,\s*\d+\s*\)/.test(c) },
@@ -1532,6 +1684,10 @@ print(szamok)
 print(szamok)
 szamok.add(7)
 print(7 in szamok)`,
+  hintCode: `szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
+print(szamok)
+szamok.___(7)
+print(7 ___ szamok)`,
   mockInputs: [],
   checks: [
     { label: 'set létrehozva kapcsos zárójelekkel', fn: (c,o) => /\w+\s*=\s*\{[\d\s,]+\}/.test(c) },
@@ -1596,6 +1752,14 @@ c = math.sqrt(a**2 + b**2)
 print("Átfogó:", c)
 print("Felső egész:", math.ceil(c))
 print(f"π = {math.pi:.4f}")`,
+  hintCode: `import math
+
+a = 3
+b = 4
+c = math.___(a**2 + b**2)
+print("Átfogó:", c)
+print("Felső egész:", math.___(c))
+print(f"π = {math.___:.4f}")`,
   mockInputs: [],
   checks: [
     { label: 'import math megtalálható', fn: (c,o) => /import\s+math/.test(c) },
@@ -1980,9 +2144,9 @@ function showHint(){
     banner.textContent='👉 Nézd meg a jobb oldali Tananyag példáját – segít!';
     st.hintLevel[st.cur]=1;
   } else if(lvl===1){
-    if(st.editor&&task.starterCode) st.editor.setValue(task.starterCode);
+    if(st.editor&&(task.hintCode||task.solution)) st.editor.setValue(task.hintCode||task.solution);
     banner.className='level2';
-    banner.textContent='📝 Vázlat betöltve – töltsd ki a hiányzó részeket!';
+    banner.textContent='📝 Vázlat betöltve – töltsd ki a ___ helyeket!';
     st.hintLevel[st.cur]=2;
   } else if(lvl===2){
     if(st.editor&&task.solution) st.editor.setValue(task.solution);
