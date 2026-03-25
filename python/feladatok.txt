@@ -1915,9 +1915,10 @@ Sajnos nem, a helyes válasz 896.
 Pontozas:
 import:random|Importálja a random modult|A véletlenszerű választáshoz szükséges egy beépített modul. Melyik? 📦|📦 A random modul megvan – a gép már tud véletlenszerűen választani!
 tartalmaz:choice|random.choice()-t használ|Hogyan lehet véletlenszerűen választani a kérdések közül? 🎲|🎲 random.choice() – a kvíz motor beindul!
-tartalmaz:1526|Legalább egy évszámot tartalmaz|Legalább egy valódi történelmi évszámnak szerepelnie kell a szótárban. 📅|📅 Történelmi adat megtalálható a kódban!
+tartalmaz:input|input()-t használ a válasz bekéréséhez|A tanuló válaszát be kell kérni – melyik beépített függvénnyel?|✅ Az input() megvan – a program várja a tanuló válaszát!
 tartalmaz:.keys()|A szótár kulcsait használja|A kérdések a szótár kulcsai – hogyan éred el őket? Keress egy .keys() nevű dolgot! 🔑|🔑 A .keys() megvan – a program ki tudja olvasni a kérdéseket!
 if|Elágazást használ az ellenőrzéshez|A bevitt választ összehasonlítja a helyessel – melyik kulcsszóval döntöd el?|✅ Az elágazás megvan – a program ítélkezni tud!
+else|else ágat tartalmaz|Ha a válasz nem helyes, mit tegyen a program? Az else blokk kezeli a hibás választ!|🔀 Az else ág megvan – a hibás választ is kezeli a program!
 tartalmaz:Helyes|A helyes választ jelzi|Mit ír ki, ha a tanuló jól tudta? Pontosan: "Helyes!"|🏆 A helyes válasz visszajelzése megvan!
 tartalmaz:a helyes válasz|Kiírja a helyes évszámot|Hiba esetén a helyes választ is közölni kell a tanulóval!|💡 A helyes évszám is megjelenik – a tanuló tanulhat belőle!
 
