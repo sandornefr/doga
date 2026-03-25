@@ -1369,7 +1369,7 @@ A felhasználó tippel. A program:</p>
 <li>Számolja a tippek számát</li>
 <li>Addig fut, amíg el nem találja</li>
 </ul>
-<div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenetek:</strong> <code>10</code>, <code>15</code>, <code>18</code> (a titkos szám 18 lesz rögzítve)</div>`,
+<div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenetek:</strong> <code>10</code>, <code>20</code>, <code>18</code> (a titkos szám 18 lesz rögzítve)</div>`,
   starterCode:`# 20. feladat: Szám kitaláló – mini projekt
 import random
 
@@ -1407,7 +1407,7 @@ while ___:              # ← while True:
     else:
         print(f"___ {tippek} ___")   # ← "Eltaláltad! X tipp kellett."
         ___              # ← break`,
-  mockInputs:['10','15','18'],
+  mockInputs:['10','20','18'],
   checks:[
     {label:'import random megtalálható', fn:(c,o)=>/import\s+random/.test(c)},
     {label:'while True ciklus', fn:(c,o)=>/while\s+True\s*:/.test(c)},
@@ -1418,7 +1418,7 @@ while ___:              # ← while True:
     {label:'Kimenet: "Túl nagy"', fn:(c,o)=>/[Tt]úl\s+nagy/i.test(o)},
     {label:'Kimenet: "Eltaláltad"', fn:(c,o)=>/[Ee]ltal[aá]ltad/i.test(o)},
   ],
-  mockHint:'Teszt bemenetek sorban: <code>10</code>, <code>15</code>, <code>18</code> (a titkos szám 18)',
+  mockHint:'Teszt bemenetek sorban: <code>10</code>, <code>20</code>, <code>18</code> (a titkos szám 18)',
   tutorial:{
     intro:`<h3>Mini projekt – az első önálló alkalmazásod</h3>
 <p>Ez a program már valódi interaktív játék: a gép „gondol" egy számot, te tippelsz, ő visszajelzést ad, és addig fut, amíg el nem találod. Megvan benne minden: adatbekérés, feltételvizsgálat, ciklus, számláló változó és formázott kimenet. Ilyen alapszerkezetű programokból épülnek fel az igazi alkalmazások is.</p>
