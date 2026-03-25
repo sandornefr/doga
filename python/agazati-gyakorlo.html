@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ágazati feladatok – Gyakorló</title>
+  <link rel="icon" href="../kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0f172a; --bg2:#111827; --bg3:#1e293b; --border:#1f2937;
+      --text:#e2e8f0; --muted:#94a3b8;
+      --konnyu:#22c55e; --kozepes:#f59e0b; --nehez:#ef4444;
+      --font:'Segoe UI',system-ui,sans-serif;
+      --topbar-h:54px; --tabbar-h:46px; --bottom-h:54px;
+      --list-w:210px;
+    }
+    html,body { height:100%; overflow:hidden; }
+    body { font-family:var(--font); background:var(--bg); color:var(--text); display:flex; flex-direction:column; }
+
+    /* TOPBAR */
+    .topbar { height:var(--topbar-h); background:var(--bg2); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; padding:0 12px; gap:8px; flex-shrink:0; }
+    .topbar-logo { height:30px; }
+    .topbar-title { font-size:0.95rem; font-weight:700; color:var(--text); white-space:nowrap; }
+    .topbar-spacer { flex:1; }
+    #pyodide-status { font-size:0.72rem; padding:2px 8px; border-radius:4px;
+      background:rgba(245,158,11,.12); color:#fcd34d; border:1px solid rgba(245,158,11,.3); white-space:nowrap; }
+    #pyodide-status.ready { background:rgba(34,197,94,.1); color:#86efac; border-color:rgba(34,197,94,.3); }
+    .btn-back { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px;
+      background:transparent; border:1.5px solid var(--border); color:var(--muted);
+      font-size:0.82rem; cursor:pointer; text-decoration:none; transition:all .2s; white-space:nowrap; }
+    .btn-back:hover { border-color:var(--konnyu); color:var(--konnyu); }
+
+    /* TABBAR */
+    .tabbar { height:var(--tabbar-h); background:var(--bg2); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; padding:0 12px; gap:6px; flex-shrink:0; }
+    .diff-tab { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px;
+      border:1.5px solid var(--border); background:transparent; color:var(--muted);
+      font-size:0.84rem; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; }
+    .diff-tab .badge { font-size:0.7rem; background:rgba(255,255,255,.08); border-radius:10px;
+      padding:1px 6px; font-weight:700; }
+    .diff-tab.konnyu.active  { border-color:var(--konnyu); color:var(--konnyu); background:rgba(34,197,94,.1); }
+    .diff-tab.kozepes.active { border-color:var(--kozepes); color:var(--kozepes); background:rgba(245,158,11,.1); }
+    .diff-tab.nehez.active   { border-color:var(--nehez); color:var(--nehez); background:rgba(239,68,68,.1); }
+    .diff-tab:not(.active):hover { border-color:#374151; color:var(--text); }
+    .tabbar-spacer { flex:1; }
+    .btn-random { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px;
+      border:1.5px solid #4f46e5; background:rgba(79,70,229,.1); color:#a5b4fc;
+      font-size:0.84rem; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; }
+    .btn-random:hover { background:rgba(79,70,229,.25); color:#c7d2fe; }
+
+    /* LAYOUT */
+    .layout { display:flex; flex:1; overflow:hidden;
+      height:calc(100vh - var(--topbar-h) - var(--tabbar-h) - var(--bottom-h)); }
+
+    /* TASK LIST */
+    .task-list-panel { width:var(--list-w); flex-shrink:0; background:var(--bg2);
+      border-right:1.5px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+    .task-list-header { padding:8px 10px 6px; font-size:0.7rem; font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); flex-shrink:0; }
+    .task-list-scroll { flex:1; overflow-y:auto; padding:4px; }
+    .task-list-scroll::-webkit-scrollbar { width:4px; }
+    .task-list-scroll::-webkit-scrollbar-track { background:transparent; }
+    .task-list-scroll::-webkit-scrollbar-thumb { background:#1f2937; border-radius:4px; }
+    .task-item { display:flex; align-items:center; gap:6px; padding:7px 8px; border-radius:7px;
+      cursor:pointer; transition:background .15s; font-size:0.82rem; color:var(--muted); line-height:1.3; }
+    .task-item:hover { background:rgba(255,255,255,.05); color:var(--text); }
+    .task-item.active { background:rgba(79,70,229,.15); color:#c7d2fe; }
+    .task-item.done { color:var(--konnyu); }
+    .task-item .task-num { font-size:0.68rem; font-weight:700; opacity:.5; flex-shrink:0; width:18px; }
+    .task-item .done-icon { color:var(--konnyu); font-size:0.75rem; flex-shrink:0; margin-left:auto; }
+
+    /* MIDDLE: task description */
+    .desc-panel { width:340px; flex-shrink:0; background:var(--bg2); border-right:1.5px solid var(--border);
+      display:flex; flex-direction:column; overflow:hidden; }
+    .desc-header { padding:10px 14px 8px; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .desc-header h2 { font-size:0.95rem; font-weight:700; color:var(--text); }
+    .desc-header .desc-meta { display:flex; gap:8px; margin-top:4px; }
+    .desc-badge { font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:10px; }
+    .desc-badge.konnyu  { background:rgba(34,197,94,.15); color:var(--konnyu); border:1px solid rgba(34,197,94,.3); }
+    .desc-badge.kozepes { background:rgba(245,158,11,.15); color:var(--kozepes); border:1px solid rgba(245,158,11,.3); }
+    .desc-badge.nehez   { background:rgba(239,68,68,.15); color:var(--nehez); border:1px solid rgba(239,68,68,.3); }
+    .desc-badge.pont    { background:rgba(99,102,241,.15); color:#a5b4fc; border:1px solid rgba(99,102,241,.3); }
+    .desc-scroll { flex:1; overflow-y:auto; padding:12px 14px; font-size:0.84rem; line-height:1.6;
+      color:#cbd5e1; }
+    .desc-scroll::-webkit-scrollbar { width:4px; }
+    .desc-scroll::-webkit-scrollbar-thumb { background:#1f2937; border-radius:4px; }
+    .desc-scroll pre { background:#0f172a; border:1px solid var(--border); border-radius:7px;
+      padding:10px 12px; font-size:0.8rem; overflow-x:auto; margin:8px 0; color:#86efac;
+      font-family:'Consolas','Courier New',monospace; white-space:pre; }
+    .desc-scroll .minta-label { font-size:0.72rem; color:var(--muted); font-weight:600;
+      text-transform:uppercase; letter-spacing:.05em; margin:12px 0 4px; }
+
+    /* CHECKLIST */
+    .checklist-section { border-top:1.5px solid var(--border); flex-shrink:0; max-height:220px;
+      overflow-y:auto; padding:8px 14px; }
+    .checklist-section::-webkit-scrollbar { width:4px; }
+    .checklist-section::-webkit-scrollbar-thumb { background:#1f2937; border-radius:4px; }
+    .checklist-title { font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.05em; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; }
+    .check-item { display:flex; align-items:flex-start; gap:6px; padding:3px 0;
+      font-size:0.79rem; line-height:1.4; }
+    .check-icon { flex-shrink:0; width:14px; margin-top:2px; font-size:0.75rem; }
+    .check-item.pass .check-icon { color:var(--konnyu); }
+    .check-item.fail .check-icon { color:#4b5563; }
+    .check-item.pass { color:var(--konnyu); }
+    .check-item.fail { color:#6b7280; }
+
+    /* EDITOR AREA */
+    .editor-area { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:300px; }
+    .editor-container { flex:1; overflow:hidden; min-height:0; }
+    #editor { width:100%; height:100%; }
+
+    /* TERMINAL */
+    .terminal-wrap { height:150px; flex-shrink:0; background:#0a0f1a; border-top:1.5px solid var(--border);
+      display:flex; flex-direction:column; }
+    .terminal-header { display:flex; align-items:center; padding:4px 10px;
+      background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.72rem;
+      color:var(--muted); gap:6px; flex-shrink:0; }
+    #terminal { flex:1; overflow-y:auto; padding:8px 12px; font-family:'Consolas','Courier New',monospace;
+      font-size:0.82rem; color:#86efac; white-space:pre-wrap; word-break:break-word; }
+    #terminal.empty { color:#4b5563; font-style:italic; font-family:var(--font); }
+    #terminal.has-error { color:#fca5a5; }
+    #terminal::-webkit-scrollbar { width:4px; }
+    #terminal::-webkit-scrollbar-thumb { background:#1f2937; border-radius:4px; }
+
+    /* BOTTOM BAR */
+    .bottom-bar { height:var(--bottom-h); background:var(--bg2); border-top:1.5px solid var(--border);
+      display:flex; align-items:center; padding:0 12px; gap:8px; flex-shrink:0; }
+    .btn-run { display:flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px;
+      background:#166534; border:1.5px solid var(--konnyu); color:var(--konnyu);
+      font-size:0.88rem; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-run:hover { background:#15803d; color:#fff; }
+    .btn-run:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-eval { display:flex; align-items:center; gap:6px; padding:8px 18px; border-radius:8px;
+      background:rgba(79,70,229,.1); border:1.5px solid #4f46e5; color:#a5b4fc;
+      font-size:0.88rem; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-eval:hover { background:rgba(79,70,229,.25); color:#c7d2fe; }
+    .btn-eval:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-sol { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px;
+      background:transparent; border:1.5px solid #374151; color:#9ca3af;
+      font-size:0.84rem; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-sol:hover { border-color:#6b7280; color:var(--text); }
+    #score-display { font-size:0.82rem; color:var(--muted); white-space:nowrap; }
+    #score-display span { color:#a5b4fc; font-weight:700; }
+    .bottom-spacer { flex:1; }
+    #run-spinner { display:none; }
+
+    /* INPUT AREA */
+    .input-wrap { display:flex; flex-direction:column; gap:2px; }
+    .input-label { font-size:0.7rem; color:var(--muted); }
+    #input-values { width:220px; height:28px; background:#0f172a; border:1px solid var(--border);
+      border-radius:6px; color:#e0e0e0; font-size:0.8rem; padding:2px 8px;
+      font-family:'Consolas','Courier New',monospace; resize:none; }
+    #input-values:focus { outline:none; border-color:#4f46e5; }
+
+    /* SUCCESS BANNER */
+    #success-banner { position:fixed; top:calc(var(--topbar-h) + var(--tabbar-h) + 12px); left:50%;
+      transform:translateX(-50%) translateY(-60px); background:#166534; border:1.5px solid var(--konnyu);
+      color:var(--konnyu); padding:8px 24px; border-radius:10px; font-weight:700; font-size:0.9rem;
+      transition:transform .35s; z-index:200; pointer-events:none; white-space:nowrap; }
+    #success-banner.visible { transform:translateX(-50%) translateY(0); }
+
+    /* MODALS */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:500;
+      align-items:center; justify-content:center; padding:16px; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#16213e; border:1.5px solid #1f3460; border-radius:14px; padding:20px;
+      max-width:580px; width:100%; max-height:85vh; overflow-y:auto; font-family:var(--font); }
+    .modal-box h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:12px; }
+    .modal-box pre { background:#0a0f1a; border:1px solid var(--border); border-radius:8px;
+      padding:14px; font-size:0.82rem; color:#86efac; overflow-x:auto; white-space:pre;
+      font-family:'Consolas','Courier New',monospace; }
+    .modal-close { display:flex; justify-content:flex-end; margin-top:14px; }
+    .modal-close button { padding:6px 18px; background:transparent; border:1px solid #374151;
+      border-radius:8px; color:#9ca3af; cursor:pointer; font-family:var(--font); font-size:0.85rem; }
+    .modal-close button:hover { border-color:#6b7280; color:var(--text); }
+
+    /* EMPTY STATE */
+    #empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center;
+      flex:1; gap:10px; color:var(--muted); font-size:0.9rem; }
+    #empty-state i { font-size:2.5rem; opacity:.3; }
+
+    /* NO TASKS */
+    .no-tasks { padding:16px 10px; font-size:0.8rem; color:var(--muted); text-align:center;
+      font-style:italic; line-height:1.5; }
+  </style>
+</head>
+<body>
+
+<!-- Auth check -->
+<script>
+(function(){
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (!u.token && u.szerep !== 'oktato' && u.szerep !== 'vendeg' && !u._tesztMod)
+    location.replace('../portal.html');
+})();
+</script>
+
+<!-- Teszt mód banner -->
+<div id="teszt-mod-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#1a1a2e;color:#94a3b8;padding:5px 20px;font-size:0.78rem;font-weight:500;
+  align-items:center;justify-content:center;gap:12px;border-bottom:1px solid #2d3748;">
+  <i class="fas fa-user-graduate"></i>
+  <span>Diák teszt mód – <strong>Teszt Elek</strong> nézetében vagy</span>
+  <a href="../portal.html" style="padding:3px 12px;background:transparent;border:1px solid #4a5568;
+    border-radius:6px;color:#94a3b8;font-size:0.76rem;font-weight:600;text-decoration:none;">&#8592; Vissza</a>
+</div>
+
+<!-- Topbar -->
+<header class="topbar">
+  <span id="kando-logo-wrap" style="position:relative;display:inline-block;">
+    <a href="../portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó" class="topbar-logo" style="cursor:pointer;display:block;"></a>
+    <span id="kando-bug-badge" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:4px;font-size:1.2rem;align-items:center;justify-content:center;pointer-events:none;">🐛</span>
+  </span>
+  <span class="topbar-title"><i class="fas fa-graduation-cap" style="color:#a5b4fc;margin-right:5px;"></i>Ágazati feladatok – Gyakorló</span>
+  <div class="topbar-spacer"></div>
+  <div id="pyodide-status">Pyodide betölt...</div>
+  <a class="btn-back" href="../portal.html"><i class="fas fa-arrow-left"></i> Főmenü</a>
+</header>
+
+<!-- Difficulty tab bar -->
+<div class="tabbar">
+  <button class="diff-tab konnyu active" id="tab-konnyu" onclick="setTab('konnyu')">
+    <i class="fas fa-seedling"></i> Könnyű <span class="badge" id="cnt-konnyu">0</span>
+  </button>
+  <button class="diff-tab kozepes" id="tab-kozepes" onclick="setTab('kozepes')">
+    <i class="fas fa-dumbbell"></i> Közepes <span class="badge" id="cnt-kozepes">0</span>
+  </button>
+  <button class="diff-tab nehez" id="tab-nehez" onclick="setTab('nehez')">
+    <i class="fas fa-fire"></i> Nehéz <span class="badge" id="cnt-nehez">0</span>
+  </button>
+  <div class="tabbar-spacer"></div>
+  <button class="btn-random" onclick="pickRandom()">
+    <i class="fas fa-shuffle"></i> Véletlenszerű
+  </button>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+  <!-- Task list -->
+  <div class="task-list-panel">
+    <div class="task-list-header">Feladatok</div>
+    <div class="task-list-scroll" id="task-list"></div>
+  </div>
+
+  <!-- Description + checklist -->
+  <div class="desc-panel">
+    <div id="desc-header" class="desc-header" style="display:none;">
+      <h2 id="desc-title"></h2>
+      <div class="desc-meta">
+        <span class="desc-badge pont" id="desc-pont"></span>
+        <span class="desc-badge" id="desc-diff"></span>
+      </div>
+    </div>
+    <div class="desc-scroll" id="desc-content">
+      <div id="empty-state"><i class="fas fa-mouse-pointer"></i><span>Válassz feladatot a listából</span></div>
+    </div>
+    <div class="checklist-section" id="checklist-section" style="display:none;">
+      <div class="checklist-title">
+        <span>Értékelés</span>
+        <span id="score-display"></span>
+      </div>
+      <div id="checklist"></div>
+    </div>
+  </div>
+
+  <!-- Editor area -->
+  <div class="editor-area">
+    <div class="editor-container">
+      <div id="editor"></div>
+    </div>
+    <div class="terminal-wrap">
+      <div class="terminal-header">
+        <i class="fas fa-terminal" style="font-size:.7rem;"></i>
+        <span>Kimenet</span>
+      </div>
+      <div id="terminal" class="empty">A kód futtatásának eredménye itt jelenik meg.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <button class="btn-run" id="btn-run" onclick="runCode()">
+    <i class="fas fa-play"></i> Futtatás
+    <span id="run-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+  </button>
+  <button class="btn-eval" id="btn-eval" onclick="evaluate()" disabled>
+    <i class="fas fa-check-double"></i> Értékelés
+  </button>
+  <button class="btn-sol" onclick="showSolution()">
+    <i class="fas fa-lightbulb"></i> Megoldás
+  </button>
+  <div class="bottom-spacer"></div>
+  <div class="input-wrap">
+    <div class="input-label">Input értékek (soronként)</div>
+    <textarea id="input-values" placeholder="pl.: 5&#10;alma"></textarea>
+  </div>
+</div>
+
+<!-- Success banner -->
+<div id="success-banner">✓ Kiváló! Minden kritérium teljesítve!</div>
+
+<!-- Solution modal -->
+<div class="modal-overlay" id="solution-modal">
+  <div class="modal-box" style="border-color:#4f46e5;">
+    <h3><i class="fas fa-lightbulb" style="color:#a5b4fc;"></i> Minta megoldás</h3>
+    <pre id="solution-code"></pre>
+    <div id="solution-tips" style="margin-top:10px;font-size:0.83rem;color:#94a3b8;line-height:1.6;display:none;"></div>
+    <div class="modal-close"><button onclick="document.getElementById('solution-modal').classList.remove('open')">Bezárás</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let allTasks = [];
+let filteredTasks = [];
+let currentTask = null;
+let currentTab = 'konnyu';
+let editor = null;
+let pyodide = null;
+let pyLoading = false;
+let lastOutput = '';
+const doneSet = new Set(JSON.parse(localStorage.getItem('ag_done') || '[]'));
+
+// ═══════════════════════════════════════════════════════════════════
+// TESZT MÓD BANNER
+// ═══════════════════════════════════════════════════════════════════
+(function(){
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (u._tesztMod) {
+    const b = document.getElementById('teszt-mod-banner');
+    if (b) b.style.display = 'flex';
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// FELADATOK.TXT BETÖLTÉS + PARSE
+// ═══════════════════════════════════════════════════════════════════
+async function loadTasks() {
+  try {
+    const res = await fetch('feladatok.txt?v=' + Date.now());
+    const text = await res.text();
+    allTasks = parseTasks(text);
+    renderCounts();
+    setTab('konnyu');
+  } catch(e) {
+    console.error('feladatok.txt betöltési hiba:', e);
+  }
+}
+
+function parseTasks(text) {
+  const tasks = [];
+  const blocks = text.replace(/\r\n/g, '\n').split(/(?=^\d+\. feladat$)/m).filter(b => b.trim());
+
+  for (const block of blocks) {
+    const lines = block.split('\n');
+    const numMatch = lines[0].trim().match(/^(\d+)\. feladat$/);
+    if (!numMatch) continue;
+
+    const id = parseInt(numMatch[1]);
+    let pont = 8, cim = '', tipus = '', nehezseg = 'kozepes';
+    let i = 1;
+
+    while (i < lines.length) {
+      const l = lines[i].trim();
+      if (l.startsWith('Pont: '))      { pont     = parseInt(l.slice(6));  i++; }
+      else if (l.startsWith('Cim: '))  { cim      = l.slice(5).trim();     i++; }
+      else if (l.startsWith('Tipus: ')){ tipus     = l.slice(7).trim();     i++; }
+      else if (l.startsWith('Nehezseg: ')){ nehezseg = l.slice(10).trim(); i++; }
+      else if (l === '')               { i++; break; }
+      else break;
+    }
+
+    let szovegLines = [], criteriaLines = [], tippekLines = [], megoldasLines = [];
+    let section = 'szoveg';
+
+    for (; i < lines.length; i++) {
+      const l  = lines[i];
+      const lt = l.trim();
+      if (lt === 'Pontozas:') { section = 'pontozas'; continue; }
+      if (lt === 'Tippek:')   { section = 'tippek';   continue; }
+      if (lt === 'Megoldas:') { section = 'megoldas'; continue; }
+
+      if      (section === 'szoveg')   szovegLines.push(l);
+      else if (section === 'pontozas' && lt) criteriaLines.push(lt);
+      else if (section === 'tippek'   && lt) tippekLines.push(lt);
+      else if (section === 'megoldas')       megoldasLines.push(l);
+    }
+
+    tasks.push({
+      id, pont, cim, tipus, nehezseg,
+      szoveg:   szovegLines.join('\n').trim(),
+      criteria: criteriaLines,
+      tippek:   tippekLines.join('\n').trim(),
+      megoldas: megoldasLines.join('\n').trimEnd(),
+    });
+  }
+  return tasks;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB + TASK NAVIGÁCIÓ
+// ═══════════════════════════════════════════════════════════════════
+function renderCounts() {
+  ['konnyu','kozepes','nehez'].forEach(d => {
+    document.getElementById('cnt-' + d).textContent =
+      allTasks.filter(t => t.nehezseg === d).length;
+  });
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  ['konnyu','kozepes','nehez'].forEach(d => {
+    document.getElementById('tab-' + d).classList.toggle('active', d === tab);
+  });
+  filteredTasks = allTasks.filter(t => t.nehezseg === tab);
+  renderTaskList();
+  if (filteredTasks.length > 0) selectTask(filteredTasks[0]);
+}
+
+function renderTaskList() {
+  const el = document.getElementById('task-list');
+  if (filteredTasks.length === 0) {
+    el.innerHTML = '<div class="no-tasks">Nincs feladat ebben a kategóriában.</div>';
+    return;
+  }
+  el.innerHTML = filteredTasks.map(t => `
+    <div class="task-item${currentTask && currentTask.id === t.id ? ' active' : ''}${doneSet.has(t.id) ? ' done' : ''}"
+         onclick="selectTask(allTasks.find(x=>x.id===${t.id}))">
+      <span class="task-num">${t.id}.</span>
+      <span>${esc(t.cim)}</span>
+      ${doneSet.has(t.id) ? '<i class="fas fa-check done-icon"></i>' : ''}
+    </div>`).join('');
+}
+
+function selectTask(task) {
+  if (!task) return;
+  currentTask = task;
+  lastOutput = '';
+
+  // Update task list highlight
+  renderTaskList();
+
+  // Populate description panel
+  document.getElementById('desc-header').style.display = 'block';
+  document.getElementById('desc-title').textContent = task.id + '. ' + task.cim;
+  document.getElementById('desc-pont').textContent = task.pont + ' pont';
+
+  const diffLabels = { konnyu: '🌱 Könnyű', kozepes: '💪 Közepes', nehez: '🔥 Nehéz' };
+  const diffEl = document.getElementById('desc-diff');
+  diffEl.textContent = diffLabels[task.nehezseg] || task.nehezseg;
+  diffEl.className = 'desc-badge ' + task.nehezseg;
+
+  document.getElementById('desc-content').innerHTML = formatDesc(task.szoveg);
+  document.getElementById('desc-content').prepend(document.getElementById('desc-header'));
+
+  // Hide checklist
+  document.getElementById('checklist-section').style.display = 'none';
+  document.getElementById('checklist').innerHTML = '';
+  document.getElementById('score-display').textContent = '';
+  document.getElementById('btn-eval').disabled = true;
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('terminal').className = 'empty';
+  document.getElementById('terminal').textContent = 'A kód futtatásának eredménye itt jelenik meg.';
+
+  // Reset editor
+  if (editor) editor.setValue('# ' + task.id + '. ' + task.cim + '\n\n');
+}
+
+function pickRandom() {
+  if (filteredTasks.length === 0) return;
+  const t = filteredTasks[Math.floor(Math.random() * filteredTasks.length)];
+  selectTask(t);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LEÍRÁS FORMÁZÁS
+// ═══════════════════════════════════════════════════════════════════
+function formatDesc(text) {
+  // Split on ```...``` blocks and "Minta kód:" label
+  let html = '';
+  const parts = text.split(/(```[\s\S]*?```)/);
+  for (const part of parts) {
+    if (part.startsWith('```')) {
+      const code = part.slice(3, part.endsWith('```') ? -3 : undefined).trim();
+      html += '<div class="minta-label">Minta I/O:</div><pre>' + esc(code) + '</pre>';
+    } else {
+      const cleaned = part.replace(/^Minta kód:\s*/m, '').trim();
+      if (cleaned) html += '<p style="white-space:pre-wrap;">' + esc(cleaned) + '</p>';
+    }
+  }
+  return html;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MONACO
+// ═══════════════════════════════════════════════════════════════════
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+require(['vs/editor/editor.main'], function () {
+  monaco.editor.defineTheme('kandoDark', {
+    base:'vs-dark', inherit:true,
+    rules:[],
+    colors:{ 'editor.background':'#0f172a', 'editor.lineHighlightBackground':'#1e293b' }
+  });
+  editor = monaco.editor.create(document.getElementById('editor'), {
+    value: '# Válassz feladatot a listából!\n\n',
+    language: 'python', theme: 'kandoDark',
+    fontSize: 14, lineNumbers: 'on', minimap: { enabled: false },
+    scrollBeyondLastLine: false, wordWrap: 'on', automaticLayout: true,
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// PYODIDE
+// ═══════════════════════════════════════════════════════════════════
+function setPyStatus(msg, cls='') {
+  const el = document.getElementById('pyodide-status');
+  el.textContent = msg; el.className = cls;
+}
+
+async function ensurePyodide() {
+  if (pyodide) return pyodide;
+  if (pyLoading) return new Promise(r => { const iv = setInterval(() => { if(pyodide){clearInterval(iv);r(pyodide);} }, 150); });
+  pyLoading = true;
+  setPyStatus('Betöltés... (~10 mp)', '');
+  try {
+    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/' });
+    setPyStatus('Kész ✓', 'ready');
+  } catch(e) { setPyStatus('Hiba', 'error'); pyLoading = false; throw e; }
+  return pyodide;
+}
+
+window.addEventListener('load', () => {
+  if (window.loadPyodide) ensurePyodide().catch(() => {});
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// KÓDFUTTATÁS
+// ═══════════════════════════════════════════════════════════════════
+async function runCode() {
+  if (!editor) return;
+  const btn = document.getElementById('btn-run');
+  const spinner = document.getElementById('run-spinner');
+  btn.disabled = true; spinner.style.display = 'inline';
+  const term = document.getElementById('terminal');
+  term.className = 'empty'; term.textContent = 'Futtatás...';
+
+  try {
+    const py = await ensurePyodide();
+    const code = editor.getValue();
+    const rawInputs = document.getElementById('input-values').value;
+    const inputs = rawInputs.trim() ? rawInputs.split('\n').map(s => s.trimEnd()) : [];
+
+    let output = '', hasError = false;
+    py.setStdout({ batched: t => { output += t + '\n'; } });
+    py.setStderr({ batched: t => { output += t + '\n'; hasError = true; } });
+
+    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+    try { await py.runPythonAsync(setup + '\n' + code); }
+    catch(e) { output += e.message + '\n'; hasError = true; }
+
+    lastOutput = output.trim();
+    term.textContent = lastOutput || (hasError ? '' : '(Nincs kimenet)');
+    term.className = hasError ? 'has-error' : '';
+    document.getElementById('btn-eval').disabled = false;
+  } catch(e) {
+    term.textContent = 'Pyodide hiba: ' + e.message;
+    term.className = 'has-error';
+  } finally { btn.disabled = false; spinner.style.display = 'none'; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ÉRTÉKELÉS
+// ═══════════════════════════════════════════════════════════════════
+async function evaluate() {
+  if (!currentTask || !editor) return;
+  const btn = document.getElementById('btn-eval');
+  btn.disabled = true;
+  const code = editor.getValue();
+  const results = [];
+
+  for (const crit of currentTask.criteria) {
+    if (crit.startsWith('teszt:')) {
+      results.push(await evalTeszt(code, crit));
+    } else {
+      results.push(evalSync(code, crit));
+    }
+  }
+
+  btn.disabled = false;
+  renderChecklist(results);
+
+  const passed = results.filter(Boolean).length;
+  const total  = results.length;
+  if (passed === total && total > 0) {
+    doneSet.add(currentTask.id);
+    localStorage.setItem('ag_done', JSON.stringify([...doneSet]));
+    renderTaskList();
+    const banner = document.getElementById('success-banner');
+    banner.classList.add('visible');
+    setTimeout(() => banner.classList.remove('visible'), 2800);
+  }
+}
+
+function evalSync(code, crit) {
+  const pipe = crit.split('|');
+  const typeStr = pipe[0].trim();
+  const [typeName, ...argParts] = typeStr.split(':');
+  const arg = argParts.join(':');
+
+  switch(typeName.trim()) {
+    case 'if':      return /\bif\b/.test(code);
+    case 'elif':    return /\belif\b/.test(code);
+    case 'else':    return /\belse\b/.test(code);
+    case 'def':     return /\bdef\b/.test(code);
+    case 'return':  return /\breturn\b/.test(code);
+    case 'while':   return /\bwhile\b/.test(code);
+    case 'for':     return /\bfor\b/.test(code);
+    case 'import':  return new RegExp('\\bimport\\s+' + escRe(arg) + '\\b').test(code);
+    case 'tartalmaz': return code.includes(arg);
+    case 'bekeres': {
+      const escaped = escRe(arg);
+      return new RegExp('input\\s*\\(\\s*["\']' + escaped + '["\']\\s*\\)').test(code);
+    }
+    case 'int_float': {
+      const n = parseInt(arg) || 1;
+      return ((code.match(/\bint\s*\(|\bfloat\s*\(/g)) || []).length >= n;
+    }
+    default: return false;
+  }
+}
+
+async function evalTeszt(code, crit) {
+  try {
+    // format: teszt:in1,in2,...:expected|label|...
+    const typeStr = crit.split('|')[0].trim(); // teszt:in1,in2:expected
+    const withoutPrefix = typeStr.slice(6);    // in1,in2:expected
+    const lastColon = withoutPrefix.lastIndexOf(':');
+    if (lastColon < 0) return false;
+    const inputsStr = withoutPrefix.slice(0, lastColon);
+    const expected  = withoutPrefix.slice(lastColon + 1).trim();
+    const inputs = inputsStr ? inputsStr.split(',') : [];
+
+    const py = await ensurePyodide();
+    let output = '';
+    py.setStdout({ batched: t => { output += t + '\n'; } });
+    py.setStderr({ batched: () => {} });
+    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+    try { await py.runPythonAsync(setup + '\n' + code); } catch(e) { return false; }
+    return output.includes(expected);
+  } catch(e) { return false; }
+}
+
+function escRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function renderChecklist(results) {
+  const task = currentTask;
+  const passed = results.filter(Boolean).length;
+  const total  = results.length;
+  document.getElementById('score-display').innerHTML = `<span>${passed} / ${total}</span> teljesítve`;
+  document.getElementById('checklist-section').style.display = 'block';
+
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+  task.criteria.forEach((crit, i) => {
+    const label = (crit.split('|')[1] || crit.split(':')[0]).trim();
+    const pass = results[i];
+    const div = document.createElement('div');
+    div.className = 'check-item ' + (pass ? 'pass' : 'fail');
+    div.innerHTML = `<i class="fas fa-${pass ? 'check' : 'circle'} check-icon"></i><span>${esc(label)}</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MEGOLDÁS MODAL
+// ═══════════════════════════════════════════════════════════════════
+function showSolution() {
+  if (!currentTask) return;
+  document.getElementById('solution-code').textContent = currentTask.megoldas || '(Nincs megoldás)';
+  const tipsEl = document.getElementById('solution-tips');
+  if (currentTask.tippek) {
+    tipsEl.textContent = '💡 ' + currentTask.tippek;
+    tipsEl.style.display = 'block';
+  } else {
+    tipsEl.style.display = 'none';
+  }
+  document.getElementById('solution-modal').classList.add('open');
+}
+
+document.getElementById('solution-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+loadTasks();
+</script>
+
+<!-- Pyodide (lazy) -->
+<script>
+const pyScript = document.createElement('script');
+pyScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js';
+document.head.appendChild(pyScript);
+</script>
+
+<script src="../special-roles.js"></script>
+</body>
+</html>

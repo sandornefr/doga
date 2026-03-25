@@ -1,6 +1,7 @@
 1. feladat
 Cim: Kisebb-nagyobb
 Tipus: if
+Nehezseg: konnyu
 
 Írj programot, amelyben bekérsz a felhasználótól két egész számot, majd a program döntse el, hogy melyik a nagyobb.
 Ha a két szám egyenlő, írja ki, hogy: A két szám egyenlő!
@@ -39,6 +40,7 @@ else:
 2. feladat
 Cim: Kő-papír-olló
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amelyben kő-papír-olló játékot játszhat a felhasználó a géppel!
 A játékos adja meg a választását (kő, papír vagy olló), majd a gép véletlenszerűen választ a három lehetőség közül.
@@ -99,6 +101,7 @@ else:
 3. feladat
 Cim: Nettó-bruttó kalkulátor
 Tipus: if
+Nehezseg: konnyu
 
 Készíts egy programot, amely kiszámítja a havi nettó bért a bruttó bérből!
 A számításhoz használj konstansokat a kód elején:
@@ -146,6 +149,7 @@ print(f"Nettó bér: {netto_ber:.0f} Ft")
 4. feladat
 Cim: Napszak köszöntő
 Tipus: if
+Nehezseg: konnyu
 
 Készíts egy programot, amely köszön a felhasználónak a napszaknak megfelelően.
 Kérd be a nevét és azt, hogy hány óra van (egész óra).
@@ -188,6 +192,7 @@ print(f"{koszones}, {nev}!")
 5. feladat
 Cim: Lázmérő
 Tipus: if
+Nehezseg: konnyu
 
 Hozz létre egy programot, amely bekéri a felhasználótól a jelenlegi testhőmérsékletét, majd kiírja a diagnózist!
 Testhőmérsékletek:
@@ -240,6 +245,7 @@ else:
 6. feladat
 Cim: Sebességkategória
 Tipus: if
+Nehezseg: konnyu
 
 Készíts egy programot, amely bekéri egy autó sebességét km/h-ban, majd kiírja, hogy milyen úton haladhat ilyen sebességgel!
 0-50 km/h: Lakott területen haladhatsz.
@@ -291,6 +297,7 @@ else:
 7. feladat
 Cim: Nyitvatartás
 Tipus: if
+Nehezseg: kozepes
 
 Egy bolt pontban reggel 8 órakor nyit, és pontban délután 16 órakor zár be – azaz 8:00-kor már nyitva van és 16:00-kor már nincs nyitva.
 Írj programot, amelyben bekérsz egy egész órát jelző számot a felhasználótól, majd írja ki a program, hogy a megadott időpontban nyitva van-e a bolt!
@@ -341,6 +348,7 @@ else:
 8. feladat
 Cim: Évszakok
 Tipus: if
+Nehezseg: konnyu
 
 Írj programot, amelyben bekérsz a felhasználótól a hónapoknak megfelelően egy számot 1-12 között, majd írja ki a program, hogy milyen évszak van!
 A program kezelje azon eseteket is amelyek a tartományon kívül esnek.
@@ -402,6 +410,7 @@ else:
 9. feladat
 Cim: Dolgozat pontszám
 Tipus: if
+Nehezseg: konnyu
 
 Készíts programot, amely bekér egy dolgozat pontszámát (0-100), majd kiírja a megfelelő érdemjegyet!
 0-19 pont: Elégtelen (1)
@@ -461,6 +470,7 @@ else:
 10. feladat
 Cim: BMI kalkulátor
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amelyben bekéred a felhasználó testsúlyát kilogramm-ban és magasságát méterben, majd számítsd ki és írd ki a BMI értékét két tizedesjegyre kerekítve! A program írjon rövid választ a felhasználónak, hogy melyik kategóriába tartozik: Sovány / Normál testsúlyú / Túlsúlyos / Elhízott vagy! szöveggel.
 A BMI képlete: testsúly / (magasság * magasság)
@@ -511,6 +521,7 @@ else:
 11. feladat
 Cim: Jegyek átlaga
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amelyben bekérsz a felhasználótól 3 érdemjegyet 1 és 5 között, majd számíts átlagot két tizedesjegyre kerekítve, valamint írd ki azt, hogy megfelelt-e.
 (Megfelelt az átlag: 2.0 és afelett)!
@@ -562,6 +573,7 @@ else:
 12. feladat
 Cim: Étterem értékelő
 Tipus: if
+Nehezseg: kozepes
 
 Készíts programot, amely bekér egy éttermi értékelést 1-10 között, majd kiírja a véleményt!
 1-2 pont: Szörnyű! Ide többet nem megyek.
@@ -619,6 +631,7 @@ else:
 Pont: 14
 Cim: Csekkbefizetés
 Tipus: függvény,while
+Nehezseg: nehez
 
 Egy postahivatalban a csekkbefizetések után a rendszernek azonnal ki kell számolnia a kezelési költséget, és a nap végén összesítenie kell a posta ebből származó bevételét.
 
@@ -690,6 +703,7 @@ print(f"A posta teljes bevétele a költségekből: {osszes_bevetel} Ft")
 Pont: 14
 Cim: Könyvtári bírság
 Tipus: függvény,while
+Nehezseg: nehez
 
 A könyvtárban a késések utáni bírságot szeretnénk gyorsan kiszámolni. A programodnak nem kell tárolnia az adatokat, csak folyamatosan összeadnia a bevételt.
 
@@ -770,6 +784,7 @@ print(f"A teljes beszedett bírság: {bevetel} Ft")
 Pont: 14
 Cim: Lépésszámláló
 Tipus: függvény,for
+Nehezseg: nehez
 
 Egy okosóra adatait szeretnénk feldolgozni. A programnak nem kell eltárolnia az adatokat, csak értékelnie kell a napokat, és megszámolnia, hányszor sikerült a kitűzött cél.
 
@@ -851,6 +866,7 @@ print(f"A héten {sikeres_napok} napon sikerült a cél!")
 Pont: 14
 Cim: Magasugrás
 Tipus: függvény,for
+Nehezseg: nehez
 
 Egy magasugró versenyen vagyunk. A versenyző 6 kísérletet tesz. A te feladatod egy programot írni, ami értékeli az ugrásokat, és megjegyzi, mi volt a legnagyobb magasság, amivel a sportoló megpróbálkozott.
 
@@ -931,6 +947,7 @@ print(f"A legnagyobb próbálkozás: {legnagyobb} cm")
 Pont: 14
 Cim: Italautomata
 Tipus: függvény,while
+Nehezseg: nehez
 
 Készíts programot, amely egy italautomata működését szimulálja!
 
@@ -1061,6 +1078,7 @@ else:
 Pont: 14
 Cim: Iskolai büfé
 Tipus: függvény,for
+Nehezseg: nehez
 
 Az iskolai büfében önkiszolgáló kasszát vezettek be. A programnak először meg kell kérdeznie, hány dolgot vesz a diák, majd pontosan annyiszor kell bekérnie a termékek kódját, ahány terméket vásárol. A vásárolt tételeket egy listában kell gyűjteni.
 
@@ -1212,6 +1230,7 @@ print(f"Fizetendő összeg: {vegosszeg} Ft")
 19. feladat
 Cim: Mozijegy
 Tipus: if
+Nehezseg: konnyu
 
 Írj programot, amely bekéri a mozilátogató életkorát, majd kiírja a jegy árát!
 Gyerekjegy (14 év alatt): 1200 Ft
@@ -1257,6 +1276,7 @@ else:
 20. feladat
 Cim: Pizza rendelés
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amely bekéri a megrendelt pizza méretét, majd kiírja az árat!
 kis méret: 1500 Ft
@@ -1305,6 +1325,7 @@ else:
 21. feladat
 Cim: Ruhaméret
 Tipus: if
+Nehezseg: konnyu
 
 Írj programot, amely bekéri a mellbőséget cm-ben, majd kiírja a megfelelő ruháméretet!
 XS: kisebb mint 80 cm
@@ -1356,6 +1377,7 @@ else:
 22. feladat
 Cim: Taxi ár kalkulátor
 Tipus: if
+Nehezseg: konnyu
 
 Írj programot, amely kiszámolja egy taxiút árát!
 Az alap díj: 500 Ft.
@@ -1399,6 +1421,7 @@ print(f"Fizetendő: {ar} Ft")
 23. feladat
 Cim: Szállodai szoba
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amely kiszámítja egy szállodai tartózkodás árát!
 Az éjszakák számát és a szoba típusát kérd be a felhasználótól!
@@ -1455,6 +1478,7 @@ else:
 24. feladat
 Cim: Kutya életkor kalkulátor
 Tipus: if
+Nehezseg: kozepes
 
 A kutyák életkora nem egyszerűen 7-tel szorzódik! A tudományos számítás szerint:
 Az 1. év pontosan 15 emberi évnek számít.
@@ -1507,6 +1531,7 @@ print(f"A kutyád emberi években: {emberi_ev} éves.")
 25. feladat
 Cim: Traffipax
 Tipus: if
+Nehezseg: kozepes
 
 Készíts programot egy sebességmérő kamerának! A program kérje be az útszakaszon megengedett sebességet (km/h), majd a radar által mért tényleges sebességet (km/h)!
 A program számolja ki a különbséget, és döntse el a büntetést az alábbiak szerint:
@@ -1557,6 +1582,7 @@ else:
 Pont: 14
 Cim: Űrhajó Rakomány
 Tipus: függvény,for
+Nehezseg: nehez
 
 Egy teherűrhajó felszállás előtt ellenőrzi a berakodott konténerek súlyát, mert a hajó maximum 100 tonna extra súlyt bír el.
 
@@ -1646,6 +1672,7 @@ else:
 27. feladat
 Cim: Mobiladat Túllépés
 Tipus: if
+Nehezseg: kozepes
 
 Egy mobilszolgáltató a havi 5 GB-os adatkeret felett extra díjat számol fel. Készíts programot, ami bekéri az adott hónapban felhasznált adatmennyiséget (egész GB-ban), majd kiszámolja a fizetendő túldíjat az alábbiak szerint:
 
@@ -1694,6 +1721,7 @@ else:
 Pont: 14
 Cim: Alkimista Varázsital
 Tipus: függvény,for
+Nehezseg: nehez
 
 Egy alkimista varázsitalt főz. Minden hozzávalónak van egy toxicitási (mérgezési) szintje. Ha az üstben lévő anyagok össz-toxicitása eléri a 100%-ot, az üst felrobban!
 
@@ -1785,6 +1813,7 @@ else:
 Pont: 8
 Cim: Okosotthon fűtés
 Tipus: if
+Nehezseg: konnyu
 
 Egy okosotthon fűtésvezérlőjét kell beprogramoznod. A program kérje be a szoba jelenlegi hőmérsékletét, majd a beállított célhőmérsékletet (egész számokként)!
 A program döntse el, hogy kell-e fűteni, és ha igen, milyen fokozaton:
@@ -1837,6 +1866,7 @@ else:
 Pont: 8
 Cim: Hiányzás kalkulátor
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amely segít nyomon követni, mennyire állsz közel a 250 órás hiányzási határhoz – ami felett osztályozó vizsgát kell tenni!
 A program kérje be az eddigi hiányzások számát (egész óra), majd számolja ki, hány óra maradt még!
@@ -1896,6 +1926,7 @@ else:
 Pont: 8
 Cim: Töri évszám kvíz
 Tipus: if
+Nehezseg: kozepes
 
 Írj programot, amely véletlenszerűen feltesz egy történelmi évszám kérdést, majd ellenőrzi a választ!
 A programban legalább 3 kérdés-válasz párt tárolj el szótár (dict) segítségével!
