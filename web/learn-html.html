@@ -114,6 +114,9 @@
     .monaco-row { flex:1; display:flex; gap:12px; overflow:hidden; margin-top:10px; }
     .monaco-wrap { flex:1; border:1px solid var(--border); border-radius:9px; overflow:hidden; min-width:0; }
     .preview-wrap { flex:1; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+    .editor-hd { padding:5px 10px; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .btn-wrap { padding:2px 10px; border-radius:5px; background:transparent; border:1px solid var(--border); color:var(--muted); font-size:0.7rem; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; gap:4px; }
+    .btn-wrap:hover { border-color:var(--blue); color:#93c5fd; }
     .preview-hd { padding:5px 10px; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:5px; flex-shrink:0; }
     .pdot { width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse 2s ease-in-out infinite; }
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1042,7 +1045,13 @@ function lockFillin(){
 function renderMonacoShell(task,idx){
   const chks=task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('');
   return `<div class="monaco-row">
-      <div class="monaco-wrap"><div id="med" style="width:100%;height:100%"></div></div>
+      <div class="monaco-wrap">
+        <div class="editor-hd">
+          <span style="text-transform:uppercase;letter-spacing:.06em;">HTML szerkesztő</span>
+          <button class="btn-wrap" id="btn-wrap" title="Jelölj ki szöveget, majd kattints ide (Shift+Alt+W)"><i class="fas fa-wrap-text" style="font-size:.65rem;"></i> Wrap</button>
+        </div>
+        <div id="med" style="width:100%;height:calc(100% - 29px)"></div>
+      </div>
       <div class="preview-wrap">
         <div class="preview-hd"><div class="pdot"></div>Élő előnézet</div>
         <iframe id="monaco-preview" sandbox="allow-scripts"></iframe>
@@ -1061,6 +1070,14 @@ function initMonaco(task,idx){
       quickSuggestions:{other:true,comments:false,strings:true}
     });
     if(window.emmetMonaco) window.emmetMonaco.emmetHTML(monaco);
+    // Wrap gomb + Shift+Alt+W billentyűparancs
+    const btnW = document.getElementById('btn-wrap');
+    if(btnW) btnW.onclick = ()=>wrapWithAbbreviation(state.monacoEd);
+    state.monacoEd.addAction({
+      id:'wrap-with-abbreviation', label:'Wrap with Abbreviation',
+      keybindings:[monaco.KeyMod.Shift|monaco.KeyMod.Alt|monaco.KeyCode.KeyW],
+      run: ed => wrapWithAbbreviation(ed)
+    });
     state.monacoEd.onDidChangeModelContent(()=>{
       clearTimeout(state.prevTimer);
       state.prevTimer=setTimeout(()=>updatePreview(task),400);
@@ -1088,6 +1105,100 @@ function liveChecks(task){
     const el=document.getElementById('chk-'+i);
     if(el){ el.className='chk-row'+(pass?' pass':''); el.querySelector('.ci').textContent=pass?'✅':'⬜'; }
   });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// WRAP WITH ABBREVIATION (átvéve a web/app.js-ből)
+// ══════════════════════════════════════════════════════════════════════
+
+function parseTagAbbr(abbr) {
+  const tagMatch = abbr.match(/^([a-zA-Z][\w-]*)/);
+  const classMatch = abbr.match(/\.([a-zA-Z0-9_-]+)/g);
+  const idMatch = abbr.match(/#([a-zA-Z0-9_-]+)/);
+  return {
+    tag: tagMatch ? tagMatch[1] : 'div',
+    id: idMatch ? idMatch[1] : '',
+    className: classMatch ? classMatch.map(c=>c.substring(1)).join(' ') : ''
+  };
+}
+
+function buildTag(parsed, content, indent='') {
+  let openTag = `<${parsed.tag}`;
+  if (parsed.id) openTag += ` id="${parsed.id}"`;
+  if (parsed.className) openTag += ` class="${parsed.className}"`;
+  openTag += '>';
+  const closeTag = `</${parsed.tag}>`;
+  if (content.includes('\n'))
+    return `${openTag}\n${indent}  ${content.split('\n').join('\n'+indent+'  ')}\n${indent}${closeTag}`;
+  return `${openTag}${content}${closeTag}`;
+}
+
+function showWrapWidget(editor, onConfirm) {
+  const WIDGET_ID = 'wrap-abbr-input-widget';
+  try { editor.removeOverlayWidget({ getId:()=>WIDGET_ID }); } catch(e) {}
+  const dom = document.createElement('div');
+  dom.style.cssText = [
+    'position:absolute;top:0;left:50%;transform:translateX(-50%)',
+    'display:flex;align-items:center;gap:10px',
+    'background:#2d2d2d;border:1px solid #007acc',
+    'border-top:none;padding:8px 16px',
+    'font-family:Consolas,monospace;font-size:14px',
+    'box-shadow:0 4px 12px rgba(0,0,0,0.6);z-index:100'
+  ].join(';');
+  const label = document.createElement('span');
+  label.textContent = 'Wrap with Abbreviation:';
+  label.style.cssText = 'color:#cccccc;white-space:nowrap;font-size:14px;';
+  const input = document.createElement('input');
+  input.type='text'; input.value='div';
+  input.style.cssText = [
+    'background:#3c3c3c;border:1px solid #555',
+    'color:#d4d4d4;padding:5px 10px;font-size:14px',
+    'font-family:Consolas,monospace;outline:none;width:220px'
+  ].join(';');
+  dom.appendChild(label); dom.appendChild(input);
+  const widget = { getId:()=>WIDGET_ID, getDomNode:()=>dom, getPosition:()=>null };
+  editor.addOverlayWidget(widget);
+  setTimeout(()=>{ input.focus(); input.select(); }, 50);
+  function close() { try{editor.removeOverlayWidget(widget);}catch(e){} editor.focus(); }
+  input.addEventListener('keydown', e=>{
+    if (e.key==='Enter') { const abbr=input.value.trim(); close(); if(abbr) onConfirm(abbr); }
+    else if (e.key==='Escape') close();
+    e.stopPropagation();
+  });
+  const disposable = editor.onDidChangeCursorPosition(()=>{});
+  input.addEventListener('blur', ()=>{
+    setTimeout(()=>{ try{editor.removeOverlayWidget(widget);}catch(e){} }, 150);
+    disposable.dispose();
+  });
+}
+
+function wrapWithAbbreviation(editor, abbreviation) {
+  const selection = editor.getSelection();
+  const model = editor.getModel();
+  const selectedText = selection && !selection.isEmpty() ? model.getValueInRange(selection) : '';
+  if (!selectedText) { alert('Jelölj ki szöveget a becsomagoláshoz!'); return; }
+  if (!abbreviation) { showWrapWidget(editor, abbr=>wrapWithAbbreviation(editor, abbr)); return; }
+  const lines = selectedText.split('\n').filter(l=>l.trim()!=='');
+  let wrappedText;
+  const wrapEachMatch = abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)>([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
+  const wrapEachSimpleMatch = abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
+  if (wrapEachMatch) {
+    const outerParsed = parseTagAbbr(wrapEachMatch[1]);
+    const innerParsed = parseTagAbbr(wrapEachMatch[2]);
+    const innerItems = lines.map(line=>`  ${buildTag(innerParsed, line.trim())}`).join('\n');
+    wrappedText = buildTag(outerParsed, '\n'+innerItems+'\n', '');
+  } else if (wrapEachSimpleMatch) {
+    const parsed = parseTagAbbr(wrapEachSimpleMatch[1]);
+    wrappedText = lines.map(line=>buildTag(parsed, line.trim())).join('\n');
+  } else if (abbreviation.includes('>')) {
+    const parts = abbreviation.split('>');
+    let content = selectedText;
+    for (let i=parts.length-1; i>=0; i--) content = buildTag(parseTagAbbr(parts[i]), content, '');
+    wrappedText = content;
+  } else {
+    wrappedText = buildTag(parseTagAbbr(abbreviation), selectedText, '');
+  }
+  editor.executeEdits('wrap-with-abbreviation', [{ range:selection, text:wrappedText, forceMoveMarkers:true }]);
 }
 
 // ══════════════════════════════════════════════════════════════════════
