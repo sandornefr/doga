@@ -466,18 +466,29 @@ const tasks = [
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Webhelyek</title>
+  <title>Kedvenc webhelyeim</title>
 </head>
 <body>
+  <h1>Kedvenc webhelyeim</h1>
+
+  <p>
+    <a href="https://www.google.com">Google</a>
+  </p>
+
+  <p>
+    <!-- Ide írj egy másik linket, ami új lapon nyílik meg (target="_blank") -->
+  </p>
+
+  <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="">
 
 </body>
 </html>`,
     checks:[
-      { label:'<h1> főcím az oldalon',                    fn:(h,d)=>!!d.querySelector('h1') },
-      { label:'Legalább 2 link (<a href>)',                fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
-      { label:'Egyik link new lapon nyílik (target=_blank)', fn:(h,d)=>!!d.querySelector('a[target="_blank"]') },
-      { label:'Van <img> kép az oldalon',                 fn:(h,d)=>!!d.querySelector('img') },
-      { label:'A képnek van alt attribútuma',              fn:(h,d)=>d.querySelector('img')?.hasAttribute('alt') }
+      { label:'<h1> főcím az oldalon',                       fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Legalább 2 link (<a href>)',                   fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
+      { label:'Egyik link új lapon nyílik (target=_blank)',   fn:(h,d)=>!!d.querySelector('a[target="_blank"]') },
+      { label:'Van <img> kép az oldalon',                    fn:(h,d)=>!!d.querySelector('img') },
+      { label:'A képnek van alt attribútuma',                 fn:(h,d)=>d.querySelector('img')?.hasAttribute('alt') }
     ]
   },
 
