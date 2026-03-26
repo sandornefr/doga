@@ -85,8 +85,8 @@
     .quiz-q { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:14px; }
     .quiz-opts { display:flex; flex-direction:column; gap:8px; }
     .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.87rem; color:var(--text); transition:all .16s; }
-    .quiz-opt:hover:not(.disabled) { border-color:var(--blue); background:rgba(59,130,246,.06); }
-    .quiz-opt.selected { border-color:var(--blue); background:rgba(59,130,246,.1); }
+    .quiz-opt:hover:not(.disabled):not(.selected) { border-color:#475569; background:rgba(255,255,255,.04); }
+    .quiz-opt.selected { border-color:#60a5fa; background:rgba(59,130,246,.22); color:#e0f2fe; box-shadow:0 0 0 2px rgba(59,130,246,.3); }
     .quiz-opt.correct { border-color:var(--accent); background:rgba(34,197,94,.1); color:#86efac; }
     .quiz-opt.wrong   { border-color:var(--red);    background:rgba(239,68,68,.1);  color:#fca5a5; }
     .quiz-opt.disabled{ cursor:default; }
