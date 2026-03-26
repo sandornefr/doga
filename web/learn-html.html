@@ -180,7 +180,7 @@
   <div class="modal-box">
     <div style="font-size:2.8rem">🏆</div>
     <h2>HTML Alapok – kész!</h2>
-    <p>Elsajátítottad a HTML alapjait. Következő szint: CSS stílusok!</p>
+    <p>Gratulálok! Teljesítetted mind a 7 blokkot és elsajátítottad a HTML alapjait.<br>Következő szint: CSS stílusok!</p>
     <div class="modal-btns">
       <a class="btn-m btn-m-p" href="learn-css.html"><i class="fas fa-arrow-right"></i> Tovább: CSS</a>
       <a class="btn-m btn-m-s" href="../portal.html"><i class="fas fa-home"></i> Főmenü</a>
@@ -393,6 +393,440 @@ const tasks = [
       { label:'<strong> félkövér egy bekezdésben',   fn:(h,d)=>!!d.querySelector('p strong') },
       { label:'<em> dőlt egy bekezdésben',           fn:(h,d)=>!!d.querySelector('p em') },
       { label:'<u> aláhúzás valahol',               fn:(h,d)=>!!d.querySelector('u') }
+    ]
+  },
+
+  // ── BLOKK 3: Linkek és képek ─────────────────────────────────────
+  {
+    id:7, block:3, blockName:'Linkek és képek', emoji:'🔗',
+    type:'quiz',
+    title:'Hogyan működik a hivatkozás?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <code>&lt;a&gt;</code> elem (anchor = horgony) hoz létre kattintható linket.
+      Az <code>href</code> attribútum mondja meg, hova vezet:<br><br>
+      <code>&lt;a href="https://google.com"&gt;Google&lt;/a&gt;</code><br><br>
+      Ha <code>target="_blank"</code>-et is megadsz, új lapon nyílik meg.<br><br>
+      A <code>&lt;img&gt;</code> elem képet szúr be – önzáró, nincs záró tagje:
+      <code>&lt;img src="kep.jpg" alt="leírás"&gt;</code><br><br>
+      Az <strong>alt</strong> kötelező: képernyőolvasóknak és ha a kép nem tölt be.`,
+    question:'Melyik attribútum adja meg a link célját az <a> elemnél?',
+    options:['src','target','href','alt'],
+    correct:2,
+    feedback:'✅ Igen! A <code>href</code> (hypertext reference) mondja meg, hova mutasson a link. Az <code>src</code> a képeknél, az <code>alt</code> a kép szöveges leírása.'
+  },
+
+  {
+    id:8, block:3, blockName:'Linkek és képek', emoji:'🔗',
+    type:'fillin',
+    title:'Link és kép attribútumai',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Két alapelem attribútumokkal:
+      <ul>
+        <li><code>&lt;a href="..."&gt;</code> — <strong>href</strong>: a cél URL</li>
+        <li><code>&lt;a target="_blank"&gt;</code> — új lapon nyílik</li>
+        <li><code>&lt;img src="..."&gt;</code> — <strong>src</strong>: a kép fájlneve</li>
+        <li><code>&lt;img alt="..."&gt;</code> — <strong>alt</strong>: szöveges leírás</li>
+      </ul>`,
+    codeTemplate:
+`<p>
+  <a ___="https://kando.hu">Kandó Kálmán</a>
+  iskolánk névadója.
+</p>
+
+<p>
+  Látogasd meg: <a href="https://mesterai.hu" ___="_blank">MesterAI</a>
+</p>
+
+<img ___="logo.png" ___="Kandó logó">`,
+    blanks:[
+      { answer:'href',   hint:'Hypertext Reference – a link célja' },
+      { answer:'target', hint:'Megadja, hol nyíljon meg: "_blank" = új lap' },
+      { answer:'src',    hint:'Source – a kép forrásfájlja' },
+      { answer:'alt',    hint:'Alternate text – szöveges leírás, ha a kép nem tölt be' }
+    ]
+  },
+
+  {
+    id:9, block:3, blockName:'Linkek és képek', emoji:'🔗',
+    type:'monaco',
+    title:'Készíts linkes oldalt képpel!',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts egy HTML oldalt:
+      <ul>
+        <li><code>&lt;h1&gt;</code>: <strong>Kedvenc webhelyeim</strong></li>
+        <li>Legalább <strong>2 db link</strong> (<code>&lt;a href="..."&gt;</code>)</li>
+        <li>Az egyik link nyíljon meg <strong>új lapon</strong> (<code>target="_blank"</code>)</li>
+        <li>Legalább <strong>1 db kép</strong> (<code>&lt;img src="..."&gt;</code>) <code>alt</code> attribútummal</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Webhelyek</title>
+</head>
+<body>
+
+</body>
+</html>`,
+    checks:[
+      { label:'<h1> főcím az oldalon',                    fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Legalább 2 link (<a href>)',                fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
+      { label:'Egyik link new lapon nyílik (target=_blank)', fn:(h,d)=>!!d.querySelector('a[target="_blank"]') },
+      { label:'Van <img> kép az oldalon',                 fn:(h,d)=>!!d.querySelector('img') },
+      { label:'A képnek van alt attribútuma',              fn:(h,d)=>d.querySelector('img')?.hasAttribute('alt') }
+    ]
+  },
+
+  // ── BLOKK 4: Listák ──────────────────────────────────────────────
+  {
+    id:10, block:4, blockName:'Listák', emoji:'📋',
+    type:'quiz',
+    title:'Rendezett és rendezetlen lista',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Kétféle lista létezik:
+      <ul>
+        <li><code>&lt;ul&gt;</code> — <strong>rendezetlen lista</strong> (unordered list): pontokkal jelölt</li>
+        <li><code>&lt;ol&gt;</code> — <strong>rendezett lista</strong> (ordered list): számokkal jelölt</li>
+      </ul>
+      Mindkét esetben a lista elemek: <code>&lt;li&gt;</code> (list item).<br><br>
+      Pl. bevásárlólistánál <code>&lt;ul&gt;</code>, lépéssoroknál (recept, utasítás) <code>&lt;ol&gt;</code> a logikus választás.`,
+    question:'Melyik listát használd ha a sorrend fontos (pl. lépések)?',
+    options:['<ul> – rendezetlen lista','<li> – listaelem','<ol> – rendezett lista','<dl> – leíró lista'],
+    correct:2,
+    feedback:'✅ Pontosan! Az <code>&lt;ol&gt;</code> automatikusan számozza az elemeket. Az <code>&lt;ul&gt;</code>-nál a sorrend mindegy.'
+  },
+
+  {
+    id:11, block:4, blockName:'Listák', emoji:'📋',
+    type:'fillin',
+    title:'Lista elemek',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Lista felépítése:
+      <ul>
+        <li><code>&lt;ul&gt;</code> vagy <code>&lt;ol&gt;</code> — a lista konténere</li>
+        <li><code>&lt;li&gt;</code> — egy listaelem (list item)</li>
+        <li>A listaelemek csak a konténer belsejébe kerülhetnek!</li>
+      </ul>`,
+    codeTemplate:
+`<h2>Bevásárlólista</h2>
+<___>
+  <___>Tej</li>
+  <li>Kenyér</li>
+  <li>Sajt</li>
+</ul>
+
+<h2>Teendők sorban</h2>
+<___>
+  <li>Bekapcsolom a számítógépet</li>
+  <___>Megnyitom a böngészőt</li>
+  <li>Megírom a kódot</li>
+</ol>`,
+    blanks:[
+      { answer:'ul', hint:'Rendezetlen lista – pontokkal' },
+      { answer:'li', hint:'List item – egy listaelem' },
+      { answer:'ol', hint:'Ordered list – számozott lista' },
+      { answer:'li', hint:'List item – egy listaelem' }
+    ]
+  },
+
+  {
+    id:12, block:4, blockName:'Listák', emoji:'📋',
+    type:'monaco',
+    title:'Készíts listás oldalt!',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts HTML oldalt listákkal:
+      <ul>
+        <li><code>&lt;h1&gt;</code>: <strong>Kedvenc dolgaim</strong></li>
+        <li><strong>Rendezetlen lista</strong> (<code>&lt;ul&gt;</code>) legalább <strong>3 elemmel</strong></li>
+        <li><strong>Rendezett lista</strong> (<code>&lt;ol&gt;</code>) legalább <strong>3 elemmel</strong></li>
+        <li>Minden listának legyen <code>&lt;h2&gt;</code> alcíme</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Listák</title>
+</head>
+<body>
+
+</body>
+</html>`,
+    checks:[
+      { label:'<h1> főcím az oldalon',                  fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Van rendezetlen lista (<ul>)',             fn:(h,d)=>!!d.querySelector('ul') },
+      { label:'Az <ul>-ban legalább 3 listaelem',        fn:(h,d)=>d.querySelectorAll('ul > li').length>=3 },
+      { label:'Van rendezett lista (<ol>)',               fn:(h,d)=>!!d.querySelector('ol') },
+      { label:'Az <ol>-ban legalább 3 listaelem',        fn:(h,d)=>d.querySelectorAll('ol > li').length>=3 },
+      { label:'Legalább 2 <h2> alcím',                   fn:(h,d)=>d.querySelectorAll('h2').length>=2 }
+    ]
+  },
+
+  // ── BLOKK 5: Szemantikus váz ─────────────────────────────────────
+  {
+    id:13, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
+    type:'quiz',
+    title:'Miért használunk szemantikus elemeket?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <strong>szemantikus elemek</strong> elmondják a böngészőnek (és a keresőknek), mi mire való:
+      <ul>
+        <li><code>&lt;header&gt;</code> — fejléc (logo, navigáció)</li>
+        <li><code>&lt;nav&gt;</code> — navigáció (menü linkek)</li>
+        <li><code>&lt;main&gt;</code> — fő tartalom (egy oldalaon csak egy!)</li>
+        <li><code>&lt;article&gt;</code> — önálló tartalom (pl. blogbejegyzés)</li>
+        <li><code>&lt;section&gt;</code> — tematikus szakasz</li>
+        <li><code>&lt;footer&gt;</code> — lábléc (copyright, kapcsolat)</li>
+      </ul>
+      Régen mindent <code>&lt;div&gt;</code>-val csináltak – ez nem mondja el mi micsoda.`,
+    question:'Melyik elem a fő navigációs menü jelölésére való?',
+    options:['<menu>','<nav>','<header>','<ul>'],
+    correct:1,
+    feedback:'✅ Igen! A <code>&lt;nav&gt;</code> jelöli a navigációs linkkészletet. A <code>&lt;header&gt;</code> a fejléc egésze (amibe a nav is kerülhet), az <code>&lt;ul&gt;</code> csak egy lista, szemantika nélkül.'
+  },
+
+  {
+    id:14, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
+    type:'fillin',
+    title:'Szemantikus oldal váza',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Egy tipikus szemantikus oldal szerkezete:
+      <ul>
+        <li><code>&lt;header&gt;</code> – logo, cím, navigáció</li>
+        <li><code>&lt;main&gt;</code> – a fő tartalom</li>
+        <li><code>&lt;article&gt;</code> – egy önálló egység a main-en belül</li>
+        <li><code>&lt;footer&gt;</code> – lábléc</li>
+      </ul>`,
+    codeTemplate:
+`<body>
+  <___>
+    <h1>Kandó Hírek</h1>
+    <nav>
+      <a href="/">Főoldal</a>
+      <a href="/hirek">Hírek</a>
+    </nav>
+  </header>
+
+  <___>
+    <___>
+      <h2>Új tananyag érkezett!</h2>
+      <p>A HTML alapok leckék elérhetők.</p>
+    </article>
+  </main>
+
+  <___>
+    <p>&copy; 2025 Kandó Kálmán</p>
+  </footer>
+</body>`,
+    blanks:[
+      { answer:'header',  hint:'Fejléc – a lap teteje: logo és navigáció' },
+      { answer:'main',    hint:'Fő tartalom – oldalanként csak egy!' },
+      { answer:'article', hint:'Önálló cikk vagy tartalom egység' },
+      { answer:'footer',  hint:'Lábléc – copyright, kapcsolati infók' }
+    ]
+  },
+
+  {
+    id:15, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
+    type:'monaco',
+    title:'Szemantikus oldal felépítése',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts szemantikus felépítésű HTML oldalt:
+      <ul>
+        <li><code>&lt;header&gt;</code>: logó-szerű <code>&lt;h1&gt;</code> és <code>&lt;nav&gt;</code> legalább 2 linkkel</li>
+        <li><code>&lt;main&gt;</code>: legalább egy <code>&lt;article&gt;</code> vagy <code>&lt;section&gt;</code></li>
+        <li><code>&lt;footer&gt;</code>: copyright szöveg</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Szemantikus oldal</title>
+</head>
+<body>
+
+</body>
+</html>`,
+    checks:[
+      { label:'Van <header> fejléc',                 fn:(h,d)=>!!d.querySelector('header') },
+      { label:'Van <nav> navigáció',                 fn:(h,d)=>!!d.querySelector('nav') },
+      { label:'A navban legalább 2 link',            fn:(h,d)=>d.querySelectorAll('nav a').length>=2 },
+      { label:'Van <main> fő tartalom',              fn:(h,d)=>!!d.querySelector('main') },
+      { label:'Van <article> vagy <section>',        fn:(h,d)=>!!(d.querySelector('article')||d.querySelector('section')) },
+      { label:'Van <footer> lábléc',                 fn:(h,d)=>!!d.querySelector('footer') }
+    ]
+  },
+
+  // ── BLOKK 6: Táblázatok ──────────────────────────────────────────
+  {
+    id:16, block:6, blockName:'Táblázatok', emoji:'📊',
+    type:'quiz',
+    title:'Tábla felépítése HTML-ben',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A HTML tábla elemei (kívülről befelé):
+      <ul>
+        <li><code>&lt;table&gt;</code> — maga a tábla</li>
+        <li><code>&lt;thead&gt;</code> — fejléc sor(ok)</li>
+        <li><code>&lt;tbody&gt;</code> — törzs (az adatok)</li>
+        <li><code>&lt;tr&gt;</code> — tábla sor (table row)</li>
+        <li><code>&lt;th&gt;</code> — fejléc cella (félkövér, középre igazított)</li>
+        <li><code>&lt;td&gt;</code> — adat cella (table data)</li>
+      </ul>`,
+    question:'Melyik elem jelöl egy adatsort a táblázatban?',
+    options:['<td>','<th>','<tr>','<table>'],
+    correct:2,
+    feedback:'✅ Igen! A <code>&lt;tr&gt;</code> (table row) egy teljes sort jelöl. Egy soron belül <code>&lt;td&gt;</code> vagy <code>&lt;th&gt;</code> az egyes cellák.'
+  },
+
+  {
+    id:17, block:6, blockName:'Táblázatok', emoji:'📊',
+    type:'fillin',
+    title:'Tábla elemei',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Tábla minta – fejléccel és adatsorokkal:
+      <ul>
+        <li><code>&lt;thead&gt;</code> + <code>&lt;th&gt;</code> = fejléc cellák</li>
+        <li><code>&lt;tbody&gt;</code> + <code>&lt;td&gt;</code> = adat cellák</li>
+        <li>Minden sor: <code>&lt;tr&gt;</code></li>
+      </ul>`,
+    codeTemplate:
+`<table>
+  <___>
+    <tr>
+      <___>Név</th>
+      <th>Osztály</th>
+    </tr>
+  </thead>
+  <___>
+    <___>
+      <td>Gipsz Jakab</td>
+      <td>13A</td>
+    </tr>
+  </tbody>
+</table>`,
+    blanks:[
+      { answer:'thead', hint:'Table head – a fejléc rész' },
+      { answer:'th',    hint:'Table header cell – félkövér fejléc cella' },
+      { answer:'tbody', hint:'Table body – a törzs/adat rész' },
+      { answer:'tr',    hint:'Table row – egy sor a táblázatban' }
+    ]
+  },
+
+  {
+    id:18, block:6, blockName:'Táblázatok', emoji:'📊',
+    type:'monaco',
+    title:'Készíts táblázatot!',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts HTML táblázatot:
+      <ul>
+        <li><code>&lt;table&gt;</code> belső <code>&lt;thead&gt;</code> és <code>&lt;tbody&gt;</code>-val</li>
+        <li>Fejléc sorban legalább <strong>3 <code>&lt;th&gt;</code></strong> cella</li>
+        <li>Legalább <strong>2 adatsor</strong> (<code>&lt;tr&gt;</code>) a <code>&lt;tbody&gt;</code>-ban</li>
+        <li>Minden adatsorban legalább <strong>3 <code>&lt;td&gt;</code></strong> cella</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Táblázat</title>
+</head>
+<body>
+
+</body>
+</html>`,
+    checks:[
+      { label:'Van <table> a lapon',                   fn:(h,d)=>!!d.querySelector('table') },
+      { label:'Van <thead> fejléc rész',               fn:(h,d)=>!!d.querySelector('thead') },
+      { label:'A fejlécben legalább 3 <th> cella',     fn:(h,d)=>d.querySelectorAll('thead th').length>=3 },
+      { label:'Van <tbody> törzs rész',                fn:(h,d)=>!!d.querySelector('tbody') },
+      { label:'A törzsben legalább 2 <tr> sor',        fn:(h,d)=>d.querySelectorAll('tbody tr').length>=2 },
+      { label:'Minden adatsorban legalább 3 <td>',     fn:(h,d)=>[...d.querySelectorAll('tbody tr')].every(r=>r.querySelectorAll('td').length>=3) }
+    ]
+  },
+
+  // ── BLOKK 7: Div és Span ─────────────────────────────────────────
+  {
+    id:19, block:7, blockName:'Div és Span', emoji:'📦',
+    type:'quiz',
+    title:'Mi a különbség a div és a span között?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      <strong>Semleges konténer elemek</strong> – nincs saját szemantikájuk, CSS-hez és JavaScript-hez használjuk:
+      <ul>
+        <li><code>&lt;div&gt;</code> — <strong>blokk szintű</strong>: új sort kezd, egész sorát foglalja el</li>
+        <li><code>&lt;span&gt;</code> — <strong>inline</strong>: a szövegen belül marad, nem töri meg a sort</li>
+      </ul>
+      Pl. egy doboz hátterét <code>&lt;div&gt;</code>-vel, egy szó kiemelőszínét <code>&lt;span&gt;</code>-nel adjuk meg.`,
+    question:'Melyik elem marad a szöveg folyamán belül (inline)?',
+    options:['<div>','<section>','<span>','<article>'],
+    correct:2,
+    feedback:'✅ Pontosan! A <code>&lt;span&gt;</code> inline elem – szövegen belül lehet alkalmazni stílusdefinícióhoz. A <code>&lt;div&gt;</code> blokk szintű, mindig új sort kezd.'
+  },
+
+  {
+    id:20, block:7, blockName:'Div és Span', emoji:'📦',
+    type:'fillin',
+    title:'Div és Span használata',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <code>class</code> attribútummal nevezzük meg a dobozt/jelölést,
+      majd CSS-sel adjuk meg a stílusát:
+      <ul>
+        <li><code>&lt;div class="kártya"&gt;</code> — egy doboz</li>
+        <li><code>&lt;span class="kiemel"&gt;</code> — kiemelés szövegen belül</li>
+      </ul>`,
+    codeTemplate:
+`<___  class="kártya">
+  <h2>Termék neve</h2>
+  <p>Ára: <___ class="ár">2 999 Ft</span></p>
+  <p>Állapot: <___ class="elérhető">Elérhető</span></p>
+</div>
+
+<___ class="figyelmeztető-sáv">
+  <p>Akció csak ma!</p>
+</div>`,
+    blanks:[
+      { answer:'div',  hint:'Blokk szintű konténer – doboz' },
+      { answer:'span', hint:'Inline elem – szövegen belüli jelölés' },
+      { answer:'span', hint:'Inline elem – szövegen belüli jelölés' },
+      { answer:'div',  hint:'Blokk szintű konténer – doboz' }
+    ]
+  },
+
+  {
+    id:21, block:7, blockName:'Div és Span', emoji:'📦',
+    type:'monaco',
+    title:'Div és span a gyakorlatban',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts HTML oldalt <code>&lt;div&gt;</code> és <code>&lt;span&gt;</code> elemekkel:
+      <ul>
+        <li>Legalább <strong>2 db <code>&lt;div&gt;</code></strong> legyen az oldalon</li>
+        <li>Legalább <strong>1 db <code>&lt;span&gt;</code></strong> legyen szövegen belül</li>
+        <li>Mindegyiknek legyen <code>class</code> attribútuma</li>
+        <li>Legyen egy <code>&lt;h1&gt;</code> és legalább egy <code>&lt;p&gt;</code></li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Div és Span</title>
+  <style>
+    .kiemel { color: orange; font-weight: bold; }
+    .doboz { border: 1px solid #ccc; padding: 10px; margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+</body>
+</html>`,
+    checks:[
+      { label:'Van <h1> főcím',                          fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Van legalább egy <p> bekezdés',           fn:(h,d)=>!!d.querySelector('p') },
+      { label:'Legalább 2 <div> az oldalon',            fn:(h,d)=>d.querySelectorAll('div').length>=2 },
+      { label:'Legalább 1 <span> az oldalon',           fn:(h,d)=>!!d.querySelector('span') },
+      { label:'A <div>-eknek van class attribútuma',     fn:(h,d)=>[...d.querySelectorAll('div')].some(el=>el.hasAttribute('class')) },
+      { label:'A <span>-nek van class attribútuma',      fn:(h,d)=>!!d.querySelector('span[class]') }
     ]
   }
 ];
