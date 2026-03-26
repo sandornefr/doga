@@ -341,12 +341,12 @@ const tasks = [
     explanation:`<div class="exp-label">📖 Tananyag</div>
       A legfontosabb szövegformázó elemek:
       <ul>
-        <li><code>&lt;strong&gt;</code> — <strong>félkövér</strong>, fontos tartalom</li>
-        <li><code>&lt;em&gt;</code> — <em>dőlt</em>, hangsúlyos, idegen szavakhoz</li>
-        <li><code>&lt;u&gt;</code> — <u>aláhúzott</u> szöveg (vizsgán kérik!)</li>
+        <li><code>&lt;strong&gt;</code> vagy <code>&lt;b&gt;</code> — <strong>félkövér</strong> szöveg</li>
+        <li><code>&lt;em&gt;</code> vagy <code>&lt;i&gt;</code> — <em>dőlt</em> szöveg</li>
+        <li><code>&lt;u&gt;</code> vagy <code>&lt;ins&gt;</code> — <u>aláhúzott</u> szöveg</li>
         <li><code>&lt;br&gt;</code> — sortörés, önzáró (nincs záró tagje!)</li>
       </ul>
-      ⚠️ Ne <code>&lt;b&gt;</code> és <code>&lt;i&gt;</code> – azok csak vizuálisan formáznak, szemantikus jelentésük nincs.`,
+      💡 A <code>&lt;strong&gt;</code>/<code>&lt;em&gt;</code> szemantikusan hangsúlyt jelöl, a <code>&lt;b&gt;</code>/<code>&lt;i&gt;</code> csak vizuálisan formáz – de mindkét változat elfogadott a vizsgán.`,
     codeTemplate:
 `<h1>Kedvenc ételeim</h1>
 
@@ -498,13 +498,18 @@ const tasks = [
     type:'quiz',
     title:'Rendezett és rendezetlen lista',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      Kétféle lista létezik:
+      Kétféle lista létezik, de mindkettő felépítése azonos:
+      <br><br>
+      <code>&lt;ul&gt;</code> — a konténer (rendezetlen, pontok)<br>
+      &nbsp;&nbsp;<code>&lt;li&gt;</code>Elem 1<code>&lt;/li&gt;</code><br>
+      &nbsp;&nbsp;<code>&lt;li&gt;</code>Elem 2<code>&lt;/li&gt;</code><br>
+      <code>&lt;/ul&gt;</code>
+      <br><br>
       <ul>
-        <li><code>&lt;ul&gt;</code> — <strong>rendezetlen lista</strong> (unordered list): pontokkal jelölt</li>
-        <li><code>&lt;ol&gt;</code> — <strong>rendezett lista</strong> (ordered list): számokkal jelölt</li>
+        <li><code>&lt;ul&gt;</code> — <strong>rendezetlen lista</strong>: pontokkal jelölt – belső tagja: <code>&lt;li&gt;</code></li>
+        <li><code>&lt;ol&gt;</code> — <strong>rendezett lista</strong>: számokkal jelölt – belső tagja: <code>&lt;li&gt;</code></li>
       </ul>
-      Mindkét esetben a lista elemek: <code>&lt;li&gt;</code> (list item).<br><br>
-      Pl. bevásárlólistánál <code>&lt;ul&gt;</code>, lépéssoroknál (recept, utasítás) <code>&lt;ol&gt;</code> a logikus választás.`,
+      Bevásárlólistánál <code>&lt;ul&gt;</code>, lépéssoroknál (recept, utasítás) <code>&lt;ol&gt;</code>.`,
     question:'Melyik listát használd ha a sorrend fontos (pl. lépések)?',
     options:['&lt;ul&gt; – rendezetlen lista','&lt;li&gt; – listaelem','&lt;ol&gt; – rendezett lista','&lt;dl&gt; – leíró lista'],
     correct:2,
@@ -516,11 +521,17 @@ const tasks = [
     type:'fillin',
     title:'Lista elemek',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      Lista felépítése:
+      Minden lista ugyanígy épül fel – a konténer tartalmazza az elemeket:
+      <br><br>
+      <code>&lt;ul&gt;</code> — a lista maga (ez a konténer)<br>
+      &nbsp;&nbsp;<code>&lt;li&gt;</code>Tej<code>&lt;/li&gt;</code> — egy listaelem<br>
+      &nbsp;&nbsp;<code>&lt;li&gt;</code>Kenyér<code>&lt;/li&gt;</code><br>
+      <code>&lt;/ul&gt;</code>
+      <br><br>
       <ul>
-        <li><code>&lt;ul&gt;</code> vagy <code>&lt;ol&gt;</code> — a lista konténere</li>
-        <li><code>&lt;li&gt;</code> — egy listaelem (list item)</li>
-        <li>A listaelemek csak a konténer belsejébe kerülhetnek!</li>
+        <li><code>&lt;ul&gt;</code> — rendezetlen lista konténere, belső tagja: <strong><code>&lt;li&gt;</code></strong></li>
+        <li><code>&lt;ol&gt;</code> — rendezett (számozott) lista konténere, belső tagja: <strong><code>&lt;li&gt;</code></strong></li>
+        <li><code>&lt;li&gt;</code> — maga a listaelem (list item) – mindig a konténerbe kerül!</li>
       </ul>`,
     codeTemplate:
 `<h2>Bevásárlólista</h2>
