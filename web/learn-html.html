@@ -308,8 +308,8 @@ const tasks = [
     starterHtml:'',
     checks:[
       { label:'lang="hu" az html elemen',         fn:(h,d)=>!!d.querySelector('html[lang="hu"]') },
-      { label:'<title>Első oldalam</title>',       fn:(h,d)=>d.querySelector('title')?.textContent?.trim()==='Első oldalam' },
-      { label:'<p> bekezdés a body-ban',           fn:(h,d)=>!!d.querySelector('body p') },
+      { label:'A &lt;title&gt; szövege: "Első oldalam"', fn:(h,d)=>d.querySelector('title')?.textContent?.trim()==='Első oldalam' },
+      { label:'&lt;p&gt; bekezdés a body-ban',      fn:(h,d)=>!!d.querySelector('body p') },
       { label:'A bekezdés tartalmazza: Helló, HTML!', fn:(h,d)=>[...d.querySelectorAll('body p')].some(p=>p.textContent.includes('Helló, HTML!')) }
     ]
   },
@@ -390,12 +390,12 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'<h1> főcím az oldalon',              fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'&lt;h1&gt; főcím az oldalon',              fn:(h,d)=>!!d.querySelector('h1') },
       { label:'h1 tartalma: Kedvenc ételeim',        fn:(h,d)=>d.querySelector('h1')?.textContent?.trim()==='Kedvenc ételeim' },
-      { label:'<h2> alcím az oldalon',               fn:(h,d)=>!!d.querySelector('h2') },
-      { label:'<strong> félkövér egy bekezdésben',   fn:(h,d)=>!!d.querySelector('p strong') },
-      { label:'<em> dőlt egy bekezdésben',           fn:(h,d)=>!!d.querySelector('p em') },
-      { label:'<u> aláhúzás valahol',               fn:(h,d)=>!!d.querySelector('u') }
+      { label:'&lt;h2&gt; alcím az oldalon',          fn:(h,d)=>!!d.querySelector('h2') },
+      { label:'&lt;strong&gt; félkövér egy bekezdésben', fn:(h,d)=>!!d.querySelector('p strong') },
+      { label:'&lt;em&gt; dőlt egy bekezdésben',      fn:(h,d)=>!!d.querySelector('p em') },
+      { label:'&lt;u&gt; aláhúzás valahol',           fn:(h,d)=>!!d.querySelector('u') }
     ]
   },
 
@@ -484,10 +484,10 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'<h1> főcím az oldalon',                       fn:(h,d)=>!!d.querySelector('h1') },
-      { label:'Legalább 2 link (<a href>)',                   fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
+      { label:'&lt;h1&gt; főcím az oldalon',                       fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Legalább 2 link (&lt;a href&gt;)',             fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
       { label:'Egyik link új lapon nyílik (target=_blank)',   fn:(h,d)=>!!d.querySelector('a[target="_blank"]') },
-      { label:'Van <img> kép az oldalon',                    fn:(h,d)=>!!d.querySelector('img') },
+      { label:'Van &lt;img&gt; kép az oldalon',               fn:(h,d)=>!!d.querySelector('img') },
       { label:'A képnek van alt attribútuma',                 fn:(h,d)=>d.querySelector('img')?.hasAttribute('alt') }
     ]
   },
@@ -579,12 +579,12 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'<h1> főcím az oldalon',                  fn:(h,d)=>!!d.querySelector('h1') },
-      { label:'Van rendezetlen lista (<ul>)',             fn:(h,d)=>!!d.querySelector('ul') },
-      { label:'Az <ul>-ban legalább 3 listaelem',        fn:(h,d)=>d.querySelectorAll('ul > li').length>=3 },
-      { label:'Van rendezett lista (<ol>)',               fn:(h,d)=>!!d.querySelector('ol') },
-      { label:'Az <ol>-ban legalább 3 listaelem',        fn:(h,d)=>d.querySelectorAll('ol > li').length>=3 },
-      { label:'Legalább 2 <h2> alcím',                   fn:(h,d)=>d.querySelectorAll('h2').length>=2 }
+      { label:'&lt;h1&gt; főcím az oldalon',                  fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Van rendezetlen lista (&lt;ul&gt;)',          fn:(h,d)=>!!d.querySelector('ul') },
+      { label:'Az &lt;ul&gt;-ban legalább 3 listaelem',   fn:(h,d)=>d.querySelectorAll('ul > li').length>=3 },
+      { label:'Van rendezett lista (&lt;ol&gt;)',            fn:(h,d)=>!!d.querySelector('ol') },
+      { label:'Az &lt;ol&gt;-ban legalább 3 listaelem',   fn:(h,d)=>d.querySelectorAll('ol > li').length>=3 },
+      { label:'Legalább 2 &lt;h2&gt; alcím',              fn:(h,d)=>d.querySelectorAll('h2').length>=2 }
     ]
   },
 
@@ -675,12 +675,12 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'Van <header> fejléc',                 fn:(h,d)=>!!d.querySelector('header') },
-      { label:'Van <nav> navigáció',                 fn:(h,d)=>!!d.querySelector('nav') },
+      { label:'Van &lt;header&gt; fejléc',             fn:(h,d)=>!!d.querySelector('header') },
+      { label:'Van &lt;nav&gt; navigáció',             fn:(h,d)=>!!d.querySelector('nav') },
       { label:'A navban legalább 2 link',            fn:(h,d)=>d.querySelectorAll('nav a').length>=2 },
-      { label:'Van <main> fő tartalom',              fn:(h,d)=>!!d.querySelector('main') },
-      { label:'Van <article> vagy <section>',        fn:(h,d)=>!!(d.querySelector('article')||d.querySelector('section')) },
-      { label:'Van <footer> lábléc',                 fn:(h,d)=>!!d.querySelector('footer') }
+      { label:'Van &lt;main&gt; fő tartalom',          fn:(h,d)=>!!d.querySelector('main') },
+      { label:'Van &lt;article&gt; vagy &lt;section&gt;', fn:(h,d)=>!!(d.querySelector('article')||d.querySelector('section')) },
+      { label:'Van &lt;footer&gt; lábléc',             fn:(h,d)=>!!d.querySelector('footer') }
     ]
   },
 
@@ -763,12 +763,12 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'Van <table> a lapon',                   fn:(h,d)=>!!d.querySelector('table') },
-      { label:'Van <thead> fejléc rész',               fn:(h,d)=>!!d.querySelector('thead') },
-      { label:'A fejlécben legalább 3 <th> cella',     fn:(h,d)=>d.querySelectorAll('thead th').length>=3 },
-      { label:'Van <tbody> törzs rész',                fn:(h,d)=>!!d.querySelector('tbody') },
-      { label:'A törzsben legalább 2 <tr> sor',        fn:(h,d)=>d.querySelectorAll('tbody tr').length>=2 },
-      { label:'Minden adatsorban legalább 3 <td>',     fn:(h,d)=>[...d.querySelectorAll('tbody tr')].every(r=>r.querySelectorAll('td').length>=3) }
+      { label:'Van &lt;table&gt; a lapon',               fn:(h,d)=>!!d.querySelector('table') },
+      { label:'Van &lt;thead&gt; fejléc rész',           fn:(h,d)=>!!d.querySelector('thead') },
+      { label:'A fejlécben legalább 3 &lt;th&gt; cella', fn:(h,d)=>d.querySelectorAll('thead th').length>=3 },
+      { label:'Van &lt;tbody&gt; törzs rész',            fn:(h,d)=>!!d.querySelector('tbody') },
+      { label:'A törzsben legalább 2 &lt;tr&gt; sor',   fn:(h,d)=>d.querySelectorAll('tbody tr').length>=2 },
+      { label:'Minden adatsorban legalább 3 &lt;td&gt;', fn:(h,d)=>[...d.querySelectorAll('tbody tr')].every(r=>r.querySelectorAll('td').length>=3) }
     ]
   },
 
@@ -847,12 +847,12 @@ const tasks = [
 </body>
 </html>`,
     checks:[
-      { label:'Van <h1> főcím',                          fn:(h,d)=>!!d.querySelector('h1') },
-      { label:'Van legalább egy <p> bekezdés',           fn:(h,d)=>!!d.querySelector('p') },
-      { label:'Legalább 2 <div> az oldalon',            fn:(h,d)=>d.querySelectorAll('div').length>=2 },
-      { label:'Legalább 1 <span> az oldalon',           fn:(h,d)=>!!d.querySelector('span') },
-      { label:'A <div>-eknek van class attribútuma',     fn:(h,d)=>[...d.querySelectorAll('div')].every(el=>el.hasAttribute('class')) },
-      { label:'A <span>-nek van class attribútuma',      fn:(h,d)=>!!d.querySelector('span[class]') }
+      { label:'Van &lt;h1&gt; főcím',                     fn:(h,d)=>!!d.querySelector('h1') },
+      { label:'Van legalább egy &lt;p&gt; bekezdés',      fn:(h,d)=>!!d.querySelector('p') },
+      { label:'Legalább 2 &lt;div&gt; az oldalon',       fn:(h,d)=>d.querySelectorAll('div').length>=2 },
+      { label:'Legalább 1 &lt;span&gt; az oldalon',      fn:(h,d)=>!!d.querySelector('span') },
+      { label:'A &lt;div&gt;-eknek van class attribútuma', fn:(h,d)=>[...d.querySelectorAll('div')].every(el=>el.hasAttribute('class')) },
+      { label:'A &lt;span&gt;-nek van class attribútuma', fn:(h,d)=>!!d.querySelector('span[class]') }
     ]
   }
 ];
