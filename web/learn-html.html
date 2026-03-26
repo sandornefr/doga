@@ -58,7 +58,7 @@
     .badge-quiz  { background:rgba(168,85,247,.15); color:#c084fc; border:1px solid rgba(168,85,247,.3); }
     .badge-fillin{ background:rgba(59,130,246,.15);  color:#93c5fd; border:1px solid rgba(59,130,246,.3); }
     .badge-monaco{ background:rgba(34,197,94,.12);   color:#86efac; border:1px solid rgba(34,197,94,.3); }
-    .task-title-row { font-size:1.15rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
+    .task-title-row { font-size:1.25rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
 
     /* ── CONTENT AREA (fill viewport) ── */
     .content-area { flex:1; display:flex; overflow:hidden; gap:16px; }
@@ -73,7 +73,7 @@
     .exp-compact { flex-shrink:0; overflow:hidden; }
 
     /* ── MAGYARÁZAT DOBOZ ── */
-    .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:9px; padding:12px 14px; font-size:0.83rem; color:#cbd5e1; line-height:1.65; height:100%; }
+    .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:9px; padding:12px 14px; font-size:0.93rem; color:#cbd5e1; line-height:1.65; height:100%; }
     .exp-box.compact { height:auto; }
     .exp-box code { background:#1e293b; color:#93c5fd; padding:1px 5px; border-radius:4px; font-size:0.8rem; }
     .exp-box strong { color:#f1f5f9; }
@@ -82,9 +82,9 @@
     .exp-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--blue); font-weight:700; margin-bottom:7px; }
 
     /* ── QUIZ ── */
-    .quiz-q { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:14px; }
+    .quiz-q { font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:14px; }
     .quiz-opts { display:flex; flex-direction:column; gap:8px; }
-    .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.87rem; color:var(--text); transition:all .16s; }
+    .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.97rem; color:var(--text); transition:all .16s; }
     .quiz-opt:hover:not(.disabled):not(.selected) { border-color:#475569; background:rgba(255,255,255,.04); }
     .quiz-opt.selected { border-color:#60a5fa; background:rgba(59,130,246,.22); color:#e0f2fe; box-shadow:0 0 0 2px rgba(59,130,246,.3); }
     .quiz-opt.correct { border-color:var(--accent); background:rgba(34,197,94,.1); color:#86efac; }
@@ -93,7 +93,7 @@
     .opt-letter { width:26px; height:26px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
     .quiz-opt.correct .opt-letter { background:var(--accent); border-color:var(--accent); color:#052e16; }
     .quiz-opt.wrong   .opt-letter { background:var(--red);    border-color:var(--red);    color:#fff; }
-    .quiz-feedback { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:0.84rem; line-height:1.6; display:none; }
+    .quiz-feedback { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:0.93rem; line-height:1.6; display:none; }
     .quiz-feedback.show { display:block; }
     .quiz-feedback.ok  { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3); color:#86efac; }
     .quiz-feedback.err { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
@@ -101,7 +101,7 @@
 
     /* ── FILL-IN ── */
     .fillin-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:8px; }
-    .code-tpl { background:#020617; border:1px solid #0f1f3a; border-radius:9px; padding:14px 16px; font-family:'Consolas','Fira Code',monospace; font-size:0.87rem; line-height:2.1; color:#a3e635; white-space:pre-wrap; word-break:break-all; }
+    .code-tpl { background:#020617; border:1px solid #0f1f3a; border-radius:9px; padding:14px 16px; font-family:'Consolas','Fira Code',monospace; font-size:0.95rem; line-height:2.1; color:#a3e635; white-space:pre-wrap; word-break:break-all; }
     .blank-in { display:inline-block; background:#0f2744; border:1.5px solid var(--blue); border-radius:5px; padding:0 6px; color:#93c5fd; font-family:inherit; font-size:inherit; font-weight:700; outline:none; min-width:44px; transition:border-color .18s; vertical-align:baseline; }
     .blank-in:focus { border-color:#60a5fa; box-shadow:0 0 0 2px rgba(59,130,246,.2); }
     .blank-in.ok  { border-color:var(--accent); background:rgba(34,197,94,.1); color:#86efac; }
@@ -122,7 +122,7 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     #monaco-preview { flex:1; border:none; background:#fff; }
     .check-list { flex-shrink:0; display:flex; flex-wrap:wrap; gap:5px 14px; padding-top:8px; }
-    .chk-row { display:flex; align-items:center; gap:5px; font-size:0.8rem; color:var(--muted); }
+    .chk-row { display:flex; align-items:center; gap:5px; font-size:0.9rem; color:var(--muted); }
     .chk-row.pass { color:var(--accent); }
 
     /* ── SUCCESS BANNER ── */
@@ -851,7 +851,7 @@ const tasks = [
       { label:'Van legalább egy <p> bekezdés',           fn:(h,d)=>!!d.querySelector('p') },
       { label:'Legalább 2 <div> az oldalon',            fn:(h,d)=>d.querySelectorAll('div').length>=2 },
       { label:'Legalább 1 <span> az oldalon',           fn:(h,d)=>!!d.querySelector('span') },
-      { label:'A <div>-eknek van class attribútuma',     fn:(h,d)=>[...d.querySelectorAll('div')].some(el=>el.hasAttribute('class')) },
+      { label:'A <div>-eknek van class attribútuma',     fn:(h,d)=>[...d.querySelectorAll('div')].every(el=>el.hasAttribute('class')) },
       { label:'A <span>-nek van class attribútuma',      fn:(h,d)=>!!d.querySelector('span[class]') }
     ]
   }
@@ -982,6 +982,10 @@ function loadTask(idx){
     ? `<div class="exp-compact">${expHtml}</div>${taskHtml}`
     : `<div class="exp-col">${expHtml}</div><div class="task-col">${taskHtml}</div>`;
 
+  const checkListHtml = task.type==='monaco' && task.checks
+    ? `<div class="check-list">${task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('')}</div>`
+    : '';
+
   document.getElementById('main-panel').innerHTML=`
     <div class="task-meta">
       <span class="task-num">${task.block}. blokk · ${idx+1}. feladat</span>
@@ -991,6 +995,7 @@ function loadTask(idx){
     <div class="content-area ${layoutCls}" id="content-area">
       ${monacoContent}
     </div>
+    ${checkListHtml}
     <div class="success-banner${isDone?' show':''}" id="suc-banner">🎉 Sikeresen teljesítetted ezt a feladatot!</div>
   `;
 
@@ -1076,7 +1081,6 @@ function lockFillin(){
 // ══════════════════════════════════════════════════════════════════════
 
 function renderMonacoShell(task,idx){
-  const chks=task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('');
   return `<div class="monaco-row">
       <div class="monaco-wrap">
         <div class="editor-hd">
@@ -1089,8 +1093,7 @@ function renderMonacoShell(task,idx){
         <div class="preview-hd"><div class="pdot"></div>Élő előnézet</div>
         <iframe id="monaco-preview" sandbox="allow-scripts"></iframe>
       </div>
-    </div>
-    <div class="check-list">${chks}</div>`;
+    </div>`;
 }
 
 function initMonaco(task,idx){

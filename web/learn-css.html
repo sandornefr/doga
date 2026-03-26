@@ -58,7 +58,7 @@
     .badge-quiz  { background:rgba(168,85,247,.15); color:#c084fc; border:1px solid rgba(168,85,247,.3); }
     .badge-fillin{ background:rgba(59,130,246,.15);  color:#93c5fd; border:1px solid rgba(59,130,246,.3); }
     .badge-monaco{ background:rgba(34,197,94,.12);   color:#86efac; border:1px solid rgba(34,197,94,.3); }
-    .task-title-row { font-size:1.15rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
+    .task-title-row { font-size:1.25rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
 
     /* ── CONTENT AREA ── */
     .content-area { flex:1; display:flex; overflow:hidden; gap:16px; }
@@ -69,7 +69,7 @@
     .exp-compact { flex-shrink:0; overflow:hidden; }
 
     /* ── MAGYARÁZAT ── */
-    .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:9px; padding:12px 14px; font-size:0.83rem; color:#cbd5e1; line-height:1.65; height:100%; }
+    .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:9px; padding:12px 14px; font-size:0.93rem; color:#cbd5e1; line-height:1.65; height:100%; }
     .exp-box.compact { height:auto; }
     .exp-box code { background:#1e293b; color:#93c5fd; padding:1px 5px; border-radius:4px; font-size:0.8rem; }
     .exp-box strong { color:#f1f5f9; }
@@ -78,9 +78,9 @@
     .exp-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--blue); font-weight:700; margin-bottom:7px; }
 
     /* ── QUIZ ── */
-    .quiz-q { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom:14px; }
+    .quiz-q { font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:14px; }
     .quiz-opts { display:flex; flex-direction:column; gap:8px; }
-    .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.87rem; color:var(--text); transition:all .16s; }
+    .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.97rem; color:var(--text); transition:all .16s; }
     .quiz-opt:hover:not(.disabled):not(.selected) { border-color:#475569; background:rgba(255,255,255,.04); }
     .quiz-opt.selected { border-color:#60a5fa; background:rgba(59,130,246,.22); color:#e0f2fe; box-shadow:0 0 0 2px rgba(59,130,246,.3); }
     .quiz-opt.correct { border-color:var(--accent); background:rgba(34,197,94,.1); color:#86efac; }
@@ -89,7 +89,7 @@
     .opt-letter { width:26px; height:26px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
     .quiz-opt.correct .opt-letter { background:var(--accent); border-color:var(--accent); color:#052e16; }
     .quiz-opt.wrong   .opt-letter { background:var(--red);    border-color:var(--red);    color:#fff; }
-    .quiz-feedback { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:0.84rem; line-height:1.6; display:none; }
+    .quiz-feedback { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:0.93rem; line-height:1.6; display:none; }
     .quiz-feedback.show { display:block; }
     .quiz-feedback.ok  { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3); color:#86efac; }
     .quiz-feedback.err { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
@@ -97,7 +97,7 @@
 
     /* ── FILL-IN ── */
     .fillin-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:8px; }
-    .code-tpl { background:#020617; border:1px solid #0f1f3a; border-radius:9px; padding:14px 16px; font-family:'Consolas','Fira Code',monospace; font-size:0.87rem; line-height:2.1; color:#a3e635; white-space:pre-wrap; word-break:break-all; }
+    .code-tpl { background:#020617; border:1px solid #0f1f3a; border-radius:9px; padding:14px 16px; font-family:'Consolas','Fira Code',monospace; font-size:0.95rem; line-height:2.1; color:#a3e635; white-space:pre-wrap; word-break:break-all; }
     .blank-in { display:inline-block; background:#0f2744; border:1.5px solid var(--blue); border-radius:5px; padding:0 6px; color:#93c5fd; font-family:inherit; font-size:inherit; font-weight:700; outline:none; min-width:44px; transition:border-color .18s; vertical-align:baseline; }
     .blank-in:focus { border-color:#60a5fa; box-shadow:0 0 0 2px rgba(59,130,246,.2); }
     .blank-in.ok  { border-color:var(--accent); background:rgba(34,197,94,.1); color:#86efac; }
@@ -118,7 +118,7 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     #monaco-preview { flex:1; border:none; background:#fff; }
     .check-list { flex-shrink:0; display:flex; flex-wrap:wrap; gap:5px 14px; padding-top:8px; }
-    .chk-row { display:flex; align-items:center; gap:5px; font-size:0.8rem; color:var(--muted); }
+    .chk-row { display:flex; align-items:center; gap:5px; font-size:0.9rem; color:var(--muted); }
     .chk-row.pass { color:var(--accent); }
 
     /* ── SUCCESS BANNER ── */
@@ -312,14 +312,15 @@ const tasks = [
       Írd meg a hiányzó stílusokat:
       <ul>
         <li>A <code>h1</code> elemen legyen <strong>inline CSS</strong>: <code>style="color: navy;"</code></li>
-        <li>A <code>&lt;style&gt;</code> tagbe (internal CSS) írj szabályt:
+        <li>A <code>&lt;style&gt;</code> tagbe (internal CSS) írj szabályokat:
           <ul>
-            <li><code>body</code>-nak <code>background-color</code></li>
-            <li><code>p</code>-nek <code>font-size</code> (legalább 16px)</li>
-            <li><code>.kiemelt</code> osztálynak <code>font-weight: bold</code></li>
+            <li><code>body { background-color: lightblue; }</code></li>
+            <li><code>p { font-size: 18px; }</code> — legalább 16px legyen</li>
+            <li><code>.kiemelt { font-weight: bold; }</code></li>
           </ul>
         </li>
-      </ul>`,
+      </ul>
+      <br>💡 Tipp: a szerkesztőben gépelj be egy szelektor nevet (pl. <code>body</code>), majd válassz a listából!`,
     starterHtml:
 `<!DOCTYPE html>
 <html lang="hu">
@@ -1455,13 +1456,24 @@ const whenMonaco = cb => monacoOk ? cb() : monacoQ.push(cb);
 // ── CSS IntelliSense a <style> blokkon belül ─────────────────────────────
 function registerCssInStyleCompletions(){
   const Kind = monaco.languages.CompletionItemKind;
-  const Rule = monaco.languages.CompletionItemInsertTextRule;
+
+  // Közös színlista (color és background-color egyaránt)
+  const COLORS = [
+    'red','blue','green','black','white','navy','gray','orange','purple','tomato',
+    'lightblue','lightgreen','lightyellow','lightgray','lightcoral','lightsalmon',
+    'yellow','pink','coral','cyan','magenta','violet','salmon','gold','silver',
+    'teal','lime','maroon','olive','aqua','fuchsia','khaki','indigo','turquoise',
+    'darkblue','darkred','darkgreen','darkgray','darkorange','darkviolet',
+    '#333','#555','#777','#999','#ccc','#eee','#fff','#000',
+    '#f0f4f8','#3b82f6','#ef4444','#22c55e','#f59e0b',
+    'rgba(0,0,0,0.5)','rgba(0,0,0,0.1)','transparent','inherit'
+  ];
 
   // CSS tulajdonságok és jellemző értékeik
   const CSS_PROPS = [
-    { p:'color',            vals:['red','blue','green','black','white','navy','gray','orange','purple','tomato','#333','#fff','#000','rgba(0,0,0,0.5)','inherit'] },
-    { p:'background-color', vals:['red','blue','green','white','black','navy','#f0f4f8','#3b82f6','rgba(0,0,0,0.1)','transparent','inherit'] },
-    { p:'background',       vals:['none','url("")','linear-gradient(to right, #f00, #00f)','transparent','inherit'] },
+    { p:'color',            vals:COLORS },
+    { p:'background-color', vals:COLORS },
+    { p:'background',       vals:['none','transparent','inherit','url("")','linear-gradient(to right, #f00, #00f)',...COLORS] },
     { p:'font-size',        vals:['12px','14px','16px','18px','20px','24px','28px','32px','36px','48px','1rem','1.25rem','1.5rem','2rem','0.875rem'] },
     { p:'font-weight',      vals:['normal','bold','lighter','bolder','100','400','700','900'] },
     { p:'font-style',       vals:['normal','italic','oblique'] },
@@ -1491,7 +1503,7 @@ function registerCssInStyleCompletions(){
     { p:'border',           vals:['none','1px solid #ccc','2px solid #333','1px dashed #999','2px solid #3b82f6'] },
     { p:'border-top',       vals:['none','1px solid #ccc','2px solid #333'] },
     { p:'border-radius',    vals:['0','4px','6px','8px','12px','16px','50%','999px'] },
-    { p:'border-color',     vals:['red','blue','#ccc','#333','transparent'] },
+    { p:'border-color',     vals:['red','blue','#ccc','#333','transparent',...COLORS] },
     { p:'border-width',     vals:['1px','2px','3px','thin','medium','thick'] },
     { p:'border-style',     vals:['none','solid','dashed','dotted','double'] },
     { p:'box-shadow',       vals:['none','0 2px 4px rgba(0,0,0,0.1)','0 4px 12px rgba(0,0,0,0.15)','0 8px 24px rgba(0,0,0,0.2)','inset 0 1px 3px rgba(0,0,0,0.1)'] },
@@ -1519,6 +1531,38 @@ function registerCssInStyleCompletions(){
     { p:'transition',       vals:['none','0.2s','0.3s','all 0.3s ease','background-color 0.2s','opacity 0.3s'] },
     { p:'list-style',       vals:['none','disc','circle','square','decimal'] },
     { p:'list-style-type',  vals:['none','disc','circle','square','decimal','lower-alpha','upper-alpha'] },
+  ];
+
+  // CSS elem szelektorok (szelektor pozícióban ajánlott)
+  const CSS_SELECTORS = [
+    { s:'body',    d:'Oldal törzse' },
+    { s:'html',    d:'Gyökér elem' },
+    { s:'h1',      d:'Főcím' },
+    { s:'h2',      d:'Alcím 2' },
+    { s:'h3',      d:'Alcím 3' },
+    { s:'h4',      d:'Alcím 4' },
+    { s:'p',       d:'Bekezdés' },
+    { s:'div',     d:'Tároló blokk' },
+    { s:'span',    d:'Inline tároló' },
+    { s:'a',       d:'Hivatkozás' },
+    { s:'img',     d:'Kép' },
+    { s:'ul',      d:'Rendezetlen lista' },
+    { s:'ol',      d:'Számozott lista' },
+    { s:'li',      d:'Listaelem' },
+    { s:'table',   d:'Táblázat' },
+    { s:'tr',      d:'Táblázat sor' },
+    { s:'td',      d:'Táblázat cella' },
+    { s:'th',      d:'Fejléc cella' },
+    { s:'form',    d:'Űrlap' },
+    { s:'input',   d:'Beviteli mező' },
+    { s:'button',  d:'Gomb' },
+    { s:'header',  d:'Fejléc' },
+    { s:'footer',  d:'Lábléc' },
+    { s:'nav',     d:'Navigáció' },
+    { s:'main',    d:'Fő tartalom' },
+    { s:'section', d:'Szakasz' },
+    { s:'article', d:'Cikk' },
+    { s:'*',       d:'Minden elem (universal szelektor)' },
   ];
 
   monaco.languages.registerCompletionItemProvider('html', {
@@ -1550,7 +1594,6 @@ function registerCssInStyleCompletions(){
         const prop = afterColon[1];
         const found = CSS_PROPS.find(x => x.p === prop);
         if (!found) return { suggestions: [] };
-        // Range: a kettőspont utáni rész cseréje
         const colonIdx = lineUpToCursor.lastIndexOf(':');
         const afterColonText = lineText.slice(colonIdx + 1);
         const valMatch = afterColonText.match(/^\s*([\w#().,\s-]*)/);
@@ -1569,18 +1612,40 @@ function registerCssInStyleCompletions(){
         };
       }
 
-      // Property javaslatok
       const propRange = {
         startLineNumber: position.lineNumber, endLineNumber: position.lineNumber,
         startColumn: word.startColumn, endColumn: position.column
       };
+
+      // Brace-számlálás: rule blokkon belül vagyunk-e (szelektor után {})?
+      const styleContent = inStyleBlock ? textBefore.slice(lastStyleOpen) : '';
+      const openBraces  = (styleContent.match(/\{/g) || []).length;
+      const closeBraces = (styleContent.match(/\}/g) || []).length;
+      const inRuleBlock = openBraces > closeBraces;
+
+      // Rule blokkon belül vagy style="" attribútumban → property javaslatok
+      // (command: triggerSuggest → értéklista automatikusan megjelenik kiválasztás után)
+      if (inRuleBlock || inStyleAttr) {
+        return {
+          suggestions: CSS_PROPS.map(({p}) => ({
+            label: p, kind: Kind.Property,
+            insertText: p + ': ',
+            range: propRange,
+            sortText: '0_' + p,
+            detail: 'CSS tulajdonság',
+            command: { id: 'editor.action.triggerSuggest', title: 'Értékek megjelenítése' }
+          }))
+        };
+      }
+
+      // Szelektor pozíció (nem vagyunk { } blokkon belül) → elem szelektor javaslatok
       return {
-        suggestions: CSS_PROPS.map(({p}) => ({
-          label: p, kind: Kind.Property,
-          insertText: p + ': ',
+        suggestions: CSS_SELECTORS.map(({s, d}) => ({
+          label: s, kind: Kind.Class,
+          insertText: s + ' {\n\t',
           range: propRange,
-          sortText: '0_' + p,
-          detail: 'CSS tulajdonság'
+          sortText: '0_' + s,
+          detail: d + ' – CSS szelektor'
         }))
       };
     }
@@ -1680,6 +1745,10 @@ function loadTask(idx){
     ? `<div class="exp-compact">${expHtml}</div>${taskHtml}`
     : `<div class="exp-col">${expHtml}</div><div class="task-col">${taskHtml}</div>`;
 
+  const checkListHtml = task.type==='monaco' && task.checks
+    ? `<div class="check-list">${task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('')}</div>`
+    : '';
+
   document.getElementById('main-panel').innerHTML=`
     <div class="task-meta">
       <span class="task-num">${task.block}. blokk · ${idx+1}. feladat</span>
@@ -1689,6 +1758,7 @@ function loadTask(idx){
     <div class="content-area ${layoutCls}" id="content-area">
       ${monacoContent}
     </div>
+    ${checkListHtml}
     <div class="success-banner${isDone?' show':''}" id="suc-banner">🎉 Sikeresen teljesítetted ezt a feladatot!</div>
   `;
 
@@ -1770,7 +1840,6 @@ function lockFillin(){
 // ══════════════════════════════════════════════════════════════════════
 
 function renderMonacoShell(task,idx){
-  const chks=task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('');
   return `<div class="monaco-row">
       <div class="monaco-wrap">
         <div class="editor-hd">
@@ -1783,8 +1852,7 @@ function renderMonacoShell(task,idx){
         <div class="preview-hd"><div class="pdot"></div>Élő előnézet</div>
         <iframe id="monaco-preview" sandbox="allow-scripts"></iframe>
       </div>
-    </div>
-    <div class="check-list">${chks}</div>`;
+    </div>`;
 }
 
 function initMonaco(task,idx){
