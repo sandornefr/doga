@@ -877,9 +877,15 @@
                     <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Email (nem szerkeszthető)</label>
                     <div id="edit-user-email-display" style="color:#94a3b8;font-size:0.9rem;padding:8px 10px;background:#0f1e35;border-radius:8px;"></div>
                 </div>
-                <div style="margin-bottom:10px;">
-                    <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Teljes név *</label>
-                    <input id="edit-user-nev" type="text" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #4ade80;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Vezetéknév *</label>
+                        <input id="edit-user-vezeteknev" type="text" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #4ade80;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Keresztnév *</label>
+                        <input id="edit-user-keresztnev" type="text" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #4ade80;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                    </div>
                 </div>
                 <div style="margin-bottom:1.2rem;">
                     <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Csoport</label>
@@ -1193,7 +1199,7 @@
                         <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
                         <td>
                             <div style="display:flex;gap:5px;flex-wrap:nowrap;">
-                                <button onclick="openEditUser('${u.email}','${(u.nev||'').replace(/'/g,'\\')}','${u.csoport||''}')" title="Szerkesztés" style="padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.85rem;"><i class="fas fa-pen"></i></button>
+                                <button onclick="openEditUser('${u.email}','${(u.vezeteknev||'').replace(/'/g,'\\'')}','${(u.keresztnev||'').replace(/'/g,'\\'')}','${u.csoport||''}')" title="Szerkesztés" style="padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.85rem;"><i class="fas fa-pen"></i></button>
                                 <button onclick="openResetPassword('${u.email}')" title="Jelszó visszaállítása" style="padding:4px 10px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.85rem;"><i class="fas fa-key"></i></button>
                                 <button onclick="deleteUser('${u.email}')" title="Törlés" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.85rem;"><i class="fas fa-trash"></i></button>
                             </div>
@@ -1208,10 +1214,11 @@
         }
 
         let editUserTargetEmail = '';
-        function openEditUser(email, nev, csoport) {
+        function openEditUser(email, vezeteknev, keresztnev, csoport) {
             editUserTargetEmail = email;
             document.getElementById('edit-user-email-display').textContent = email;
-            document.getElementById('edit-user-nev').value = nev;
+            document.getElementById('edit-user-vezeteknev').value = vezeteknev;
+            document.getElementById('edit-user-keresztnev').value = keresztnev;
             document.getElementById('edit-user-csoport').value = csoport;
             document.getElementById('edit-user-error').style.display = 'none';
             document.getElementById('edit-user-modal').style.display = 'flex';
@@ -1221,17 +1228,18 @@
             document.getElementById('edit-user-modal').style.display = 'none';
         }
         async function saveEditUser() {
-            const nev = document.getElementById('edit-user-nev').value.trim();
+            const vezeteknev = document.getElementById('edit-user-vezeteknev').value.trim();
+            const keresztnev = document.getElementById('edit-user-keresztnev').value.trim();
             const csoport = document.getElementById('edit-user-csoport').value.trim() || null;
             const errEl = document.getElementById('edit-user-error');
-            if (!nev) { errEl.textContent = 'A név nem lehet üres!'; errEl.style.display = 'block'; return; }
+            if (!vezeteknev || !keresztnev) { errEl.textContent = 'A név nem lehet üres!'; errEl.style.display = 'block'; return; }
             const btn = document.getElementById('edit-user-btn');
             btn.disabled = true;
             try {
                 const res = await authFetch(`${RAILWAY_URL}/api/users/${encodeURIComponent(editUserTargetEmail)}/update`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nev, csoport })
+                    body: JSON.stringify({ vezeteknev, keresztnev, csoport })
                 });
                 if (res.ok) {
                     closeEditUser();

@@ -78,7 +78,9 @@ public record UserListItem(
     string? Evfolyam,
     string? Osztaly,
     string? Csoport,
-    string? CreatedAt
+    string? CreatedAt,
+    string? Vezeteknev = null,
+    string? Keresztnev = null
 );
 
 public record UserRecord(
