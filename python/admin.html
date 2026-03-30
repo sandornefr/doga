@@ -709,6 +709,7 @@
             <div style="display:flex;gap:10px;margin-bottom:14px;">
                 <button class="btn-refresh" onclick="loadUsers()"><i class="fas fa-rotate"></i> Frissítés</button>
             </div>
+            <div id="evfolyam-stat" style="display:none;margin-bottom:18px;"></div>
             <div id="users-loading" class="loading" style="display:none;">Betöltés...</div>
             <div class="table-wrapper">
                 <table class="submissions-table" id="users-table" style="min-width:700px;table-layout:fixed;">
@@ -1014,6 +1015,37 @@
                     tbody.innerHTML = '<tr><td colspan="6" class="loading">Nincs regisztrált felhasználó</td></tr>';
                     return;
                 }
+
+                // Évfolyam / osztály összesítő
+                const tanulok = users.filter(u => u.szerep !== 'oktato');
+                const evfolyamMap = {};
+                tanulok.forEach(u => {
+                    const ef = u.evfolyam || '–';
+                    const osz = u.osztaly || '–';
+                    if (!evfolyamMap[ef]) evfolyamMap[ef] = {};
+                    evfolyamMap[ef][osz] = (evfolyamMap[ef][osz] || 0) + 1;
+                });
+                const efSorted = Object.keys(evfolyamMap).sort();
+                const statEl = document.getElementById('evfolyam-stat');
+                statEl.style.display = 'block';
+                statEl.innerHTML = `
+                  <div style="font-size:0.8rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">
+                    🎓 Regisztrált tanulók évfolyam szerint (összesen: ${tanulok.length} fő)
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                    ${efSorted.map(ef => {
+                      const osztalyok = evfolyamMap[ef];
+                      const total = Object.values(osztalyok).reduce((a,b)=>a+b,0);
+                      const reszlet = Object.keys(osztalyok).sort().map(o =>
+                        `<span style="color:#94a3b8;">${o}:</span> <strong>${osztalyok[o]}</strong>`
+                      ).join(' &nbsp;·&nbsp; ');
+                      return `<div style="background:#0f1e35;border:1px solid #1f3460;border-radius:10px;padding:10px 16px;min-width:160px;">
+                        <div style="font-size:1.15rem;font-weight:800;color:#7dd3fc;">${ef}. évfolyam &nbsp;<span style="font-size:0.95rem;color:#38bdf8;">${total} fő</span></div>
+                        <div style="font-size:0.8rem;margin-top:4px;color:#cbd5e1;">${reszlet}</div>
+                      </div>`;
+                    }).join('')}
+                  </div>`;
+
                 tbody.innerHTML = users.map(u => {
                     const osztalyTeljes = [u.evfolyam, u.osztaly].filter(Boolean).join('') || '-';
                     const isOktato = u.szerep === 'oktato';
