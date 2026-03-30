@@ -1268,16 +1268,19 @@
             if (!nevek.length) { eredmenyEl.innerHTML = '<span style="color:#aaa;font-size:0.85rem;">Adj meg legalább egy nevet!</span>'; return; }
             if (!_cachedUsers.length) { eredmenyEl.innerHTML = '<span style="color:#ffc107;font-size:0.85rem;">Előbb kattints a Frissítés gombra, hogy betöltse a felhasználókat!</span>'; return; }
 
-            const regNevek = _cachedUsers.filter(u => u.szerep !== 'oktato').map(u => normNev(u.nev));
+            const tanulok = _cachedUsers.filter(u => u.szerep !== 'oktato');
 
             const regisztralt = [], nemRegisztralt = [];
             nevek.forEach(nev => {
                 const norm = normNev(nev);
-                // Egyenes és fordított sorrend is (Kovács Péter = Péter Kovács)
                 const parts = norm.split(' ');
                 const fordított = parts.length === 2 ? parts[1] + ' ' + parts[0] : null;
-                const talalt = regNevek.includes(norm) || (fordított && regNevek.includes(fordított));
-                if (talalt) regisztralt.push(nev);
+                // Összes egyező tanuló (lehet több azonos nevű)
+                const egyezok = tanulok.filter(u => {
+                    const un = normNev(u.nev);
+                    return un === norm || (fordított && un === fordított);
+                });
+                if (egyezok.length) regisztralt.push({ nev, egyezok });
                 else nemRegisztralt.push(nev);
             });
 
@@ -1299,8 +1302,13 @@
                 <div>
                     <div style="font-weight:700;color:#4ade80;font-size:0.85rem;margin-bottom:6px;"><i class="fas fa-circle-check"></i> Regisztrált (${regisztralt.length} fő):</div>
                     <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                        ${regisztralt.map(n => `<span style="background:rgba(74,222,128,0.08);border:1px solid #4ade80;border-radius:20px;padding:3px 12px;color:#86efac;font-size:0.85rem;">${n}</span>`).join('')}
+                        ${regisztralt.map(({ nev, egyezok }) => egyezok.map(u => {
+                            const osztalyTeljes = [u.evfolyam, u.osztaly].filter(Boolean).join('') || '?';
+                            const dupla = egyezok.length > 1 ? ' ⚠️' : '';
+                            return `<span style="background:rgba(74,222,128,0.08);border:1px solid #4ade80;border-radius:20px;padding:3px 12px;color:#86efac;font-size:0.85rem;">${nev} <span style="color:#7dd3fc;font-size:0.78rem;">${osztalyTeljes}</span>${dupla}</span>`;
+                        }).join('')).join('')}
                     </div>
+                    ${regisztralt.some(r => r.egyezok.length > 1) ? '<div style="color:#fbbf24;font-size:0.78rem;margin-top:6px;">⚠️ = azonos nevű tanuló több osztályban is</div>' : ''}
                 </div>` : ''}
             `;
         }
