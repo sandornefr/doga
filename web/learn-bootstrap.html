@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML Alapok – WEB Tananyag</title>
+  <title>Bootstrap + JavaScript – WEB Tananyag</title>
   <link rel="icon" href="../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
   <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -60,19 +60,15 @@
     .badge-monaco{ background:rgba(34,197,94,.12);   color:#86efac; border:1px solid rgba(34,197,94,.3); }
     .task-title-row { font-size:1.25rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
 
-    /* ── CONTENT AREA (fill viewport) ── */
+    /* ── CONTENT AREA ── */
     .content-area { flex:1; display:flex; overflow:hidden; gap:16px; }
-
-    /* Quiz & Fillin: két oszlop */
     .content-area.two-col { flex-direction:row; }
     .exp-col { width:38%; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
     .task-col { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
-
-    /* Monaco: egy oszlop */
     .content-area.one-col { flex-direction:column; }
     .exp-compact { flex-shrink:0; overflow:hidden; }
 
-    /* ── MAGYARÁZAT DOBOZ ── */
+    /* ── MAGYARÁZAT ── */
     .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:9px; padding:12px 14px; font-size:0.93rem; color:#cbd5e1; line-height:1.65; height:100%; }
     .exp-box.compact { height:auto; }
     .exp-box code { background:#1e293b; color:#93c5fd; padding:1px 5px; border-radius:4px; font-size:0.8rem; }
@@ -171,22 +167,22 @@
   <a href="../portal.html"><img src="kandologo2.png" alt="Kandó" class="topbar-logo"></a>
   <a href="../portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
   <div class="topbar-info">
-    <div class="topbar-title">🌐 WEB Tananyag</div>
-    <div class="topbar-sub">1. szint · HTML Alapok</div>
+    <div class="topbar-title">🅱️ WEB Tananyag</div>
+    <div class="topbar-sub">3. szint · Bootstrap + JavaScript</div>
   </div>
   <div class="topbar-spacer"></div>
   <div id="streak-counter" style="display:none;align-items:center;gap:5px;padding:4px 12px;background:#1e293b;border:1px solid #374151;border-radius:20px;font-size:0.82rem;font-weight:700;color:#fb923c;" title="Bejelentkezési sorozat"></div>
-  <div class="progress-label">Teljesítve: <span id="prog-done">0</span> / <span id="prog-total">6</span></div>
+  <div class="progress-label">Teljesítve: <span id="prog-done">0</span> / <span id="prog-total">21</span></div>
 </header>
 
 <div class="modal-ov" id="modal-done">
   <div class="modal-box">
     <div style="font-size:2.8rem">🏆</div>
-    <h2>HTML Alapok – kész!</h2>
-    <p>Gratulálok! Teljesítetted mind a 7 blokkot és elsajátítottad a HTML alapjait.<br>Következő szint: CSS stílusok!</p>
+    <h2>Bootstrap + JavaScript – kész!</h2>
+    <p>Gratulálok! Elvégezted a WEB Tananyag összes szintjét. Készen állsz a vizsgára!</p>
     <div class="modal-btns">
-      <a class="btn-m btn-m-p" href="learn-css.html"><i class="fas fa-arrow-right"></i> Tovább: CSS</a>
-      <a class="btn-m btn-m-s" href="../portal.html"><i class="fas fa-home"></i> Főmenü</a>
+      <a class="btn-m btn-m-p" href="../portal.html"><i class="fas fa-home"></i> Főmenü</a>
+      <a class="btn-m btn-m-s" href="index.html"><i class="fas fa-pencil-alt"></i> WEB Dolgozat</a>
     </div>
   </div>
 </div>
@@ -231,640 +227,717 @@
 // ══════════════════════════════════════════════════════════════════════
 // FELADATOK
 // ══════════════════════════════════════════════════════════════════════
-// codeTemplate-ben a ___ (három aláhúzás) egy-egy kitöltendő mező,
-// sorban a blanks tömbnek megfelelően.
 
 const tasks = [
 
-  // ── BLOKK 1: Mi a HTML? ──────────────────────────────────────────
+  // ── BLOKK 1: Bootstrap bevezetés ─────────────────────────────────────
   {
-    id:1, block:1, blockName:'Mi a HTML?', emoji:'🏗️',
+    id:1, block:1, blockName:'Bootstrap bevezetés', emoji:'🅱️',
     type:'quiz',
-    title:'Mi a HTML?',
+    title:'Mi a Bootstrap?',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      A <strong>HTML</strong> (HyperText Markup Language) egy <strong>jelölőnyelv</strong> – nem programozás!
-      Olyan mint egy Word dokumentum, csak kézzel írjuk a formázást
-      <code>&lt; &gt;</code> jelek közé – ezeket hívjuk <strong>tageknek</strong>.
+      A <strong>Bootstrap</strong> egy nyílt forráskódú CSS keretrendszer, amellyel
+      gyorsan készíthetsz <strong>reszponzív</strong> (mobilra is alkalmazkodó) weboldalakat.
       <br><br>
-      A böngésző (Chrome, Firefox) olvassa el és jeleníti meg.
+      A <strong>reszponzív webdizájn</strong> alapelve: az oldal automatikusan igazodik a képernyő méretéhez –
+      mobilon, tableten és asztalon egyaránt jól néz ki.
       <br><br>
-      Pl. a <code>&lt;p&gt;</code> egy nyitó tag, a <code>&lt;/p&gt;</code> a záró tag –
-      a kettő között van a tartalom.`,
-    question:'Mire való a HTML?',
+      Két fontos elv:
+      <ul>
+        <li><strong>Mobile first</strong> – először a mobilra tervezünk, majd bővítjük</li>
+        <li><strong>Progressive enhancement</strong> – alap funkció mindig működik, a jobb eszközökön több is</li>
+      </ul>
+      A Bootstrap CDN-ről betölthető – nem kell letölteni, csak egy <code>&lt;link&gt;</code> tag kell.`,
+    question:'Mire való a Bootstrap keretrendszer?',
     options:[
-      'Programokat futtat a számítógépen',
-      'Megmondja a böngészőnek, hogyan épüljön fel a weboldal',
-      'Adatbázisokat kezel',
-      'Képeket rajzol és animál'
+      'Python programok futtatására böngészőben',
+      'Reszponzív weboldalak gyors készítéséhez CSS osztályokkal',
+      'Adatbázisok kezelésére és SQL lekérdezések futtatásához',
+      'Képek és videók szerkesztéséhez'
     ],
     correct:1,
-    feedback:'✅ Pontosan! A HTML csak <em>leírja</em> az oldal szerkezetét – hogy mi hol legyen. Nem programoz, nem számol, csak szervez és jelöl.'
+    feedback:'✅ Pontosan! A Bootstrap CSS osztályokat ad, amelyekkel gyorsan készíthetsz mobilra is alkalmazkodó weboldalakat. Az oldal automatikusan igazodik a képernyő méretéhez.'
   },
 
   {
-    id:2, block:1, blockName:'Mi a HTML?', emoji:'🏗️',
+    id:2, block:1, blockName:'Bootstrap bevezetés', emoji:'🅱️',
     type:'fillin',
-    title:'A HTML váz felépítése',
+    title:'Bootstrap CDN beillesztése',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      Minden HTML oldal ugyanígy kezdődik:
-      <ul>
-        <li><code>&lt;!DOCTYPE html&gt;</code> — "ez HTML5 oldal"</li>
-        <li><code>&lt;html lang="hu"&gt;</code> — az egész oldal, <code>lang="hu"</code> = magyar</li>
-        <li><code>&lt;head&gt;</code> — beállítások (nem látszik az oldalon)</li>
-        <li><code>&lt;meta charset="UTF-8"&gt;</code> — nélküle az ékezetek (á,é,ő) rosszul jelennek meg</li>
-        <li><code>&lt;body&gt;</code> — ide kerül minden amit a látogató lát</li>
-      </ul>`,
-    codeTemplate:
-`<!___ html>
-<html ___="hu">
-<___>
-  <meta charset="UTF-8">
-  <title>Az én weboldalem</title>
-</head>
-<___>
-  <p>Hello világ!</p>
-</body>
-</html>`,
-    blanks:[
-      { answer:'DOCTYPE', hint:'Nagybetűs – minden HTML oldal ezzel kezdődik' },
-      { answer:'lang',    hint:'Attribútum neve, ami a nyelvet jelzi' },
-      { answer:'head',    hint:'Fejléc – a beállítások helye, nem látszik az oldalon' },
-      { answer:'body',    hint:'Test – a látható tartalom helye' }
-    ]
-  },
-
-  {
-    id:3, block:1, blockName:'Mi a HTML?', emoji:'🏗️',
-    type:'monaco',
-    title:'Írd meg a saját HTML vázadat!',
-    explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts egy teljes HTML oldalt:
-      <ul>
-        <li>A <code>&lt;html&gt;</code> elemen legyen <code>lang="hu"</code></li>
-        <li>A <code>&lt;title&gt;</code> tartalma: <strong>Első oldalam</strong></li>
-        <li>A <code>&lt;body&gt;</code>-ban egy <code>&lt;p&gt;</code> bekezdés: <strong>Helló, HTML!</strong></li>
-      </ul>
-      💡 Írd be: <strong>!</strong> majd nyomd meg a <strong>Tab</strong> billentyűt – az Emmet legenerálja a vázat!`,
-    starterHtml:'',
-    checks:[
-      { label:'Van &lt;html lang="hu"&gt; elem',          fn:(h,d)=>!!d.querySelector('html[lang="hu"]') },
-      { label:'A &lt;title&gt; szövege: "Első oldalam"',  fn:(h,d)=>d.querySelector('title')?.textContent?.trim()==='Első oldalam' },
-      { label:'Van &lt;p&gt; bekezdés a &lt;body&gt;-ban',fn:(h,d)=>!!d.querySelector('body > p')||!!d.querySelector('body p') },
-      { label:'A bekezdés szövege pontosan: "Helló, HTML!"', fn:(h,d)=>[...d.querySelectorAll('body p')].some(p=>p.textContent.trim()==='Helló, HTML!') },
-      { label:'Van záró &lt;/body&gt; és &lt;/html&gt; tag', fn:(h)=>/\<\/body\>/i.test(h)&&/\<\/html\>/i.test(h) }
-    ]
-  },
-
-  // ── BLOKK 2: Szöveg elemek ───────────────────────────────────────
-  {
-    id:4, block:2, blockName:'Szöveg elemek', emoji:'📝',
-    type:'quiz',
-    title:'Fejléc elemek: h1–h6',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      A HTML-ben 6 szintű fejléc (cím) létezik. Képzeld el mint egy könyvben:
-      <ul>
-        <li><code>&lt;h1&gt;</code> — A könyv főcíme (nagy, vastag). <strong>Oldalanként csak egy!</strong></li>
-        <li><code>&lt;h2&gt;</code> — Fejezet cím</li>
-        <li><code>&lt;h3&gt;</code> — Alfejezet</li>
-        <li><code>&lt;h6&gt;</code> — A legkisebb alcím</li>
-      </ul>
-      A <code>&lt;p&gt;</code> elem a <strong>bekezdés</strong> – a legtöbb szöveg ide kerül.`,
-    question:'Melyik HTML elem a legfontosabb (legnagyobb) főcím?',
-    options:['&lt;h6&gt;','&lt;title&gt;','&lt;h1&gt;','&lt;header&gt;'],
-    correct:2,
-    feedback:'✅ Igen! <code>&lt;h1&gt;</code> a legnagyobb, <code>&lt;h6&gt;</code> a legkisebb. A <code>&lt;title&gt;</code> csak a böngésző fülén jelenik meg. A <code>&lt;header&gt;</code> egy strukturális doboz, nem cím.'
-  },
-
-  {
-    id:5, block:2, blockName:'Szöveg elemek', emoji:'📝',
-    type:'fillin',
-    title:'Szöveg formázó elemek',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      A legfontosabb szövegformázó elemek:
-      <ul>
-        <li><code>&lt;strong&gt;</code> vagy <code>&lt;b&gt;</code> — <strong>félkövér</strong> szöveg</li>
-        <li><code>&lt;em&gt;</code> vagy <code>&lt;i&gt;</code> — <em>dőlt</em> szöveg</li>
-        <li><code>&lt;u&gt;</code> vagy <code>&lt;ins&gt;</code> — <u>aláhúzott</u> szöveg</li>
-        <li><code>&lt;br&gt;</code> — sortörés, önzáró (nincs záró tagje!)</li>
-      </ul>
-      💡 A <code>&lt;strong&gt;</code>/<code>&lt;em&gt;</code> szemantikusan hangsúlyt jelöl, a <code>&lt;b&gt;</code>/<code>&lt;i&gt;</code> csak vizuálisan formáz – de mindkét változat elfogadott a vizsgán.`,
-    codeTemplate:
-`<h1>Kedvenc ételeim</h1>
-
-<p>
-  A <___>pizza</strong> az <___>olasz</em> konyha remeke.
-</p>
-
-<p>
-  A <___>gulyás</u> magyar klasszikus.<___>
-  Szeretem főzni.
-</p>`,
-    blanks:[
-      { answer:'strong', alts:['b'],   hint:'Félkövér – strong vagy b' },
-      { answer:'em',     alts:['i'],   hint:'Dőlt – em vagy i' },
-      { answer:'u',      alts:['ins'], hint:'Aláhúzott – u vagy ins' },
-      { answer:'br',                   hint:'Sortörés – önzáró elem, nincs záró tagje!' }
-    ]
-  },
-
-  {
-    id:6, block:2, blockName:'Szöveg elemek', emoji:'📝',
-    type:'monaco',
-    title:'Formázd meg a szöveget!',
-    explanation:`<div class="exp-label">✏️ Feladat</div>
-      A megadott vázba írd be a hiányzó tartalmat:
-      <ul>
-        <li>Főcím <code>&lt;h1&gt;</code>: <strong>Kedvenc ételeim</strong></li>
-        <li>Alcím <code>&lt;h2&gt;</code>: <strong>Olasz ételek</strong></li>
-        <li>Bekezdés: "A <strong>pizza</strong> az <em>olasz</em> konyha remeke."<br>
-          <small style="color:#94a3b8">(&lt;strong&gt; vagy &lt;b&gt;, &lt;em&gt; vagy &lt;i&gt; is elfogadott)</small></li>
-        <li>Valahol legyen aláhúzás: <code>&lt;u&gt;</code> vagy <code>&lt;ins&gt;</code></li>
-      </ul>`,
-    starterHtml:
-`<!DOCTYPE html>
-<html lang="hu">
-<head>
-  <meta charset="UTF-8">
-  <title>Ételek</title>
-</head>
-<body>
-
-</body>
-</html>`,
-    checks:[
-      { label:'&lt;h1&gt; szövege: "Kedvenc ételeim"',               fn:(h,d)=>d.querySelector('h1')?.textContent?.trim()==='Kedvenc ételeim' },
-      { label:'&lt;h2&gt; szövege: "Olasz ételek"',                  fn:(h,d)=>[...d.querySelectorAll('h2')].some(el=>el.textContent.trim()==='Olasz ételek') },
-      { label:'Van &lt;p&gt; bekezdés a &lt;body&gt;-ban',           fn:(h,d)=>!!d.querySelector('body p') },
-      { label:'Félkövér (&lt;strong&gt; vagy &lt;b&gt;) bekezdésben',fn:(h,d)=>!!(d.querySelector('p strong')||d.querySelector('p b')) },
-      { label:'Dőlt (&lt;em&gt; vagy &lt;i&gt;) bekezdésben',       fn:(h,d)=>!!(d.querySelector('p em')||d.querySelector('p i')) },
-      { label:'Aláhúzás (&lt;u&gt; vagy &lt;ins&gt;) valahol',      fn:(h,d)=>!!(d.querySelector('u')||d.querySelector('ins')) }
-    ]
-  },
-
-  // ── BLOKK 3: Linkek és képek ─────────────────────────────────────
-  {
-    id:7, block:3, blockName:'Linkek és képek', emoji:'🔗',
-    type:'quiz',
-    title:'Hogyan működik a hivatkozás?',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      A <code>&lt;a&gt;</code> elem (anchor = horgony) hoz létre kattintható linket.
-      Az <code>href</code> attribútum mondja meg, hova vezet:<br><br>
-      <code>&lt;a href="https://google.com"&gt;Google&lt;/a&gt;</code><br><br>
-      Ha <code>target="_blank"</code>-et is megadsz, új lapon nyílik meg.<br><br>
-      A <code>&lt;img&gt;</code> elem képet szúr be – önzáró, nincs záró tagje:
-      <code>&lt;img src="kep.jpg" alt="leírás"&gt;</code><br><br>
-      Az <strong>alt</strong> kötelező: képernyőolvasóknak és ha a kép nem tölt be.`,
-    question:'Melyik attribútum adja meg a link célját az <a> elemnél?',
-    options:['src','target','href','alt'],
-    correct:2,
-    feedback:'✅ Igen! A <code>href</code> (hypertext reference) mondja meg, hova mutasson a link. Az <code>src</code> a képeknél, az <code>alt</code> a kép szöveges leírása.'
-  },
-
-  {
-    id:8, block:3, blockName:'Linkek és képek', emoji:'🔗',
-    type:'fillin',
-    title:'Link és kép attribútumai',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      Két alapelem attribútumokkal:
-      <ul>
-        <li><code>&lt;a href="..."&gt;</code> — <strong>href</strong>: a cél URL</li>
-        <li><code>&lt;a target="_blank"&gt;</code> — új lapon nyílik</li>
-        <li><code>&lt;img src="..."&gt;</code> — <strong>src</strong>: a kép fájlneve</li>
-        <li><code>&lt;img alt="..."&gt;</code> — <strong>alt</strong>: szöveges leírás</li>
-      </ul>`,
-    codeTemplate:
-`<p>
-  <a ___="https://kando.hu">Kandó Kálmán</a>
-  iskolánk névadója.
-</p>
-
-<p>
-  Látogasd meg: <a href="https://mesterai.hu" ___="_blank">MesterAI</a>
-</p>
-
-<img ___="logo.png" ___="Kandó logó">`,
-    blanks:[
-      { answer:'href',   hint:'Hypertext Reference – a link célja' },
-      { answer:'target', hint:'Megadja, hol nyíljon meg: "_blank" = új lap' },
-      { answer:'src',    hint:'Source – a kép forrásfájlja' },
-      { answer:'alt',    hint:'Alternate text – szöveges leírás, ha a kép nem tölt be' }
-    ]
-  },
-
-  {
-    id:9, block:3, blockName:'Linkek és képek', emoji:'🔗',
-    type:'monaco',
-    title:'Készíts linkes oldalt képpel!',
-    explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts egy HTML oldalt:
-      <ul>
-        <li><code>&lt;h1&gt;</code>: <strong>Kedvenc webhelyeim</strong></li>
-        <li>Legalább <strong>2 db link</strong> (<code>&lt;a href="..."&gt;</code>)</li>
-        <li>Az egyik link nyíljon meg <strong>új lapon</strong> (<code>target="_blank"</code>)</li>
-        <li>A képet csomagold <code>&lt;figure&gt;</code> elembe, és adj hozzá <code>&lt;figcaption&gt;</code> feliratot</li>
-      </ul>
-      <br>💡 Emlékeztető:
-      <code>&lt;figure&gt;<br>&nbsp;&nbsp;&lt;img src="..." alt="..."&gt;<br>&nbsp;&nbsp;&lt;figcaption&gt;Kép felirata&lt;/figcaption&gt;<br>&lt;/figure&gt;</code>`,
-    starterHtml:
-`<!DOCTYPE html>
-<html lang="hu">
-<head>
-  <meta charset="UTF-8">
-  <title>Kedvenc webhelyeim</title>
-</head>
-<body>
-  <h1>Kedvenc webhelyeim</h1>
-
-  <p>
-    <a href="https://www.google.com">Google</a>
-  </p>
-
-  <p>
-    <!-- Ide írj egy másik linket, ami új lapon nyílik meg (target="_blank") -->
-  </p>
-
-  <figure>
-    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google logó">
-    <figcaption>A Google logója</figcaption>
-  </figure>
-
-</body>
-</html>`,
-    checks:[
-      { label:'&lt;h1&gt; szövege: "Kedvenc webhelyeim"',           fn:(h,d)=>d.querySelector('h1')?.textContent?.trim()==='Kedvenc webhelyeim' },
-      { label:'Legalább 2 link (&lt;a href="..."&gt;)',              fn:(h,d)=>d.querySelectorAll('a[href]').length>=2 },
-      { label:'Egyik link új lapon nyílik (target="_blank")',        fn:(h,d)=>!!d.querySelector('a[target="_blank"]') },
-      { label:'Van &lt;figure&gt; elem a &lt;body&gt;-ban',         fn:(h,d)=>!!d.querySelector('body figure') },
-      { label:'A &lt;figure&gt;-ben van &lt;img src&gt; kép',       fn:(h,d)=>!!d.querySelector('figure img[src]') },
-      { label:'A képnek van alt attribútuma (nem üres)',             fn:(h,d)=>{ const i=d.querySelector('figure img'); return !!(i&&i.hasAttribute('alt')&&i.getAttribute('alt').trim()!==''); } },
-      { label:'Van &lt;figcaption&gt; szöveggel',                   fn:(h,d)=>{ const fc=d.querySelector('figcaption'); return !!(fc&&fc.textContent.trim()!==''); } }
-    ]
-  },
-
-  // ── BLOKK 4: Listák ──────────────────────────────────────────────
-  {
-    id:10, block:4, blockName:'Listák', emoji:'📋',
-    type:'quiz',
-    title:'Rendezett és rendezetlen lista',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      Kétféle lista létezik, de mindkettő felépítése azonos:
+      A Bootstrapot CDN-ről töltjük be – a <code>&lt;head&gt;</code> részbe kell egy <code>&lt;link&gt;</code> tag:
       <br><br>
-      <code>&lt;ul&gt;</code> — a konténer (rendezetlen, pontok)<br>
-      &nbsp;&nbsp;<code>&lt;li&gt;</code>Elem 1<code>&lt;/li&gt;</code><br>
-      &nbsp;&nbsp;<code>&lt;li&gt;</code>Elem 2<code>&lt;/li&gt;</code><br>
-      <code>&lt;/ul&gt;</code>
+      <code>&lt;link rel="stylesheet" href="https://..."&gt;</code>
       <br><br>
-      <ul>
-        <li><code>&lt;ul&gt;</code> — <strong>rendezetlen lista</strong>: pontokkal jelölt – belső tagja: <code>&lt;li&gt;</code></li>
-        <li><code>&lt;ol&gt;</code> — <strong>rendezett lista</strong>: számokkal jelölt – belső tagja: <code>&lt;li&gt;</code></li>
-      </ul>
-      Bevásárlólistánál <code>&lt;ul&gt;</code>, lépéssoroknál (recept, utasítás) <code>&lt;ol&gt;</code>.`,
-    question:'Melyik listát használd ha a sorrend fontos (pl. lépések)?',
-    options:['&lt;ul&gt; – rendezetlen lista','&lt;li&gt; – listaelem','&lt;ol&gt; – rendezett lista','&lt;dl&gt; – leíró lista'],
-    correct:2,
-    feedback:'✅ Pontosan! Az <code>&lt;ol&gt;</code> automatikusan számozza az elemeket. Az <code>&lt;ul&gt;</code>-nál a sorrend mindegy.'
-  },
-
-  {
-    id:11, block:4, blockName:'Listák', emoji:'📋',
-    type:'fillin',
-    title:'Lista elemek',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      Minden lista ugyanígy épül fel – a konténer tartalmazza az elemeket:
+      A <code>rel="stylesheet"</code> mondja meg a böngészőnek, hogy ez egy stíluslap.
+      A <code>href</code> adja meg a fájl elérési útját (URL).
       <br><br>
-      <code>&lt;ul&gt;</code> — a lista maga (ez a konténer)<br>
-      &nbsp;&nbsp;<code>&lt;li&gt;</code>Tej<code>&lt;/li&gt;</code> — egy listaelem<br>
-      &nbsp;&nbsp;<code>&lt;li&gt;</code>Kenyér<code>&lt;/li&gt;</code><br>
-      <code>&lt;/ul&gt;</code>
-      <br><br>
-      <ul>
-        <li><code>&lt;ul&gt;</code> — rendezetlen lista konténere, belső tagja: <strong><code>&lt;li&gt;</code></strong></li>
-        <li><code>&lt;ol&gt;</code> — rendezett (számozott) lista konténere, belső tagja: <strong><code>&lt;li&gt;</code></strong></li>
-        <li><code>&lt;li&gt;</code> — maga a listaelem (list item) – mindig a konténerbe kerül!</li>
-      </ul>`,
+      A <strong>viewport meta tag</strong> is szükséges a reszponzivitáshoz:
+      <br>
+      <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code>`,
     codeTemplate:
-`<h2>Bevásárlólista</h2>
-<___>
-  <___>Tej</li>
-  <li>Kenyér</li>
-  <li>Sajt</li>
-</ul>
-
-<h2>Teendők sorban</h2>
-<___>
-  <li>Bekapcsolom a számítógépet</li>
-  <___>Megnyitom a böngészőt</li>
-  <li>Megírom a kódot</li>
-</ol>`,
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <!-- Viewport: reszponzív megjelenítéshez -->
+  <meta ___="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CDN -->
+  <link ___="stylesheet"
+        ___="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Bootstrap oldal</title>
+</head>
+<body>
+  <h1>Helló Bootstrap!</h1>
+</body>
+</html>`,
     blanks:[
-      { answer:'ul', hint:'Rendezetlen lista – pontokkal' },
-      { answer:'li', hint:'List item – egy listaelem' },
-      { answer:'ol', hint:'Ordered list – számozott lista' },
-      { answer:'li', hint:'List item – egy listaelem' }
+      { answer:'name',       hint:'A meta tag azonosítója – viewport esetén name="viewport"' },
+      { answer:'rel',        hint:'A kapcsolat típusa – rel="stylesheet"' },
+      { answer:'href',       hint:'A fájl elérési útja – href="https://..."' }
     ]
   },
 
   {
-    id:12, block:4, blockName:'Listák', emoji:'📋',
+    id:3, block:1, blockName:'Bootstrap bevezetés', emoji:'🅱️',
     type:'monaco',
-    title:'Készíts listás oldalt!',
+    title:'Első Bootstrap oldal',
     explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts HTML oldalt listákkal:
+      Egészítsd ki a kódot Bootstrap osztályokkal:
       <ul>
-        <li><code>&lt;h1&gt;</code>: <strong>Kedvenc dolgaim</strong></li>
-        <li><strong>Rendezetlen lista</strong> (<code>&lt;ul&gt;</code>) legalább <strong>3 elemmel</strong></li>
-        <li><strong>Rendezett lista</strong> (<code>&lt;ol&gt;</code>) legalább <strong>3 elemmel</strong></li>
-        <li>Minden listának legyen <code>&lt;h2&gt;</code> alcíme</li>
+        <li>A <code>&lt;div&gt;</code>-nak adj <code>container</code> osztályt (ez középre igazítja és bekeretezi a tartalmat)</li>
+        <li>A főcímnek adj <code>display-4</code> osztályt (nagy tipográfiai stílus)</li>
+        <li>A bekezdésnek adj <code>lead</code> osztályt (kiemelt, nagyobb bevezető szöveg)</li>
+        <li>A Bootstrap CDN link már benne van a starterben</li>
       </ul>`,
     starterHtml:
 `<!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Listák</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Első Bootstrap oldal</title>
 </head>
 <body>
-
+  <div class="">
+    <h1 class="">Üdvözöllek!</h1>
+    <p class="">Ez az első Bootstrap oldalunk. A Bootstrap automatikusan szép stílust ad.</p>
+  </div>
 </body>
 </html>`,
     checks:[
-      { label:'&lt;h1&gt; szövege: "Kedvenc dolgaim"',              fn:(h,d)=>d.querySelector('h1')?.textContent?.trim()==='Kedvenc dolgaim' },
-      { label:'Van &lt;ul&gt; rendezetlen lista',                   fn:(h,d)=>!!d.querySelector('body ul') },
-      { label:'Az &lt;ul&gt;-ban legalább 3 &lt;li&gt; elem',      fn:(h,d)=>d.querySelectorAll('ul > li').length>=3 },
-      { label:'Van &lt;ol&gt; rendezett lista',                     fn:(h,d)=>!!d.querySelector('body ol') },
-      { label:'Az &lt;ol&gt;-ban legalább 3 &lt;li&gt; elem',      fn:(h,d)=>d.querySelectorAll('ol > li').length>=3 },
-      { label:'Minden listának van &lt;h2&gt; alcíme (legalább 2)', fn:(h,d)=>d.querySelectorAll('h2').length>=2 }
+      { label:'Bootstrap CDN van a &lt;head&gt;-ben',         fn:(h,d)=>h.includes('bootstrap') },
+      { label:'Van .container osztály',                       fn:(h,d)=>h.includes('container') },
+      { label:'Van display-* (display-1..6) osztály',        fn:(h,d)=>/class="[^"]*display-[1-6]/.test(h)||/class='[^']*display-[1-6]/.test(h) },
+      { label:'Van .lead osztály',                           fn:(h,d)=>h.includes('lead') }
     ]
   },
 
-  // ── BLOKK 5: Szemantikus váz ─────────────────────────────────────
+  // ── BLOKK 2: Rácsrendszer ─────────────────────────────────────────────
   {
-    id:13, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
+    id:4, block:2, blockName:'Rácsrendszer (Grid)', emoji:'📐',
     type:'quiz',
-    title:'Szemantikus elemek – ki mit jelöl?',
+    title:'A Bootstrap rácsrendszer',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      Vannak HTML elemek, amelyek neve már elárulja, mi a szerepük az oldalon.
-      Ezeket hívjuk <strong>szemantikus elemeknek</strong>:
+      A Bootstrap <strong>12 oszlopos rácsrendszert</strong> használ.
+      Az oldal szélességét 12 egyenlő részre osztja – az elemek ezeket foglalhatják el.
+      <br><br>
+      Felépítés:
       <ul>
-        <li><code>&lt;header&gt;</code> — az oldal teteje: logo, cím</li>
-        <li><code>&lt;nav&gt;</code> — a menü, ahol a linkek vannak</li>
-        <li><code>&lt;main&gt;</code> — a fő tartalom (oldalanként csak egy)</li>
-        <li><code>&lt;article&gt;</code> — egy önálló egység, pl. egy hír</li>
-        <li><code>&lt;section&gt;</code> — egy téma szerinti rész</li>
-        <li><code>&lt;footer&gt;</code> — az oldal alja: copyright, kapcsolat</li>
+        <li><code>.container</code> — a rácsot befoglaló elem (középre igazít)</li>
+        <li><code>.row</code> — egy sor a rácson belül</li>
+        <li><code>.col-md-6</code> — fél szélességű oszlop közepes (md) mérettől</li>
       </ul>
-      Hasznos, mert a Google és a képernyőolvasók is jobban értik az oldalt.`,
-    question:'Melyik elemet használjuk a navigációs menü jelölésére?',
-    options:['&lt;menu&gt;','&lt;nav&gt;','&lt;header&gt;','&lt;ul&gt;'],
-    correct:1,
-    feedback:'✅ Helyes! A <code>&lt;nav&gt;</code> jelöli a menüt. A <code>&lt;header&gt;</code> az egész fejléc doboza (amibe a nav is kerülhet), az <code>&lt;ul&gt;</code> pedig csak egy lista – nem mondja el, hogy ez egy navigáció.'
-  },
-
-  {
-    id:14, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
-    type:'fillin',
-    title:'Szemantikus oldal váza',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      Egy tipikus szemantikus oldal szerkezete:
+      <strong>Törési pontok</strong> (breakpoints):
       <ul>
-        <li><code>&lt;header&gt;</code> – logo, cím, navigáció</li>
-        <li><code>&lt;main&gt;</code> – a fő tartalom</li>
-        <li><code>&lt;article&gt;</code> – egy önálló egység a main-en belül</li>
-        <li><code>&lt;footer&gt;</code> – lábléc</li>
-      </ul>`,
-    codeTemplate:
-`<body>
-  <___>
-    <h1>Kandó Hírek</h1>
-    <nav>
-      <a href="/">Főoldal</a>
-      <a href="/hirek">Hírek</a>
-    </nav>
-  </header>
-
-  <___>
-    <___>
-      <h2>Új tananyag érkezett!</h2>
-      <p>A HTML alapok leckék elérhetők.</p>
-    </article>
-  </main>
-
-  <___>
-    <p>&copy; 2025 Kandó Kálmán</p>
-  </footer>
-</body>`,
-    blanks:[
-      { answer:'header',  hint:'Fejléc – a lap teteje: logo és navigáció' },
-      { answer:'main',    hint:'Fő tartalom – oldalanként csak egy!' },
-      { answer:'article', hint:'Önálló cikk vagy tartalom egység' },
-      { answer:'footer',  hint:'Lábléc – copyright, kapcsolati infók' }
-    ]
-  },
-
-  {
-    id:15, block:5, blockName:'Szemantikus váz', emoji:'🏛️',
-    type:'monaco',
-    title:'Szemantikus oldal felépítése',
-    explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts szemantikus felépítésű HTML oldalt:
-      <ul>
-        <li><code>&lt;header&gt;</code>: logó-szerű <code>&lt;h1&gt;</code> és <code>&lt;nav&gt;</code> legalább 2 linkkel</li>
-        <li><code>&lt;main&gt;</code>: legalább egy <code>&lt;article&gt;</code> vagy <code>&lt;section&gt;</code></li>
-        <li><code>&lt;footer&gt;</code>: copyright szöveg</li>
-      </ul>`,
-    starterHtml:
-`<!DOCTYPE html>
-<html lang="hu">
-<head>
-  <meta charset="UTF-8">
-  <title>Szemantikus oldal</title>
-</head>
-<body>
-
-</body>
-</html>`,
-    checks:[
-      { label:'Van &lt;header&gt; fejléc a &lt;body&gt;-ban',                      fn:(h,d)=>!!d.querySelector('body header') },
-      { label:'Van &lt;nav&gt; navigáció',                                          fn:(h,d)=>!!d.querySelector('nav') },
-      { label:'A &lt;nav&gt;-ban legalább 2 &lt;a&gt; link',                       fn:(h,d)=>d.querySelectorAll('nav a').length>=2 },
-      { label:'Van &lt;main&gt; fő tartalom a &lt;body&gt;-ban',                   fn:(h,d)=>!!d.querySelector('body main') },
-      { label:'A &lt;main&gt;-ban van &lt;article&gt; vagy &lt;section&gt;',       fn:(h,d)=>!!(d.querySelector('main article')||d.querySelector('main section')) },
-      { label:'Van &lt;footer&gt; lábléc szöveggel',                               fn:(h,d)=>{ const f=d.querySelector('footer'); return !!(f&&f.textContent.trim()!==''); } }
-    ]
-  },
-
-  // ── BLOKK 6: Táblázatok ──────────────────────────────────────────
-  {
-    id:16, block:6, blockName:'Táblázatok', emoji:'📊',
-    type:'quiz',
-    title:'Tábla felépítése HTML-ben',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      A HTML tábla elemei (kívülről befelé):
-      <ul>
-        <li><code>&lt;table&gt;</code> — maga a tábla</li>
-        <li><code>&lt;thead&gt;</code> — fejléc sor(ok)</li>
-        <li><code>&lt;tbody&gt;</code> — törzs (az adatok)</li>
-        <li><code>&lt;tr&gt;</code> — tábla sor (table row)</li>
-        <li><code>&lt;th&gt;</code> — fejléc cella (félkövér, középre igazított)</li>
-        <li><code>&lt;td&gt;</code> — adat cella (table data)</li>
-      </ul>`,
-    question:'Melyik elem jelöl egy adatsort a táblázatban?',
-    options:['&lt;td&gt;','&lt;th&gt;','&lt;tr&gt;','&lt;table&gt;'],
+        <li><code>sm</code> ≥576px (kisebb telefon vízszintesen)</li>
+        <li><code>md</code> ≥768px (tablet)</li>
+        <li><code>lg</code> ≥992px (laptop)</li>
+        <li><code>xl</code> ≥1200px (asztali)</li>
+      </ul>
+      12 oszlopot összesen kell kitölteni egy sorban: <code>col-md-6 + col-md-6 = 12</code>.`,
+    question:'Hány oszlopos a Bootstrap rácsrendszere?',
+    options:['6 oszlopos','10 oszlopos','12 oszlopos','16 oszlopos'],
     correct:2,
-    feedback:'✅ Igen! A <code>&lt;tr&gt;</code> (table row) egy teljes sort jelöl. Egy soron belül <code>&lt;td&gt;</code> vagy <code>&lt;th&gt;</code> az egyes cellák.'
+    feedback:'✅ Helyes! A Bootstrap 12 oszlopos rácsot használ. Ez azért kényelmes, mert 12 könnyen osztható: 1/2 = 6, 1/3 = 4, 1/4 = 3 oszlop.'
   },
 
   {
-    id:17, block:6, blockName:'Táblázatok', emoji:'📊',
+    id:5, block:2, blockName:'Rácsrendszer (Grid)', emoji:'📐',
     type:'fillin',
-    title:'Tábla elemei',
+    title:'Grid osztályok',
     explanation:`<div class="exp-label">📖 Tananyag</div>
-      Tábla minta – fejléccel és adatsorokkal:
+      Kétoszlopos elrendezés Bootstrappal:
       <ul>
-        <li><code>&lt;thead&gt;</code> + <code>&lt;th&gt;</code> = fejléc cellák</li>
-        <li><code>&lt;tbody&gt;</code> + <code>&lt;td&gt;</code> = adat cellák</li>
-        <li>Minden sor: <code>&lt;tr&gt;</code></li>
-      </ul>`,
-    codeTemplate:
-`<table>
-  <___>
-    <tr>
-      <___>Név</th>
-      <th>Osztály</th>
-    </tr>
-  </thead>
-  <___>
-    <___>
-      <td>Gipsz Jakab</td>
-      <td>13A</td>
-    </tr>
-  </tbody>
-</table>`,
-    blanks:[
-      { answer:'thead', hint:'Table head – a fejléc rész' },
-      { answer:'th',    hint:'Table header cell – félkövér fejléc cella' },
-      { answer:'tbody', hint:'Table body – a törzs/adat rész' },
-      { answer:'tr',    hint:'Table row – egy sor a táblázatban' }
-    ]
-  },
-
-  {
-    id:18, block:6, blockName:'Táblázatok', emoji:'📊',
-    type:'monaco',
-    title:'Készíts táblázatot!',
-    explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts HTML táblázatot:
-      <ul>
-        <li>A táblázatnak legyen <code>&lt;caption&gt;</code> felirata (pl. "Osztálylista")</li>
-        <li><code>&lt;table&gt;</code> belső <code>&lt;thead&gt;</code> és <code>&lt;tbody&gt;</code>-val</li>
-        <li>Fejléc sorban legalább <strong>3 <code>&lt;th&gt;</code></strong> cella</li>
-        <li>Legalább <strong>2 adatsor</strong> (<code>&lt;tr&gt;</code>) a <code>&lt;tbody&gt;</code>-ban</li>
-        <li>Minden adatsorban legalább <strong>3 <code>&lt;td&gt;</code></strong> cella</li>
+        <li><code>.container</code> — befoglaló, középre igazít</li>
+        <li><code>.row</code> — sor (flex konténer)</li>
+        <li><code>.col-md-6</code> — 12-ből 6 oszlopot foglal el (fele az oldalnak)</li>
+        <li><code>.col-md-4</code> — 12-ből 4 oszlop (harmad)</li>
+        <li><code>.col-md-3</code> — 12-ből 3 oszlop (negyed)</li>
       </ul>
-      <br>💡 A <code>&lt;caption&gt;</code> közvetlenül a <code>&lt;table&gt;</code> nyitó tag után kerül.`,
-    starterHtml:
-`<!DOCTYPE html>
-<html lang="hu">
-<head>
-  <meta charset="UTF-8">
-  <title>Táblázat</title>
-</head>
-<body>
-
-</body>
-</html>`,
-    checks:[
-      { label:'Van &lt;table&gt; a &lt;body&gt;-ban',                fn:(h,d)=>!!d.querySelector('body table') },
-      { label:'Van &lt;caption&gt; felirat szöveggel',              fn:(h,d)=>{ const c=d.querySelector('caption'); return !!(c&&c.textContent.trim()!==''); } },
-      { label:'Van &lt;thead&gt; a táblázatban',                     fn:(h,d)=>!!d.querySelector('table thead') },
-      { label:'A &lt;thead&gt;-ben legalább 3 &lt;th&gt; cella',     fn:(h,d)=>d.querySelectorAll('thead th').length>=3 },
-      { label:'Van &lt;tbody&gt; a táblázatban',                     fn:(h,d)=>!!d.querySelector('table tbody') },
-      { label:'A &lt;tbody&gt;-ban legalább 2 &lt;tr&gt; sor',       fn:(h,d)=>d.querySelectorAll('tbody tr').length>=2 },
-      { label:'Minden adatsorban legalább 3 &lt;td&gt; cella',       fn:(h,d)=>{ const rows=[...d.querySelectorAll('tbody tr')]; return rows.length>=2 && rows.every(r=>r.querySelectorAll('td').length>=3); } }
-    ]
-  },
-
-  // ── BLOKK 7: Div és Span ─────────────────────────────────────────
-  {
-    id:19, block:7, blockName:'Div és Span', emoji:'📦',
-    type:'quiz',
-    title:'Mi a különbség a div és a span között?',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      <strong>Semleges konténer elemek</strong> – nincs saját szemantikájuk, CSS-hez és JavaScript-hez használjuk:
-      <ul>
-        <li><code>&lt;div&gt;</code> — <strong>blokk szintű</strong>: új sort kezd, egész sorát foglalja el</li>
-        <li><code>&lt;span&gt;</code> — <strong>inline</strong>: a szövegen belül marad, nem töri meg a sort</li>
-      </ul>
-      Pl. egy doboz hátterét <code>&lt;div&gt;</code>-vel, egy szó kiemelőszínét <code>&lt;span&gt;</code>-nel adjuk meg.`,
-    question:'Melyik elem marad a szöveg folyamán belül (inline)?',
-    options:['&lt;div&gt;','&lt;section&gt;','&lt;span&gt;','&lt;article&gt;'],
-    correct:2,
-    feedback:'✅ Pontosan! A <code>&lt;span&gt;</code> inline elem – szövegen belül lehet alkalmazni stílusdefinícióhoz. A <code>&lt;div&gt;</code> blokk szintű, mindig új sort kezd.'
-  },
-
-  {
-    id:20, block:7, blockName:'Div és Span', emoji:'📦',
-    type:'fillin',
-    title:'Div és Span használata',
-    explanation:`<div class="exp-label">📖 Tananyag</div>
-      A <code>class</code> attribútummal nevezzük meg a dobozt/jelölést,
-      majd CSS-sel adjuk meg a stílusát:
-      <ul>
-        <li><code>&lt;div class="kártya"&gt;</code> — egy doboz</li>
-        <li><code>&lt;span class="kiemel"&gt;</code> — kiemelés szövegen belül</li>
-      </ul>`,
+      Mobilon (md alatti méretben) minden oszlop automatikusan teljes szélességre vált.`,
     codeTemplate:
-`<___  class="kártya">
-  <h2>Termék neve</h2>
-  <p>Ára: <___ class="ár">2 999 Ft</span></p>
-  <p>Állapot: <___ class="elérhető">Elérhető</span></p>
-</div>
-
-<___ class="figyelmeztető-sáv">
-  <p>Akció csak ma!</p>
+`<div class="___">
+  <div class="___">
+    <div class="col-___-6">
+      <p>Bal oldal</p>
+    </div>
+    <div class="col-___-6">
+      <p>Jobb oldal</p>
+    </div>
+  </div>
 </div>`,
     blanks:[
-      { answer:'div',  hint:'Blokk szintű konténer – doboz' },
-      { answer:'span', hint:'Inline elem – szövegen belüli jelölés' },
-      { answer:'span', hint:'Inline elem – szövegen belüli jelölés' },
-      { answer:'div',  hint:'Blokk szintű konténer – doboz' }
+      { answer:'container', hint:'Befoglaló elem – középre igazítja és bekeretezi a tartalmat' },
+      { answer:'row',       hint:'Egy sor a rácsban' },
+      { answer:'md',        hint:'Tablet-mérettől (≥768px) érvényes törési pont' },
+      { answer:'md',        hint:'Ugyanaz a törési pont a jobb oszlopnál' }
     ]
   },
 
   {
-    id:21, block:7, blockName:'Div és Span', emoji:'📦',
+    id:6, block:2, blockName:'Rácsrendszer (Grid)', emoji:'📐',
     type:'monaco',
-    title:'Div és span a gyakorlatban',
+    title:'Kétoszlopos elrendezés',
     explanation:`<div class="exp-label">✏️ Feladat</div>
-      Készíts HTML oldalt <code>&lt;div&gt;</code> és <code>&lt;span&gt;</code> elemekkel:
+      Készíts kétoszlopos elrendezést:
       <ul>
-        <li>Legalább <strong>2 db <code>&lt;div&gt;</code></strong> legyen az oldalon</li>
-        <li>Legalább <strong>1 db <code>&lt;span&gt;</code></strong> legyen szövegen belül</li>
-        <li>Mindegyiknek legyen <code>class</code> attribútuma</li>
-        <li>Legyen egy <code>&lt;h1&gt;</code> és legalább egy <code>&lt;p&gt;</code></li>
+        <li>Legyen <code>.container</code> befoglaló</li>
+        <li>Legyen <code>.row</code> sor</li>
+        <li>Két <code>.col-md-6</code> oszlop – mindkettőben egy &lt;h2&gt; és egy &lt;p&gt;</li>
+        <li>Adj a &lt;div class="container"&gt;-nek <code>mt-4</code> osztályt is (felső margó)</li>
       </ul>`,
     starterHtml:
 `<!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Div és Span</title>
-  <style>
-    .kiemel { color: orange; font-weight: bold; }
-    .doboz { border: 1px solid #ccc; padding: 10px; margin: 8px 0; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Grid</title>
 </head>
 <body>
+  <!-- Ide jön a container > row > 2× col-md-6 -->
 
 </body>
 </html>`,
     checks:[
-      { label:'Van &lt;h1&gt; szöveggel a &lt;body&gt;-ban',        fn:(h,d)=>{ const el=d.querySelector('body h1'); return !!(el&&el.textContent.trim()!==''); } },
-      { label:'Van legalább egy &lt;p&gt; bekezdés szöveggel',       fn:(h,d)=>[...d.querySelectorAll('body p')].some(p=>p.textContent.trim()!=='') },
-      { label:'Legalább 2 &lt;div&gt; a &lt;body&gt;-ban',           fn:(h,d)=>d.querySelectorAll('body div').length>=2 },
-      { label:'Legalább 1 &lt;span&gt; szöveggel',                   fn:(h,d)=>{ const s=d.querySelector('span'); return !!(s&&s.textContent.trim()!==''); } },
-      { label:'Minden &lt;div&gt;-nek van class attribútuma',         fn:(h,d)=>{const divs=[...d.querySelectorAll('body div')];return divs.length>=2&&divs.every(el=>el.hasAttribute('class')&&el.getAttribute('class').trim()!=='');} },
-      { label:'A &lt;span&gt;-nek van class attribútuma',             fn:(h,d)=>!!d.querySelector('span[class]') }
+      { label:'Van .container osztály',                          fn:(h,d)=>h.includes('container') },
+      { label:'Van .row osztály',                               fn:(h,d)=>h.includes('row') },
+      { label:'Van legalább 2 db col-md-6 (vagy col-*) osztály',fn:(h,d)=>(h.match(/col-[a-z]{0,3}-?\d+/g)||[]).length>=2 },
+      { label:'Az oszlopokban van &lt;h2&gt; cím',              fn:(h,d)=>d.querySelectorAll('h2').length>=1 },
+      { label:'Az oszlopokban van &lt;p&gt; szöveg',            fn:(h,d)=>d.querySelectorAll('p').length>=1 }
+    ]
+  },
+
+  // ── BLOKK 3: Tipográfia és szöveg ─────────────────────────────────────
+  {
+    id:7, block:3, blockName:'Tipográfia és szöveg', emoji:'✍️',
+    type:'quiz',
+    title:'Bootstrap tipográfiai osztályok',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A Bootstrap számos hasznos szövegformázó osztályt ad:
+      <ul>
+        <li><code>display-1</code> … <code>display-6</code> — óriási főcímek</li>
+        <li><code>lead</code> — kiemelt, nagyobb bevezető szöveg</li>
+        <li><code>text-muted</code> — halványabb (szürke) szöveg</li>
+        <li><code>text-center</code> / <code>text-end</code> — igazítás</li>
+        <li><code>fw-bold</code> — félkövér szöveg</li>
+        <li><code>fst-italic</code> — dőlt szöveg</li>
+        <li><code>text-primary</code>, <code>text-danger</code>, <code>text-success</code> — Bootstrap színek</li>
+      </ul>
+      Képekhez: <code>img-fluid</code> — reszponzív kép (100%-ra szűkül, ha kell).`,
+    question:'Melyik Bootstrap osztály teszi a szöveget halványabbá (szürkévé)?',
+    options:['text-light','text-muted','text-secondary','text-gray'],
+    correct:1,
+    feedback:'✅ Helyes! A <code>text-muted</code> halványabb, szürkés szöveget eredményez. A <code>text-secondary</code> is hasonló, de a <code>text-muted</code> a leggyakoribb erre a célra.'
+  },
+
+  {
+    id:8, block:3, blockName:'Tipográfia és szöveg', emoji:'✍️',
+    type:'fillin',
+    title:'Tipográfiai osztályok a gyakorlatban',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Összefoglalás:
+      <ul>
+        <li><code>display-4</code> — óriás főcím</li>
+        <li><code>lead</code> — kiemelkedő bevezető szöveg</li>
+        <li><code>text-muted</code> — halvány szöveg</li>
+        <li><code>img-fluid</code> — reszponzív kép</li>
+        <li><code>text-center</code> — középre igazítás</li>
+      </ul>`,
+    codeTemplate:
+`<!-- Óriás főcím -->
+<h1 class="___-4">Főcím</h1>
+
+<!-- Kiemelt bevezető -->
+<p class="___">Ez a bevezető szöveg.</p>
+
+<!-- Halványabb kiegészítő szöveg -->
+<p class="text-___">Kiegészítő információ...</p>
+
+<!-- Reszponzív kép -->
+<img src="foto.jpg" class="___-fluid" alt="Kép">`,
+    blanks:[
+      { answer:'display',  hint:'Óriás cím: display-4, display-3 stb.' },
+      { answer:'lead',     hint:'Kiemelt bevezető szöveg osztálya' },
+      { answer:'muted',    hint:'text-muted = halvány szürke szöveg' },
+      { answer:'img',      hint:'img-fluid = reszponzív kép' }
+    ]
+  },
+
+  {
+    id:9, block:3, blockName:'Tipográfia és szöveg', emoji:'✍️',
+    type:'monaco',
+    title:'Tipografikus fejléc',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts Bootstrap tipográfiai fejlécet:
+      <ul>
+        <li>Főcím <code>display-3</code> és <code>text-center</code> osztályokkal</li>
+        <li>Bevezető szöveg <code>lead</code> osztállyal</li>
+        <li>Kiegészítő szöveg <code>text-muted</code> osztállyal</li>
+        <li>Egy reszponzív kép <code>img-fluid</code> és <code>rounded</code> osztályokkal</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Tipográfia</title>
+</head>
+<body>
+  <div class="container mt-5 text-center">
+    <!-- Ide jön a főcím display-3 + text-center osztályokkal -->
+
+    <!-- Bevezető szöveg lead osztállyal -->
+
+    <!-- Halvány szöveg text-muted osztállyal -->
+
+    <!-- Kép img-fluid + rounded osztályokkal -->
+
+  </div>
+</body>
+</html>`,
+    checks:[
+      { label:'Van display-* (display-1..6) osztály',          fn:(h,d)=>/class="[^"]*display-[1-6]/.test(h)||/class='[^']*display-[1-6]/.test(h) },
+      { label:'Van .text-center osztály',                      fn:(h,d)=>h.includes('text-center') },
+      { label:'Van .lead osztály',                             fn:(h,d)=>h.includes('lead') },
+      { label:'Van .text-muted osztály',                       fn:(h,d)=>h.includes('text-muted') },
+      { label:'Van img-fluid osztályú kép',                    fn:(h,d)=>!!d.querySelector('img.img-fluid')||h.includes('img-fluid') }
+    ]
+  },
+
+  // ── BLOKK 4: Gombok ───────────────────────────────────────────────────
+  {
+    id:10, block:4, blockName:'Gombok', emoji:'🔘',
+    type:'quiz',
+    title:'Bootstrap gombok',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Bootstrap gombok: minden gombnak kell <code>btn</code> alap osztály, plusz egy szín-osztály:
+      <ul>
+        <li><code>btn btn-primary</code> — kék (elsődleges)</li>
+        <li><code>btn btn-secondary</code> — szürke</li>
+        <li><code>btn btn-success</code> — zöld</li>
+        <li><code>btn btn-danger</code> — piros (veszélyes/törlés)</li>
+        <li><code>btn btn-warning</code> — sárga</li>
+        <li><code>btn btn-info</code> — cián</li>
+        <li><code>btn btn-outline-primary</code> — keretezett kék</li>
+        <li><code>btn btn-outline-danger</code> — keretezett piros</li>
+      </ul>
+      Méret: <code>btn-lg</code> (nagy), <code>btn-sm</code> (kis).`,
+    question:'Melyik osztály kombinációval lesz egy Bootstrap gomb PIROS?',
+    options:[
+      'btn btn-red',
+      'btn btn-warning',
+      'btn btn-danger',
+      'button-red'
+    ],
+    correct:2,
+    feedback:'✅ Helyes! A piros gombhoz <code>btn btn-danger</code> kell. Mindig kell az alap <code>btn</code> osztály, majd a szín-osztály (btn-primary, btn-success, btn-danger stb.).'
+  },
+
+  {
+    id:11, block:4, blockName:'Gombok', emoji:'🔘',
+    type:'fillin',
+    title:'Gomb osztályok',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Mindig kell az alap <code>btn</code>, majd a szín:
+      <ul>
+        <li><code>btn btn-primary</code> — kék</li>
+        <li><code>btn btn-danger</code> — piros</li>
+        <li><code>btn btn-outline-secondary</code> — keretezett szürke</li>
+        <li><code>btn btn-success btn-lg</code> — nagy zöld gomb</li>
+      </ul>`,
+    codeTemplate:
+`<!-- Kék gomb -->
+<button class="___ btn-primary">Mentés</button>
+
+<!-- Piros gomb -->
+<button class="btn ___-danger">Törlés</button>
+
+<!-- Keretezett szürke gomb (outline) -->
+<button class="btn btn-___-secondary">Mégse</button>
+
+<!-- Nagy zöld gomb -->
+<button class="btn btn-success ___-lg">Beküldés</button>`,
+    blanks:[
+      { answer:'btn',      hint:'Alap gomb osztály – mindig kell!' },
+      { answer:'btn',      hint:'Színosztály előtt mindig "btn"' },
+      { answer:'outline',  hint:'Keretezett stílus: btn-outline-...' },
+      { answer:'btn',      hint:'Méretosztály: btn-lg, btn-sm' }
+    ]
+  },
+
+  {
+    id:12, block:4, blockName:'Gombok', emoji:'🔘',
+    type:'monaco',
+    title:'Gomb galéria',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts egy gombok bemutató oldalt:
+      <ul>
+        <li>Legalább 3 különböző Bootstrap gomb (pl. primary, danger, outline-secondary)</li>
+        <li>Egy reszponzív kép <code>img-fluid</code> és <code>rounded</code> osztályokkal</li>
+        <li>A gombokat tedd egy <code>d-flex gap-2</code> osztályú div-be</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Gombok</title>
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>Gomb galéria</h2>
+
+    <!-- Gomb sor: d-flex gap-2 -->
+    <div class="d-flex gap-2 mt-3">
+      <!-- 3 különböző gomb -->
+
+    </div>
+
+    <!-- Reszponzív kép img-fluid + rounded -->
+
+  </div>
+</body>
+</html>`,
+    checks:[
+      { label:'Van btn-primary gomb',                          fn:(h,d)=>h.includes('btn-primary') },
+      { label:'Van btn-danger gomb',                           fn:(h,d)=>h.includes('btn-danger') },
+      { label:'Van btn-outline-* vagy btn-secondary gomb',    fn:(h,d)=>h.includes('btn-outline')||h.includes('btn-secondary') },
+      { label:'Van img-fluid osztályú kép',                   fn:(h,d)=>h.includes('img-fluid') },
+      { label:'Van .rounded osztály',                         fn:(h,d)=>h.includes('rounded') },
+      { label:'Van d-flex és gap-* osztály',                  fn:(h,d)=>h.includes('d-flex')&&/gap-\d/.test(h) }
+    ]
+  },
+
+  // ── BLOKK 5: Táblázat és Card ─────────────────────────────────────────
+  {
+    id:13, block:5, blockName:'Táblázat és Card', emoji:'🃏',
+    type:'quiz',
+    title:'Bootstrap táblázat és kártya',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      <strong>Táblázat</strong> Bootstrap osztályokkal:
+      <ul>
+        <li><code>table</code> — alap Bootstrap stílus</li>
+        <li><code>table-striped</code> — csíkos sorok</li>
+        <li><code>table-bordered</code> — keretezett cellák</li>
+        <li><code>table-hover</code> — rámutatáskor kiemel</li>
+      </ul>
+      <strong>Card (kártya)</strong> – tartalom elkülönítése panelekkel:
+      <ul>
+        <li><code>card</code> — kártya alap</li>
+        <li><code>card-body</code> — kártya tartalmi része</li>
+        <li><code>card-title</code> — kártya cím</li>
+        <li><code>card-text</code> — kártya szöveg</li>
+      </ul>`,
+    question:'Melyik Bootstrap osztály teszi a táblázat sorait váltakozva csíkossá?',
+    options:['table-dark','table-striped','table-light','table-zebra'],
+    correct:1,
+    feedback:'✅ Helyes! A <code>table-striped</code> váltakozó háttérszínnel teszi könnyen olvashatóvá a táblázatot. A <code>table</code> alap osztály mindig szükséges mellé.'
+  },
+
+  {
+    id:14, block:5, blockName:'Táblázat és Card', emoji:'🃏',
+    type:'fillin',
+    title:'Card és táblázat osztályok',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Card felépítése:
+      <ul>
+        <li><code>div.card</code> — külső keret</li>
+        <li><code>div.card-body</code> — belső tartalom</li>
+        <li><code>h5.card-title</code> — cím a kártyán</li>
+        <li><code>p.card-text</code> — szöveg a kártyán</li>
+        <li><code>a.btn.btn-primary</code> — gomb a kártyán</li>
+      </ul>`,
+    codeTemplate:
+`<div class="___">
+  <div class="___-body">
+    <h5 class="___-title">Termék neve</h5>
+    <p class="___-text">Rövid leírás a termékről.</p>
+    <a href="#" class="btn btn-primary">Részletek</a>
+  </div>
+</div>`,
+    blanks:[
+      { answer:'card',      hint:'A kártya külső div osztálya' },
+      { answer:'card',      hint:'card-body: a belső tartalom' },
+      { answer:'card',      hint:'card-title: a cím osztálya' },
+      { answer:'card',      hint:'card-text: a szöveg osztálya' }
+    ]
+  },
+
+  {
+    id:15, block:5, blockName:'Táblázat és Card', emoji:'🃏',
+    type:'monaco',
+    title:'Kártya és táblázat együtt',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts egy oldalt kártyával és táblázattal:
+      <ul>
+        <li>Egy <code>.card</code> kártya, benne <code>.card-body</code>, <code>.card-title</code>, <code>.card-text</code></li>
+        <li>Egy Bootstrap <code>table table-striped table-bordered</code> osztályú táblázat legalább 3 sorral</li>
+        <li>A táblázatnak legyen fejléce (<code>&lt;thead&gt;</code>) és törzse (<code>&lt;tbody&gt;</code>)</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Kártya és táblázat</title>
+</head>
+<body>
+  <div class="container mt-4">
+
+    <!-- Kártya -->
+
+    <!-- Táblázat -->
+
+  </div>
+</body>
+</html>`,
+    checks:[
+      { label:'Van .card osztály',                             fn:(h,d)=>!!d.querySelector('.card') },
+      { label:'Van .card-body osztály',                       fn:(h,d)=>!!d.querySelector('.card-body') },
+      { label:'Van .card-title osztály',                      fn:(h,d)=>!!d.querySelector('.card-title') },
+      { label:'Van .card-text osztály',                       fn:(h,d)=>!!d.querySelector('.card-text') },
+      { label:'Van table-striped táblázat',                   fn:(h,d)=>h.includes('table-striped') },
+      { label:'Van &lt;thead&gt; és &lt;tbody&gt;',           fn:(h,d)=>!!d.querySelector('thead')&&!!d.querySelector('tbody') },
+      { label:'Van legalább 3 &lt;tr&gt; sor',               fn:(h,d)=>d.querySelectorAll('tr').length>=3 }
+    ]
+  },
+
+  // ── BLOKK 6: JavaScript alapok ────────────────────────────────────────
+  {
+    id:16, block:6, blockName:'JavaScript alapok', emoji:'⚡',
+    type:'quiz',
+    title:'A JavaScript szerepe',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <strong>JavaScript</strong> (JS) a weboldal <strong>logikáját</strong> adja:
+      <ul>
+        <li>HTML = szerkezet, CSS = kinézet, <strong>JS = viselkedés</strong></li>
+        <li>Eseményeket kezel (kattintás, billentyű)</li>
+        <li>Módosítja az oldal tartalmát futás közben (DOM)</li>
+        <li>Adatokat küld/fogad szerverről</li>
+      </ul>
+      <strong>Változók deklarálása:</strong>
+      <ul>
+        <li><code>let nev = 'Kata'</code> — újraértékelhető változó</li>
+        <li><code>const PI = 3.14</code> — konstans, nem változtatható</li>
+        <li><code>var</code> — régi mód, kerüljük</li>
+      </ul>
+      <strong>Beágyazás:</strong> <code>&lt;script&gt; ... &lt;/script&gt;</code> vagy külső fájl:
+      <code>&lt;script src="kod.js"&gt;&lt;/script&gt;</code>`,
+    question:'Melyik kulcsszóval deklarálunk újraértékelhető változót modern JavaScript-ben?',
+    options:['const — konstans, nem módosítható','let — újraértékelhető változó','var — régi mód, ma már kerüljük','int — egész szám típus'],
+    correct:1,
+    feedback:'✅ Helyes! A <code>let</code> újraértékelhető, a <code>const</code> nem. Modern JS-ben a <code>var</code> helyett <code>let</code>/<code>const</code>-ot használunk, mert jobban viselkednek blokkhatárokon belül.'
+  },
+
+  {
+    id:17, block:6, blockName:'JavaScript alapok', emoji:'⚡',
+    type:'fillin',
+    title:'Változók és alert()',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      JavaScript alapok:
+      <ul>
+        <li><code>let pont = 0</code> — változó, 0 kezdőértékkel</li>
+        <li><code>pont = pont + 10</code> — újraértékelés</li>
+        <li><code>const NEV = 'Kata'</code> — konstans, nem változtatható</li>
+        <li><code>alert('Helló!')</code> — felugró ablak üzenettel</li>
+        <li><code>console.log(pont)</code> — kiírás a konzolra</li>
+      </ul>
+      Az <code>alert()</code> beépített JavaScript függvény – egyszerű üzenetet jelenít meg.`,
+    codeTemplate:
+`<script>
+  // Konstans: nem változtatható
+  ___ ISKOLA = 'Kandó';
+
+  // Változó: újraértékelhető
+  ___ pont = 0;
+
+  // Értékadás (újraértékelés)
+  pont ___ pont + 10;
+
+  // Felugró ablak
+  alert('Helló ' + ISKOLA + '! Pontjaid: ' + pont);
+</script>`,
+    blanks:[
+      { answer:'const', hint:'Konstans – nem változtatható érték' },
+      { answer:'let',   hint:'Változó – újraértékelhető' },
+      { answer:'=',     hint:'Értékadás operátor' }
+    ]
+  },
+
+  {
+    id:18, block:6, blockName:'JavaScript alapok', emoji:'⚡',
+    type:'monaco',
+    title:'JavaScript beágyazása',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Ágyazz be JavaScriptet egy weboldalba:
+      <ul>
+        <li>Legyen <code>&lt;script&gt;</code> tag a <code>&lt;body&gt;</code> végén</li>
+        <li>Deklarálj egy <code>let</code> változót névvel</li>
+        <li>Deklarálj egy <code>const</code> konstanst</li>
+        <li>Írj egy <code>alert()</code> üzenetet, amiben szerepel a változó értéke</li>
+      </ul>
+      <em>Tipp: a script tag-et a &lt;/body&gt; zárótag elé tedd!</em>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>JavaScript alapok</title>
+</head>
+<body>
+  <h1>JavaScript beágyazás</h1>
+  <p>Nyisd meg az oldalt – megjelenik egy felugró ablak!</p>
+
+  <!-- Ide jön a script tag -->
+
+</body>
+</html>`,
+    checks:[
+      { label:'Van &lt;script&gt; tag',                        fn:(h,d)=>/<script/i.test(h) },
+      { label:'Van let deklaráció',                           fn:(h,d)=>/\blet\b/.test(h) },
+      { label:'Van const deklaráció',                        fn:(h,d)=>/\bconst\b/.test(h) },
+      { label:'Van alert() hívás',                            fn:(h,d)=>/alert\s*\(/.test(h) }
+    ]
+  },
+
+  // ── BLOKK 7: DOM és események ─────────────────────────────────────────
+  {
+    id:19, block:7, blockName:'DOM és események', emoji:'🖱️',
+    type:'quiz',
+    title:'A DOM – az oldal módosítása',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <strong>DOM</strong> (Document Object Model) a weboldal fa-struktúrája Javascriptből nézve.
+      JS-sel módosíthatjuk az oldal tartalmát futás közben.
+      <br><br>
+      <strong>Elemek kiválasztása:</strong>
+      <ul>
+        <li><code>document.getElementById('azonosito')</code> — ID alapján keres</li>
+        <li><code>document.querySelector('.osztaly')</code> — CSS szelektor alapján</li>
+      </ul>
+      <strong>Módosítás:</strong>
+      <ul>
+        <li><code>elem.innerHTML = 'Új tartalom'</code> — belső HTML felülírása</li>
+        <li><code>elem.style.color = 'red'</code> — stílus módosítása</li>
+      </ul>
+      <strong>Eseménykezelés:</strong>
+      <ul>
+        <li><code>elem.addEventListener('click', function(){...})</code></li>
+      </ul>`,
+    question:'Melyik JavaScript függvénnyel keresünk elemet az ID-ja alapján?',
+    options:[
+      'document.getElement("id")',
+      'document.findById("id")',
+      'document.getElementById("id")',
+      'document.selectById("id")'
+    ],
+    correct:2,
+    feedback:'✅ Helyes! A <code>document.getElementById()</code> az ID alapján adja vissza az elemet. Az ID-k egyediek egy oldalon, tehát pontosan egy elemet ad vissza (vagy null-t, ha nem találja).'
+  },
+
+  {
+    id:20, block:7, blockName:'DOM és események', emoji:'🖱️',
+    type:'fillin',
+    title:'DOM módosítás',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Tipikus DOM műveletek:
+      <ul>
+        <li><code>const cim = document.getElementById('focim')</code> — elem lekérése</li>
+        <li><code>cim.innerHTML = 'Új szöveg'</code> — tartalom módosítása</li>
+        <li><code>cim.style.color = 'navy'</code> — szín módosítása</li>
+        <li><code>cim.style.fontSize = '2rem'</code> — betűméret módosítása</li>
+      </ul>`,
+    codeTemplate:
+`<script>
+  // Elem lekérése ID alapján
+  const cim = document.___('focim');
+
+  // Szöveg módosítása
+  cim.___ = 'Módosított cím!';
+
+  // Szín módosítása
+  cim.style.___ = 'navy';
+</script>`,
+    blanks:[
+      { answer:'getElementById', hint:'ID alapján keresi az elemet – document.getElementById("...")' },
+      { answer:'innerHTML',      hint:'Az elem belső HTML tartalmát módosítja' },
+      { answer:'color',          hint:'A betűszín CSS tulajdonsága' }
+    ]
+  },
+
+  {
+    id:21, block:7, blockName:'DOM és események', emoji:'🖱️',
+    type:'monaco',
+    title:'Kattintás eseménykezelő',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts interaktív oldalt, ahol egy gombra kattintva változik a szöveg:
+      <ul>
+        <li>Egy <code>id="gomb"</code> attribútumú gomb</li>
+        <li>Egy <code>id="uzenet"</code> attribútumú elem (pl. &lt;p&gt;)</li>
+        <li>A script-ben: <code>document.getElementById</code> mindkét elemhez</li>
+        <li><code>addEventListener('click', ...)</code> a gombra</li>
+        <li>Kattintásra módosul az üzenet <code>innerHTML</code>-je</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>DOM esemény</title>
+</head>
+<body>
+  <div class="container mt-5 text-center">
+    <h2>Kattints a gombra!</h2>
+
+    <!-- Gomb id="gomb" attribútummal -->
+
+    <!-- Üzenet elem id="uzenet" attribútummal -->
+
+  </div>
+
+  <script>
+    // Elemek lekérése, eseménykezelő hozzáadása
+
+  </script>
+</body>
+</html>`,
+    checks:[
+      { label:'Van &lt;script&gt; tag',                        fn:(h,d)=>/<script/i.test(h) },
+      { label:'Van id="gomb" elem',                           fn:(h,d)=>!!d.getElementById('gomb') },
+      { label:'Van id="uzenet" elem',                         fn:(h,d)=>!!d.getElementById('uzenet') },
+      { label:'Van addEventListener hívás',                  fn:(h,d)=>/addEventListener/.test(h) },
+      { label:"'click' esemény megadva",                     fn:(h,d)=>/addEventListener\s*\(\s*['"]click['"]/.test(h) },
+      { label:'Van innerHTML értékadás',                     fn:(h,d)=>/\.innerHTML\s*=/.test(h) }
     ]
   }
 ];
@@ -873,12 +946,12 @@ const tasks = [
 // STATE
 // ══════════════════════════════════════════════════════════════════════
 
-const SKEY = 'lhtml_v3';
+const SKEY = 'lbs_v1';
 const state = {
   cur: 0,
-  done:     JSON.parse(localStorage.getItem(SKEY+'_done')||'null') || Array(tasks.length).fill(false),
-  qSel:     Array(tasks.length).fill(null),   // quiz: kiválasztott opció indexe
-  qAnswered:Array(tasks.length).fill(false),  // quiz: már ellenőrzött-e
+  done:      JSON.parse(localStorage.getItem(SKEY+'_done')||'null') || Array(tasks.length).fill(false),
+  qSel:      Array(tasks.length).fill(null),
+  qAnswered: Array(tasks.length).fill(false),
   monacoEd: null,
   prevTimer: null
 };
@@ -891,13 +964,197 @@ let monacoOk = false;
 const monacoQ = [];
 require.config({ paths:{ vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 require(['vs/editor/editor.main'], ()=>{
-  require(['vs/language/html/htmlMode','vs/language/css/cssMode'], ()=>{
+  require(['vs/language/html/htmlMode'], ()=>{
+    registerBootstrapCompletions();
     monacoOk=true;
     if(window.emmetMonaco) window.emmetMonaco.emmetHTML(monaco);
     monacoQ.forEach(cb=>cb()); monacoQ.length=0;
   });
 });
 const whenMonaco = cb => monacoOk ? cb() : monacoQ.push(cb);
+
+// ── Bootstrap IntelliSense a class="" attribútumon belül ──────────────────
+function registerBootstrapCompletions(){
+  const Kind = monaco.languages.CompletionItemKind;
+
+  // Bootstrap osztályok listája
+  const BS_CLASSES = [
+    // Layout
+    { c:'container',           d:'Középre igazított tároló (max szélesség)' },
+    { c:'container-fluid',     d:'Teljes szélességű tároló' },
+    { c:'row',                 d:'Rácssor (flex konténer)' },
+    { c:'col',                 d:'Automatikus szélességű oszlop' },
+    { c:'col-1',               d:'1/12 szélességű oszlop' },
+    { c:'col-2',               d:'2/12 szélességű oszlop' },
+    { c:'col-3',               d:'3/12 (negyed) szélesség' },
+    { c:'col-4',               d:'4/12 (harmad) szélesség' },
+    { c:'col-6',               d:'6/12 (fél) szélesség' },
+    { c:'col-8',               d:'8/12 szélesség' },
+    { c:'col-12',              d:'Teljes sor' },
+    { c:'col-md-3',            d:'Tablet-mérettől: negyed szélesség' },
+    { c:'col-md-4',            d:'Tablet-mérettől: harmad szélesség' },
+    { c:'col-md-6',            d:'Tablet-mérettől: fél szélesség' },
+    { c:'col-md-8',            d:'Tablet-mérettől: 8/12 szélesség' },
+    { c:'col-lg-4',            d:'Laptop-mérettől: harmad szélesség' },
+    { c:'col-lg-6',            d:'Laptop-mérettől: fél szélesség' },
+    // Tipográfia
+    { c:'display-1',           d:'Óriás főcím (legnagyobb)' },
+    { c:'display-2',           d:'Óriás főcím 2' },
+    { c:'display-3',           d:'Óriás főcím 3' },
+    { c:'display-4',           d:'Óriás főcím 4' },
+    { c:'display-5',           d:'Óriás főcím 5' },
+    { c:'display-6',           d:'Óriás főcím 6 (legkisebb)' },
+    { c:'lead',                d:'Kiemelt, nagyobb bevezető szöveg' },
+    { c:'text-muted',          d:'Halvány szürke szöveg' },
+    { c:'text-center',         d:'Középre igazított szöveg' },
+    { c:'text-end',            d:'Jobbra igazított szöveg' },
+    { c:'text-start',          d:'Balra igazított szöveg' },
+    { c:'fw-bold',             d:'Félkövér szöveg' },
+    { c:'fw-normal',           d:'Normál vastagságú szöveg' },
+    { c:'fst-italic',          d:'Dőlt szöveg' },
+    { c:'text-uppercase',      d:'Nagybetűs szöveg' },
+    { c:'text-primary',        d:'Bootstrap kék szöveg' },
+    { c:'text-danger',         d:'Bootstrap piros szöveg' },
+    { c:'text-success',        d:'Bootstrap zöld szöveg' },
+    { c:'text-warning',        d:'Bootstrap sárga szöveg' },
+    { c:'text-info',           d:'Bootstrap cián szöveg' },
+    { c:'text-dark',           d:'Sötét szöveg' },
+    { c:'text-white',          d:'Fehér szöveg' },
+    // Gombok
+    { c:'btn',                 d:'Gomb alap osztály (mindig kell!)' },
+    { c:'btn-primary',         d:'Kék gomb' },
+    { c:'btn-secondary',       d:'Szürke gomb' },
+    { c:'btn-success',         d:'Zöld gomb' },
+    { c:'btn-danger',          d:'Piros gomb' },
+    { c:'btn-warning',         d:'Sárga gomb' },
+    { c:'btn-info',            d:'Cián gomb' },
+    { c:'btn-light',           d:'Világos gomb' },
+    { c:'btn-dark',            d:'Sötét gomb' },
+    { c:'btn-outline-primary', d:'Keretezett kék gomb' },
+    { c:'btn-outline-secondary',d:'Keretezett szürke gomb' },
+    { c:'btn-outline-danger',  d:'Keretezett piros gomb' },
+    { c:'btn-lg',              d:'Nagy gomb' },
+    { c:'btn-sm',              d:'Kis gomb' },
+    // Táblázat
+    { c:'table',               d:'Bootstrap táblázat alap stílus' },
+    { c:'table-striped',       d:'Csíkos sorok' },
+    { c:'table-bordered',      d:'Keretezett cellák' },
+    { c:'table-hover',         d:'Rámutatáskor kiemel' },
+    { c:'table-dark',          d:'Sötét táblázat' },
+    { c:'table-responsive',    d:'Vízszintesen görgethetővé teszi' },
+    // Card
+    { c:'card',                d:'Kártya külső keret' },
+    { c:'card-body',           d:'Kártya tartalmi rész' },
+    { c:'card-title',          d:'Kártya cím' },
+    { c:'card-text',           d:'Kártya szöveg' },
+    { c:'card-footer',         d:'Kártya lábléc' },
+    { c:'card-header',         d:'Kártya fejléc' },
+    { c:'card-img-top',        d:'Kártya tetején lévő kép' },
+    // Képek
+    { c:'img-fluid',           d:'Reszponzív kép (max 100% szélességű)' },
+    { c:'rounded',             d:'Lekerekített sarkok' },
+    { c:'rounded-circle',      d:'Kör alakú kép' },
+    { c:'rounded-pill',        d:'Kapszula alakú elem' },
+    // Margók és paddinggek
+    { c:'m-0',                 d:'Margó: 0' },
+    { c:'m-1',                 d:'Margó: 4px' },
+    { c:'m-2',                 d:'Margó: 8px' },
+    { c:'m-3',                 d:'Margó: 16px' },
+    { c:'m-4',                 d:'Margó: 24px' },
+    { c:'m-5',                 d:'Margó: 48px' },
+    { c:'mt-1',                d:'Felső margó: 4px' },
+    { c:'mt-2',                d:'Felső margó: 8px' },
+    { c:'mt-3',                d:'Felső margó: 16px' },
+    { c:'mt-4',                d:'Felső margó: 24px' },
+    { c:'mt-5',                d:'Felső margó: 48px' },
+    { c:'mb-3',                d:'Alsó margó: 16px' },
+    { c:'mb-4',                d:'Alsó margó: 24px' },
+    { c:'mx-auto',             d:'Vízszintes auto margó (középre igazítás)' },
+    { c:'p-2',                 d:'Padding: 8px minden irányban' },
+    { c:'p-3',                 d:'Padding: 16px minden irányban' },
+    { c:'p-4',                 d:'Padding: 24px minden irányban' },
+    { c:'px-3',                d:'Vízszintes padding: 16px' },
+    { c:'py-3',                d:'Függőleges padding: 16px' },
+    // Flex
+    { c:'d-flex',              d:'display: flex' },
+    { c:'d-block',             d:'display: block' },
+    { c:'d-none',              d:'display: none (elrejtve)' },
+    { c:'d-inline',            d:'display: inline' },
+    { c:'flex-column',         d:'Flex irány: függőleges' },
+    { c:'justify-content-center',    d:'Vízszintes középre igazítás' },
+    { c:'justify-content-between',   d:'Elemek szélekre igazítva' },
+    { c:'justify-content-around',    d:'Egyenlő tér az elemek körül' },
+    { c:'align-items-center',        d:'Függőleges középre igazítás' },
+    { c:'gap-1',               d:'Rés az elemek között: 4px' },
+    { c:'gap-2',               d:'Rés az elemek között: 8px' },
+    { c:'gap-3',               d:'Rés az elemek között: 16px' },
+    { c:'gap-4',               d:'Rés az elemek között: 24px' },
+    // Háttérszínek
+    { c:'bg-primary',          d:'Kék háttér' },
+    { c:'bg-secondary',        d:'Szürke háttér' },
+    { c:'bg-success',          d:'Zöld háttér' },
+    { c:'bg-danger',           d:'Piros háttér' },
+    { c:'bg-warning',          d:'Sárga háttér' },
+    { c:'bg-light',            d:'Világos háttér' },
+    { c:'bg-dark',             d:'Sötét háttér' },
+    { c:'bg-white',            d:'Fehér háttér' },
+    // Alert
+    { c:'alert',               d:'Értesítő sáv alap' },
+    { c:'alert-primary',       d:'Kék értesítő' },
+    { c:'alert-success',       d:'Zöld értesítő (siker)' },
+    { c:'alert-danger',        d:'Piros értesítő (hiba)' },
+    { c:'alert-warning',       d:'Sárga értesítő (figyelmeztetés)' },
+    // Egyéb
+    { c:'w-100',               d:'Szélesség: 100%' },
+    { c:'w-50',                d:'Szélesség: 50%' },
+    { c:'h-100',               d:'Magasság: 100%' },
+    { c:'border',              d:'Vékony keret' },
+    { c:'border-0',            d:'Nincs keret' },
+    { c:'shadow',              d:'Árnyék' },
+    { c:'shadow-sm',           d:'Kis árnyék' },
+    { c:'shadow-lg',           d:'Nagy árnyék' },
+    { c:'text-decoration-none',d:'Nincs aláhúzás (linkekhez)' },
+    { c:'list-unstyled',       d:'Lista pontok eltávolítva' },
+    { c:'navbar',              d:'Navigációs sáv' },
+    { c:'nav-link',            d:'Navigációs link' },
+  ];
+
+  monaco.languages.registerCompletionItemProvider('html', {
+    triggerCharacters: ['"', "'", ' ', '-'],
+    provideCompletionItems(model, position) {
+      const textBefore = model.getValueInRange({
+        startLineNumber:1, startColumn:1,
+        endLineNumber:position.lineNumber, endColumn:position.column
+      });
+
+      // Csak class="..." attribútumon belül ajánlunk
+      if (!/class\s*=\s*["'][^"']*$/.test(textBefore)) return { suggestions:[] };
+
+      const word = model.getWordUntilPosition(position);
+      // Kötőjeles szavakhoz: megkeressük az utolsó szót a kötőjelekkel együtt
+      const lineUpToCursor = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+      const partialClass = (lineUpToCursor.match(/[\w-]*$/) || [''])[0];
+
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: position.column - partialClass.length,
+        endColumn: position.column
+      };
+
+      return {
+        suggestions: BS_CLASSES.map(({c, d}) => ({
+          label: c,
+          kind: monaco.languages.CompletionItemKind.Value,
+          insertText: c,
+          range,
+          detail: d,
+          sortText: '0_' + c
+        }))
+      };
+    }
+  });
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // BOOT
@@ -951,7 +1208,6 @@ function refreshLeft(){
   tasks.forEach((_,i)=>{
     const p=document.getElementById('pill-'+i); if(!p) return;
     const locked=i>0&&!state.done[i-1];
-    const t=tasks[i];
     p.querySelector('.pill-icon').textContent=state.done[i]?'✅':locked?'🔒':'⬜';
     updatePillClass(p,i,locked);
     if(!locked) p.onclick=()=>loadTask(i); else p.onclick=null;
@@ -982,7 +1238,6 @@ function loadTask(idx){
     : '<span class="type-badge badge-monaco">💻 Szerkesztő</span>';
 
   const layoutCls = task.type==='monaco' ? 'one-col' : 'two-col';
-
   let expHtml = `<div class="exp-box${task.type==='monaco'?' compact':''}">${task.explanation}</div>`;
   let taskHtml = '';
 
@@ -1012,8 +1267,6 @@ function loadTask(idx){
   `;
 
   if(task.type==='monaco') initMonaco(task,idx);
-
-  // Restore quiz state if already answered
   if(task.type==='quiz' && state.qAnswered[idx]) restoreQuiz(task,idx);
   if(task.type==='fillin' && isDone) lockFillin();
 }
@@ -1037,7 +1290,6 @@ function renderQuiz(task,idx){
 
 function selQuiz(optIdx,taskIdx){
   if(state.qAnswered[taskIdx]) return;
-  // Töröljük a korábbi wrong/selected jelölést, új választásnál tiszta lap
   document.querySelectorAll('.quiz-opt').forEach(el=>el.classList.remove('selected','wrong'));
   document.getElementById('score-msg').textContent='';
   const fb=document.getElementById('qfb'); if(fb) fb.className='quiz-feedback';
@@ -1062,7 +1314,6 @@ function restoreQuiz(task,idx){
 // ══════════════════════════════════════════════════════════════════════
 
 function renderFillin(task,idx){
-  // Split template by ___ and interleave with inputs
   const parts=task.codeTemplate.split('___');
   let html='';
   parts.forEach((part,i)=>{
@@ -1097,7 +1348,7 @@ function renderMonacoShell(task,idx){
       <div class="monaco-wrap">
         <div class="editor-hd">
           <span style="text-transform:uppercase;letter-spacing:.06em;">HTML szerkesztő</span>
-          <button class="btn-wrap" id="btn-wrap" title="Jelölj ki szöveget, majd kattints ide (Shift+Alt+W)"><i class="fas fa-wrap-text" style="font-size:.65rem;"></i> Wrap</button>
+          <button class="btn-wrap" id="btn-wrap" title="Jelölj ki szöveget, majd kattints ide (Shift+Alt+W)"><i class="fas fa-code" style="font-size:.65rem;"></i> Wrap</button>
         </div>
         <div id="med" style="width:100%;height:calc(100% - 29px)"></div>
       </div>
@@ -1115,9 +1366,10 @@ function initMonaco(task,idx){
       value:task.starterHtml, language:'html', theme:'vs-dark',
       fontSize:14, minimap:{enabled:false}, automaticLayout:true,
       wordWrap:'on', scrollBeyondLastLine:false, tabSize:2,
-      quickSuggestions:{other:true,comments:false,strings:true}
+      quickSuggestions:true,
+      suggestOnTriggerCharacters:true,
+      wordBasedSuggestions:'off'
     });
-    // Wrap gomb + Shift+Alt+W billentyűparancs
     const btnW = document.getElementById('btn-wrap');
     if(btnW) btnW.onclick = ()=>wrapWithAbbreviation(state.monacoEd);
     state.monacoEd.addAction({
@@ -1155,7 +1407,7 @@ function liveChecks(task){
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// WRAP WITH ABBREVIATION (átvéve a web/app.js-ből)
+// WRAP WITH ABBREVIATION
 // ══════════════════════════════════════════════════════════════════════
 
 function parseTagAbbr(abbr) {
@@ -1269,7 +1521,6 @@ function checkQuiz(task,idx){
   const ok=sel===task.correct;
   const fb=document.getElementById('qfb');
   if(ok){
-    // Helyes: lezárjuk, markDone
     state.qAnswered[idx]=true;
     document.querySelectorAll('.quiz-opt').forEach((el,i)=>{
       el.classList.add('disabled');
@@ -1279,7 +1530,6 @@ function checkQuiz(task,idx){
     fb.innerHTML=task.feedback;
     markDone(idx);
   } else {
-    // Helytelen: csak a rossz opciót jelöljük, de NEM zárjuk le → újra lehet próbálni
     document.getElementById('opt-'+sel)?.classList.add('wrong');
     fb.className='quiz-feedback show err';
     fb.innerHTML='❌ Nem ez a helyes. Gondold át, és próbáld újra!';
