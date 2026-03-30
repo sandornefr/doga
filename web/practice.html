@@ -454,7 +454,7 @@
       border-radius: 8px; overflow: hidden; margin: 16px 0;
       border: 1px solid #334155; position: relative;
     }
-    .welcome-preview iframe { width: 100%; height: 340px; border: none; background: #fff; display: block; pointer-events: none; }
+    .welcome-preview iframe { width: 100%; height: 340px; border: none; background: #fff; display: block; }
     .welcome-preview-label {
       margin: 0; padding: 6px 10px; font-size: 0.75rem; color: #64748b;
       background: #0f172a; text-align: center; border-top: 1px solid #1e293b;
@@ -1250,7 +1250,7 @@ function setupWelcomePreview() {
   let html = S_FINAL;
   const base = location.href.replace(/\/[^\/]*$/, '/');
   html = html.replace('<head>', `<head>\n  <base href="${base}">`);
-  html = html.replace('</head>', '<style>' + Css7 + '</style>\n</head>');
+  html = html.replace('</head>', '<style>' + Css7 + '</style>\n<style>a{pointer-events:none!important;cursor:default!important;}</style>\n</head>');
   document.getElementById('welcome-iframe').srcdoc = html;
 }
 
