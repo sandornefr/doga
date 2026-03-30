@@ -744,8 +744,9 @@
         <!-- Felhasználók -->
         <div class="panel" id="users-panel" data-tab="felhasznalok" style="display:none;">
             <h2><i class="fas fa-users"></i> Felhasználók kezelése</h2>
-            <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
                 <button class="btn-refresh" onclick="loadUsers()"><i class="fas fa-rotate"></i> Frissítés</button>
+                <button onclick="bulkSetKCsoport()" style="padding:7px 16px;background:rgba(83,109,254,0.15);border:1px solid #536dfe;border-radius:8px;color:#818cf8;font-weight:600;cursor:pointer;font-size:0.85rem;"><i class="fas fa-wand-magic-sparkles"></i> K osztály → infó csoport beállítása</button>
             </div>
 
             <!-- Névsor ellenőrzés -->
@@ -1230,6 +1231,26 @@
             } finally {
                 document.getElementById('users-loading').style.display = 'none';
             }
+        }
+
+        async function bulkSetKCsoport() {
+            if (!_cachedUsers.length) { alert('Előbb kattints a Frissítés gombra!'); return; }
+            const kTanulok = _cachedUsers.filter(u => u.szerep !== 'oktato' && u.osztaly === 'K' && u.csoport !== 'info');
+            if (!kTanulok.length) { alert('Minden K osztályos tanuló csoportja már "info".'); return; }
+            if (!confirm(`${kTanulok.length} K osztályos tanuló csoportját "info"-ra állítod.\n\nFolytatod?`)) return;
+            let sikeres = 0, hibas = 0;
+            for (const u of kTanulok) {
+                try {
+                    const res = await authFetch(`${RAILWAY_URL}/api/users/${encodeURIComponent(u.email)}/update`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ vezeteknev: u.vezeteknev || '', keresztnev: u.keresztnev || '', csoport: 'info' })
+                    });
+                    if (res.ok) sikeres++; else hibas++;
+                } catch { hibas++; }
+            }
+            alert(`Kész! ${sikeres} frissítve, ${hibas} hiba.`);
+            loadUsers();
         }
 
         function normNev(s) {
