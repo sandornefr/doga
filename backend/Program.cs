@@ -324,6 +324,15 @@ app.MapDelete("/api/users/{email}", (HttpContext ctx, string email, Database db)
     return deleted ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
+// Felhasználó nevének és csoportjának szerkesztése (admin)
+app.MapPatch("/api/users/{email}", (HttpContext ctx, string email, UpdateUserRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(req.Nev)) return Results.BadRequest(new { error = "A név nem lehet üres!" });
+    var ok = db.UpdateUserBasic(Uri.UnescapeDataString(email), req.Nev.Trim(), req.Csoport?.Trim());
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
+});
+
 // Felhasználó jelszavának visszaállítása admin/oktató által
 app.MapPost("/api/users/reset-password", (HttpContext ctx, ResetPasswordRequest req, Database db) =>
 {
@@ -881,4 +890,5 @@ namespace KandoTest
     public record ChangePasswordRequest(string Username, string OldPassword, string NewPassword);
     public record DeleteAccountRequest(string Email, string Jelszo);
     public record ResetPasswordRequest(string Email, string NewPassword);
+    public record UpdateUserRequest(string Nev, string? Csoport);
 }

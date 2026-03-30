@@ -362,7 +362,7 @@
                 </div>
                 <div class="form-group">
                     <label>Osztály</label>
-                    <select id="reg-osztaly">
+                    <select id="reg-osztaly" onchange="updateCsoportOptions()">
                         <option value="">– válassz –</option>
                         <option value="A">A</option>
                         <option value="B">B</option>
@@ -518,6 +518,39 @@
         document.getElementById('role-oktato').classList.toggle('selected', role === 'oktato');
         document.getElementById('student-fields').classList.toggle('show', role === 'tanulo');
         document.getElementById('teacher-code-field').classList.toggle('show', role === 'oktato');
+    }
+
+    // Csoport opciók frissítése osztály alapján
+    function updateCsoportOptions() {
+        const osztaly = document.getElementById('reg-osztaly').value;
+        const csoportSel = document.getElementById('reg-csoport');
+        const csoportGroup = csoportSel.closest('.form-group');
+        csoportSel.value = '';
+        if (osztaly === 'K') {
+            csoportGroup.style.display = 'block';
+            csoportSel.innerHTML = `
+                <option value="">– válassz –</option>
+                <option value="info">infó</option>
+            `;
+        } else if (osztaly === 'F') {
+            csoportGroup.style.display = 'none';
+            csoportSel.innerHTML = `<option value="nincs" selected>nincs csoport</option>`;
+        } else if (['A', 'B', 'C'].includes(osztaly)) {
+            csoportGroup.style.display = 'block';
+            csoportSel.innerHTML = `
+                <option value="">– válassz –</option>
+                <option value="1">1. csoport</option>
+                <option value="2">2. csoport</option>
+            `;
+        } else {
+            csoportGroup.style.display = 'block';
+            csoportSel.innerHTML = `
+                <option value="">– válassz –</option>
+                <option value="1">1. csoport</option>
+                <option value="2">2. csoport</option>
+                <option value="nincs">nincs csoport</option>
+            `;
+        }
     }
 
     // Jelszó megjelenítés toggle

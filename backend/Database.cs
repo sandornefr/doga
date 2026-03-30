@@ -422,6 +422,17 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
+    public bool UpdateUserBasic(string email, string nev, string? csoport)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE users SET nev = $n, csoport = $c WHERE email = $e";
+        cmd.Parameters.AddWithValue("$n", nev);
+        cmd.Parameters.AddWithValue("$c", (object?)csoport ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
     public bool ResetUserPassword(string email, string newHash)
     {
         using var conn = Open();

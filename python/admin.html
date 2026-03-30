@@ -868,6 +868,30 @@
         </div>
 
 
+        <!-- Felhasználó szerkesztés modal -->
+        <div class="modal" id="edit-user-modal" style="display:none;">
+            <div class="modal-content" style="max-width:400px;">
+                <h3 style="color:#4ade80;margin-bottom:1rem;"><i class="fas fa-pen"></i> Felhasználó szerkesztése</h3>
+                <div id="edit-user-error" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
+                <div style="margin-bottom:10px;">
+                    <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Email (nem szerkeszthető)</label>
+                    <div id="edit-user-email-display" style="color:#94a3b8;font-size:0.9rem;padding:8px 10px;background:#0f1e35;border-radius:8px;"></div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Teljes név *</label>
+                    <input id="edit-user-nev" type="text" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #4ade80;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                </div>
+                <div style="margin-bottom:1.2rem;">
+                    <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Csoport</label>
+                    <input id="edit-user-csoport" type="text" placeholder="pl. info, 1, 2 (üresen hagyható)" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #4ade80;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="closeEditUser()" style="flex:1;padding:0.6rem;background:transparent;border:1px solid #555;border-radius:8px;color:#aaa;cursor:pointer;">Mégsem</button>
+                    <button id="edit-user-btn" onclick="saveEditUser()" style="flex:2;padding:0.6rem;background:#4ade80;border:none;border-radius:8px;color:#0f1e35;font-weight:700;cursor:pointer;"><i class="fas fa-save"></i> Mentés</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Jelszó visszaállítás modal -->
         <div class="modal" id="reset-pw-modal" style="display:none;">
             <div class="modal-content" style="max-width:400px;">
@@ -1169,6 +1193,7 @@
                         <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
                         <td>
                             <div style="display:flex;gap:5px;flex-wrap:nowrap;">
+                                <button onclick="openEditUser('${u.email}','${(u.nev||'').replace(/'/g,'\\')}','${u.csoport||''}')" style="padding:4px 8px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-pen"></i> Szerkesztés</button>
                                 <button onclick="openResetPassword('${u.email}')" style="padding:4px 8px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-key"></i> Jelszó</button>
                                 <button onclick="deleteUser('${u.email}')" style="padding:4px 8px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.78rem;white-space:nowrap;"><i class="fas fa-trash"></i> Törlés</button>
                             </div>
@@ -1179,6 +1204,48 @@
                 document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
             } finally {
                 document.getElementById('users-loading').style.display = 'none';
+            }
+        }
+
+        let editUserTargetEmail = '';
+        function openEditUser(email, nev, csoport) {
+            editUserTargetEmail = email;
+            document.getElementById('edit-user-email-display').textContent = email;
+            document.getElementById('edit-user-nev').value = nev;
+            document.getElementById('edit-user-csoport').value = csoport;
+            document.getElementById('edit-user-error').style.display = 'none';
+            document.getElementById('edit-user-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('edit-user-nev').focus(), 100);
+        }
+        function closeEditUser() {
+            document.getElementById('edit-user-modal').style.display = 'none';
+        }
+        async function saveEditUser() {
+            const nev = document.getElementById('edit-user-nev').value.trim();
+            const csoport = document.getElementById('edit-user-csoport').value.trim() || null;
+            const errEl = document.getElementById('edit-user-error');
+            if (!nev) { errEl.textContent = 'A név nem lehet üres!'; errEl.style.display = 'block'; return; }
+            const btn = document.getElementById('edit-user-btn');
+            btn.disabled = true;
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/users/${encodeURIComponent(editUserTargetEmail)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nev, csoport })
+                });
+                if (res.ok) {
+                    closeEditUser();
+                    loadUsers();
+                } else {
+                    const d = await res.json();
+                    errEl.textContent = d.error || 'Hiba történt!';
+                    errEl.style.display = 'block';
+                }
+            } catch(e) {
+                errEl.textContent = 'Kapcsolati hiba: ' + e.message;
+                errEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
             }
         }
 
