@@ -1184,21 +1184,43 @@
     </div>
 </div>
 
-<!-- WEB választó modal (Tananyag / Gyakorló / Dolgozat) -->
+<!-- WEB választó modal -->
 <div id="web-valaszto-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#16213e;border:2px solid #0ea5e9;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:420px;width:100%;">
         <div style="font-size:2rem;text-align:center;margin-bottom:0.5rem;"><i class="fas fa-globe" style="color:#0ea5e9;"></i></div>
-        <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:0.5rem;">WEB – mit szeretnél csinálni?</h3>
-        <p style="color:#888;font-size:0.84rem;text-align:center;margin-bottom:1.4rem;">Válassz az alábbi lehetőségek közül:</p>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
-            <button onclick="location.replace('web/learn-html.html')" style="padding:13px 20px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:10px;color:#7dd3fc;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'"><i class="fas fa-book-open"></i> HTML Tananyag</button>
-            <button onclick="location.replace('web/learn-css.html')" style="padding:13px 20px;background:#1a0a2e;border:2px solid #a855f7;border-radius:10px;color:#d8b4fe;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#4c1d95'" onmouseout="this.style.background='#1a0a2e'"><i class="fas fa-palette"></i> CSS Tananyag</button>
-            <button onclick="location.replace('web/learn-bootstrap.html')" style="padding:13px 20px;background:#0a1f14;border:2px solid #22c55e;border-radius:10px;color:#86efac;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'"><i class="fab fa-bootstrap"></i> Bootstrap + JS Tananyag</button>
-            <button onclick="location.replace('web/learn-emmet.html')" style="padding:13px 20px;background:#1a1500;border:2px solid #f59e0b;border-radius:10px;color:#fcd34d;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#78350f'" onmouseout="this.style.background='#1a1500'"><i class="fas fa-bolt"></i> Emmet Tananyag</button>
-            <button onclick="location.replace('web/practice.html')" style="padding:13px 20px;background:#0a2a1a;border:2px solid #22c55e;border-radius:10px;color:#86efac;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a2a1a'"><i class="fas fa-dumbbell"></i> WEB Gyakorló</button>
-            <button id="web-modal-dolgozat-btn" onclick="location.replace('web/index.html')" style="display:none;padding:13px 20px;background:#2a0a1a;border:2px solid #f472b6;border-radius:10px;color:#f9a8d4;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a1a'"><i class="fas fa-file-code"></i> WEB Dolgozat</button>
+        <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:1.4rem;">WEB – mit szeretnél csinálni?</h3>
+
+        <!-- 1. szint: két nagy gomb -->
+        <div id="web-modal-foMenu" style="display:flex;flex-direction:column;gap:12px;margin-bottom:1rem;">
+            <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-tanulas').style.display='flex';"
+                style="padding:18px 20px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:12px;color:#7dd3fc;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;">
+                <i class="fas fa-book-open" style="font-size:1.4rem;"></i>
+                <span>WEB Tanulás<br><span style="font-size:0.8rem;font-weight:400;color:#94a3b8;">HTML · CSS · Bootstrap · Emmet</span></span>
+            </button>
+            <button onclick="location.replace('web/practice.html')"
+                style="padding:18px 20px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;">
+                <i class="fas fa-laptop-code" style="font-size:1.4rem;"></i>
+                <span>Ágazati feladatok<br><span style="font-size:0.8rem;font-weight:400;color:#94a3b8;">Kávézó weboldal lépésről lépésre</span></span>
+            </button>
+            <button id="web-modal-dolgozat-btn" onclick="location.replace('web/index.html')"
+                style="display:none;padding:18px 20px;background:#2a0a1a;border:2px solid #f472b6;border-radius:12px;color:#f9a8d4;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;align-items:center;gap:12px;">
+                <i class="fas fa-file-code" style="font-size:1.4rem;"></i>
+                <span>WEB Dolgozat<br><span style="font-size:0.8rem;font-weight:400;color:#94a3b8;">Vizsga feladat</span></span>
+            </button>
         </div>
-        <button onclick="document.getElementById('web-valaszto-modal').style.display='none'" style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
+
+        <!-- 2. szint: tananyagok -->
+        <div id="web-modal-tanulas" style="display:none;flex-direction:column;gap:10px;margin-bottom:1rem;">
+            <button onclick="location.replace('web/learn-html.html')" style="padding:13px 20px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:10px;color:#7dd3fc;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'"><i class="fas fa-code"></i> HTML</button>
+            <button onclick="location.replace('web/learn-css.html')" style="padding:13px 20px;background:#1a0a2e;border:2px solid #a855f7;border-radius:10px;color:#d8b4fe;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#4c1d95'" onmouseout="this.style.background='#1a0a2e'"><i class="fas fa-palette"></i> CSS</button>
+            <button onclick="location.replace('web/learn-bootstrap.html')" style="padding:13px 20px;background:#0a1f14;border:2px solid #22c55e;border-radius:10px;color:#86efac;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'"><i class="fab fa-bootstrap"></i> Bootstrap + JS</button>
+            <button onclick="location.replace('web/learn-emmet.html')" style="padding:13px 20px;background:#1a1500;border:2px solid #f59e0b;border-radius:10px;color:#fcd34d;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#78350f'" onmouseout="this.style.background='#1a1500'"><i class="fas fa-bolt"></i> Emmet</button>
+            <button onclick="document.getElementById('web-modal-tanulas').style.display='none';document.getElementById('web-modal-foMenu').style.display='flex';"
+                style="padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;">← Vissza</button>
+        </div>
+
+        <button onclick="document.getElementById('web-valaszto-modal').style.display='none';document.getElementById('web-modal-tanulas').style.display='none';document.getElementById('web-modal-foMenu').style.display='flex';"
+            style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
     </div>
 </div>
 
