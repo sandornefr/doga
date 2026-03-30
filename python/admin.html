@@ -1199,7 +1199,7 @@
                         <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
                         <td>
                             <div style="display:flex;gap:5px;flex-wrap:nowrap;">
-                                <button onclick="openEditUser('${u.email}','${(u.vezeteknev||'').replace(/'/g,'\\'')}','${(u.keresztnev||'').replace(/'/g,'\\'')}','${u.csoport||''}')" title="Szerkesztés" style="padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.85rem;"><i class="fas fa-pen"></i></button>
+                                <button onclick="openEditUser(${JSON.stringify(u.email)},${JSON.stringify(u.vezeteknev||'')},${JSON.stringify(u.keresztnev||'')},${JSON.stringify(u.csoport||'')})" title="Szerkesztés" style="padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.85rem;"><i class="fas fa-pen"></i></button>
                                 <button onclick="openResetPassword('${u.email}')" title="Jelszó visszaállítása" style="padding:4px 10px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.85rem;"><i class="fas fa-key"></i></button>
                                 <button onclick="deleteUser('${u.email}')" title="Törlés" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.85rem;"><i class="fas fa-trash"></i></button>
                             </div>
