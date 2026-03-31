@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript – WEB Tananyag</title>
+  <link rel="icon" href="../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0f172a; --bg2:#111827; --bg3:#1e293b;
+      --border:#1f2937; --accent:#f59e0b; --accent2:#d97706;
+      --text:#e2e8f0; --muted:#94a3b8;
+      --blue:#3b82f6; --red:#ef4444; --yellow:#fbbf24;
+      --font:'Segoe UI',system-ui,sans-serif;
+      --topbar-h:54px; --bottom-h:52px; --left-w:230px;
+    }
+    html,body { height:100%; overflow:hidden; }
+    body { font-family:var(--font); background:var(--bg); color:var(--text); display:flex; flex-direction:column; }
+    .topbar { height:var(--topbar-h); background:var(--bg2); border-bottom:1.5px solid var(--border); display:flex; align-items:center; padding:0 14px; gap:10px; flex-shrink:0; }
+    .topbar-logo { height:30px; cursor:pointer; }
+    .btn-back { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px; background:transparent; border:1.5px solid var(--border); color:var(--muted); font-size:0.82rem; cursor:pointer; text-decoration:none; transition:border-color .2s,color .2s; white-space:nowrap; }
+    .btn-back:hover { border-color:var(--accent); color:var(--accent); }
+    .topbar-info { line-height:1.3; }
+    .topbar-title { font-size:0.95rem; font-weight:700; color:var(--text); }
+    .topbar-sub { font-size:0.75rem; color:var(--muted); }
+    .topbar-spacer { flex:1; }
+    .progress-label { font-size:0.8rem; color:var(--muted); white-space:nowrap; }
+    .progress-label span { color:var(--accent); font-weight:700; }
+    .layout { display:flex; flex:1; overflow:hidden; }
+    .left-panel { width:var(--left-w); flex-shrink:0; background:var(--bg2); border-right:1.5px solid var(--border); overflow-y:auto; padding:10px 8px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .block-group { margin-bottom:6px; border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+    .block-header { padding:8px 10px; background:var(--bg3); font-size:0.79rem; font-weight:700; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .block-done-mark { margin-left:auto; color:var(--accent); font-size:0.72rem; }
+    .block-tasks { padding:5px 6px; display:flex; flex-direction:column; gap:3px; }
+    .task-pill { display:flex; align-items:flex-start; gap:7px; padding:6px 8px; border-radius:7px; border:1px solid transparent; cursor:pointer; font-size:0.8rem; color:var(--muted); transition:all .14s; }
+    .task-pill:hover:not(.locked) { background:var(--bg3); color:var(--text); }
+    .task-pill.active { background:rgba(245,158,11,.12); border-color:var(--accent); color:#fcd34d; }
+    .task-pill.done { color:var(--accent); }
+    .task-pill.locked { opacity:.32; cursor:not-allowed; }
+    .pill-icon { font-size:0.75rem; margin-top:2px; flex-shrink:0; }
+    .pill-label { font-size:0.8rem; line-height:1.3; }
+    .pill-type { font-size:0.67rem; color:var(--muted); margin-top:1px; }
+    .main-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; padding:16px 22px 12px; gap:0; min-width:0; }
+    .task-meta { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom:4px; }
+    .task-num { font-size:0.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
+    .type-badge { font-size:0.68rem; padding:2px 8px; border-radius:20px; font-weight:600; }
+    .badge-quiz  { background:rgba(168,85,247,.15); color:#c084fc; border:1px solid rgba(168,85,247,.3); }
+    .badge-fillin{ background:rgba(59,130,246,.15);  color:#93c5fd; border:1px solid rgba(59,130,246,.3); }
+    .badge-monaco{ background:rgba(245,158,11,.12);  color:#fcd34d; border:1px solid rgba(245,158,11,.3); }
+    .task-title-row { font-size:1.25rem; font-weight:700; color:var(--text); flex-shrink:0; margin-bottom:10px; }
+    .content-area { flex:1; display:flex; overflow:hidden; gap:16px; }
+    .content-area.two-col { flex-direction:row; }
+    .exp-col { width:38%; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .task-col { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .content-area.one-col { flex-direction:column; }
+    .exp-compact { flex-shrink:0; overflow:hidden; }
+    .exp-box { background:var(--bg2); border:1px solid var(--border); border-left:3px solid var(--yellow); border-radius:9px; padding:12px 14px; font-size:0.93rem; color:#cbd5e1; line-height:1.65; height:100%; }
+    .exp-box.compact { height:auto; }
+    .exp-box code { background:#1e293b; color:#fcd34d; padding:1px 5px; border-radius:4px; font-size:0.8rem; }
+    .exp-box strong { color:#f1f5f9; }
+    .exp-box ul { margin:6px 0 2px 16px; }
+    .exp-box ul li { margin-bottom:3px; }
+    .exp-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--yellow); font-weight:700; margin-bottom:7px; }
+    .quiz-q { font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:14px; }
+    .quiz-opts { display:flex; flex-direction:column; gap:8px; }
+    .quiz-opt { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg2); cursor:pointer; font-size:0.97rem; color:var(--text); transition:all .16s; }
+    .quiz-opt:hover:not(.disabled):not(.selected) { border-color:#475569; background:rgba(255,255,255,.04); }
+    .quiz-opt.selected { border-color:#60a5fa; background:rgba(59,130,246,.22); color:#e0f2fe; box-shadow:0 0 0 2px rgba(59,130,246,.3); }
+    .quiz-opt.correct { border-color:var(--accent); background:rgba(245,158,11,.1); color:#fcd34d; }
+    .quiz-opt.wrong   { border-color:var(--red);    background:rgba(239,68,68,.1);  color:#fca5a5; }
+    .quiz-opt.disabled{ cursor:default; }
+    .opt-letter { width:26px; height:26px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
+    .quiz-opt.correct .opt-letter { background:var(--accent); border-color:var(--accent); color:#1a0a00; }
+    .quiz-opt.wrong   .opt-letter { background:var(--red);    border-color:var(--red);    color:#fff; }
+    .quiz-feedback { margin-top:12px; padding:10px 13px; border-radius:9px; font-size:0.93rem; line-height:1.6; display:none; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.ok  { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#fcd34d; }
+    .quiz-feedback.err { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
+    .quiz-feedback code { background:rgba(255,255,255,.08); padding:1px 4px; border-radius:3px; font-size:0.8rem; }
+    .fillin-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:8px; }
+    .code-tpl { background:#020617; border:1px solid #1a1a00; border-radius:9px; padding:14px 16px; font-family:'Consolas','Fira Code',monospace; font-size:0.95rem; line-height:2.1; color:#a3e635; white-space:pre-wrap; word-break:break-all; }
+    .blank-in { display:inline-block; background:#1a1400; border:1.5px solid var(--yellow); border-radius:5px; padding:0 6px; color:#fcd34d; font-family:inherit; font-size:inherit; font-weight:700; outline:none; min-width:44px; transition:border-color .18s; vertical-align:baseline; }
+    .blank-in:focus { border-color:var(--accent); box-shadow:0 0 0 2px rgba(245,158,11,.2); }
+    .blank-in.ok  { border-color:#22c55e; background:rgba(34,197,94,.1); color:#86efac; }
+    .blank-in.err { border-color:var(--red); background:rgba(239,68,68,.1); color:#fca5a5; }
+    .blank-in:disabled { opacity:.7; }
+    .fillin-fb { margin-top:10px; font-size:0.82rem; line-height:1.6; display:none; }
+    .fillin-fb.show { display:block; }
+    .monaco-row { flex:1; display:flex; gap:12px; overflow:hidden; margin-top:10px; }
+    .monaco-wrap { flex:1; border:1px solid var(--border); border-radius:9px; overflow:hidden; min-width:0; }
+    .preview-wrap { flex:1; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+    .editor-hd { padding:5px 10px; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .preview-hd { padding:5px 10px; background:var(--bg3); border-bottom:1px solid var(--border); font-size:0.7rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:5px; flex-shrink:0; }
+    .pdot { width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    #monaco-preview { flex:1; border:none; background:#fff; }
+    .check-list { flex-shrink:0; display:flex; flex-wrap:wrap; gap:5px 14px; padding-top:8px; }
+    .chk-row { display:flex; align-items:center; gap:5px; font-size:0.9rem; color:var(--muted); }
+    .chk-row.pass { color:#22c55e; }
+    .success-banner { display:none; flex-shrink:0; margin-top:10px; background:rgba(245,158,11,.1); border:1.5px solid rgba(245,158,11,.35); border-radius:10px; padding:10px 14px; text-align:center; font-size:0.88rem; color:var(--accent); font-weight:600; }
+    .success-banner.show { display:block; }
+    .bottom-bar { height:var(--bottom-h); background:var(--bg2); border-top:1.5px solid var(--border); display:flex; align-items:center; padding:0 18px; gap:12px; flex-shrink:0; }
+    .btn-check { padding:9px 22px; border-radius:9px; background:var(--accent2); border:1.5px solid var(--accent); color:#fff; font-size:0.87rem; font-weight:700; cursor:pointer; transition:background .18s; display:flex; align-items:center; gap:7px; }
+    .btn-check:hover { background:var(--accent); }
+    .btn-check:disabled { opacity:.4; cursor:default; }
+    .score-msg { font-size:0.84rem; color:var(--muted); flex:1; }
+    .btn-next { padding:9px 18px; border-radius:9px; background:transparent; border:1.5px solid var(--border); color:var(--muted); font-size:0.87rem; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; gap:6px; margin-left:auto; }
+    .btn-next:hover:not(:disabled) { border-color:var(--yellow); color:#fcd34d; }
+    .btn-next:disabled { opacity:.3; cursor:default; }
+    .confetti-flash { position:fixed; inset:0; z-index:9999; pointer-events:none; display:flex; align-items:center; justify-content:center; font-size:5rem; opacity:0; }
+    .confetti-flash.animate { animation:cpop .7s ease-out forwards; }
+    @keyframes cpop{0%{opacity:0;transform:scale(.5)}30%{opacity:1;transform:scale(1.2)}70%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+    .modal-ov { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.8); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+    .modal-ov.show { display:flex; }
+    .modal-box { background:var(--bg2); border:1px solid var(--accent); border-radius:14px; padding:32px 28px; max-width:400px; width:94%; text-align:center; }
+    .modal-box h2 { color:var(--accent); font-size:1.2rem; margin:10px 0 8px; }
+    .modal-box p { color:#cbd5e1; font-size:0.88rem; line-height:1.6; margin-bottom:20px; }
+    .modal-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .btn-m { padding:9px 18px; border-radius:8px; font-size:0.86rem; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:5px; }
+    .btn-m-p { background:var(--accent); color:#000; border:none; }
+    .btn-m-p:hover { background:var(--yellow); }
+    .btn-m-s { background:transparent; color:#94a3b8; border:1px solid var(--border); }
+    .btn-m-s:hover { color:#f1f5f9; border-color:#64748b; }
+    ::-webkit-scrollbar{width:4px;height:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  </style>
+</head>
+<body>
+
+<script>
+  (function(){
+    const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+    if(!u.token&&u.szerep!=='oktato'&&u.szerep!=='vendeg'&&!u._tesztMod) location.replace('../portal.html');
+  })();
+</script>
+
+<header class="topbar">
+  <a href="../portal.html"><img src="kandologo2.png" alt="Kandó" class="topbar-logo"></a>
+  <a href="../portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <div class="topbar-info">
+    <div class="topbar-title">🟨 WEB Tananyag</div>
+    <div class="topbar-sub">3. szint · JavaScript</div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div id="streak-counter" style="display:none;align-items:center;gap:5px;padding:4px 12px;background:#1e293b;border:1px solid #374151;border-radius:20px;font-size:0.82rem;font-weight:700;color:#fb923c;" title="Bejelentkezési sorozat"></div>
+  <div class="progress-label">Teljesítve: <span id="prog-done">0</span> / <span id="prog-total">15</span></div>
+</header>
+
+<div class="modal-ov" id="modal-done">
+  <div class="modal-box">
+    <div style="font-size:2.8rem">🏆</div>
+    <h2>JavaScript – kész!</h2>
+    <p>Gratulálok! Elvégezted a 3. szintet. Következő lépés: <strong>Bootstrap</strong> (4. szint).</p>
+    <div class="modal-btns">
+      <a class="btn-m btn-m-p" href="learn-bootstrap.html"><i class="fas fa-arrow-right"></i> Tovább: Bootstrap</a>
+      <a class="btn-m btn-m-s" href="../portal.html"><i class="fas fa-home"></i> Főmenü</a>
+    </div>
+    <button onclick="document.getElementById('modal-done').classList.remove('show')" style="margin-top:12px;background:transparent;border:none;color:#475569;font-size:0.82rem;cursor:pointer;text-decoration:underline;">Mégse – maradok itt</button>
+  </div>
+</div>
+
+<div class="confetti-flash" id="confetti">🎉</div>
+
+<div class="layout">
+  <aside class="left-panel" id="left-panel"></aside>
+  <div class="main-panel" id="main-panel"></div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-check" id="btn-check" onclick="checkTask()">
+    <i class="fas fa-check-circle"></i> Ellenőrzés
+  </button>
+  <div class="score-msg" id="score-msg"></div>
+  <button class="btn-next" id="btn-next" onclick="goNext()" disabled>
+    Következő <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script>
+'use strict';
+
+// ── Streak counter ──────────────────────────────────────────────────────────
+(function(){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  if(!u.email) return;
+  const email=u.email.replace('@kkszki.hu','');
+  fetch('https://agazati.up.railway.app/api/leaderboard/rank/'+encodeURIComponent(email))
+    .then(r=>r.ok?r.json():null).then(d=>{
+      const s=d?.streak??0, el=document.getElementById('streak-counter');
+      if(!el||s<1) return;
+      const lbl=s>=30?'Élő Legenda':s>=14?'Kitartó Harcos':s>=7?'Heti Hős':s>=3?'Ügyes Kezdő':null;
+      el.innerHTML='🔥 '+s+' nap'+(lbl?' · '+lbl:'');
+      el.style.display='flex';
+    }).catch(()=>{});
+})();
+
+// ══════════════════════════════════════════════════════════════════════
+// FELADATOK
+// ══════════════════════════════════════════════════════════════════════
+
+const tasks = [
+
+  // ── BLOKK 1: JavaScript bevezetés ────────────────────────────────────
+  {
+    id:1, block:1, blockName:'JavaScript bevezetés', emoji:'🟨',
+    type:'quiz',
+    title:'Mi a JavaScript?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <strong>JavaScript</strong> egy programozási nyelv, amellyel <strong>interaktívvá</strong> tehetjük a weboldalakat.
+      <br><br>
+      Míg a HTML az oldal tartalmát, a CSS a megjelenését adja meg, addig a JavaScript a <strong>viselkedést</strong> határozza meg:
+      <ul>
+        <li>Gombok eseményei (kattintás, egérmozgás)</li>
+        <li>Tartalom dinamikus módosítása</li>
+        <li>Felugró üzenetek (<code>alert</code>)</li>
+        <li>Animációk és validációk</li>
+      </ul>
+      A JavaScript közvetlenül a böngészőben fut – nincs szükség szerverre.`,
+    question:'Mire való a JavaScript a weboldalon?',
+    options:[
+      'Az oldal tartalmának (szöveg, képek) meghatározására',
+      'Az oldal kinézetének (szín, betűtípus) beállítására',
+      'Az oldal interaktivitásának és viselkedésének megvalósítására',
+      'Adatbázisok elérésére és SQL lekérdezések futtatására'
+    ],
+    correct:2,
+    feedback:'✅ Pontosan! A JavaScript teszi interaktívvá az oldalt: eseménykezelés, tartalom módosítás, animációk. A HTML a tartalom, a CSS a megjelenés.'
+  },
+
+  {
+    id:2, block:1, blockName:'JavaScript bevezetés', emoji:'🟨',
+    type:'fillin',
+    title:'JS beágyazása – script tag',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A JavaScriptet a <code>&lt;script&gt;</code> taggel ágyazzuk be az oldalba.
+      <br><br>
+      Két módszer:
+      <ul>
+        <li><strong>Belső JS:</strong> a kód közvetlenül a <code>&lt;script&gt;</code> tagek között van</li>
+        <li><strong>Külső JS fájl:</strong> a <code>src</code> attribútummal hivatkozunk rá:<br>
+        <code>&lt;script src="script.js"&gt;&lt;/script&gt;</code></li>
+      </ul>
+      A <code>&lt;script&gt;</code> tagot általában a <code>&lt;/body&gt;</code> zárótag elé tesszük, hogy az oldal betöltsön, mielőtt a JS fut.`,
+    codeTemplate:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>JS teszt</title>
+</head>
+<body>
+  <h1>Helló!</h1>
+
+  <!-- Belső JavaScript -->
+  <___>
+    alert("Működik!");
+  </script>
+
+  <!-- Külső JS fájl -->
+  <script ___="script.js"></script>
+</body>
+</html>`,
+    blanks:[
+      { answer:'script', hint:'A JavaScript beágyazásához használt HTML tag neve' },
+      { answer:'src',    hint:'Az attribútum neve, amellyel külső fájlt hivatkozunk meg' }
+    ]
+  },
+
+  {
+    id:3, block:1, blockName:'JavaScript bevezetés', emoji:'🟨',
+    type:'quiz',
+    title:'Az alert() függvény',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Az <code>alert()</code> egy beépített JavaScript függvény, amely egy <strong>felugró üzenetablakot</strong> jelenít meg.
+      <br><br>
+      Szintaxis: <code>alert("szöveg");</code>
+      <br><br>
+      Hasonló beépített függvények:
+      <ul>
+        <li><code>alert("szöveg")</code> – üzenet megjelenítése</li>
+        <li><code>confirm("kérdés")</code> – Igen/Nem választás (igaz/hamis visszatérési érték)</li>
+        <li><code>prompt("kérdés")</code> – szöveges bevitel a felhasználótól</li>
+      </ul>`,
+    question:'Mit csinál ez a kód: <code>alert("Szia!");</code>',
+    options:[
+      'Beállítja az oldal háttérszínét',
+      'Felugró üzenetablakban megjeleníti a "Szia!" szöveget',
+      'Új HTML elemet hoz létre az oldalon',
+      'Hibát dob, mert az alert() nem létező függvény'
+    ],
+    correct:1,
+    feedback:'✅ Igen! Az <code>alert()</code> egy felugró dialógusablakot jelenít meg a megadott szöveggel. A felhasználónak OK-ra kell kattintani a folytatáshoz.'
+  },
+
+  {
+    id:4, block:1, blockName:'JavaScript bevezetés', emoji:'🟨',
+    type:'monaco',
+    title:'Hello World! – alert()',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts egy egyszerű weboldalt, amely betöltéskor egy <code>alert()</code> ablakban megjeleníti a "Hello World!" szöveget!
+      <ul>
+        <li>A <code>&lt;script&gt;</code> tag a <code>&lt;/body&gt;</code> elé kerüljön</li>
+        <li>Az <code>alert()</code>-ben pontosan <strong>Hello World!</strong> legyen</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello JS</title>
+</head>
+<body>
+  <h1>Az első JavaScript programom</h1>
+
+  <!-- Írd ide a script taget az alert() hívással -->
+
+</body>
+</html>`,
+    checks:[
+      { label:'Van &lt;script&gt; tag',              fn:(h,d)=>/<script/i.test(h) },
+      { label:'Van alert() hívás',                  fn:(h,d)=>/alert\s*\(/.test(h) },
+      { label:'"Hello World!" szerepel az alertben', fn:(h,d)=>/alert\s*\(\s*["']Hello World!["']/.test(h) },
+      { label:'A &lt;script&gt; a &lt;/body&gt; előtt van', fn:(h,d)=>/alert[\s\S]*<\/body>/i.test(h) }
+    ]
+  },
+
+  // ── BLOKK 2: Változók és függvények ──────────────────────────────────
+  {
+    id:5, block:2, blockName:'Változók és függvények', emoji:'⚙️',
+    type:'quiz',
+    title:'let és const',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      JavaScriptben változókat a <code>let</code> és <code>const</code> kulcsszavakkal hozunk létre:
+      <br><br>
+      <ul>
+        <li><code>let nev = "Anna";</code> – <strong>módosítható</strong> változó</li>
+        <li><code>const PI = 3.14;</code> – <strong>állandó</strong>, értéke nem változtatható</li>
+      </ul>
+      Az értékeket idézőjelbe tesszük, ha szöveg (<em>string</em>).
+      Számokat idézőjel nélkül írunk: <code>let kor = 16;</code>`,
+    question:'Melyik változónak nem lehet új értéket adni?',
+    options:[
+      'let nev = "Anna";',
+      'var szin = "kék";',
+      'const MAX = 100;',
+      'let osszeg = 0;'
+    ],
+    correct:2,
+    feedback:'✅ Igen! A <code>const</code>-tal létrehozott változó értéke nem módosítható. A <code>let</code> és <code>var</code> változók értéke felülírható.'
+  },
+
+  {
+    id:6, block:2, blockName:'Változók és függvények', emoji:'⚙️',
+    type:'fillin',
+    title:'Függvény deklarálása',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Egy <strong>függvény</strong> újrafelhasználható kódblokkot jelent. Szintaxis:
+      <br><br>
+      <code>function nev() { }</code>
+      <br><br>
+      A függvényt ezután <strong>meghívhatjuk</strong> a nevével és zárójelekkel:
+      <code>nev();</code>
+      <br><br>
+      A <code>return</code> kulcsszóval visszaadhatunk egy értéket:
+      <br>
+      <code>function osszead(a, b) { return a + b; }</code>`,
+    codeTemplate:
+`// Függvény deklarálása
+___ koszont() {
+  alert("Szia!");
+}
+
+// Függvény meghívása
+___();
+
+// Visszatérési értékkel
+function osszead(a, b) {
+  ___ a + b;
+}`,
+    blanks:[
+      { answer:'function', hint:'A függvény deklarálásának kulcsszava' },
+      { answer:'koszont',  hint:'A függvény nevével hívjuk meg (pontosan ugyanaz, mint a deklarációban)' },
+      { answer:'return',   hint:'Ezzel adjuk vissza a függvény értékét' }
+    ]
+  },
+
+  {
+    id:7, block:2, blockName:'Változók és függvények', emoji:'⚙️',
+    type:'monaco',
+    title:'Saját függvény írása',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Írj egy <code>koszont(nev)</code> függvényt, amely:
+      <ul>
+        <li>Kap egy <code>nev</code> paramétert</li>
+        <li><code>alert()</code>-tel megjeleníti: <strong>"Szia, [nev]!"</strong></li>
+        <li>A függvény meg is legyen hívva pl. <code>koszont("Anna")</code></li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Függvény</title>
+</head>
+<body>
+  <h1>Függvény gyakorló</h1>
+
+  <script>
+    // Írd ide a koszont(nev) függvényt és hívd is meg!
+
+  <\/script>
+</body>
+</html>`,
+    checks:[
+      { label:'Van function kulcsszó',              fn:(h,d)=>/function\s+\w+/.test(h) },
+      { label:'A függvény neve: koszont',           fn:(h,d)=>/function\s+koszont/.test(h) },
+      { label:'Van nev paraméter',                  fn:(h,d)=>/function\s+koszont\s*\(\s*nev\s*\)/.test(h) },
+      { label:'Van alert() hívás a függvényben',    fn:(h,d)=>/function\s+koszont[\s\S]*?alert/.test(h) },
+      { label:'A függvény meg van hívva',           fn:(h,d)=>/koszont\s*\(/.test(h.replace(/function\s+koszont/,'')) }
+    ]
+  },
+
+  // ── BLOKK 3: DOM kezelés ─────────────────────────────────────────────
+  {
+    id:8, block:3, blockName:'DOM kezelés', emoji:'🌳',
+    type:'quiz',
+    title:'Mi a DOM?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <strong>DOM</strong> (Document Object Model) a weboldal <strong>programozható modellje</strong>.
+      <br><br>
+      Amikor a böngésző betölti a HTML oldalt, egy fa-szerű struktúrát épít fel belőle. JavaScript segítségével ebben a struktúrában:
+      <ul>
+        <li><strong>Kereshetünk</strong> elemeket (pl. id alapján)</li>
+        <li><strong>Módosíthatjuk</strong> a tartalmat és a stílust</li>
+        <li><strong>Hozzáadhatunk</strong> vagy eltávolíthatunk elemeket</li>
+      </ul>
+      A DOM-ot a <code>document</code> objektumon keresztül érjük el.`,
+    question:'Mit jelent a DOM a webfejlesztésben?',
+    options:[
+      'Egy adatbázis-kezelő rendszer weboldalakon',
+      'A weboldal HTML-CSS-JS fájljainak tömörített csomagja',
+      'A böngésző által felépített, JavaScripttel módosítható oldal-struktúra',
+      'Egy speciális HTML5 tag az animációkhoz'
+    ],
+    correct:2,
+    feedback:'✅ Igen! A DOM a böngésző által a HTML-ből felépített fa-struktúra, amelyet JavaScript segítségével olvashatunk és módosíthatunk.'
+  },
+
+  {
+    id:9, block:3, blockName:'DOM kezelés', emoji:'🌳',
+    type:'fillin',
+    title:'getElementById és innerHTML',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A leggyakrabban használt DOM-metódus:
+      <br><br>
+      <code>document.getElementById("azonosito")</code>
+      <br><br>
+      Ez visszaadja azt az elemet, amelynek <code>id</code> attribútuma megegyezik a megadottal.
+      <br><br>
+      Az elem tartalmát az <code>innerHTML</code> tulajdonsággal érjük el és módosítjuk:
+      <br>
+      <code>elem.innerHTML = "Új szöveg";</code>`,
+    codeTemplate:
+`// HTML: <p id="uzenet">Eredeti szöveg</p>
+
+// Elem lekérése id alapján
+const elem = document._________("uzenet");
+
+// Tartalom módosítása
+elem._______ = "Megváltozott!";`,
+    blanks:[
+      { answer:'getElementById', hint:'A metódus neve, amivel id alapján keresünk elemet' },
+      { answer:'innerHTML',      hint:'Az elem HTML tartalmát tároló tulajdonság neve' }
+    ]
+  },
+
+  {
+    id:10, block:3, blockName:'DOM kezelés', emoji:'🌳',
+    type:'fillin',
+    title:'querySelector',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      A <code>querySelector()</code> CSS-szelektorral keres elemet – rugalmasabb, mint az getElementById:
+      <br><br>
+      <ul>
+        <li><code>document.querySelector("#azonosito")</code> – id alapján (<code>#</code> prefix)</li>
+        <li><code>document.querySelector(".osztaly")</code> – class alapján (<code>.</code> prefix)</li>
+        <li><code>document.querySelector("p")</code> – tagname alapján</li>
+      </ul>
+      A <code>textContent</code> csak szöveget ad vissza (HTML tagek nélkül):
+      <br>
+      <code>elem.textContent = "Szöveg";</code>`,
+    codeTemplate:
+`// Lekérés CSS-szelektorral:
+// id alapján (# prefix)
+const cim = document.___________("#focim");
+
+// class alapján (. prefix)
+const doboz = document.querySelector("._______");
+
+// Szöveg módosítása (HTML tagek nélkül)
+cim.___________ = "Új cím";`,
+    blanks:[
+      { answer:'querySelector', hint:'CSS-szelektort fogadó keresőmetódus neve' },
+      { answer:'doboz',         hint:'A keresett class neve (. nélkül)' },
+      { answer:'textContent',   hint:'Az elem szöveges tartalmát tároló tulajdonság' }
+    ]
+  },
+
+  {
+    id:11, block:3, blockName:'DOM kezelés', emoji:'🌳',
+    type:'monaco',
+    title:'Szöveg módosítása JavaScripttel',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Egészítsd ki a kódot úgy, hogy:
+      <ul>
+        <li>Legyen egy <code>id="cim"</code> attribútumú elem (pl. <code>&lt;h1&gt;</code>)</li>
+        <li>Legyen egy <code>id="szoveg"</code> attribútumú elem (pl. <code>&lt;p&gt;</code>)</li>
+        <li>A script-ben kérd le mindkét elemet <code>getElementById</code>-del</li>
+        <li>Módosítsd a <code>cim</code> elem <code>innerHTML</code>-jét</li>
+        <li>Módosítsd a <code>szoveg</code> elem <code>textContent</code>-jét</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>DOM módosítás</title>
+</head>
+<body>
+
+  <!-- Hozd létre az elemeket id="cim" és id="szoveg" attribútummal -->
+
+  <script>
+    // Kérd le és módosítsd az elemeket!
+
+  <\/script>
+</body>
+</html>`,
+    checks:[
+      { label:'Van id="cim" elem',                         fn:(h,d)=>!!d.getElementById('cim') },
+      { label:'Van id="szoveg" elem',                      fn:(h,d)=>!!d.getElementById('szoveg') },
+      { label:'Van getElementById hívás',                  fn:(h,d)=>/getElementById/.test(h) },
+      { label:'Van innerHTML értékadás',                   fn:(h,d)=>/\.innerHTML\s*=/.test(h) },
+      { label:'Van textContent értékadás',                 fn:(h,d)=>/\.textContent\s*=/.test(h) }
+    ]
+  },
+
+  // ── BLOKK 4: Események ───────────────────────────────────────────────
+  {
+    id:12, block:4, blockName:'Eseménykezelés', emoji:'🖱️',
+    type:'quiz',
+    title:'Mi az eseménykezelő?',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Az <strong>eseménykezelő</strong> (event listener) egy függvény, amely lefut, ha a felhasználó valamit csinál – pl. kattint egy gombra.
+      <br><br>
+      Szintaxis:
+      <br>
+      <code>elem.addEventListener("esemény", függvény);</code>
+      <br><br>
+      Fontosabb eseménytípusok:
+      <ul>
+        <li><code>"click"</code> – kattintás</li>
+        <li><code>"mouseover"</code> – egér az elem fölé kerül</li>
+        <li><code>"keydown"</code> – billentyű lenyomása</li>
+        <li><code>"submit"</code> – űrlap elküldése</li>
+      </ul>`,
+    question:'Melyik kód hajtja végre az <code>indit()</code> függvényt gombkattintásra?',
+    options:[
+      'document.getElementById("gomb").run("click", indit);',
+      'document.getElementById("gomb").addEventListener("click", indit);',
+      'document.getElementById("gomb").onClick = indit();',
+      'document.getElementById("gomb").trigger("indit");'
+    ],
+    correct:1,
+    feedback:'✅ Igen! Az <code>addEventListener("click", indit)</code> a helyes szintaxis. Fontos: a függvény neve mögé nem kell zárójel – csak a referenciát adjuk át, nem hívjuk meg azonnal.'
+  },
+
+  {
+    id:13, block:4, blockName:'Eseménykezelés', emoji:'🖱️',
+    type:'fillin',
+    title:'addEventListener szintaxis',
+    explanation:`<div class="exp-label">📖 Tananyag</div>
+      Az eseménykezelőt így csatoljuk:
+      <br><br>
+      <code>elem.addEventListener("click", function() { ... });</code>
+      <br><br>
+      Vagy névvel ellátott függvénnyel:
+      <br>
+      <code>elem.addEventListener("click", reagal);</code>
+      <br><br>
+      A <code>this</code> kulcsszóval az eseménykezelőn belül magára az elemre hivatkozhatunk:
+      <br>
+      <code>this.style.background = "red";</code>`,
+    codeTemplate:
+`const gomb = document.getElementById("gomb");
+
+gomb.____________("click", function() {
+  alert("Megnyomtad!");
+});
+
+// Névvel ellátott változat:
+function reagal() {
+  document.getElementById("eredmeny").________ = "Kattintottál!";
+}
+gomb.addEventListener("_____", reagal);`,
+    blanks:[
+      { answer:'addEventListener', hint:'Az eseménykezelőt regisztráló metódus neve' },
+      { answer:'innerHTML',        hint:'Az elem HTML tartalmát módosító tulajdonság' },
+      { answer:'click',            hint:'Az egérkattintás esemény neve' }
+    ]
+  },
+
+  {
+    id:14, block:4, blockName:'Eseménykezelés', emoji:'🖱️',
+    type:'monaco',
+    title:'Gomb – szöveg módosítása kattintásra',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts interaktív oldalt:
+      <ul>
+        <li>Egy <code>id="gomb"</code> gomb</li>
+        <li>Egy <code>id="uzenet"</code> elem (kezdeti szöveg: "Kattints a gombra!")</li>
+        <li>Kattintásra az üzenet változzon: <strong>"Megnyomtad a gombot!"</strong></li>
+        <li>Használj <code>addEventListener("click", ...)</code>-et</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Esemény</title>
+</head>
+<body>
+  <!-- Hozd létre a gombot és az üzenet elemet -->
+
+  <script>
+    // Eseménykezelő hozzáadása
+
+  <\/script>
+</body>
+</html>`,
+    checks:[
+      { label:'Van id="gomb" elem',                        fn:(h,d)=>!!d.getElementById('gomb') },
+      { label:'Van id="uzenet" elem',                      fn:(h,d)=>!!d.getElementById('uzenet') },
+      { label:'Van addEventListener hívás',                fn:(h,d)=>/addEventListener/.test(h) },
+      { label:'"click" esemény van megadva',               fn:(h,d)=>/addEventListener\s*\(\s*["']click["']/.test(h) },
+      { label:'"Megnyomtad a gombot!" szöveg van a kódban',fn:(h,d)=>h.includes('Megnyomtad a gombot!') }
+    ]
+  },
+
+  {
+    id:15, block:4, blockName:'Eseménykezelés', emoji:'🖱️',
+    type:'monaco',
+    title:'Stílus módosítása JavaScripttel',
+    explanation:`<div class="exp-label">✏️ Feladat</div>
+      Készíts oldalt, ahol egy gombra kattintva megváltozik egy elem háttérszíne:
+      <ul>
+        <li>Egy <code>id="szines-doboz"</code> div, kezdeti háttér: <code>#1e3a5f</code></li>
+        <li>Egy <code>id="szin-gomb"</code> gomb: "Szín váltás"</li>
+        <li>Kattintásra: <code>szines-doboz</code> háttere legyen <code>#f59e0b</code></li>
+        <li>Stílust így módosíts: <code>elem.style.backgroundColor = "..."</code></li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Stílus JS-sel</title>
+  <style>
+    #szines-doboz {
+      width: 200px;
+      height: 100px;
+      background: #1e3a5f;
+      border-radius: 10px;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hozd létre a dobozt és a gombot a megadott id-kkal -->
+
+  <script>
+    // Eseménykezelő: kattintásra háttérszín váltás
+
+  <\/script>
+</body>
+</html>`,
+    checks:[
+      { label:'Van id="szines-doboz" elem',                fn:(h,d)=>!!d.getElementById('szines-doboz') },
+      { label:'Van id="szin-gomb" elem',                   fn:(h,d)=>!!d.getElementById('szin-gomb') },
+      { label:'Van addEventListener("click", ...)',        fn:(h,d)=>/addEventListener\s*\(\s*["']click["']/.test(h) },
+      { label:'Van style.backgroundColor értékadás',       fn:(h,d)=>/style\.backgroundColor/.test(h) },
+      { label:'"#f59e0b" szín szerepel a kódban',          fn:(h,d)=>h.includes('#f59e0b') }
+    ]
+  }
+
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════
+
+const SKEY = 'ljs_v1';
+const state = {
+  cur: 0,
+  done:      JSON.parse(localStorage.getItem(SKEY+'_done')||'null') || Array(tasks.length).fill(false),
+  qSel:      Array(tasks.length).fill(null),
+  qAnswered: Array(tasks.length).fill(false),
+  monacoEd: null,
+  prevTimer: null
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// MONACO INIT
+// ══════════════════════════════════════════════════════════════════════
+
+let monacoOk = false;
+const monacoQ = [];
+require.config({ paths:{ vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+require(['vs/editor/editor.main'], ()=>{
+  monacoOk=true;
+  monacoQ.forEach(cb=>cb()); monacoQ.length=0;
+});
+const whenMonaco = cb => monacoOk ? cb() : monacoQ.push(cb);
+
+// ══════════════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════════════
+
+document.getElementById('prog-total').textContent = tasks.length;
+buildLeft();
+loadTask(0);
+
+// ══════════════════════════════════════════════════════════════════════
+// LEFT PANEL
+// ══════════════════════════════════════════════════════════════════════
+
+function buildLeft() {
+  const panel = document.getElementById('left-panel');
+  panel.innerHTML = '';
+  const blocks = [];
+  tasks.forEach((t,i) => {
+    let b = blocks.find(x=>x.id===t.block);
+    if (!b) { b={id:t.block,name:t.blockName,emoji:t.emoji,tasks:[]}; blocks.push(b); }
+    b.tasks.push({t,i});
+  });
+  blocks.forEach(bl => {
+    const allDone = bl.tasks.every(x=>state.done[x.i]);
+    const g = document.createElement('div'); g.className='block-group';
+    const h = document.createElement('div'); h.className='block-header';
+    h.innerHTML = `<span>${bl.emoji}</span><span>${bl.name}</span>`+(allDone?'<span class="block-done-mark">✓ kész</span>':'');
+    const lst = document.createElement('div'); lst.className='block-tasks';
+    bl.tasks.forEach(({t,i})=>{
+      const locked = i>0 && !state.done[i-1];
+      const p = document.createElement('div');
+      p.id='pill-'+i;
+      const typeIcon = t.type==='quiz'?'❓':t.type==='fillin'?'✏️':'💻';
+      const typeLabel= t.type==='quiz'?'Kvíz':t.type==='fillin'?'Kódkiegészítés':'Szerkesztő';
+      p.innerHTML=`<span class="pill-icon">${state.done[i]?'✅':locked?'🔒':'⬜'}</span>
+        <div><div class="pill-label">${i+1}. ${t.title}</div>
+        <div class="pill-type">${typeIcon} ${typeLabel}</div></div>`;
+      updatePillClass(p,i,locked);
+      if(!locked) p.onclick=()=>loadTask(i);
+      lst.appendChild(p);
+    });
+    g.appendChild(h); g.appendChild(lst); panel.appendChild(g);
+  });
+}
+
+function updatePillClass(el,i,locked){
+  el.className='task-pill'+(i===state.cur?' active':'')+(state.done[i]?' done':'')+(locked?' locked':'');
+}
+
+function refreshLeft(){
+  tasks.forEach((_,i)=>{
+    const p=document.getElementById('pill-'+i); if(!p) return;
+    const locked=i>0&&!state.done[i-1];
+    p.querySelector('.pill-icon').textContent=state.done[i]?'✅':locked?'🔒':'⬜';
+    updatePillClass(p,i,locked);
+    if(!locked) p.onclick=()=>loadTask(i); else p.onclick=null;
+  });
+  document.getElementById('prog-done').textContent=state.done.filter(Boolean).length;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// TASK LOADING
+// ══════════════════════════════════════════════════════════════════════
+
+function loadTask(idx){
+  if(state.monacoEd){ state.monacoEd.dispose(); state.monacoEd=null; }
+  clearTimeout(state.prevTimer);
+  state.cur = idx;
+  const task = tasks[idx];
+  const isDone = state.done[idx];
+
+  document.getElementById('score-msg').textContent='';
+  document.getElementById('btn-next').disabled=!isDone;
+  document.getElementById('btn-check').disabled=isDone && task.type!=='monaco';
+  refreshLeft();
+
+  const typeBadge = task.type==='quiz'
+    ? '<span class="type-badge badge-quiz">❓ Kvíz</span>'
+    : task.type==='fillin'
+    ? '<span class="type-badge badge-fillin">✏️ Kódkiegészítés</span>'
+    : '<span class="type-badge badge-monaco">💻 Szerkesztő</span>';
+
+  const layoutCls = task.type==='monaco' ? 'one-col' : 'two-col';
+  let expHtml = `<div class="exp-box${task.type==='monaco'?' compact':''}">${task.explanation}</div>`;
+  let taskHtml = '';
+
+  if(task.type==='quiz')   taskHtml = renderQuiz(task,idx);
+  if(task.type==='fillin') taskHtml = renderFillin(task,idx);
+  if(task.type==='monaco') taskHtml = renderMonacoShell(task,idx);
+
+  const monacoContent = task.type==='monaco'
+    ? `<div class="exp-compact">${expHtml}</div>${taskHtml}`
+    : `<div class="exp-col">${expHtml}</div><div class="task-col">${taskHtml}</div>`;
+
+  const checkListHtml = task.type==='monaco' && task.checks
+    ? `<div class="check-list">${task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><span class="ci">⬜</span> ${task.checks[i].label}</div>`).join('')}</div>`
+    : '';
+
+  document.getElementById('main-panel').innerHTML=`
+    <div class="task-meta">
+      <span class="task-num">${task.block}. blokk · ${idx+1}. feladat</span>
+      ${typeBadge}
+    </div>
+    <div class="task-title-row">${task.emoji} ${task.title}</div>
+    <div class="content-area ${layoutCls}" id="content-area">
+      ${monacoContent}
+    </div>
+    ${checkListHtml}
+    <div class="success-banner${isDone?' show':''}" id="suc-banner">🎉 Sikeresen teljesítetted ezt a feladatot!</div>
+  `;
+
+  if(task.type==='monaco') initMonaco(task,idx);
+  if(task.type==='quiz' && state.qAnswered[idx]) restoreQuiz(task,idx);
+  if(task.type==='fillin' && isDone) lockFillin();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════════════════════════════
+
+function renderQuiz(task,idx){
+  const LETTERS=['A','B','C','D'];
+  const opts=task.options.map((opt,i)=>
+    `<div class="quiz-opt" id="opt-${i}" onclick="selQuiz(${i},${idx})">
+      <span class="opt-letter">${LETTERS[i]}</span>
+      <span>${opt}</span>
+    </div>`
+  ).join('');
+  return `<div class="quiz-q">${task.question}</div>
+    <div class="quiz-opts">${opts}</div>
+    <div class="quiz-feedback" id="qfb"></div>`;
+}
+
+function selQuiz(optIdx,taskIdx){
+  if(state.qAnswered[taskIdx]) return;
+  document.querySelectorAll('.quiz-opt').forEach(el=>el.classList.remove('selected','wrong'));
+  document.getElementById('score-msg').textContent='';
+  const fb=document.getElementById('qfb'); if(fb) fb.className='quiz-feedback';
+  const el=document.getElementById('opt-'+optIdx);
+  if(el) el.classList.add('selected');
+  state.qSel[taskIdx]=optIdx;
+}
+
+function restoreQuiz(task,idx){
+  const sel=state.qSel[idx];
+  document.querySelectorAll('.quiz-opt').forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===task.correct) el.classList.add('correct');
+    else if(i===sel && sel!==task.correct) el.classList.add('wrong');
+  });
+  const fb=document.getElementById('qfb');
+  if(fb){ fb.className='quiz-feedback show ok'; fb.innerHTML=task.feedback; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FILL-IN
+// ══════════════════════════════════════════════════════════════════════
+
+function renderFillin(task,idx){
+  const parts=task.codeTemplate.split('___');
+  let html='';
+  parts.forEach((part,i)=>{
+    html+=escH(part);
+    if(i<task.blanks.length){
+      const b=task.blanks[i];
+      const sz=Math.max(b.answer.length+2,7);
+      const altsAttr = b.alts ? ` data-alts="${escH(b.alts.join(','))}"` : '';
+      html+=`<input class="blank-in" id="bi-${i}" data-ans="${escH(b.answer)}"${altsAttr} data-hint="${escH(b.hint)}" size="${sz}" placeholder="?" autocomplete="off" spellcheck="false">`;
+    }
+  });
+  return `<div class="fillin-label">Egészítsd ki a kódot!</div>
+    <div class="code-tpl">${html}</div>
+    <div class="fillin-fb" id="fillin-fb"></div>`;
+}
+
+function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function lockFillin(){
+  document.querySelectorAll('.blank-in').forEach(inp=>{
+    inp.disabled=true;
+    inp.classList.add('ok');
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// MONACO
+// ══════════════════════════════════════════════════════════════════════
+
+function renderMonacoShell(task,idx){
+  return `<div class="monaco-row">
+      <div class="monaco-wrap">
+        <div class="editor-hd">
+          <span style="text-transform:uppercase;letter-spacing:.06em;">HTML szerkesztő</span>
+        </div>
+        <div id="med" style="width:100%;height:calc(100% - 29px)"></div>
+      </div>
+      <div class="preview-wrap">
+        <div class="preview-hd"><div class="pdot"></div>Élő előnézet</div>
+        <iframe id="monaco-preview" sandbox="allow-scripts"></iframe>
+      </div>
+    </div>`;
+}
+
+function initMonaco(task,idx){
+  whenMonaco(()=>{
+    const el=document.getElementById('med'); if(!el) return;
+    state.monacoEd=monaco.editor.create(el,{
+      value:task.starterHtml, language:'html', theme:'vs-dark',
+      fontSize:14, minimap:{enabled:false}, automaticLayout:true,
+      wordWrap:'on', scrollBeyondLastLine:false, tabSize:2,
+      quickSuggestions:true, suggestOnTriggerCharacters:true, wordBasedSuggestions:'off'
+    });
+    state.monacoEd.onDidChangeModelContent(()=>{
+      clearTimeout(state.prevTimer);
+      state.prevTimer=setTimeout(()=>updatePreview(task),400);
+    });
+    if(task.starterHtml) updatePreview(task);
+  });
+}
+
+function updatePreview(task){
+  if(!state.monacoEd) return;
+  const html=state.monacoEd.getValue();
+  const fr=document.getElementById('monaco-preview');
+  if(fr) fr.srcdoc=html;
+  liveChecks(task);
+}
+
+function liveChecks(task){
+  if(!state.monacoEd) return;
+  const html=state.monacoEd.getValue();
+  let doc; try{doc=new DOMParser().parseFromString(html,'text/html');}catch(e){doc=document.implementation.createHTMLDocument('');}
+  task.checks.forEach((ch,i)=>{
+    const pass=(()=>{try{return !!ch.fn(html,doc);}catch(e){return false;}})();
+    const el=document.getElementById('chk-'+i);
+    if(el){ el.className='chk-row'+(pass?' pass':''); el.querySelector('.ci').textContent=pass?'✅':'⬜'; }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CHECK
+// ══════════════════════════════════════════════════════════════════════
+
+function checkTask(){
+  const t=tasks[state.cur], idx=state.cur;
+  if(t.type==='quiz')   checkQuiz(t,idx);
+  if(t.type==='fillin') checkFillin(t,idx);
+  if(t.type==='monaco') checkMonaco(t,idx);
+}
+
+function checkQuiz(task,idx){
+  if(state.qAnswered[idx]) return;
+  const sel=state.qSel[idx];
+  if(sel===null||sel===undefined){
+    document.getElementById('score-msg').textContent='⚠️ Válassz egy lehetőséget!';
+    return;
+  }
+  const ok=sel===task.correct;
+  const fb=document.getElementById('qfb');
+  if(ok){
+    state.qAnswered[idx]=true;
+    document.querySelectorAll('.quiz-opt').forEach((el,i)=>{
+      el.classList.add('disabled');
+      if(i===task.correct) el.classList.add('correct');
+    });
+    fb.className='quiz-feedback show ok';
+    fb.innerHTML=task.feedback;
+    markDone(idx);
+  } else {
+    document.getElementById('opt-'+sel)?.classList.add('wrong');
+    fb.className='quiz-feedback show err';
+    fb.innerHTML='❌ Nem ez a helyes. Gondold át, és próbáld újra!';
+    document.getElementById('score-msg').textContent='';
+  }
+}
+
+function checkFillin(task,idx){
+  const inputs=document.querySelectorAll('.blank-in');
+  let allOk=true;
+  const hints=[];
+  inputs.forEach((inp,i)=>{
+    const val=inp.value.toLowerCase().trim();
+    const accepted=[inp.dataset.ans,...(inp.dataset.alts?inp.dataset.alts.split(','):[])].map(s=>s.toLowerCase().trim());
+    const ok=accepted.includes(val);
+    inp.classList.remove('ok','err');
+    inp.classList.add(ok?'ok':'err');
+    if(!ok){ allOk=false; hints.push(`💡 ${i+1}. mező: <em>${inp.dataset.hint}</em>`); }
+  });
+  const fb=document.getElementById('fillin-fb');
+  fb.className='fillin-fb show';
+  if(allOk){
+    fb.style.color='#86efac'; fb.textContent='✅ Tökéletes! Minden mező helyes.';
+    markDone(idx); lockFillin();
+  } else {
+    fb.style.color='#fca5a5';
+    fb.innerHTML=`❌ ${hints.length} mező még nem stimmel.<br>${hints.join('<br>')}`;
+  }
+}
+
+function checkMonaco(task,idx){
+  if(!state.monacoEd) return;
+  const html=state.monacoEd.getValue();
+  let doc; try{doc=new DOMParser().parseFromString(html,'text/html');}catch(e){doc=document.implementation.createHTMLDocument('');}
+  const res=task.checks.map(ch=>{try{return !!ch.fn(html,doc);}catch(e){return false;}});
+  const pass=res.filter(Boolean).length, tot=res.length;
+  res.forEach((r,i)=>{
+    const el=document.getElementById('chk-'+i);
+    if(el){ el.className='chk-row'+(r?' pass':''); el.querySelector('.ci').textContent=r?'✅':'❌'; }
+  });
+  document.getElementById('score-msg').innerHTML=`<span style="color:${pass===tot?'#f59e0b':'#94a3b8'}">${pass}/${tot}</span> ellenőrzés teljesítve`;
+  if(pass===tot) markDone(idx);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// DONE / NEXT
+// ══════════════════════════════════════════════════════════════════════
+
+function markDone(idx){
+  state.done[idx]=true;
+  localStorage.setItem(SKEY+'_done',JSON.stringify(state.done));
+  document.getElementById('btn-next').disabled=false;
+  document.getElementById('btn-check').disabled=true;
+  const b=document.getElementById('suc-banner'); if(b) b.classList.add('show');
+  triggerConfetti(); refreshLeft();
+  if(state.done.every(Boolean)){
+    saveCompletion('tananyag_javascript');
+    setTimeout(()=>document.getElementById('modal-done').classList.add('show'),900);
+  }
+}
+
+function saveCompletion(key){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  if(!u.token||!u.email) return;
+  fetch(`https://agazati.up.railway.app/api/user-state/${encodeURIComponent(u.email)}/${key}`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
+    body:JSON.stringify({value:new Date().toISOString().substring(0,10)})
+  }).catch(()=>{});
+}
+
+function goNext(){
+  const n=state.cur+1;
+  if(n<tasks.length) loadTask(n);
+  else location.href='learn-bootstrap.html';
+}
+
+function triggerConfetti(){
+  const el=document.getElementById('confetti');
+  el.classList.remove('animate'); void el.offsetWidth;
+  el.classList.add('animate');
+  setTimeout(()=>el.classList.remove('animate'),800);
+}
+</script>
+<script src="../special-roles.js"></script>
+</body>
+</html>
