@@ -405,8 +405,9 @@ for i in range(4):                              # i = 0, 1, 2, 3  →  6., 7., 8
     </div>
     <div class="step-body">
       <p class="explain">
-        Meg kell találni a <strong>legnagyobb értéket</strong> és annak <strong>indexét</strong> a listában,
+        Meg kell találni a <strong>legnagyobb értéket</strong> és annak <strong>sorszámát (indexét)</strong> a listában,
         majd az indexből ki kell számítani az időpontot.
+        A <code>range(len(...))</code> ciklus egyszerre ad indexet (<code>i</code>) és hozzáférést az értékhez (<code>meresi_adatok[i]</code>).
         Minden index 15 percet jelent 6:00-tól számolva —
         az <strong>egészosztás</strong> (<code>//</code>) adja az órákat, a <strong>maradék</strong> (<code>%</code>) a perceket.
       </p>
@@ -422,9 +423,9 @@ for i in range(4):                              # i = 0, 1, 2, 3  →  6., 7., 8
         <pre><code class="language-python">max_ertek = -1
 max_index = 0
 
-for i, ertek in enumerate(meresi_adatok):       # enumerate: egyszerre adja az indexet és az értéket
-    if ertek > max_ertek:
-        max_ertek = ertek
+for i in range(len(meresi_adatok)):
+    if meresi_adatok[i] > max_ertek:
+        max_ertek = meresi_adatok[i]
         max_index = i
 
 # Időpont kiszámítása az indexből
@@ -481,9 +482,9 @@ for i in range(4):
 # 4. feladat – csúcsforgalom
 max_ertek = -1
 max_index = 0
-for i, ertek in enumerate(meresi_adatok):
-    if ertek > max_ertek:
-        max_ertek = ertek
+for i in range(len(meresi_adatok)):
+    if meresi_adatok[i] > max_ertek:
+        max_ertek = meresi_adatok[i]
         max_index = i
 
 percek  = max_index * 15
