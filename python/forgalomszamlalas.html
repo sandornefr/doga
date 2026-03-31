@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgalomszámlálás – Lépésről lépésre</title>
+  <link rel="icon" href="../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f172a;
+      --bg2:     #111827;
+      --bg3:     #1e293b;
+      --bg4:     #0d1a2e;
+      --border:  #1f2937;
+      --accent:  #f97316;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --green:   #22c55e;
+      --green2:  #16a34a;
+      --blue:    #3b82f6;
+      --yellow:  #f59e0b;
+      --red:     #ef4444;
+      --purple:  #a78bfa;
+      --font:    'Segoe UI', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      height: 54px; background: var(--bg2);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+    }
+    .topbar-logo { height: 28px; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 8px;
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; cursor: pointer;
+      text-decoration: none; transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+    .topbar-title {
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--accent); margin-left: 4px;
+    }
+    .topbar-spacer { flex: 1; }
+    .topbar-badge {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: .05em;
+      padding: 3px 10px; border-radius: 20px;
+      background: #1e2d1e; color: var(--green); border: 1px solid var(--green2);
+    }
+
+    /* ── TARTALOM ── */
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ── FELADAT KÁRTYA (mint a kiadott feladatlap) ── */
+    .task-card {
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .task-card-header {
+      background: #1a2540;
+      padding: 16px 22px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .task-card-header .task-num {
+      font-size: 1.05rem; font-weight: 800;
+      color: var(--accent);
+    }
+    .task-card-header h2 {
+      font-size: 1.15rem; font-weight: 700; color: var(--text);
+    }
+    .task-body { padding: 20px 22px; }
+    .task-desc {
+      font-size: 0.92rem; line-height: 1.75;
+      color: #cbd5e1; margin-bottom: 18px;
+    }
+    .task-desc strong { color: var(--text); }
+
+    /* Adatfájl megjelenítő */
+    .file-preview {
+      display: flex; gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .file-box {
+      background: #0d1a2e;
+      border: 1.5px solid #2d3f5a;
+      border-radius: 10px;
+      padding: 14px 18px;
+      flex: 0 0 auto;
+    }
+    .file-box-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .file-box-label i { color: var(--yellow); }
+    .file-numbers {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+    }
+    .file-num {
+      text-align: right;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #93c5fd;
+    }
+    .file-num.hibas {
+      color: var(--red);
+      background: #2a1515;
+    }
+    .file-num-note {
+      font-size: 0.72rem; color: var(--muted);
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    /* Feladatrészek */
+    .task-parts { margin-bottom: 20px; }
+    .task-part {
+      display: flex; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #1f2937;
+      font-size: 0.9rem; line-height: 1.6;
+      color: #cbd5e1;
+    }
+    .task-part:last-child { border-bottom: none; }
+    .task-part-num {
+      font-weight: 800; color: var(--accent);
+      font-size: 0.88rem; flex-shrink: 0;
+      width: 22px;
+    }
+
+    /* Minta kimenet */
+    .sample-output-title {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sample-output-title i { color: var(--green); }
+    .sample-output {
+      background: #060e1a;
+      border: 1.5px solid #1a2a3a;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: #86efac;
+    }
+    .sample-output .label {
+      color: var(--muted); font-size: 0.78rem; font-style: italic;
+    }
+
+    /* ── LÉPÉSEK ── */
+    .section-title {
+      font-size: 1.1rem; font-weight: 800;
+      color: var(--text);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title i { color: var(--accent); }
+
+    .step-card {
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .step-header {
+      padding: 14px 20px;
+      background: var(--bg2);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .step-badge {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .step-badge.s1 { background: #1e3a5f; color: #60a5fa; }
+    .step-badge.s2 { background: #1e3b2e; color: #4ade80; }
+    .step-badge.s3 { background: #3b2e1e; color: #fb923c; }
+    .step-badge.s4 { background: #2e1e3b; color: #c084fc; }
+
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .step-subtitle { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+
+    .step-body { padding: 20px; }
+
+    .step-what {
+      font-size: 0.92rem; line-height: 1.75;
+      color: #cbd5e1; margin-bottom: 16px;
+    }
+
+    /* Python eszköz magyarázat */
+    .tool-explain {
+      background: #0d1a2e;
+      border: 1.5px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .tool-explain-title {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: #60a5fa; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tool-row {
+      display: flex; gap: 10px;
+      margin-bottom: 8px;
+      align-items: flex-start;
+      font-size: 0.88rem;
+    }
+    .tool-name {
+      font-family: 'Courier New', monospace;
+      color: #fde68a;
+      font-weight: 700;
+      min-width: 130px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .tool-desc { color: #94a3b8; line-height: 1.5; }
+
+    /* Miért? panel */
+    .why-box {
+      background: #1a1a0d;
+      border: 1.5px solid #3d3010;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #fde68a;
+    }
+    .why-box-title {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--yellow); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Kódblokk */
+    .code-block {
+      background: #060e1a;
+      border: 1.5px solid #1a2a3a;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .code-block-header {
+      background: #0d1a2e;
+      padding: 8px 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid #1a2a3a;
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .code-block-header i { color: var(--yellow); }
+    pre {
+      padding: 16px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.9;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    /* Szintaxis kiemelés */
+    .kw  { color: #c084fc; }   /* kulcsszó: with, for, if, while */
+    .fn  { color: #60a5fa; }   /* függvény: open, int, print, range */
+    .str { color: #86efac; }   /* szöveg: "meres..." */
+    .num { color: #fbbf24; }   /* szám: -1, 4, 6, 15 */
+    .op  { color: #f87171; }   /* operátor: !=, +=, * */
+    .cm  { color: #475569; font-style: italic; }  /* megjegyzés */
+    .var { color: #e2e8f0; }   /* változó */
+
+    /* Sor-magyarázat */
+    .line-explain {
+      margin-top: 16px;
+    }
+    .line-row {
+      display: flex; gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a2236;
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+    .line-row:last-child { border-bottom: none; }
+    .line-code {
+      font-family: 'Courier New', monospace;
+      color: #fde68a;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+      min-width: 200px;
+      padding-top: 1px;
+    }
+    .line-desc { color: #94a3b8; }
+    .line-desc strong { color: #e2e8f0; }
+
+    /* Teljes megoldás */
+    .solution-card {
+      background: var(--bg3);
+      border: 1.5px solid #1e3a1e;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+    .solution-header {
+      background: #0d1f0d;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid #1e3a1e;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .solution-header i { color: var(--green); font-size: 1.1rem; }
+    .solution-header h3 { font-size: 1rem; font-weight: 700; color: var(--text); }
+
+    /* Navigáló gombok a lépések közt */
+    .step-nav {
+      display: flex; justify-content: flex-end;
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .step-nav a {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .step-nav a:hover { color: var(--accent); }
+
+    /* Összegző doboz */
+    .summary-box {
+      background: #0d1a2e;
+      border: 1.5px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .summary-box-title {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: #60a5fa; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .summary-item {
+      display: flex; gap: 10px;
+      margin-bottom: 6px;
+      font-size: 0.87rem;
+      line-height: 1.5;
+    }
+    .summary-item i { color: var(--green); margin-top: 2px; flex-shrink: 0; }
+    .summary-item span { color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <img src="../kando_logo_light.png" class="topbar-logo" alt="Kandó">
+  <a href="index.html" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Vissza
+  </a>
+  <span class="topbar-title">Forgalomszámlálás – Lépésről lépésre</span>
+  <div class="topbar-spacer"></div>
+  <span class="topbar-badge"><i class="fas fa-file-code"></i> fájlkezelés &nbsp;·&nbsp; for ciklus</span>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ═══════════════════════════════════════════
+       FELADAT KÁRTYA (a kiadott feladatlap alapján)
+  ═══════════════════════════════════════════ -->
+  <div class="task-card">
+    <div class="task-card-header">
+      <span class="task-num">5.</span>
+      <h2>Forgalomszámlálás</h2>
+    </div>
+    <div class="task-body">
+
+      <p class="task-desc">
+        Egy város közlekedéstervezési célból kerékpárforgalom-számlálót telepített az egyik főútvonára.
+        A próbaüzem <strong>reggel 6-tól 10-ig</strong> tart, amelynek során <strong>15 percenként</strong> rögzíti az áthaladó kerékpárosok számát.
+        A rendszer négy bizonytalant; ha technikai problémák lépnek fel, az adott időpontban
+        <strong>−1</strong> értéket rögzít a rendszer; különben az áthaladók száma nemnegatív egész szám.
+        <br><br>
+        A rögzített mérési értékek száma <strong>16</strong>, és például a következők:
+      </p>
+
+      <div class="file-preview">
+        <div class="file-box">
+          <div class="file-box-label">
+            <i class="fas fa-file-alt"></i> meresi_adatok.txt tartalma
+          </div>
+          <div class="file-numbers">
+            <span class="file-num">36</span>
+            <span class="file-num">48</span>
+            <span class="file-num">39</span>
+            <span class="file-num hibas">−1</span>
+            <span class="file-num">30</span>
+            <span class="file-num">43</span>
+            <span class="file-num hibas">−1</span>
+            <span class="file-num">76</span>
+            <span class="file-num">72</span>
+            <span class="file-num">73</span>
+            <span class="file-num">82</span>
+            <span class="file-num">70</span>
+            <span class="file-num">67</span>
+            <span class="file-num">72</span>
+            <span class="file-num">65</span>
+            <span class="file-num">65</span>
+          </div>
+          <div class="file-num-note">
+            <i class="fas fa-exclamation-circle" style="color:var(--red)"></i>
+            Piros = hibás mérés (−1), ezeket ki kell hagyni
+          </div>
+        </div>
+        <div style="flex:1; min-width:160px; font-size:0.82rem; color:var(--muted); line-height:1.8; padding-top:6px;">
+          <div><i class="fas fa-clock" style="color:var(--accent); width:16px"></i> 6:00 → 1. sor</div>
+          <div><i class="fas fa-clock" style="color:var(--accent); width:16px"></i> 6:15 → 2. sor</div>
+          <div><i class="fas fa-clock" style="color:var(--accent); width:16px"></i> 6:30 → 3. sor</div>
+          <div><i class="fas fa-clock" style="color:var(--accent); width:16px"></i> 6:45 → 4. sor</div>
+          <div style="margin-top:4px; color:#475569">…és így tovább, 15 percenként…</div>
+          <div style="margin-top:4px;"><i class="fas fa-clock" style="color:var(--accent); width:16px"></i> 9:45 → 16. sor</div>
+        </div>
+      </div>
+
+      <div class="task-parts">
+        <div class="task-part">
+          <span class="task-part-num">1.</span>
+          <span>A megadott 16 számot tárolja el a program a <strong>meresi_adatok.txt</strong> fájlból, egy megfelelő adatszerkezetben!</span>
+        </div>
+        <div class="task-part">
+          <span class="task-part-num">2.</span>
+          <span>A fájlban lévő adatok alapján határozza meg az áthaladó összes kerékpáros számát, és írja ki a minta szerint! Az összesítésnél hagyja ki a hibás (−1) adatokat!</span>
+        </div>
+        <div class="task-part">
+          <span class="task-part-num">3.</span>
+          <span>Írja ki a képernyőre, hogy az egyes <strong>órák alatt</strong> összesen hány kerékpáros haladt át! (A −1-es adatokat itt is hagyja ki!)</span>
+        </div>
+        <div class="task-part">
+          <span class="task-part-num">4.</span>
+          <span>Határozza meg a <strong>legmagasabb mérési értéket</strong> és a rögzítés <strong>időpontját</strong>! Írja ki a minta szerint!</span>
+        </div>
+      </div>
+
+      <div class="sample-output-title">
+        <i class="fas fa-terminal"></i> Minta a szöveges kimenet kialakításához:
+      </div>
+      <div class="sample-output">
+<span class="label">3. feladat:</span>
+Összesen 838 kerékpárost számoltak.
+
+Óránkénti mérések:
+6 órától 123 kerékpáros
+7 órától 149 kerékpáros
+8 órától 297 kerékpáros
+9 órától 269 kerékpáros
+
+<span class="label">4. feladat:</span>
+Az áthaladás maximális száma: 82; A rögzítés időpontja: 8:30.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TUTORIAL RÉSZ
+  ═══════════════════════════════════════════ -->
+  <div class="section-title">
+    <i class="fas fa-graduation-cap"></i>
+    Hogyan oldjuk meg lépésről lépésre?
+  </div>
+
+  <!-- ─── 1. LÉPÉS: Fájl beolvasása ─── -->
+  <div class="step-card" id="step1">
+    <div class="step-header">
+      <div class="step-badge s1">1</div>
+      <div>
+        <div class="step-title">Az adatok beolvasása a fájlból</div>
+        <div class="step-subtitle">1. feladat megoldása</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <p class="step-what">
+        A program nem tudja fejből, hogy hány kerékpáros haladt át — ezeket az adatokat
+        a <strong>meresi_adatok.txt</strong> fájlból kell kiolvasnia, és egy listába eltárolnia.
+        Képzeld el úgy, mint amikor valaki beolvas egy füzetből minden sort, és egymás után
+        felírja egy papírra a számokat.
+      </p>
+
+      <div class="tool-explain">
+        <div class="tool-explain-title"><i class="fas fa-wrench"></i> Mire lesz szükségünk?</div>
+        <div class="tool-row">
+          <span class="tool-name">meresi_adatok = []</span>
+          <span class="tool-desc">Létrehozunk egy üres listát — ide gyűjtjük majd be a számokat.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">open("fájl", "r")</span>
+          <span class="tool-desc">Megnyitjuk a fájlt olvasásra (<code>"r"</code> = read = olvasás). Olyan, mint kinyitni egy könyvet.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">with ... as f:</span>
+          <span class="tool-desc">A <code>with</code> gondoskodik róla, hogy a fájl a végén automatikusan bezáródjon — nem kell nekünk külön bezárni.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">for sor in f:</span>
+          <span class="tool-desc">A fájl minden során végigmegy — soronként adja át a tartalmat.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">sor.strip()</span>
+          <span class="tool-desc">Eltávolítja a sor végéről a "láthatatlan" sortörést és szóközöket. A fájlból olvasott sorok mindig így érkeznek.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">int(...)</span>
+          <span class="tool-desc">A fájlból <em>szövegként</em> érkezik minden szám (pl. <code>"36"</code>), az <code>int()</code> alakítja át valódi számmá (<code>36</code>).</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">.append(ertek)</span>
+          <span class="tool-desc">Hozzáfűzi az értéket a lista végéhez. Ez gyűjti össze a 16 számot.</span>
+        </div>
+      </div>
+
+      <div class="why-box">
+        <div class="why-box-title"><i class="fas fa-lightbulb"></i> Miért pont így?</div>
+        A <code>with open(...)</code> szerkezet azért jó, mert ha valami hiba is történik olvasás közben,
+        a fájl akkor is biztosan bezáródik. A <code>for sor in f</code> ciklus azért praktikus,
+        mert pontosan annyiszor fut le, ahány sor van a fájlban — nem kell előre tudni, hogy 16 sor lesz.
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><i class="fab fa-python"></i> Python kód – 1. feladat</div>
+        <pre><span class="var">meresi_adatok</span> <span class="op">=</span> []
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"meresi_adatok.txt"</span>, <span class="str">"r"</span>, encoding<span class="op">=</span><span class="str">"utf-8"</span>) <span class="kw">as</span> <span class="var">f</span>:
+    <span class="kw">for</span> <span class="var">sor</span> <span class="kw">in</span> <span class="var">f</span>:
+        <span class="var">ertek</span> <span class="op">=</span> <span class="fn">int</span>(<span class="var">sor</span>.<span class="fn">strip</span>())
+        <span class="var">meresi_adatok</span>.<span class="fn">append</span>(<span class="var">ertek</span>)</pre>
+      </div>
+
+      <div class="line-explain">
+        <div class="line-row">
+          <span class="line-code">meresi_adatok = []</span>
+          <span class="line-desc">Üres lista — ide kerülnek majd a beolvasott számok, sorban.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">with open(...) as f:</span>
+          <span class="line-desc">Megnyitja a fájlt. Az <code>f</code> nevű változón keresztül tudunk belőle olvasni. Az <code>encoding="utf-8"</code> azért kell, mert a fájl ékezetes karaktereket is tartalmazhat.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">for sor in f:</span>
+          <span class="line-desc">Végigmegy a fájl minden során. Első körben <code>sor = "36\n"</code>, majd <code>"48\n"</code>, és így tovább mind a 16 soron.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">ertek = int(sor.strip())</span>
+          <span class="line-desc"><strong>strip()</strong> eltávolítja a sor végi <code>\n</code> sortörést → <code>"36"</code>. Ezután <strong>int()</strong> számmá alakítja → <code>36</code>.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">meresi_adatok.append(ertek)</span>
+          <span class="line-desc">A számot hozzáfűzi a listához. A 16 ciklus végén a lista: <code>[36, 48, 39, -1, 30, ...]</code></span>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <a href="#step2">2. lépés <i class="fas fa-arrow-down"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 2. LÉPÉS: Összesítés ─── -->
+  <div class="step-card" id="step2">
+    <div class="step-header">
+      <div class="step-badge s2">2</div>
+      <div>
+        <div class="step-title">Az összes kerékpáros megszámlálása</div>
+        <div class="step-subtitle">2. feladat megoldása – hibás (−1) adatok kizárásával</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <p class="step-what">
+        Most össze kell adnunk az összes érvényes mérési értéket. Az érvényes szám az,
+        amelyik <strong>nem −1</strong>. A −1 azt jelenti, hogy a számláló hibásodott meg —
+        ezt nem szabad beleszámítani az összesítésbe.
+      </p>
+
+      <div class="tool-explain">
+        <div class="tool-explain-title"><i class="fas fa-wrench"></i> Mire lesz szükségünk?</div>
+        <div class="tool-row">
+          <span class="tool-name">osszeg = 0</span>
+          <span class="tool-desc">Nulláról indul az összeg — ide adogatjuk hozzá az értékeket.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">for ertek in lista:</span>
+          <span class="tool-desc">Végigmegy a lista minden elemén. Minden körben az <code>ertek</code> változó az aktuális szám lesz.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">if ertek != -1:</span>
+          <span class="tool-desc">Feltétel: csak akkor adjuk hozzá, ha az érték <em>nem egyenlő</em> −1-gyel (<code>!=</code> = nem egyenlő).</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">osszeg += ertek</span>
+          <span class="tool-desc">Hozzáadja az értéket az összeghez. Az <code>+=</code> rövid írásmód: <code>osszeg = osszeg + ertek</code>.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">print(f"... {osszeg} ...")</span>
+          <span class="tool-desc">Az f-string segítségével beleszúrjuk a változó értékét a kiírt szövegbe.</span>
+        </div>
+      </div>
+
+      <div class="why-box">
+        <div class="why-box-title"><i class="fas fa-lightbulb"></i> Miért kell az if?</div>
+        Ha minden értéket összeadnánk szűrés nélkül, a −1-esek csökkentenék az összeget.
+        Az <code>if ertek != -1</code> feltétel kiszűri a hibás méréseket,
+        és csak az érvényes adatokat veszi figyelembe.
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><i class="fab fa-python"></i> Python kód – 2. feladat</div>
+        <pre><span class="var">osszeg</span> <span class="op">=</span> <span class="num">0</span>
+<span class="kw">for</span> <span class="var">ertek</span> <span class="kw">in</span> <span class="var">meresi_adatok</span>:
+    <span class="kw">if</span> <span class="var">ertek</span> <span class="op">!=</span> <span class="num">-1</span>:
+        <span class="var">osszeg</span> <span class="op">+=</span> <span class="var">ertek</span>
+
+<span class="fn">print</span>(<span class="str">f"Összesen </span><span class="var">{osszeg}</span><span class="str"> kerékpárost számoltak."</span>)</pre>
+      </div>
+
+      <div class="line-explain">
+        <div class="line-row">
+          <span class="line-code">osszeg = 0</span>
+          <span class="line-desc">Az összeg 0-ról indul. Mint egy kasszafiók, amelybe berakjuk a tételeket.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">for ertek in meresi_adatok:</span>
+          <span class="line-desc">Egyenként kiveszi a lista elemeit: 36, 48, 39, −1, 30, 43, −1, 76, 72 …</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">if ertek != -1:</span>
+          <span class="line-desc">Ha az aktuális szám <em>nem</em> −1 (vagyis érvényes mérés), akkor…</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">osszeg += ertek</span>
+          <span class="line-desc">…hozzáadjuk az összeghez. A két −1 értéket átugorja, ezért lesz az összeg 838 (nem 840).</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">print(f"Összesen {osszeg}...")</span>
+          <span class="line-desc">Kiírja: <code>Összesen 838 kerékpárost számoltak.</code></span>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <a href="#step3">3. lépés <i class="fas fa-arrow-down"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 3. LÉPÉS: Óránkénti bontás ─── -->
+  <div class="step-card" id="step3">
+    <div class="step-header">
+      <div class="step-badge s3">3</div>
+      <div>
+        <div class="step-title">Óránkénti bontás</div>
+        <div class="step-subtitle">3. feladat megoldása – minden 4 adat egy óra</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <p class="step-what">
+        A 16 mérés pontosan 4 teljes órát fed le (6, 7, 8, 9). Minden óra alatt
+        <strong>4 mérés</strong> van (pl. 8:00, 8:15, 8:30, 8:45).
+        Tehát a lista elemei ilyen csoportokra oszthatók:
+      </p>
+
+      <div class="summary-box" style="margin-bottom:16px;">
+        <div class="summary-box-title"><i class="fas fa-table"></i> A lista felosztása</div>
+        <div class="summary-item"><i class="fas fa-check-circle"></i><span><strong>6. óra:</strong> lista[0], lista[1], lista[2], lista[3] → 36, 48, 39, <span style="color:var(--red)">−1</span> → összeg: 123</span></div>
+        <div class="summary-item"><i class="fas fa-check-circle"></i><span><strong>7. óra:</strong> lista[4], lista[5], lista[6], lista[7] → 30, 43, <span style="color:var(--red)">−1</span>, 76 → összeg: 149</span></div>
+        <div class="summary-item"><i class="fas fa-check-circle"></i><span><strong>8. óra:</strong> lista[8], lista[9], lista[10], lista[11] → 72, 73, 82, 70 → összeg: 297</span></div>
+        <div class="summary-item"><i class="fas fa-check-circle"></i><span><strong>9. óra:</strong> lista[12], lista[13], lista[14], lista[15] → 67, 72, 65, 65 → összeg: 269</span></div>
+      </div>
+
+      <p class="step-what">
+        A trükk: az <strong>i-edik óra</strong> adatai a listában mindig a
+        <code>i×4</code>, <code>i×4+1</code>, <code>i×4+2</code>, <code>i×4+3</code>
+        indexeken találhatók. Ezt egy egymásba ágyazott for ciklussal dolgozzuk fel.
+      </p>
+
+      <div class="tool-explain">
+        <div class="tool-explain-title"><i class="fas fa-wrench"></i> Mire lesz szükségünk?</div>
+        <div class="tool-row">
+          <span class="tool-name">for i in range(4):</span>
+          <span class="tool-desc">Négy órán megy végig: i = 0 (6. óra), 1 (7. óra), 2 (8. óra), 3 (9. óra).</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">for j in range(4):</span>
+          <span class="tool-desc">Az adott órán belül a 4 mérési adaton megy végig: j = 0, 1, 2, 3.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">i * 4 + j</span>
+          <span class="tool-desc">Kiszámolja, hogy a listában melyik indexen van az adat. Pl. i=2, j=2 → index = 10 → ez 8:30-as adat.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">6 + i</span>
+          <span class="tool-desc">Az óra száma: i=0 → 6. óra, i=1 → 7. óra, stb.</span>
+        </div>
+      </div>
+
+      <div class="why-box">
+        <div class="why-box-title"><i class="fas fa-lightbulb"></i> Miért egymásba ágyazott ciklus?</div>
+        Az egymásba ágyazott (belső-külső) ciklus azért praktikus, mert a külső ciklus
+        az órákon megy végig (0, 1, 2, 3), a belső ciklus pedig az adott órán belüli
+        4 mérési adaton. Így nem kell kézzel megírni mind a négy óra külön összesítőjét.
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><i class="fab fa-python"></i> Python kód – 3. feladat</div>
+        <pre><span class="fn">print</span>()
+<span class="fn">print</span>(<span class="str">"Óránkénti mérések:"</span>)
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):          <span class="cm"># i = 0, 1, 2, 3  →  6., 7., 8., 9. óra</span>
+    <span class="var">orankenti_osszeg</span> <span class="op">=</span> <span class="num">0</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):      <span class="cm"># j = 0, 1, 2, 3  →  az óra 4 mérése</span>
+        <span class="var">ertek</span> <span class="op">=</span> <span class="var">meresi_adatok</span>[<span class="var">i</span> <span class="op">*</span> <span class="num">4</span> <span class="op">+</span> <span class="var">j</span>]
+        <span class="kw">if</span> <span class="var">ertek</span> <span class="op">!=</span> <span class="num">-1</span>:
+            <span class="var">orankenti_osszeg</span> <span class="op">+=</span> <span class="var">ertek</span>
+    <span class="fn">print</span>(<span class="str">f"</span><span class="var">{6 + i}</span><span class="str"> órától </span><span class="var">{orankenti_osszeg}</span><span class="str"> kerékpáros haladt át"</span>)</pre>
+      </div>
+
+      <div class="line-explain">
+        <div class="line-row">
+          <span class="line-code">for i in range(4):</span>
+          <span class="line-desc">A külső ciklus lefut 4-szer. Az <code>i</code> értéke: 0, 1, 2, 3 — ezek az egyes órákat jelölik.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">orankenti_osszeg = 0</span>
+          <span class="line-desc">Minden új óránál nulláról indítjuk az óra összegét — különben az előző óra összege is benne maradna.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">for j in range(4):</span>
+          <span class="line-desc">A belső ciklus lefut 4-szer — ez az adott óra 4 negyedórájának felel meg.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">meresi_adatok[i * 4 + j]</span>
+          <span class="line-desc"><strong>Hogyan számolódik ki az index?</strong> Pl. i=2 (8. óra), j=2 (8:30): 2×4+2 = <strong>10</strong>. → lista[10] = 82 ✓</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">if ertek != -1:</span>
+          <span class="line-desc">A −1-es értékeket itt is kizárjuk, mint az összesítésnél.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">print(f"{6 + i} órától...")</span>
+          <span class="line-desc">Az óra száma: ha i=0, akkor 6+0=6; ha i=2, akkor 6+2=8. A belső ciklus utáni kiírás — az adott óra összegét írja ki.</span>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <a href="#step4">4. lépés <i class="fas fa-arrow-down"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 4. LÉPÉS: Csúcsforgalom ─── -->
+  <div class="step-card" id="step4">
+    <div class="step-header">
+      <div class="step-badge s4">4</div>
+      <div>
+        <div class="step-title">A csúcsforgalom meghatározása</div>
+        <div class="step-subtitle">4. feladat megoldása – maximum keresés + időpont kiszámítása</div>
+      </div>
+    </div>
+    <div class="step-body">
+
+      <p class="step-what">
+        Meg kell találnunk a <strong>legnagyobb értéket</strong> a listában, és ki kell számítanunk,
+        hogy az melyik <strong>időponthoz</strong> tartozik.
+        Az időpontot az index alapján számítjuk: minden lépés 15 perc, a mérések 6:00-tól indulnak.
+      </p>
+
+      <div class="tool-explain">
+        <div class="tool-explain-title"><i class="fas fa-wrench"></i> Mire lesz szükségünk?</div>
+        <div class="tool-row">
+          <span class="tool-name">max_ertek = -1</span>
+          <span class="tool-desc">Az eddigi legnagyobb értéket −1-ről indítjuk — biztosan minden valódi adat nagyobb ennél.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">enumerate(lista)</span>
+          <span class="tool-desc">Egyszerre adja az elemet és annak sorszámát (indexét). Pl. <code>(0, 36)</code>, <code>(1, 48)</code>, <code>(10, 82)</code> …</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">if ertek > max_ertek:</span>
+          <span class="tool-desc">Ha az aktuális értéknél nagyobbat találtunk, frissítjük a maximumot — és megjegyezzük az indexét is.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">percek = max_index * 15</span>
+          <span class="tool-desc">Az index × 15 adja, hogy hány perccel vagyunk 6:00 után. Index 10 → 150 perc.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">ora = 6 + percek // 60</span>
+          <span class="tool-desc"><code>//</code> = egészosztás (hány teljes óra telt el). 150 // 60 = 2 → 6 + 2 = <strong>8. óra</strong>.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">perc = percek % 60</span>
+          <span class="tool-desc"><code>%</code> = maradék (hány perc maradt az óra után). 150 % 60 = 30 → <strong>:30 perc</strong>.</span>
+        </div>
+        <div class="tool-row">
+          <span class="tool-name">f"{ora}:{perc:02d}"</span>
+          <span class="tool-desc">Az időpont formázása. A <code>:02d</code> gondoskodik arról, hogy 8:00 ne 8:0-ként jelenjen meg.</span>
+        </div>
+      </div>
+
+      <div class="why-box">
+        <div class="why-box-title"><i class="fas fa-lightbulb"></i> A // és % magyarázata egyszerűen</div>
+        Ha 150 percet óra:perc formátumra akarok átváltani:
+        <br>— Hány <em>teljes</em> óra van 150 percben? → 150 ÷ 60 = <strong>2</strong> (egész rész) → <code>150 // 60 = 2</code>
+        <br>— Mennyi perc marad? → 150 − 2×60 = <strong>30</strong> → <code>150 % 60 = 30</code>
+        <br>Tehát: 6:00 + 2 óra 30 perc = <strong>8:30</strong>
+      </div>
+
+      <div class="code-block">
+        <div class="code-block-header"><i class="fab fa-python"></i> Python kód – 4. feladat</div>
+        <pre><span class="var">max_ertek</span> <span class="op">=</span> <span class="num">-1</span>
+<span class="var">max_index</span> <span class="op">=</span> <span class="num">0</span>
+
+<span class="kw">for</span> <span class="var">i</span>, <span class="var">ertek</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">meresi_adatok</span>):
+    <span class="kw">if</span> <span class="var">ertek</span> <span class="op">></span> <span class="var">max_ertek</span>:
+        <span class="var">max_ertek</span> <span class="op">=</span> <span class="var">ertek</span>
+        <span class="var">max_index</span> <span class="op">=</span> <span class="var">i</span>
+
+<span class="var">percek</span> <span class="op">=</span> <span class="var">max_index</span> <span class="op">*</span> <span class="num">15</span>
+<span class="var">ora</span>    <span class="op">=</span> <span class="num">6</span> <span class="op">+</span> <span class="var">percek</span> <span class="op">//</span> <span class="num">60</span>
+<span class="var">perc</span>   <span class="op">=</span> <span class="var">percek</span> <span class="op">%</span> <span class="num">60</span>
+<span class="var">idopont</span> <span class="op">=</span> <span class="str">f"</span><span class="var">{ora}</span><span class="str">:</span><span class="var">{perc:02d}</span><span class="str">"</span>
+
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="str">f"Az áthaladás maximális száma: </span><span class="var">{max_ertek}</span><span class="str">; A rögzítés időpontja: </span><span class="var">{idopont}</span><span class="str">."</span>)</pre>
+      </div>
+
+      <div class="line-explain">
+        <div class="line-row">
+          <span class="line-code">max_ertek = -1</span>
+          <span class="line-desc">Az eddigi maximumot −1-ről indítjuk, mert a hibás értékek is −1-esek — az első valódi adat már biztosan nagyobb lesz nála.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">for i, ertek in enumerate(...):</span>
+          <span class="line-desc">Az <code>enumerate</code> egyszerre adja az indexet (<code>i</code>) és az értéket (<code>ertek</code>) — így nem kell külön nyilvántartani az indexet.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">if ertek > max_ertek:</span>
+          <span class="line-desc">Ha nagyobb értéket találtunk, frissítjük. Így a ciklus végén <code>max_ertek = 82</code> és <code>max_index = 10</code> lesz.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">percek = max_index * 15</span>
+          <span class="line-desc">Index 10 × 15 = <strong>150 perc</strong> telt el 6:00 óta.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">ora = 6 + percek // 60</span>
+          <span class="line-desc">150 // 60 = 2 → 6 + 2 = <strong>8</strong> → ez a 8. óra.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">perc = percek % 60</span>
+          <span class="line-desc">150 % 60 = <strong>30</strong> → ez a 30. perc.</span>
+        </div>
+        <div class="line-row">
+          <span class="line-code">f"{ora}:{perc:02d}"</span>
+          <span class="line-desc"><code>:02d</code> = legalább 2 jegy, vezető nullával. Eredmény: <code>"8:30"</code>. (Ha perc=0 lenne: <code>"8:00"</code>, nem <code>"8:0"</code>.)</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TELJES MEGOLDÁS
+  ═══════════════════════════════════════════ -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <i class="fas fa-check-circle"></i>
+      <h3>A teljes megoldás egy helyen</h3>
+    </div>
+    <div class="code-block" style="border:none; border-radius:0;">
+      <div class="code-block-header"><i class="fab fa-python"></i> forgalomszamlalas.py</div>
+      <pre><span class="cm"># 1. feladat – Adatok beolvasása fájlból</span>
+<span class="var">meresi_adatok</span> <span class="op">=</span> []
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"meresi_adatok.txt"</span>, <span class="str">"r"</span>, encoding<span class="op">=</span><span class="str">"utf-8"</span>) <span class="kw">as</span> <span class="var">f</span>:
+    <span class="kw">for</span> <span class="var">sor</span> <span class="kw">in</span> <span class="var">f</span>:
+        <span class="var">ertek</span> <span class="op">=</span> <span class="fn">int</span>(<span class="var">sor</span>.<span class="fn">strip</span>())
+        <span class="var">meresi_adatok</span>.<span class="fn">append</span>(<span class="var">ertek</span>)
+
+<span class="cm"># 2. feladat – Összes kerékpáros (hibás −1 értékek kizárásával)</span>
+<span class="var">osszeg</span> <span class="op">=</span> <span class="num">0</span>
+<span class="kw">for</span> <span class="var">ertek</span> <span class="kw">in</span> <span class="var">meresi_adatok</span>:
+    <span class="kw">if</span> <span class="var">ertek</span> <span class="op">!=</span> <span class="num">-1</span>:
+        <span class="var">osszeg</span> <span class="op">+=</span> <span class="var">ertek</span>
+
+<span class="fn">print</span>(<span class="str">f"Összesen </span><span class="var">{osszeg}</span><span class="str"> kerékpárost számoltak."</span>)
+
+<span class="cm"># 3. feladat – Óránkénti bontás</span>
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="str">"Óránkénti mérések:"</span>)
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):
+    <span class="var">orankenti_osszeg</span> <span class="op">=</span> <span class="num">0</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):
+        <span class="var">ertek</span> <span class="op">=</span> <span class="var">meresi_adatok</span>[<span class="var">i</span> <span class="op">*</span> <span class="num">4</span> <span class="op">+</span> <span class="var">j</span>]
+        <span class="kw">if</span> <span class="var">ertek</span> <span class="op">!=</span> <span class="num">-1</span>:
+            <span class="var">orankenti_osszeg</span> <span class="op">+=</span> <span class="var">ertek</span>
+    <span class="fn">print</span>(<span class="str">f"</span><span class="var">{6 + i}</span><span class="str"> órától </span><span class="var">{orankenti_osszeg}</span><span class="str"> kerékpáros haladt át"</span>)
+
+<span class="cm"># 4. feladat – Csúcsforgalom meghatározása</span>
+<span class="var">max_ertek</span> <span class="op">=</span> <span class="num">-1</span>
+<span class="var">max_index</span> <span class="op">=</span> <span class="num">0</span>
+<span class="kw">for</span> <span class="var">i</span>, <span class="var">ertek</span> <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="var">meresi_adatok</span>):
+    <span class="kw">if</span> <span class="var">ertek</span> <span class="op">></span> <span class="var">max_ertek</span>:
+        <span class="var">max_ertek</span> <span class="op">=</span> <span class="var">ertek</span>
+        <span class="var">max_index</span> <span class="op">=</span> <span class="var">i</span>
+
+<span class="var">percek</span> <span class="op">=</span> <span class="var">max_index</span> <span class="op">*</span> <span class="num">15</span>
+<span class="var">ora</span>    <span class="op">=</span> <span class="num">6</span> <span class="op">+</span> <span class="var">percek</span> <span class="op">//</span> <span class="num">60</span>
+<span class="var">perc</span>   <span class="op">=</span> <span class="var">percek</span> <span class="op">%</span> <span class="num">60</span>
+<span class="var">idopont</span> <span class="op">=</span> <span class="str">f"</span><span class="var">{ora}</span><span class="str">:</span><span class="var">{perc:02d}</span><span class="str">"</span>
+
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="str">f"Az áthaladás maximális száma: </span><span class="var">{max_ertek}</span><span class="str">; A rögzítés időpontja: </span><span class="var">{idopont}</span><span class="str">."</span>)</pre>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+  // Auth redirect: vendég és oktató is megtekintheti
+  try {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!u.token && u.szerep !== 'oktato' && u.szerep !== 'vendeg' && !u._tesztMod) {
+      location.replace('../portal.html');
+    }
+  } catch(e) {}
+</script>
+
+</body>
+</html>
