@@ -1979,3 +1979,166 @@ if valasz == helyes:
 else:
     print("Sajnos nem, a helyes válasz " + helyes + ".")
 
+32. feladat
+Pont: 18
+Cim: Forgalomszámlálás
+Tipus: fájlkezelés,for
+Nehezseg: nehez
+
+Egy város közlekedéstervezési célból kerékpárforgalom-számlálót telepített az egyik főútvonára. A mérőberendezés reggel 6:00-tól 9:45-ig, 15 percenként rögzíti az áthaladó kerékpárosok számát — összesen 16 mérési adat keletkezik.
+Ha a számláló meghibásodik, az adott időpontban -1 értéket rögzít a rendszer. Ezeket a hibás méréseket nem szabad beleszámítani az összesítésbe.
+
+A meres.txt fájl tartalma (soronként egy szám):
+36
+48
+39
+-1
+30
+43
+-1
+76
+78
+81
+87
+76
+64
+73
+49
+63
+
+A feladatod négy részből áll — olvasd el figyelmesen mindegyiket, mielőtt nekiállsz!
+
+1. lépés – Adatok beolvasása fájlból
+Nyisd meg a meres.txt fájlt olvasásra, és olvasd be mind a 16 mérési értéket egy listába!
+Minden sort egész számmá (int) kell átalakítani.
+A -1 értékek is kerüljenek be a listába — majd a feldolgozás során hagyjuk ki őket.
+
+2. lépés – Az összes áthaladó kerékpáros megszámlálása
+Add össze az összes pozitív mérési értéket (amelyek nem -1)!
+Írd ki a képernyőre: Összesen X kerékpárost számoltak.
+(ahol X a kiszámolt összeg)
+
+3. lépés – Óránkénti bontás
+A mérések 6:00-tól indulnak, 15 percenként: 6:00, 6:15, 6:30, 6:45 — ez az első 4 adat (6. óra).
+Majd 7:00, 7:15, 7:30, 7:45 — a következő 4 (7. óra), és így tovább 9. óráig.
+Minden óránál add össze az adott 4 mérési értéket (a -1-eseket kihagyva), és írd ki:
+Óránkénti mérések:
+6 órától X kerékpáros haladt át
+7 órától X kerékpáros haladt át
+8 órától X kerékpáros haladt át
+9 órától X kerékpáros haladt át
+
+4. lépés – A csúcsforgalom meghatározása
+Keresd meg a lista legnagyobb értékét és annak sorszámát (indexét)!
+Az időpontot az alábbi képlettel számold ki: az index × 15 perc, 6:00-tól számolva.
+Például: index 10 → 10 × 15 = 150 perc → 6:00 + 2 óra 30 perc = 8:30
+Írd ki: Az áthaladás maximális száma: X; A rögzítés időpontja: H:MM.
+
+5. lépés – Mentés fájlba
+Nyisd meg az eredmeny.txt fájlt írásra, és mentsd el bele ugyanazokat az adatokat, amelyeket a képernyőre is kiírtál (összesítés, óránkénti bontás, maximum)!
+
+Minta képernyő kimenet:
+```
+Összesen 843 kerékpárost számoltak.
+
+Óránkénti mérések:
+6 órától 123 kerékpáros haladt át
+7 órától 149 kerékpáros haladt át
+8 órától 322 kerékpáros haladt át
+9 órától 249 kerékpáros haladt át
+
+Az áthaladás maximális száma: 87; A rögzítés időpontja: 8:30.
+
+Az eredmények mentve: eredmeny.txt
+```
+
+Pontozas:
+tartalmaz:open|Fájlt nyit meg (open() függvény)|A fájl beolvasásához a beépített open() függvényt kell használni. Megvan a kódban? 📂|📂 Az open() megvan – a program képes fájlt megnyitni!
+tartalmaz:meres.txt|A fájl neve pontosan "meres.txt"|A fájlnévnek pontosan "meres.txt"-nek kell lennie – kis- és nagybetűk számítanak! 🔍|✅ A fájlnév tökéletesen egyezik!
+for|For ciklust alkalmaz a fájl feldolgozásához|A fájl sorait végig kell olvasni. Melyik ciklus alkalmas erre? 🔄|🔄 A for ciklus forog – minden sor feldolgozásra kerül!
+tartalmaz:int(|Az értékeket int()-té alakítja|A fájlból szövegként érkeznek a számok. Mit kell hívni, hogy számként kezeld őket? 🔢|🔢 int() megvan – a szövegből szám lett!
+tartalmaz:-1|A hibás (-1) értékeket kizárja|Hogyan dönti el a program, hogy egy mérés érvényes-e? A -1-es értékek kihagyása látszik a kódban? ⚠️|⚠️ A hibás mérések kizárva – csak érvényes adatok számítanak!
+if|if feltételt alkalmaz a -1-es kizáráshoz vagy maximumkereséshez|A hibás értékek szűrése vagy a maximum keresése döntést igényel. Melyik kulcsszóval?|🌿 Az if feltétel megvan – a program tud dönteni!
+tartalmaz:Összesen|Az összesítés szövegét kiírja|A minta szerint az összesítő sor "Összesen"-nel kezdődik. Szerepel a kódban? 📋|📋 Az összesítő sor szövege megvan!
+tartalmaz:kerékpárost számoltak|Az összesítő sor pontos szövege|A minta szerint pontosan "kerékpárost számoltak" szerepel a sorban. Megvan? 🔍|✅ Az összesítő sor szövege pontosan egyezik!
+tartalmaz:Óránkénti mérések|Az óránkénti fejlécsort kiírja|A minta szerint az óránkénti rész előtt megjelenik: "Óránkénti mérések:". Benne van? 📊|📊 Az óránkénti fejlécsor megvan!
+tartalmaz:6 órától|A 6. óra adatait kiírja|A 6. óra összesítőjénél "6 órától" szöveggel kell kezdeni a sort. Megvan? ⌚|⌚ A 6. óra adata kiírva!
+tartalmaz:7 órától|A 7. óra adatait kiírja|A 7. óra sora "7 órától"-lal kezdődik. Látod a kódban? ⌚|⌚ A 7. óra adata kiírva!
+tartalmaz:8 órától|A 8. óra adatait kiírja|A 8. óra sora "8 órától"-lal kezdődik. ⌚|⌚ A 8. óra adata kiírva!
+tartalmaz:9 órától|A 9. óra adatait kiírja|A 9. óra sora "9 órától"-lal kezdődik. ⌚|⌚ A 9. óra adata kiírva!
+tartalmaz:haladt át|Az óránkénti sorok pontos szövege|Minden óránkénti sor "kerékpáros haladt át" végződéssel kell záruljon. Benne van? 🔍|✅ Az óránkénti sorok szövege pontosan egyezik!
+tartalmaz:maximális száma|A csúcsforgalom sorát kiírja|A minta szerint "Az áthaladás maximális száma:" szöveggel kell kezdeni. Megvan? 🏆|🏆 A csúcsforgalom sora kiírva!
+tartalmaz:időpontja|Az időpontot kiírja|A csúcs sorában az "időpontja" szónak is szerepelnie kell. Látod a kódban? 🕐|🕐 Az időpont szövege megvan!
+tartalmaz:eredmeny.txt|Az eredmeny.txt fájlt megnyitja írásra|A fájlba mentéshez meg kell nyitni az "eredmeny.txt"-t. Szerepel a kódban? 💾|💾 Az eredmeny.txt megnyitva – az adatok mentésre kerülnek!
+tartalmaz:write(|A fájlba írás megvalósul (.write() hívás)|Az open()-nel megnyitott fájlba a .write() metódussal lehet írni. Megvan? ✍️|✍️ A .write() megvan – az adatok fájlba kerülnek!
+
+Tippek:
+A fájl beolvasásához használhatod ezt a mintát:
+with open("meres.txt", "r", encoding="utf-8") as f:
+    for sor in f:
+        ertek = int(sor.strip())
+        meresi_adatok.append(ertek)
+
+Az óránkénti bontáshoz: az i-edik óra adatai a meresi_adatok[i*4] ... meresi_adatok[i*4+3] elemek.
+A maximum indexéből az időpont: percek = index * 15; ora = 6 + percek // 60; perc = percek % 60
+Az időpont formázásához: f"{ora}:{perc:02d}" — a :02d gondoskodik arról, hogy 8:00 ne 8:0-ként jelenjen meg.
+Az eredmeny.txt fájlba ugyanúgy írhatsz mint a képernyőre, csak print() helyett f.write()-ot használj (és a sor végére \n-t kell írni).
+
+Megoldas:
+# 1. lépés – Adatok beolvasása fájlból
+meresi_adatok = []
+with open("meres.txt", "r", encoding="utf-8") as f:
+    for sor in f:
+        ertek = int(sor.strip())
+        meresi_adatok.append(ertek)
+
+# 2. lépés – Összesítés (hibás -1 értékek kihagyásával)
+osszeg = 0
+for ertek in meresi_adatok:
+    if ertek != -1:
+        osszeg += ertek
+
+print(f"Összesen {osszeg} kerékpárost számoltak.")
+print()
+
+# 3. lépés – Óránkénti bontás
+print("Óránkénti mérések:")
+for i in range(4):
+    orankenti_osszeg = 0
+    for j in range(4):
+        ertek = meresi_adatok[i * 4 + j]
+        if ertek != -1:
+            orankenti_osszeg += ertek
+    print(f"{6 + i} órától {orankenti_osszeg} kerékpáros haladt át")
+
+# 4. lépés – Csúcsforgalom meghatározása
+max_ertek = -1
+max_index = 0
+for i, ertek in enumerate(meresi_adatok):
+    if ertek > max_ertek:
+        max_ertek = ertek
+        max_index = i
+
+percek = max_index * 15
+ora = 6 + percek // 60
+perc = percek % 60
+idopont = f"{ora}:{perc:02d}"
+
+print()
+print(f"Az áthaladás maximális száma: {max_ertek}; A rögzítés időpontja: {idopont}.")
+
+# 5. lépés – Mentés fájlba
+with open("eredmeny.txt", "w", encoding="utf-8") as f:
+    f.write(f"Összesen {osszeg} kerékpárost számoltak.\n")
+    f.write("Óránkénti mérések:\n")
+    for i in range(4):
+        orankenti_osszeg = 0
+        for j in range(4):
+            ertek = meresi_adatok[i * 4 + j]
+            if ertek != -1:
+                orankenti_osszeg += ertek
+        f.write(f"{6 + i} órától {orankenti_osszeg} kerékpáros haladt át\n")
+    f.write(f"Az áthaladás maximális száma: {max_ertek}; A rögzítés időpontja: {idopont}.\n")
+
+print("\nAz eredmények mentve: eredmeny.txt")
+
