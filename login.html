@@ -428,7 +428,13 @@
             </div>
             <div style="flex:1;">
                 <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Csoport *</label>
-                <input id="forgot-csoport" type="text" placeholder="1" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.9rem;">
+                <select id="forgot-csoport" style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.9rem;cursor:pointer;">
+                    <option value="">– válassz –</option>
+                    <option value="1">1. csoport</option>
+                    <option value="2">2. csoport</option>
+                    <option value="info">info</option>
+                    <option value="nincs">nincs csoport</option>
+                </select>
             </div>
         </div>
         <div style="display:flex;gap:10px;">
@@ -448,7 +454,7 @@
         document.getElementById('forgot-email').value = '';
         document.getElementById('forgot-nev').value = '';
         document.getElementById('forgot-osztaly').value = '';
-        document.getElementById('forgot-csoport').value = '';
+        document.getElementById('forgot-csoport').selectedIndex = 0;
         document.getElementById('forgot-error').style.display = 'none';
         document.getElementById('forgot-success').style.display = 'none';
         document.getElementById('forgot-modal').style.display = 'flex';
