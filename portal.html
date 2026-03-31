@@ -1191,15 +1191,21 @@
         <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:0.4rem;">WEBOLDAL KÓDOLÁS</h3>
         <p style="color:#888;font-size:0.84rem;text-align:center;margin-bottom:1.4rem;">Mit szeretnél csinálni?</p>
 
-        <!-- 1. szint: két nagy gomb -->
-        <div id="web-modal-foMenu" style="display:flex;flex-direction:column;gap:12px;margin-bottom:1rem;">
+        <!-- 1. szint: két kártya -->
+        <div id="web-modal-foMenu" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
             <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-tanulas').style.display='block';"
-                style="padding:18px 20px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:12px;color:#7dd3fc;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;">
-                Tananyag<br><span style="font-size:0.8rem;font-weight:400;color:#94a3b8;">HTML · CSS · JavaScript · Bootstrap · Emmet · Eszközök</span>
+                style="padding:20px 12px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:12px;color:#7dd3fc;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
+                <div style="font-size:1.5rem;margin-bottom:6px;">📚</div>
+                <div style="font-size:0.95rem;font-weight:800;">Tananyag</div>
+                <div style="font-size:0.72rem;color:#93c5fd;font-weight:400;margin-top:4px;">HTML · CSS · JS<br>Bootstrap · Emmet</div>
+                <div style="font-size:0.7rem;color:#475569;margin-top:5px;">6 szint</div>
             </button>
-            <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-gyakorlo').style.display='flex';"
-                style="padding:18px 20px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:left;">
-                Gyakorló feladatok<br><span style="font-size:0.8rem;font-weight:400;color:#94a3b8;">Weboldal · Ágazati alapvizsga</span>
+            <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-gyakorlo').style.display='block';"
+                style="padding:20px 12px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
+                <div style="font-size:1.5rem;margin-bottom:6px;">💻</div>
+                <div style="font-size:0.95rem;font-weight:800;">Gyakorló feladatok</div>
+                <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Weboldal lépésről<br>lépésre · Ágazati</div>
+                <div style="font-size:0.7rem;color:#475569;margin-top:5px;">2 mód</div>
             </button>
         </div>
 
@@ -1243,16 +1249,28 @@
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">support</div>
                 </button>
             </div>
-            <button onclick="document.getElementById('web-modal-tanulas').style.display='none';document.getElementById('web-modal-foMenu').style.display='flex';"
+            <button onclick="document.getElementById('web-modal-tanulas').style.display='none';document.getElementById('web-modal-foMenu').style.display='grid';"
                 style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;">Mégse</button>
         </div>
 
-        <!-- 2. szint: gyakorló feladatok -->
-        <div id="web-modal-gyakorlo" style="display:none;flex-direction:column;gap:10px;margin-bottom:1rem;">
-            <button onclick="location.replace('web/practice.html')" style="padding:13px 20px;background:#0a1f14;border:2px solid #22c55e;border-radius:10px;color:#86efac;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">Weboldal lépésről lépésre</button>
-            <button id="web-modal-dolgozat-btn" onclick="location.replace('web/index.html')" style="padding:13px 20px;background:#2a0a1a;border:2px solid #f472b6;border-radius:10px;color:#f9a8d4;font-size:0.95rem;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a1a'">Ágazati alapvizsga feladatok</button>
-            <button onclick="document.getElementById('web-modal-gyakorlo').style.display='none';document.getElementById('web-modal-foMenu').style.display='flex';"
-                style="padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;">Mégse</button>
+        <!-- 2. szint: gyakorló feladatok – 2 kártya -->
+        <div id="web-modal-gyakorlo" style="display:none;margin-bottom:1rem;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <button onclick="location.replace('web/practice.html')" style="padding:20px 12px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
+                    <div style="font-size:1.5rem;margin-bottom:6px;">🌐</div>
+                    <div style="font-size:0.95rem;font-weight:800;">Weboldal<br>lépésről lépésre</div>
+                    <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Vegyes feladatok,<br>bootstrap, képek</div>
+                    <div style="font-size:0.7rem;color:#475569;margin-top:5px;">25 feladat</div>
+                </button>
+                <button id="web-modal-dolgozat-btn" onclick="location.replace('web/index.html')" style="padding:20px 12px;background:#2a0a1a;border:2px solid #f472b6;border-radius:12px;color:#f9a8d4;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a1a'">
+                    <div style="font-size:1.5rem;margin-bottom:6px;">🎓</div>
+                    <div style="font-size:0.95rem;font-weight:800;">Ágazati alapvizsga<br>feladatok</div>
+                    <div style="font-size:0.72rem;color:#fda4af;font-weight:400;margin-top:4px;">9 forrásfeladat,<br>40 pont/feladat</div>
+                    <div style="font-size:0.7rem;color:#475569;margin-top:5px;">éles mód</div>
+                </button>
+            </div>
+            <button onclick="document.getElementById('web-modal-gyakorlo').style.display='none';document.getElementById('web-modal-foMenu').style.display='grid';"
+                style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;">Mégse</button>
         </div>
 
         <button onclick="location.href='portal.html'"
@@ -1381,7 +1399,7 @@
     if (webParam === 'gyakorlo') {
         document.getElementById('web-valaszto-modal').style.display = 'flex';
         document.getElementById('web-modal-foMenu').style.display = 'none';
-        document.getElementById('web-modal-gyakorlo').style.display = 'flex';
+        document.getElementById('web-modal-gyakorlo').style.display = 'block';
     }
 
     // ── Diák teszt mód ────────────────────────────────────────────────────────
