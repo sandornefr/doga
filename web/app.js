@@ -4055,6 +4055,7 @@ function updateStudentDisplay() {
 }
 
 function showModeSelector() {
+  if (new URLSearchParams(location.search).get('mode') === 'exam') { goToExam(); return; }
   const modal = document.getElementById('mode-selector-modal');
   if (modal) modal.style.display = 'flex';
 }
