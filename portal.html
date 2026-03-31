@@ -1195,14 +1195,14 @@
         <div id="web-modal-foMenu" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
             <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-tanulas').style.display='block';"
                 style="padding:20px 12px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:12px;color:#7dd3fc;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
-                <div style="font-size:1.5rem;margin-bottom:6px;">📚</div>
+                <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-book-open"></i></div>
                 <div style="font-size:0.95rem;font-weight:800;">Tananyag</div>
                 <div style="font-size:0.72rem;color:#93c5fd;font-weight:400;margin-top:4px;">HTML · CSS · JS<br>Bootstrap · Emmet</div>
                 <div style="font-size:0.7rem;color:#475569;margin-top:5px;">6 szint</div>
             </button>
             <button onclick="document.getElementById('web-modal-foMenu').style.display='none';document.getElementById('web-modal-gyakorlo').style.display='block';"
                 style="padding:20px 12px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
-                <div style="font-size:1.5rem;margin-bottom:6px;">💻</div>
+                <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-laptop-code"></i></div>
                 <div style="font-size:0.95rem;font-weight:800;">Gyakorló feladatok</div>
                 <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Weboldal lépésről<br>lépésre · Ágazati</div>
                 <div style="font-size:0.7rem;color:#475569;margin-top:5px;">2 mód</div>
@@ -1213,37 +1213,37 @@
         <div id="web-modal-tanulas" style="display:none;margin-bottom:1rem;">
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
                 <button onclick="location.replace('web/learn-html.html')" style="padding:16px 10px;background:#0a1a2e;border:2px solid #0ea5e9;border-radius:12px;color:#7dd3fc;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">📄</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fab fa-html5"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">HTML</div>
                     <div style="font-size:0.72rem;color:#93c5fd;font-weight:400;margin-top:4px;">Tagek, struktúra,<br>képek, táblázat</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">21 feladat</div>
                 </button>
                 <button onclick="location.replace('web/learn-css.html')" style="padding:16px 10px;background:#1a0a2e;border:2px solid #a855f7;border-radius:12px;color:#d8b4fe;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#4c1d95'" onmouseout="this.style.background='#1a0a2e'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">🎨</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fab fa-css3-alt"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">CSS</div>
                     <div style="font-size:0.72rem;color:#c4b5fd;font-weight:400;margin-top:4px;">Stílusok, elrendezés,<br>animáció, reszponzív</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">30 feladat</div>
                 </button>
                 <button onclick="location.replace('web/learn-bootstrap.html')" style="padding:16px 10px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">🅱️</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fab fa-bootstrap"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">Bootstrap</div>
                     <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Rácsrendszer,<br>gombok, kártyák</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">15 feladat</div>
                 </button>
                 <button onclick="location.replace('web/learn-emmet.html')" style="padding:16px 10px;background:#0f1a1f;border:2px solid #38bdf8;border-radius:12px;color:#7dd3fc;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0f1a1f'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">⚡</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fas fa-bolt"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">Emmet</div>
                     <div style="font-size:0.72rem;color:#bae6fd;font-weight:400;margin-top:4px;">Gyorsírás, rövidítések,<br>hatékony kódolás</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">18 feladat</div>
                 </button>
                 <button onclick="location.replace('web/learn-js.html')" style="padding:16px 10px;background:#1a1400;border:2px solid #f59e0b;border-radius:12px;color:#fcd34d;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#78350f'" onmouseout="this.style.background='#1a1400'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">🟨</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fab fa-js"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">JavaScript</div>
                     <div style="font-size:0.72rem;color:#fde68a;font-weight:400;margin-top:4px;">Alert, függvények,<br>DOM, események</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">15 feladat</div>
                 </button>
                 <button onclick="location.replace('web/learn-devtools.html')" style="padding:16px 10px;background:#0f1520;border:2px solid #64748b;border-radius:12px;color:#94a3b8;font-size:0.88rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f1520'">
-                    <div style="font-size:1.5rem;margin-bottom:5px;">🔧</div>
+                    <div style="font-size:1.5rem;margin-bottom:5px;"><i class="fas fa-screwdriver-wrench"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">Hasznos oldalak</div>
                     <div style="font-size:0.72rem;color:#94a3b8;font-weight:400;margin-top:4px;">W3Schools, MDN,<br>validátor, DevTools</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">support</div>
@@ -1257,13 +1257,13 @@
         <div id="web-modal-gyakorlo" style="display:none;margin-bottom:1rem;">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
                 <button onclick="location.replace('web/practice.html')" style="padding:20px 12px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
-                    <div style="font-size:1.5rem;margin-bottom:6px;">🌐</div>
+                    <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-globe"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">Weboldal<br>lépésről lépésre</div>
                     <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Vegyes feladatok,<br>bootstrap, képek</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">25 feladat</div>
                 </button>
                 <button id="web-modal-dolgozat-btn" onclick="location.replace('web/index.html')" style="padding:20px 12px;background:#2a0a1a;border:2px solid #f472b6;border-radius:12px;color:#f9a8d4;cursor:pointer;text-align:center;line-height:1.4;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a1a'">
-                    <div style="font-size:1.5rem;margin-bottom:6px;">🎓</div>
+                    <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-graduation-cap"></i></div>
                     <div style="font-size:0.95rem;font-weight:800;">Ágazati alapvizsga<br>feladatok</div>
                     <div style="font-size:0.72rem;color:#fda4af;font-weight:400;margin-top:4px;">9 forrásfeladat,<br>40 pont/feladat</div>
                     <div style="font-size:0.7rem;color:#475569;margin-top:5px;">éles mód</div>
