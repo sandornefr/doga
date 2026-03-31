@@ -260,7 +260,7 @@
 
       <div class="file-row">
         <div class="file-box">
-          <div class="file-label"><i class="fas fa-file-alt"></i> meresi_adatok.txt</div>
+          <div class="file-label"><i class="fas fa-file-alt"></i> meres.txt</div>
           <div class="file-grid">
             <span class="fn">36</span><span class="fn">48</span><span class="fn">39</span><span class="fn bad">−1</span>
             <span class="fn">30</span><span class="fn">43</span><span class="fn bad">−1</span><span class="fn">76</span>
@@ -277,10 +277,10 @@
       </div>
 
       <div class="reszek">
-        <div class="resz"><span class="resz-szam">1.</span><span>A megadott 16 számot tárolja el a program a <strong>meresi_adatok.txt</strong> fájlból, egy megfelelő adatszerkezetben!</span></div>
-        <div class="resz"><span class="resz-szam">2.</span><span>A fájlban lévő adatok alapján határozza meg az áthaladó összes kerékpáros számát, és írja ki a minta szerint! Az összesítésnél hagyja ki a hibás (<strong>−1</strong>) adatokat!</span></div>
-        <div class="resz"><span class="resz-szam">3.</span><span>Írja ki a képernyőre, hogy az egyes <strong>órákon belül</strong> összesen hány kerékpáros haladt át! (A −1-es adatokat itt is hagyja ki!)</span></div>
-        <div class="resz"><span class="resz-szam">4.</span><span>Határozza meg a <strong>legmagasabb mérési értéket</strong> és a rögzítés <strong>időpontját</strong>! Írja ki a minta szerint!</span></div>
+        <div class="resz"><span class="resz-szam">1.</span><span>A megadott 16 számot tárolja el a program forrásában egy megfelelő adatszerkezetben! A 16 szám rendelkezésre áll a <strong>meres.txt</strong> állományban, amelyből a program kódjába átmásolhatók.</span></div>
+        <div class="resz"><span class="resz-szam">2.</span><span>A forgalomszámláló adatai alapján határozza meg az áthaladt összes kerékpáros számát, és írassa ki a minta szerint! Ügyeljen arra, hogy a számítás során a mérőhibás adatok ne befolyásolják az összeget!</span></div>
+        <div class="resz"><span class="resz-szam">3.</span><span>Írassa ki a képernyőre a mintának megfelelően, hogy óránként hány kerékpáros haladt át a számlálón!</span></div>
+        <div class="resz"><span class="resz-szam">4.</span><span>Határozza meg a legnagyobb mérési értéket és rögzítésének időpontját! Az eredményt írassa ki a mintának megfelelő formátumban! Több maximális érték esetén az elsőt jelenítse meg! A feladat szempontjából most egyformán helyesnek tekintjük a <strong>07:00, 7:00, 7:0</strong> írásmódot is.</span></div>
       </div>
 
       <div class="minta-label">Minta a szöveges kimenet kialakításához:</div>
@@ -352,7 +352,7 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
     </div>
     <div class="step-body">
       <p class="explain">
-        A program nem tudja fejből az adatokat — a <strong>meresi_adatok.txt</strong> fájlból kell kiolvasnia őket,
+        A program nem tudja fejből az adatokat — a <strong>meres.txt</strong> fájlból kell kiolvasnia őket,
         és egy <strong>listába</strong> gyűjteni. Fontos tudni: a fájlból minden adat <em>szövegként</em> érkezik,
         nem számként — ezért át kell alakítani. Ezen kívül minden sor végén van egy láthatatlan sortörés-jel,
         amit el kell távolítani. Erre való a <code>.strip()</code> és az <code>int()</code>.
@@ -367,7 +367,7 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
         <div class="kod-fej"><i class="fab fa-python"></i> 1. feladat – fájl beolvasása</div>
         <pre><code class="language-python">meresi_adatok = []                              # üres lista, ide kerülnek a számok
 
-with open("meresi_adatok.txt", "r", encoding="utf-8") as f:
+with open("meres.txt", "r", encoding="utf-8") as f:
     for sor in f:                               # minden soron végigmegy
         ertek = int(sor.strip())                # szövegből egész szám: "36\n" → 36
         meresi_adatok.append(ertek)             # hozzáfűzi a listához
@@ -540,7 +540,7 @@ print(f"Az áthaladók maximális száma: {max_ertek}; a rögzítés időpontja:
       <div class="kod-fej"><i class="fab fa-python"></i> forgalomszamlalas.py</div>
       <pre><code class="language-python"># 1. feladat – adatok beolvasása
 meresi_adatok = []
-with open("meresi_adatok.txt", "r", encoding="utf-8") as f:
+with open("meres.txt", "r", encoding="utf-8") as f:
     for sor in f:
         ertek = int(sor.strip())
         meresi_adatok.append(ertek)
