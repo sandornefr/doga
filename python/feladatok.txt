@@ -2157,11 +2157,10 @@ ModulVege
 
 Az elkészítendő program állatfajok nevét és tömegét tárolja objektumokban. A felhasználótól bekéri három állatfaj nevét és tömegét, majd ezt követően meghatározza és fájlba kiírja a legnehezebb állatfaj nevét.
 
-a) Írjon programot nehez.py néven!
-b) Az állatfajok adatainak tárolására szolgáló objektumok alapját képező osztály rendelkezésre áll az allat.py fájlban. A programjában töltse be ezt a modult, és használja a benne lévő osztályt!
-c) Kérje be a felhasználótól három állatfaj nevét és tömegét! Az adatok alapján hozzon létre Allatfaj osztályú objektumokat és tárolja őket!
-d) Határozza meg a legnehezebb állatfajhoz tartozó tömeget! Feltételezheti, hogy a felhasználó nem ad meg egyező tömegadatokat.
-e) Határozza meg, hogy ez a tömeg melyik fajhoz tartozik, és a faj nevét írja be a "legnehezebb.txt" szövegfájlba!
+Az állatfajok adatainak tárolására szolgáló objektumok alapját képező osztály rendelkezésre áll az allat.py fájlban. Töltsd be ezt a modult, és használd a benne lévő osztályt!
+Kérd be a felhasználótól három állatfaj nevét és tömegét! Az adatok alapján hozz létre Allatfaj osztályú objektumokat és tárold őket!
+Határozd meg a legnehezebb állatfajhoz tartozó tömeget! Feltételezheted, hogy a felhasználó nem ad meg egyező tömegadatokat.
+Határozd meg, hogy ez a tömeg melyik fajhoz tartozik, és a faj nevét írd be a "legnehezebb.txt" szövegfájlba!
 
 Minta kód:
 
