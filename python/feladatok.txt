@@ -2142,3 +2142,90 @@ with open("eredmeny.txt", "w", encoding="utf-8") as f:
 
 print("\nAz eredmények mentve: eredmeny.txt")
 
+33. feladat
+Pont: 18
+Cim: Állatok
+Tipus: class,for,fájlkezelés
+Nehezseg: nehez
+ModulNev: allat.py
+ModulTartalom:
+class Allatfaj:
+    def __init__(self, fajnev, tomeg):
+        self.fajnev = fajnev
+        self.tomeg = tomeg
+ModulVege
+
+Az elkészítendő program állatfajok nevét és tömegét tárolja objektumokban. A felhasználótól bekéri három állatfaj nevét és tömegét, majd ezt követően meghatározza és fájlba kiírja a legnehezebb állatfaj nevét.
+
+a) Írjon programot nehez.py néven!
+b) Az állatfajok adatainak tárolására szolgáló objektumok alapját képező osztály rendelkezésre áll az allat.py fájlban. A programjában töltse be ezt a modult, és használja a benne lévő osztályt!
+c) Kérje be a felhasználótól három állatfaj nevét és tömegét! Az adatok alapján hozzon létre Allatfaj osztályú objektumokat és tárolja őket!
+d) Határozza meg a legnehezebb állatfajhoz tartozó tömeget! Feltételezheti, hogy a felhasználó nem ad meg egyező tömegadatokat.
+e) Határozza meg, hogy ez a tömeg melyik fajhoz tartozik, és a faj nevét írja be a "legnehezebb.txt" szövegfájlba!
+
+Minta kód:
+
+```
+Add meg egy állatfaj nevét! tőkés réce
+Hány kilogramm a tömege egy példánynak? 1
+Add meg egy állatfaj nevét! teve
+Hány kilogramm a tömege egy példánynak? 500
+Add meg egy állatfaj nevét! strucc
+Hány kilogramm a tömege egy példánynak? 110
+A(z) tőkés réce tömege 1 kg.
+A(z) teve tömege 500 kg.
+A(z) strucc tömege 110 kg.
+```
+
+Pontozas:
+teszt:tőkés réce,1,teve,500,strucc,110:A(z) tőkés réce tömege 1 kg.|Program hibaüzenet nélkül lefut|Fut le a kód hibátlanul? Próbáld meg futtatni és nézd meg a kimenetet! 🚀|🚀 A program hibátlanul lefutott!
+tartalmaz:import allat|Betölti az allat nevű modult|A fájl elején szerepel "import allat"? Ez szükséges a megadott osztály használatához! 📦|📦 Az allat modul betöltve!
+bekeres:Add meg egy állatfaj nevét! |Bekérés szövege: "Add meg egy állatfaj nevét! "|Pontosan kell a szöveg, szóköz van a felkiáltójel után! 🔍|✅ Az állatfaj nevének bekérése tökéletes!
+bekeres:Hány kilogramm a tömege egy példánynak? |Bekérés szövege: "Hány kilogramm a tömege egy példánynak? "|Pontosan kell a szöveg, kérdőjel és szóköz a végén! 🔍|✅ A tömeg bekérése tökéletes!
+int_float:1|A bekért tömeget számmá alakítja|Az input() szöveget ad vissza – a tömeget int() segítségével számmá kell alakítani a helyes összehasonlításhoz! 🔢|🔢 A tömeg számmá alakítva!
+tartalmaz:allat.Allatfaj(|Az allat modul Allatfaj osztályából példányosít|Az objektum létrehozásához: allat.Allatfaj(fajnev, tomeg) – megvan a kódban? 🦁|🦁 Allatfaj objektum sikeresen létrehozva!
+teszt:tőkés réce,1,teve,500,strucc,110:A(z) tőkés réce tömege 1 kg.|Első objektum adatait helyesen jeleníti meg|Az első állatfaj neve és tömege helyesen jelenik meg "A(z) ... tömege ... kg." formában? 📋|📋 Az első objektum adatai tökéletesek!
+tartalmaz:= []|Listát hoz létre az objektumoknak|Az objektumokat egy listában kell tárolni. Üres lista: allatfajok = [] 📝|📝 Az adatszerkezet (lista) létrehozva!
+tartalmaz:.append(|Az objektumokat hozzáadja a listához|Minden létrehozott objektumot a lista.append(objektum) paranccsal add a listához! ➕|➕ Az objektumok listához adva!
+for|For ciklust alkalmaz az adatbekéréshez|A három állatfaj bekéréséhez ciklust kell használni – for _ in range(3): 🔄|🔄 A for ciklus forog – mindenki bekerül a listába!
+teszt:tőkés réce,1,teve,500,strucc,110:A(z) teve tömege 500 kg.|Második objektum adatait is megjeleníti|A második állatfaj (teve, 500 kg) adatai is helyesen jelennek meg? ⚖️|⚖️ A második objektum is tökéletesen megjelenik!
+teszt:tőkés réce,1,teve,500,strucc,110:A(z) strucc tömege 110 kg.|Mindhárom objektum adatait megjeleníti|A harmadik állatfaj (strucc, 110 kg) is megjelenik? ✅|✅ Mindhárom objektum adatai megjelennek!
+tartalmaz:.tomeg|Az objektumok tömeg attribútumát eléri a maximum kereséshez|A maximum kereséshez az egyes objektumok .tomeg értékét kell összehasonlítani! 🔍|🔍 A tömeg attribútum elérése megvan!
+teszt:tőkés réce,1,teve,500,strucc,110:teve a legnehezebb|Meghatározza és fájlba írja a legnehezebb állatfajt|A "legnehezebb.txt" fájlban szerepel "teve a legnehezebb"? A fájl tartalmát a terminálban is látod futtatás után! 🏆|🏆 A legnehezebb állatfaj helyesen meghatározva!
+tartalmaz:legnehezebb.txt|Megnyitja a legnehezebb.txt fájlt|A fájl neve pontosan "legnehezebb.txt" – kis- és nagybetűk számítanak! 💾|💾 A legnehezebb.txt fájl megnyitva!
+tartalmaz:a legnehezebb|A mondatot felépíti ("A(z) ... a legnehezebb.")|A fájlba írt mondat "a legnehezebb" szövegrészt tartalmaz? ✍️|✍️ A mondat felépítve!
+tartalmaz:write(|A mondatot fájlba írja (.write() hívás)|Az open()-nel megnyitott fájlba a .write() metódussal lehet írni! 📝|📝 A .write() megvan – az adat fájlba kerül!
+teszt:kutya,5,elefant,200,eger,30:elefant a legnehezebb|Más adatokkal is helyesen találja meg a maximumot|Más adatokkal is működik? (kutya-5, elefant-200, eger-30 → elefant a legnehezebb) 🧮|🏆 Más adatokkal is tökéletesen működik!
+
+Tippek:
+Az adatok bekéréséhez és objektumok létrehozásához használhatod ezt a mintát:
+for _ in range(3):
+    fajnev = input('Add meg egy állatfaj nevét! ')
+    tomeg = int(input('Hány kilogramm a tömege egy példánynak? '))
+    allatfaj = allat.Allatfaj(fajnev, tomeg)
+    allatfajok.append(allatfaj)
+A maximum kereséséhez indulj az első elemből: legnehezebb = allatfajok[0], majd hasonlítsd össze .tomeg alapján.
+A fájlba íráshoz: celfajl = open('legnehezebb.txt', 'w'), majd celfajl.write('A(z) ' + legnehezebb.fajnev + ' a legnehezebb.')
+
+Megoldas:
+import allat
+
+allatfajok = []
+
+for _ in range(3):
+    fajnev = input('Add meg egy állatfaj nevét! ')
+    tomeg = int(input('Hány kilogramm a tömege egy példánynak? '))
+    allatfaj = allat.Allatfaj(fajnev, tomeg)
+    allatfajok.append(allatfaj)
+
+legnehezebb = allatfajok[0]
+
+for allatfaj in allatfajok:
+    print('A(z) ' + allatfaj.fajnev + ' tömege ' + str(allatfaj.tomeg) + ' kg.')
+    if allatfaj.tomeg > legnehezebb.tomeg:
+        legnehezebb = allatfaj
+
+celfajl = open('legnehezebb.txt', 'w')
+celfajl.write('A(z) ' + legnehezebb.fajnev + ' a legnehezebb.')
+celfajl.close()
+

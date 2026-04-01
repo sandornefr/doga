@@ -188,8 +188,9 @@
             font-weight: 700;
             white-space: nowrap;
         }
-        .task-badge.pt8 { color: #2ed573; border: 1px solid #2ed573; }
+        .task-badge.pt8  { color: #2ed573; border: 1px solid #2ed573; }
         .task-badge.pt14 { color: #ffa502; border: 1px solid #ffa502; }
+        .task-badge.pt18 { color: #f472b6; border: 1px solid #f472b6; }
         .task-type-btn {
             padding: 0.35rem 0.9rem;
             border-radius: 8px;
@@ -1271,7 +1272,7 @@
                             <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)"><i class="fa-solid fa-shuffle"></i> Vegyes</button>
                             <button class="task-type-btn" data-type="csak8" onclick="setTaskType('csak8', this)">8 pontos × 3</button>
                             <button class="task-type-btn" data-type="csak14" onclick="setTaskType('csak14', this)">14 pontos × 3</button>
-                            <button class="task-type-btn" disabled>18 pontos (hamarosan)</button>
+                            <button class="task-type-btn" data-type="csak18" onclick="setTaskType('csak18', this)">18 pontos × 1</button>
                         </div>
                     </div>
 
@@ -1469,7 +1470,7 @@
                             <button class="task-type-btn active" data-type="random" onclick="setTaskType('random', this)"><i class="fa-solid fa-shuffle"></i> Vegyes</button>
                             <button class="task-type-btn" data-type="csak8" onclick="setTaskType('csak8', this)">8 pontos × 3</button>
                             <button class="task-type-btn" data-type="csak14" onclick="setTaskType('csak14', this)">14 pontos × 3</button>
-                            <button class="task-type-btn" disabled>18 pontos (hamarosan)</button>
+                            <button class="task-type-btn" data-type="csak18" onclick="setTaskType('csak18', this)">18 pontos × 1</button>
                         </div>
                         <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
                             <button onclick="restartPractice()" style="padding:0.65rem 1.6rem;background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;">🔄 Még egy kör!</button>

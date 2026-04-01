@@ -442,13 +442,15 @@ function parseTasks(text) {
     let inCriteria = false;
     let inTippek = false;
     let inMegoldas = false;
+    let inModulTartalom = false;
     let exampleLines = [];
     let criteriaLines = [];
     let tippLines = [];
     let megoldasLines = [];
+    let modulLines = [];
 
     const resetSections = () => {
-        inExample = false; inCriteria = false; inTippek = false; inMegoldas = false;
+        inExample = false; inCriteria = false; inTippek = false; inMegoldas = false; inModulTartalom = false;
     };
 
     for (let line of lines) {
@@ -460,11 +462,12 @@ function parseTasks(text) {
                 currentTask.criteria = parseCriteria(criteriaLines);
                 currentTask.hints = tippLines.filter(h => h.trim() !== '');
                 currentTask.solution = megoldasLines.join('\n').trim();
+                currentTask.modulTartalom = modulLines.join('\n').trim();
                 tasks.push(currentTask);
             }
-            currentTask = { number: parseInt(taskMatch[1]), cim: '', description: '', example: '', points: 8, criteria: [], hints: [], solution: '' };
+            currentTask = { number: parseInt(taskMatch[1]), cim: '', description: '', example: '', points: 8, criteria: [], hints: [], solution: '', modulNev: '', modulTartalom: '' };
             resetSections();
-            exampleLines = []; criteriaLines = []; tippLines = []; megoldasLines = [];
+            exampleLines = []; criteriaLines = []; tippLines = []; megoldasLines = []; modulLines = [];
             continue;
         }
 
@@ -477,9 +480,14 @@ function parseTasks(text) {
         const tipusMatch = line.match(/^Tipus:\s*(.+)/i);
         if (tipusMatch && currentTask) { currentTask.tipus = tipusMatch[1].trim(); continue; }
 
-        if (line.trim() === 'Pontozas:')  { resetSections(); inCriteria = true; continue; }
-        if (line.trim() === 'Tippek:')    { resetSections(); inTippek   = true; continue; }
-        if (line.trim() === 'Megoldas:')  { resetSections(); inMegoldas = true; continue; }
+        const modulNevMatch = line.match(/^ModulNev:\s*(.+)/i);
+        if (modulNevMatch && currentTask) { currentTask.modulNev = modulNevMatch[1].trim(); continue; }
+
+        if (line.trim() === 'Pontozas:')     { resetSections(); inCriteria       = true; continue; }
+        if (line.trim() === 'Tippek:')       { resetSections(); inTippek         = true; continue; }
+        if (line.trim() === 'Megoldas:')     { resetSections(); inMegoldas       = true; continue; }
+        if (line.trim() === 'ModulTartalom:'){ resetSections(); inModulTartalom  = true; continue; }
+        if (line.trim() === 'ModulVege')     { inModulTartalom = false; continue; }
 
         if (line.trim() === '```python' || line.trim() === '```') {
             if (!inCriteria && !inTippek) inExample = inMegoldas ? false : !inExample;
@@ -488,9 +496,10 @@ function parseTasks(text) {
         if (line.match(/^Minta kód:/i)) continue;
 
         if (currentTask) {
-            if (inCriteria)  { if (line.trim() !== '') criteriaLines.push(line.trim()); }
-            else if (inTippek)   { if (line.trim() !== '') tippLines.push(line.trim()); }
-            else if (inMegoldas) { megoldasLines.push(line); }
+            if (inCriteria)        { if (line.trim() !== '') criteriaLines.push(line.trim()); }
+            else if (inTippek)     { if (line.trim() !== '') tippLines.push(line.trim()); }
+            else if (inMegoldas)   { megoldasLines.push(line); }
+            else if (inModulTartalom) { modulLines.push(line); }
             else if (inExample)  { exampleLines.push(line); }
             else if (line.trim() !== '') {
                 if (currentTask.description !== '') currentTask.description += '\n';
@@ -504,12 +513,14 @@ function parseTasks(text) {
         currentTask.criteria = parseCriteria(criteriaLines);
         currentTask.hints = tippLines.filter(h => h.trim() !== '');
         currentTask.solution = megoldasLines.join('\n').trim();
+        currentTask.modulTartalom = modulLines.join('\n').trim();
         tasks.push(currentTask);
     }
 
     const count8 = tasks.filter(t => t.points === 8).length;
     const count14 = tasks.filter(t => t.points === 14).length;
-    debugLog(`✅ ${tasks.length} feladat betöltve (${count8} db 8 pontos, ${count14} db 14 pontos)`);
+    const count18 = tasks.filter(t => t.points === 18).length;
+    debugLog(`✅ ${tasks.length} feladat betöltve (${count8} db 8 pontos, ${count14} db 14 pontos, ${count18} db 18 pontos)`);
 }
 
 // Teszt indítása
@@ -666,8 +677,9 @@ async function startTest() {
 
 // Véletlenszerű feladatok kiválasztása – előző kör feladatait kizárja ha lehet
 async function selectRandomTasks() {
-    const tasks8 = tasks.filter(t => t.points === 8);
+    const tasks8  = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
+    const tasks18 = tasks.filter(t => t.points === 18);
 
     // Előző kör betöltése: először backend (cross-device), fallback localStorage
     const email = studentData.email || 'anon';
@@ -690,8 +702,9 @@ async function selectRandomTasks() {
     }
 
     // Előző körben nem szereplő feladatok (ha van elég belőlük, azokat részesítjük előnyben)
-    const fresh8 = tasks8.filter(t => !lastRoundTaskNumbers.has(t.number));
+    const fresh8  = tasks8.filter(t => !lastRoundTaskNumbers.has(t.number));
     const fresh14 = tasks14.filter(t => !lastRoundTaskNumbers.has(t.number));
+    const fresh18 = tasks18.filter(t => !lastRoundTaskNumbers.has(t.number));
 
     const shuffle = arr => [...arr].sort(() => 0.5 - Math.random());
 
@@ -701,6 +714,9 @@ async function selectRandomTasks() {
     } else if (selectedTaskType === 'csak14') {
         const pool = fresh14.length >= 3 ? fresh14 : tasks14;
         selectedTasks = shuffle(pool).slice(0, 3);
+    } else if (selectedTaskType === 'csak18') {
+        const pool = fresh18.length >= 1 ? fresh18 : tasks18;
+        selectedTasks = shuffle(pool).slice(0, 1);
     } else {
         // random: 2×8 + 1×14
         const pool8 = fresh8.length >= 2 ? fresh8 : tasks8;
@@ -964,6 +980,12 @@ async function runCodeWithMockInputs(code, inputs) {
         const pyodide = await getPyodide();
         pyodideLoaded = true;
 
+        // Segédfájl (modul) befecskendezése a virtuális fájlrendszerbe
+        const activeTask = selectedTasks[currentTaskIndex];
+        if (activeTask && activeTask.modulNev && activeTask.modulTartalom) {
+            pyodide.FS.writeFile('/home/pyodide/' + activeTask.modulNev, activeTask.modulTartalom, { encoding: 'utf8' });
+        }
+
         // Előző futtatás globális névterének törlése
         pyodide.runPython(`
 _kando_keep = {'__name__', '__doc__', '__package__', '__loader__', '__spec__', '__builtins__', 'sys', 'builtins', 'js', '_kando_keep'}
@@ -979,6 +1001,9 @@ import sys
 from io import StringIO
 import builtins
 
+if '/home/pyodide' not in sys.path:
+    sys.path.insert(0, '/home/pyodide')
+
 sys.stdout = StringIO()
 sys.stderr = StringIO()
 
@@ -993,7 +1018,19 @@ builtins.input = input
         const wrappedCode = wrapPythonCodeForAsyncInput(code);
         await pyodide.runPythonAsync(wrappedCode);
 
-        const stdout = pyodide.runPython('sys.stdout.getvalue()');
+        let stdout = pyodide.runPython('sys.stdout.getvalue()');
+
+        // Fájlba írt .txt fájlok tartalmának befűzése az outputba (teszt kritériumok is ellenőrizni tudják)
+        try {
+            const entries = pyodide.FS.readdir('/home/pyodide/');
+            for (const f of entries) {
+                if (f.endsWith('.txt') && f !== 'meres.txt' && f !== '.' && f !== '..') {
+                    const fc = pyodide.FS.readFile('/home/pyodide/' + f, { encoding: 'utf8' });
+                    stdout += '\n[' + f + ']\n' + fc;
+                }
+            }
+        } catch(e) {}
+
         return { success: true, output: stdout || '' };
     } catch (error) {
         // pyodideFailed: true → Python értelmező nem töltődött be (nem a kód hibája)
@@ -1640,6 +1677,12 @@ async function runPythonCode() {
         globalThis.js_input = customPythonInput;
         globalThis.js_print = (text) => { term.write(String(text)); };
 
+        // Segédfájl (modul) befecskendezése a virtuális fájlrendszerbe
+        const activeTask18 = selectedTasks[currentTaskIndex];
+        if (activeTask18 && activeTask18.modulNev && activeTask18.modulTartalom) {
+            pyodide.FS.writeFile('/home/pyodide/' + activeTask18.modulNev, activeTask18.modulTartalom, { encoding: 'utf8' });
+        }
+
         // Előző futtatás globális névterének törlése
         pyodide.runPython(`
 _kando_keep = {'__name__', '__doc__', '__package__', '__loader__', '__spec__', '__builtins__', 'sys', 'builtins', 'js', '_kando_keep'}
@@ -1654,6 +1697,9 @@ del _kando_keep
 import sys
 from io import StringIO
 import builtins
+
+if '/home/pyodide' not in sys.path:
+    sys.path.insert(0, '/home/pyodide')
 
 # Közvetlen terminál-kimenet: print() azonnal megjelenik
 class _TermOut:
@@ -1678,6 +1724,19 @@ builtins.input = input
         // Kód futtatása aszinkron módon
         const wrappedCode = wrapPythonCodeForAsyncInput(code);
         await pyodide.runPythonAsync(wrappedCode);
+
+        // Fájlba írt .txt fájlok megjelenítése a terminálban
+        try {
+            const entries = pyodide.FS.readdir('/home/pyodide/');
+            for (const f of entries) {
+                if (f.endsWith('.txt') && f !== 'meres.txt' && f !== '.' && f !== '..') {
+                    const fc = pyodide.FS.readFile('/home/pyodide/' + f, { encoding: 'utf8' });
+                    term.writeln('\r\n\x1b[36m📄 ' + f + ' tartalma:\x1b[0m');
+                    term.writeln('\x1b[90m' + '─'.repeat(30) + '\x1b[0m');
+                    term.writeln(fc.trim());
+                }
+            }
+        } catch(e) {}
 
         await sleep(400);
         term.writeln('\n✅  Kód sikeresen lefutott!');
@@ -2605,6 +2664,15 @@ function updateTaskBreakdown() {
                 <span class="task-row-time">~25 perc/feladat</span>
             </div>`;
         totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">42 pont</strong>';
+    } else if (selectedTaskType === 'csak18') {
+        titleEl.textContent = '1 db 18 pontos feladat:';
+        rowsEl.innerHTML = `
+            <div class="task-row">
+                <span class="task-badge pt18">18 pont × 1</span>
+                <span class="task-row-desc">OOP + fájlkezelés</span>
+                <span class="task-row-time">~35 perc</span>
+            </div>`;
+        totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">18 pont</strong> &nbsp;|&nbsp; ~35 perc';
     } else {
         titleEl.textContent = 'Véletlenszerűen kiosztott feladatok:';
         rowsEl.innerHTML = `
