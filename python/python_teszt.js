@@ -713,7 +713,7 @@ async function startTest() {
 async function selectRandomTasks() {
     const tasks8  = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
-    const tasks18 = tasks.filter(t => t.points === 18);
+    const tasks18 = tasks.filter(t => t.points === 18 && t.modulNev);
 
     // Előző kör betöltése: először backend (cross-device), fallback localStorage
     const email = studentData.email || 'anon';
@@ -844,7 +844,7 @@ function renderCustomTaskList() {
     const allPastNums = new Set(customTaskHistory.flat());
     const tasks8  = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
-    const tasks18 = tasks.filter(t => t.points === 18);
+    const tasks18 = tasks.filter(t => t.points === 18 && t.modulNev);
 
     function matches(task) {
         if (filterType === 'all') return true;
