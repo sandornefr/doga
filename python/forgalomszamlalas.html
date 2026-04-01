@@ -251,11 +251,12 @@
     </div>
     <div class="task-body">
       <p class="task-desc">
-        Egy város közlekedéstervezési célból kerékpárforgalom-számlálót telepített az egyik főútvonára.
+        Egy város közlekedéstervezési céllal kerékpárosforgalom-számlálót telepít az egyik főútjára.
         A próbaüzem <strong>reggel 6-tól 10-ig</strong> tart, amelynek során <strong>15 percenként</strong>
-        rögzíti az áthaladó kerékpárosok számát. Ha technikai problémák lépnek fel, az adott időpontban
-        <strong>−1</strong> értéket rögzít a rendszer; különben az áthaladók száma nemnegatív egész szám.
-        A rögzített mérési értékek száma <strong>16</strong>.
+        rögzítik a megelőző 15 percben áthaladó kerékpárosok számát. A rendszer még bizonytalan, ha
+        technikai probléma – például áramszünet – történik a mérés során bármikor, akkor a rögzített
+        érték abban az időintervallumban <strong>−1</strong> lesz, különben az áthaladók száma
+        nemnegatív egész szám. A rögzített mérési értékek száma <strong>16</strong>, és értékük például a következő:
       </p>
 
       <div class="file-row">
@@ -264,15 +265,15 @@
           <div class="file-grid">
             <span class="fn">36</span><span class="fn">48</span><span class="fn">39</span><span class="fn bad">−1</span>
             <span class="fn">30</span><span class="fn">43</span><span class="fn bad">−1</span><span class="fn">76</span>
-            <span class="fn">72</span><span class="fn">73</span><span class="fn">82</span><span class="fn">70</span>
-            <span class="fn">67</span><span class="fn">72</span><span class="fn">65</span><span class="fn">65</span>
+            <span class="fn">67</span><span class="fn">82</span><span class="fn">73</span><span class="fn">75</span>
+            <span class="fn">64</span><span class="fn">73</span><span class="fn">69</span><span class="fn">63</span>
           </div>
           <div class="file-note"><i class="fas fa-exclamation-circle" style="color:var(--red)"></i> Piros = hibás mérés (−1)</div>
         </div>
         <div class="ido-lista">
-          <div><i class="fas fa-clock"></i> 6:00 → 1. sor &nbsp;·&nbsp; 6:15 → 2. sor &nbsp;·&nbsp; 6:30 → 3. sor &nbsp;·&nbsp; 6:45 → 4. sor</div>
-          <div><i class="fas fa-clock"></i> 7:00 → 5. sor &nbsp;·&nbsp; 7:15 → 6. sor &nbsp;·&nbsp; … és így tovább, 15 percenként</div>
-          <div><i class="fas fa-clock"></i> 9:30 → 15. sor &nbsp;·&nbsp; 9:45 → 16. sor</div>
+          <div><i class="fas fa-clock"></i> 6:15 → 1. sor &nbsp;·&nbsp; 6:30 → 2. sor &nbsp;·&nbsp; 6:45 → 3. sor &nbsp;·&nbsp; 7:00 → 4. sor</div>
+          <div><i class="fas fa-clock"></i> 7:15 → 5. sor &nbsp;·&nbsp; 7:30 → 6. sor &nbsp;·&nbsp; … és így tovább, 15 percenként</div>
+          <div><i class="fas fa-clock"></i> 9:45 → 15. sor &nbsp;·&nbsp; 10:00 → 16. sor</div>
         </div>
       </div>
 
@@ -282,6 +283,13 @@
         <div class="resz"><span class="resz-szam">3.</span><span>Írassa ki a képernyőre a mintának megfelelően, hogy óránként hány kerékpáros haladt át a számlálón!</span></div>
         <div class="resz"><span class="resz-szam">4.</span><span>Határozza meg a legnagyobb mérési értéket és rögzítésének időpontját! Az eredményt írassa ki a mintának megfelelő formátumban! Több maximális érték esetén az elsőt jelenítse meg! A feladat szempontjából most egyformán helyesnek tekintjük a <strong>07:00, 7:00, 7:0</strong> írásmódot is.</span></div>
       </div>
+
+      <p class="task-desc" style="margin-top:4px; font-size:0.85rem; color:var(--muted);">
+        <i class="fas fa-info-circle" style="color:var(--accent)"></i>
+        A mérés kezdőadatai: 6:15-kor 36, 6:30-kor 48 kerékpáros, és így tovább.
+        7:00-kor és 7:45-kor −1 került rögzítésre, mert az előző negyedórában mérőhiba történt a számlálórendszerben.
+        Az utolsó adatot, 63 kerékpárost 10:00-kor jegyezték fel.
+      </p>
 
       <div class="minta-label">Minta a szöveges kimenet kialakításához:</div>
       <pre class="minta">2. feladat
@@ -319,11 +327,11 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
         </div>
         <div class="sor">
           <span class="sor-kod">lista</span>
-          <span class="sor-leiras">Több érték együtt, sorban tárolva, szögletes zárójelben. Például <code>meresi_adatok = [36, 48, 39, -1, ...]</code>. Az elemeket <strong>0-tól számozzuk</strong>: az első elem a 0. helyen van, a második az 1. helyen stb. Ezt a sorszámot <strong>indexnek</strong> nevezzük. Így a mi listánkban <code>meresi_adatok[0]</code> = 36 (a 6:00-ás adat), <code>meresi_adatok[10]</code> = 82 (a 8:30-as adat).</span>
+          <span class="sor-leiras">Több érték együtt, sorban tárolva, szögletes zárójelben. Például <code>meresi_adatok = [36, 48, 39, -1, ...]</code>. Az elemeket <strong>0-tól számozzuk</strong>: az első elem a 0. helyen van, a második az 1. helyen stb. Ezt a sorszámot <strong>indexnek</strong> nevezzük. Így a mi listánkban <code>meresi_adatok[0]</code> = 36 (a 6:15-ös adat), <code>meresi_adatok[9]</code> = 82 (a 8:30-as adat).</span>
         </div>
         <div class="sor">
           <span class="sor-kod">index (sorszám)</span>
-          <span class="sor-leiras">A lista elemeinek sorszáma, <strong>0-tól kezdve</strong>. A mi 16 elemű listánkban: lista[0]=36 (6:00), lista[1]=48 (6:15), lista[2]=39 (6:30) … lista[10]=82 (8:30) … lista[15]=65 (9:45). Az index és az időpont kapcsolata: index × 15 perc = eltelt idő 6:00 óta.</span>
+          <span class="sor-leiras">A lista elemeinek sorszáma, <strong>0-tól kezdve</strong>. A mi 16 elemű listánkban: lista[0]=36 (6:15), lista[1]=48 (6:30), lista[2]=39 (6:45) … lista[9]=82 (8:30) … lista[15]=63 (10:00). Az index és az időpont kapcsolata: (index + 1) × 15 perc = eltelt idő 6:00 óta.</span>
         </div>
         <div class="sor">
           <span class="sor-kod">print()</span>
@@ -358,10 +366,10 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
       </p>
       <div class="kod-wrap">
         <div class="kod-fej"><i class="fab fa-python"></i> 1. feladat – lista létrehozása</div>
-        <pre><code class="language-python">meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 72, 73, 82, 70, 67, 72, 65, 65]</code></pre>
+        <pre><code class="language-python">meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 67, 82, 73, 75, 64, 73, 69, 63]</code></pre>
       </div>
       <div class="sor-lista">
-        <div class="sor"><span class="sor-kod">meresi_adatok = [...]</span><span class="sor-leiras">Létrehozunk egy <strong>listát</strong> a 16 mérési értékkel. A szögletes zárójel jelzi, hogy lista. A számokat vesszővel választjuk el egymástól — pontosan abban a sorrendben, ahogy a meres.txt-ben szerepelnek (6:00-tól 9:45-ig).</span></div>
+        <div class="sor"><span class="sor-kod">meresi_adatok = [...]</span><span class="sor-leiras">Létrehozunk egy <strong>listát</strong> a 16 mérési értékkel. A szögletes zárójel jelzi, hogy lista. A számokat vesszővel választjuk el egymástól — pontosan abban a sorrendben, ahogy a meres.txt-ben szerepelnek (6:15-től 10:00-ig, 15 percenként).</span></div>
         <div class="sor"><span class="sor-kod">-1 értékek a listában</span><span class="sor-leiras">A hibás mérések (<code>-1</code>) is belekerülnek a listába — a 4. és a 7. helyen (index 3 és 6). Ezeket majd a következő feladatokban szűrjük ki, nem most.</span></div>
       </div>
     </div>
@@ -398,7 +406,7 @@ print(f"Összesen {osszeg} kerékpárost számoltak.")
         <div class="sor"><span class="sor-kod">osszeg = 0</span><span class="sor-leiras">Nulláról indul az összeg. Mint egy kasszafiók, amelybe majd berakjuk az értékeket egyenként.</span></div>
         <div class="sor"><span class="sor-kod">for ertek in meresi_adatok:</span><span class="sor-leiras">Végigmegy a lista összes elemén. Minden körben az <code>ertek</code> változó az aktuális szám: először 36, majd 48, 39, -1, 30 stb.</span></div>
         <div class="sor"><span class="sor-kod">if ertek != -1:</span><span class="sor-leiras"><strong>Feltétel:</strong> csak akkor adja hozzá, ha az érték nem egyenlő -1-gyel. A <code>!=</code> jel azt jelenti: "nem egyenlő". A két hibás mérés (-1) így kimarad.</span></div>
-        <div class="sor"><span class="sor-kod">osszeg += ertek</span><span class="sor-leiras">Hozzáadja az aktuális értéket az összeghez. Az <code>+=</code> rövidítés: <code>osszeg = osszeg + ertek</code>. A végén: 36+48+39+30+43+76+72+73+82+70+67+72+65+65 = <strong>838</strong>.</span></div>
+        <div class="sor"><span class="sor-kod">osszeg += ertek</span><span class="sor-leiras">Hozzáadja az aktuális értéket az összeghez. Az <code>+=</code> rövidítés: <code>osszeg = osszeg + ertek</code>. A végén: 36+48+39+30+43+76+67+82+73+75+64+73+69+63 = <strong>838</strong>.</span></div>
         <div class="sor"><span class="sor-kod">print("2. feladat")</span><span class="sor-leiras">Kiírja a feladat sorszámát — ez jelzi, melyik feladat eredménye következik.</span></div>
         <div class="sor"><span class="sor-kod">print(f"Összesen {osszeg}...")</span><span class="sor-leiras">Az f-string belehelyettesíti az <code>osszeg</code> változó értékét a szövegbe. Kimenet: <code>Összesen 838 kerékpárost számoltak.</code></span></div>
       </div>
@@ -416,14 +424,15 @@ print(f"Összesen {osszeg} kerékpárost számoltak.")
     </div>
     <div class="step-body">
       <p class="explain">
-        A 16 mérés 4 órára oszlik (6., 7., 8., 9. óra), és minden óra pontosan <strong>4 adatot</strong> tartalmaz
-        (pl. 8:00, 8:15, 8:30, 8:45). A listában ezek egymás után vannak: az első 4 a 6. óra, a következő 4 a 7. óra stb.
+        A 16 mérés 4 órára oszlik (6., 7., 8., 9. óra), és minden óra pontosan <strong>4 adatot</strong> tartalmaz.
+        Mivel a mérés a <em>megelőző</em> 15 percet rögzíti, a 6. óra adatai: 6:15, 6:30, 6:45, 7:00 (mind a hat és hét közötti forgalom).
+        A listában ezek egymás után vannak: az első 4 a 6. óra, a következő 4 a 7. óra stb.
         Két egymásba ágyazott ciklust használunk: a <strong>külső</strong> az órákon megy végig,
         a <strong>belső</strong> az adott óra 4 negyedórájára.
       </p>
       <div class="miert">
         <div class="miert-cim"><i class="fas fa-lightbulb"></i> Hogyan számolódik az index?</div>
-        Pl. a 8. óra (i=2) 3. negyedórájához (j=2): <code>2 × 4 + 2 = 10</code> → lista[10] = 82 (ez a 8:30-as adat).
+        Pl. a 8. óra (i=2) 2. negyedórájához (j=1): <code>2 × 4 + 1 = 9</code> → lista[9] = 82 (ez a 8:30-as adat).
         A külső ciklus az órákon, a belső az adott óra 4 mérésén megy végig.
       </div>
       <div class="kod-wrap">
@@ -435,7 +444,7 @@ print("Óránkénti mérések:")
 for i in range(4):                              # i = 0, 1, 2, 3  →  6., 7., 8., 9. óra
     orankenti_osszeg = 0
     for j in range(4):                          # j = 0, 1, 2, 3  →  az óra 4 negyedórája
-        ertek = meresi_adatok[i * 4 + j]        # pl. i=2, j=2 → index 10 → 82
+        ertek = meresi_adatok[i * 4 + j]        # pl. i=2, j=1 → index 9 → 82
         if ertek != -1:
             orankenti_osszeg += ertek
     print(f"{6 + i} órától {orankenti_osszeg} kerékpáros")
@@ -448,7 +457,7 @@ for i in range(4):                              # i = 0, 1, 2, 3  →  6., 7., 8
         <div class="sor"><span class="sor-kod">for i in range(4):</span><span class="sor-leiras"><strong>Külső ciklus</strong> — négyszer fut le: i=0 (6. óra), i=1 (7. óra), i=2 (8. óra), i=3 (9. óra).</span></div>
         <div class="sor"><span class="sor-kod">orankenti_osszeg = 0</span><span class="sor-leiras">Minden új óránál nulláról indítjuk az összeget. Fontos, hogy ez a sorban belül van — különben az előző óra összege is benne maradna.</span></div>
         <div class="sor"><span class="sor-kod">for j in range(4):</span><span class="sor-leiras"><strong>Belső ciklus</strong> — az adott óra 4 negyedórájára megy végig: j=0, 1, 2, 3.</span></div>
-        <div class="sor"><span class="sor-kod">meresi_adatok[i * 4 + j]</span><span class="sor-leiras">Kiszámolja, melyik listaelemhez tartozik az adott negyedóra. Pl. 8. óra (i=2), 3. negyedóra (j=2): <code>2×4+2 = 10</code> → lista[10] = <strong>82</strong>.</span></div>
+        <div class="sor"><span class="sor-kod">meresi_adatok[i * 4 + j]</span><span class="sor-leiras">Kiszámolja, melyik listaelemhez tartozik az adott negyedóra. Pl. 8. óra (i=2), 2. negyedóra (j=1): <code>2×4+1 = 9</code> → lista[9] = <strong>82</strong>.</span></div>
         <div class="sor"><span class="sor-kod">if ertek != -1:</span><span class="sor-leiras">A hibás -1-es értékeket itt is kizárjuk az összesítésből, ugyanúgy mint a 2. feladatnál.</span></div>
         <div class="sor"><span class="sor-kod">print(f"{6 + i} órától...")</span><span class="sor-leiras">A belső ciklus után írja ki az adott óra összegét. Ha i=0: <code>6+0=6</code> → "6 órától 123 kerékpáros". Ha i=2: <code>6+2=8</code> → "8 órától 297 kerékpáros".</span></div>
       </div>
@@ -468,12 +477,13 @@ for i in range(4):                              # i = 0, 1, 2, 3  →  6., 7., 8
       <p class="explain">
         Végigmegyünk az összes mérési értéken, és megkeressük a <strong>legnagyobbat</strong> — de nem elég tudni,
         mekkora, azt is meg kell jegyezni, hogy <strong>hányadik helyen van</strong> a listában (ez az index).
-        Ebből a sorszámból számítjuk ki az időpontot: az index × 15 perc adja meg, hány perccel vagyunk 6:00 után.
-        Az óra és a perc szétválasztásához egészosztást (<code>//</code>) és maradékot (<code>%</code>) használunk.
+        Ebből a sorszámból számítjuk ki az időpontot: mivel a mérések 6:15-kor kezdődnek, az (index + 1) × 15 perc
+        adja meg, hány perccel vagyunk 6:00 után. Az óra és a perc szétválasztásához egészosztást
+        (<code>//</code>) és maradékot (<code>%</code>) használunk.
       </p>
       <div class="miert">
         <div class="miert-cim"><i class="fas fa-lightbulb"></i> A // és % egyszerűen</div>
-        Index 10 → 10 × 15 = <strong>150 perc</strong> telt el 6:00 óta.<br>
+        Index 9 → (9 + 1) × 15 = <strong>150 perc</strong> telt el 6:00 óta.<br>
         150 // 60 = <strong>2</strong> teljes óra &nbsp;→&nbsp; 6 + 2 = <strong>8. óra</strong><br>
         150 % 60 = <strong>30</strong> maradék perc &nbsp;→&nbsp; <strong>:30</strong><br>
         Eredmény: <strong>8:30</strong>
@@ -489,7 +499,8 @@ for i in range(len(meresi_adatok)):
         max_index = i
 
 # Időpont kiszámítása az indexből
-percek  = max_index * 15                        # index 10 → 150 perc
+# (A mérések 6:15-kor kezdődnek → index 0 = 6:15, tehát +1 kell)
+percek  = (max_index + 1) * 15                 # index 9 → (9+1)×15 = 150 perc
 ora     = 6 + percek // 60                      # 150 // 60 = 2  →  6 + 2 = 8
 perc    = percek % 60                           # 150 % 60 = 30
 idopont = f"{ora}:{perc:02d}"                   # :02d → ha perc=0, akkor "8:00" (nem "8:0")
@@ -504,8 +515,8 @@ print(f"Az áthaladók maximális száma: {max_ertek}; a rögzítés időpontja:
         <div class="sor"><span class="sor-kod">max_ertek = -1</span><span class="sor-leiras">Az eddigi legnagyobb értéket -1-ről indítjuk. Mivel minden valódi mérés ennél nagyobb, az első érvényes szám már felülírja majd.</span></div>
         <div class="sor"><span class="sor-kod">max_index = 0</span><span class="sor-leiras">Ide kerül a legnagyobb értékű elem sorszáma (indexe) a listában — ebből számítjuk ki majd az időpontot.</span></div>
         <div class="sor"><span class="sor-kod">for i in range(len(...)):</span><span class="sor-leiras">Végigmegy a lista összes elemén, miközben az <code>i</code> változó az aktuális sorszámot (0-tól 15-ig) tartalmazza.</span></div>
-        <div class="sor"><span class="sor-kod">if meresi_adatok[i] > max_ertek:</span><span class="sor-leiras">Ha az aktuális elem nagyobb az eddigi maximumnál, frissítjük a maximumot és megjegyezzük a sorszámát. A végén i=10, mert lista[10]=82 a legnagyobb.</span></div>
-        <div class="sor"><span class="sor-kod">percek = max_index * 15</span><span class="sor-leiras">Index 10 × 15 = <strong>150 perc</strong> telt el 6:00 óta. (Minden index 15 percet jelent.)</span></div>
+        <div class="sor"><span class="sor-kod">if meresi_adatok[i] > max_ertek:</span><span class="sor-leiras">Ha az aktuális elem nagyobb az eddigi maximumnál, frissítjük a maximumot és megjegyezzük a sorszámát. A végén i=9, mert lista[9]=82 a legnagyobb.</span></div>
+        <div class="sor"><span class="sor-kod">percek = (max_index + 1) * 15</span><span class="sor-leiras">Index 9 → (9+1) × 15 = <strong>150 perc</strong> telt el 6:00 óta. (+1 azért kell, mert a mérések 6:15-kor kezdődnek.)</span></div>
         <div class="sor"><span class="sor-kod">ora = 6 + percek // 60</span><span class="sor-leiras"><code>//</code> az egészosztás: 150 ÷ 60 = <strong>2</strong> teljes óra → 6 + 2 = <strong>8. óra</strong>.</span></div>
         <div class="sor"><span class="sor-kod">perc = percek % 60</span><span class="sor-leiras"><code>%</code> a maradék: 150 - 2×60 = <strong>30</strong> perc maradt → <strong>:30</strong>.</span></div>
         <div class="sor"><span class="sor-kod">f"{ora}:{perc:02d}"</span><span class="sor-leiras">Az időpont szöveggé alakítása. A <code>:02d</code> legalább 2 jegyet ír ki: ha perc=0, akkor <code>8:00</code> jelenik meg, nem <code>8:0</code>. Eredmény: <strong>"8:30"</strong>.</span></div>
@@ -520,9 +531,9 @@ print(f"Az áthaladók maximális száma: {max_ertek}; a rögzítés időpontja:
       <h3>A teljes megoldás</h3>
     </div>
     <div class="kod-wrap" style="border:none;border-radius:0;">
-      <div class="kod-fej"><i class="fab fa-python"></i> forgalomszamlalas.py</div>
+      <div class="kod-fej"><i class="fab fa-python"></i> szamlalas.py</div>
       <pre><code class="language-python"># 1. feladat – adatok eltárolása listában
-meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 72, 73, 82, 70, 67, 72, 65, 65]
+meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 67, 82, 73, 75, 64, 73, 69, 63]
 
 # 2. feladat – összes kerékpáros (hibás -1 értékek kizárásával)
 osszeg = 0
@@ -553,7 +564,7 @@ for i in range(len(meresi_adatok)):
         max_ertek = meresi_adatok[i]
         max_index = i
 
-percek  = max_index * 15
+percek  = (max_index + 1) * 15
 ora     = 6 + percek // 60
 perc    = percek % 60
 idopont = f"{ora}:{perc:02d}"
