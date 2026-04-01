@@ -541,10 +541,10 @@
   const daysLeft = Math.ceil((switchDate - now) / 864e5);
   if (now >= switchDate) {
     el.style.cssText += ';display:block;background:rgba(251,191,36,0.1);border-bottom:1px solid #d97706;color:#fbbf24;';
-    el.innerHTML = '⚠️ <strong>Ponthatárok (2026. május 1-től):</strong> Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%';
+    el.innerHTML = '⚠️ <strong>A számonkérés ponthatárai megváltoztak (2026. május 1-től):</strong> Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%';
   } else if (daysLeft <= 7) {
     el.style.cssText += ';display:block;background:rgba(99,102,241,0.08);border-bottom:1px solid #6366f1;color:#a5b4fc;';
-    el.innerHTML = `🕐 <strong>${daysLeft} nap múlva</strong> a WEB ponthatárok emelkednek → Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%`;
+    el.innerHTML = `🕐 <strong>${daysLeft} nap múlva</strong> a számonkérés ponthatárai emelkednek → Jeles ≥85% · Jó ≥70% · Közepes ≥55% · Elégséges ≥40%`;
   }
 })();
 </script>
