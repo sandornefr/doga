@@ -132,6 +132,31 @@ async function initializeApp() {
         .catch(err => debugLog('⚠️ Python előbetöltési hiba: ' + err.message));
 }
 
+function updateStartSection() {
+    const isPractice = (testMode === 'practice');
+    const practiceType = document.getElementById('practice-task-type');
+    if (practiceType) practiceType.style.display = isPractice ? 'block' : 'none';
+    const timePicker = document.getElementById('practice-time-picker');
+    if (timePicker) timePicker.style.display = isPractice ? 'block' : 'none';
+    const customBtn = document.getElementById('btn-open-custom-modal');
+    if (customBtn) customBtn.style.display = isPractice ? 'block' : 'none';
+    const liveRules = document.getElementById('start-live-rules');
+    if (liveRules) liveRules.style.display = isPractice ? 'none' : 'block';
+    const badge = document.getElementById('test-mode-badge');
+    const badgeText = document.getElementById('test-mode-text');
+    if (badge && badgeText) {
+        badge.style.display = 'block';
+        if (isPractice) {
+            badge.style.cssText = 'padding:0.5rem 1rem;border-radius:8px;text-align:center;margin-bottom:0.6rem;font-weight:600;font-size:0.9rem;background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;';
+            badgeText.textContent = '🎓 GYAKORLÓ MÓD';
+        } else {
+            badge.style.cssText = 'padding:0.5rem 1rem;border-radius:8px;text-align:center;margin-bottom:0.6rem;font-weight:600;font-size:0.9rem;background:#2d0a0a;border:1px solid #e94560;color:#e94560;';
+            badgeText.textContent = (testMode === 'vizsga' ? '🎓 VIZSGA MÓD' : '🔴 ÉLES MÓD');
+        }
+    }
+    updateTaskBreakdown();
+}
+
 // Teszt mód betöltése az API-ból (retry ha Railway alszik)
 async function loadTestMode() {
     const fetchWithTimeout = (url, ms) => {
@@ -538,7 +563,13 @@ async function startTest() {
 
     const tasks8 = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
-    if (tasks8.length < 2 || tasks14.length < 1) {
+    const tasks18check = tasks.filter(t => t.points === 18);
+    if (selectedTaskType === 'csak18') {
+        if (tasks18check.length < 1) {
+            alert(`Nincs 18 pontos feladat betöltve! Ellenőrizd a feladatok.txt fájlt.`);
+            return;
+        }
+    } else if (tasks8.length < 2 || tasks14.length < 1) {
         alert(`Nincs elég feladat! Szükséges: legalább 2 db 8 pontos és 1 db 14 pontos feladat.\nJelenleg: ${tasks8.length} db 8 pontos, ${tasks14.length} db 14 pontos.`);
         return;
     }
