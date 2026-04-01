@@ -319,7 +319,7 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
         </div>
         <div class="sor">
           <span class="sor-kod">lista</span>
-          <span class="sor-leiras">Több érték együtt, sorban tárolva. Például <code>[36, 48, 39, -1]</code> egy négy elemű lista. Az elemeket <strong>0-tól számozzuk</strong>: az első elem a 0. helyen van, a második az 1. helyen, stb. Ezt a sorszámot <strong>indexnek</strong> nevezzük.</span>
+          <span class="sor-leiras">Több érték együtt, sorban tárolva, szögletes zárójelben. Például <code>meresi_adatok = [36, 48, 39, -1, ...]</code>. Az elemeket <strong>0-tól számozzuk</strong>: az első elem a 0. helyen van, a második az 1. helyen stb. Ezt a sorszámot <strong>indexnek</strong> nevezzük. Így a mi listánkban <code>meresi_adatok[0]</code> = 36 (a 6:00-ás adat), <code>meresi_adatok[10]</code> = 82 (a 8:30-as adat).</span>
         </div>
         <div class="sor">
           <span class="sor-kod">index (sorszám)</span>
@@ -346,40 +346,23 @@ Az áthaladók maximális száma: 82; a rögzítés időpontja: 8:30.</pre>
     <div class="step-head">
       <div class="step-badge b1">1</div>
       <div>
-        <div class="step-ttl">Adatok beolvasása fájlból</div>
+        <div class="step-ttl">Az adatok eltárolása listában</div>
         <div class="step-sub">1. feladat</div>
       </div>
     </div>
     <div class="step-body">
       <p class="explain">
-        A program nem tudja fejből az adatokat — a <strong>meres.txt</strong> fájlból kell kiolvasnia őket,
-        és egy <strong>listába</strong> gyűjteni. Fontos tudni: a fájlból minden adat <em>szövegként</em> érkezik,
-        nem számként — ezért át kell alakítani. Ezen kívül minden sor végén van egy láthatatlan sortörés-jel,
-        amit el kell távolítani. Erre való a <code>.strip()</code> és az <code>int()</code>.
+        A feladat azt kéri, hogy a 16 számot tároljuk el a program kódjában egy megfelelő adatszerkezetben.
+        A számok rendelkezésre állnak a <strong>meres.txt</strong> fájlban — onnan egyszerűen kimásoljuk őket,
+        és egy <strong>listát</strong> hozunk létre belőlük. Ez egyetlen sorban megoldható.
       </p>
-      <div class="miert">
-        <div class="miert-cim"><i class="fas fa-lightbulb"></i> Miért <code>with open(...)</code>?</div>
-        A <code>with</code> kulcsszó gondoskodik róla, hogy a fájl automatikusan bezáródjon az olvasás végén —
-        még akkor is, ha hiba történik. A <code>for sor in f</code> ciklus pontosan annyiszor fut le,
-        ahány sor van a fájlban, nem kell előre tudni, hogy 16 sor lesz.
-      </div>
       <div class="kod-wrap">
-        <div class="kod-fej"><i class="fab fa-python"></i> 1. feladat – fájl beolvasása</div>
-        <pre><code class="language-python">meresi_adatok = []                              # üres lista, ide kerülnek a számok
-
-with open("meres.txt", "r", encoding="utf-8") as f:
-    for sor in f:                               # minden soron végigmegy
-        ertek = int(sor.strip())                # szövegből egész szám: "36\n" → 36
-        meresi_adatok.append(ertek)             # hozzáfűzi a listához
-
-# Eredmény: meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 72, 73, 82, 70, 67, 72, 65, 65]</code></pre>
+        <div class="kod-fej"><i class="fab fa-python"></i> 1. feladat – lista létrehozása</div>
+        <pre><code class="language-python">meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 72, 73, 82, 70, 67, 72, 65, 65]</code></pre>
       </div>
       <div class="sor-lista">
-        <div class="sor"><span class="sor-kod">meresi_adatok = []</span><span class="sor-leiras">Létrehozunk egy <strong>üres listát</strong>. Ide fogjuk gyűjteni a fájlból beolvasott számokat — egyelőre még üres, mint egy üres kosár.</span></div>
-        <div class="sor"><span class="sor-kod">with open(...) as f:</span><span class="sor-leiras">Megnyitjuk a fájlt olvasásra (<code>"r"</code> = read). A <code>with</code> gondoskodik arról, hogy a fájl a végén automatikusan bezáródjon. Az <code>f</code> változón keresztül tudunk belőle olvasni.</span></div>
-        <div class="sor"><span class="sor-kod">for sor in f:</span><span class="sor-leiras">Végigmegy a fájl minden során egyenként. Először <code>sor = "36\n"</code>, majd <code>"48\n"</code> stb. — összesen 16-szor fut le.</span></div>
-        <div class="sor"><span class="sor-kod">ertek = int(sor.strip())</span><span class="sor-leiras"><code>strip()</code> levágja a sor végi láthatatlan sortörést: <code>"36\n"</code> → <code>"36"</code>. Az <code>int()</code> szövegből egész számmá alakítja: <code>"36"</code> → <code>36</code>. Erre azért van szükség, mert a fájlból minden szövegként érkezik.</span></div>
-        <div class="sor"><span class="sor-kod">meresi_adatok.append(ertek)</span><span class="sor-leiras">Hozzáfűzi a számot a lista végéhez. A 16 ciklus végén a lista tartalmazza az összes mérési értéket, köztük a hibás <code>-1</code>-eseket is.</span></div>
+        <div class="sor"><span class="sor-kod">meresi_adatok = [...]</span><span class="sor-leiras">Létrehozunk egy <strong>listát</strong> a 16 mérési értékkel. A szögletes zárójel jelzi, hogy lista. A számokat vesszővel választjuk el egymástól — pontosan abban a sorrendben, ahogy a meres.txt-ben szerepelnek (6:00-tól 9:45-ig).</span></div>
+        <div class="sor"><span class="sor-kod">-1 értékek a listában</span><span class="sor-leiras">A hibás mérések (<code>-1</code>) is belekerülnek a listába — a 4. és a 7. helyen (index 3 és 6). Ezeket majd a következő feladatokban szűrjük ki, nem most.</span></div>
       </div>
     </div>
   </div>
@@ -538,12 +521,8 @@ print(f"Az áthaladók maximális száma: {max_ertek}; a rögzítés időpontja:
     </div>
     <div class="kod-wrap" style="border:none;border-radius:0;">
       <div class="kod-fej"><i class="fab fa-python"></i> forgalomszamlalas.py</div>
-      <pre><code class="language-python"># 1. feladat – adatok beolvasása
-meresi_adatok = []
-with open("meres.txt", "r", encoding="utf-8") as f:
-    for sor in f:
-        ertek = int(sor.strip())
-        meresi_adatok.append(ertek)
+      <pre><code class="language-python"># 1. feladat – adatok eltárolása listában
+meresi_adatok = [36, 48, 39, -1, 30, 43, -1, 76, 72, 73, 82, 70, 67, 72, 65, 65]
 
 # 2. feladat – összes kerékpáros (hibás -1 értékek kizárásával)
 osszeg = 0
