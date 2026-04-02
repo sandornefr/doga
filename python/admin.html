@@ -1345,6 +1345,11 @@
                 .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
                 .replace(/\s+/g,' ').trim();
         }
+        // Csak Vezeteknév + Keresztnév – második keresztnevet elhagyja
+        function shortNev(normált) {
+            const parts = normált.split(' ');
+            return parts.length > 2 ? parts[0] + ' ' + parts[1] : normált;
+        }
 
         function checkNevsor() {
             const input = document.getElementById('nevsor-input').value;
@@ -1358,12 +1363,19 @@
             const regisztralt = [], nemRegisztralt = [];
             nevek.forEach(nev => {
                 const norm = normNev(nev);
+                const short = shortNev(norm);
                 const parts = norm.split(' ');
                 const fordított = parts.length === 2 ? parts[1] + ' ' + parts[0] : null;
+                const fordítottShort = parts.length >= 2 ? parts[1] + ' ' + parts[0] : null;
                 // Összes egyező tanuló (lehet több azonos nevű)
+                // Egyezés: teljes név VAGY rövidített (második keresztnév nélkül) VAGY fordított sorrend
                 const egyezok = tanulok.filter(u => {
                     const un = normNev(u.nev);
-                    return un === norm || (fordított && un === fordított);
+                    const us = shortNev(un);
+                    return un === norm
+                        || (fordított && un === fordított)
+                        || us === short
+                        || (fordítottShort && us === fordítottShort);
                 });
                 if (egyezok.length) regisztralt.push({ nev, egyezok });
                 else nemRegisztralt.push(nev);
