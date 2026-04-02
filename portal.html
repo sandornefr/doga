@@ -1467,6 +1467,9 @@
             // Oktató tanulói előnézetben látja a Csatlakozás gombot is
             const csBtn = document.getElementById('csatlakozas-btn');
             if (csBtn) csBtn.style.display = 'flex';
+            // Python kártya → gyakorló választó (mint vendég/Teszt Elek módban)
+            const cardPy = document.getElementById('card-python');
+            if (cardPy) cardPy.onclick = function(e) { e.preventDefault(); document.getElementById('vendeg-python-modal').style.display = 'flex'; };
         }
     }
 
