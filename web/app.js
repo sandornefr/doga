@@ -3047,7 +3047,7 @@ function maybePostProgress() {
   if (_progressPosted.has(key) || localStorage.getItem(lsKey)) return;
   _progressPosted.add(key);
   localStorage.setItem(lsKey, '1');
-  fetch('https://agazati.up.railway.app/api/progress', {
+  fetch('http://192.168.0.250/api/progress', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -3994,7 +3994,7 @@ function updateStudentDisplay() {
     if (kandoUser.szerep === 'oktato') {
       if (switchBtn) switchBtn.style.display = 'inline-block';
       // Oktató is látja a valódi módot, de anti-cheat nem indul
-      fetch('https://agazati.up.railway.app/api/config', { signal: AbortSignal.timeout(6000) })
+      fetch('http://192.168.0.250/api/config', { signal: AbortSignal.timeout(6000) })
         .then(r => r.json())
         .then(data => {
           const isLive = data.test_mode === 'live' || data.test_mode === 'vizsga';
@@ -4019,7 +4019,7 @@ function updateStudentDisplay() {
         })
         .catch(() => { setModeBadge(false); });
     } else {
-      fetch('https://agazati.up.railway.app/api/config', { signal: AbortSignal.timeout(6000) })
+      fetch('http://192.168.0.250/api/config', { signal: AbortSignal.timeout(6000) })
         .then(r => r.json())
         .then(data => {
           const isVizsga = data.test_mode === 'vizsga';
@@ -4932,7 +4932,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
     // Session tracking indítása (nem blokkolja az init-et)
     (function() {
-      const API_S = 'https://agazati.up.railway.app';
+      const API_S = 'http://192.168.0.250';
       const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
       if (!u.email) return;
       let sessionId = null;
@@ -5063,7 +5063,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     // Anti-cheat inicializálás (test mode lekérdezése után)
     const acKandoUser = (() => { try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); } catch { return {}; } })();
     if (acKandoUser.szerep !== 'oktato') {
-      fetch('https://agazati.up.railway.app/api/config', { signal: AbortSignal.timeout(6000) })
+      fetch('http://192.168.0.250/api/config', { signal: AbortSignal.timeout(6000) })
         .then(r => r.json())
         .then(data => { initAntiCheat(data.test_mode === 'live'); })
         .catch(() => { initAntiCheat(false); });
@@ -5117,7 +5117,7 @@ async function submitWebToBackend() {
     subject:      'web'
   };
   try {
-    await fetch('https://agazati.up.railway.app/api/submit', {
+    await fetch('http://192.168.0.250/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

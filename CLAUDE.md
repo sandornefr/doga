@@ -55,7 +55,7 @@ while|leírás
 for|leírás
 ```
 
-**Backend (Railway):** ASP.NET Core Minimal API + SQLite at `backend/`. URL: `https://agazati.up.railway.app`. Endpoints: `/api/auth/login`, `/api/submit`, `/api/submissions`, `/api/config`, `/api/stats`, `/api/user-state/{email}/{key}`.
+**Backend (Railway):** ASP.NET Core Minimal API + SQLite at `backend/`. URL: `http://192.168.0.250`. Endpoints: `/api/auth/login`, `/api/submit`, `/api/submissions`, `/api/config`, `/api/stats`, `/api/user-state/{email}/{key}`.
 
 ### Web Exam (`web/`)
 - `index.html` — Student interface (Monaco Editor, HTML+CSS fülek, élő előnézet, 60 perc)

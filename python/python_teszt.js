@@ -2,7 +2,7 @@
 // Visszafejtett és helyreállított verzió
 
 // Globális változók
-const RAILWAY_URL = 'https://agazati.up.railway.app';
+const RAILWAY_URL = 'http://192.168.0.250';
 let testMode = 'practice';
 let tasks = [];
 let selectedTasks = [];
@@ -1203,7 +1203,7 @@ function maybePostPythonProgress(task, earned, total) {
     const key = `${email}:python:${taskId}`;
     if (_pythonProgressPosted.has(key)) return;
     _pythonProgressPosted.add(key);
-    fetch('https://agazati.up.railway.app/api/progress', {
+    fetch('http://192.168.0.250/api/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

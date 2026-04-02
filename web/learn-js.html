@@ -187,7 +187,7 @@
   const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
   if(!u.email) return;
   const email=u.email.replace('@kkszki.hu','');
-  fetch('https://agazati.up.railway.app/api/leaderboard/rank/'+encodeURIComponent(email))
+  fetch('http://192.168.0.250/api/leaderboard/rank/'+encodeURIComponent(email))
     .then(r=>r.ok?r.json():null).then(d=>{
       const s=d?.streak??0, el=document.getElementById('streak-counter');
       if(!el||s<1) return;
@@ -1057,7 +1057,7 @@ function markDone(idx){
 function saveCompletion(key){
   const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
   if(!u.token||!u.email) return;
-  fetch(`https://agazati.up.railway.app/api/user-state/${encodeURIComponent(u.email)}/${key}`,{
+  fetch(`http://192.168.0.250/api/user-state/${encodeURIComponent(u.email)}/${key}`,{
     method:'PUT',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
     body:JSON.stringify({value:new Date().toISOString().substring(0,10)})

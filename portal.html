@@ -1304,8 +1304,8 @@
 </div>
 
 <script>
-    const API      = 'https://agazati.up.railway.app';
-    const API_BASE = 'https://agazati.up.railway.app';
+    const API      = 'http://192.168.0.250';
+    const API_BASE = 'http://192.168.0.250';
 
     // ── Session tracking ──────────────────────────────────────────────────────
     let _sessionId = null;
@@ -1914,7 +1914,7 @@
         if (!jelszo) { errEl.textContent = 'Add meg a jelszavadat!'; errEl.style.display = 'block'; return; }
 
         try {
-            const res = await fetch('https://agazati.up.railway.app/api/auth/delete-account', {
+            const res = await fetch('http://192.168.0.250/api/auth/delete-account', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: user.email, jelszo })

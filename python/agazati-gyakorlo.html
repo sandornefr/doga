@@ -289,7 +289,7 @@
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   if (!u.email) return;
   const email = u.email.replace('@kkszki.hu', '');
-  fetch('https://agazati.up.railway.app/api/leaderboard/rank/' + encodeURIComponent(email))
+  fetch('http://192.168.0.250/api/leaderboard/rank/' + encodeURIComponent(email))
     .then(r => r.ok ? r.json() : null)
     .then(data => {
       const streak = data?.streak ?? 0;

@@ -1670,7 +1670,7 @@
                 if (u.szerep === 'oktato') {
                     showWebBtn();
                 } else {
-                    fetch('https://agazati.up.railway.app/api/config')
+                    fetch('http://192.168.0.250/api/config')
                         .then(r => r.json())
                         .then(data => {
                             if (data.test_mode !== 'live' && data.test_mode !== 'vizsga') showWebBtn();
@@ -1708,7 +1708,7 @@
 
         // ── Session tracking ────────────────────────────────────────────────
         (function() {
-            const API_S = 'https://agazati.up.railway.app';
+            const API_S = 'http://192.168.0.250';
             const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
             if (!u.email || u.szerep === 'vendeg') return;
             let sid = null;
@@ -1765,7 +1765,7 @@
         };
 
         // ── Feedback / visszajelzés rendszer ──────────────────────────────────
-        const RAILWAY_URL_FB = 'https://agazati.up.railway.app';
+        const RAILWAY_URL_FB = 'http://192.168.0.250';
 
         // Friss feladatok chip-ek renderelése (csak szöveg, gombok nélkül)
         document.querySelectorAll('.vote-task-list').forEach(container => {

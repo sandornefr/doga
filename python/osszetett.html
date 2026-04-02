@@ -273,7 +273,7 @@
 
 // ─── Session tracking ──────────────────────────────────────────────────────
 (function() {
-  const API = 'https://agazati.up.railway.app';
+  const API = 'http://192.168.0.250';
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   if (!u.email) return;
   let sid = null;
@@ -1542,7 +1542,7 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 function saveCompletion(key) {
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   if (!u.token || !u.email) return;
-  fetch(`https://agazati.up.railway.app/api/user-state/${encodeURIComponent(u.email)}/${key}`, {
+  fetch(`http://192.168.0.250/api/user-state/${encodeURIComponent(u.email)}/${key}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
     body: JSON.stringify({ value: new Date().toISOString().substring(0, 10) })

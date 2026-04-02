@@ -6,7 +6,7 @@
 (function () {
     'use strict';
 
-    const API = 'https://agazati.up.railway.app';
+    const API = 'http://192.168.0.250';
 
     function getUser() {
         try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); }

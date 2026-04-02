@@ -25,7 +25,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// CORS – GitHub Pages + helyi fejlesztés
+// CORS – GitHub Pages + helyi fejlesztés + iskolai szerver
 builder.Services.AddCors(o => {
     o.AddDefaultPolicy(p =>
         p.WithOrigins(
@@ -33,7 +33,8 @@ builder.Services.AddCors(o => {
             "https://sandorpeteer.github.io",
             "http://localhost:5500",
             "http://127.0.0.1:5500",
-            "http://localhost:3000"
+            "http://localhost:3000",
+            "http://192.168.0.250"
         ).AllowAnyHeader().AllowAnyMethod());
     o.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
