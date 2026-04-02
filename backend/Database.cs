@@ -430,14 +430,16 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
-    public bool UpdateUserBasic(string email, string vezeteknev, string keresztnev, string? csoport)
+    public bool UpdateUserBasic(string email, string vezeteknev, string keresztnev, string? csoport, string? evfolyam, string? osztaly)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE users SET vezeteknev = $v, keresztnev = $k, csoport = $c WHERE email = $e";
+        cmd.CommandText = "UPDATE users SET vezeteknev = $v, keresztnev = $k, csoport = $c, evfolyam = $ef, osztaly = $o WHERE email = $e";
         cmd.Parameters.AddWithValue("$v", vezeteknev);
         cmd.Parameters.AddWithValue("$k", keresztnev);
         cmd.Parameters.AddWithValue("$c", (object?)csoport ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$ef", (object?)evfolyam ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$o", (object?)osztaly ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
         return cmd.ExecuteNonQuery() > 0;
     }

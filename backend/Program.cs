@@ -337,7 +337,7 @@ app.MapPost("/api/users/{email}/update", (HttpContext ctx, string email, UpdateU
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     if (string.IsNullOrWhiteSpace(req.Vezeteknev)) return Results.BadRequest(new { error = "A vezetéknév nem lehet üres!" });
     if (string.IsNullOrWhiteSpace(req.Keresztnev)) return Results.BadRequest(new { error = "A keresztnév nem lehet üres!" });
-    var ok = db.UpdateUserBasic(Uri.UnescapeDataString(email), req.Vezeteknev.Trim(), req.Keresztnev.Trim(), req.Csoport?.Trim());
+    var ok = db.UpdateUserBasic(Uri.UnescapeDataString(email), req.Vezeteknev.Trim(), req.Keresztnev.Trim(), req.Csoport?.Trim(), req.Evfolyam?.Trim(), req.Osztaly?.Trim());
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
 });
 
@@ -923,6 +923,6 @@ namespace KandoTest
     public record ChangePasswordRequest(string Username, string OldPassword, string NewPassword);
     public record DeleteAccountRequest(string Email, string Jelszo);
     public record ResetPasswordRequest(string Email, string NewPassword);
-    public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport);
+    public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);
     public record PasswordResetRequestInput(string Email, string Nev, string? Osztaly, string? Csoport);
 }
