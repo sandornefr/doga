@@ -903,6 +903,16 @@ app.MapDelete("/api/password-reset-request/{id}", (HttpContext ctx, int id, Data
     return Results.Ok(new { success = true });
 });
 
+// IDEIGLENES DB EXPORT VÉGPONT - TÖRLENDŐ LETÖLTÉS UTÁN
+app.MapGet("/api/export-db-temp-kandoadmin", async (HttpContext ctx) => {
+    var exportKey = app.Configuration["EXPORT_KEY"] ?? "kandoadmin2026";
+    if (!ctx.Request.Query.TryGetValue("key", out var k) || k != exportKey)
+        return Results.Unauthorized();
+    if (!File.Exists(dbPath)) return Results.NotFound("DB not found");
+    var bytes = await File.ReadAllBytesAsync(dbPath);
+    return Results.File(bytes, "application/octet-stream", "kando.db");
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 
