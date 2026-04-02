@@ -1739,9 +1739,10 @@
 
     async function openEredmenyek() {
         document.getElementById('ered-overlay').classList.add('open');
-        // Oktató előnézet sor megjelenítése ha tanulói nézetben van
         const previewRow = document.getElementById('ered-preview-row');
-        if (isTeacherPreview) {
+        const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        // Oktató (tanári nézetben is) a tanulókeresőt látja, nem saját statisztikáját
+        if (isTeacherPreview || u.szerep === 'oktato') {
             previewRow.style.display = 'block';
             document.getElementById('ered-content').innerHTML = '<div class="ered-loading" style="color:#aaa;"><i class="fas fa-search"></i> Add meg egy tanuló email-jét a fenti mezőben az eredmények megtekintéséhez.</div>';
             return;
@@ -1750,7 +1751,6 @@
         }
         document.getElementById('ered-content').innerHTML = '<div class="ered-loading"><i class="fas fa-spinner fa-spin"></i> Adatok betöltése...</div>';
         try {
-            const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
             const email = (u.email || '').replace('@kkszki.hu','');
             if (!email) { document.getElementById('ered-content').innerHTML = '<div class="ered-loading">Nem találhatók adatok.</div>'; return; }
             const authHeader = u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
