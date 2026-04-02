@@ -893,11 +893,6 @@
                 <span class="label">Admin</span>
                 <span class="desc">Mód beállítása, statisztikák, jelszócsere</span>
             </a>
-            <a class="option-card diak-mod" href="#" onclick="event.preventDefault(); enterStudentTestMode()">
-                <span class="icon"><i class="fas fa-user-graduate"></i></span>
-                <span class="label">Diák mód</span>
-                <span class="desc">Belépés Teszt Elek tanulóként – teljes diáknézet</span>
-            </a>
         </div>
     </div>
 </div>
@@ -1360,6 +1355,7 @@
                 document.getElementById('changelog-python').style.display = 'block';
                 document.getElementById('changelog-web').style.display = 'block';
                 document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
+                document.getElementById('otlet-btn').style.display = 'flex';
                 const cardPython = document.getElementById('card-python');
                 if (cardPython) cardPython.onclick = function(e) { e.preventDefault(); document.getElementById('vendeg-python-modal').style.display = 'flex'; };
                 const cardWeb = document.getElementById('card-web');
