@@ -771,7 +771,14 @@
             <div id="evfolyam-stat" style="display:none;margin-bottom:18px;"></div>
             <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
                 <input id="users-filter-nev" type="text" placeholder="Név keresés…" oninput="renderUsersTable()"
+                    autocomplete="off" autocorrect="off" spellcheck="false"
                     style="padding:6px 12px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;width:180px;">
+                <select id="users-filter-evfolyam" onchange="renderUsersTable()"
+                    style="padding:6px 10px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;cursor:pointer;">
+                    <option value="">Minden évfolyam</option>
+                    <option value="9">9. évfolyam</option>
+                    <option value="10">10. évfolyam</option>
+                </select>
                 <select id="users-filter-osztaly" onchange="renderUsersTable()"
                     style="padding:6px 10px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;cursor:pointer;">
                     <option value="">Minden osztály</option>
@@ -1287,11 +1294,13 @@
             const tbody = document.getElementById('users-tbody');
             if (!_cachedUsers.length) return;
             const q = (document.getElementById('users-filter-nev')?.value || '').toLowerCase().trim();
+            const fef = (document.getElementById('users-filter-evfolyam')?.value || '');
             const fo = (document.getElementById('users-filter-osztaly')?.value || '').toUpperCase();
             const fc = (document.getElementById('users-filter-csoport')?.value || '').toLowerCase();
             const filtered = _cachedUsers.filter((u, i) => {
                 u._idx = i;
                 if (q && !(u.nev||'').toLowerCase().includes(q)) return false;
+                if (fef && String(parseInt(u.evfolyam)||'') !== fef) return false;
                 if (fo && (u.osztaly||'').toUpperCase() !== fo) return false;
                 if (fc && String(u.csoport||'').toLowerCase() !== fc) return false;
                 return true;
