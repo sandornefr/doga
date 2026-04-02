@@ -771,7 +771,7 @@
             <div id="evfolyam-stat" style="display:none;margin-bottom:18px;"></div>
             <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
                 <input id="users-filter-nev" type="text" placeholder="Név keresés…" oninput="renderUsersTable()"
-                    autocomplete="off" autocorrect="off" spellcheck="false"
+                    autocomplete="new-password" spellcheck="false" name="users-search-x"
                     style="padding:6px 12px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;width:180px;">
                 <select id="users-filter-evfolyam" onchange="renderUsersTable()"
                     style="padding:6px 10px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;cursor:pointer;">
@@ -1634,6 +1634,8 @@
         let _usersAutoRefreshTimer = null;
         function startUsersAutoRefresh() {
             stopUsersAutoRefresh();
+            const nev = document.getElementById('users-filter-nev');
+            if (nev) nev.value = '';
             _usersAutoRefreshTimer = setInterval(() => loadUsers(), 60000);
         }
         function stopUsersAutoRefresh() {
