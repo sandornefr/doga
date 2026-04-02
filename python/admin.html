@@ -1433,9 +1433,8 @@
 
         function normNev(s) {
             return (s || '').toLowerCase()
-                .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
-                .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
-                .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')  // minden ékezet/kombináló karakter eltávolítása
                 .replace(/\s+/g,' ').trim();
         }
         // Csak Vezeteknév + Keresztnév – második keresztnevet elhagyja
