@@ -1227,7 +1227,8 @@
                 const tanulok = users.filter(u => u.szerep !== 'oktato');
                 const evfolyamMap = {};
                 tanulok.forEach(u => {
-                    const ef = u.evfolyam || '–';
+                    const efRaw = parseInt(u.evfolyam) || null;
+                    const ef = efRaw ? String(efRaw) : '–';
                     const osz = u.osztaly || '–';
                     if (!evfolyamMap[ef]) evfolyamMap[ef] = {};
                     evfolyamMap[ef][osz] = (evfolyamMap[ef][osz] || 0) + 1;
@@ -1330,7 +1331,7 @@
 
             grid.innerHTML = CSOPORT_GROUPS.map(g => {
                 const regTanulok = tanulok.filter(u =>
-                    String(u.evfolyam) === g.ef &&
+                    String(parseInt(u.evfolyam)||'') === g.ef &&
                     (u.osztaly || '').toUpperCase() === g.osz &&
                     String(u.csoport || '').toLowerCase() === g.cs.toLowerCase()
                 );
