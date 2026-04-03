@@ -588,6 +588,21 @@
                 </div>
             </div>
 
+            <!-- Practice szavazatok (feladatkészítők feladataira) -->
+            <div id="feedback-practice-section" style="display:none;margin-top:1.5rem;">
+                <div style="color:#2dd4bf;font-weight:700;margin-bottom:0.7rem;font-size:0.95rem;"><i class="fas fa-graduation-cap"></i> Feladatkészítők – practice szavazatok</div>
+                <p style="color:#64748b;font-size:0.83rem;margin-bottom:0.8rem;">Ha egy feladat eléri a küszöbértéket, érdemes bevenni a rendes practice pool-ba.</p>
+                <table style="width:100%;border-collapse:collapse;font-size:0.87rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #333;">
+                            <th style="text-align:left;padding:7px 10px;color:#94a3b8;font-weight:600;">Feladat neve</th>
+                            <th style="text-align:center;padding:7px 10px;color:#2dd4bf;font-weight:600;">👍 Szavazat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="practice-votes-tbody"></tbody>
+                </table>
+            </div>
+
             <div id="feedback-empty" style="display:none;color:#555;font-style:italic;font-size:0.9rem;">Még nincs visszajelzés.</div>
         </div>
 
@@ -2871,9 +2886,27 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     if (FELADAT_NEV_MAP[d.feladatNev]) d.feladatNev = FELADAT_NEV_MAP[d.feladatNev];
                 });
 
-                // Szétválasztjuk vote / reaction
-                const votes     = data.filter(d => d.tipus === 'vote');
-                const reactions = data.filter(d => d.tipus === 'reaction');
+                // Szétválasztjuk vote / reaction / practice_vote
+                const votes         = data.filter(d => d.tipus === 'vote');
+                const reactions     = data.filter(d => d.tipus === 'reaction');
+                const practiceVotes = data.filter(d => d.tipus === 'practice_vote');
+
+                // ── Practice szavazatok ──
+                const practiceSec = document.getElementById('feedback-practice-section');
+                if (practiceVotes.length > 0) {
+                    const pvMap = {};
+                    practiceVotes.forEach(d => { pvMap[d.feladatNev] = (pvMap[d.feladatNev]||0) + d.db; });
+                    const tbody = document.getElementById('practice-votes-tbody');
+                    tbody.innerHTML = Object.entries(pvMap).sort((a,b) => b[1]-a[1]).map(([nev, db]) =>
+                        `<tr style="border-bottom:1px solid #1e2a3a;">
+                            <td style="padding:7px 10px;color:#e0e0e0;">${escHtml(nev)}</td>
+                            <td style="text-align:center;padding:7px 10px;color:#2dd4bf;font-weight:700;">${db}</td>
+                        </tr>`
+                    ).join('');
+                    practiceSec.style.display = 'block';
+                } else {
+                    practiceSec.style.display = 'none';
+                }
 
                 // ── Szavazások ──
                 if (votes.length > 0) {

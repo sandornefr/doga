@@ -1326,6 +1326,7 @@ else:
 Cim: Ruhaméret
 Tipus: if
 Nehezseg: konnyu
+Uj: igen
 
 Írj programot, amely bekéri a mellbőséget cm-ben, majd kiírja a megfelelő ruháméretet!
 XS: kisebb mint 80 cm
@@ -1378,6 +1379,7 @@ else:
 Cim: Taxi ár kalkulátor
 Tipus: if
 Nehezseg: konnyu
+Uj: igen
 
 Írj programot, amely kiszámolja egy taxiút árát!
 Az alap díj: 500 Ft.
@@ -1422,6 +1424,7 @@ print(f"Fizetendő: {ar} Ft")
 Cim: Szállodai szoba
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
 
 Írj programot, amely kiszámítja egy szállodai tartózkodás árát!
 Az éjszakák számát és a szoba típusát kérd be a felhasználótól!
@@ -1479,6 +1482,7 @@ else:
 Cim: Kutya életkor kalkulátor
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
 
 A kutyák életkora nem egyszerűen 7-tel szorzódik! A tudományos számítás szerint:
 Az 1. év pontosan 15 emberi évnek számít.
@@ -1532,6 +1536,7 @@ print(f"A kutyád emberi években: {emberi_ev} éves.")
 Cim: Traffipax
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
 
 Készíts programot egy sebességmérő kamerának! A program kérje be az útszakaszon megengedett sebességet (km/h), majd a radar által mért tényleges sebességet (km/h)!
 A program számolja ki a különbséget, és döntse el a büntetést az alábbiak szerint:
@@ -1583,6 +1588,7 @@ Pont: 14
 Cim: Űrhajó Rakomány
 Tipus: függvény,for
 Nehezseg: nehez
+Uj: igen
 
 Egy teherűrhajó felszállás előtt ellenőrzi a berakodott konténerek súlyát, mert a hajó maximum 100 tonna extra súlyt bír el.
 
@@ -1673,6 +1679,7 @@ else:
 Cim: Mobiladat Túllépés
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
 
 Egy mobilszolgáltató a havi 5 GB-os adatkeret felett extra díjat számol fel. Készíts programot, ami bekéri az adott hónapban felhasznált adatmennyiséget (egész GB-ban), majd kiszámolja a fizetendő túldíjat az alábbiak szerint:
 
@@ -1722,6 +1729,7 @@ Pont: 14
 Cim: Alkimista Varázsital
 Tipus: függvény,for
 Nehezseg: nehez
+Uj: igen
 
 Egy alkimista varázsitalt főz. Minden hozzávalónak van egy toxicitási (mérgezési) szintje. Ha az üstben lévő anyagok össz-toxicitása eléri a 100%-ot, az üst felrobban!
 
@@ -1814,6 +1822,7 @@ Pont: 8
 Cim: Okosotthon fűtés
 Tipus: if
 Nehezseg: konnyu
+Uj: igen
 
 Egy okosotthon fűtésvezérlőjét kell beprogramoznod. A program kérje be a szoba jelenlegi hőmérsékletét, majd a beállított célhőmérsékletet (egész számokként)!
 A program döntse el, hogy kell-e fűteni, és ha igen, milyen fokozaton:
@@ -1867,6 +1876,8 @@ Pont: 8
 Cim: Hiányzás kalkulátor
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
 
 Írj programot, amely segít nyomon követni, mennyire állsz közel a 250 órás hiányzási határhoz – ami felett osztályozó vizsgát kell tenni!
 A program kérje be az eddigi hiányzások számát (egész óra), majd számolja ki, hány óra maradt még!
@@ -1927,6 +1938,8 @@ Pont: 8
 Cim: Töri évszám kvíz
 Tipus: if
 Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
 
 Írj programot, amely véletlenszerűen feltesz egy történelmi évszám kérdést, majd ellenőrzi a választ!
 A programban legalább 3 kérdés-válasz párt tárolj el szótár (dict) segítségével!
@@ -1984,6 +1997,7 @@ Pont: 18
 Cim: Forgalomszámlálás
 Tipus: fájlkezelés,for
 Nehezseg: nehez
+Uj: igen
 
 Egy város közlekedéstervezési célból kerékpárforgalom-számlálót telepített az egyik főútvonára. A mérőberendezés reggel 6:00-tól 9:45-ig, 15 percenként rögzíti az áthaladó kerékpárosok számát — összesen 16 mérési adat keletkezik.
 Ha a számláló meghibásodik, az adott időpontban -1 értéket rögzít a rendszer. Ezeket a hibás méréseket nem szabad beleszámítani az összesítésbe.
@@ -2147,6 +2161,7 @@ Pont: 18
 Cim: Állatok
 Tipus: class,for,fájlkezelés
 Nehezseg: nehez
+Uj: igen
 ModulNev: allat.py
 ModulTartalom:
 class Állatfaj:

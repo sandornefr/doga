@@ -1285,17 +1285,7 @@
                          ÚJ FELADATOK POST-IT – HETENTE FRISSÍTSD!
                          Csak a felsorolt feladatokat és a dátumot cseréld.
                          ════════════════════════════════════════════════════════ -->
-                    <div id="friss-feladatok-box" style="background:#fefce8; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1rem; font-size:0.85rem; color:#78350f;">
-                        <div style="font-weight:700; margin-bottom:0.6rem;">🆕 Friss feladatok <span style="font-weight:400; font-size:0.78rem; color:#a16207;">(2026. március 21.)</span></div>
-                        <div style="margin-bottom:0.5rem;">
-                            <div style="font-weight:600; margin-bottom:0.3rem;">🟢 Új 8 pontosak:</div>
-                            <div class="vote-task-list" style="display:flex;flex-wrap:wrap;gap:5px;" data-tasks="Ruhaméret,Kutya életkor kalkulátor,Traffipax,Mobiladat Túllépés"></div>
-                        </div>
-                        <div>
-                            <div style="font-weight:600; margin-bottom:0.3rem;">🟡 Új 14 pontosak:</div>
-                            <div class="vote-task-list" style="display:flex;flex-wrap:wrap;gap:5px;" data-tasks="Űrhajó Rakomány,Alkimista Varázsital"></div>
-                        </div>
-                    </div>
+                    <div id="friss-feladatok-box" style="background:#fefce8;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:8px;padding:0.7rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#78350f;display:none;"></div>
 
                     <!-- Practice time picker (csak gyakorló módban látszik) -->
                     <div id="practice-time-picker" style="display:none; background:#0a1a0a; border:1px solid #2ed573; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1rem;">
@@ -1876,25 +1866,8 @@
         // ÚJ! badge logika – globálisan elérhető, mert a DOM elem (custom-task-list)
         // csak a script blokk UTÁN jelenik meg az HTML-ben
         window._ujBadgeDates = { 24: '2026-03-24', 25: '2026-03-24', 27: '2026-03-24', 26: '2026-03-24', 28: '2026-03-24', 29: '2026-03-24', 30: '2026-03-25', 31: '2026-03-25' };
-        window._tanuloFeladatok = new Set([30, 31]);
-        window._ujBadgeMs    = 7 * 24 * 60 * 60 * 1000;
-        window._addUjBadges  = function() {
-            document.querySelectorAll('.custom-cb').forEach(function(cb) {
-                const num = parseInt(cb.value);
-                const dateStr = window._ujBadgeDates[num];
-                if (!dateStr) return;
-                if (Date.now() - new Date(dateStr).getTime() >= window._ujBadgeMs) return;
-                const label = cb.closest('label');
-                if (!label || label.querySelector('.custom-new-tag')) return;
-                const badge = document.createElement('span');
-                badge.className = 'custom-new-tag';
-                badge.textContent = 'ÚJ!';
-                const tags = label.querySelector('.card-tags');
-                if (tags) tags.appendChild(badge);
-                else label.appendChild(badge);
-            });
-        };
-
+        // _tanuloFeladatok és ÚJ! badge-ek most a parseTasks után töltődnek dinamikusan
+        window._addUjBadges      = function() {};
         window._addTanulosBadges = function() {};
 
         // ── Plusz idő kérés – autoSubmitTest() felülírása ──────────────────────
@@ -2082,6 +2055,14 @@
     font-size:0.67rem;color:#fbbf24;background:rgba(251,191,36,0.1);
     border:1px solid rgba(251,191,36,0.35);border-radius:8px;padding:1px 7px;font-weight:700;
 }
+.tanulo-vote-btn {
+    position:absolute;top:4px;right:4px;
+    background:none;border:none;cursor:pointer;
+    color:#4a7fa8;font-size:0.75rem;padding:2px 4px;border-radius:4px;
+    transition:color 0.15s;z-index:2;
+}
+.tanulo-vote-btn:hover { color:#22c55e; }
+.tanulo-vote-btn:disabled { cursor:default; }
 /* ── Számláló ── */
 .custom-count-label {
     font-size:0.82rem;margin-top:2px;padding:7px 12px;border-radius:8px;

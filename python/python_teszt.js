@@ -460,6 +460,8 @@ async function loadTasksFromFile() {
         const response = await fetch('feladatok.txt', { signal: AbortSignal.timeout(10000) });
         const text = await response.text();
         parseTasks(text);
+        window._tanuloFeladatok = new Set(tasks.filter(t => t.feladatkeszito).map(t => t.number));
+        updateFrissFeladatokBox();
         logEvent('Tasks loaded', { count: tasks.length });
     } catch (error) {
         alert('Hiba történt a feladatok betöltésekor!');
@@ -519,6 +521,12 @@ function parseTasks(text) {
         const nehezMatch = line.match(/^Nehezseg:\s*(.+)/i);
         if (nehezMatch && currentTask) { currentTask.nehezseg = nehezMatch[1].trim(); continue; }
 
+        const ujMatch = line.match(/^Uj:\s*(.+)/i);
+        if (ujMatch && currentTask) { currentTask.uj = ujMatch[1].trim().toLowerCase() === 'igen'; continue; }
+
+        const feladatkesziteMatch = line.match(/^Feladatkeszito:\s*(.+)/i);
+        if (feladatkesziteMatch && currentTask) { currentTask.feladatkeszito = feladatkesziteMatch[1].trim().toLowerCase() === 'igen'; continue; }
+
         if (line.trim() === 'Pontozas:')     { resetSections(); inCriteria       = true; continue; }
         if (line.trim() === 'Tippek:')       { resetSections(); inTippek         = true; continue; }
         if (line.trim() === 'Megoldas:')     { resetSections(); inMegoldas       = true; continue; }
@@ -572,9 +580,10 @@ async function startTest() {
         return;
     }
 
-    const tasks8 = tasks.filter(t => t.points === 8);
-    const tasks14 = tasks.filter(t => t.points === 14);
-    const tasks18check = tasks.filter(t => t.points === 18);
+    const tanuloNums = window._tanuloFeladatok || new Set();
+    const tasks8 = tasks.filter(t => t.points === 8  && !tanuloNums.has(t.number));
+    const tasks14 = tasks.filter(t => t.points === 14 && !tanuloNums.has(t.number));
+    const tasks18check = tasks.filter(t => t.points === 18 && !tanuloNums.has(t.number));
     if (selectedTaskType === 'csak18') {
         if (tasks18check.length < 1) {
             alert(`Nincs 18 pontos feladat betöltve! Ellenőrizd a feladatok.txt fájlt.`);
@@ -914,20 +923,25 @@ function renderCustomTaskList() {
         return pts === 8 ? 'card-pts-8' : pts === 14 ? 'card-pts-14' : pts === 18 ? 'card-pts-18' : 'card-pts-8';
     }
 
-    function renderGroup(list, title, cls, extraTag) {
+    function renderGroup(list, title, cls, extraTag, isTanulo = false) {
         if (!list.length) return '';
         const header = `<div class="custom-group-divider"><span class="custom-group-divider-label">${title}</span></div>`;
         const cards = list.map(t => {
             const past = allPastNums.has(t.number);
             const ptsCls = t.points ? ` pts-${t.points}` : '';
+            const voteBtn = isTanulo
+                ? `<button class="tanulo-vote-btn" title="Szerintem kerüljön a practice feladatok közé!" onclick="voteForPractice(${t.number}, event)"><i class="fa-solid fa-thumbs-up"></i></button>`
+                : '';
             return `<label class="custom-task-card${past ? ' past' : ''}${ptsCls}">
                 <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
                 <div class="card-check-icon"><i class="fa-solid fa-check"></i></div>
                 <div class="card-title">${t.cim}</div>
                 <div class="card-tags">
                     ${diffBadge(t.nehezseg)}
+                    ${t.uj ? '<span class="custom-new-tag">ÚJ!</span>' : ''}
                     ${past ? '<span class="custom-past-tag"><i class="fa-solid fa-rotate-left"></i> volt már</span>' : ''}
                 </div>
+                ${voteBtn}
             </label>`;
         }).join('');
         return `${header}<div class="custom-card-grid">${cards}</div>`;
@@ -937,7 +951,7 @@ function renderCustomTaskList() {
     if (filterCat === 'all' || filterCat === '8')      html += renderGroup(tasks8,      'Könnyű feladatok <span class="pts-sub">(8 pontos)</span>',                   'card-pts-8',  '');
     if (filterCat === 'all' || filterCat === '14')     html += renderGroup(tasks14,     'Közepesen nehéz feladatok <span class="pts-sub">(14 pontos)</span>',          'card-pts-14', '');
     if (filterCat === 'all' || filterCat === '18')     html += renderGroup(tasks18,     'Nehéz feladatok <span class="pts-sub">(18 pontos)</span>',                    'card-pts-18', '');
-    if (filterCat === 'all' || filterCat === 'tanulo') html += renderGroup(tasksTanulo, 'Feladatkészítők feladatai <span class="pts-sub">(vegyes)</span>',             '',            '');
+    if (filterCat === 'all' || filterCat === 'tanulo') html += renderGroup(tasksTanulo, 'Feladatkészítők feladatai <span class="pts-sub">(vegyes)</span>', '', '', true);
     if (!html) html = '<div style="color:#64748b;text-align:center;padding:1.5rem;font-size:0.88rem;">Nincs feladat ebben a kategóriában.</div>';
 
     document.getElementById('custom-task-list').innerHTML = html;
@@ -2768,6 +2782,70 @@ function jumpVegyesCombo(i) {
     selectedVegyesIndex = i;
     updateTaskBreakdown();
     renderVegyesDots();
+}
+
+// ── Friss feladatok doboz ────────────────────────────────────────────────────
+function updateFrissFeladatokBox() {
+    const box = document.getElementById('friss-feladatok-box');
+    if (!box) return;
+    const tanuloNums = window._tanuloFeladatok || new Set();
+    const ujTasks = tasks.filter(t => t.uj && !tanuloNums.has(t.number));
+    const hasTanulo = tanuloNums.size > 0;
+    if (!ujTasks.length && !hasTanulo) { box.style.display = 'none'; return; }
+
+    const counts = ujTasks.reduce((acc, t) => { acc[t.points] = (acc[t.points]||0)+1; return acc; }, {});
+    const countParts = Object.entries(counts)
+        .sort(([a],[b]) => a-b)
+        .map(([p,n]) => `<strong>${n} db ${p} pontos</strong>`)
+        .join(' · ');
+
+    box.style.display = '';
+    box.innerHTML = `
+        <div style="font-weight:700;margin-bottom:0.4rem;color:#92400e;">
+            <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Új feladatok
+        </div>
+        ${ujTasks.length ? `<div style="margin-bottom:${hasTanulo?'0.5':'0'}rem;">
+            ${countParts} feladat érkezett — keresd az <strong>Egyéni összeállításban</strong> <span style="font-size:0.82rem;color:#b45309;">(ÚJ! jellel jelölve)</span>
+        </div>` : ''}
+        ${hasTanulo ? `<div><i class="fa-solid fa-graduation-cap" style="color:#b45309;"></i> <strong>Feladatkészítők feladatai</strong> szintén csak Egyéni összeállításban érhetők el — ott szavazhatsz is rájuk!</div>` : ''}
+    `;
+}
+
+// ── Feladatkészítő szavazás ──────────────────────────────────────────────────
+const _votedTasks = new Set(JSON.parse(localStorage.getItem('_practiceVotes') || '[]'));
+
+async function voteForPractice(taskNum, e) {
+    e.preventDefault(); e.stopPropagation();
+    const btn = e.currentTarget;
+    if (_votedTasks.has(taskNum)) {
+        btn.title = 'Már szavaztál erre!';
+        return;
+    }
+    const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    const task = tasks.find(t => t.number === taskNum);
+    if (!task) return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+        const res = await fetch(`${RAILWAY_URL}/api/feedback`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email: user.email || 'vendeg', feladatNev: task.cim, tipus: 'practice_vote', ertek: 1 })
+        });
+        if (res.ok) {
+            _votedTasks.add(taskNum);
+            localStorage.setItem('_practiceVotes', JSON.stringify([..._votedTasks]));
+            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            btn.style.color = '#22c55e';
+            btn.title = 'Szavazat elküldve!';
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
+            btn.disabled = false;
+        }
+    } catch(err) {
+        btn.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
+        btn.disabled = false;
+    }
 }
 
 function updateTaskBreakdown() {
