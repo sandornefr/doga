@@ -2033,7 +2033,7 @@ A csúcsforgalom időpontja: 08:00, kerékpáros: 87.
 ```
 
 Pontozas:
-import:forgalom|Betölti a forgalom nevű modult|A forgalom.py fájlban van az osztály – be kell importálni. Melyik kulcsszóval? 📦|📦 A forgalom modul betöltve – az osztály használható!
+vagy:import forgalom~~class Meresadat|Betölti a forgalom modult vagy bemásolja az osztályt|Vagy: import forgalom — vagy másold be a Meresadat osztályt közvetlenül! 📦|📦 A Meresadat osztály elérhető!
 bekeres:Add meg a mérés időpontját! |Bekér egy mérési időpontot|Az időpontot kell először bekérni. A prompt pontosan egyezik a mintával? 🕐|🕐 Az időpont bekérés megvan!
 bekeres:Hány kerékpáros haladt át? |Bekér egy darabszámot|A kerékpárosok számát is be kell kérni. A prompt pontosan egyezik a minta szövegével? 🚲|🚲 A darabszám bekérés megvan!
 int_float:1|A darabszámot számmá alakítja|A bekért darabszám szövegként érkezik. Mit kell hívni, hogy számként kezeld? 🔢|🔢 int() megvan – a szövegből szám lett!
@@ -2122,11 +2122,11 @@ A(z) strucc tömege 110 kg.
 
 Pontozas:
 teszt:tőkés réce,1,teve,500,strucc,110:A(z) tőkés réce tömege 1 kg.|Program hibaüzenet nélkül lefut|Fut le a kód hibátlanul? Próbáld meg futtatni és nézd meg a kimenetet! 🚀|🚀 A program hibátlanul lefutott!
-tartalmaz:import allat|Betölti az allat nevű modult|A fájl elején szerepel "import allat"? Ez szükséges a megadott osztály használatához! 📦|📦 Az allat modul betöltve!
+vagy:import allat~~class Állatfaj|Betölti az allat modult vagy bemásolja az osztályt|Vagy: import allat — vagy másold be az Állatfaj osztályt közvetlenül! 📦|📦 Az Állatfaj osztály elérhető!
 bekeres:Add meg egy állatfaj nevét! |Bekérés szövege: "Add meg egy állatfaj nevét! "|Pontosan kell a szöveg, szóköz van a felkiáltójel után! 🔍|✅ Az állatfaj nevének bekérése tökéletes!
 bekeres:Hány kilogramm a tömege egy példánynak? |Bekérés szövege: "Hány kilogramm a tömege egy példánynak? "|Pontosan kell a szöveg, kérdőjel és szóköz a végén! 🔍|✅ A tömeg bekérése tökéletes!
 int_float:1|A bekért tömeget számmá alakítja|Az input() szöveget ad vissza – a tömeget int() segítségével számmá kell alakítani a helyes összehasonlításhoz! 🔢|🔢 A tömeg számmá alakítva!
-tartalmaz:allat.Állatfaj(|Az allat modul Állatfaj osztályából példányosít|Az objektum létrehozásához: allat.Állatfaj(fajnév, tömeg) – megvan a kódban? 🦁|🦁 Állatfaj objektum sikeresen létrehozva!
+tartalmaz:Állatfaj(|Létrehoz egy Állatfaj objektumot|Az objektum létrehozásához: allat.Állatfaj(fajnév, tömeg) vagy Állatfaj(fajnév, tömeg) – megvan a kódban? 🦁|🦁 Állatfaj objektum sikeresen létrehozva!
 teszt:tőkés réce,1,teve,500,strucc,110:A(z) tőkés réce tömege 1 kg.|Első objektum adatait helyesen jeleníti meg|Az első állatfaj neve és tömege helyesen jelenik meg "A(z) ... tömege ... kg." formában? 📋|📋 Az első objektum adatai tökéletesek!
 tartalmaz:= []|Listát hoz létre az objektumoknak|Az objektumokat egy listában kell tárolni. Üres lista: allatfajok = [] 📝|📝 Az adatszerkezet (lista) létrehozva!
 tartalmaz:.append(|Az objektumokat hozzáadja a listához|Minden létrehozott objektumot a lista.append(objektum) paranccsal add a listához! ➕|➕ Az objektumok listához adva!

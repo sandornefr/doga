@@ -1062,6 +1062,10 @@ function evaluateCriterion(code, criterion) {
         return code.includes(args);
     }
 
+    if (type === 'vagy') {
+        return args.split('~~').some(a => code.includes(a));
+    }
+
     if (type === 'input_format') {
         // Ellenőrzi, hogy az összes input() bekérő szöveg szóközzel végződik-e
         const calls = [...code.matchAll(/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];
