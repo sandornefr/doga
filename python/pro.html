@@ -425,10 +425,255 @@
 // ═══════════════════════════════════════════════════════════════════════════
 const tasks = [
 
-// ═══════════ ALGORITMUSOK (1–5) ═══════════
+// ═══════════ HIBAKEZELÉS (1–2) ═══════════
 
 {
-  id: 1, emoji: '🔍', topicGroup: 'algoritmus',
+  id: 1, emoji: '🛡️', topicGroup: 'hiba',
+  title: 'try / except – hibakezelés',
+  description: `<p>Mi történik, ha a felhasználó betűt ír be, amikor számot várnál? A program hibával leáll – ezt el lehet kerülni.</p>
+<p>A <code>try</code> blokkba kerül a "veszélyes" kód (pl. az <code>int(input())</code>). Ha hiba történik, az <code>except</code> blokk fut le – a program nem áll le, hanem szépen kiírja a hibaüzenetet.</p>
+<p>Kérd be a felhasználótól a számot, és kezeld le, ha nem számot ad meg!</p>`,
+  starterCode: `# try / except
+try:
+    szam = int(input("Adj meg egy számot: "))
+    print("A szám duplája:", szam * 2)
+except ValueError:
+    # Ha nem számot adott meg, ide kerül a hibaüzenet:
+`,
+  solution: `try:
+    szam = int(input("Adj meg egy számot: "))
+    print("A szám duplája:", szam * 2)
+except ValueError:
+    print("Hiba! Nem számot adtál meg.")`,
+  hintCode: `try:
+    szam = int(input("Adj meg egy számot: "))
+    print("A szám duplája:", szam * 2)
+except ValueError:
+    print("___")`,
+  mockInputs: ['alma'],
+  checks: [
+    { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
+    { label: 'except megtalálható', fn: (c,o) => /\bexcept\b/.test(c) },
+    { label: 'int(input()) a try blokkban', fn: (c,o) => /try[\s\S]*int\s*\(\s*input/.test(c) },
+    { label: 'Kimenet: hibaüzenet jelenik meg', fn: (c,o) => /[Hh]iba|[Nn]em sz[aá]m|[Hh]elytelen|[Ee]rror/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>try / except – ne álljon le a program!</h3>
+<p>Ha a felhasználó rosszat ír be, a Python általában hibával leáll. A <code>try/except</code> megakadályozza ezt – olyan, mint egy biztonsági háló.</p>
+<p>A <code>ValueError</code> azt jelenti: rossz típusú értéket kaptunk (pl. szöveg szám helyett). A <code>FileNotFoundError</code> akkor jön, ha nem létező fájlt próbálunk megnyitni.</p>`,
+    examples: [
+      { title: 'try / except példa', code: `try:
+    kor = int(input("Hány éves vagy? "))
+    print(f"10 év múlva {kor + 10} éves leszel.")
+except ValueError:
+    print("Hiba! Számot kellett volna beírni.")` }
+    ]
+  }
+},
+
+{
+  id: 2, emoji: '📂', topicGroup: 'hiba',
+  title: 'try / except fájlkezeléssel',
+  description: `<p>A fájlkezelésnél is előfordulhat hiba – például ha a fájl nem létezik. Ilyenkor <code>FileNotFoundError</code> keletkezik.</p>
+<p>Írj programot, amely megpróbálja megnyitni a <code>titok.txt</code> fájlt, és ha nem találja, kiírja: <code>A fájl nem található!</code></p>`,
+  starterCode: `# try / except fájlkezeléssel
+try:
+    with open("titok.txt", "r", encoding="utf-8") as f:
+        tartalom = f.read()
+    print(tartalom)
+except FileNotFoundError:
+    # Ha a fájl nem létezik:
+`,
+  solution: `try:
+    with open("titok.txt", "r", encoding="utf-8") as f:
+        tartalom = f.read()
+    print(tartalom)
+except FileNotFoundError:
+    print("A fájl nem található!")`,
+  hintCode: `try:
+    with open("titok.txt", "r", encoding="utf-8") as f:
+        tartalom = f.read()
+    print(tartalom)
+except FileNotFoundError:
+    print("___")`,
+  mockInputs: [],
+  checks: [
+    { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
+    { label: 'except FileNotFoundError (vagy Exception)', fn: (c,o) => /except\s+(FileNotFoundError|Exception)/.test(c) },
+    { label: 'open() a try blokkban', fn: (c,o) => /try[\s\S]*open\s*\(/.test(c) },
+    { label: 'Kimenet: hibaüzenet jelenik meg', fn: (c,o) => /nem tal[aá]lhat[oó]|[Hh]iba|not found/i.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Fájlkezelés try / except-tel</h3>
+<p>A <code>FileNotFoundError</code> pontosan erre az esetre van: "a megadott fájl nem létezik". Az <code>except FileNotFoundError:</code> csak akkor fut le, ha ez a konkrét hiba történik.</p>`,
+    examples: [
+      { title: 'Fájlhiba kezelése', code: `try:
+    with open("adatok.txt", "r", encoding="utf-8") as f:
+        sorok = f.readlines()
+    print(f"{len(sorok)} sort olvastam be.")
+except FileNotFoundError:
+    print("Hiba: az adatok.txt fájl nem létezik.")` }
+    ]
+  }
+},
+
+
+// ═══════════ TUPLE & SET (3–4) ═══════════
+
+{
+  id: 3, emoji: '📍', topicGroup: 'adat',
+  title: 'Tuple – rögzített sorozat',
+  description: `<p>A tuple olyan, mint a lista – de <strong>nem lehet megváltoztatni</strong> a létrehozás után. Kerek zárójelekkel írjuk: <code>(1, 2, 3)</code></p>
+<p>Hozz létre egy <code>pont</code> nevű tuple-t két koordinátával (x=3, y=7), majd írd ki az x és y értékét, és a tuple hosszát!</p>`,
+  starterCode: `# Tuple
+pont = (3, 7)
+
+print("x:", pont[0])
+# Írd ki az y koordinátát:
+
+# Írd ki a tuple hosszát:
+`,
+  solution: `pont = (3, 7)
+print("x:", pont[0])
+print("y:", pont[1])
+print("Hossz:", len(pont))`,
+  hintCode: `pont = (3, 7)
+print("x:", pont[___])
+print("y:", pont[___])
+print("Hossz:", ___(pont))`,
+  mockInputs: [],
+  checks: [
+    { label: 'tuple létrehozva zárójelekkel', fn: (c,o) => /\(\s*\d+\s*,\s*\d+\s*\)/.test(c) },
+    { label: 'pont[0] és pont[1] indexelés', fn: (c,o) => /pont\s*\[\s*0\s*\]/.test(c) && /pont\s*\[\s*1\s*\]/.test(c) },
+    { label: 'len() megtalálható', fn: (c,o) => /len\s*\(/.test(c) },
+    { label: 'Kimenet: 3 és 7', fn: (c,o) => /\b3\b/.test(o) && /\b7\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>Tuple – amit nem lehet megváltoztatni</h3>
+<p>A tuple pont olyan, mint a lista, de <strong>létrehozás után nem módosítható</strong>. Indexelése ugyanúgy működik: <code>pont[0]</code> az első elem.</p>
+<p>Mikor érdemes? GPS koordináta, RGB szín, dátum – ha az adatokat nem akarod véletlenül felülírni.</p>`,
+    examples: [
+      { title: 'Tuple alapok', code: `szinek = (255, 128, 0)
+print(szinek[0])   # 255
+print(len(szinek)) # 3
+r, g, b = szinek   # kicsomagolás
+print(f"Piros: {r}")` }
+    ]
+  }
+},
+
+{
+  id: 4, emoji: '🔵', topicGroup: 'adat',
+  title: 'Set – egyedi elemek halmaza',
+  description: `<p>A set olyan lista, amiben <strong>minden elem csak egyszer szerepelhet</strong> – az ismétlések automatikusan eltűnnek.</p>
+<p>Hozz létre egy <code>szamok</code> set-et duplikátumokkal, adj hozzá egy új elemet, és ellenőrizd, benne van-e a 7-es!</p>`,
+  starterCode: `# Set
+szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
+print(szamok)
+
+# Adj hozzá 7-est (.add()):
+
+# Ellenőrizd, benne van-e (in operátor):
+`,
+  solution: `szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
+print(szamok)
+szamok.add(7)
+print(7 in szamok)`,
+  hintCode: `szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
+print(szamok)
+szamok.___(7)
+print(7 ___ szamok)`,
+  mockInputs: [],
+  checks: [
+    { label: 'set létrehozva kapcsos zárójelekkel', fn: (c,o) => /\w+\s*=\s*\{[\d\s,]+\}/.test(c) },
+    { label: '.add() megtalálható', fn: (c,o) => /\.add\s*\(/.test(c) },
+    { label: 'in operátor', fn: (c,o) => /\bin\b/.test(c) },
+    { label: 'Kimenet megjelenik', fn: (c,o) => o.trim().length > 0 },
+  ],
+  tutorial: {
+    intro: `<h3>Set – egyedi elemek halmaza</h3>
+<p>A set-ben nincs sorrend, és minden elem csak egyszer szerepelhet. Duplikátumok kiszűrésére és gyors tagságvizsgálatra ideális.</p>`,
+    examples: [
+      { title: 'Set műveletek', code: `nevek = ["Anna", "Béla", "Anna"]
+egyedi = set(nevek)
+print(egyedi)  # {'Anna', 'Béla'}
+
+a = {1, 2, 3, 4}
+b = {3, 4, 5, 6}
+print(a & b)   # metszet: {3, 4}
+print(a | b)   # unió` }
+    ]
+  }
+},
+
+
+// ═══════════ MODULOK (5) ═══════════
+
+{
+  id: 5, emoji: '🧮', topicGroup: 'modul',
+  title: 'import math – matematikai függvények',
+  description: `<p>A <code>math</code> modul tele van hasznos matematikai eszközzel – négyzetgyök, kerekítés, hatványozás és még sok más.</p>
+<p>Számítsd ki egy derékszögű háromszög átfogóját (befogók: 3 és 4), írd ki a felső egészre kerekített értékét és π-t 4 tizedesjegyre!</p>`,
+  starterCode: `import math
+
+a = 3
+b = 4
+
+# Számítsd ki az átfogót: math.sqrt(a**2 + b**2)
+c =
+
+print("Átfogó:", c)
+# Felső egészre kerekítés: math.ceil()
+
+# π értéke: math.pi
+`,
+  solution: `import math
+
+a = 3
+b = 4
+c = math.sqrt(a**2 + b**2)
+print("Átfogó:", c)
+print("Felső egész:", math.ceil(c))
+print(f"π = {math.pi:.4f}")`,
+  hintCode: `import math
+
+a = 3
+b = 4
+c = math.___(a**2 + b**2)
+print("Átfogó:", c)
+print("Felső egész:", math.___(c))
+print(f"π = {math.___:.4f}")`,
+  mockInputs: [],
+  checks: [
+    { label: 'import math megtalálható', fn: (c,o) => /import\s+math/.test(c) },
+    { label: 'math.sqrt() használva', fn: (c,o) => /math\.sqrt\s*\(/.test(c) },
+    { label: 'math.ceil() vagy math.floor()', fn: (c,o) => /math\.ceil\s*\(|math\.floor\s*\(/.test(c) },
+    { label: 'math.pi megtalálható', fn: (c,o) => /math\.pi/.test(c) },
+    { label: 'Kimenet: 5.0 (átfogó)', fn: (c,o) => /\b5\.0\b|\b5\b/.test(o) },
+  ],
+  tutorial: {
+    intro: `<h3>import math – a matematika eszköztára</h3>
+<ul>
+<li><code>math.sqrt(x)</code> – négyzetgyök</li>
+<li><code>math.ceil(x)</code> – felső egészre kerekítés</li>
+<li><code>math.floor(x)</code> – alsó egészre kerekítés</li>
+<li><code>math.pi</code> – π értéke</li>
+</ul>`,
+    examples: [
+      { title: 'math modul példák', code: `import math
+print(math.sqrt(144))    # 12.0
+print(math.ceil(3.2))    # 4
+print(math.floor(3.8))   # 3
+print(f"{math.pi:.4f}")  # 3.1416` }
+    ]
+  }
+},
+
+
+// ═══════════ ALGORITMUSOK (6–11) ═══════════
+
+{
+  id: 6, emoji: '🔍', topicGroup: 'algoritmus',
   title: 'Lineáris keresés',
   description: `<p>A lineáris keresés azt jelenti: <strong>végigmész a listán elemről elemre</strong>, és megállsz, ha megtalálod amit keresel.</p>
 <p>Adott egy számlista. Keresd meg az első <strong>páros számot</strong> for ciklussal (ne a beépített függvényeket használd)!<br>
@@ -492,7 +737,7 @@ if not talalt:
 },
 
 {
-  id: 2, emoji: '🔄', topicGroup: 'algoritmus',
+  id: 7, emoji: '🔄', topicGroup: 'algoritmus',
   title: 'Buborékrendezés',
   description: `<p>A buborékrendezés a legismertebb kézi rendezési algoritmus: <strong>párokat hasonlít össze és cserél fel</strong>, amíg a lista rendezett nem lesz.</p>
 <p>A neve onnan ered, hogy a nagy elemek "felbuborékolnak" a lista végére – körülbelül úgy, ahogy a buborékok felfelé szállnak a vízben.</p>
@@ -563,10 +808,8 @@ print(lista)  # [1, 1, 3, 4, 5]` }
   }
 },
 
-// ═══════════ ALGORITMUSOK FOLYTATÁS (6–10) ═══════════
-
 {
-  id: 3, emoji: '✅', topicGroup: 'algoritmus',
+  id: 8, emoji: '✅', topicGroup: 'algoritmus',
   title: 'Eldöntés tétele',
   description: `<p>Az eldöntés tétele arra válaszol: <strong>van-e legalább egy elem a listában, ami teljesít egy feltételt?</strong></p>
 <p>Nem kell az összes elemet megvizsgálni – amint megtaláltad az elsőt, megvan a válasz.</p>
@@ -667,7 +910,7 @@ print(any(x > 10 for x in szamok))  # True` },
 },
 
 {
-  id: 4, emoji: '🗂️', topicGroup: 'algoritmus',
+  id: 9, emoji: '🗂️', topicGroup: 'algoritmus',
   title: 'Kiválogatás tétele',
   description: `<p>A kiválogatás tétele: <strong>gyűjtsd ki egy új listába az összes olyan elemet, ami megfelel egy feltételnek.</strong></p>
 <p>Ez olyan mint a megszámlálás – csak nem csak megszámolod, hanem el is teszed félre a megfelelőket.</p>
@@ -751,7 +994,7 @@ print(nagy2)  # [15, 42, 19, 24]` },
 },
 
 {
-  id: 5, emoji: '🔄', topicGroup: 'algoritmus',
+  id: 10, emoji: '🔄', topicGroup: 'algoritmus',
   title: 'Másolás tétele',
   description: `<p>A másolás tétele: <strong>másold át a lista összes elemét egy új listába – de közben alakítsd át őket.</strong></p>
 <p>Például: minden elemet duplázz meg, vagy alakítsd át más típussá.</p>
@@ -817,7 +1060,7 @@ print(szovegek)  # ['1. elem', '2. elem', ...]` },
 },
 
 {
-  id: 6, emoji: '🎯', topicGroup: 'algoritmus',
+  id: 11, emoji: '🎯', topicGroup: 'algoritmus',
   title: 'Bináris keresés',
   description: `<p>A bináris keresés sokkal <strong>gyorsabb</strong> mint a lineáris – de csak <strong>rendezett listán</strong> működik.</p>
 <p>Az ötlet: mindig a lista közepét nézed meg. Ha a keresett szám ennél kisebb, a bal felét vizsgálod tovább, ha nagyobb, a jobb felét. Minden lépéssel felezed a keresési területet.</p>
@@ -915,10 +1158,11 @@ while bal <= jobb:
   }
 },
 
-// ═══════════ LIST COMPREHENSION (6–8) ═══════════
+
+// ═══════════ LIST COMPREHENSION (12–14) ═══════════
 
 {
-  id: 7, emoji: '⚡', topicGroup: 'listakif',
+  id: 12, emoji: '⚡', topicGroup: 'listakif',
   title: 'List comprehension – alap',
   description: `<p>A <strong>lista-lerövidítés</strong> (angolul: list comprehension) azt jelenti, hogy ahelyett hogy ciklussal és <code>.append()</code>-pel töltöd fel a listát, egyetlen sorban megírhatod.</p>
 <p>Hozz létre egy listát, ami az 1–10 számok <strong>négyzeteit</strong> tartalmazza – az egysoros rövidítéssel!<br>
@@ -969,7 +1213,7 @@ print(parosak)  # [2, 4, 6, 8, 10]` }
 },
 
 {
-  id: 8, emoji: '🔍', topicGroup: 'listakif',
+  id: 13, emoji: '🔍', topicGroup: 'listakif',
   title: 'List comprehension – feltétellel',
   description: `<p>A list comprehension végére tehetsz egy <code>if</code> feltételt – így csak azok az elemek kerülnek bele, amik megfelelnek a feltételnek.</p>
 <p>Szintaxis: <code>[kifejezés for elem in lista if feltétel]</code></p>
@@ -1029,7 +1273,7 @@ print(hosszuk)  # ['helló', 'sziasztok']` }
 },
 
 {
-  id: 9, emoji: '📖', topicGroup: 'listakif',
+  id: 14, emoji: '📖', topicGroup: 'listakif',
   title: 'Dict comprehension',
   description: `<p>Ugyanúgy ahogy listát lehet egy sorban létrehozni, szótárat is lehet: ez a dict comprehension.</p>
 <p>Szintaxis: <code>{kulcs: érték for elem in lista}</code></p>
@@ -1084,10 +1328,11 @@ print(dupla)  # {'kávé': 800, 'tea': 600, 'víz': 300}` }
   }
 },
 
-// ═══════════ LAMBDA & MAP/FILTER (9–11) ═══════════
+
+// ═══════════ LAMBDA & MAP/FILTER (15–17) ═══════════
 
 {
-  id: 10, emoji: 'λ', topicGroup: 'lambda_f',
+  id: 15, emoji: 'λ', topicGroup: 'lambda_f',
   title: 'lambda – névtelen függvény',
   description: `<p>A <code>lambda</code> egy kis, névtelen függvény – egyetlen kifejezés, amit nem kell <code>def</code>-fel megírni.</p>
 <p>Szintaxis: <code>lambda paraméter: kifejezés</code></p>
@@ -1152,7 +1397,7 @@ print(rendezett)  # ['bor', 'alma', 'eper', 'körte']` }
 },
 
 {
-  id: 11, emoji: '🗺️', topicGroup: 'lambda_f',
+  id: 16, emoji: '🗺️', topicGroup: 'lambda_f',
   title: 'map() – minden elemre alkalmaz',
   description: `<p>A <code>map()</code> egy függvényt alkalmaz a lista <strong>minden elemére</strong> – nem kell for ciklus.</p>
 <p>Szintaxis: <code>list(map(függvény, lista))</code></p>
@@ -1211,7 +1456,7 @@ print(hosszak)  # [6, 4, 11]` }
 },
 
 {
-  id: 12, emoji: '🔽', topicGroup: 'lambda_f',
+  id: 17, emoji: '🔽', topicGroup: 'lambda_f',
   title: 'filter() – szűrés',
   description: `<p>A <code>filter()</code> kiszűri a lista azon elemeit, amelyekre a megadott feltétel igaz.</p>
 <p>Szintaxis: <code>list(filter(feltétel_fv, lista))</code></p>
@@ -1268,10 +1513,11 @@ print(parosak_lc)  # [2, 4, 6, 8, 10]` }
   }
 },
 
-// ═══════════ REKURZIÓ & MATEMATIKA (17–19) ═══════════
+
+// ═══════════ REKURZIÓ & MATEMATIKA (18–20) ═══════════
 
 {
-  id: 13, emoji: '🔢', topicGroup: 'rekurzio',
+  id: 18, emoji: '🔢', topicGroup: 'rekurzio',
   title: 'Prímszám ellenőrzés',
   description: `<p>Egy szám <strong>prímszám</strong>, ha csak 1-gyel és önmagával osztható. Például: 2, 3, 5, 7, 11, 13...</p>
 <p>Az ellenőrzés ötlete: próbáld osztani a számot 2-től a négyzetgyökéig. Ha valamelyikkel osztható – nem prím. Ha egyikkel sem – prím.</p>
@@ -1354,7 +1600,7 @@ print(primek)
 },
 
 {
-  id: 14, emoji: '❗', topicGroup: 'rekurzio',
+  id: 19, emoji: '❗', topicGroup: 'rekurzio',
   title: 'Faktoriális – ciklussal és rekurzióval',
   description: `<p>A faktoriális: <code>n! = 1 × 2 × 3 × ... × n</code><br>
 Például: <code>5! = 1×2×3×4×5 = 120</code></p>
@@ -1441,7 +1687,7 @@ print(f(4))  # 24` },
 },
 
 {
-  id: 15, emoji: '🌀', topicGroup: 'rekurzio',
+  id: 20, emoji: '🌀', topicGroup: 'rekurzio',
   title: 'Fibonacci sorozat',
   description: `<p>A Fibonacci sorozatban minden szám az előző kettő összege:<br>
 <code>0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...</code></p>
@@ -1534,243 +1780,7 @@ print(fib(8))  # [0, 1, 1, 2, 3, 5, 8, 13]` },
   }
 },
 
-// ═══════════ EGYÉB HASZNOS TÉMÁK (16–20) ═══════════
-
-{
-  id: 16, emoji: '🛡️', topicGroup: 'hiba',
-  title: 'try / except – hibakezelés',
-  description: `<p>Mi történik, ha a felhasználó betűt ír be, amikor számot várnál? A program hibával leáll – ezt el lehet kerülni.</p>
-<p>A <code>try</code> blokkba kerül a "veszélyes" kód (pl. az <code>int(input())</code>). Ha hiba történik, az <code>except</code> blokk fut le – a program nem áll le, hanem szépen kiírja a hibaüzenetet.</p>
-<p>Kérd be a felhasználótól a számot, és kezeld le, ha nem számot ad meg!</p>`,
-  starterCode: `# try / except
-try:
-    szam = int(input("Adj meg egy számot: "))
-    print("A szám duplája:", szam * 2)
-except ValueError:
-    # Ha nem számot adott meg, ide kerül a hibaüzenet:
-`,
-  solution: `try:
-    szam = int(input("Adj meg egy számot: "))
-    print("A szám duplája:", szam * 2)
-except ValueError:
-    print("Hiba! Nem számot adtál meg.")`,
-  hintCode: `try:
-    szam = int(input("Adj meg egy számot: "))
-    print("A szám duplája:", szam * 2)
-except ValueError:
-    print("___")`,
-  mockInputs: ['alma'],
-  checks: [
-    { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
-    { label: 'except megtalálható', fn: (c,o) => /\bexcept\b/.test(c) },
-    { label: 'int(input()) a try blokkban', fn: (c,o) => /try[\s\S]*int\s*\(\s*input/.test(c) },
-    { label: 'Kimenet: hibaüzenet jelenik meg', fn: (c,o) => /[Hh]iba|[Nn]em sz[aá]m|[Hh]elytelen|[Ee]rror/i.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>try / except – ne álljon le a program!</h3>
-<p>Ha a felhasználó rosszat ír be, a Python általában hibával leáll. A <code>try/except</code> megakadályozza ezt – olyan, mint egy biztonsági háló.</p>
-<p>A <code>ValueError</code> azt jelenti: rossz típusú értéket kaptunk (pl. szöveg szám helyett). A <code>FileNotFoundError</code> akkor jön, ha nem létező fájlt próbálunk megnyitni.</p>`,
-    examples: [
-      { title: 'try / except példa', code: `try:
-    kor = int(input("Hány éves vagy? "))
-    print(f"10 év múlva {kor + 10} éves leszel.")
-except ValueError:
-    print("Hiba! Számot kellett volna beírni.")` }
-    ]
-  }
-},
-
-{
-  id: 17, emoji: '📂', topicGroup: 'hiba',
-  title: 'try / except fájlkezeléssel',
-  description: `<p>A fájlkezelésnél is előfordulhat hiba – például ha a fájl nem létezik. Ilyenkor <code>FileNotFoundError</code> keletkezik.</p>
-<p>Írj programot, amely megpróbálja megnyitni a <code>titok.txt</code> fájlt, és ha nem találja, kiírja: <code>A fájl nem található!</code></p>`,
-  starterCode: `# try / except fájlkezeléssel
-try:
-    with open("titok.txt", "r", encoding="utf-8") as f:
-        tartalom = f.read()
-    print(tartalom)
-except FileNotFoundError:
-    # Ha a fájl nem létezik:
-`,
-  solution: `try:
-    with open("titok.txt", "r", encoding="utf-8") as f:
-        tartalom = f.read()
-    print(tartalom)
-except FileNotFoundError:
-    print("A fájl nem található!")`,
-  hintCode: `try:
-    with open("titok.txt", "r", encoding="utf-8") as f:
-        tartalom = f.read()
-    print(tartalom)
-except FileNotFoundError:
-    print("___")`,
-  mockInputs: [],
-  checks: [
-    { label: 'try blokk megtalálható', fn: (c,o) => /\btry\s*:/.test(c) },
-    { label: 'except FileNotFoundError (vagy Exception)', fn: (c,o) => /except\s+(FileNotFoundError|Exception)/.test(c) },
-    { label: 'open() a try blokkban', fn: (c,o) => /try[\s\S]*open\s*\(/.test(c) },
-    { label: 'Kimenet: hibaüzenet jelenik meg', fn: (c,o) => /nem tal[aá]lhat[oó]|[Hh]iba|not found/i.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>Fájlkezelés try / except-tel</h3>
-<p>A <code>FileNotFoundError</code> pontosan erre az esetre van: "a megadott fájl nem létezik". Az <code>except FileNotFoundError:</code> csak akkor fut le, ha ez a konkrét hiba történik.</p>`,
-    examples: [
-      { title: 'Fájlhiba kezelése', code: `try:
-    with open("adatok.txt", "r", encoding="utf-8") as f:
-        sorok = f.readlines()
-    print(f"{len(sorok)} sort olvastam be.")
-except FileNotFoundError:
-    print("Hiba: az adatok.txt fájl nem létezik.")` }
-    ]
-  }
-},
-
-{
-  id: 18, emoji: '📍', topicGroup: 'adat',
-  title: 'Tuple – rögzített sorozat',
-  description: `<p>A tuple olyan, mint a lista – de <strong>nem lehet megváltoztatni</strong> a létrehozás után. Kerek zárójelekkel írjuk: <code>(1, 2, 3)</code></p>
-<p>Hozz létre egy <code>pont</code> nevű tuple-t két koordinátával (x=3, y=7), majd írd ki az x és y értékét, és a tuple hosszát!</p>`,
-  starterCode: `# Tuple
-pont = (3, 7)
-
-print("x:", pont[0])
-# Írd ki az y koordinátát:
-
-# Írd ki a tuple hosszát:
-`,
-  solution: `pont = (3, 7)
-print("x:", pont[0])
-print("y:", pont[1])
-print("Hossz:", len(pont))`,
-  hintCode: `pont = (3, 7)
-print("x:", pont[___])
-print("y:", pont[___])
-print("Hossz:", ___(pont))`,
-  mockInputs: [],
-  checks: [
-    { label: 'tuple létrehozva zárójelekkel', fn: (c,o) => /\(\s*\d+\s*,\s*\d+\s*\)/.test(c) },
-    { label: 'pont[0] és pont[1] indexelés', fn: (c,o) => /pont\s*\[\s*0\s*\]/.test(c) && /pont\s*\[\s*1\s*\]/.test(c) },
-    { label: 'len() megtalálható', fn: (c,o) => /len\s*\(/.test(c) },
-    { label: 'Kimenet: 3 és 7', fn: (c,o) => /\b3\b/.test(o) && /\b7\b/.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>Tuple – amit nem lehet megváltoztatni</h3>
-<p>A tuple pont olyan, mint a lista, de <strong>létrehozás után nem módosítható</strong>. Indexelése ugyanúgy működik: <code>pont[0]</code> az első elem.</p>
-<p>Mikor érdemes? GPS koordináta, RGB szín, dátum – ha az adatokat nem akarod véletlenül felülírni.</p>`,
-    examples: [
-      { title: 'Tuple alapok', code: `szinek = (255, 128, 0)
-print(szinek[0])   # 255
-print(len(szinek)) # 3
-r, g, b = szinek   # kicsomagolás
-print(f"Piros: {r}")` }
-    ]
-  }
-},
-
-{
-  id: 19, emoji: '🔵', topicGroup: 'adat',
-  title: 'Set – egyedi elemek halmaza',
-  description: `<p>A set olyan lista, amiben <strong>minden elem csak egyszer szerepelhet</strong> – az ismétlések automatikusan eltűnnek.</p>
-<p>Hozz létre egy <code>szamok</code> set-et duplikátumokkal, adj hozzá egy új elemet, és ellenőrizd, benne van-e a 7-es!</p>`,
-  starterCode: `# Set
-szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
-print(szamok)
-
-# Adj hozzá 7-est (.add()):
-
-# Ellenőrizd, benne van-e (in operátor):
-`,
-  solution: `szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
-print(szamok)
-szamok.add(7)
-print(7 in szamok)`,
-  hintCode: `szamok = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3}
-print(szamok)
-szamok.___(7)
-print(7 ___ szamok)`,
-  mockInputs: [],
-  checks: [
-    { label: 'set létrehozva kapcsos zárójelekkel', fn: (c,o) => /\w+\s*=\s*\{[\d\s,]+\}/.test(c) },
-    { label: '.add() megtalálható', fn: (c,o) => /\.add\s*\(/.test(c) },
-    { label: 'in operátor', fn: (c,o) => /\bin\b/.test(c) },
-    { label: 'Kimenet megjelenik', fn: (c,o) => o.trim().length > 0 },
-  ],
-  tutorial: {
-    intro: `<h3>Set – egyedi elemek halmaza</h3>
-<p>A set-ben nincs sorrend, és minden elem csak egyszer szerepelhet. Duplikátumok kiszűrésére és gyors tagságvizsgálatra ideális.</p>`,
-    examples: [
-      { title: 'Set műveletek', code: `nevek = ["Anna", "Béla", "Anna"]
-egyedi = set(nevek)
-print(egyedi)  # {'Anna', 'Béla'}
-
-a = {1, 2, 3, 4}
-b = {3, 4, 5, 6}
-print(a & b)   # metszet: {3, 4}
-print(a | b)   # unió` }
-    ]
-  }
-},
-
-{
-  id: 20, emoji: '🧮', topicGroup: 'modul',
-  title: 'import math – matematikai függvények',
-  description: `<p>A <code>math</code> modul tele van hasznos matematikai eszközzel – négyzetgyök, kerekítés, hatványozás és még sok más.</p>
-<p>Számítsd ki egy derékszögű háromszög átfogóját (befogók: 3 és 4), írd ki a felső egészre kerekített értékét és π-t 4 tizedesjegyre!</p>`,
-  starterCode: `import math
-
-a = 3
-b = 4
-
-# Számítsd ki az átfogót: math.sqrt(a**2 + b**2)
-c =
-
-print("Átfogó:", c)
-# Felső egészre kerekítés: math.ceil()
-
-# π értéke: math.pi
-`,
-  solution: `import math
-
-a = 3
-b = 4
-c = math.sqrt(a**2 + b**2)
-print("Átfogó:", c)
-print("Felső egész:", math.ceil(c))
-print(f"π = {math.pi:.4f}")`,
-  hintCode: `import math
-
-a = 3
-b = 4
-c = math.___(a**2 + b**2)
-print("Átfogó:", c)
-print("Felső egész:", math.___(c))
-print(f"π = {math.___:.4f}")`,
-  mockInputs: [],
-  checks: [
-    { label: 'import math megtalálható', fn: (c,o) => /import\s+math/.test(c) },
-    { label: 'math.sqrt() használva', fn: (c,o) => /math\.sqrt\s*\(/.test(c) },
-    { label: 'math.ceil() vagy math.floor()', fn: (c,o) => /math\.ceil\s*\(|math\.floor\s*\(/.test(c) },
-    { label: 'math.pi megtalálható', fn: (c,o) => /math\.pi/.test(c) },
-    { label: 'Kimenet: 5.0 (átfogó)', fn: (c,o) => /\b5\.0\b|\b5\b/.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>import math – a matematika eszköztára</h3>
-<ul>
-<li><code>math.sqrt(x)</code> – négyzetgyök</li>
-<li><code>math.ceil(x)</code> – felső egészre kerekítés</li>
-<li><code>math.floor(x)</code> – alsó egészre kerekítés</li>
-<li><code>math.pi</code> – π értéke</li>
-</ul>`,
-    examples: [
-      { title: 'math modul példák', code: `import math
-print(math.sqrt(144))    # 12.0
-print(math.ceil(3.2))    # 4
-print(math.floor(3.8))   # 3
-print(f"{math.pi:.4f}")  # 3.1416` }
-    ]
-  }
-},
+]
 
 ]; // end tasks
 
@@ -2063,8 +2073,8 @@ function restartPractice() {
 // ═══════════════════════════════════════════════════════════════════════════
 // PILLS
 // ═══════════════════════════════════════════════════════════════════════════
-const GROUP_ORDER = ['algoritmus', 'listakif', 'lambda_f', 'rekurzio', 'hiba', 'adat', 'modul'];
-const GROUP_LABEL = { algoritmus: 'Algoritmusok', listakif: 'Comprehension', lambda_f: 'Lambda', rekurzio: 'Rekurzió & Matek', hiba: 'Hibakezelés', adat: 'Tuple & Set', modul: 'Modulok' };
+const GROUP_ORDER = ['hiba', 'adat', 'modul', 'algoritmus', 'listakif', 'lambda_f', 'rekurzio'];
+const GROUP_LABEL = { hiba: 'Hibakezelés', adat: 'Tuple & Set', modul: 'Modulok', algoritmus: 'Algoritmusok', listakif: 'Comprehension', lambda_f: 'Lambda', rekurzio: 'Rekurzió & Matek' };
 
 function buildPills() {
   const wrapper = document.getElementById('pills-wrapper');
