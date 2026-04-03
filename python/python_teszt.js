@@ -154,11 +154,10 @@ function updateStartSection() {
     const badge = document.getElementById('test-mode-badge');
     const badgeText = document.getElementById('test-mode-text');
     if (badge && badgeText) {
-        badge.style.display = 'block';
         if (isPractice) {
-            badge.style.cssText = 'padding:0.5rem 1rem;border-radius:8px;text-align:center;margin-bottom:0.6rem;font-weight:600;font-size:0.9rem;background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;';
-            badgeText.textContent = '🎓 GYAKORLÓ MÓD';
+            badge.style.display = 'none';
         } else {
+            badge.style.display = 'block';
             badge.style.cssText = 'padding:0.5rem 1rem;border-radius:8px;text-align:center;margin-bottom:0.6rem;font-weight:600;font-size:0.9rem;background:#2d0a0a;border:1px solid #e94560;color:#e94560;';
             badgeText.textContent = (testMode === 'vizsga' ? '🎓 VIZSGA MÓD' : '🔴 ÉLES MÓD');
         }
@@ -2783,7 +2782,7 @@ function updateTaskBreakdown() {
 
     const configs = {
         csak8:  { title: '3 × Könnyű:', pts: [8,8,8],       total: 24 },
-        csak14: { title: '3 × Közepes:', pts: [14,14,14],   total: 42 },
+        csak14: { title: '3 × Közepesen nehéz:', pts: [14,14,14],   total: 42 },
         csak18: { title: '3 × Nehéz:',  pts: [18,18,18],    total: 54 },
         agazati:{ title: 'Ágazati:',    pts: [8,14,18],      total: 40 },
     };
@@ -2876,7 +2875,7 @@ function renderPracticeHistory(solutionPeeked) {
         if (solutionPeeked) {
             el.style.display = 'block';
             const prevRoundsHtml = rounds.length >= 1 ? (() => {
-                const typeLabel = { agazati: 'Ágazati', csak8: '3×Könnyű', csak14: '3×Közepes', csak18: '3×Nehéz', vegyes: 'Vegyes', random: 'Vegyes' };
+                const typeLabel = { agazati: 'Ágazati', csak8: '3×Könnyű', csak14: '3×Közepesen nehéz', csak18: '3×Nehéz', vegyes: 'Vegyes', random: 'Vegyes' };
                 const last5 = rounds.slice(-5).reverse();
                 const rows = last5.map((r, i) => {
                     const min = Math.floor(r.elapsedSec / 60);
@@ -2908,7 +2907,7 @@ function renderPracticeHistory(solutionPeeked) {
 
         if (rounds.length < 2) { el.style.display = 'none'; return; }
 
-        const typeLabel = { agazati: 'Ágazati', csak8: '3×Könnyű', csak14: '3×Közepes', csak18: '3×Nehéz', vegyes: 'Vegyes', random: 'Vegyes' };
+        const typeLabel = { agazati: 'Ágazati', csak8: '3×Könnyű', csak14: '3×Közepesen nehéz', csak18: '3×Nehéz', vegyes: 'Vegyes', random: 'Vegyes' };
         const last5 = rounds.slice(-5).reverse();
         const rows = last5.map((r, i) => {
             const min = Math.floor(r.elapsedSec / 60);
