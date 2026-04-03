@@ -2583,7 +2583,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 if (mod) url += `?mode=${encodeURIComponent(mod)}`;
                 const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + authToken } });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                leaderboardData = await res.json();
+                const oktatoEmailek = new Set(_cachedUsers.filter(u => u.szerep === 'oktato').map(u => u.email));
+                leaderboardData = (await res.json()).filter(x => !oktatoEmailek.has(x.email));
                 populateRangsorFilters();
                 renderLeaderboard();
             } catch(e) {
@@ -2676,7 +2677,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     headers: { 'Authorization': 'Bearer ' + authToken }
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                haladásData = await res.json();
+                const oktatoEmailek = new Set(_cachedUsers.filter(u => u.szerep === 'oktato').map(u => u.email));
+                haladásData = (await res.json()).filter(p => !oktatoEmailek.has(p.email));
                 filterProgress();
             } catch(e) {
                 document.getElementById('haladas-error').textContent = 'Hiba a betöltés során: ' + e.message;
