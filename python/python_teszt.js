@@ -2803,7 +2803,7 @@ function updateFrissFeladatokBox() {
         ${ujTasks.length ? `<div style="margin-bottom:${hasTanulo?'0.5':'0'}rem;">
             Keresd az <strong>Egyéni összeállításban</strong> — az újak ${ujBadge} jellel jelölve.
         </div>` : ''}
-        ${hasTanulo ? `<div><i class="fa-solid fa-graduation-cap" style="color:#3b82f6;"></i> <strong>Feladatkészítők feladatai</strong> szintén csak Egyéni összeállításban érhetők el — ott szavazhatsz is rájuk!</div>` : ''}
+        ${hasTanulo ? `<div><i class="fa-solid fa-graduation-cap" style="color:#3b82f6;"></i> <strong>Feladatkészítők feladatai</strong> szintén csak Egyéni összeállításban érhetők el — kipróbálás után szavazhatsz is rájuk!</div>` : ''}
     `;
 }
 
