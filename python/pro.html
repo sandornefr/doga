@@ -489,173 +489,7 @@ if not talalt:
 },
 
 {
-  id: 2, emoji: '➕', topicGroup: 'algoritmus',
-  title: 'Összegzés tétele',
-  description: `<p>Az összegzés tétele: <strong>végigmész a listán, és összeadod azokat az elemeket, amik megfelelnek egy feltételnek</strong>.</p>
-<p>Adott egy számlista. Számítsd ki a <strong>pozitív számok összegét</strong> for ciklussal (ne a beépített <code>sum()</code>-ot használd)!<br>
-Írd ki: <code>Pozitív számok összege: 25</code></p>`,
-  starterCode: `# 2. feladat: Összegzés tétele
-szamok = [4, -3, 7, -1, 8, -5, 6]
-
-osszeg = 0   # itt gyűjtjük az összeget
-
-for szam in szamok:
-    # Ha szam pozitív, add hozzá az összeghez:
-
-print("Pozitív számok összege:", osszeg)
-`,
-  solution: `szamok = [4, -3, 7, -1, 8, -5, 6]
-osszeg = 0
-for szam in szamok:
-    if szam > 0:
-        osszeg += szam
-print("Pozitív számok összege:", osszeg)`,
-  hintCode: `szamok = [4, -3, 7, -1, 8, -5, 6]
-osszeg = 0
-for szam in szamok:
-    if szam ___ 0:
-        osszeg ___ szam
-print("Pozitív számok összege:", osszeg)`,
-  mockInputs: [],
-  checks: [
-    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+szamok/.test(c) },
-    { label: 'osszeg = 0 kezdőérték', fn: (c,o) => /osszeg\s*=\s*0/.test(c) },
-    { label: 'feltétel: szam > 0', fn: (c,o) => /szam\s*>\s*0/.test(c) },
-    { label: 'összeadás (osszeg +=)', fn: (c,o) => /osszeg\s*\+=/.test(c) },
-    { label: 'Kimenet: 25', fn: (c,o) => /\b25\b/.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>Összegzés tétele</h3>
-<p>Az összegzés tétele egy alapvető algoritmikus gondolat: van egy "gyűjtő" változód (általában 0-ra állítod), és a ciklusban mindig hozzáadod az aktuális elemet – de csak ha teljesít egy feltételt.</p>
-<p>A minta mindig ugyanez: <code>osszeg = 0</code> → for ciklus → <code>if feltétel: osszeg += szam</code> → ciklus után kiírod az eredményt.</p>
-<p>Érettségin és vizsgákon nagyon gyakran kérik: "összegezd a páros/pozitív/ötösnél nagyobb elemeket".</p>`,
-    examples: [
-      { title: 'Összegzés tétele minta', code: `# Páros számok összege
-szamok = [1, 2, 3, 4, 5, 6, 7, 8]
-osszeg = 0
-for szam in szamok:
-    if szam % 2 == 0:
-        osszeg += szam
-print("Páros összeg:", osszeg)  # 20` }
-    ]
-  }
-},
-
-{
-  id: 3, emoji: '🔢', topicGroup: 'algoritmus',
-  title: 'Megszámlálás tétele',
-  description: `<p>A megszámlálás tétele: <strong>végigmész a listán, és megszámlálod, hány elem teljesít egy feltételt</strong>.</p>
-<p>Adott egy jegylista. Számold meg, hány tanuló kapott <strong>ötöst</strong> for ciklussal (ne a beépített <code>count()</code>-ot használd)!<br>
-Írd ki: <code>Ötösök száma: 3</code></p>`,
-  starterCode: `# 3. feladat: Megszámlálás tétele
-jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
-
-db = 0   # a számláló
-
-for jegy in jegyek:
-    # Ha jegy == 5, növeld db-t 1-gyel:
-
-print("Ötösök száma:", db)
-`,
-  solution: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
-db = 0
-for jegy in jegyek:
-    if jegy == 5:
-        db += 1
-print("Ötösök száma:", db)`,
-  hintCode: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
-db = 0
-for jegy in jegyek:
-    if jegy ___ 5:
-        db ___ 1
-print("Ötösök száma:", db)`,
-  mockInputs: [],
-  checks: [
-    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+jegyek/.test(c) },
-    { label: 'db = 0 számláló', fn: (c,o) => /db\s*=\s*0/.test(c) },
-    { label: 'feltétel: jegy == 5', fn: (c,o) => /jegy\s*==\s*5/.test(c) },
-    { label: 'számlálás (db += 1)', fn: (c,o) => /db\s*\+=\s*1/.test(c) },
-    { label: 'Kimenet: 4', fn: (c,o) => /\b4\b/.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>Megszámlálás tétele</h3>
-<p>A megszámlálás tétele hasonló az összegzéshez, de itt nem összeadunk – hanem megszámolunk. A "gyűjtő" változó neve általában <code>db</code> (darab), és mindig 0-ról indul.</p>
-<p>A minta: <code>db = 0</code> → for ciklus → <code>if feltétel: db += 1</code> → ciklus után kiírod az eredményt.</p>
-<p>Tipikus feladatok: "hány páros szám van", "hány tanuló bukott", "hány szó hosszabb 5 karakternél".</p>`,
-    examples: [
-      { title: 'Megszámlálás tétele minta', code: `# Hány szó hosszabb 4 karakternél?
-szavak = ["alma", "körte", "eper", "szilva", "bor"]
-db = 0
-for szo in szavak:
-    if len(szo) > 4:
-        db += 1
-print("Hosszú szavak:", db)  # 2` }
-    ]
-  }
-},
-
-{
-  id: 4, emoji: '🏆', topicGroup: 'algoritmus',
-  title: 'Maximum kiválasztás',
-  description: `<p>A maximum kiválasztása: <strong>végigmész a listán, és nyomon követed a legnagyobb értéket</strong> – a beépített <code>max()</code> nélkül.</p>
-<p>Adott egy pontszámlista. Keresd meg a legnagyobb pontszámot for ciklussal!<br>
-Írd ki: <code>Legjobb eredmény: 95</code></p>`,
-  starterCode: `# 4. feladat: Maximum kiválasztás
-pontok = [72, 88, 65, 95, 71, 83, 90]
-
-maximum = pontok[0]   # kezdetben az első az "eddigi legjobb"
-
-for pont in pontok:
-    # Ha pont nagyobb mint a jelenlegi maximum:
-    # frissítsd a maximumot
-
-print("Legjobb eredmény:", maximum)
-`,
-  solution: `pontok = [72, 88, 65, 95, 71, 83, 90]
-maximum = pontok[0]
-for pont in pontok:
-    if pont > maximum:
-        maximum = pont
-print("Legjobb eredmény:", maximum)`,
-  hintCode: `pontok = [72, 88, 65, 95, 71, 83, 90]
-maximum = pontok[0]
-for pont in pontok:
-    if pont ___ maximum:
-        maximum = ___
-print("Legjobb eredmény:", maximum)`,
-  mockInputs: [],
-  checks: [
-    { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+pontok/.test(c) },
-    { label: 'maximum = pontok[0] kezdőérték', fn: (c,o) => /maximum\s*=\s*pontok\s*\[\s*0\s*\]/.test(c) },
-    { label: 'feltétel: pont > maximum', fn: (c,o) => /pont\s*>\s*maximum/.test(c) },
-    { label: 'maximum frissítése', fn: (c,o) => /maximum\s*=\s*pont/.test(c) },
-    { label: 'Kimenet: 95', fn: (c,o) => /\b95\b/.test(o) },
-  ],
-  tutorial: {
-    intro: `<h3>Maximum kiválasztás</h3>
-<p>A maximum keresésének trükkje: az első elemmel kezded mint "eddigi legjobb", majd végigjárod a listát. Ha találsz valami nagyobbat, frissíted az "eddigi legjobb" értéket.</p>
-<p>Miért <code>pontok[0]</code>-ról indulsz és nem 0-ról? Mert ha minden szám negatív, a 0-ról induló téves eredményt adna.</p>
-<p>Ugyanez a gondolat működik minimumnál is – csak a feltétel megfordul: <code>if szam &lt; minimum</code>.</p>`,
-    examples: [
-      { title: 'Maximum és minimum keresés', code: `szamok = [34, 12, 78, 56, 23, 89, 11]
-
-maximum = szamok[0]
-minimum = szamok[0]
-
-for szam in szamok:
-    if szam > maximum:
-        maximum = szam
-    if szam < minimum:
-        minimum = szam
-
-print("Max:", maximum)  # 89
-print("Min:", minimum)  # 11` }
-    ]
-  }
-},
-
-{
-  id: 5, emoji: '🔄', topicGroup: 'algoritmus',
+  id: 2, emoji: '🔄', topicGroup: 'algoritmus',
   title: 'Buborékrendezés',
   description: `<p>A buborékrendezés a legismertebb kézi rendezési algoritmus: <strong>párokat hasonlít össze és cserél fel</strong>, amíg a lista rendezett nem lesz.</p>
 <p>A neve onnan ered, hogy a nagy elemek "felbuborékolnak" a lista végére – körülbelül úgy, ahogy a buborékok felfelé szállnak a vízben.</p>
@@ -729,7 +563,7 @@ print(lista)  # [1, 1, 3, 4, 5]` }
 // ═══════════ ALGORITMUSOK FOLYTATÁS (6–10) ═══════════
 
 {
-  id: 6, emoji: '⬇️', topicGroup: 'algoritmus',
+  id: 3, emoji: '⬇️', topicGroup: 'algoritmus',
   title: 'Minimum kiválasztás',
   description: `<p>Ugyanolyan mint a maximum keresés – csak itt a <strong>legkisebb</strong> elemet keresed.</p>
 <p>Adott: <code>arak = [850, 320, 1200, 450, 290, 780, 560]</code></p>
@@ -791,7 +625,7 @@ print(f"Legkisebb: {minimum} ({min_i+1}. helyen)")
 },
 
 {
-  id: 7, emoji: '✅', topicGroup: 'algoritmus',
+  id: 4, emoji: '✅', topicGroup: 'algoritmus',
   title: 'Eldöntés tétele',
   description: `<p>Az eldöntés tétele arra válaszol: <strong>van-e legalább egy elem a listában, ami teljesít egy feltételt?</strong></p>
 <p>Nem kell az összes elemet megvizsgálni – amint megtaláltad az elsőt, megvan a válasz.</p>
@@ -892,7 +726,7 @@ print(any(x > 10 for x in szamok))  # True` },
 },
 
 {
-  id: 8, emoji: '🗂️', topicGroup: 'algoritmus',
+  id: 5, emoji: '🗂️', topicGroup: 'algoritmus',
   title: 'Kiválogatás tétele',
   description: `<p>A kiválogatás tétele: <strong>gyűjtsd ki egy új listába az összes olyan elemet, ami megfelel egy feltételnek.</strong></p>
 <p>Ez olyan mint a megszámlálás – csak nem csak megszámolod, hanem el is teszed félre a megfelelőket.</p>
@@ -976,7 +810,7 @@ print(nagy2)  # [15, 42, 19, 24]` },
 },
 
 {
-  id: 9, emoji: '🔄', topicGroup: 'algoritmus',
+  id: 6, emoji: '🔄', topicGroup: 'algoritmus',
   title: 'Másolás tétele',
   description: `<p>A másolás tétele: <strong>másold át a lista összes elemét egy új listába – de közben alakítsd át őket.</strong></p>
 <p>Például: minden elemet duplázz meg, vagy alakítsd át más típussá.</p>
@@ -1042,7 +876,7 @@ print(szovegek)  # ['1. elem', '2. elem', ...]` },
 },
 
 {
-  id: 10, emoji: '🎯', topicGroup: 'algoritmus',
+  id: 7, emoji: '🎯', topicGroup: 'algoritmus',
   title: 'Bináris keresés',
   description: `<p>A bináris keresés sokkal <strong>gyorsabb</strong> mint a lineáris – de csak <strong>rendezett listán</strong> működik.</p>
 <p>Az ötlet: mindig a lista közepét nézed meg. Ha a keresett szám ennél kisebb, a bal felét vizsgálod tovább, ha nagyobb, a jobb felét. Minden lépéssel felezed a keresési területet.</p>
@@ -1143,7 +977,7 @@ while bal <= jobb:
 // ═══════════ LIST COMPREHENSION (6–8) ═══════════
 
 {
-  id: 11, emoji: '⚡', topicGroup: 'listakif',
+  id: 8, emoji: '⚡', topicGroup: 'listakif',
   title: 'List comprehension – alap',
   description: `<p>A <strong>lista-lerövidítés</strong> (angolul: list comprehension) azt jelenti, hogy ahelyett hogy ciklussal és <code>.append()</code>-pel töltöd fel a listát, egyetlen sorban megírhatod.</p>
 <p>Hozz létre egy listát, ami az 1–10 számok <strong>négyzeteit</strong> tartalmazza – az egysoros rövidítéssel!<br>
@@ -1194,7 +1028,7 @@ print(parosak)  # [2, 4, 6, 8, 10]` }
 },
 
 {
-  id: 12, emoji: '🔍', topicGroup: 'listakif',
+  id: 9, emoji: '🔍', topicGroup: 'listakif',
   title: 'List comprehension – feltétellel',
   description: `<p>A list comprehension végére tehetsz egy <code>if</code> feltételt – így csak azok az elemek kerülnek bele, amik megfelelnek a feltételnek.</p>
 <p>Szintaxis: <code>[kifejezés for elem in lista if feltétel]</code></p>
@@ -1254,7 +1088,7 @@ print(hosszuk)  # ['helló', 'sziasztok']` }
 },
 
 {
-  id: 13, emoji: '📖', topicGroup: 'listakif',
+  id: 10, emoji: '📖', topicGroup: 'listakif',
   title: 'Dict comprehension',
   description: `<p>Ugyanúgy ahogy listát lehet egy sorban létrehozni, szótárat is lehet: ez a dict comprehension.</p>
 <p>Szintaxis: <code>{kulcs: érték for elem in lista}</code></p>
@@ -1312,7 +1146,7 @@ print(dupla)  # {'kávé': 800, 'tea': 600, 'víz': 300}` }
 // ═══════════ LAMBDA & MAP/FILTER (9–11) ═══════════
 
 {
-  id: 14, emoji: 'λ', topicGroup: 'lambda_f',
+  id: 11, emoji: 'λ', topicGroup: 'lambda_f',
   title: 'lambda – névtelen függvény',
   description: `<p>A <code>lambda</code> egy kis, névtelen függvény – egyetlen kifejezés, amit nem kell <code>def</code>-fel megírni.</p>
 <p>Szintaxis: <code>lambda paraméter: kifejezés</code></p>
@@ -1377,7 +1211,7 @@ print(rendezett)  # ['bor', 'alma', 'eper', 'körte']` }
 },
 
 {
-  id: 15, emoji: '🗺️', topicGroup: 'lambda_f',
+  id: 12, emoji: '🗺️', topicGroup: 'lambda_f',
   title: 'map() – minden elemre alkalmaz',
   description: `<p>A <code>map()</code> egy függvényt alkalmaz a lista <strong>minden elemére</strong> – nem kell for ciklus.</p>
 <p>Szintaxis: <code>list(map(függvény, lista))</code></p>
@@ -1436,7 +1270,7 @@ print(hosszak)  # [6, 4, 11]` }
 },
 
 {
-  id: 16, emoji: '🔽', topicGroup: 'lambda_f',
+  id: 13, emoji: '🔽', topicGroup: 'lambda_f',
   title: 'filter() – szűrés',
   description: `<p>A <code>filter()</code> kiszűri a lista azon elemeit, amelyekre a megadott feltétel igaz.</p>
 <p>Szintaxis: <code>list(filter(feltétel_fv, lista))</code></p>
@@ -1496,7 +1330,7 @@ print(parosak_lc)  # [2, 4, 6, 8, 10]` }
 // ═══════════ REKURZIÓ & MATEMATIKA (17–19) ═══════════
 
 {
-  id: 17, emoji: '🔢', topicGroup: 'rekurzio',
+  id: 14, emoji: '🔢', topicGroup: 'rekurzio',
   title: 'Prímszám ellenőrzés',
   description: `<p>Egy szám <strong>prímszám</strong>, ha csak 1-gyel és önmagával osztható. Például: 2, 3, 5, 7, 11, 13...</p>
 <p>Az ellenőrzés ötlete: próbáld osztani a számot 2-től a négyzetgyökéig. Ha valamelyikkel osztható – nem prím. Ha egyikkel sem – prím.</p>
@@ -1579,7 +1413,7 @@ print(primek)
 },
 
 {
-  id: 18, emoji: '❗', topicGroup: 'rekurzio',
+  id: 15, emoji: '❗', topicGroup: 'rekurzio',
   title: 'Faktoriális – ciklussal és rekurzióval',
   description: `<p>A faktoriális: <code>n! = 1 × 2 × 3 × ... × n</code><br>
 Például: <code>5! = 1×2×3×4×5 = 120</code></p>
@@ -1666,7 +1500,7 @@ print(f(4))  # 24` },
 },
 
 {
-  id: 19, emoji: '🌀', topicGroup: 'rekurzio',
+  id: 16, emoji: '🌀', topicGroup: 'rekurzio',
   title: 'Fibonacci sorozat',
   description: `<p>A Fibonacci sorozatban minden szám az előző kettő összege:<br>
 <code>0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...</code></p>

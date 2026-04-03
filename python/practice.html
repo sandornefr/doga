@@ -1281,10 +1281,223 @@ t.vasarol(2)` },
   }
 },
 
-// ═══════════ FILE I/O (13–15) ═══════════
+// ═══════════ ALGORITMUS TÉTELEK (13–15) ═══════════
+
+    {
+      id: 13, emoji: '➕', topicGroup: 'algoritmus',
+      title: 'Összegzés tétele',
+      description: `<p>Az összegzés tétele: <strong>végigmész a listán, és összeadod azokat az elemeket, amik megfelelnek egy feltételnek</strong>.</p>
+<p>Adott egy jegylista. Számítsd ki az összes <strong>ötösnél kisebb jegy összegét</strong> for ciklussal (ne a beépített <code>sum()</code>-ot használd)!<br>
+Írd ki: <code>Nem ötösök összege: X</code></p>`,
+      starterCode: `# 13. feladat: Összegzés tétele
+jegyek = [5, 3, 4, 5, 2, 4, 5, 3, 1, 4]
+
+osszeg = 0   # itt gyűjtjük az összeget
+
+for jegy in jegyek:
+    # Ha jegy kisebb mint 5, add hozzá:
+
+print("Nem ötösök összege:", osszeg)
+`,
+      solution: `jegyek = [5, 3, 4, 5, 2, 4, 5, 3, 1, 4]
+osszeg = 0
+for jegy in jegyek:
+    if jegy < 5:
+        osszeg += jegy
+print("Nem ötösök összege:", osszeg)`,
+      hintCode: `jegyek = [5, 3, 4, 5, 2, 4, 5, 3, 1, 4]
+osszeg = 0
+for jegy in jegyek:
+    if jegy ___ 5:
+        osszeg ___ jegy
+print("Nem ötösök összege:", osszeg)`,
+      mockInputs: [],
+      checks: [
+        { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+jegyek/.test(c) },
+        { label: 'osszeg = 0 kezdőérték', fn: (c,o) => /osszeg\s*=\s*0/.test(c) },
+        { label: 'feltétel: jegy < 5', fn: (c,o) => /jegy\s*<\s*5/.test(c) },
+        { label: 'összeadás (osszeg +=)', fn: (c,o) => /osszeg\s*\+=/.test(c) },
+        { label: 'Kimenet: 17', fn: (c,o) => /\b17\b/.test(o) },
+      ],
+      tutorial: {
+        intro: `<h3>Összegzés tétele</h3>
+<p>Az összegzés tétele egy alapvető algoritmikus gondolat: van egy "gyűjtő" változód (általában 0-ra állítod), és a ciklusban mindig hozzáadod az aktuális elemet – de csak ha teljesít egy feltételt.</p>
+<p>A minta mindig ugyanez: <code>osszeg = 0</code> → for ciklus → <code>if feltétel: osszeg += elem</code> → ciklus után kiírod az eredményt.</p>
+<p>Vizsgákon és dolgozatokon nagyon gyakori: "összegezd a páros/pozitív/ötösnél kisebb elemeket".</p>`,
+        examples: [
+          { title: 'Összegzés tétele minta', code: `# Pozitív számok összege
+szamok = [4, -3, 7, -1, 8, -5, 6]
+osszeg = 0
+for szam in szamok:
+    if szam > 0:
+        osszeg += szam
+print("Pozitív összeg:", osszeg)  # 25` }
+        ]
+      }
+    },
+    {
+      id: 14, emoji: '🔢', topicGroup: 'algoritmus',
+      title: 'Megszámlálás tétele',
+      description: `<p>A megszámlálás tétele: <strong>végigmész a listán, és megszámlálod, hány elem teljesít egy feltételt</strong>.</p>
+<p>Adott egy jegylista. Számold meg, hány tanuló kapott <strong>ötöst</strong> for ciklussal (ne a beépített <code>count()</code>-ot használd)!<br>
+Írd ki: <code>Ötösök száma: X</code></p>`,
+      starterCode: `# 14. feladat: Megszámlálás tétele
+jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+
+db = 0   # a számláló
+
+for jegy in jegyek:
+    # Ha jegy == 5, növeld db-t 1-gyel:
+
+print("Ötösök száma:", db)
+`,
+      solution: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+db = 0
+for jegy in jegyek:
+    if jegy == 5:
+        db += 1
+print("Ötösök száma:", db)`,
+      hintCode: `jegyek = [4, 5, 3, 5, 2, 5, 4, 3, 5, 1]
+db = 0
+for jegy in jegyek:
+    if jegy ___ 5:
+        db ___ 1
+print("Ötösök száma:", db)`,
+      mockInputs: [],
+      checks: [
+        { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+jegyek/.test(c) },
+        { label: 'db = 0 számláló', fn: (c,o) => /db\s*=\s*0/.test(c) },
+        { label: 'feltétel: jegy == 5', fn: (c,o) => /jegy\s*==\s*5/.test(c) },
+        { label: 'számlálás (db += 1)', fn: (c,o) => /db\s*\+=\s*1/.test(c) },
+        { label: 'Kimenet: 4', fn: (c,o) => /\b4\b/.test(o) },
+      ],
+      tutorial: {
+        intro: `<h3>Megszámlálás tétele</h3>
+<p>A megszámlálás tétele hasonló az összegzéshez, de itt nem összeadunk – hanem megszámolunk. A "gyűjtő" változó neve általában <code>db</code> (darab), és mindig 0-ról indul.</p>
+<p>A minta: <code>db = 0</code> → for ciklus → <code>if feltétel: db += 1</code> → ciklus után kiírod az eredményt.</p>
+<p>Tipikus feladatok: "hány páros szám van", "hány tanuló bukott", "hány szó hosszabb 5 karakternél".</p>`,
+        examples: [
+          { title: 'Megszámlálás tétele minta', code: `# Hány szó hosszabb 4 karakternél?
+szavak = ["alma", "körte", "eper", "szilva", "bor"]
+db = 0
+for szo in szavak:
+    if len(szo) > 4:
+        db += 1
+print("Hosszú szavak:", db)  # 2` }
+        ]
+      }
+    },
+    {
+      id: 15, emoji: '🏆', topicGroup: 'algoritmus',
+      title: 'Maximum keresés objektumokban',
+      description: `<p>A 18 pontos vizsgafeladatnál objektumok listájából kell megkeresni a "legjobbat" – pl. a legnehezebb állatot vagy a csúcsforgalmú időpontot.</p>
+<p>A trükk: az <strong>első objektummal indulsz</strong> mint "eddigi legjobb", majd ciklusban összehasonlítod a többivel egy attribútum alapján.</p>
+<p>Adott egy hallgatói lista osztályokkal. Keresd meg a legjobb pontszámú hallgatót, és írd ki a nevét és pontszámát!</p>`,
+      starterCode: `# 15. feladat: Maximum keresés objektumokban
+
+class Hallgato:
+    def __init__(self, nev, pont):
+        self.nev = nev
+        self.pont = pont
+
+hallgatok = [
+    Hallgato("Anna", 87),
+    Hallgato("Béla", 92),
+    Hallgato("Csaba", 78),
+    Hallgato("Dóra", 95),
+]
+
+# Kezdj az első hallgatóval mint "eddigi legjobb":
+legjobb = hallgatok[0]
+
+for h in hallgatok:
+    # Ha h.pont nagyobb mint legjobb.pont:
+    # frissítsd a legjobbat
+
+print(f"Legjobb hallgató: {legjobb.nev}, {legjobb.pont} pont")
+`,
+      solution: `class Hallgato:
+    def __init__(self, nev, pont):
+        self.nev = nev
+        self.pont = pont
+
+hallgatok = [
+    Hallgato("Anna", 87),
+    Hallgato("Béla", 92),
+    Hallgato("Csaba", 78),
+    Hallgato("Dóra", 95),
+]
+
+legjobb = hallgatok[0]
+for h in hallgatok:
+    if h.pont > legjobb.pont:
+        legjobb = h
+
+print(f"Legjobb hallgató: {legjobb.nev}, {legjobb.pont} pont")`,
+      hintCode: `class Hallgato:
+    def __init__(self, nev, pont):
+        self.nev = nev
+        self.pont = pont
+
+hallgatok = [
+    Hallgato("Anna", 87),
+    Hallgato("Béla", 92),
+    Hallgato("Csaba", 78),
+    Hallgato("Dóra", 95),
+]
+
+legjobb = hallgatok[___]
+for h in hallgatok:
+    if h.pont ___ legjobb.pont:
+        legjobb = ___
+
+print(f"Legjobb hallgató: {legjobb.nev}, {legjobb.pont} pont")`,
+      mockInputs: [],
+      checks: [
+        { label: 'legjobb = hallgatok[0] (első elemmel indul)', fn: (c,o) => /legjobb\s*=\s*hallgatok\s*\[\s*0\s*\]/.test(c) },
+        { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+hallgatok/.test(c) },
+        { label: 'összehasonlítás attribútumon (h.pont > legjobb.pont)', fn: (c,o) => /h\.pont\s*>\s*legjobb\.pont/.test(c) },
+        { label: 'legjobb frissítése (legjobb = h)', fn: (c,o) => /legjobb\s*=\s*h\b/.test(c) },
+        { label: 'Kimenet: "Dóra" és "95"', fn: (c,o) => /D[oó]ra/i.test(o) && /95/.test(o) },
+      ],
+      tutorial: {
+        intro: `<h3>Maximum keresés objektumokban</h3>
+<p>Ha számok listájában keresed a maximumot, a <code>max()</code> elég. De ha <strong>objektumok listájában</strong> kell megkeresni a "legjobbat" egy attribútum alapján, kézi algoritmusra van szükség.</p>
+<p>A minta:</p>
+<ol>
+<li><code>legjobb = lista[0]</code> — az első objektum az "eddigi legjobb"</li>
+<li>for ciklus a listán</li>
+<li><code>if aktualis.attribútum &gt; legjobb.attribútum: legjobb = aktualis</code></li>
+<li>ciklus után <code>legjobb</code> tartalmazza a keresett objektumot</li>
+</ol>
+<p>Pontosan ezt kell tudni a 18 pontos vizsgafeladatnál is!</p>`,
+        examples: [
+          { title: 'Maximum keresés objektumban', code: `class Allat:
+    def __init__(self, fajnev, tomeg):
+        self.fajnev = fajnev
+        self.tomeg = tomeg
+
+allatok = [
+    Allat("tőkés réce", 1),
+    Allat("teve", 500),
+    Allat("strucc", 110),
+]
+
+legnehezebb = allatok[0]
+for a in allatok:
+    if a.tomeg > legnehezebb.tomeg:
+        legnehezebb = a
+
+print(f"A legnehezebb: {legnehezebb.fajnev}")
+# A legnehezebb: teve` }
+        ]
+      }
+    },
+
+// ═══════════ FILE I/O (16–18) ═══════════
 
 {
-  id: 13, emoji: '📝', topicGroup: 'file',
+  id: 16, emoji: '📝', topicGroup: 'file',
   title: 'Fájl írása',
   description: `<p>Gondolj erre úgy, mint amikor kinyitsz egy füzetet, beleírsz valamit, majd becsukod.<br>
 Az <code>open("naplo.txt", "w")</code> „kinyitja" a fájlt – a <code>"w"</code> mód azt jelenti: <strong>írásra</strong> nyitjuk meg (ha még nem létezik, létrehozza; ha létezik, az előző tartalmát törli).<br>
@@ -1355,7 +1568,7 @@ f.close()` },
 },
 
 {
-  id: 14, emoji: '📖', topicGroup: 'file',
+  id: 17, emoji: '📖', topicGroup: 'file',
   title: 'Fájl olvasása',
   description: `<p>Eddig megtanultuk, hogyan <em>írjunk</em> fájlba – most megtanuljuk, hogyan <em>olvassunk</em> belőle.<br>
 A <code>open("lista.txt", "r")</code> megnyitja a fájlt <strong>olvasásra</strong> (mint amikor kinyitod a füzeted, hogy megnézd, mit írtál bele).<br>
@@ -1442,7 +1655,7 @@ f.close()` },
 },
 
 {
-  id: 15, emoji: '🛡️', topicGroup: 'file',
+  id: 18, emoji: '🛡️', topicGroup: 'file',
   title: 'with utasítás',
   description: `<p>Az előző feladatokban mindig manuálisan kellett lezárni a fájlt a <code>close()</code>-zal – és ha elfelejtettük, az gond volt.<br>
 A <code>with</code> utasítás ezt megoldja: <strong>automatikusan lezárja a fájlt</strong>, amikor a blokk véget ér – még akkor is, ha hiba történt közben.<br>
@@ -1525,7 +1738,7 @@ with open("eredmeny.txt", "a", encoding="utf-8") as f:
 },
 
 {
-  id: 16, emoji: '🛡️', topicGroup: 'hiba',
+  id: 19, emoji: '🛡️', topicGroup: 'hiba',
   title: 'try / except – hibakezelés',
   description: `<p>Mi történik, ha a felhasználó betűt ír be, amikor számot várnál? A program hibával leáll – ezt el lehet kerülni.</p>
 <p>A <code>try</code> blokkba kerül a "veszélyes" kód (pl. az <code>int(input())</code>). Ha hiba történik, az <code>except</code> blokk fut le – a program nem áll le, hanem szépen kiírja a hibaüzenetet.</p>
@@ -1576,7 +1789,7 @@ except ValueError:
 },
 
 {
-  id: 17, emoji: '📂', topicGroup: 'hiba',
+  id: 20, emoji: '📂', topicGroup: 'hiba',
   title: 'try / except fájlkezeléssel',
   description: `<p>A fájlkezelésnél is előfordulhat hiba – például ha a fájl nem létezik. Ilyenkor <code>FileNotFoundError</code> keletkezik.</p>
 <p>Írj programot, amely megpróbálja megnyitni a <code>titok.txt</code> fájlt, és ha nem találja, kiírja: <code>A fájl nem található!</code></p>`,
@@ -1626,7 +1839,7 @@ except Exception as e:
 },
 
 {
-  id: 18, emoji: '📍', topicGroup: 'adat',
+  id: 21, emoji: '📍', topicGroup: 'adat',
   title: 'Tuple – rögzített sorozat',
   description: `<p>A tuple olyan, mint a lista – de <strong>nem lehet megváltoztatni</strong> a létrehozás után. Kerek zárójelekkel írjuk: <code>(1, 2, 3)</code></p>
 <p>Mire jó? Ha valamit rögzíteni akarsz: pl. egy koordináta, egy dátum, egy RGB szín. Ezeket nem akarod véletlenül felülírni.</p>
@@ -1687,7 +1900,7 @@ print(f"Piros: {r}, Zöld: {g}, Kék: {b}")` }
 },
 
 {
-  id: 19, emoji: '🔵', topicGroup: 'adat',
+  id: 22, emoji: '🔵', topicGroup: 'adat',
   title: 'Set – egyedi elemek halmaza',
   description: `<p>A set (halmaz) olyan lista, amiben <strong>minden elem csak egyszer szerepelhet</strong> – az ismétlések automatikusan eltűnnek.</p>
 <p>Kapcsos zárójelekkel hozod létre: <code>{1, 2, 3}</code> – de figyelj: ez máshogy néz ki mint a dict, mert itt nincs kettőspont!</p>
@@ -1746,7 +1959,7 @@ print(a - b)   # különbség: {1, 2}` }
 },
 
 {
-  id: 20, emoji: '🧮', topicGroup: 'modul',
+  id: 23, emoji: '🧮', topicGroup: 'modul',
   title: 'import math – matematikai függvények',
   description: `<p>A <code>math</code> modul tele van hasznos matematikai eszközzel – négyzetgyök, kerekítés, hatványozás és még sok más.</p>
 <p>Ahogy a <code>random</code>-ot importálod, úgy a <code>math</code>-ot is: <code>import math</code></p>
