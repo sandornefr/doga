@@ -2853,6 +2853,23 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     return;
                 }
 
+                // Régi → jelenlegi feladatnevek összefésülése
+                const FELADAT_NEV_MAP = {
+                    'Bolt nyitvatartás':        'Nyitvatartás',
+                    'Dolgozat pontszám → jegy': 'Dolgozat pontszám',
+                    'Jegyértékelő':             'Dolgozat pontszám',
+                    'Jegy átlag':               'Jegyek átlaga',
+                    'Két szám összehasonlítása':'Kisebb-nagyobb',
+                    'Lépésszám tracker':        'Lépésszámláló',
+                    'Magasugrás verseny':        'Magasugrás',
+                    'Mozijegy ára':             'Mozijegy',
+                    'Posta kasszagép':          'Csekkbefizetés',
+                    'Taxi ár':                  'Taxi ár kalkulátor',
+                };
+                data.forEach(d => {
+                    if (FELADAT_NEV_MAP[d.feladatNev]) d.feladatNev = FELADAT_NEV_MAP[d.feladatNev];
+                });
+
                 // Szétválasztjuk vote / reaction
                 const votes     = data.filter(d => d.tipus === 'vote');
                 const reactions = data.filter(d => d.tipus === 'reaction');
