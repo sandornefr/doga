@@ -874,7 +874,7 @@ function renderCustomTaskList() {
 
     function diffBadge(neh) {
         if (!neh) return '';
-        const map = { konnyu: ['Könnyű','konnyu'], kozepes: ['Közepes','kozepes'], nehez: ['Nehéz','nehez'] };
+        const map = { konnyu: ['Könnyű','konnyu'], kozepes: ['Közepesen nehéz','kozepes'], nehez: ['Nehéz','nehez'] };
         const [label, cls] = map[neh] || [neh, 'kozepes'];
         return `<span class="card-diff-badge ${cls}">${label}</span>`;
     }
