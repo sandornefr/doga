@@ -2773,65 +2773,31 @@ function updateTaskBreakdown() {
     const titleEl = document.getElementById('task-breakdown-title');
     if (!rowsEl || !totalEl || !titleEl) return;
 
-    if (selectedTaskType === 'csak8') {
-        titleEl.textContent = '3 db könnyű feladat:';
-        rowsEl.innerHTML = `
-            <div class="task-row">
-                <span class="task-badge pt8">8 pont × 3</span>
-                <span class="task-row-desc">Könnyű feladatok</span>
-                <span class="task-row-time">8–15 perc/feladat</span>
-            </div>`;
-        totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">24 pont</strong> &nbsp;|&nbsp; ~30–45 perc';
-    } else if (selectedTaskType === 'csak14') {
-        titleEl.textContent = '3 db közepes feladat:';
-        rowsEl.innerHTML = `
-            <div class="task-row">
-                <span class="task-badge pt14">14 pont × 3</span>
-                <span class="task-row-desc">Közepes feladatok</span>
-                <span class="task-row-time">~25 perc/feladat</span>
-            </div>`;
-        totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">42 pont</strong> &nbsp;|&nbsp; ~75 perc';
-    } else if (selectedTaskType === 'csak18') {
-        titleEl.textContent = '3 db nehéz feladat:';
-        rowsEl.innerHTML = `
-            <div class="task-row">
-                <span class="task-badge pt18">18 pont × 3</span>
-                <span class="task-row-desc">Nehéz feladatok</span>
-                <span class="task-row-time">~35 perc/feladat</span>
-            </div>`;
-        totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">54 pont</strong> &nbsp;|&nbsp; ~105 perc';
-    } else if (selectedTaskType === 'vegyes') {
+    function badges(pts) {
+        const counted = pts.reduce((acc, p) => { acc[p] = (acc[p]||0)+1; return acc; }, {});
+        return Object.entries(counted).map(([p,n], i, arr) =>
+            `<span class="task-badge pt${p}">${p}p × ${n}</span>${i < arr.length-1 ? '<span class="task-badge-sep">+</span>' : ''}`
+        ).join('');
+    }
+
+    const configs = {
+        csak8:  { title: '3 × Könnyű:', pts: [8,8,8],       total: 24 },
+        csak14: { title: '3 × Közepes:', pts: [14,14,14],   total: 42 },
+        csak18: { title: '3 × Nehéz:',  pts: [18,18,18],    total: 54 },
+        agazati:{ title: 'Ágazati:',    pts: [8,14,18],      total: 40 },
+    };
+
+    if (selectedTaskType === 'vegyes') {
         const combo = VEGYES_COMBOS[selectedVegyesIndex];
-        const ptMap = { 8: ['pt8','Könnyű','8–15 perc'], 14: ['pt14','Közepes','~25 perc'], 18: ['pt18','Nehéz','~35 perc'] };
-        const counted = combo.pts.reduce((acc, p) => { acc[p] = (acc[p]||0)+1; return acc; }, {});
-        const rows = Object.entries(counted).map(([p,n]) => {
-            const [cls,desc,time] = ptMap[p];
-            return `<div class="task-row"><span class="task-badge ${cls}">${p} pont × ${n}</span><span class="task-row-desc">${desc} feladat</span><span class="task-row-time">${time}</span></div>`;
-        }).join('');
         const total = combo.pts.reduce((s,p) => s+p, 0);
-        titleEl.textContent = combo.label + ':';
-        rowsEl.innerHTML = rows;
-        totalEl.innerHTML = `Összesen: <strong style="color:#e0e0e0;">${total} pont</strong>`;
+        titleEl.textContent = 'Vegyes:';
+        rowsEl.innerHTML = badges(combo.pts);
+        totalEl.innerHTML = `= <strong>${total} pont</strong>`;
     } else {
-        // agazati
-        titleEl.textContent = 'Ágazati alapvizsga összeállítás:';
-        rowsEl.innerHTML = `
-            <div class="task-row">
-                <span class="task-badge pt8">8 pont × 1</span>
-                <span class="task-row-desc">Könnyű feladat</span>
-                <span class="task-row-time">8–15 perc</span>
-            </div>
-            <div class="task-row">
-                <span class="task-badge pt14">14 pont × 1</span>
-                <span class="task-row-desc">Közepes feladat</span>
-                <span class="task-row-time">~25 perc</span>
-            </div>
-            <div class="task-row">
-                <span class="task-badge pt18">18 pont × 1</span>
-                <span class="task-row-desc">Nehéz feladat</span>
-                <span class="task-row-time">~35 perc</span>
-            </div>`;
-        totalEl.innerHTML = 'Összesen: <strong style="color:#e0e0e0;">40 pont</strong> &nbsp;|&nbsp; ~60 perc';
+        const cfg = configs[selectedTaskType] || configs.agazati;
+        titleEl.textContent = cfg.title;
+        rowsEl.innerHTML = badges(cfg.pts);
+        totalEl.innerHTML = `= <strong>${cfg.total} pont</strong>`;
     }
 }
 

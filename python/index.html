@@ -166,31 +166,36 @@
         .task-breakdown {
             background: #0f3460;
             border-radius: 10px;
-            padding: 0.5rem 0.9rem;
+            padding: 0.45rem 0.9rem;
             margin-bottom: 0.5rem;
-        }
-
-        .task-breakdown p { color: #aaa; font-size: 0.9rem; margin-bottom: 0.3rem; }
-
-        .task-row {
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #1a3a6e;
+            flex-wrap: wrap;
+            gap: 0.4rem;
         }
-        .task-row:last-child { border-bottom: none; }
+        #task-breakdown-title {
+            color: #7db8e8; font-size: 0.78rem; font-weight: 600;
+            margin: 0; white-space: nowrap;
+        }
+        #task-breakdown-rows {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; flex: 1;
+        }
         .task-badge {
             background: #1a1a2e;
             border-radius: 6px;
-            padding: 4px 10px;
-            font-size: 0.85rem;
+            padding: 3px 8px;
+            font-size: 0.8rem;
             font-weight: 700;
             white-space: nowrap;
         }
         .task-badge.pt8  { color: #2ed573; border: 1px solid #2ed573; }
         .task-badge.pt14 { color: #ffa502; border: 1px solid #ffa502; }
         .task-badge.pt18 { color: #f472b6; border: 1px solid #f472b6; }
+        .task-badge-sep  { color: #4a6a8a; font-size: 0.8rem; }
+        #task-breakdown-total {
+            color: #94a3b8; font-size: 0.8rem; white-space: nowrap; margin-left: auto;
+        }
+        #task-breakdown-total strong { color: #e0e0e0; }
         .task-type-btn {
             padding: 0.35rem 0.9rem;
             border-radius: 8px;
@@ -205,16 +210,6 @@
         .task-type-btn:hover:not(:disabled) { border-color: #2ed573; color: #2ed573; }
         .task-type-btn.active { border-color: #2ed573; color: #2ed573; background: #0a2918; }
         .task-type-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-        .task-row-desc { color: #ccc; font-size: 0.9rem; }
-        .task-row-time { color: #888; font-size: 0.82rem; margin-left: auto; white-space: nowrap; }
-
-        .task-total {
-            margin-top: 0.7rem;
-            color: #e0e0e0;
-            font-size: 0.9rem;
-            text-align: right;
-        }
-
         .warning-box {
             background: #1a0a0a;
             border: 1.5px solid #e94560;
@@ -1275,25 +1270,15 @@
 
                     <!-- Feladat breakdown (mindig látszik) -->
                     <div class="task-breakdown" id="task-breakdown">
-                        <p id="task-breakdown-title">Ágazati alapvizsga összeállítás:</p>
+                        <p id="task-breakdown-title">Ágazati:</p>
                         <div id="task-breakdown-rows">
-                            <div class="task-row">
-                                <span class="task-badge pt8">8 pont × 1</span>
-                                <span class="task-row-desc">Könnyű feladat</span>
-                                <span class="task-row-time">8–15 perc</span>
-                            </div>
-                            <div class="task-row">
-                                <span class="task-badge pt14">14 pont × 1</span>
-                                <span class="task-row-desc">Közepes feladat</span>
-                                <span class="task-row-time">~25 perc</span>
-                            </div>
-                            <div class="task-row">
-                                <span class="task-badge pt18">18 pont × 1</span>
-                                <span class="task-row-desc">Nehéz feladat</span>
-                                <span class="task-row-time">~35 perc</span>
-                            </div>
+                            <span class="task-badge pt8">8p × 1</span>
+                            <span class="task-badge-sep">+</span>
+                            <span class="task-badge pt14">14p × 1</span>
+                            <span class="task-badge-sep">+</span>
+                            <span class="task-badge pt18">18p × 1</span>
                         </div>
-                        <div class="task-total" id="task-breakdown-total">Összesen: <strong style="color:#e0e0e0;">40 pont</strong> &nbsp;|&nbsp; ~60 perc</div>
+                        <div id="task-breakdown-total">= <strong>40 pont</strong></div>
                     </div>
 
                     <!-- ════════════════════════════════════════════════════════
