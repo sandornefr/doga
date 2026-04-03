@@ -711,6 +711,23 @@ async function startTest() {
 
 // Véletlenszerű feladatok kiválasztása – előző kör feladatait kizárja ha lehet
 async function selectRandomTasks() {
+    // Ha egyéni összeállítás módban vagyunk, a selectedTasks már be van állítva – ne írjuk felül
+    if (window._customModeActive) {
+        window._customModeActive = false;
+        lastRoundTaskNumbers = new Set(selectedTasks.map(t => t.number));
+        const taskNums = JSON.stringify([...lastRoundTaskNumbers]);
+        const email = studentData.email || 'anon';
+        try { localStorage.setItem('kandoLastTasks_' + email, taskNums); } catch(e) {}
+        fetch(RAILWAY_URL + '/api/user-state/' + encodeURIComponent(email.replace('@kkszki.hu','')) + '/lastTasks', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: taskNums })
+        }).catch(() => {});
+        tippIndex = selectedTasks.map(() => 0);
+        window._kandoSelectedTasks = selectedTasks;
+        saveTasksToHistory(selectedTasks.map(t => t.number));
+        return;
+    }
+
     const tasks8  = tasks.filter(t => t.points === 8);
     const tasks14 = tasks.filter(t => t.points === 14);
     const tasks18 = tasks.filter(t => t.points === 18 && t.modulNev);
@@ -929,6 +946,7 @@ function startCustomTest() {
 
     tippIndex = selectedTasks.map(() => 0);
     window._kandoSelectedTasks = selectedTasks;
+    window._customModeActive = true; // selectRandomTasks() ne írja felül
 
     lastRoundTaskNumbers = new Set(nums);
     saveTasksToHistory(nums);
