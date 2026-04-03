@@ -1447,10 +1447,10 @@ for h in hallgatok:
 print(f"Legjobb hallgató: {legjobb.nev}, {legjobb.pont} pont")`,
       mockInputs: [],
       checks: [
-        { label: 'legjobb = hallgatok[0] (első elemmel indul)', fn: (c,o) => /legjobb\s*=\s*hallgatok\s*\[\s*0\s*\]/.test(c) },
+        { label: 'első elemmel indul (hallgatok[0])', fn: (c,o) => /\w+\s*=\s*hallgatok\s*\[\s*0\s*\]/.test(c) },
         { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+hallgatok/.test(c) },
-        { label: 'összehasonlítás attribútumon (h.pont > legjobb.pont)', fn: (c,o) => /h\.pont\s*>\s*legjobb\.pont/.test(c) },
-        { label: 'legjobb frissítése (legjobb = h)', fn: (c,o) => /legjobb\s*=\s*h\b/.test(c) },
+        { label: 'összehasonlítás .pont attribútumon (>)', fn: (c,o) => /\.pont\s*>\s*\w+\.pont|\w+\.pont\s*<\s*\w+\.pont/.test(c) },
+        { label: 'legjobb frissítése az if ágban', fn: (c,o) => /if\s[\s\S]{1,60}:\s*\n\s*\w+\s*=\s*\w+/.test(c) },
         { label: 'Kimenet: "Dóra" és "95"', fn: (c,o) => /D[oó]ra/i.test(o) && /95/.test(o) },
       ],
       tutorial: {
@@ -1548,10 +1548,10 @@ for t in termekek:
 print(f"Legolcsóbb termék: {legolcsobb.nev}, {legolcsobb.ar} Ft")`,
       mockInputs: [],
       checks: [
-        { label: 'legolcsobb = termekek[0] (első elemmel indul)', fn: (c,o) => /legolcsobb\s*=\s*termekek\s*\[\s*0\s*\]/.test(c) },
+        { label: 'első elemmel indul (termekek[0])', fn: (c,o) => /\w+\s*=\s*termekek\s*\[\s*0\s*\]/.test(c) },
         { label: 'for ciklus a listán', fn: (c,o) => /for\s+\w+\s+in\s+termekek/.test(c) },
-        { label: 'összehasonlítás attribútumon (t.ar < legolcsobb.ar)', fn: (c,o) => /t\.ar\s*<\s*legolcsobb\.ar/.test(c) },
-        { label: 'legolcsobb frissítése (legolcsobb = t)', fn: (c,o) => /legolcsobb\s*=\s*t\b/.test(c) },
+        { label: 'összehasonlítás .ar attribútumon (<)', fn: (c,o) => /\.ar\s*<\s*\w+\.ar|\w+\.ar\s*>\s*\w+\.ar/.test(c) },
+        { label: 'legolcsóbb frissítése az if ágban', fn: (c,o) => /if\s[\s\S]{1,60}:\s*\n\s*\w+\s*=\s*\w+/.test(c) },
         { label: 'Kimenet: "Egér" és "4900"', fn: (c,o) => /Eg[eé]r/i.test(o) && /4900/.test(o) },
       ],
       tutorial: {
