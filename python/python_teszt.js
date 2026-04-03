@@ -897,12 +897,11 @@ function renderCustomTaskList() {
         return `${header}<div class="custom-card-grid">${cards}</div>`;
     }
 
-    const tanuloTag = '<span class="custom-tanulo-tag"><i class="fa-solid fa-graduation-cap"></i> feladatkészítő</span>';
     let html = '';
-    if (filterCat === 'all' || filterCat === '8')      html += renderGroup(tasks8,      '8 pontos feladatok',             'card-pts-8',  '');
-    if (filterCat === 'all' || filterCat === '14')     html += renderGroup(tasks14,     '14 pontos feladatok',            'card-pts-14', '');
-    if (filterCat === 'all' || filterCat === '18')     html += renderGroup(tasks18,     '18 pontos feladatok',            'card-pts-18', '');
-    if (filterCat === 'all' || filterCat === 'tanulo') html += renderGroup(tasksTanulo, 'Feladatkészítők feladatai',      '',            tanuloTag);
+    if (filterCat === 'all' || filterCat === '8')      html += renderGroup(tasks8,      '8 pontos feladatok',        'card-pts-8',  '');
+    if (filterCat === 'all' || filterCat === '14')     html += renderGroup(tasks14,     '14 pontos feladatok',       'card-pts-14', '');
+    if (filterCat === 'all' || filterCat === '18')     html += renderGroup(tasks18,     '18 pontos feladatok',       'card-pts-18', '');
+    if (filterCat === 'all' || filterCat === 'tanulo') html += renderGroup(tasksTanulo, 'Feladatkészítők feladatai', '',            '');
     if (!html) html = '<div style="color:#64748b;text-align:center;padding:1.5rem;font-size:0.88rem;">Nincs feladat ebben a kategóriában.</div>';
 
     document.getElementById('custom-task-list').innerHTML = html;
