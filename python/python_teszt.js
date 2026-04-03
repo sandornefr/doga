@@ -872,25 +872,37 @@ function renderCustomTaskList() {
         return true;
     }
 
-    function renderGroup(list, title) {
+    function diffBadge(neh) {
+        if (!neh) return '';
+        const map = { konnyu: ['Könnyű','konnyu'], kozepes: ['Közepes','kozepes'], nehez: ['Nehéz','nehez'] };
+        const [label, cls] = map[neh] || [neh, 'kozepes'];
+        return `<span class="card-diff-badge ${cls}">${label}</span>`;
+    }
+
+    function renderGroup(list, title, ptsCls) {
         const filtered = list.filter(matches);
         if (!filtered.length) return '';
-        return `<div class="custom-group-title">${title}</div>` +
-            filtered.map(t => {
-                const past = allPastNums.has(t.number);
-                return `<label class="custom-task-item${past ? ' past' : ''}">
-                    <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
-                    <span class="custom-task-name">${t.cim}</span>
-                    <span class="custom-task-pts">${t.points}p</span>
-                    ${past ? '<span class="custom-past-tag">✓ volt már</span>' : ''}
-                </label>`;
-            }).join('');
+        const header = `<div class="custom-group-divider"><span class="custom-group-divider-label">${title}</span></div>`;
+        const cards = filtered.map(t => {
+            const past = allPastNums.has(t.number);
+            return `<label class="custom-task-card${past ? ' past' : ''}">
+                <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
+                <div class="card-check-icon"><i class="fa-solid fa-check"></i></div>
+                <div class="card-pts-badge ${ptsCls}">${t.points}p</div>
+                <div class="card-title">${t.cim}</div>
+                <div class="card-tags">
+                    ${diffBadge(t.nehezseg)}
+                    ${past ? '<span class="custom-past-tag"><i class="fa-solid fa-rotate-left"></i> volt már</span>' : ''}
+                </div>
+            </label>`;
+        }).join('');
+        return `${header}<div class="custom-card-grid">${cards}</div>`;
     }
 
     document.getElementById('custom-task-list').innerHTML =
-        renderGroup(tasks8,  '8 pontos feladatok') +
-        renderGroup(tasks14, '14 pontos feladatok') +
-        renderGroup(tasks18, '18 pontos feladatok');
+        renderGroup(tasks8,  '8 pontos feladatok', 'card-pts-8') +
+        renderGroup(tasks14, '14 pontos feladatok', 'card-pts-14') +
+        renderGroup(tasks18, '18 pontos feladatok', 'card-pts-18');
 
     document.querySelectorAll('.custom-cb').forEach(cb =>
         cb.addEventListener('change', updateCustomCount));
