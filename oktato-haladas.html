@@ -462,12 +462,15 @@ body {
 
     <!-- Topbar -->
     <div class="topbar">
-        <a class="topbar-logo" href="portal.html">
+        <a class="topbar-logo" href="oktato-portal.html">
             <i class="fas fa-graduation-cap"></i> Kandó Teszt
         </a>
         <div class="topbar-title"><strong>Tanulói haladás</strong></div>
-        <a class="topbar-back" href="portal.html">
-            <i class="fas fa-arrow-left"></i> Vissza a portálra
+        <a class="topbar-back" href="profil.html" style="margin-right:4px">
+            <i class="fas fa-user-circle"></i> Profilom
+        </a>
+        <a class="topbar-back" href="oktato-portal.html">
+            <i class="fas fa-arrow-left"></i> Vissza
         </a>
     </div>
 
@@ -494,7 +497,7 @@ body {
     <!-- Fő elrendezés -->
     <div class="main-layout">
 
-        <!-- Bal: kártyák -->
+        <!-- Bal: kártyák + összehasonlítás (belső scroll) -->
         <div class="cards-panel" id="cards-panel">
             <div class="loading-msg">
                 <i class="fas fa-circle-notch spin"></i> Betöltés...
@@ -510,9 +513,6 @@ body {
         </div>
 
     </div>
-
-    <!-- Összehasonlítás tábla (alul, teljes szélességben) -->
-    <div id="comparison-wrap"></div>
 
 </div>
 
@@ -639,6 +639,7 @@ async function loadOsszesito() {
         const res = await authFetch(`${API}/api/haladas/osszesito`);
         if (!res.ok) return;
         const data = await res.json();
+        window._comparisonData = data;
         renderComparison(data);
     } catch(e) {}
 }
@@ -710,11 +711,18 @@ function renderCards(students) {
         return;
     }
 
+    const panel = document.getElementById('cards-panel');
+    panel.innerHTML = '';
     const grid = document.createElement('div');
     grid.className = 'cards-grid';
     students.forEach(s => grid.appendChild(makeCard(s)));
-    document.getElementById('cards-panel').innerHTML = '';
-    document.getElementById('cards-panel').appendChild(grid);
+    panel.appendChild(grid);
+    // Összehasonlítás tábla a kártyák alatt (a bal panel aljára)
+    const compWrap = document.createElement('div');
+    compWrap.id = 'comparison-wrap';
+    panel.appendChild(compWrap);
+    // Ha már betöltöttük az összehasonlítás adatait, újrarendereljük ide
+    if (window._comparisonData) renderComparison(window._comparisonData);
 }
 
 function makeCard(s) {

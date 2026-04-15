@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kandó – Oktatói portál</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family:'Segoe UI',sans-serif;
+    background:#0d1117;
+    color:#e0e0e0;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* ── Topbar ── */
+.topbar {
+    background:#161b22;
+    border-bottom:1px solid #21262d;
+    padding:14px 32px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+.topbar-logo {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+}
+.topbar-logo img { height:32px; }
+.topbar-logo-text {
+    font-size:1.05rem;
+    font-weight:700;
+    color:#58a6ff;
+}
+.topbar-spacer { flex:1; }
+.topbar-greeting {
+    font-size:0.9rem;
+    color:#8b949e;
+}
+.topbar-greeting strong { color:#e0e0e0; }
+
+.topbar-btn {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:7px 16px;
+    border-radius:7px;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    border:none;
+    transition:background .2s, color .2s;
+}
+.btn-profil {
+    background:#21262d;
+    border:1px solid #30363d;
+    color:#e0e0e0;
+}
+.btn-profil:hover { background:#30363d; }
+.btn-logout {
+    background:transparent;
+    border:1px solid #30363d;
+    color:#8b949e;
+}
+.btn-logout:hover { border-color:#f85149; color:#f85149; }
+
+/* ── Hero szöveg ── */
+.hero {
+    text-align:center;
+    padding:52px 32px 36px;
+}
+.hero h1 {
+    font-size:1.8rem;
+    font-weight:700;
+    color:#e0e0e0;
+    margin-bottom:8px;
+}
+.hero p {
+    font-size:1rem;
+    color:#8b949e;
+}
+
+/* ── 3 kártya ── */
+.cards-row {
+    display:flex;
+    gap:24px;
+    padding:0 48px 60px;
+    justify-content:center;
+    align-items:stretch;
+    flex:1;
+}
+
+.big-card {
+    flex:1;
+    max-width:360px;
+    background:#161b22;
+    border:1px solid #21262d;
+    border-radius:16px;
+    padding:36px 30px;
+    text-decoration:none;
+    color:inherit;
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    cursor:pointer;
+    transition:border-color .25s, transform .2s, box-shadow .25s;
+    position:relative;
+    overflow:hidden;
+}
+.big-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.big-card::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:3px;
+    border-radius:16px 16px 0 0;
+    opacity:0;
+    transition:opacity .25s;
+}
+.big-card:hover::before { opacity:1; }
+
+.card-agazati { border-color:#1d4f7a; }
+.card-agazati:hover { border-color:#58a6ff; box-shadow:0 8px 32px rgba(88,166,255,.15); }
+.card-agazati::before { background:linear-gradient(90deg,#58a6ff,#388bfd); }
+
+.card-szamonkeres { border-color:#3b2b6b; }
+.card-szamonkeres:hover { border-color:#a371f7; box-shadow:0 8px 32px rgba(163,113,247,.15); }
+.card-szamonkeres::before { background:linear-gradient(90deg,#a371f7,#7c3aed); }
+
+.card-haladas { border-color:#1a3a2a; }
+.card-haladas:hover { border-color:#3fb950; box-shadow:0 8px 32px rgba(63,185,80,.15); }
+.card-haladas::before { background:linear-gradient(90deg,#3fb950,#238636); }
+
+.card-icon-wrap {
+    width:58px;
+    height:58px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.6rem;
+    margin-bottom:20px;
+    flex-shrink:0;
+}
+.icon-agazati    { background:#0d2a45; color:#58a6ff; }
+.icon-szamonkeres { background:#1e1040; color:#a371f7; }
+.icon-haladas    { background:#0b2016; color:#3fb950; }
+
+.card-title {
+    font-size:1.2rem;
+    font-weight:700;
+    color:#e0e0e0;
+    margin-bottom:10px;
+}
+.card-desc {
+    font-size:0.88rem;
+    color:#8b949e;
+    line-height:1.6;
+    flex:1;
+}
+.card-bullets {
+    margin-top:18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.card-bullet {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:0.83rem;
+    color:#8b949e;
+}
+.card-bullet i {
+    width:16px;
+    text-align:center;
+    font-size:0.85rem;
+    flex-shrink:0;
+}
+.bullet-agazati i    { color:#58a6ff; }
+.bullet-szamonkeres i { color:#a371f7; }
+.bullet-haladas i    { color:#3fb950; }
+
+.card-arrow {
+    margin-top:24px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    font-size:0.82rem;
+    font-weight:600;
+    gap:6px;
+    opacity:.5;
+    transition:opacity .2s;
+}
+.big-card:hover .card-arrow { opacity:1; }
+.card-agazati .card-arrow    { color:#58a6ff; }
+.card-szamonkeres .card-arrow { color:#a371f7; }
+.card-haladas .card-arrow    { color:#3fb950; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <a class="topbar-logo" href="oktato-portal.html">
+        <img src="kando_favion_light.png" alt="Kandó" onerror="this.style.display='none'">
+        <span class="topbar-logo-text">Kandó Teszt</span>
+    </a>
+    <div class="topbar-spacer"></div>
+    <span class="topbar-greeting">Üdvözöllek, <strong id="greeting-name">–</strong>!</span>
+    <a class="topbar-btn btn-profil" href="profil.html" id="profil-btn">
+        <i class="fas fa-user-circle"></i> Profilom
+    </a>
+    <button class="topbar-btn btn-logout" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Kilépés
+    </button>
+</div>
+
+<div class="hero">
+    <h1>Mit szeretnél csinálni?</h1>
+    <p>Válaszd ki az alábbi lehetőségek közül</p>
+</div>
+
+<div class="cards-row">
+
+    <!-- Ágazati alapvizsga -->
+    <a class="big-card card-agazati" href="portal.html?mode=student">
+        <div class="card-icon-wrap icon-agazati">
+            <i class="fas fa-laptop-code"></i>
+        </div>
+        <div class="card-title">Ágazati alapvizsga</div>
+        <div class="card-desc">
+            Próbáld ki a diákok feladatait, gyakorolj a vizsga előtt, vagy ellenőrizd a feladatsor nehézségét.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet bullet-agazati">
+                <i class="fab fa-python"></i> Python ágazati feladatok
+            </div>
+            <div class="card-bullet bullet-agazati">
+                <i class="fas fa-code"></i> WEB HTML+CSS feladatok
+            </div>
+            <div class="card-bullet bullet-agazati">
+                <i class="fas fa-circle-question"></i> Interaktív teszt
+            </div>
+        </div>
+        <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+    <!-- Számonkérés -->
+    <a class="big-card card-szamonkeres" href="python/szamonkeres.html">
+        <div class="card-icon-wrap icon-szamonkeres">
+            <i class="fas fa-file-pen"></i>
+        </div>
+        <div class="card-title">Számonkérés</div>
+        <div class="card-desc">
+            Adj ki feladatokat a diákoknak, kövesd nyomon a beadásokat, és értékeld az eredményeket.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet bullet-szamonkeres">
+                <i class="fas fa-plus-circle"></i> Feladat kiadása csoportnak
+            </div>
+            <div class="card-bullet bullet-szamonkeres">
+                <i class="fas fa-inbox"></i> Beadások megtekintése
+            </div>
+            <div class="card-bullet bullet-szamonkeres">
+                <i class="fas fa-star"></i> Eredmények értékelése
+            </div>
+        </div>
+        <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+    <!-- Tanulói haladás -->
+    <a class="big-card card-haladas" href="oktato-haladas.html">
+        <div class="card-icon-wrap icon-haladas">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-title">Tanulói haladás</div>
+        <div class="card-desc">
+            Láthatod, hogy a diákjaid hol tartanak a tananyagban, mennyit gyakorolnak, és kik szorulnak segítségre.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet bullet-haladas">
+                <i class="fas fa-book-open"></i> Tananyag előrehaladás
+            </div>
+            <div class="card-bullet bullet-haladas">
+                <i class="fas fa-dumbbell"></i> Gyakorlási aktivitás
+            </div>
+            <div class="card-bullet bullet-haladas">
+                <i class="fas fa-exclamation-triangle"></i> Lemaradó tanulók jelölése
+            </div>
+        </div>
+        <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+</div>
+
+<script>
+// Bejelentkezés ellenőrzése
+(function() {
+    const saved = sessionStorage.getItem('kandoUser');
+    if (!saved) { location.href = 'login.html'; return; }
+    try {
+        const u = JSON.parse(saved);
+        if (u.szerep !== 'oktato') { location.href = 'portal.html'; return; }
+        // Admin (sandornef) a saját portálját kapja
+        if (u.email === 'sandornef@kkszki.hu') { location.href = 'portal.html'; return; }
+        document.getElementById('greeting-name').textContent = u.nev || u.email;
+    } catch(e) { location.href = 'login.html'; }
+})();
+
+function logout() {
+    sessionStorage.removeItem('kandoUser');
+    localStorage.removeItem('admin_token');
+    location.href = 'login.html';
+}
+</script>
+</body>
+</html>
