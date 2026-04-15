@@ -1419,17 +1419,17 @@
                 const urlMode = new URLSearchParams(location.search).get('mode');
                 if (urlMode !== 'student') {
                     location.replace('oktato-portal.html');
-                    return;
+                } else {
+                    // ?mode=student: diák nézet, hogy kipróbálhassák a feladatokat
+                    document.getElementById('student-layout-wrap').style.display = 'flex';
+                    document.getElementById('changelog-python').style.display = 'block';
+                    document.getElementById('changelog-web').style.display = 'block';
+                    document.getElementById('changelog-interaktiv').style.display = 'block';
+                    document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
+                    document.getElementById('otlet-btn').style.display = 'flex';
+                    const cardWeb = document.getElementById('card-web');
+                    if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
                 }
-                // ?mode=student: diák nézet, hogy kipróbálhassák a feladatokat
-                document.getElementById('student-layout-wrap').style.display = 'flex';
-                document.getElementById('changelog-python').style.display = 'block';
-                document.getElementById('changelog-web').style.display = 'block';
-                document.getElementById('changelog-interaktiv').style.display = 'block';
-                document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
-                document.getElementById('otlet-btn').style.display = 'flex';
-                const cardWeb = document.getElementById('card-web');
-                if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
             }
         } else if (user.szerep === 'vendeg') {
             document.getElementById('student-layout-wrap').style.display = 'flex';
