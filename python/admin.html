@@ -3070,8 +3070,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         }
 
         // ── Megoldások & Tippek ───────────────────────────────────────────
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw6c00BA-N3Lf3lWFg3Jm-uVJKrOKKmoRTI9vBUxk2xRdFBrNR_ztB9EoA_Uq2Kg-Ms/exec';
-        const GAS_ADMIN_PASSWORD = atob('S2FuZG8xMjM0');
+        // A GAS URL és jelszó a Railway backenden van tárolva (env változóként).
+        // A frontend csak a proxy endpointokat hívja, oktató tokennel hitelesítve.
 
         async function saveMegoldasToApi() {
             const taskId = document.getElementById('megoldas-task-select').value;
@@ -3085,20 +3085,21 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             errEl.style.display = 'none'; okEl.style.display = 'none';
             statusEl.textContent = 'Mentés...';
             try {
-                const resp = await fetch(GAS_URL + '?action=saveMegoldas', {
+                const resp = await authFetch(`${RAILWAY_URL}/api/gas/save-megoldas`, {
                     method: 'POST',
-                    body: JSON.stringify({ admin_password: GAS_ADMIN_PASSWORD, feladatId: taskId, solution, hint1, hint2, hint3 })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feladatId: taskId, solution, hint1, hint2, hint3 })
                 });
                 const data = await resp.json();
                 if (data.ok) {
-                    okEl.textContent = '✅ Mentve!'; okEl.style.display = 'block';
+                    okEl.textContent = 'Mentve!'; okEl.style.display = 'block';
                     statusEl.textContent = '';
                 } else {
-                    errEl.textContent = '❌ Hiba: ' + (data.error || 'Ismeretlen'); errEl.style.display = 'block';
+                    errEl.textContent = 'Hiba: ' + (data.error || 'Ismeretlen'); errEl.style.display = 'block';
                     statusEl.textContent = '';
                 }
             } catch(e) {
-                errEl.textContent = '❌ Hálózati hiba: ' + e.message; errEl.style.display = 'block';
+                errEl.textContent = 'Hálózati hiba: ' + e.message; errEl.style.display = 'block';
                 statusEl.textContent = '';
             }
         }
@@ -3108,7 +3109,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             const statusEl = document.getElementById('megoldas-status');
             statusEl.textContent = 'Betöltés...';
             try {
-                const resp = await fetch(GAS_URL + '?action=getMegoldasok');
+                const resp = await authFetch(`${RAILWAY_URL}/api/gas/get-megoldasok`);
                 const data = await resp.json();
                 if (data.ok && data.data && data.data[taskId]) {
                     const d = data.data[taskId];

@@ -56,6 +56,8 @@ db.Initialize();
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
 var adminEnvUser = app.Configuration["ADMIN_USERNAME"] ?? "admin";
 var adminEnvPass = app.Configuration["ADMIN_PASSWORD"] ?? "kandooktato";
+var gasUrl       = app.Configuration["GAS_URL"]       ?? "";
+var gasAdminPass = app.Configuration["GAS_ADMIN_PASSWORD"] ?? "";
 
 // Admin létrehozása/frissítése – mindig az env változóból (jelszó reset lehetséges)
 db.UpsertTeacher(adminEnvUser, BCrypt.Net.BCrypt.HashPassword(adminEnvPass));
@@ -1340,6 +1342,39 @@ app.MapGet("/api/szamonkeres/eredmeny", (HttpContext ctx, Database db) =>
     return Results.Ok(kiadottak);
 });
 
+// ── GAS proxy (megoldások & tippek) ──────────────────────────────────────────
+// A GAS_URL és GAS_ADMIN_PASSWORD env változókban tárolt, nem a frontendben.
+
+app.MapPost("/api/gas/save-megoldas", async (HttpContext ctx, SaveMegoldasRequest req) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrEmpty(gasUrl)) return Results.Problem("GAS_URL nincs konfigurálva");
+    using var http = new HttpClient();
+    var payload = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        admin_password = gasAdminPass,
+        feladatId = req.FeladatId,
+        solution  = req.Solution,
+        hint1     = req.Hint1,
+        hint2     = req.Hint2,
+        hint3     = req.Hint3
+    });
+    var resp = await http.PostAsync(gasUrl + "?action=saveMegoldas",
+        new StringContent(payload, Encoding.UTF8, "application/json"));
+    var body = await resp.Content.ReadAsStringAsync();
+    return Results.Content(body, "application/json");
+});
+
+app.MapGet("/api/gas/get-megoldasok", async (HttpContext ctx) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrEmpty(gasUrl)) return Results.Problem("GAS_URL nincs konfigurálva");
+    using var http = new HttpClient();
+    var resp = await http.GetAsync(gasUrl + "?action=getMegoldasok");
+    var body = await resp.Content.ReadAsStringAsync();
+    return Results.Content(body, "application/json");
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 
@@ -1351,4 +1386,5 @@ namespace KandoTest
     public record ResetPasswordRequest(string Email, string NewPassword);
     public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);
     public record PasswordResetRequestInput(string Email, string Nev, string? Osztaly, string? Csoport);
+    public record SaveMegoldasRequest(string FeladatId, string Solution, string Hint1, string Hint2, string Hint3);
 }
