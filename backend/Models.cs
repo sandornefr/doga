@@ -405,3 +405,58 @@ public class BeadasItem
 }
 
 public record SetBeadasPontRequest(int Pont, string? Megjegyzes);
+
+// ── Oktatói haladás dashboard ─────────────────────────────────────────────────
+
+public class HaladasItem
+{
+    public string  Email              { get; set; } = "";
+    public string? Nev                { get; set; }
+    public string? Evfolyam           { get; set; }
+    public string? Osztaly            { get; set; }
+    public string? Csoport            { get; set; }
+    // Tananyag szintek teljesítési dátuma (null = nem teljesítette)
+    public string? TananyagHtml       { get; set; }
+    public string? TananyagCss        { get; set; }
+    public string? TananyagBootstrap  { get; set; }
+    public string? TananyagEmmet      { get; set; }
+    public string? TananyagJavascript { get; set; }
+    // Ágazati Python practice
+    public int     PythonSessions     { get; set; }
+    public double  PythonAvgPct       { get; set; }
+    public double  PythonBestPct      { get; set; }
+    public string? PythonLastDate     { get; set; }
+    // WEB practice
+    public int     WebSessions        { get; set; }
+    public double  WebAvgPct          { get; set; }
+    public double  WebBestPct         { get; set; }
+    public string? WebLastDate        { get; set; }
+    // Utolsó aktivitás (legkésőbbi dátum az összes forrásból)
+    public string? LastActive         { get; set; }
+}
+
+public class HaladasTanuloDetail : HaladasItem
+{
+    public List<SzamonkeresEredmenyItem> Szamonkeres { get; set; } = new();
+}
+
+public class SzamonkeresEredmenyItem
+{
+    public int    SzamonkeresId { get; set; }
+    public string Cim           { get; set; } = "";
+    public string OktatoEmail   { get; set; } = "";
+    public int    OsszPont      { get; set; }
+    public int    MaxPont       { get; set; }
+    public int    Szazalek      { get; set; }
+    public string SubmittedAt   { get; set; } = "";
+}
+
+public class HaladasOsztalyStat
+{
+    public string Osztaly         { get; set; } = "";
+    public int    TanuloCount     { get; set; }
+    public int    AktivCount      { get; set; }  // aktív az elmúlt 14 napban
+    public double TananyagAtlag   { get; set; }  // átlag teljesített szintek száma (0–5)
+    public double PythonFeladAtlag { get; set; } // átlag Python practice feladatok száma
+    public double WebFeladAtlag   { get; set; }  // átlag WEB practice feladatok száma
+}

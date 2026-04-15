@@ -1342,6 +1342,29 @@ app.MapGet("/api/szamonkeres/eredmeny", (HttpContext ctx, Database db) =>
     return Results.Ok(kiadottak);
 });
 
+// ── Oktatói haladás dashboard ─────────────────────────────────────────────────
+
+app.MapGet("/api/haladas", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var osztaly = ctx.Request.Query["osztaly"].FirstOrDefault();
+    return Results.Ok(db.GetHaladasByOsztaly(osztaly));
+});
+
+app.MapGet("/api/haladas/osszesito", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetHaladasOsztalySummary());
+});
+
+app.MapGet("/api/haladas/tanulo/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var decoded = Uri.UnescapeDataString(email);
+    var detail = db.GetHaladasTanuloDetail(decoded);
+    return detail is null ? Results.NotFound() : Results.Ok(detail);
+});
+
 // ── GAS proxy (megoldások & tippek) ──────────────────────────────────────────
 // A GAS_URL és GAS_ADMIN_PASSWORD env változókban tárolt, nem a frontendben.
 

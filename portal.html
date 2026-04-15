@@ -885,6 +885,18 @@
             <i class="fas fa-chevron-right" style="color:#64748b;margin-left:auto"></i>
         </a>
 
+        <!-- Tanulói haladás gomb (oktatóknak) -->
+        <a id="haladas-oktato-btn" href="oktato-haladas.html"
+           style="display:none;margin-top:12px;width:100%;max-width:960px;padding:14px 20px;background:#0d2416;border:1px solid #238636;border-radius:12px;text-decoration:none;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
+           onmouseover="this.style.borderColor='#3fb950'" onmouseout="this.style.borderColor='#238636'">
+            <i class="fas fa-chart-line" style="color:#3fb950;font-size:1.4rem"></i>
+            <div>
+                <div style="font-weight:700;color:#e0e0e0;font-size:0.95rem">Tanulói haladás</div>
+                <div style="font-size:0.8rem;color:#64748b">Tananyag előrehaladás, gyakorlási aktivitás, számonkérés eredmények osztályonként</div>
+            </div>
+            <i class="fas fa-chevron-right" style="color:#64748b;margin-left:auto"></i>
+        </a>
+
     </div>
 
 
@@ -1414,6 +1426,7 @@
                 if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
                 // Számonkérés-kezelő gomb oktatóknak
                 document.getElementById('szamonkeres-oktato-btn').style.display = 'flex';
+                document.getElementById('haladas-oktato-btn').style.display = 'flex';
             }
         } else if (user.szerep === 'vendeg') {
             document.getElementById('student-layout-wrap').style.display = 'flex';

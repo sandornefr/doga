@@ -1156,6 +1156,180 @@ public class Database
         return list;
     }
 
+    // ── Oktatói haladás dashboard ────────────────────────────────────────────
+
+    static readonly string HaladasBaseSql = @"
+        SELECT
+            u.vezeteknev || ' ' || u.keresztnev AS nev,
+            u.email, u.evfolyam, u.osztaly, u.csoport,
+            MAX(CASE WHEN s.state_key='tananyag_html'       THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_css'        THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_bootstrap'  THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_emmet'      THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_javascript' THEN s.state_value END),
+            COALESCE(py.sessions,0), COALESCE(py.avg_pct,0), COALESCE(py.best_pct,0), py.last_date,
+            COALESCE(wb.sessions,0), COALESCE(wb.avg_pct,0), COALESCE(wb.best_pct,0), wb.last_date
+        FROM users u
+        LEFT JOIN user_state s ON LOWER(u.email)=LOWER(s.email)
+        LEFT JOIN (
+            SELECT email, COUNT(*) as sessions,
+                   ROUND(AVG(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as avg_pct,
+                   ROUND(MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as best_pct,
+                   MAX(datum) as last_date
+            FROM progress WHERE targy='python' GROUP BY LOWER(email)
+        ) py ON LOWER(u.email)=LOWER(py.email)
+        LEFT JOIN (
+            SELECT email, COUNT(*) as sessions,
+                   ROUND(AVG(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as avg_pct,
+                   ROUND(MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as best_pct,
+                   MAX(datum) as last_date
+            FROM progress WHERE targy='web' GROUP BY LOWER(email)
+        ) wb ON LOWER(u.email)=LOWER(wb.email)
+        WHERE u.szerep='tanulo'";
+
+    static HaladasItem ReadHaladasRow(Microsoft.Data.Sqlite.SqliteDataReader r)
+    {
+        var pyLast = r.IsDBNull(13) ? null : r.GetString(13);
+        var wbLast = r.IsDBNull(17) ? null : r.GetString(17);
+        var th = r.IsDBNull(5) ? null : r.GetString(5);
+        var tc = r.IsDBNull(6) ? null : r.GetString(6);
+        var tb = r.IsDBNull(7) ? null : r.GetString(7);
+        var te = r.IsDBNull(8) ? null : r.GetString(8);
+        var tj = r.IsDBNull(9) ? null : r.GetString(9);
+        // Legkésőbbi aktivitás: tananyag dátumok + practice dátumok közül a maximum
+        var dates = new[] { th, tc, tb, te, tj, pyLast, wbLast }
+                        .Where(d => d != null).ToList();
+        string? lastActive = dates.Count > 0 ? dates.Max() : null;
+        return new HaladasItem {
+            Nev               = r.IsDBNull(0) ? null : r.GetString(0),
+            Email             = r.GetString(1),
+            Evfolyam          = r.IsDBNull(2) ? null : r.GetString(2),
+            Osztaly           = r.IsDBNull(3) ? null : r.GetString(3),
+            Csoport           = r.IsDBNull(4) ? null : r.GetString(4),
+            TananyagHtml      = th,
+            TananyagCss       = tc,
+            TananyagBootstrap = tb,
+            TananyagEmmet     = te,
+            TananyagJavascript= tj,
+            PythonSessions    = r.GetInt32(10),
+            PythonAvgPct      = r.GetDouble(11),
+            PythonBestPct     = r.GetDouble(12),
+            PythonLastDate    = pyLast,
+            WebSessions       = r.GetInt32(14),
+            WebAvgPct         = r.GetDouble(15),
+            WebBestPct        = r.GetDouble(16),
+            WebLastDate       = wbLast,
+            LastActive        = lastActive
+        };
+    }
+
+    public List<HaladasItem> GetHaladasByOsztaly(string? osztaly)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        if (!string.IsNullOrEmpty(osztaly))
+        {
+            cmd.CommandText = HaladasBaseSql +
+                " AND LOWER(u.osztaly)=LOWER($o) GROUP BY u.email ORDER BY u.vezeteknev,u.keresztnev";
+            cmd.Parameters.AddWithValue("$o", osztaly);
+        }
+        else
+        {
+            cmd.CommandText = HaladasBaseSql +
+                " GROUP BY u.email ORDER BY u.osztaly,u.vezeteknev,u.keresztnev";
+        }
+        var list = new List<HaladasItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadHaladasRow(r));
+        return list;
+    }
+
+    public HaladasTanuloDetail? GetHaladasTanuloDetail(string email)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = HaladasBaseSql +
+            " AND LOWER(u.email)=LOWER($e) GROUP BY u.email";
+        cmd.Parameters.AddWithValue("$e", email);
+        HaladasTanuloDetail? item = null;
+        using (var r = cmd.ExecuteReader())
+        {
+            if (r.Read())
+            {
+                var base_ = ReadHaladasRow(r);
+                item = new HaladasTanuloDetail {
+                    Email=base_.Email, Nev=base_.Nev, Evfolyam=base_.Evfolyam,
+                    Osztaly=base_.Osztaly, Csoport=base_.Csoport,
+                    TananyagHtml=base_.TananyagHtml, TananyagCss=base_.TananyagCss,
+                    TananyagBootstrap=base_.TananyagBootstrap, TananyagEmmet=base_.TananyagEmmet,
+                    TananyagJavascript=base_.TananyagJavascript,
+                    PythonSessions=base_.PythonSessions, PythonAvgPct=base_.PythonAvgPct,
+                    PythonBestPct=base_.PythonBestPct, PythonLastDate=base_.PythonLastDate,
+                    WebSessions=base_.WebSessions, WebAvgPct=base_.WebAvgPct,
+                    WebBestPct=base_.WebBestPct, WebLastDate=base_.WebLastDate,
+                    LastActive=base_.LastActive
+                };
+            }
+        }
+        if (item == null) return null;
+        // Számonkérés eredmények
+        using var cmd2 = conn.CreateCommand();
+        cmd2.CommandText = @"
+            SELECT s.id, s.cim, s.oktato_email,
+                   COALESCE(b.manualis_pont, b.auto_pont) as pont,
+                   b.max_pont, b.submitted_at
+            FROM szamonkeres_beadas b
+            JOIN szamonkeres s ON s.id=b.szamonkeres_id
+            WHERE LOWER(b.tanulo_email)=LOWER($e) AND s.statusz='kiadva'
+            ORDER BY b.submitted_at DESC";
+        cmd2.Parameters.AddWithValue("$e", email);
+        using var r2 = cmd2.ExecuteReader();
+        while (r2.Read())
+        {
+            var pont = r2.GetInt32(3);
+            var maxp = r2.GetInt32(4);
+            item.Szamonkeres.Add(new SzamonkeresEredmenyItem {
+                SzamonkeresId = r2.GetInt32(0),
+                Cim           = r2.GetString(1),
+                OktatoEmail   = r2.GetString(2),
+                OsszPont      = pont,
+                MaxPont       = maxp,
+                Szazalek      = maxp > 0 ? (int)Math.Round(pont * 100.0 / maxp) : 0,
+                SubmittedAt   = r2.GetString(5)
+            });
+        }
+        return item;
+    }
+
+    public List<HaladasOsztalyStat> GetHaladasOsztalySummary()
+    {
+        var all = GetHaladasByOsztaly(null);
+        var cutoff = DateTime.Today.AddDays(-14).ToString("yyyy-MM-dd");
+        return all
+            .Where(x => x.Osztaly != null)
+            .GroupBy(x => x.Osztaly!)
+            .Select(g =>
+            {
+                var students = g.ToList();
+                return new HaladasOsztalyStat {
+                    Osztaly = g.Key,
+                    TanuloCount = students.Count,
+                    AktivCount = students.Count(s =>
+                        s.LastActive != null && string.Compare(s.LastActive, cutoff) >= 0),
+                    TananyagAtlag = Math.Round(students.Average(s =>
+                        (s.TananyagHtml != null ? 1 : 0) +
+                        (s.TananyagCss != null ? 1 : 0) +
+                        (s.TananyagBootstrap != null ? 1 : 0) +
+                        (s.TananyagEmmet != null ? 1 : 0) +
+                        (s.TananyagJavascript != null ? 1 : 0)), 1),
+                    PythonFeladAtlag = Math.Round(students.Average(s => (double)s.PythonSessions), 1),
+                    WebFeladAtlag    = Math.Round(students.Average(s => (double)s.WebSessions), 1)
+                };
+            })
+            .OrderBy(x => x.Osztaly)
+            .ToList();
+    }
+
     public int GetStreak(string email)
     {
         using var conn = Open();

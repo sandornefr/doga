@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kandó – Tanulói haladás</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family:'Segoe UI',sans-serif;
+    background:#0d1117;
+    color:#e0e0e0;
+    min-height:100vh;
+}
+
+/* ── Topbar ── */
+.topbar {
+    background:#161b22;
+    border-bottom:1px solid #21262d;
+    padding:12px 24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+.topbar-logo {
+    font-size:1.1rem;
+    font-weight:700;
+    color:#58a6ff;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.topbar-title {
+    font-size:1rem;
+    color:#8b949e;
+    flex:1;
+}
+.topbar-title strong { color:#e0e0e0; }
+.topbar-back {
+    background:none;
+    border:1px solid #30363d;
+    color:#8b949e;
+    padding:6px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:0.85rem;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:border-color .2s,color .2s;
+}
+.topbar-back:hover { border-color:#58a6ff; color:#58a6ff; }
+
+/* ── Filter bar ── */
+.filterbar {
+    background:#161b22;
+    border-bottom:1px solid #21262d;
+    padding:12px 24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+}
+.filterbar label { font-size:0.85rem; color:#8b949e; }
+.filterbar select {
+    background:#0d1117;
+    border:1px solid #30363d;
+    color:#e0e0e0;
+    padding:6px 12px;
+    border-radius:6px;
+    font-size:0.9rem;
+    cursor:pointer;
+}
+.filterbar select:focus { outline:none; border-color:#58a6ff; }
+.stat-pill {
+    background:#21262d;
+    border:1px solid #30363d;
+    border-radius:20px;
+    padding:4px 12px;
+    font-size:0.8rem;
+    color:#8b949e;
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+.stat-pill strong { color:#e0e0e0; }
+.stat-pill.danger strong { color:#f85149; }
+.stat-pill.warn strong { color:#f0883e; }
+.stat-pill.ok strong { color:#3fb950; }
+
+/* ── Fő layout ── */
+.main-layout {
+    display:grid;
+    grid-template-columns: 1fr 380px;
+    gap:0;
+    height:calc(100vh - 105px);
+    overflow:hidden;
+}
+
+/* ── Kártyák panel ── */
+.cards-panel {
+    overflow-y:auto;
+    padding:20px;
+}
+.cards-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+    gap:12px;
+}
+
+.student-card {
+    background:#161b22;
+    border:1px solid #21262d;
+    border-radius:10px;
+    padding:14px;
+    cursor:pointer;
+    transition:border-color .2s,transform .15s,box-shadow .2s;
+    position:relative;
+}
+.student-card:hover {
+    border-color:#58a6ff;
+    transform:translateY(-2px);
+    box-shadow:0 4px 16px rgba(88,166,255,.12);
+}
+.student-card.active-card {
+    border-color:#58a6ff;
+    background:#1a2332;
+}
+.student-card.gyenge {
+    border-color:#f85149 !important;
+}
+.student-card.gyenge:hover {
+    border-color:#ff6b6b !important;
+    box-shadow:0 4px 16px rgba(248,81,73,.15);
+}
+.card-name {
+    font-weight:600;
+    font-size:0.95rem;
+    color:#e0e0e0;
+    margin-bottom:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.card-csoport {
+    font-size:0.75rem;
+    color:#8b949e;
+    margin-bottom:10px;
+}
+.tananyag-dots {
+    display:flex;
+    gap:5px;
+    margin-bottom:10px;
+    align-items:center;
+}
+.tdot {
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#21262d;
+    border:1.5px solid #30363d;
+    title:'';
+}
+.tdot.done { background:#3fb950; border-color:#3fb950; }
+.tdot.done.css-dot { background:#58a6ff; border-color:#58a6ff; }
+.tdot.done.boot-dot { background:#a371f7; border-color:#a371f7; }
+.tdot.done.emmet-dot { background:#f0883e; border-color:#f0883e; }
+.tdot.done.js-dot { background:#d29922; border-color:#d29922; }
+.tdot-label { font-size:0.72rem; color:#8b949e; margin-left:3px; }
+.card-stats {
+    font-size:0.78rem;
+    color:#8b949e;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+.card-stats span { display:flex; align-items:center; gap:5px; }
+.card-stats i { width:12px; text-align:center; }
+.card-activity {
+    font-size:0.72rem;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid #21262d;
+    color:#8b949e;
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+.activity-dot {
+    width:7px; height:7px;
+    border-radius:50%;
+    flex-shrink:0;
+}
+.activity-dot.green { background:#3fb950; }
+.activity-dot.yellow { background:#d29922; }
+.activity-dot.red { background:#f85149; }
+.activity-dot.gray { background:#484f58; }
+
+.gyenge-badge {
+    position:absolute;
+    top:10px; right:10px;
+    background:#f85149;
+    color:#fff;
+    font-size:0.65rem;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:10px;
+}
+
+/* ── Részletek panel ── */
+.detail-panel {
+    background:#161b22;
+    border-left:1px solid #21262d;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+}
+.detail-empty {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:#484f58;
+    gap:12px;
+    padding:40px;
+    text-align:center;
+}
+.detail-empty i { font-size:2.5rem; }
+.detail-empty p { font-size:0.85rem; line-height:1.5; }
+
+.detail-header {
+    padding:20px 20px 16px;
+    border-bottom:1px solid #21262d;
+    background:#0d1117;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+.detail-name {
+    font-size:1.1rem;
+    font-weight:700;
+    color:#e0e0e0;
+}
+.detail-meta {
+    font-size:0.8rem;
+    color:#8b949e;
+    margin-top:3px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+.detail-body { padding:16px 20px; display:flex; flex-direction:column; gap:20px; }
+
+.detail-section-title {
+    font-size:0.75rem;
+    font-weight:700;
+    color:#8b949e;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+.detail-section-title i { font-size:0.85rem; }
+
+/* Tananyag szintek */
+.tananyag-list { display:flex; flex-direction:column; gap:6px; }
+.tananyag-row {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:7px 10px;
+    background:#0d1117;
+    border-radius:6px;
+    font-size:0.83rem;
+}
+.tananyag-icon { width:22px; text-align:center; font-size:0.9rem; }
+.tananyag-label { flex:1; color:#e0e0e0; }
+.tananyag-date { color:#8b949e; font-size:0.75rem; }
+.tananyag-check { font-size:0.85rem; }
+.tananyag-check.done { color:#3fb950; }
+.tananyag-check.missing { color:#484f58; }
+
+/* Practice stat blokkok */
+.practice-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pstat {
+    background:#0d1117;
+    border-radius:6px;
+    padding:10px 12px;
+    text-align:center;
+}
+.pstat-val { font-size:1.3rem; font-weight:700; color:#58a6ff; }
+.pstat-val.green { color:#3fb950; }
+.pstat-val.orange { color:#f0883e; }
+.pstat-val.yellow { color:#d29922; }
+.pstat-lbl { font-size:0.72rem; color:#8b949e; margin-top:2px; }
+
+/* Számonkérés lista */
+.szamonkeres-list { display:flex; flex-direction:column; gap:6px; }
+.szamonkeres-row {
+    background:#0d1117;
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:0.82rem;
+}
+.szamonkeres-cim { color:#e0e0e0; font-weight:600; margin-bottom:4px; }
+.szamonkeres-meta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.szamonkeres-pont { color:#58a6ff; font-weight:700; }
+.szamonkeres-szaz {
+    padding:2px 8px;
+    border-radius:10px;
+    font-size:0.75rem;
+    font-weight:700;
+}
+.szamonkeres-szaz.ot { background:#1a3a2a; color:#3fb950; }
+.szamonkeres-szaz.negy { background:#1a2e40; color:#58a6ff; }
+.szamonkeres-szaz.harom { background:#2a2a1a; color:#d29922; }
+.szamonkeres-szaz.ketto { background:#2a1a1a; color:#f0883e; }
+.szamonkeres-szaz.egy { background:#3a1a1a; color:#f85149; }
+.szamonkeres-datum { color:#8b949e; font-size:0.75rem; }
+.no-szamonkeres { color:#484f58; font-size:0.82rem; padding:10px 0; text-align:center; }
+
+/* ── Összehasonlítás tábla ── */
+.comparison-section {
+    border-top:1px solid #21262d;
+    padding:20px;
+}
+.comparison-title {
+    font-size:0.85rem;
+    font-weight:700;
+    color:#8b949e;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.comparison-table {
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.82rem;
+}
+.comparison-table th {
+    text-align:left;
+    color:#8b949e;
+    font-weight:600;
+    padding:6px 8px;
+    border-bottom:1px solid #21262d;
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+.comparison-table td {
+    padding:8px 8px;
+    border-bottom:1px solid #161b22;
+    color:#e0e0e0;
+}
+.comparison-table tr:last-child td { border-bottom:none; }
+.comparison-table tr.my-class td { background:#1a2332; }
+.comparison-table tr.my-class .col-osztaly { color:#58a6ff; font-weight:700; }
+
+.bar-wrap { display:flex; align-items:center; gap:8px; }
+.bar-bg {
+    flex:1;
+    height:6px;
+    background:#21262d;
+    border-radius:3px;
+    overflow:hidden;
+}
+.bar-fill { height:100%; border-radius:3px; background:#58a6ff; }
+.bar-val { font-size:0.78rem; color:#8b949e; white-space:nowrap; min-width:36px; text-align:right; }
+
+/* ── Loading / üres állapot ── */
+.loading-msg {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    color:#8b949e;
+    padding:60px;
+    font-size:0.9rem;
+}
+.spin { animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Bejelentkezési képernyő ── */
+#login-screen {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+}
+.login-box {
+    background:#161b22;
+    border:1px solid #30363d;
+    border-radius:12px;
+    padding:40px;
+    width:100%;
+    max-width:380px;
+    text-align:center;
+}
+.login-box h2 { color:#e0e0e0; font-size:1.3rem; margin-bottom:6px; }
+.login-box p { color:#8b949e; font-size:0.85rem; margin-bottom:28px; }
+.login-box input {
+    width:100%;
+    background:#0d1117;
+    border:1px solid #30363d;
+    color:#e0e0e0;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:0.95rem;
+    margin-bottom:12px;
+    display:block;
+}
+.login-box input:focus { outline:none; border-color:#58a6ff; }
+.login-box button {
+    width:100%;
+    background:#238636;
+    border:none;
+    color:#fff;
+    padding:11px;
+    border-radius:8px;
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s;
+}
+.login-box button:hover { background:#2ea043; }
+.login-err { color:#f85149; font-size:0.82rem; margin-top:10px; min-height:20px; }
+</style>
+</head>
+<body>
+
+<!-- Bejelentkezési képernyő -->
+<div id="login-screen">
+    <div class="login-box">
+        <i class="fas fa-chalkboard-teacher" style="font-size:2rem;color:#58a6ff;margin-bottom:14px"></i>
+        <h2>Tanulói haladás</h2>
+        <p>Ez a felület csak oktatóknak elérhető. Jelentkezz be a folytatáshoz.</p>
+        <input type="text" id="l-user" placeholder="Felhasználónév" autocomplete="username">
+        <input type="password" id="l-pass" placeholder="Jelszó" autocomplete="current-password">
+        <button onclick="doLogin()"><i class="fas fa-sign-in-alt" style="margin-right:6px"></i>Bejelentkezés</button>
+        <div class="login-err" id="l-err"></div>
+    </div>
+</div>
+
+<!-- Fő oldal (bejelentkezés után) -->
+<div id="main-page" style="display:none">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <a class="topbar-logo" href="portal.html">
+            <i class="fas fa-graduation-cap"></i> Kandó Teszt
+        </a>
+        <div class="topbar-title"><strong>Tanulói haladás</strong></div>
+        <a class="topbar-back" href="portal.html">
+            <i class="fas fa-arrow-left"></i> Vissza a portálra
+        </a>
+    </div>
+
+    <!-- Filter + stat bar -->
+    <div class="filterbar">
+        <label><i class="fas fa-filter" style="margin-right:5px"></i>Osztály:</label>
+        <select id="osztaly-select" onchange="onOsztalyChange()">
+            <option value="">Összes tanuló</option>
+        </select>
+        <div class="stat-pill" id="pill-osszes">
+            <i class="fas fa-users"></i> Tanuló: <strong id="cnt-osszes">–</strong>
+        </div>
+        <div class="stat-pill ok" id="pill-aktiv">
+            <i class="fas fa-circle" style="font-size:.6rem;color:#3fb950"></i> Aktív (14 nap): <strong id="cnt-aktiv">–</strong>
+        </div>
+        <div class="stat-pill warn" id="pill-tananyag">
+            <i class="fas fa-book-open"></i> Teljes tananyag: <strong id="cnt-tananyag">–</strong>
+        </div>
+        <div class="stat-pill danger" id="pill-gyenge">
+            <i class="fas fa-exclamation-triangle"></i> Gyenge láncszem: <strong id="cnt-gyenge">–</strong>
+        </div>
+    </div>
+
+    <!-- Fő elrendezés -->
+    <div class="main-layout">
+
+        <!-- Bal: kártyák -->
+        <div class="cards-panel" id="cards-panel">
+            <div class="loading-msg">
+                <i class="fas fa-circle-notch spin"></i> Betöltés...
+            </div>
+        </div>
+
+        <!-- Jobb: részletek -->
+        <div class="detail-panel" id="detail-panel">
+            <div class="detail-empty">
+                <i class="fas fa-hand-pointer"></i>
+                <p>Kattints egy tanuló kártyájára a részletes adatok megtekintéséhez.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Összehasonlítás tábla (alul, teljes szélességben) -->
+    <div id="comparison-wrap"></div>
+
+</div>
+
+<script>
+const API = 'https://agazati.up.railway.app';
+let authToken = '';
+let currentData = [];
+let selectedEmail = null;
+let selectedOsztaly = '';
+
+// ── Bejelentkezés ────────────────────────────────────────────────────────────
+
+async function doLogin() {
+    const user = document.getElementById('l-user').value.trim();
+    const pass = document.getElementById('l-pass').value;
+    const errEl = document.getElementById('l-err');
+    errEl.textContent = '';
+    if (!user || !pass) { errEl.textContent = 'Töltsd ki mindkét mezőt!'; return; }
+
+    // Próbál kandoUser sessionStorage-ból (ha már be van lépve a portálon)
+    const saved = sessionStorage.getItem('kandoUser');
+    if (saved) {
+        try {
+            const u = JSON.parse(saved);
+            if (u.szerep === 'oktato' && u.token) {
+                authToken = u.token;
+                showMainPage(u.nev || u.email);
+                return;
+            }
+        } catch(e) {}
+    }
+
+    try {
+        const res = await fetch(`${API}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        if (!res.ok) { errEl.textContent = 'Hibás felhasználónév vagy jelszó!'; return; }
+        const data = await res.json();
+        if (data.role !== 'oktato') { errEl.textContent = 'Csak oktatók érhetik el ezt a felületet!'; return; }
+        authToken = data.token;
+        showMainPage(data.name || user);
+    } catch(e) {
+        errEl.textContent = 'Kapcsolódási hiba. Ellenőrizd az internetkapcsolatot!';
+    }
+}
+
+function showMainPage(nev) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-page').style.display = 'block';
+    loadAll();
+}
+
+document.getElementById('l-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+});
+
+// Ha sessionStorage-ban van oktató token, automatikusan bejelentkezik
+(function autoLogin() {
+    const saved = sessionStorage.getItem('kandoUser');
+    if (!saved) return;
+    try {
+        const u = JSON.parse(saved);
+        if (u.szerep === 'oktato' && u.token) {
+            authToken = u.token;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+            loadAll();
+        }
+    } catch(e) {}
+})();
+
+// ── Adatbetöltés ─────────────────────────────────────────────────────────────
+
+async function authFetch(url) {
+    return fetch(url, { headers: { 'Authorization': 'Bearer ' + authToken } });
+}
+
+async function loadAll() {
+    await Promise.all([loadOsztalyList(), loadOsszesito()]);
+    await loadHaladas('');
+}
+
+async function loadOsztalyList() {
+    try {
+        const res = await authFetch(`${API}/api/haladas`);
+        if (!res.ok) return;
+        const all = await res.json();
+        const osztalyok = [...new Set(all.map(s => s.osztaly).filter(Boolean))].sort();
+        const sel = document.getElementById('osztaly-select');
+        osztalyok.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o;
+            opt.textContent = o + '. osztály';
+            sel.appendChild(opt);
+        });
+    } catch(e) {}
+}
+
+async function loadHaladas(osztaly) {
+    selectedOsztaly = osztaly;
+    selectedEmail = null;
+    showDetailEmpty();
+    document.getElementById('cards-panel').innerHTML =
+        '<div class="loading-msg"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>';
+    try {
+        const url = osztaly
+            ? `${API}/api/haladas?osztaly=${encodeURIComponent(osztaly)}`
+            : `${API}/api/haladas`;
+        const res = await authFetch(url);
+        if (!res.ok) throw new Error();
+        currentData = await res.json();
+        renderCards(currentData, osztaly);
+        updatePills(currentData);
+    } catch(e) {
+        document.getElementById('cards-panel').innerHTML =
+            '<div class="loading-msg"><i class="fas fa-exclamation-triangle" style="color:#f85149"></i> Betöltési hiba. Ellenőrizd a kapcsolatot!</div>';
+    }
+}
+
+async function loadOsszesito() {
+    try {
+        const res = await authFetch(`${API}/api/haladas/osszesito`);
+        if (!res.ok) return;
+        const data = await res.json();
+        renderComparison(data);
+    } catch(e) {}
+}
+
+function onOsztalyChange() {
+    const val = document.getElementById('osztaly-select').value;
+    loadHaladas(val);
+}
+
+// ── Segédfüggvények ──────────────────────────────────────────────────────────
+
+function daysSince(dateStr) {
+    if (!dateStr) return Infinity;
+    const d = new Date(dateStr);
+    const now = new Date();
+    return Math.floor((now - d) / 86400000);
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('hu-HU', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function activityLabel(dateStr) {
+    const days = daysSince(dateStr);
+    if (days === Infinity) return { cls:'gray', text:'Sosem volt aktív' };
+    if (days === 0) return { cls:'green', text:'Ma volt aktív' };
+    if (days === 1) return { cls:'green', text:'Tegnap volt aktív' };
+    if (days <= 7) return { cls:'green', text:`${days} napja aktív` };
+    if (days <= 14) return { cls:'yellow', text:`${days} napja aktív` };
+    return { cls:'red', text:`${days} napja nem volt aktív` };
+}
+
+function isGyenge(s) {
+    const days = daysSince(s.lastActive);
+    const tananyagDb =
+        (s.tananyagHtml ? 1 : 0) + (s.tananyagCss ? 1 : 0) +
+        (s.tananyagBootstrap ? 1 : 0) + (s.tananyagEmmet ? 1 : 0) +
+        (s.tananyagJavascript ? 1 : 0);
+    const totalSessions = s.pythonSessions + s.webSessions;
+    return days === Infinity ||
+           (days > 14 && tananyagDb < 2) ||
+           (days > 7 && tananyagDb === 0 && totalSessions < 3);
+}
+
+function gradeColor(szazalek) {
+    if (szazalek >= 85) return 'ot';
+    if (szazalek >= 70) return 'negy';
+    if (szazalek >= 55) return 'harom';
+    if (szazalek >= 40) return 'ketto';
+    return 'egy';
+}
+
+function gradeLabel(szazalek) {
+    if (szazalek >= 85) return '5';
+    if (szazalek >= 70) return '4';
+    if (szazalek >= 55) return '3';
+    if (szazalek >= 40) return '2';
+    return '1';
+}
+
+// ── Kártyák renderelése ──────────────────────────────────────────────────────
+
+function renderCards(students) {
+    if (!students.length) {
+        document.getElementById('cards-panel').innerHTML =
+            '<div class="loading-msg"><i class="fas fa-user-slash"></i> Nincs tanuló ebben az osztályban.</div>';
+        return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+    students.forEach(s => grid.appendChild(makeCard(s)));
+    document.getElementById('cards-panel').innerHTML = '';
+    document.getElementById('cards-panel').appendChild(grid);
+}
+
+function makeCard(s) {
+    const gyenge = isGyenge(s);
+    const act = activityLabel(s.lastActive);
+    const tananyag = [
+        { done: !!s.tananyagHtml,       cls:'',         title:'HTML' },
+        { done: !!s.tananyagCss,        cls:'css-dot',  title:'CSS' },
+        { done: !!s.tananyagBootstrap,  cls:'boot-dot', title:'Bootstrap' },
+        { done: !!s.tananyagEmmet,      cls:'emmet-dot',title:'Emmet' },
+        { done: !!s.tananyagJavascript, cls:'js-dot',   title:'JavaScript' },
+    ];
+    const tananyagDb = tananyag.filter(t => t.done).length;
+    const totalSessions = s.pythonSessions + s.webSessions;
+
+    const card = document.createElement('div');
+    card.className = 'student-card' + (gyenge ? ' gyenge' : '');
+    card.dataset.email = s.email;
+    card.innerHTML = `
+        ${gyenge ? '<span class="gyenge-badge"><i class="fas fa-exclamation"></i> Lemarad</span>' : ''}
+        <div class="card-name" title="${s.nev || s.email}">${s.nev || s.email}</div>
+        <div class="card-csoport">${s.csoport || (s.osztaly ? s.osztaly + '. osztály' : 'Ismeretlen csoport')}</div>
+        <div class="tananyag-dots">
+            ${tananyag.map(t =>
+                `<div class="tdot ${t.done ? 'done ' + t.cls : ''}" title="${t.title}${t.done ? ' ✓' : ' (hiányzik)'}"></div>`
+            ).join('')}
+            <span class="tdot-label">${tananyagDb}/5</span>
+        </div>
+        <div class="card-stats">
+            ${s.pythonSessions > 0
+                ? `<span><i class="fas fa-python" style="color:#3b82f6"></i> Python: ${s.pythonSessions} fel. · ${Math.round(s.pythonAvgPct)}% átl.</span>`
+                : `<span style="color:#484f58"><i class="fas fa-python"></i> Python: nincs adat</span>`}
+            ${s.webSessions > 0
+                ? `<span><i class="fas fa-code" style="color:#a371f7"></i> WEB: ${s.webSessions} fel. · ${Math.round(s.webAvgPct)}% átl.</span>`
+                : `<span style="color:#484f58"><i class="fas fa-code"></i> WEB: nincs adat</span>`}
+        </div>
+        <div class="card-activity">
+            <div class="activity-dot ${act.cls}"></div>
+            ${act.text}
+        </div>
+    `;
+    card.addEventListener('click', () => selectCard(s.email, card));
+    return card;
+}
+
+function selectCard(email, cardEl) {
+    document.querySelectorAll('.student-card').forEach(c => c.classList.remove('active-card'));
+    cardEl.classList.add('active-card');
+    selectedEmail = email;
+    loadDetail(email);
+}
+
+// ── Részletes panel ──────────────────────────────────────────────────────────
+
+async function loadDetail(email) {
+    const panel = document.getElementById('detail-panel');
+    panel.innerHTML = '<div class="loading-msg"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>';
+    try {
+        const res = await authFetch(`${API}/api/haladas/tanulo/${encodeURIComponent(email)}`);
+        if (!res.ok) throw new Error();
+        const s = await res.json();
+        renderDetail(s);
+    } catch(e) {
+        panel.innerHTML = '<div class="loading-msg"><i class="fas fa-exclamation-triangle" style="color:#f85149"></i> Nem sikerült betölteni.</div>';
+    }
+}
+
+function renderDetail(s) {
+    const panel = document.getElementById('detail-panel');
+    const act = activityLabel(s.lastActive);
+
+    const tananyagRows = [
+        { key:'tananyagHtml',       label:'HTML alapok',     icon:'fab fa-html5',      color:'#e34c26' },
+        { key:'tananyagCss',        label:'CSS stílusok',    icon:'fab fa-css3-alt',   color:'#264de4' },
+        { key:'tananyagBootstrap',  label:'Bootstrap',       icon:'fab fa-bootstrap',  color:'#a371f7' },
+        { key:'tananyagEmmet',      label:'Emmet gyorsírás', icon:'fas fa-bolt',       color:'#f0883e' },
+        { key:'tananyagJavascript', label:'JavaScript',      icon:'fab fa-js',         color:'#d29922' },
+    ].map(t => `
+        <div class="tananyag-row">
+            <div class="tananyag-icon"><i class="${t.icon}" style="color:${t.color}"></i></div>
+            <div class="tananyag-label">${t.label}</div>
+            ${s[t.key]
+                ? `<div class="tananyag-date">${formatDate(s[t.key])}</div>
+                   <div class="tananyag-check done"><i class="fas fa-check-circle"></i></div>`
+                : `<div class="tananyag-check missing"><i class="fas fa-circle" style="opacity:.3"></i></div>`
+            }
+        </div>
+    `).join('');
+
+    const szamonkeresHtml = s.szamonkeres && s.szamonkeres.length
+        ? s.szamonkeres.map(sz => {
+            const gc = gradeColor(sz.szazalek);
+            return `
+            <div class="szamonkeres-row">
+                <div class="szamonkeres-cim">${sz.cim}</div>
+                <div class="szamonkeres-meta">
+                    <span class="szamonkeres-pont">${sz.osszPont} / ${sz.maxPont} pont</span>
+                    <span class="szamonkeres-szaz ${gc}">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>
+                    <span class="szamonkeres-datum">${formatDate(sz.submittedAt)}</span>
+                </div>
+            </div>`;
+          }).join('')
+        : '<div class="no-szamonkeres"><i class="fas fa-inbox" style="margin-right:6px"></i>Még nincs beadott számonkérés</div>';
+
+    const pyStatColor = s.pythonAvgPct >= 70 ? 'green' : s.pythonAvgPct >= 50 ? 'orange' : 'yellow';
+    const wbStatColor = s.webAvgPct >= 70 ? 'green' : s.webAvgPct >= 50 ? 'orange' : 'yellow';
+
+    panel.innerHTML = `
+        <div class="detail-header">
+            <div class="detail-name">${s.nev || s.email}</div>
+            <div class="detail-meta">
+                <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${s.osztaly || '?'} · ${s.csoport || 'ismeretlen csoport'}</span>
+                <span>
+                    <i class="fas fa-circle" style="font-size:.6rem;color:${act.cls === 'green' ? '#3fb950' : act.cls === 'yellow' ? '#d29922' : act.cls === 'red' ? '#f85149' : '#484f58'};margin-right:4px"></i>
+                    ${act.text}
+                </span>
+            </div>
+        </div>
+        <div class="detail-body">
+
+            <div>
+                <div class="detail-section-title">
+                    <i class="fas fa-book-open" style="color:#58a6ff"></i> Tananyag előrehaladás
+                </div>
+                <div class="tananyag-list">${tananyagRows}</div>
+            </div>
+
+            <div>
+                <div class="detail-section-title">
+                    <i class="fab fa-python" style="color:#3b82f6"></i> Python ágazati gyakorló
+                </div>
+                ${s.pythonSessions > 0 ? `
+                <div class="practice-grid">
+                    <div class="pstat">
+                        <div class="pstat-val">${s.pythonSessions}</div>
+                        <div class="pstat-lbl">feladat megoldva</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val ${pyStatColor}">${Math.round(s.pythonAvgPct)}%</div>
+                        <div class="pstat-lbl">átlagos eredmény</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val green">${Math.round(s.pythonBestPct)}%</div>
+                        <div class="pstat-lbl">legjobb eredmény</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val" style="font-size:.85rem;color:#8b949e">${formatDate(s.pythonLastDate) || '–'}</div>
+                        <div class="pstat-lbl">utolsó aktivitás</div>
+                    </div>
+                </div>` : `<div class="no-szamonkeres"><i class="fas fa-inbox" style="margin-right:6px"></i>Még nem gyakorolt</div>`}
+            </div>
+
+            <div>
+                <div class="detail-section-title">
+                    <i class="fas fa-code" style="color:#a371f7"></i> WEB gyakorló
+                </div>
+                ${s.webSessions > 0 ? `
+                <div class="practice-grid">
+                    <div class="pstat">
+                        <div class="pstat-val">${s.webSessions}</div>
+                        <div class="pstat-lbl">feladat megoldva</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val ${wbStatColor}">${Math.round(s.webAvgPct)}%</div>
+                        <div class="pstat-lbl">átlagos eredmény</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val green">${Math.round(s.webBestPct)}%</div>
+                        <div class="pstat-lbl">legjobb eredmény</div>
+                    </div>
+                    <div class="pstat">
+                        <div class="pstat-val" style="font-size:.85rem;color:#8b949e">${formatDate(s.webLastDate) || '–'}</div>
+                        <div class="pstat-lbl">utolsó aktivitás</div>
+                    </div>
+                </div>` : `<div class="no-szamonkeres"><i class="fas fa-inbox" style="margin-right:6px"></i>Még nem gyakorolt</div>`}
+            </div>
+
+            <div>
+                <div class="detail-section-title">
+                    <i class="fas fa-file-alt" style="color:#3fb950"></i> Számonkérések eredménye
+                </div>
+                <div class="szamonkeres-list">${szamonkeresHtml}</div>
+            </div>
+
+        </div>
+    `;
+}
+
+function showDetailEmpty() {
+    document.getElementById('detail-panel').innerHTML = `
+        <div class="detail-empty">
+            <i class="fas fa-hand-pointer"></i>
+            <p>Kattints egy tanuló kártyájára a részletes adatok megtekintéséhez.</p>
+        </div>`;
+}
+
+// ── Összesítő pill-ek frissítése ─────────────────────────────────────────────
+
+function updatePills(students) {
+    const osszes = students.length;
+    const aktiv  = students.filter(s => daysSince(s.lastActive) <= 14).length;
+    const teljTananyag = students.filter(s =>
+        s.tananyagHtml && s.tananyagCss && s.tananyagBootstrap &&
+        s.tananyagEmmet && s.tananyagJavascript).length;
+    const gyenge = students.filter(isGyenge).length;
+
+    document.getElementById('cnt-osszes').textContent   = osszes;
+    document.getElementById('cnt-aktiv').textContent    = `${aktiv} / ${osszes}`;
+    document.getElementById('cnt-tananyag').textContent = `${teljTananyag} / ${osszes}`;
+    document.getElementById('cnt-gyenge').textContent   = gyenge;
+}
+
+// ── Osztályok összehasonlítása ───────────────────────────────────────────────
+
+function renderComparison(stats) {
+    if (!stats || !stats.length) return;
+
+    // A saját osztályt megpróbáljuk kiemelni a sessionStorage-ból
+    const myUser = (() => {
+        try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); } catch(e) { return {}; }
+    })();
+
+    const maxPy = Math.max(...stats.map(s => s.pythonFeladAtlag), 1);
+    const maxWb = Math.max(...stats.map(s => s.webFeladAtlag), 1);
+
+    const rows = stats.map(s => {
+        const aktPct = s.tanuloCount > 0 ? Math.round(s.aktivCount / s.tanuloCount * 100) : 0;
+        const isMyClass = selectedOsztaly && s.osztaly === selectedOsztaly;
+        return `
+        <tr class="${isMyClass ? 'my-class' : ''}">
+            <td class="col-osztaly">${s.osztaly}${isMyClass ? ' <i class="fas fa-chevron-left" style="font-size:.7rem;color:#58a6ff"></i>' : ''}</td>
+            <td>${s.tanuloCount} fő</td>
+            <td>
+                <div class="bar-wrap">
+                    <div class="bar-bg"><div class="bar-fill" style="width:${aktPct}%;background:${aktPct >= 70 ? '#3fb950' : aktPct >= 40 ? '#d29922' : '#f85149'}"></div></div>
+                    <span class="bar-val">${aktPct}%</span>
+                </div>
+            </td>
+            <td>
+                <div class="bar-wrap">
+                    <div class="bar-bg"><div class="bar-fill" style="width:${s.tananyagAtlag / 5 * 100}%;background:#58a6ff"></div></div>
+                    <span class="bar-val">${s.tananyagAtlag}/5</span>
+                </div>
+            </td>
+            <td>
+                <div class="bar-wrap">
+                    <div class="bar-bg"><div class="bar-fill" style="width:${s.pythonFeladAtlag / maxPy * 100}%;background:#3b82f6"></div></div>
+                    <span class="bar-val">${Math.round(s.pythonFeladAtlag)}</span>
+                </div>
+            </td>
+            <td>
+                <div class="bar-wrap">
+                    <div class="bar-bg"><div class="bar-fill" style="width:${s.webFeladAtlag / maxWb * 100}%;background:#a371f7"></div></div>
+                    <span class="bar-val">${Math.round(s.webFeladAtlag)}</span>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('comparison-wrap').innerHTML = `
+        <div class="comparison-section">
+            <div class="comparison-title">
+                <i class="fas fa-chart-bar"></i> Osztályok összehasonlítása
+            </div>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Osztály</th>
+                        <th>Tanulók</th>
+                        <th>Aktív (14 nap)</th>
+                        <th>Tananyag átlag</th>
+                        <th>Python feladatok</th>
+                        <th>WEB feladatok</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+}
+</script>
+</body>
+</html>
