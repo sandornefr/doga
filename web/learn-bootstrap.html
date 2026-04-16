@@ -764,6 +764,124 @@ const tasks = [
     ]
   },
 
+  // ── BLOKK 6: Színek ──────────────────────────────────────────────────
+  {
+    id:16, block:6, blockName:'Színek', emoji:'<i class="fas fa-palette"></i>',
+    type:'quiz',
+    title:'Bootstrap szemantikus színek',
+    explanation:`<div class="exp-label"><i class="fas fa-book-open"></i> Tananyag</div>
+      A Bootstrap nem hexadecimális színkódokkal, hanem <strong>névvel ellátott szemantikus színekkel</strong> dolgozik.
+      Minden szín egy jelentést hordoz – pl. a zöld a sikert, a piros a hibát jelzi.
+      <br><br>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-top:4px;">
+        <tr style="background:#0f172a"><th style="padding:5px 8px;text-align:left;color:#94a3b8">Névkulcs</th><th style="padding:5px 8px;color:#94a3b8">Szín</th><th style="padding:5px 8px;color:#94a3b8">Jelentés</th></tr>
+        <tr style="background:#1e293b"><td style="padding:5px 8px"><code>primary</code></td><td style="padding:5px 8px"><span style="background:#0d6efd;color:#fff;padding:1px 8px;border-radius:4px">kék</span></td><td style="padding:5px 8px;color:#94a3b8">fő cselekvés</td></tr>
+        <tr><td style="padding:5px 8px"><code>secondary</code></td><td style="padding:5px 8px"><span style="background:#6c757d;color:#fff;padding:1px 8px;border-radius:4px">szürke</span></td><td style="padding:5px 8px;color:#94a3b8">másodlagos</td></tr>
+        <tr style="background:#1e293b"><td style="padding:5px 8px"><code>success</code></td><td style="padding:5px 8px"><span style="background:#198754;color:#fff;padding:1px 8px;border-radius:4px">zöld</span></td><td style="padding:5px 8px;color:#94a3b8">siker, OK</td></tr>
+        <tr><td style="padding:5px 8px"><code>danger</code></td><td style="padding:5px 8px"><span style="background:#dc3545;color:#fff;padding:1px 8px;border-radius:4px">piros</span></td><td style="padding:5px 8px;color:#94a3b8">hiba, törlés</td></tr>
+        <tr style="background:#1e293b"><td style="padding:5px 8px"><code>warning</code></td><td style="padding:5px 8px"><span style="background:#ffc107;color:#000;padding:1px 8px;border-radius:4px">sárga</span></td><td style="padding:5px 8px;color:#94a3b8">figyelmeztetés</td></tr>
+        <tr><td style="padding:5px 8px"><code>info</code></td><td style="padding:5px 8px"><span style="background:#0dcaf0;color:#000;padding:1px 8px;border-radius:4px">türkiz</span></td><td style="padding:5px 8px;color:#94a3b8">információ</td></tr>
+      </table>
+      <br>
+      Ezeket a névkulcsokat <strong>előtaggal</strong> használod:
+      <ul>
+        <li><code>text-success</code> – zöld szöveg</li>
+        <li><code>bg-danger</code> – piros háttér</li>
+        <li><code>btn-warning</code> – sárga gomb</li>
+        <li><code>alert-info</code> – türkiz értesítő doboz</li>
+      </ul>`,
+    question:'Melyik Bootstrap osztály teszi a szöveget zöldre?',
+    options:[
+      'color-green',
+      'text-success',
+      'font-success',
+      'bg-success'
+    ],
+    correct:1,
+    feedback:'<i class="fas fa-circle-check" style="color:#22c55e"></i> Igen! A <code>text-success</code> teszi zöldre a szöveget. A <code>bg-success</code> a hátteret zöldíti, a <code>color-green</code> és <code>font-success</code> Bootstrap-ban nem léteznek.'
+  },
+
+  {
+    id:17, block:6, blockName:'Színek', emoji:'<i class="fas fa-palette"></i>',
+    type:'fillin',
+    title:'text-* és bg-* osztályok',
+    explanation:`<div class="exp-label"><i class="fas fa-book-open"></i> Tananyag</div>
+      A szín-névkulcshoz két leggyakoribb előtag:
+      <br><br>
+      <strong><code>text-{szín}</code></strong> — a szöveg színét állítja:
+      <pre style="background:#0f172a;padding:8px;border-radius:6px;font-size:0.82rem;color:#86efac;margin:6px 0;">&lt;p class="text-danger"&gt;Hiba!&lt;/p&gt;
+&lt;p class="text-muted"&gt;Halványszürke&lt;/p&gt;</pre>
+      <strong><code>bg-{szín}</code></strong> — a háttérszínt állítja:
+      <pre style="background:#0f172a;padding:8px;border-radius:6px;font-size:0.82rem;color:#86efac;margin:6px 0;">&lt;div class="bg-warning p-3"&gt;Figyelem!&lt;/div&gt;
+&lt;div class="bg-dark text-white p-3"&gt;Sötét&lt;/div&gt;</pre>
+      <strong>Tip:</strong> Fehér szöveget sötét háttérre, fekete szöveget világos háttérre rakj – egyébként nem olvasható!
+      Ehhez a <code>text-white</code> és <code>text-dark</code> osztályok segítenek.`,
+    codeTemplate:
+`<!-- Zöld sikeres üzenet -->
+<p class="___-success">Mentés sikeres!</p>
+
+<!-- Piros háttér fehér szöveggel -->
+<div class="___-danger ___-white p-2">Törlés!</div>
+
+<!-- Sárga háttér sötét szöveggel -->
+<div class="bg-___ text-dark p-2">Figyelem!</div>
+
+<!-- Szürke halvány szöveg -->
+<p class="text-___">Megjegyzés</p>`,
+    blanks:[
+      { answer:'text',    hint:'Szöveg színosztályának előtagja' },
+      { answer:'bg',      hint:'Háttérszín osztályának előtagja' },
+      { answer:'text',    hint:'Szöveg színosztályának előtagja (fehér szöveghez)' },
+      { answer:'warning', hint:'Sárga Bootstrap szín neve' },
+      { answer:'muted',   hint:'Halvány szürke szöveg Bootstrap osztálya: text-___' }
+    ]
+  },
+
+  {
+    id:18, block:6, blockName:'Színek', emoji:'<i class="fas fa-palette"></i>',
+    type:'monaco',
+    title:'Alert dobozok és színes kártyák',
+    explanation:`<div class="exp-label"><i class="fas fa-pen"></i> Feladat</div>
+      Készíts oldalt Bootstrap <strong>alert dobozokkal</strong> és <strong>színes szövegekkel</strong>:
+      <ul>
+        <li>Egy <code>alert alert-success</code> doboz: "Mentés sikeres!"</li>
+        <li>Egy <code>alert alert-danger</code> doboz: "Hiba történt!"</li>
+        <li>Egy <code>alert alert-warning</code> doboz: "Figyelem!"</li>
+        <li>Egy <code>text-primary</code> osztályú bekezdés: "Kék szöveg"</li>
+        <li>Egy <code>bg-dark text-white</code> osztályú div valamilyen szöveggel</li>
+      </ul>`,
+    starterHtml:
+`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Bootstrap színek</title>
+</head>
+<body>
+  <div class="container mt-4">
+
+    <!-- Alert dobozok -->
+
+    <!-- Színes szöveg -->
+
+    <!-- Sötét háttér -->
+
+  </div>
+</body>
+</html>`,
+    checks:[
+      { label:'Van alert-success doboz',                          fn:(h,d)=>!!d.querySelector('.alert-success') },
+      { label:'Van alert-danger doboz',                           fn:(h,d)=>!!d.querySelector('.alert-danger') },
+      { label:'Van alert-warning doboz',                          fn:(h,d)=>!!d.querySelector('.alert-warning') },
+      { label:'"Mentés sikeres!" szöveg szerepel',                fn:(h)=>h.includes('Ment\u00e9s sikeres!') },
+      { label:'"Hiba történt!" szöveg szerepel',                  fn:(h)=>h.includes('Hiba t\u00f6rt\u00e9nt!') },
+      { label:'Van text-primary osztályú elem',                   fn:(h,d)=>!!d.querySelector('.text-primary') },
+      { label:'Van bg-dark elem',                                 fn:(h,d)=>!!d.querySelector('.bg-dark') }
+    ]
+  }
+
 ];
 
 // ══════════════════════════════════════════════════════════════════════
