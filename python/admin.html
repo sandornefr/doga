@@ -1721,6 +1721,7 @@
             if (name === 'kovetelmenyek' && kovData.length === 0) loadKovetelmenyek();
             if (name === 'felhasznalok') {
                 loadPwResetRequests();
+                loadUsers();
                 startUsersAutoRefresh();
             } else {
                 stopUsersAutoRefresh();
