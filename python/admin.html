@@ -1399,6 +1399,7 @@
                 document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
             } finally {
                 document.getElementById('users-loading').style.display = 'none';
+                await loadNevsors();
                 updateCsoportLetszam();
             }
         }
@@ -1453,12 +1454,52 @@
             { label: '10.K – info',        ef: '10', osz: 'K', cs: 'info', key: '10Kinfo' },
         ];
 
-        function saveCsoportNevsor(key) {
+        // Névsor cache – szerverről töltve, localStorage fallback-kel
+        let _nevsors = {};
+        const NEVSOR_ADMIN_EMAIL = encodeURIComponent('sandornef@kkszki.hu');
+
+        async function loadNevsors() {
+            await Promise.all(CSOPORT_GROUPS.map(async g => {
+                try {
+                    const res = await authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        _nevsors[g.key] = data.value || '';
+                        // localStorage szinkron (offline fallback)
+                        if (data.value) localStorage.setItem('nevsor_' + g.key, data.value);
+                    } else {
+                        _nevsors[g.key] = localStorage.getItem('nevsor_' + g.key) || '';
+                    }
+                } catch(e) {
+                    _nevsors[g.key] = localStorage.getItem('nevsor_' + g.key) || '';
+                }
+            }));
+        }
+
+        async function saveCsoportNevsor(key) {
             const ta = document.getElementById('nevsor-ta-' + key);
             if (!ta) return;
-            localStorage.setItem('nevsor_' + key, ta.value.trim());
-            const nevek = ta.value.trim().split('\n').map(s=>s.trim()).filter(Boolean);
-            localStorage.setItem('elvart_' + key, nevek.length || '');
+            const value = ta.value.trim();
+            _nevsors[key] = value;
+            localStorage.setItem('nevsor_' + key, value);
+
+            const btn = ta.closest('div')?.querySelector('button[onclick*="saveCsoportNevsor"]');
+            const origHtml = btn ? btn.innerHTML : null;
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mentés...';
+
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value })
+                });
+                if (btn) btn.innerHTML = res.ok
+                    ? '<i class="fas fa-check"></i> Mentve'
+                    : '<i class="fas fa-triangle-exclamation"></i> Hiba';
+            } catch(e) {
+                if (btn) btn.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Hálózati hiba';
+            }
+            setTimeout(() => { if (btn && origHtml) btn.innerHTML = origHtml; }, 2000);
             updateCsoportLetszam();
         }
 
@@ -1479,9 +1520,9 @@
                 );
                 const reg = regTanulok.length;
 
-                const savedNevsor = localStorage.getItem('nevsor_' + g.key) || '';
+                const savedNevsor = _nevsors[g.key] || localStorage.getItem('nevsor_' + g.key) || '';
                 const nevsorNevek = savedNevsor.split('\n').map(s=>s.trim()).filter(Boolean);
-                const elvart = nevsorNevek.length || parseInt(localStorage.getItem('elvart_' + g.key) || '0') || 0;
+                const elvart = nevsorNevek.length || 0;
                 const vanNevsor = nevsorNevek.length > 0;
 
                 // Hiányzók kiszámítása névsor alapján
