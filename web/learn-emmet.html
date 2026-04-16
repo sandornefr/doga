@@ -537,7 +537,7 @@ div.elem-$*3  →  class="elem-1", "elem-2", "elem-3"</pre>`,
         <li><code>$$</code> — kétjegyű: 01, 02, 03… (ha szükséges a rendezéshez)</li>
       </ul>
       <strong>Tip:</strong> A <code>$</code> és a <code>{}</code> kombinálható:
-      <code>li.sor-${$. tétel}*4</code> → négy li, mindegyiken egyedi osztály és szöveg.`,
+      <code>li.sor-\${$. tétel}*4</code> → négy li, mindegyiken egyedi osztály és szöveg.`,
     codeTemplate:
 `/* Cím szöveggel */
 h2___Üdvözlet___
@@ -915,7 +915,7 @@ function loadTask(idx){
         </div>
       </div>`;
     if(task.checks){
-      checkListHtml = `<div class="check-list">${task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><i class="fas fa-square" style="color:#374151"></i> ${task.checks[i].label}</div>`).join('')}</div>`;
+      checkListHtml = `<div class="check-list">${task.checks.map((_,i)=>`<div class="chk-row" id="chk-${i}"><i class="ci fas fa-square" style="color:#374151"></i> ${task.checks[i].label}</div>`).join('')}</div>`;
     }
   }
 
@@ -1051,7 +1051,11 @@ function liveEmmetChecks(task){
   task.checks.forEach((ch,i)=>{
     const pass=(()=>{try{return !!ch.fn(html,doc);}catch(e){return false;}})();
     const el=document.getElementById('chk-'+i);
-    if(el){ el.className='chk-row'+(pass?' pass':''); el.querySelector('.ci').textContent=pass?'✅':'⬜'; }
+    if(el){
+      el.className='chk-row'+(pass?' pass':'');
+      const ic=el.querySelector('.ci');
+      if(ic) ic.className=pass?'ci fas fa-circle-check':'ci fas fa-square';
+    }
   });
 }
 
@@ -1129,7 +1133,11 @@ function checkEmmet(task,idx){
   const pass=res.filter(Boolean).length, tot=res.length;
   res.forEach((r,i)=>{
     const el=document.getElementById('chk-'+i);
-    if(el){ el.className='chk-row'+(r?' pass':''); el.querySelector('.ci').textContent=r?'✅':'❌'; }
+    if(el){
+      el.className='chk-row'+(r?' pass':'');
+      const ic=el.querySelector('.ci');
+      if(ic) ic.className=r?'ci fas fa-circle-check':'ci fas fa-circle-xmark';
+    }
   });
   document.getElementById('score-msg').innerHTML=`<span style="color:${pass===tot?'#22c55e':'#94a3b8'}">${pass}/${tot}</span> ellenőrzés teljesítve`;
   if(pass===tot) markDone(idx);
