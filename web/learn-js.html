@@ -878,7 +878,7 @@ function buildLeft() {
     h.innerHTML = `<span>${bl.emoji}</span><span>${bl.name}</span>`+(allDone?'<span class="block-done-mark">✓ kész</span>':'');
     const lst = document.createElement('div'); lst.className='block-tasks';
     bl.tasks.forEach(({t,i})=>{
-      const locked = i>0 && !state.done[i-1];
+      const locked = !u._tesztMod && i>0 && !state.done[i-1];
       const p = document.createElement('div');
       p.id='pill-'+i;
       const typeIcon = t.type==='quiz'?'<i class="fas fa-circle-question"></i>':t.type==='fillin'?'<i class="fas fa-pen"></i>':'<i class="fas fa-code"></i>';
@@ -901,7 +901,7 @@ function updatePillClass(el,i,locked){
 function refreshLeft(){
   tasks.forEach((_,i)=>{
     const p=document.getElementById('pill-'+i); if(!p) return;
-    const locked=i>0&&!state.done[i-1];
+    const locked=!u._tesztMod&&i>0&&!state.done[i-1];
     p.querySelector('.pill-icon').innerHTML=state.done[i]?'<i class="fa-solid fa-circle-check" style="color:#58D58D;"></i>':locked?'<i class="fa-solid fa-lock" style="color:#E82B41;"></i>':'<i class="fa-solid fa-lock-open" style="color:#53C3F4;"></i>';
     updatePillClass(p,i,locked);
     if(!locked) p.onclick=()=>loadTask(i); else p.onclick=null;
