@@ -818,6 +818,7 @@ function koszont(nev) { ... }</pre>
 // STATE
 // ══════════════════════════════════════════════════════════════════════
 
+const u = JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
 const SKEY = 'ljs_v2';
 (function migrate() {
   if (!localStorage.getItem(SKEY+'_done')) {
