@@ -651,18 +651,20 @@ function javasoltJegy(s) {
 }
 
 function peerScore(s) {
-    // Összetett pontszám: kötelező fontos, de ~30 Python session felér 1 kötelező lépéssel
+    // Nagy szórású pontszám: a tényleges munka mennyisége és minősége dönt
     const done   = getKotelezoDb(s);
     const pyS    = s.pythonSessions     || 0;
     const webS   = s.webAgazatiSessions || 0;
+    const webAll = (s.webSessions       || 0) + webS;
     const pyAvg  = s.pythonAvgPct       || 0;
     const webAvg = s.webAvgPct          || 0;
     const ikt    = s.interaktivDb       || 0;
-    return done * 1500
-         + pyS  * 50
-         + webS * 150
-         + Math.round(pyAvg + webAvg)
-         + ikt  * 30;
+    return done  * 1000                         // kötelező checklist (0–9000)
+         + pyS   * 80                           // Python feladatok (0–10400 Tibinél)
+         + webAll* 200                          // WEB feladatok (ritka, nagy súly)
+         + Math.round(pyAvg * pyS / 10)         // minőség × mennyiség Python
+         + Math.round(webAvg * webAll / 10)     // minőség × mennyiség WEB
+         + ikt   * 50;                          // interaktív teszt
 }
 
 function peerComparison(s) {
@@ -683,7 +685,7 @@ function peerComparison(s) {
     const better = peers.filter(x => peerScore(x) > myScore).length;
     const rank   = better + 1;
     const total  = peers.length + 1;
-    return { rank, total };
+    return { rank, total, score: myScore };
 }
 
 // Kártya státusz meghatározása
@@ -919,7 +921,7 @@ function renderDetail(s) {
     const extraHtml = `<div class="detail-extra">
         <span class="jegy-pill jegy-${jegy}"><i class="fas fa-graduation-cap" style="font-size:.7rem"></i> Javasolt: ${jegy} – ${JEGY_LABELS[jegy]}</span>
         ${peer ? `<span class="peer-info"><i class="fas fa-users" style="margin-right:4px;color:#484f58"></i>
-            Csoportban: <span class="peer-rank">${peer.rank}. hely</span> (${peer.total} főből · ${doneCnt}/${total} kötelező)</span>` : ''}
+            Csoportban: <span class="peer-rank">${peer.rank}. hely</span> (${peer.total} főből · ${peer.score} pont)</span>` : ''}
         ${streakT ? `<span class="peer-info"><i class="fas fa-fire" style="margin-right:4px;color:#f97316"></i>${s.streak} aktív nap · <strong style="color:#c9d1d9">${streakT}</strong></span>` : ''}
     </div>`;
 
