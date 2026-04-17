@@ -219,6 +219,78 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .login-box button:hover { background:#2ea043; }
 .login-err { color:#f85149; font-size:0.82rem; margin-top:10px; min-height:20px; }
 
+/* ── Filterbar extra gombok ── */
+.fbar-btn {
+    background:none; border:1px solid #30363d; color:#8b949e;
+    padding:5px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem;
+    display:flex; align-items:center; gap:6px; transition:all .15s; white-space:nowrap;
+}
+.fbar-btn:hover { border-color:#58a6ff; color:#58a6ff; }
+.fbar-btn.active { background:#1a2332; border-color:#58a6ff; color:#58a6ff; }
+.my-groups-banner {
+    display:none; background:#1a2332; border-bottom:1px solid #21262d;
+    padding:6px 20px; font-size:0.8rem; color:#58a6ff;
+    align-items:center; gap:10px;
+}
+.my-groups-banner button { background:none; border:none; color:#8b949e; cursor:pointer; font-size:0.8rem; padding:2px 6px; border-radius:4px; }
+.my-groups-banner button:hover { color:#f85149; }
+
+/* ── Modal ── */
+.modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.6);
+    z-index:200; align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+    background:#161b22; border:1px solid #30363d; border-radius:12px;
+    width:480px; max-width:95vw; max-height:80vh; display:flex; flex-direction:column;
+}
+.modal-header {
+    padding:18px 22px 14px; border-bottom:1px solid #21262d;
+    display:flex; align-items:center; gap:10px;
+}
+.modal-header h3 { flex:1; font-size:1rem; color:#e0e0e0; font-weight:700; }
+.modal-close { background:none; border:none; color:#8b949e; cursor:pointer; font-size:1.1rem; padding:4px; }
+.modal-close:hover { color:#f85149; }
+.modal-body { padding:16px 22px; overflow-y:auto; flex:1; }
+.modal-body p { font-size:0.83rem; color:#8b949e; margin-bottom:14px; line-height:1.5; }
+.csoport-check-list { display:flex; flex-direction:column; gap:6px; }
+.csoport-check-item {
+    display:flex; align-items:center; gap:10px; padding:9px 12px;
+    background:#0d1117; border:1px solid #21262d; border-radius:8px; cursor:pointer;
+    transition:border-color .15s;
+}
+.csoport-check-item:hover { border-color:#30363d; }
+.csoport-check-item.checked { border-color:#58a6ff; background:#1a2332; }
+.csoport-check-item input[type=checkbox] { accent-color:#58a6ff; width:15px; height:15px; cursor:pointer; }
+.csoport-check-label { font-size:0.88rem; color:#e0e0e0; flex:1; }
+.csoport-check-sub { font-size:0.73rem; color:#8b949e; }
+.modal-footer { padding:14px 22px; border-top:1px solid #21262d; display:flex; gap:8px; justify-content:flex-end; }
+.modal-btn { padding:8px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; cursor:pointer; border:none; transition:background .15s; }
+.modal-btn.primary { background:#238636; color:#fff; }
+.modal-btn.primary:hover { background:#2ea043; }
+.modal-btn.secondary { background:#21262d; color:#8b949e; border:1px solid #30363d; }
+.modal-btn.secondary:hover { border-color:#58a6ff; color:#58a6ff; background:none; }
+
+/* ── Összehasonlítás nézet ── */
+.compare-view { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+.compare-title { font-size:0.72rem; font-weight:700; color:#8b949e; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; display:flex; align-items:center; gap:7px; }
+.compare-row {
+    background:#161b22; border:1px solid #21262d; border-radius:9px;
+    padding:12px 14px; transition:border-color .15s;
+}
+.compare-row.mine { border-color:#58a6ff; background:#1a2332; }
+.compare-row-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.compare-row-label { font-size:0.9rem; font-weight:700; color:#e0e0e0; }
+.compare-row-mine-tag { font-size:0.68rem; background:#1a3a5c; color:#58a6ff; padding:1px 7px; border-radius:8px; font-weight:700; }
+.compare-row-counts { display:flex; gap:8px; font-size:0.73rem; }
+.compare-bars { display:flex; flex-direction:column; gap:4px; }
+.compare-bar-row { display:flex; align-items:center; gap:6px; }
+.compare-bar-lbl { font-size:0.68rem; color:#8b949e; width:80px; flex-shrink:0; }
+.compare-bar-bg { flex:1; height:6px; background:#21262d; border-radius:3px; overflow:hidden; }
+.compare-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
+.compare-bar-val { font-size:0.7rem; color:#8b949e; min-width:32px; text-align:right; }
+
 /* ── Detail tabs ── */
 .detail-tabs { display:flex; gap:2px; padding:10px 20px 0; background:#0d1117; border-bottom:1px solid #21262d; }
 .detail-tab { background:none; border:none; border-bottom:2px solid transparent; color:#8b949e; padding:6px 14px; cursor:pointer; font-size:0.83rem; font-weight:600; transition:color .15s,border-color .15s; }
@@ -284,10 +356,23 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <label>Csoport:</label>
         <select id="csoport-select"  onchange="applyFilters()"><option value="">Összes</option></select>
         <div class="filter-sep"></div>
+        <button class="fbar-btn" id="btn-my-groups" onclick="openCsoportModal()">
+            <i class="fas fa-chalkboard-teacher"></i> Saját csoportjaim
+        </button>
+        <button class="fbar-btn" id="btn-compare" onclick="toggleCompareView()">
+            <i class="fas fa-chart-bar"></i> Összehasonlítás
+        </button>
+        <div class="filter-sep"></div>
         <div class="stat-pill"><i class="fas fa-users"></i> Tanuló: <strong id="cnt-osszes">–</strong></div>
         <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Aktív: <strong id="cnt-zold">–</strong></div>
         <div class="stat-pill warn"><i class="fas fa-circle" style="font-size:.55rem;color:#d29922"></i> Halad: <strong id="cnt-sarga">–</strong></div>
         <div class="stat-pill danger"><i class="fas fa-circle" style="font-size:.55rem;color:#f85149"></i> Inaktív: <strong id="cnt-gyenge">–</strong></div>
+    </div>
+
+    <div class="my-groups-banner" id="my-groups-banner">
+        <i class="fas fa-star" style="color:#58a6ff"></i>
+        <span id="my-groups-banner-txt">Saját csoportok szűrő aktív</span>
+        <button onclick="deactivateMyCsoportok()"><i class="fas fa-times" style="margin-right:3px"></i>Összes tanuló megjelenítése</button>
     </div>
 
     <div class="main-layout">
@@ -306,6 +391,27 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
     </div>
 </div>
 
+<!-- Saját csoportjaim modal -->
+<div class="modal-overlay" id="csoport-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <i class="fas fa-chalkboard-teacher" style="color:#58a6ff;font-size:1.1rem"></i>
+            <h3>Saját csoportjaim</h3>
+            <button class="modal-close" onclick="closeCsoportModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>Jelöld be azokat a csoportokat, amelyekben tanítasz. Az oldal legközelebb automatikusan ezeket fogja megjeleníteni.</p>
+            <div class="csoport-check-list" id="csoport-check-list"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="closeCsoportModal()">Mégse</button>
+            <button class="modal-btn primary" onclick="saveCsoportok()">
+                <i class="fas fa-save" style="margin-right:6px"></i>Mentés és szűrés
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 const API = 'https://agazati.up.railway.app';
 let authToken = '';
@@ -314,6 +420,9 @@ let selectedEmail = null;
 let activeGroupKey = null;
 let currentDetailData = null;
 let currentDetailTab  = 'haladas';
+let myCsoportok       = [];   // array of "ef_oz_cs" keys
+let myCsoportokActive = false;
+let compareViewActive = false;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -364,15 +473,29 @@ async function authFetch(url) {
 
 async function loadAll() {
     try {
-        const res = await authFetch(`${API}/api/haladas`);
-        if (!res.ok) throw new Error();
-        allData = await res.json();
+        const [haladasRes, csoportRes] = await Promise.all([
+            authFetch(`${API}/api/haladas`),
+            authFetch(`${API}/api/user-state/${encodeURIComponent(getTeacherEmail())}/oktato_csoportok`).catch(()=>null)
+        ]);
+        if (!haladasRes.ok) throw new Error();
+        allData = await haladasRes.json();
+        if (csoportRes?.ok) {
+            try {
+                const val = await csoportRes.json();
+                if (val?.value) { myCsoportok = JSON.parse(val.value); }
+            } catch(e) {}
+        }
         buildFilterOptions();
-        applyFilters();
+        if (myCsoportok.length) activateMyCsoportok();
+        else applyFilters();
     } catch(e) {
         document.getElementById('left-panel').innerHTML =
             '<div class="loading-msg"><i class="fas fa-exclamation-triangle" style="color:#f85149"></i> Betöltési hiba!</div>';
     }
+}
+
+function getTeacherEmail() {
+    try { return JSON.parse(sessionStorage.getItem('kandoUser')||'{}').email || ''; } catch(e) { return ''; }
 }
 
 function buildFilterOptions() {
@@ -399,17 +522,23 @@ function applyFilters() {
     const oz = document.getElementById('osztaly-select').value;
     const cs = document.getElementById('csoport-select').value;
 
-    const filtered = allData.filter(s =>
+    let filtered = allData.filter(s =>
         (!ef || String(s.evfolyam)===ef) &&
         (!oz || s.osztaly===oz) &&
         (!cs || String(s.csoport)===cs)
     );
 
+    if (myCsoportokActive && myCsoportok.length) {
+        filtered = filtered.filter(s => myCsoportok.includes(groupKey(s)));
+    }
+
     activeGroupKey = null;
     selectedEmail  = null;
     showDetailEmpty();
-    renderLeft(filtered);
     updatePills(filtered);
+
+    if (compareViewActive) { renderCompareView(); return; }
+    renderLeft(filtered);
 }
 
 // ── Segédfüggvények ───────────────────────────────────────────────────────────
@@ -790,6 +919,163 @@ function showDetailEmpty() {
         <div class="detail-empty">
             <i class="fas fa-hand-pointer"></i>
             <p>Kattints egy tanuló kártyájára a részletes adatok megtekintéséhez.</p>
+        </div>`;
+}
+
+// ── Saját csoportjaim ─────────────────────────────────────────────────────────
+
+function groupKey(s) {
+    return [String(s.evfolyam||''), s.osztaly||'', String(s.csoport||'')].join('_');
+}
+function groupLabel(ef, oz, cs) {
+    return [ef ? ef+'.' : '', oz||'', cs ? (cs==='info'?'info cs.':cs+'. cs.') : ''].filter(Boolean).join(' ');
+}
+
+function openCsoportModal() {
+    // Build unique group list from allData
+    const groups = {};
+    allData.forEach(s => {
+        const k = groupKey(s);
+        if (!groups[k]) groups[k] = { ef:String(s.evfolyam||''), oz:s.osztaly||'', cs:String(s.csoport||''), count:0 };
+        groups[k].count++;
+    });
+    const list = document.getElementById('csoport-check-list');
+    list.innerHTML = Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([k,g]) => {
+        const checked = myCsoportok.includes(k);
+        return `<label class="csoport-check-item${checked?' checked':''}" onclick="toggleCsCheck(this, '${k}')">
+            <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();toggleCsCheck(this.closest('label'),'${k}')">
+            <div>
+                <div class="csoport-check-label">${groupLabel(g.ef,g.oz,g.cs)}</div>
+                <div class="csoport-check-sub">${g.count} tanuló</div>
+            </div>
+        </label>`;
+    }).join('');
+    document.getElementById('csoport-modal').classList.add('open');
+}
+
+function toggleCsCheck(el, key) {
+    const cb = el.querySelector('input[type=checkbox]');
+    const checked = !cb.checked;
+    cb.checked = checked;
+    el.classList.toggle('checked', checked);
+    if (checked) { if (!myCsoportok.includes(key)) myCsoportok.push(key); }
+    else          { myCsoportok = myCsoportok.filter(k => k !== key); }
+}
+
+function closeCsoportModal() {
+    document.getElementById('csoport-modal').classList.remove('open');
+}
+
+async function saveCsoportok() {
+    closeCsoportModal();
+    const email = getTeacherEmail();
+    if (email) {
+        try {
+            await authFetch(`${API}/api/user-state/${encodeURIComponent(email)}/oktato_csoportok`);
+            await fetch(`${API}/api/user-state/${encodeURIComponent(email)}/oktato_csoportok`, {
+                method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
+                body: JSON.stringify({ value: JSON.stringify(myCsoportok) })
+            });
+        } catch(e) {}
+    }
+    if (myCsoportok.length) activateMyCsoportok();
+    else { deactivateMyCsoportok(); }
+}
+
+function activateMyCsoportok() {
+    myCsoportokActive = true;
+    document.getElementById('btn-my-groups').classList.add('active');
+    const banner = document.getElementById('my-groups-banner');
+    banner.style.display = 'flex';
+    const labels = myCsoportok.map(k => {
+        const [ef,oz,cs] = k.split('_');
+        return groupLabel(ef,oz,cs);
+    }).join(', ');
+    document.getElementById('my-groups-banner-txt').textContent = `Saját csoportok: ${labels}`;
+    applyFilters();
+}
+
+function deactivateMyCsoportok() {
+    myCsoportokActive = false;
+    document.getElementById('btn-my-groups').classList.remove('active');
+    document.getElementById('my-groups-banner').style.display = 'none';
+    applyFilters();
+}
+
+// ── Összehasonlítás nézet ─────────────────────────────────────────────────────
+
+function toggleCompareView() {
+    compareViewActive = !compareViewActive;
+    document.getElementById('btn-compare').classList.toggle('active', compareViewActive);
+    if (compareViewActive) {
+        showDetailEmpty();
+        renderCompareView();
+    } else {
+        applyFilters();
+    }
+}
+
+function renderCompareView() {
+    const panel = document.getElementById('left-panel');
+
+    // Get current évfolyam filter (or use all)
+    const ef = document.getElementById('evfolyam-select').value;
+    const students = ef ? allData.filter(s => String(s.evfolyam)===ef) : allData;
+
+    // Group them
+    const groups = {};
+    students.forEach(s => {
+        const k = groupKey(s);
+        if (!groups[k]) groups[k] = { ef:String(s.evfolyam||''), oz:s.osztaly||'', cs:String(s.csoport||''), students:[] };
+        groups[k].students.push(s);
+    });
+
+    const rows = Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([k,g]) => {
+        const total   = g.students.length;
+        const zold    = g.students.filter(s => getCardStatus(s)==='zold').length;
+        const sarga   = g.students.filter(s => getCardStatus(s)==='sarga').length;
+        const piros   = g.students.filter(s => getCardStatus(s)==='piros').length;
+        const kotAtl  = g.students.reduce((a,s)=>a+getKotelezoDb(s),0)/total;
+        const kotPct  = Math.round(kotAtl/KOTELEZO.length*100);
+        const aktPct  = Math.round((zold+sarga)/total*100);
+        const isMine  = myCsoportok.includes(k);
+
+        const kotColor  = kotPct>=75?'#3fb950':kotPct>=50?'#d29922':'#f85149';
+        const aktColor  = aktPct>=75?'#3fb950':aktPct>=50?'#d29922':'#f85149';
+
+        return `<div class="compare-row${isMine?' mine':''}">
+            <div class="compare-row-top">
+                <span class="compare-row-label">${groupLabel(g.ef,g.oz,g.cs)}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                    ${isMine?'<span class="compare-row-mine-tag"><i class="fas fa-star" style="margin-right:3px"></i>Saját</span>':''}
+                    <span style="font-size:.73rem;color:#8b949e">${total} tanuló</span>
+                </div>
+            </div>
+            <div class="compare-bars">
+                <div class="compare-bar-row">
+                    <span class="compare-bar-lbl">Kötelező átl.</span>
+                    <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${kotPct}%;background:${kotColor}"></div></div>
+                    <span class="compare-bar-val" style="color:${kotColor}">${kotPct}%</span>
+                </div>
+                <div class="compare-bar-row">
+                    <span class="compare-bar-lbl">Aktív tanuló</span>
+                    <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${aktPct}%;background:${aktColor}"></div></div>
+                    <span class="compare-bar-val" style="color:${aktColor}">${aktPct}%</span>
+                </div>
+            </div>
+            <div class="compare-row-counts" style="margin-top:7px">
+                <span style="color:#3fb950"><i class="fas fa-circle" style="font-size:.5rem;margin-right:3px"></i>${zold} Aktív</span>
+                <span style="color:#d29922"><i class="fas fa-circle" style="font-size:.5rem;margin-right:3px"></i>${sarga} Halad</span>
+                <span style="color:#f85149"><i class="fas fa-circle" style="font-size:.5rem;margin-right:3px"></i>${piros} Lemarad</span>
+            </div>
+        </div>`;
+    }).join('');
+
+    const efLabel = ef ? ef+'. évfolyam' : 'Összes évfolyam';
+    panel.innerHTML = `
+        <div class="compare-view">
+            <div class="compare-title"><i class="fas fa-chart-bar"></i> Csoportok összehasonlítása – ${efLabel}</div>
+            ${rows || '<div style="color:#8b949e;font-size:.85rem;padding:20px 0">Nincs adat a kiválasztott szűrőre.</div>'}
         </div>`;
 }
 
