@@ -229,24 +229,44 @@ const STREAK_TITLES = [
     { min: 3, icon:'fa-fire',              color:'#86efac', name:'Ügyes Kezdő' },
 ];
 
+// maxConsec: leghosszabb egymást követő aktív nap sorozat valaha
+function calcMaxConsecutive(activeDates) {
+    if (!activeDates.length) return 0;
+    const unique = [...new Set(activeDates.map(d => d.substring(0,10)))].sort();
+    let best = 1, cur = 1;
+    for (let i = 1; i < unique.length; i++) {
+        const prev = new Date(unique[i-1]), curr = new Date(unique[i]);
+        const diff = (curr - prev) / 86400000;
+        cur = diff === 1 ? cur + 1 : 1;
+        if (cur > best) best = cur;
+    }
+    return best;
+}
+
 const ACHIEVEMENTS = [
-    { id:'first_web',      icon:'🌐', name:'Első lépés – WEB',       check:(p)=> p.web.sessions >= 1 },
-    { id:'first_py',       icon:'🐍', name:'Első lépés – Python',    check:(p)=> p.python.sessions >= 1 },
-    { id:'persist_web',    icon:'🔥', name:'Kitartó – WEB',          check:(p)=> p.web.sessions >= 5 },
-    { id:'persist_py',     icon:'🔥', name:'Kitartó – Python',       check:(p)=> p.python.sessions >= 5 },
-    { id:'adv_web',        icon:'⚡', name:'Haladó – WEB',           check:(p)=> p.web.sessions >= 10 },
-    { id:'adv_py',         icon:'⚡', name:'Haladó – Python',        check:(p)=> p.python.sessions >= 10 },
-    { id:'perfect_web',    icon:'💯', name:'Tökéletes WEB',          check:(p)=> p.web.bestPercent >= 99.9 },
-    { id:'perfect_py',     icon:'💯', name:'Tökéletes Python',       check:(p)=> p.python.bestPercent >= 99.9 },
-    { id:'dilig_web',      icon:'🌟', name:'Szorgalmas – WEB',       check:(p)=> p.web.sessions >= 20 },
-    { id:'dilig_py',       icon:'🌟', name:'Szorgalmas – Python',    check:(p)=> p.python.sessions >= 20 },
-    { id:'webmaster',      icon:'👑', name:'Webmester',              check:(p)=> p.web.avgPercent >= 85 },
-    { id:'pymaster',       icon:'🏆', name:'Python Mester',          check:(p)=> p.python.avgPercent >= 85 },
-    { id:'both_ready',     icon:'🎓', name:'Teljes felkészültség',   check:(p)=> p.web.avgPercent >= 75 && p.python.avgPercent >= 75 },
-    { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',        check:(p,items)=> items.some(i=>{ const m=i.datum?.match(/(\d{2}):\d{2}/); return m && (parseInt(m[1])>=20||parseInt(m[1])<5); }) },
-    { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',           check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const d=new Date(i.datum.replace(' ','T')); return d.getDay()===0||d.getDay()===6; }) },
-    { id:'tiz_aktiv_nap',  icon:'📅', name:'10 aktív nap',           check:(p,_,streak)=> streak >= 10 },
-    { id:'huszon_aktiv',   icon:'🗓️', name:'20 aktív nap',           check:(p,_,streak)=> streak >= 20 },
+    { id:'first_web',      icon:'🌐', name:'Első lépés – WEB',           check:(p)=> p.web.sessions >= 1 },
+    { id:'first_py',       icon:'🐍', name:'Első lépés – Python',        check:(p)=> p.python.sessions >= 1 },
+    { id:'persist_web',    icon:'🔥', name:'Kitartó – WEB',              check:(p)=> p.web.sessions >= 5 },
+    { id:'persist_py',     icon:'🔥', name:'Kitartó – Python',           check:(p)=> p.python.sessions >= 5 },
+    { id:'adv_web',        icon:'⚡', name:'Haladó – WEB',               check:(p)=> p.web.sessions >= 10 },
+    { id:'adv_py',         icon:'⚡', name:'Haladó – Python',            check:(p)=> p.python.sessions >= 10 },
+    { id:'perfect_web',    icon:'💯', name:'Tökéletes WEB',              check:(p)=> p.web.bestPercent >= 99.9 },
+    { id:'perfect_py',     icon:'💯', name:'Tökéletes Python',           check:(p)=> p.python.bestPercent >= 99.9 },
+    { id:'dilig_web',      icon:'🌟', name:'Szorgalmas – WEB',           check:(p)=> p.web.sessions >= 20 },
+    { id:'dilig_py',       icon:'🌟', name:'Szorgalmas – Python',        check:(p)=> p.python.sessions >= 20 },
+    { id:'webmaster',      icon:'👑', name:'Webmester',                  check:(p)=> p.web.avgPercent >= 85 },
+    { id:'pymaster',       icon:'🏆', name:'Python Mester',              check:(p)=> p.python.avgPercent >= 85 },
+    { id:'both_ready',     icon:'🎓', name:'Teljes felkészültség',       check:(p)=> p.web.avgPercent >= 75 && p.python.avgPercent >= 75 },
+    { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',            check:(p,items)=> items.some(i=>{ const m=i.datum?.match(/(\d{2}):\d{2}/); return m&&(parseInt(m[1])>=20||parseInt(m[1])<5); }) },
+    { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',               check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const d=new Date(i.datum.replace(' ','T')); return d.getDay()===0||d.getDay()===6; }) },
+    { id:'tiz_aktiv_nap',  icon:'📅', name:'10 aktív nap',               check:(p,_,streak)=> streak >= 10 },
+    { id:'huszon_aktiv',   icon:'🗓️', name:'20 aktív nap',               check:(p,_,streak)=> streak >= 20 },
+    // Egymást követő napok
+    { id:'consec_3',  icon:'🌱', name:'3 egymást követő nap',   check:(p,_,s,mc)=> mc >= 3  },
+    { id:'consec_5',  icon:'🌿', name:'5 egymást követő nap',   check:(p,_,s,mc)=> mc >= 5  },
+    { id:'consec_7',  icon:'🔆', name:'Heti Sorozat (7 nap)',   check:(p,_,s,mc)=> mc >= 7  },
+    { id:'consec_10', icon:'💪', name:'10 napos sorozat',       check:(p,_,s,mc)=> mc >= 10 },
+    { id:'consec_14', icon:'🏅', name:'Két Hetes Maraton',      check:(p,_,s,mc)=> mc >= 14 },
 ];
 
 // ── Heatmap ───────────────────────────────────────────────────────────────
@@ -396,9 +416,11 @@ async function loadTanuloProfile(u, page) {
         items.forEach(i => { if(i.datum) activeDates.push(i.datum.substring(0,10)); });
         quizItems.forEach(q => { if(q.submittedAt) activeDates.push(q.submittedAt.substring(0,10)); });
 
+        const maxConsec = calcMaxConsecutive(activeDates);
+
         // Kitűzők
-        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak));
-        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak));
+        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak, maxConsec));
+        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak, maxConsec));
 
         // Legjobb kvíz
         const bestQuiz = quizItems.reduce((best, q) => (!best || q.szazalek > best.szazalek) ? q : best, null);
