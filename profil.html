@@ -374,6 +374,9 @@ async function loadProfile() {
     // Oktató megtekintheti bármelyik tanuló profilját: profil.html?email=...
     const targetEmail = new URLSearchParams(window.location.search).get('email');
     if (isOktato && targetEmail) {
+        // "Vissza" gomb → tanulói haladás oldal
+        const backBtn = document.querySelector('.topbar a[href="portal.html"]');
+        if (backBtn) { backBtn.href = 'oktato-haladas.html'; backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Tanulói haladás'; }
         const fakeU = { email: targetEmail, nev: targetEmail, szerep: 'tanulo', token: u.token, _oktatoNez: true };
         // Név lekérése a haladás adatból
         const nRes = await apiFetch(`${API}/api/haladas/tanulo/${encodeURIComponent(targetEmail)}`).catch(()=>null);
