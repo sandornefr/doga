@@ -100,6 +100,10 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .student-card.active-card { border-color:#58a6ff; background:#1a2332; }
 .student-card.gyenge { border-color:#f85149 !important; }
 .student-card.gyenge:hover { box-shadow:0 2px 8px rgba(248,81,73,.15); }
+.student-card.sarga { border-color:#d29922 !important; }
+.student-card.sarga:hover { box-shadow:0 2px 8px rgba(210,153,34,.15); }
+.student-card.zold  { border-color:#3fb950 !important; }
+.student-card.zold:hover  { box-shadow:0 2px 8px rgba(63,185,80,.15); }
 
 .card-name {
     font-weight:600; font-size:0.85rem; color:#e0e0e0;
@@ -254,9 +258,9 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <select id="csoport-select"  onchange="applyFilters()"><option value="">Összes</option></select>
         <div class="filter-sep"></div>
         <div class="stat-pill"><i class="fas fa-users"></i> Tanuló: <strong id="cnt-osszes">–</strong></div>
-        <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Aktív 14 nap: <strong id="cnt-aktiv">–</strong></div>
-        <div class="stat-pill warn"><i class="fas fa-book-open"></i> Teljes tananyag: <strong id="cnt-tananyag">–</strong></div>
-        <div class="stat-pill danger"><i class="fas fa-exclamation-triangle"></i> Lemarad: <strong id="cnt-gyenge">–</strong></div>
+        <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Mindkettő: <strong id="cnt-zold">–</strong></div>
+        <div class="stat-pill warn"><i class="fas fa-circle" style="font-size:.55rem;color:#d29922"></i> Hiányos: <strong id="cnt-sarga">–</strong></div>
+        <div class="stat-pill danger"><i class="fas fa-circle" style="font-size:.55rem;color:#f85149"></i> Inaktív: <strong id="cnt-gyenge">–</strong></div>
     </div>
 
     <div class="main-layout">
@@ -424,17 +428,29 @@ function getKotelezoDb(s) {
     return KOTELEZO.filter(k => k.count ? (s[k.key]||0) > 0 : !!s[k.key]).length;
 }
 
-function isGyenge(s) {
-    const done = getKotelezoDb(s);
-    const n    = daysSince(s.lastActive);
-    return done < KOTELEZO.length || n === Infinity || (n > 21 && done < KOTELEZO.length);
+// Kártya státusz meghatározása
+// piros  = sosem csinált semmi érdemi munkát (csak regisztrált)
+// sarga  = van aktivitás, de csak Python VAGY csak WEB
+// zold   = mindkettőt (Python + WEB) csinálja
+// normal = egyéb (alapértelmezett, keret nélkül)
+function getCardStatus(s) {
+    const hasPython = (s.pythonSessions||0) > 0 || !!s.pythonKezdo || !!s.pythonHalado;
+    const hasWeb    = (s.webSessions||0) > 0 || (s.webAgazatiSessions||0) > 0
+                      || !!s.tananyagHtml || !!s.tananyagCss || !!s.tananyagBootstrap;
+    const hasAny    = hasPython || hasWeb || (s.interaktivDb||0) > 0;
+
+    if (!hasAny) return 'piros';            // semmi érdemi munka
+    if (hasPython && hasWeb) return 'zold'; // mindkettőt csinálja
+    return 'sarga';                         // csak az egyiket csinálja
 }
 
+function isGyenge(s) { return getCardStatus(s) === 'piros'; }
+
 function kotelezoStatusColor(s) {
-    const done = getKotelezoDb(s);
+    const done  = getKotelezoDb(s);
     const total = KOTELEZO.length;
-    if (done === total)    return { color:'#3fb950', cls:'ok' };
-    if (done >= total * 0.75) return { color:'#d29922', cls:'warn' };
+    if (done === total)        return { color:'#3fb950', cls:'ok' };
+    if (done >= total * 0.75)  return { color:'#d29922', cls:'warn' };
     return { color:'#f85149', cls:'danger' };
 }
 function gradeColor(p){ return p>=85?'ot':p>=70?'negy':p>=55?'harom':p>=40?'ketto':'egy'; }
@@ -461,7 +477,8 @@ function renderLeft(students) {
     const groupHtml = Object.entries(csoportMap).map(([key, g]) => {
         const total    = g.students.length;
         const aktiv    = g.students.filter(s => daysSince(s.lastActive)<=14).length;
-        const gyenge   = g.students.filter(isGyenge).length;
+        const piros    = g.students.filter(s=>getCardStatus(s)==='piros').length;
+        const zold     = g.students.filter(s=>getCardStatus(s)==='zold').length;
         const kotAtl   = Math.round(g.students.reduce((a,s)=>a+getKotelezoDb(s),0)/total*10)/10;
         const aktivPct = Math.round(aktiv/total*100);
         const kotPct   = Math.round(kotAtl/KOTELEZO.length*100);
@@ -473,7 +490,8 @@ function renderLeft(students) {
         return `<div class="group-card" data-key="${key}" onclick="filterByGroup('${key}')">
             <div class="gc-label">${label} <span style="font-size:.68rem;font-weight:400;color:#8b949e">(${total} fő)</span></div>
             <div class="gc-meta">
-                <span style="color:${gyenge>0?'#f85149':'#3fb950'}">${gyenge>0?`<i class="fas fa-exclamation-circle" style="margin-right:2px"></i>${gyenge} lemarad`:'<i class="fas fa-check-circle" style="margin-right:2px"></i>Mindenki halad'}</span>
+                <span style="color:#3fb950"><i class="fas fa-circle" style="font-size:.55rem;margin-right:3px"></i>${zold} mindkettő</span>
+                ${piros>0?`<span style="color:#f85149"><i class="fas fa-circle" style="font-size:.55rem;margin-right:3px"></i>${piros} inaktív</span>`:''}
             </div>
             <div class="gc-bar-row">
                 <span class="gc-bar-lbl">Kötelező</span>
@@ -510,7 +528,7 @@ function renderLeft(students) {
 }
 
 function makeCard(s) {
-    const gyenge   = isGyenge(s);
+    const status   = getCardStatus(s);
     const act      = actLabel(s.lastActive);
     const doneCnt  = getKotelezoDb(s);
     const total    = KOTELEZO.length;
@@ -518,16 +536,23 @@ function makeCard(s) {
     const csLabel  = s.csoport==='info'?'info cs.':(s.csoport?s.csoport+'. cs.':'');
     const evozLabel= [s.evfolyam,s.osztaly].filter(Boolean).join('.');
 
+    const cardCls  = status==='piros'?' gyenge':status==='sarga'?' sarga':status==='zold'?' zold':'';
+    const badge    = status==='piros'
+        ? '<span class="lemarad-badge">Lemarad</span>'
+        : status==='sarga'
+            ? '<span class="lemarad-badge" style="background:#d29922">Hiányos</span>'
+            : '';
+
     // Mini kötelező dot-ok (8 db)
     const kDots = KOTELEZO.map(k => {
         const done = k.count ? (s[k.key]||0)>0 : !!s[k.key];
-        const bg = done ? k.color : '#21262d';
+        const bg     = done ? k.color : '#21262d';
         const border = done ? k.color : '#30363d';
         return `<div style="width:9px;height:9px;border-radius:50%;background:${bg};border:1.5px solid ${border};flex-shrink:0" title="${k.label}${done?'':' – hiányzik'}"></div>`;
     }).join('');
 
-    return `<div class="student-card${gyenge?' gyenge':''}" data-email="${s.email}">
-        ${gyenge?'<span class="lemarad-badge">Lemarad</span>':''}
+    return `<div class="student-card${cardCls}" data-email="${s.email}">
+        ${badge}
         <div class="card-name" title="${s.nev||s.email}">${s.nev||s.email}</div>
         <div class="card-sub">${evozLabel}${evozLabel&&csLabel?' / ':''}${csLabel}</div>
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
@@ -724,14 +749,14 @@ function showDetailEmpty() {
 }
 
 function updatePills(students) {
-    const n  = students.length;
-    const ak = students.filter(s=>daysSince(s.lastActive)<=14).length;
-    const ta = students.filter(s=>s.tananyagHtml&&s.tananyagCss&&s.tananyagBootstrap&&s.tananyagEmmet&&s.tananyagJavascript).length;
-    const gy = students.filter(isGyenge).length;
-    document.getElementById('cnt-osszes').textContent   = n;
-    document.getElementById('cnt-aktiv').textContent    = `${ak} / ${n}`;
-    document.getElementById('cnt-tananyag').textContent = `${ta} / ${n}`;
-    document.getElementById('cnt-gyenge').textContent   = gy;
+    const n     = students.length;
+    const zold  = students.filter(s => getCardStatus(s) === 'zold').length;
+    const sarga = students.filter(s => getCardStatus(s) === 'sarga').length;
+    const piros = students.filter(s => getCardStatus(s) === 'piros').length;
+    document.getElementById('cnt-osszes').textContent = n;
+    document.getElementById('cnt-zold').textContent   = `${zold} / ${n}`;
+    document.getElementById('cnt-sarga').textContent  = sarga;
+    document.getElementById('cnt-gyenge').textContent = piros;
 }
 </script>
 </body>
