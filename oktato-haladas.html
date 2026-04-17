@@ -921,9 +921,9 @@ function renderDetail(s) {
     const extraHtml = `<div class="detail-extra">
         <span class="jegy-pill jegy-${jegy}"><i class="fas fa-graduation-cap" style="font-size:.7rem"></i> Javasolt: ${jegy} – ${JEGY_LABELS[jegy]}</span>
         ${peer ? `<span class="peer-info">${
-            peer.rank===1 ? `<span class="fa-stack" style="font-size:.6em;vertical-align:middle;line-height:1;margin-right:4px"><i class="fas fa-circle fa-stack-2x" style="color:#fbbf24"></i><strong class="fa-stack-1x" style="color:#78350f;font-size:.65em">1</strong></span>` :
-            peer.rank===2 ? `<span class="fa-stack" style="font-size:.6em;vertical-align:middle;line-height:1;margin-right:4px"><i class="fas fa-circle fa-stack-2x" style="color:#94a3b8"></i><strong class="fa-stack-1x" style="color:#0f172a;font-size:.65em">2</strong></span>` :
-            peer.rank===3 ? `<span class="fa-stack" style="font-size:.6em;vertical-align:middle;line-height:1;margin-right:4px"><i class="fas fa-circle fa-stack-2x" style="color:#cd7f32"></i><strong class="fa-stack-1x" style="color:#431407;font-size:.65em">3</strong></span>` :
+            peer.rank===1 ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.3em;border-radius:50%;background:#fbbf24;color:#78350f;font-weight:800;font-size:0.8em;vertical-align:middle;margin-right:4px">1</span>` :
+            peer.rank===2 ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.3em;border-radius:50%;background:#94a3b8;color:#0f172a;font-weight:800;font-size:0.8em;vertical-align:middle;margin-right:4px">2</span>` :
+            peer.rank===3 ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:1.3em;height:1.3em;border-radius:50%;background:#cd7f32;color:#431407;font-weight:800;font-size:0.8em;vertical-align:middle;margin-right:4px">3</span>` :
             `<i class="fas fa-users" style="margin-right:4px;color:#484f58"></i>`
         }Csoportban: <span class="peer-rank">${peer.rank}. hely</span> (${peer.total} főből · ${peer.score} pont)</span>` : ''}
         ${streakT ? `<span class="peer-info"><i class="fas fa-fire" style="margin-right:4px;color:#f97316"></i>${s.streak} aktív nap · <strong style="color:#c9d1d9">${streakT}</strong></span>` : ''}
