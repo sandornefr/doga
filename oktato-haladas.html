@@ -219,6 +219,26 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .login-box button:hover { background:#2ea043; }
 .login-err { color:#f85149; font-size:0.82rem; margin-top:10px; min-height:20px; }
 
+/* ── Detail tabs ── */
+.detail-tabs { display:flex; gap:2px; padding:10px 20px 0; background:#0d1117; border-bottom:1px solid #21262d; }
+.detail-tab { background:none; border:none; border-bottom:2px solid transparent; color:#8b949e; padding:6px 14px; cursor:pointer; font-size:0.83rem; font-weight:600; transition:color .15s,border-color .15s; }
+.detail-tab.active { color:#58a6ff; border-bottom-color:#58a6ff; }
+.detail-tab:hover:not(.active) { color:#e0e0e0; }
+
+/* ── Napi aktivitás (detail tab) ── */
+.napi-date-bar { display:flex; align-items:center; gap:10px; padding:10px 20px 6px; }
+.napi-date-input { background:#0d1117; border:1px solid #30363d; color:#e0e0e0; padding:5px 10px; border-radius:6px; font-size:0.85rem; }
+.napi-date-input:focus { outline:none; border-color:#58a6ff; }
+.napi-act-list { padding:0 20px 20px; display:flex; flex-direction:column; gap:6px; }
+.napi-act-row { background:#0d1117; border-radius:7px; padding:9px 12px; display:flex; align-items:flex-start; gap:10px; font-size:0.83rem; }
+.napi-act-icon { width:20px; text-align:center; flex-shrink:0; margin-top:1px; }
+.napi-act-body { flex:1; }
+.napi-act-title { color:#e0e0e0; font-weight:600; }
+.napi-act-sub { color:#8b949e; font-size:0.75rem; margin-top:2px; }
+.napi-no-act { text-align:center; padding:40px 20px; color:#484f58; }
+.napi-no-act i { font-size:2rem; display:block; margin-bottom:10px; }
+.napi-summary-bar { display:flex; gap:16px; padding:6px 20px 10px; font-size:0.78rem; color:#8b949e; border-bottom:1px solid #21262d; }
+
 /* ── Scrollbar ── */
 * { scrollbar-width:thin; scrollbar-color:#30363d transparent; }
 ::-webkit-scrollbar { width:5px; height:5px; }
@@ -292,6 +312,8 @@ let authToken = '';
 let allData    = [];
 let selectedEmail = null;
 let activeGroupKey = null;
+let currentDetailData = null;
+let currentDetailTab  = 'haladas';
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -641,6 +663,8 @@ function checkRow(icon, color, label, done, extra) {
 }
 
 function renderDetail(s) {
+    currentDetailData = s;
+    currentDetailTab  = 'haladas';
     const panel  = document.getElementById('detail-panel');
     const act    = actLabel(s.lastActive);
     const actClr = act.cls==='green'?'#3fb950':act.cls==='yellow'?'#d29922':act.cls==='red'?'#f85149':'#484f58';
@@ -696,15 +720,7 @@ function renderDetail(s) {
             </div>`).join('')
         : '<div class="no-data"><i class="fas fa-inbox" style="margin-right:6px"></i>Még nincs beadott számonkérés</div>';
 
-    panel.innerHTML = `
-        <div class="detail-header">
-            <div class="detail-name">${s.nev||s.email}</div>
-            <div class="detail-meta">
-                <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${evozLabel} · ${csLabel}</span>
-                <span><i class="fas fa-circle" style="font-size:.55rem;color:${actClr};margin-right:4px"></i>${act.long}</span>
-                <span style="font-weight:700;color:${stColor.color}">Kötelező: ${doneCnt}/${total}</span>
-            </div>
-        </div>
+    const haladasHtml = `
         <div class="detail-body">
 
             <div>
@@ -748,6 +764,25 @@ function renderDetail(s) {
             </div>
 
         </div>`;
+
+    panel.innerHTML = `
+        <div class="detail-header">
+            <div class="detail-name">${s.nev||s.email}</div>
+            <div class="detail-meta">
+                <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${evozLabel} · ${csLabel}</span>
+                <span><i class="fas fa-circle" style="font-size:.55rem;color:${actClr};margin-right:4px"></i>${act.long}</span>
+                <span style="font-weight:700;color:${stColor.color}">Kötelező: ${doneCnt}/${total}</span>
+            </div>
+        </div>
+        <div class="detail-tabs">
+            <button class="detail-tab active" id="tab-haladas" onclick="switchDetailTab('haladas')">
+                <i class="fas fa-chart-bar" style="margin-right:5px"></i>Haladás
+            </button>
+            <button class="detail-tab" id="tab-napi" onclick="switchDetailTab('napi')">
+                <i class="fas fa-calendar-day" style="margin-right:5px"></i>Napi aktivitás
+            </button>
+        </div>
+        <div id="detail-content">${haladasHtml}</div>`;
 }
 
 function showDetailEmpty() {
@@ -756,6 +791,93 @@ function showDetailEmpty() {
             <i class="fas fa-hand-pointer"></i>
             <p>Kattints egy tanuló kártyájára a részletes adatok megtekintéséhez.</p>
         </div>`;
+}
+
+// ── Napi aktivitás tab ────────────────────────────────────────────────────────
+
+function switchDetailTab(tab) {
+    if (!currentDetailData) return;
+    currentDetailTab = tab;
+    document.getElementById('tab-haladas').classList.toggle('active', tab==='haladas');
+    document.getElementById('tab-napi').classList.toggle('active', tab==='napi');
+    if (tab === 'haladas') {
+        if (selectedEmail) loadDetail(selectedEmail);
+        return;
+    }
+    const today = new Date().toISOString().substring(0,10);
+    renderNapiContent(currentDetailData, today);
+}
+
+function renderNapiContent(s, dateStr) {
+    const content = document.getElementById('detail-content');
+    if (!content) return;
+
+    // Collect activities for the given date
+    const acts = [];
+
+    // Was online (lastActive matches date)
+    if (s.lastActive && s.lastActive.substring(0,10) === dateStr) {
+        acts.push({ type:'online', icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'' });
+    }
+
+    // Számonkérések ezen a napon
+    if (s.szamonkeres?.length) {
+        s.szamonkeres.forEach(sz => {
+            if (sz.submittedAt && sz.submittedAt.substring(0,10) === dateStr) {
+                acts.push({
+                    type:'szamonkeres', icon:'fas fa-file-alt', color:'#58a6ff',
+                    title: sz.cim,
+                    sub: `${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>`
+                });
+            }
+        });
+    }
+
+    // Tananyag teljesítések ezen a napon
+    const tananyagMap = [
+        { key:'tananyagHtml',        icon:'fab fa-html5',              color:'#e34c26', label:'HTML tananyag' },
+        { key:'tananyagCss',         icon:'fab fa-css3-alt',           color:'#264de4', label:'CSS tananyag' },
+        { key:'tananyagBootstrap',   icon:'fab fa-bootstrap',          color:'#a371f7', label:'Bootstrap tananyag' },
+        { key:'tananyagEmmet',       icon:'fas fa-bolt',               color:'#f0883e', label:'Emmet tananyag' },
+        { key:'tananyagJavascript',  icon:'fab fa-js',                 color:'#d29922', label:'JavaScript tananyag' },
+        { key:'tananyagDevtools',    icon:'fas fa-screwdriver-wrench', color:'#38bdf8', label:'Webfejlesztő eszközök tananyag' },
+    ];
+    tananyagMap.forEach(t => {
+        if (s[t.key] && s[t.key].substring(0,10) === dateStr) {
+            acts.push({ type:'tananyag', icon:t.icon, color:t.color, title:`${t.label} teljesítve`, sub:'Tananyag oldal' });
+        }
+    });
+
+    const actsHtml = acts.length === 0
+        ? `<div class="napi-no-act">
+            <i class="fas fa-moon"></i>
+            <div style="font-size:.88rem;color:#8b949e">Ezen a napon nem volt aktivitás</div>
+            <div style="font-size:.75rem;color:#484f58;margin-top:4px">Be sem lépett a felületre</div>
+           </div>`
+        : acts.map(a => `
+            <div class="napi-act-row">
+                <div class="napi-act-icon"><i class="${a.icon}" style="color:${a.color}"></i></div>
+                <div class="napi-act-body">
+                    <div class="napi-act-title">${a.title}</div>
+                    ${a.sub ? `<div class="napi-act-sub">${a.sub}</div>` : ''}
+                </div>
+            </div>`).join('');
+
+    const summaryHtml = acts.length > 0
+        ? `<div class="napi-summary-bar">
+            <span><i class="fas fa-check-circle" style="color:#3fb950;margin-right:4px"></i>${acts.length} tevékenység ezen a napon</span>
+           </div>`
+        : '';
+
+    content.innerHTML = `
+        <div class="napi-date-bar">
+            <i class="fas fa-calendar-alt" style="color:#8b949e"></i>
+            <input type="date" class="napi-date-input" id="napi-date-picker" value="${dateStr}"
+                onchange="renderNapiContent(currentDetailData, this.value)">
+            <span style="font-size:0.78rem;color:#8b949e">aktivitás ezen a napon</span>
+        </div>
+        ${summaryHtml}
+        <div class="napi-act-list">${actsHtml}</div>`;
 }
 
 function updatePills(students) {
