@@ -651,12 +651,18 @@ function javasoltJegy(s) {
 }
 
 function peerComparison(s) {
+    // Ha hiányzik a csoportinfo, nem tudunk rangsorolni
+    if (!s.evfolyam || !s.osztaly || !s.csoport) return null;
     const doneCnt = getKotelezoDb(s);
+    const sEf  = s.evfolyam.toLowerCase();
+    const sOsz = s.osztaly.toLowerCase();
+    const sCso = s.csoport.toLowerCase();
     const peers = allData.filter(x =>
         x.email !== s.email &&
-        x.evfolyam === s.evfolyam &&
-        x.osztaly  === s.osztaly  &&
-        x.csoport  === s.csoport
+        x.evfolyam && x.osztaly && x.csoport &&
+        x.evfolyam.toLowerCase() === sEf &&
+        x.osztaly.toLowerCase()  === sOsz &&
+        x.csoport.toLowerCase()  === sCso
     );
     if (!peers.length) return null;
     const better = peers.filter(x => getKotelezoDb(x) > doneCnt).length;
