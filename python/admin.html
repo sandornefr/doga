@@ -1461,25 +1461,24 @@
         async function loadNevsors() {
             await Promise.all(CSOPORT_GROUPS.map(async g => {
                 const local = localStorage.getItem('nevsor_' + g.key) || '';
+                // Előtöltés localStorage-ból azonnal
+                if (local && !_nevsors[g.key]) _nevsors[g.key] = local;
                 try {
                     const res = await authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`);
                     if (res.ok) {
                         const data = await res.json();
                         const serverVal = data.value || '';
                         if (serverVal) {
-                            // Szerveren van adat – azt használjuk, localStorage-t is frissítjük
                             _nevsors[g.key] = serverVal;
                             localStorage.setItem('nevsor_' + g.key, serverVal);
-                        } else if (local) {
-                            // Szerveren még nincs, de localStorage-ban van – feltöltjük a szerverre
+                        } else {
+                            // Szerveren nincs – local marad, és ha van, feltöltjük
                             _nevsors[g.key] = local;
-                            authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`, {
+                            if (local) authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`, {
                                 method: 'PUT',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ value: local })
                             }).catch(() => {});
-                        } else {
-                            _nevsors[g.key] = '';
                         }
                     } else {
                         _nevsors[g.key] = local;
@@ -1776,6 +1775,7 @@
             if (name === 'kovetelmenyek' && kovData.length === 0) loadKovetelmenyek();
             if (name === 'felhasznalok') {
                 loadPwResetRequests();
+                updateCsoportLetszam(); // azonnal kirajzol localStorage-ból
                 loadUsers();
                 startUsersAutoRefresh();
             } else {
