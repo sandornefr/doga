@@ -496,7 +496,7 @@ async function loadTanuloProfile(u, page) {
                     <h2>${u.nev || u.email}</h2>
                     <div class="hero-email">${u.email}</div>
                     <div class="hero-meta">
-                        ${u.osztaly ? `<span class="hero-tag">${u.osztaly}</span>` : ''}
+                        ${(u.evfolyam || u.osztaly) ? `<span class="hero-tag">${[u.evfolyam, u.osztaly].filter(Boolean).join('.')}</span>` : ''}
                         ${u.csoport ? `<span class="hero-tag">${u.csoport}. csoport</span>` : ''}
                         <span class="hero-tag role-tanulo"><i class="fas fa-graduation-cap" style="margin-right:4px"></i>Tanuló</span>
                         ${isTesztelő       ? `<span class="hero-tag" style="border-color:rgba(234,179,8,.4);color:#fbbf24;background:rgba(234,179,8,.1);"><i class="fas fa-flask" style="margin-right:4px"></i>Tesztelő</span>` : ''}
