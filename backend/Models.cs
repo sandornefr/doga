@@ -354,6 +354,15 @@ public class QuizResultItem
     public string  SubmittedAt { get; set; } = "";
 }
 
+public class ProgressDetailItem
+{
+    public string Targy   { get; set; } = "";
+    public string Feladat { get; set; } = "";
+    public int    Pont    { get; set; }
+    public int    MaxPont { get; set; }
+    public string Datum   { get; set; } = "";
+}
+
 // ── Számonkérés ───────────────────────────────────────────────────────────────
 
 public record SzamonkeresCreateRequest(

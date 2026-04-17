@@ -2217,6 +2217,53 @@ public class Database
         return (int)(long)idCmd.ExecuteScalar()!;
     }
 
+    public List<ProgressDetailItem> GetStudentProgressItems(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT targy, feladat, pont, max_pont, datum
+            FROM progress WHERE LOWER(email) = LOWER($email) ORDER BY datum DESC";
+        cmd.Parameters.AddWithValue("$email", email.Trim());
+        var list = new List<ProgressDetailItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new ProgressDetailItem {
+                Targy   = r.GetString(0),
+                Feladat = r.IsDBNull(1) ? "" : r.GetString(1),
+                Pont    = r.GetInt32(2),
+                MaxPont = r.GetInt32(3),
+                Datum   = r.IsDBNull(4) ? "" : r.GetString(4)
+            });
+        return list;
+    }
+
+    public List<QuizResultItem> GetStudentQuizResults(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT id, nev, email, osztaly, csoport, tipus, pont, max_pont, szazalek, jegy, ido_mp, submitted_at
+            FROM quiz_results WHERE LOWER(email) = LOWER($email) ORDER BY submitted_at DESC";
+        cmd.Parameters.AddWithValue("$email", email.Trim());
+        var list = new List<QuizResultItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new QuizResultItem {
+                Id          = r.GetInt32(0),
+                Nev         = r.GetString(1),
+                Email       = r.IsDBNull(2)  ? "" : r.GetString(2),
+                Osztaly     = r.IsDBNull(3)  ? "" : r.GetString(3),
+                Csoport     = r.IsDBNull(4)  ? "" : r.GetString(4),
+                Tipus       = r.GetString(5),
+                Pont        = r.GetInt32(6),
+                MaxPont     = r.GetInt32(7),
+                Szazalek    = r.GetInt32(8),
+                Jegy        = r.IsDBNull(9)  ? null : r.GetInt32(9),
+                IdoMp       = r.IsDBNull(10) ? null : r.GetInt32(10),
+                SubmittedAt = r.GetString(11)
+            });
+        return list;
+    }
+
     public List<QuizResultItem> GetQuizResults(string? tipus = null)
     {
         using var conn = Open();

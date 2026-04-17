@@ -1094,45 +1094,109 @@ function switchDetailTab(tab) {
     renderNapiContent(currentDetailData, today);
 }
 
-function renderNapiContent(s, dateStr) {
+const AGAZATI_LABELS = {
+    bogyos:'Bogyós gyümölcsök', humanoid:'Humanoid robotok', baglyok:'Baglyok',
+    egijelensegek:'Égi jelenségek', evmadarai:'Az év madarai', gombak:'Gombák',
+    hobbiallatok:'Hobbiállatok', hullok:'Hüllők', tropusi_gyumolcsok:'Trópusi gyümölcsök'
+};
+const QUIZ_LABELS = {
+    interaktiv:'Informatikai és távközlési alapok interaktív teszt',
+    html:'HTML tudáspróba', css:'CSS tudáspróba', bootstrap:'Bootstrap tudáspróba'
+};
+
+async function renderNapiContent(s, dateStr) {
     const content = document.getElementById('detail-content');
     if (!content) return;
 
-    // Collect activities for the given date
+    // Dátumválasztó megjelenítése azonnal, töltés jelzővel
+    content.innerHTML = `
+        <div class="napi-date-bar">
+            <i class="fas fa-calendar-alt" style="color:#8b949e"></i>
+            <input type="date" class="napi-date-input" id="napi-date-picker" value="${dateStr}"
+                onchange="renderNapiContent(currentDetailData, this.value)">
+            <span style="font-size:0.78rem;color:#8b949e">aktivitás ezen a napon</span>
+        </div>
+        <div class="loading-msg" style="padding:30px"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>`;
+
+    // Parallel fetch: progress items + quiz results
+    const [progressItems, quizItems] = await Promise.all([
+        authFetch(`${API}/api/progress/${encodeURIComponent(s.email)}/items`).then(r=>r.ok?r.json():[]).catch(()=>[]),
+        authFetch(`${API}/api/quiz-results/${encodeURIComponent(s.email)}`).then(r=>r.ok?r.json():[]).catch(()=>[])
+    ]);
+
+    // Ha közben másik napra váltottak, a dátumválasztó értékét használjuk
+    const picker = document.getElementById('napi-date-picker');
+    const effectiveDate = picker ? picker.value : dateStr;
+
     const acts = [];
 
-    // Was online (lastActive matches date)
-    if (s.lastActive && s.lastActive.substring(0,10) === dateStr) {
-        acts.push({ type:'online', icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'' });
+    // Online volt-e
+    if (s.lastActive && s.lastActive.substring(0,10) === effectiveDate) {
+        acts.push({ icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'' });
     }
 
-    // Számonkérések ezen a napon
-    if (s.szamonkeres?.length) {
-        s.szamonkeres.forEach(sz => {
-            if (sz.submittedAt && sz.submittedAt.substring(0,10) === dateStr) {
-                acts.push({
-                    type:'szamonkeres', icon:'fas fa-file-alt', color:'#58a6ff',
-                    title: sz.cim,
-                    sub: `${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>`
-                });
-            }
-        });
-    }
-
-    // Tananyag teljesítések ezen a napon
-    const tananyagMap = [
-        { key:'tananyagHtml',        icon:'fab fa-html5',              color:'#e34c26', label:'HTML tananyag' },
-        { key:'tananyagCss',         icon:'fab fa-css3-alt',           color:'#264de4', label:'CSS tananyag' },
-        { key:'tananyagBootstrap',   icon:'fab fa-bootstrap',          color:'#a371f7', label:'Bootstrap tananyag' },
-        { key:'tananyagEmmet',       icon:'fas fa-bolt',               color:'#f0883e', label:'Emmet tananyag' },
-        { key:'tananyagJavascript',  icon:'fab fa-js',                 color:'#d29922', label:'JavaScript tananyag' },
-        { key:'tananyagDevtools',    icon:'fas fa-screwdriver-wrench', color:'#38bdf8', label:'Webfejlesztő eszközök tananyag' },
-    ];
-    tananyagMap.forEach(t => {
-        if (s[t.key] && s[t.key].substring(0,10) === dateStr) {
-            acts.push({ type:'tananyag', icon:t.icon, color:t.color, title:`${t.label} teljesítve`, sub:'Tananyag oldal' });
+    // Számonkérések
+    s.szamonkeres?.forEach(sz => {
+        if (sz.submittedAt?.substring(0,10) === effectiveDate) {
+            acts.push({
+                icon:'fas fa-file-alt', color:'#58a6ff', title: sz.cim,
+                sub:`${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>`
+            });
         }
     });
+
+    // Tananyag + Python szint teljesítések
+    const tananyagMap = [
+        { key:'tananyagHtml',        icon:'fab fa-html5',              color:'#e34c26', label:'HTML tananyag teljesítve' },
+        { key:'tananyagCss',         icon:'fab fa-css3-alt',           color:'#264de4', label:'CSS tananyag teljesítve' },
+        { key:'tananyagBootstrap',   icon:'fab fa-bootstrap',          color:'#a371f7', label:'Bootstrap tananyag teljesítve' },
+        { key:'tananyagEmmet',       icon:'fas fa-bolt',               color:'#f0883e', label:'Emmet tananyag teljesítve' },
+        { key:'tananyagJavascript',  icon:'fab fa-js',                 color:'#d29922', label:'JavaScript tananyag teljesítve' },
+        { key:'tananyagDevtools',    icon:'fas fa-screwdriver-wrench', color:'#38bdf8', label:'Webfejlesztő eszközök tananyag teljesítve' },
+        { key:'pythonKezdo',         icon:'fas fa-star',               color:'#f59e0b', label:'Python Kezdő szint teljesítve' },
+        { key:'pythonHalado',        icon:'fas fa-star',               color:'#3b82f6', label:'Python Haladó szint teljesítve' },
+        { key:'pythonProAlgoritmus', icon:'fas fa-star',               color:'#f472b6', label:'Python Profi szint teljesítve' },
+    ];
+    tananyagMap.forEach(t => {
+        if (s[t.key]?.substring(0,10) === effectiveDate) {
+            acts.push({ icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve' });
+        }
+    });
+
+    // Web ágazati feladatok ezen a napon
+    progressItems.filter(p => p.targy==='web' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
+        const label = AGAZATI_LABELS[p.feladat] || p.feladat;
+        acts.push({
+            icon:'fas fa-code', color:'#f472b6',
+            title:`WEB ágazati: ${label}`,
+            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
+        });
+    });
+
+    // Python ágazati beadások ezen a napon
+    progressItems.filter(p => p.targy==='python' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
+        acts.push({
+            icon:'fab fa-python', color:'#3b82f6',
+            title:`Python ágazati beadás`,
+            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
+        });
+    });
+
+    // Kvíz alkalmak ezen a napon
+    const napiQuiz = quizItems.filter(q => q.submittedAt?.substring(0,10)===effectiveDate);
+    napiQuiz.forEach(q => {
+        const label = QUIZ_LABELS[q.tipus] || q.tipus;
+        const ido = q.idoMp ? ` · ${Math.floor(q.idoMp/60)}p ${q.idoMp%60}mp` : '';
+        acts.push({
+            icon:'fas fa-brain', color:'#10b981',
+            title:label,
+            sub:`${q.pont}/${q.maxPont} pont · ${q.szazalek}%${ido}`
+        });
+    });
+
+    // ── Render ──
+    const reContentEl = document.getElementById('detail-content');
+    if (!reContentEl) return;
 
     const actsHtml = acts.length === 0
         ? `<div class="napi-no-act">
@@ -1155,10 +1219,10 @@ function renderNapiContent(s, dateStr) {
            </div>`
         : '';
 
-    content.innerHTML = `
+    reContentEl.innerHTML = `
         <div class="napi-date-bar">
             <i class="fas fa-calendar-alt" style="color:#8b949e"></i>
-            <input type="date" class="napi-date-input" id="napi-date-picker" value="${dateStr}"
+            <input type="date" class="napi-date-input" id="napi-date-picker" value="${effectiveDate}"
                 onchange="renderNapiContent(currentDetailData, this.value)">
             <span style="font-size:0.78rem;color:#8b949e">aktivitás ezen a napon</span>
         </div>

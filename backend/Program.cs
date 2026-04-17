@@ -1182,6 +1182,22 @@ app.MapGet("/api/quiz-results", (HttpContext ctx, Database db) =>
 });
 
 
+// Per-student quiz results (oktató)
+app.MapGet("/api/quiz-results/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var decoded = Uri.UnescapeDataString(email);
+    return Results.Ok(db.GetStudentQuizResults(decoded));
+});
+
+// Per-student progress detail items (oktató)
+app.MapGet("/api/progress/{email}/items", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var decoded = Uri.UnescapeDataString(email);
+    return Results.Ok(db.GetStudentProgressItems(decoded));
+});
+
 // ── Számonkérés ──────────────────────────────────────────────────────────────
 
 string GetOktatoEmail(HttpContext ctx)
