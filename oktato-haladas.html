@@ -651,14 +651,14 @@ function javasoltJegy(s) {
 }
 
 function peerScore(s) {
-    // Összetett pontszám: kötelező tier az elsődleges, azon belül munkamenetek döntenek
+    // Összetett pontszám: kötelező fontos, de ~30 Python session felér 1 kötelező lépéssel
     const done   = getKotelezoDb(s);
     const pyS    = s.pythonSessions     || 0;
     const webS   = s.webAgazatiSessions || 0;
     const pyAvg  = s.pythonAvgPct       || 0;
     const webAvg = s.webAvgPct          || 0;
     const ikt    = s.interaktivDb       || 0;
-    return done * 10000
+    return done * 1500
          + pyS  * 50
          + webS * 150
          + Math.round(pyAvg + webAvg)
