@@ -416,10 +416,11 @@ const KOTELEZO = [
     { key:'tananyagCss',         label:'CSS tananyag',             ikon:'fab fa-css3-alt',   color:'#264de4', targy:'web' },
     { key:'tananyagBootstrap',   label:'Bootstrap tananyag',       ikon:'fab fa-bootstrap',  color:'#a371f7', targy:'web' },
     { key:'webAgazatiSessions',  label:'Ágazati WEB feladatok',    ikon:'fas fa-graduation-cap', color:'#f472b6', targy:'web',    count:true },
+    { key:'tudasproBestPct',     label:'Tudáspróba (kvíz)',        ikon:'fas fa-question-circle', color:'#8b5cf6', targy:'web',  pct:true },
     { key:'pythonKezdo',         label:'Python Kezdő szint',       ikon:'fas fa-star',       color:'#f59e0b', targy:'python' },
     { key:'pythonHalado',        label:'Python Haladó szint',      ikon:'fas fa-star',       color:'#3b82f6', targy:'python' },
     { key:'pythonSessions',      label:'Python Ágazati feladatok', ikon:'fab fa-python',     color:'#3b82f6', targy:'python', count:true },
-    { key:'interaktivDb',        label:'Interaktív teszt',         ikon:'fas fa-brain',      color:'#10b981', targy:'kozos',  count:true },
+    { key:'interaktivDb',        label:'Informatikai és távközlési alapok interaktív teszt', ikon:'fas fa-brain', color:'#10b981', targy:'kozos', count:true },
 ];
 
 const AJANLO = [
@@ -427,7 +428,6 @@ const AJANLO = [
     { key:'tananyagJavascript',  label:'JavaScript tananyag',      ikon:'fab fa-js',         color:'#d29922', targy:'web' },
     { key:'tananyagDevtools',    label:'Webfejlesztő eszközök',    ikon:'fas fa-screwdriver-wrench', color:'#38bdf8', targy:'web' },
     { key:'webSessions',         label:'Weboldal lépésről lépésre',ikon:'fas fa-globe',      color:'#22c55e', targy:'web',    count:true },
-    { key:'tudasproBestPct',     label:'Tudáspróba (kvíz)',        ikon:'fas fa-question-circle', color:'#8b5cf6', targy:'web',  pct:true },
     { key:'pythonProAlgoritmus', label:'Python Profi szint',       ikon:'fas fa-star',       color:'#f472b6', targy:'python' },
 ];
 
@@ -652,29 +652,32 @@ function renderDetail(s) {
 
     // ── KÖTELEZŐ sorok ──────────────────────────────────────────────────────
     const kotWebRows =
-        checkRow('fab fa-html5',     '#e34c26', 'HTML tananyag',             !!s.tananyagHtml,       formatDate(s.tananyagHtml)||'') +
-        checkRow('fab fa-css3-alt',  '#264de4', 'CSS tananyag',              !!s.tananyagCss,        formatDate(s.tananyagCss)||'') +
-        checkRow('fab fa-bootstrap', '#a371f7', 'Bootstrap tananyag',        !!s.tananyagBootstrap,  formatDate(s.tananyagBootstrap)||'') +
-        checkRow('fas fa-graduation-cap','#f472b6','Ágazati WEB feladatok',  (s.webAgazatiSessions||0)>0, (s.webAgazatiSessions||0)>0 ? `${s.webAgazatiSessions} alkalom · ${Math.round(s.webAvgPct)}% átl.` : '');
+        checkRow('fab fa-html5',           '#e34c26', 'HTML tananyag',             !!s.tananyagHtml,        formatDate(s.tananyagHtml)||'') +
+        checkRow('fab fa-css3-alt',        '#264de4', 'CSS tananyag',              !!s.tananyagCss,         formatDate(s.tananyagCss)||'') +
+        checkRow('fab fa-bootstrap',       '#a371f7', 'Bootstrap tananyag',        !!s.tananyagBootstrap,   formatDate(s.tananyagBootstrap)||'') +
+        checkRow('fas fa-graduation-cap',  '#f472b6', 'Ágazati WEB feladatok',     (s.webAgazatiSessions||0)>0, (s.webAgazatiSessions||0)>0 ? `${s.webAgazatiSessions} alkalom · ${Math.round(s.webAvgPct)}% átl.` : '') +
+        checkRow('fas fa-question-circle', '#8b5cf6', 'Tudáspróba (kvíz)',         (s.tudasproBestPct||0)>0, (s.tudasproBestPct||0)>0 ? `legjobb: ${Math.round(s.tudasproBestPct)}%` : '');
 
     const kotPyRows =
         checkRow('fas fa-star',   '#f59e0b', 'Python Kezdő szint',       !!s.pythonKezdo,        formatDate(s.pythonKezdo)||'') +
         checkRow('fas fa-star',   '#3b82f6', 'Python Haladó szint',      !!s.pythonHalado,       formatDate(s.pythonHalado)||'') +
         checkRow('fab fa-python', '#3b82f6', 'Python Ágazati feladatok', (s.pythonSessions||0)>0, (s.pythonSessions||0)>0 ? `${s.pythonSessions} alkalom · ${Math.round(s.pythonAvgPct)}% átl.` : '');
 
-    const kotKozRow =
-        checkRow('fas fa-brain',  '#10b981', 'Interaktív teszt', (s.interaktivDb||0)>0,
+    const kotInteraktivRow =
+        checkRow('fas fa-brain', '#10b981', 'Informatikai és távközlési alapok interaktív teszt', (s.interaktivDb||0)>0,
             (s.interaktivDb||0)>0 ? `${s.interaktivDb}× · legjobb: ${Math.round(s.interaktivBestPct)}%` : '');
 
-    // ── AJÁNLOTT sorok ──────────────────────────────────────────────────────
-    const ajWebRows =
-        checkRow('fas fa-bolt',              '#f0883e', 'Emmet tananyag',            !!s.tananyagEmmet,       formatDate(s.tananyagEmmet)||'') +
-        checkRow('fab fa-js',                '#d29922', 'JavaScript tananyag',       !!s.tananyagJavascript,  formatDate(s.tananyagJavascript)||'') +
-        checkRow('fas fa-screwdriver-wrench','#38bdf8', 'Webfejlesztő eszközök',     !!s.tananyagDevtools,    formatDate(s.tananyagDevtools)||'') +
-        checkRow('fas fa-globe',             '#22c55e', 'Weboldal lépésről lépésre', (s.webSessions||0)>0,    (s.webSessions||0)>0 ? `${s.webSessions} alkalom` : '') +
-        checkRow('fas fa-question-circle',   '#8b5cf6', 'Tudáspróba (kvíz)',         (s.tudasproBestPct||0)>0, (s.tudasproBestPct||0)>0 ? `legjobb: ${Math.round(s.tudasproBestPct)}%` : '');
+    // ── AJÁNLOTT sorok (csak ha van adat) ──────────────────────────────────
+    const hasAjWeb = !!s.tananyagEmmet || !!s.tananyagJavascript || !!s.tananyagDevtools || (s.webSessions||0)>0;
+    const hasAjPy  = !!s.pythonProAlgoritmus;
 
-    const ajPyRow =
+    const ajWebRows = !hasAjWeb ? '' :
+        checkRow('fas fa-bolt',               '#f0883e', 'Emmet tananyag',            !!s.tananyagEmmet,      formatDate(s.tananyagEmmet)||'') +
+        checkRow('fab fa-js',                 '#d29922', 'JavaScript tananyag',       !!s.tananyagJavascript, formatDate(s.tananyagJavascript)||'') +
+        checkRow('fas fa-screwdriver-wrench', '#38bdf8', 'Webfejlesztő eszközök',     !!s.tananyagDevtools,   formatDate(s.tananyagDevtools)||'') +
+        checkRow('fas fa-globe',              '#22c55e', 'Weboldal lépésről lépésre', (s.webSessions||0)>0,   (s.webSessions||0)>0 ? `${s.webSessions} alkalom` : '');
+
+    const ajPyRow = !hasAjPy ? '' :
         checkRow('fas fa-star', '#f472b6', 'Python Profi szint', !!s.pythonProAlgoritmus, formatDate(s.pythonProAlgoritmus)||'');
 
     // ── Számonkérések ───────────────────────────────────────────────────────
@@ -720,24 +723,24 @@ function renderDetail(s) {
 
             <div>
                 <div class="detail-section-title" style="color:#10b981">
-                    <i class="fas fa-brain"></i> Kötelező – Közös
+                    <i class="fas fa-brain"></i> Kötelező – Interaktív
                 </div>
-                <div class="tananyag-list">${kotKozRow}</div>
+                <div class="tananyag-list">${kotInteraktivRow}</div>
             </div>
 
-            <div>
+            ${hasAjWeb ? `<div>
                 <div class="detail-section-title" style="color:#8b949e">
                     <i class="fas fa-thumbs-up"></i> Ajánlott – WEB
                 </div>
                 <div class="tananyag-list">${ajWebRows}</div>
-            </div>
+            </div>` : ''}
 
-            <div>
+            ${hasAjPy ? `<div>
                 <div class="detail-section-title" style="color:#8b949e">
                     <i class="fab fa-python" style="color:#8b949e"></i> Ajánlott – Python
                 </div>
                 <div class="tananyag-list">${ajPyRow}</div>
-            </div>
+            </div>` : ''}
 
             <div>
                 <div class="detail-section-title"><i class="fas fa-file-alt" style="color:#3fb950"></i> Számonkérések eredménye</div>
