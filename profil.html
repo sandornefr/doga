@@ -303,7 +303,7 @@ function buildHeatmap(activeDates) {
             const cnt = dayMap[ds] || 0;
             week.push({ ds, cnt });
             if (cur.getMonth() !== prevMonth) {
-                monthLabels.push({ weekIdx: weeks.length, label: HU_MONTHS[cur.getMonth()] });
+                monthLabels.push({ weekIdx: weeks.length + (d >= 3 ? 1 : 0), label: HU_MONTHS[cur.getMonth()] });
                 prevMonth = cur.getMonth();
             }
             cur.setDate(cur.getDate()+1);
