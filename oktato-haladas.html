@@ -298,9 +298,23 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .detail-tab:hover:not(.active) { color:#e0e0e0; }
 
 /* ── Napi aktivitás (detail tab) ── */
-.napi-date-bar { display:flex; align-items:center; gap:10px; padding:10px 20px 6px; }
-.napi-date-input { background:#0d1117; border:1px solid #30363d; color:#e0e0e0; padding:5px 10px; border-radius:6px; font-size:0.85rem; }
-.napi-date-input:focus { outline:none; border-color:#58a6ff; }
+.napi-cal-wrap { padding:12px 16px 4px; }
+.napi-cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.napi-cal-title { font-weight:700; color:#e0e0e0; font-size:0.88rem; }
+.napi-cal-nav { background:none; border:none; color:#8b949e; cursor:pointer; padding:3px 8px; border-radius:5px; font-size:0.8rem; }
+.napi-cal-nav:hover { background:#21262d; color:#e0e0e0; }
+.napi-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.napi-cal-dow { text-align:center; font-size:0.65rem; color:#484f58; padding:2px 0 5px; font-weight:700; }
+.napi-cal-day { text-align:center; padding:5px 2px 2px; border-radius:5px; font-size:0.78rem; cursor:pointer; color:#484f58; line-height:1.1; }
+.napi-cal-day.has-act { color:#c9d1d9; }
+.napi-cal-day.has-act::after { content:''; display:block; width:4px; height:4px; border-radius:50%; background:#3fb950; margin:2px auto 0; }
+.napi-cal-day.selected { background:#1f6feb; color:#fff !important; font-weight:700; }
+.napi-cal-day.selected::after { background:#fff; }
+.napi-cal-day.today { color:#f0883e; }
+.napi-cal-day:not(.empty):hover { background:#21262d; }
+.napi-cal-day.empty { cursor:default; }
+.napi-cal-divider { border:none; border-top:1px solid #21262d; margin:10px 0 0; }
+.napi-sel-label { padding:8px 20px 4px; font-size:0.72rem; color:#8b949e; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
 .napi-act-list { padding:0 20px 20px; display:flex; flex-direction:column; gap:6px; }
 .napi-act-row { background:#0d1117; border-radius:7px; padding:9px 12px; display:flex; align-items:flex-start; gap:10px; font-size:0.83rem; }
 .napi-act-time { width:36px; flex-shrink:0; font-size:0.72rem; font-weight:700; color:#58a6ff; font-family:monospace; margin-top:2px; text-align:right; }
@@ -309,9 +323,9 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .napi-act-body { flex:1; }
 .napi-act-title { color:#e0e0e0; font-weight:600; }
 .napi-act-sub { color:#8b949e; font-size:0.75rem; margin-top:2px; }
-.napi-no-act { text-align:center; padding:40px 20px; color:#484f58; }
+.napi-no-act { text-align:center; padding:30px 20px; color:#484f58; }
 .napi-no-act i { font-size:2rem; display:block; margin-bottom:10px; }
-.napi-summary-bar { display:flex; gap:16px; padding:6px 20px 10px; font-size:0.78rem; color:#8b949e; border-bottom:1px solid #21262d; }
+.napi-summary-bar { display:flex; gap:16px; padding:6px 20px 8px; font-size:0.78rem; color:#8b949e; border-bottom:1px solid #21262d; }
 
 /* ── Scrollbar ── */
 * { scrollbar-width:thin; scrollbar-color:#30363d transparent; }
@@ -796,6 +810,7 @@ function checkRow(icon, color, label, done, extra) {
 function renderDetail(s) {
     currentDetailData = s;
     currentDetailTab  = 'haladas';
+    if (_napiCache?.email !== s.email) _napiCache = null;
     const panel  = document.getElementById('detail-panel');
     const act    = actLabel(s.lastActive);
     const actClr = act.cls==='green'?'#3fb950':act.cls==='yellow'?'#d29922':act.cls==='red'?'#f85149':'#484f58';
@@ -1119,58 +1134,66 @@ const QUIZ_LABELS = {
     html:'HTML tudáspróba', css:'CSS tudáspróba', bootstrap:'Bootstrap tudáspróba'
 };
 
-async function renderNapiContent(s, dateStr) {
-    const content = document.getElementById('detail-content');
-    if (!content) return;
+// ── Napi aktivitás – cache & állapot ──────────────────────────────────────────
+let _napiCache = null;       // { email, progressItems, quizItems, activeDays }
+let _napiCalYear  = null;
+let _napiCalMonth = null;
+let _napiSelDate  = null;
 
-    // Dátumválasztó megjelenítése azonnal, töltés jelzővel
-    content.innerHTML = `
-        <div class="napi-date-bar">
-            <i class="fas fa-calendar-alt" style="color:#8b949e"></i>
-            <input type="date" class="napi-date-input" id="napi-date-picker" value="${dateStr}"
-                onchange="renderNapiContent(currentDetailData, this.value)">
-            <span style="font-size:0.78rem;color:#8b949e">aktivitás ezen a napon</span>
-        </div>
-        <div class="loading-msg" style="padding:30px"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>`;
+function fmtIdo(ts) {
+    if (!ts) return '';
+    const m = ts.match(/\d{2}:\d{2}/);
+    return m ? m[0] : '';
+}
 
-    // Parallel fetch: progress items + quiz results
-    const [progressItems, quizItems] = await Promise.all([
-        authFetch(`${API}/api/progress/${encodeURIComponent(s.email)}/items`).then(r=>r.ok?r.json():[]).catch(()=>[]),
-        authFetch(`${API}/api/quiz-results/${encodeURIComponent(s.email)}`).then(r=>r.ok?r.json():[]).catch(()=>[])
-    ]);
-
-    // Ha közben másik napra váltottak, a dátumválasztó értékét használjuk
-    const picker = document.getElementById('napi-date-picker');
-    const effectiveDate = picker ? picker.value : dateStr;
-
-    // ts: "2025-04-17 10:35:22" vagy "2025-04-17" → "10:35" vagy ""
-    function fmtIdo(ts) {
-        if (!ts) return '';
-        const m = ts.match(/\d{2}:\d{2}/);
-        return m ? m[0] : '';
-    }
-
-    const acts = [];
-
-    // Online volt-e
-    if (s.lastActive && s.lastActive.substring(0,10) === effectiveDate) {
-        const t = fmtIdo(s.lastActive);
-        acts.push({ ts: s.lastActive, icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'', ido: t });
-    }
-
-    // Számonkérések
-    s.szamonkeres?.forEach(sz => {
-        if (sz.submittedAt?.substring(0,10) === effectiveDate) {
-            const t = fmtIdo(sz.submittedAt);
-            acts.push({
-                ts: sz.submittedAt, icon:'fas fa-file-alt', color:'#58a6ff', title: sz.cim, ido: t,
-                sub:`${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>`
-            });
-        }
+function buildActiveDays(s, progressItems, quizItems) {
+    const days = new Set();
+    progressItems.forEach(p => { if (p.datum) days.add(p.datum.substring(0,10)); });
+    quizItems.forEach(q => { if (q.submittedAt) days.add(q.submittedAt.substring(0,10)); });
+    s.szamonkeres?.forEach(sz => { if (sz.submittedAt) days.add(sz.submittedAt.substring(0,10)); });
+    if (s.lastActive) days.add(s.lastActive.substring(0,10));
+    ['tananyagHtml','tananyagCss','tananyagBootstrap','tananyagEmmet','tananyagJavascript',
+     'tananyagDevtools','pythonKezdo','pythonHalado','pythonProAlgoritmus'].forEach(k => {
+        if (s[k]) days.add(s[k].substring(0,10));
     });
+    return days;
+}
 
-    // Tananyag + Python szint teljesítések
-    const tananyagMap = [
+function renderNapiCalendar(activeDays, selDate, year, month) {
+    const HU_MONTHS = ['Január','Február','Március','Április','Május','Június',
+                       'Július','Augusztus','Szeptember','Október','November','December'];
+    const today = new Date().toISOString().substring(0,10);
+    const firstDow = new Date(year, month, 1).getDay();
+    const startDow = firstDow === 0 ? 6 : firstDow - 1;
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const DOW = ['H','K','Sz','Cs','P','Sz','V'];
+
+    let cells = DOW.map(d => `<div class="napi-cal-dow">${d}</div>`).join('');
+    for (let i=0; i<startDow; i++) cells += `<div class="napi-cal-day empty"></div>`;
+    for (let d=1; d<=daysInMonth; d++) {
+        const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const cls = ['napi-cal-day',
+            activeDays.has(ds) ? 'has-act' : '',
+            ds === selDate    ? 'selected' : '',
+            ds === today      ? 'today'    : ''
+        ].filter(Boolean).join(' ');
+        cells += `<div class="${cls}" onclick="napiCalSelect('${ds}')">${d}</div>`;
+    }
+    return `
+    <div class="napi-cal-wrap">
+        <div class="napi-cal-header">
+            <button class="napi-cal-nav" onclick="napiCalNav(-1)"><i class="fas fa-chevron-left"></i></button>
+            <span class="napi-cal-title">${HU_MONTHS[month]} ${year}</span>
+            <button class="napi-cal-nav" onclick="napiCalNav(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="napi-cal-grid">${cells}</div>
+    </div>
+    <hr class="napi-cal-divider">`;
+}
+
+function buildActsForDate(s, progressItems, quizItems, effectiveDate) {
+    const acts = [];
+    const TANANYAG_MAP = [
         { key:'tananyagHtml',        icon:'fab fa-html5',              color:'#e34c26', label:'HTML tananyag teljesítve' },
         { key:'tananyagCss',         icon:'fab fa-css3-alt',           color:'#264de4', label:'CSS tananyag teljesítve' },
         { key:'tananyagBootstrap',   icon:'fab fa-bootstrap',          color:'#a371f7', label:'Bootstrap tananyag teljesítve' },
@@ -1181,60 +1204,67 @@ async function renderNapiContent(s, dateStr) {
         { key:'pythonHalado',        icon:'fas fa-star',               color:'#3b82f6', label:'Python Haladó szint teljesítve' },
         { key:'pythonProAlgoritmus', icon:'fas fa-star',               color:'#f472b6', label:'Python Profi szint teljesítve' },
     ];
-    tananyagMap.forEach(t => {
-        if (s[t.key]?.substring(0,10) === effectiveDate) {
-            const ido = fmtIdo(s[t.key]);
-            acts.push({ ts: s[t.key], icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve', ido });
-        }
+
+    if (s.lastActive?.substring(0,10) === effectiveDate)
+        acts.push({ ts:s.lastActive, icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'', ido:fmtIdo(s.lastActive) });
+
+    s.szamonkeres?.forEach(sz => {
+        if (sz.submittedAt?.substring(0,10) === effectiveDate)
+            acts.push({ ts:sz.submittedAt, icon:'fas fa-file-alt', color:'#58a6ff', title:sz.cim, ido:fmtIdo(sz.submittedAt),
+                sub:`${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>` });
     });
 
-    // Web ágazati feladatok ezen a napon
+    TANANYAG_MAP.forEach(t => {
+        if (s[t.key]?.substring(0,10) === effectiveDate)
+            acts.push({ ts:s[t.key], icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve', ido:fmtIdo(s[t.key]) });
+    });
+
     progressItems.filter(p => p.targy==='web' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
-        const label = AGAZATI_LABELS[p.feladat] || p.feladat;
-        const ido = fmtIdo(p.datum);
-        acts.push({
-            ts: p.datum, icon:'fas fa-code', color:'#f472b6', ido,
-            title:`WEB ágazati: ${label}`,
-            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
-        });
+        acts.push({ ts:p.datum, icon:'fas fa-code', color:'#f472b6', ido:fmtIdo(p.datum),
+            title:`WEB ágazati: ${AGAZATI_LABELS[p.feladat] || p.feladat}`,
+            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
-    // Python ágazati beadások ezen a napon
     progressItems.filter(p => p.targy==='python' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
-        const feladatNev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
-        const ido = fmtIdo(p.datum);
-        acts.push({
-            ts: p.datum, icon:'fab fa-python', color:'#3b82f6', ido,
-            title:`Python ágazati: ${feladatNev}`,
-            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
-        });
+        const nev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
+        acts.push({ ts:p.datum, icon:'fab fa-python', color:'#3b82f6', ido:fmtIdo(p.datum),
+            title:`Python ágazati: ${nev}`,
+            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
-    // Kvíz alkalmak ezen a napon
     quizItems.filter(q => q.submittedAt?.substring(0,10)===effectiveDate).forEach(q => {
-        const label = QUIZ_LABELS[q.tipus] || q.tipus;
         const idoMpStr = q.idoMp ? ` · ${Math.floor(q.idoMp/60)}p ${q.idoMp%60}mp` : '';
-        const ido = fmtIdo(q.submittedAt);
-        acts.push({
-            ts: q.submittedAt, icon:'fas fa-brain', color:'#10b981', ido,
-            title:label,
-            sub:`${q.pont}/${q.maxPont} pont · ${q.szazalek}%${idoMpStr}`
-        });
+        acts.push({ ts:q.submittedAt, icon:'fas fa-brain', color:'#10b981', ido:fmtIdo(q.submittedAt),
+            title:QUIZ_LABELS[q.tipus] || q.tipus,
+            sub:`${q.pont}/${q.maxPont} pont · ${q.szazalek}%${idoMpStr}` });
     });
 
-    // Időrend szerint rendezés
-    acts.sort((a, b) => (a.ts || '') < (b.ts || '') ? -1 : 1);
+    acts.sort((a,b) => (a.ts||'') < (b.ts||'') ? -1 : 1);
+    return acts;
+}
 
-    // ── Render ──
-    const reContentEl = document.getElementById('detail-content');
-    if (!reContentEl) return;
+function renderNapiView() {
+    const el = document.getElementById('detail-content');
+    if (!el || !_napiCache || !currentDetailData) return;
+    const { progressItems, quizItems, activeDays } = _napiCache;
+    const s = currentDetailData;
+
+    const calHtml = renderNapiCalendar(activeDays, _napiSelDate, _napiCalYear, _napiCalMonth);
+
+    const acts = buildActsForDate(s, progressItems, quizItems, _napiSelDate);
+
+    const HU_MONTHS = ['január','február','március','április','május','június',
+                       'július','augusztus','szeptember','október','november','december'];
+    const [sy, sm, sd] = _napiSelDate.split('-').map(Number);
+    const selLabel = `${sy}. ${HU_MONTHS[sm-1]} ${sd}.`;
+
+    const summaryHtml = acts.length > 0
+        ? `<div class="napi-summary-bar"><span><i class="fas fa-check-circle" style="color:#3fb950;margin-right:4px"></i>${acts.length} tevékenység</span></div>`
+        : '';
 
     const actsHtml = acts.length === 0
-        ? `<div class="napi-no-act">
-            <i class="fas fa-moon"></i>
-            <div style="font-size:.88rem;color:#8b949e">Ezen a napon nem volt aktivitás</div>
-            <div style="font-size:.75rem;color:#484f58;margin-top:4px">Be sem lépett a felületre</div>
-           </div>`
+        ? `<div class="napi-no-act"><i class="fas fa-moon"></i>
+           <div style="font-size:.88rem;color:#8b949e">Ezen a napon nem volt aktivitás</div></div>`
         : acts.map(a => `
             <div class="napi-act-row">
                 ${a.ido ? `<div class="napi-act-time">${a.ido}</div>` : '<div class="napi-act-time napi-act-time--empty"></div>'}
@@ -1245,21 +1275,51 @@ async function renderNapiContent(s, dateStr) {
                 </div>
             </div>`).join('');
 
-    const summaryHtml = acts.length > 0
-        ? `<div class="napi-summary-bar">
-            <span><i class="fas fa-check-circle" style="color:#3fb950;margin-right:4px"></i>${acts.length} tevékenység ezen a napon</span>
-           </div>`
-        : '';
+    el.innerHTML = calHtml
+        + `<div class="napi-sel-label">${selLabel}</div>`
+        + summaryHtml
+        + `<div class="napi-act-list">${actsHtml}</div>`;
+}
 
-    reContentEl.innerHTML = `
-        <div class="napi-date-bar">
-            <i class="fas fa-calendar-alt" style="color:#8b949e"></i>
-            <input type="date" class="napi-date-input" id="napi-date-picker" value="${effectiveDate}"
-                onchange="renderNapiContent(currentDetailData, this.value)">
-            <span style="font-size:0.78rem;color:#8b949e">aktivitás ezen a napon</span>
-        </div>
-        ${summaryHtml}
-        <div class="napi-act-list">${actsHtml}</div>`;
+function napiCalSelect(dateStr) {
+    _napiSelDate = dateStr;
+    const [y,m] = dateStr.split('-').map(Number);
+    _napiCalYear  = y;
+    _napiCalMonth = m - 1;
+    renderNapiView();
+}
+
+function napiCalNav(dir) {
+    _napiCalMonth += dir;
+    if (_napiCalMonth < 0)  { _napiCalMonth = 11; _napiCalYear--; }
+    if (_napiCalMonth > 11) { _napiCalMonth = 0;  _napiCalYear++; }
+    renderNapiView();
+}
+
+async function renderNapiContent(s, dateStr) {
+    const content = document.getElementById('detail-content');
+    if (!content) return;
+
+    _napiSelDate = dateStr;
+    const [y,m] = dateStr.split('-').map(Number);
+    _napiCalYear  = y;
+    _napiCalMonth = m - 1;
+
+    if (_napiCache?.email === s.email) {
+        renderNapiView();
+        return;
+    }
+
+    content.innerHTML = `<div class="loading-msg" style="padding:30px"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>`;
+
+    const [progressItems, quizItems] = await Promise.all([
+        authFetch(`${API}/api/progress/${encodeURIComponent(s.email)}/items`).then(r=>r.ok?r.json():[]).catch(()=>[]),
+        authFetch(`${API}/api/quiz-results/${encodeURIComponent(s.email)}`).then(r=>r.ok?r.json():[]).catch(()=>[])
+    ]);
+
+    _napiCache = { email: s.email, progressItems, quizItems, activeDays: buildActiveDays(s, progressItems, quizItems) };
+
+    if (document.getElementById('detail-content')) renderNapiView();
 }
 
 function updatePills(students) {
