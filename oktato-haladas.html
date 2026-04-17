@@ -619,16 +619,32 @@ const JEGY_LABELS = ['–','Elégtelen','Elégséges','Közepes','Jó','Jeles'];
 
 function javasoltJegy(s) {
     const done   = getKotelezoDb(s);
-    const total  = KOTELEZO.length; // 9
-    const aktiv  = s.streak || 0;
-    const pyAvg  = s.pythonAvgPct || 0;
-    const webAvg = s.webAvgPct    || 0;
-    const avg    = (pyAvg > 0 && webAvg > 0) ? (pyAvg + webAvg) / 2
-                 : Math.max(pyAvg, webAvg);
-    if (done >= 8 && aktiv >= 10) return 5;
-    if (done >= 7 && aktiv >= 6)  return 4;
-    if (done >= 5 && aktiv >= 3)  return 3;
-    if (done >= 2 || aktiv >= 2)  return 2;
+    const pyS    = s.pythonSessions      || 0;
+    const webS   = s.webAgazatiSessions  || 0;
+    const pyAvg  = s.pythonAvgPct        || 0;
+    const webAvg = s.webAvgPct           || 0;
+    const avg    = (pyAvg > 0 && webAvg > 0) ? (pyAvg + webAvg) / 2 : Math.max(pyAvg, webAvg);
+    const sokSession = pyS >= 50 || webS >= 10;
+    const joAtlag    = avg >= 75;
+    const kozepesAtl = avg >= 55;
+
+    // 5 – Jeles: teljes kötelező csomag + aktív VAGY rengeteg feladat jó eredménnyel
+    if (done >= 8 && (s.streak >= 5 || sokSession)) return 5;
+    if (sokSession && joAtlag) return 5;
+
+    // 4 – Jó
+    if (done >= 6) return 4;
+    if (sokSession && kozepesAtl) return 4;
+    if (done >= 4 && (pyS >= 20 || webS >= 5)) return 4;
+
+    // 3 – Közepes
+    if (done >= 4) return 3;
+    if (pyS >= 20 || webS >= 5) return 3;
+    if (done >= 2 && (pyS >= 5 || webS >= 2)) return 3;
+
+    // 2 – Elégséges: bármilyen érdemi munka
+    if (done >= 1 || pyS >= 5 || webS >= 1 || (s.streak || 0) >= 3) return 2;
+
     return 1;
 }
 
