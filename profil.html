@@ -73,10 +73,14 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .ach-item{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px 10px 8px;text-align:center;transition:border-color .15s;}
 .ach-item.unlocked{border-color:#30363d;}
 .ach-item.unlocked:hover{border-color:#58a6ff;}
-.ach-item.locked{opacity:.35;filter:grayscale(1);}
+.ach-item.locked{opacity:.45;filter:grayscale(.7);}
+.ach-item.locked.close{opacity:.75;filter:grayscale(.3);border-color:#f97316aa;}
 .ach-icon{font-size:1.6rem;display:block;margin-bottom:4px;}
 .ach-name{font-size:0.68rem;color:#c9d1d9;line-height:1.3;}
 .ach-item.unlocked .ach-name{color:#e0e0e0;font-weight:600;}
+.ach-soon{font-size:0.6rem;color:#f97316;font-weight:700;margin-top:4px;letter-spacing:.02em;}
+.ach-prog-bg{background:#21262d;border-radius:3px;height:4px;margin-top:5px;overflow:hidden;}
+.ach-prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#f97316,#fbbf24);transition:width .4s;}
 
 /* ── Heatmap ── */
 .heatmap-wrap{overflow-x:auto;}
@@ -267,6 +271,10 @@ const ACHIEVEMENTS = [
     { id:'consec_7',  icon:'🔆', name:'Heti Sorozat (7 nap)',   check:(p,_,s,mc)=> mc >= 7  },
     { id:'consec_10', icon:'💪', name:'10 napos sorozat',       check:(p,_,s,mc)=> mc >= 10 },
     { id:'consec_14', icon:'🏅', name:'Két Hetes Maraton',      check:(p,_,s,mc)=> mc >= 14 },
+    // Tananyag completion
+    { id:'web_kotelezo_pack',  icon:'🌐', name:'WEB kötelező csomag',     check:(p,items,s,mc,u)=> !!u.tananyagHtml && !!u.tananyagCss && !!u.tananyagBootstrap },
+    { id:'py_kotelezo_pack',   icon:'🐍', name:'Python kötelező csomag',  check:(p,items,s,mc,u)=> !!u.pythonKezdo && !!u.pythonHalado },
+    { id:'vizsgakesz',         icon:'🎓', name:'Vizsga-kész!',            check:(p,items,s,mc,u)=> !!u.tananyagHtml && !!u.tananyagCss && !!u.tananyagBootstrap && !!u.pythonKezdo && !!u.pythonHalado && (p.web.sessions>0||p.python.sessions>0) },
 ];
 
 // ── Heatmap ───────────────────────────────────────────────────────────────
@@ -418,9 +426,27 @@ async function loadTanuloProfile(u, page) {
 
         const maxConsec = calcMaxConsecutive(activeDates);
 
-        // Kitűzők
-        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak, maxConsec));
-        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak, maxConsec));
+        // Kitűzők (u = user adatok a tananyag check-ekhez)
+        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak, maxConsec, u));
+        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak, maxConsec, u));
+
+        // "Hamarosan" jelző: mennyire közel van egy locked achievement-hez?
+        function achProgress(a) {
+            if (a.id === 'consec_3')  return { cur: maxConsec, max: 3 };
+            if (a.id === 'consec_5')  return { cur: maxConsec, max: 5 };
+            if (a.id === 'consec_7')  return { cur: maxConsec, max: 7 };
+            if (a.id === 'consec_10') return { cur: maxConsec, max: 10 };
+            if (a.id === 'consec_14') return { cur: maxConsec, max: 14 };
+            if (a.id === 'tiz_aktiv_nap')  return { cur: streak, max: 10 };
+            if (a.id === 'huszon_aktiv')   return { cur: streak, max: 20 };
+            if (a.id === 'persist_web')    return { cur: progress.web.sessions,    max: 5 };
+            if (a.id === 'persist_py')     return { cur: progress.python.sessions, max: 5 };
+            if (a.id === 'adv_web')        return { cur: progress.web.sessions,    max: 10 };
+            if (a.id === 'adv_py')         return { cur: progress.python.sessions, max: 10 };
+            if (a.id === 'dilig_web')      return { cur: progress.web.sessions,    max: 20 };
+            if (a.id === 'dilig_py')       return { cur: progress.python.sessions, max: 20 };
+            return null;
+        }
 
         // Legjobb kvíz
         const bestQuiz = quizItems.reduce((best, q) => (!best || q.szazalek > best.szazalek) ? q : best, null);
@@ -491,11 +517,32 @@ async function loadTanuloProfile(u, page) {
         <div class="section">
             <div class="section-title"><i class="fas fa-trophy"></i> Kitűzők (${unlocked.length}/${ACHIEVEMENTS.length})</div>
             <div class="ach-grid">
-                ${[...unlocked,...locked].map(a => `
-                <div class="ach-item ${unlocked.includes(a)?'unlocked':'locked'}">
-                    <span class="ach-icon">${a.icon}</span>
-                    <div class="ach-name">${a.name}</div>
-                </div>`).join('')}
+                ${[...unlocked,...locked].map(a => {
+                    const isUnlocked = unlocked.includes(a);
+                    if (isUnlocked) return `
+                    <div class="ach-item unlocked">
+                        <span class="ach-icon">${a.icon}</span>
+                        <div class="ach-name">${a.name}</div>
+                    </div>`;
+                    const prog = achProgress(a);
+                    if (prog && prog.cur > 0) {
+                        const pct = Math.min(100, Math.round(prog.cur / prog.max * 100));
+                        const isClose = pct >= 50;
+                        const remaining = prog.max - prog.cur;
+                        return `
+                        <div class="ach-item locked${isClose?' close':''}">
+                            <span class="ach-icon">${a.icon}</span>
+                            <div class="ach-name">${a.name}</div>
+                            <div class="ach-prog-bg"><div class="ach-prog-fill" style="width:${pct}%"></div></div>
+                            <div class="ach-soon">${isClose?'Hamarosan! ':''}még ${remaining}</div>
+                        </div>`;
+                    }
+                    return `
+                    <div class="ach-item locked">
+                        <span class="ach-icon">${a.icon}</span>
+                        <div class="ach-name">${a.name}</div>
+                    </div>`;
+                }).join('')}
             </div>
         </div>
 

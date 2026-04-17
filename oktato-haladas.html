@@ -156,6 +156,19 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 }
 .detail-name { font-size:1.05rem; font-weight:700; color:#e0e0e0; }
 .detail-meta { font-size:0.78rem; color:#8b949e; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
+.detail-extra { margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.jegy-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; }
+.jegy-5 { background:#0e4429; color:#39d353; border:1px solid #26a641; }
+.jegy-4 { background:#1a3a1a; color:#86efac; border:1px solid #4ade80; }
+.jegy-3 { background:#2d2a10; color:#fbbf24; border:1px solid #d97706; }
+.jegy-2 { background:#2d1a0e; color:#fb923c; border:1px solid #ea580c; }
+.jegy-1 { background:#2d0e0e; color:#f87171; border:1px solid #dc2626; }
+.peer-info { font-size:0.73rem; color:#8b949e; }
+.peer-rank { font-weight:700; color:#c9d1d9; }
+.ach-strip { display:flex; flex-wrap:wrap; gap:6px; padding:12px 20px 4px; border-top:1px solid #21262d; }
+.ach-strip-item { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:16px; font-size:0.72rem; }
+.ach-strip-item.yes { background:#0e4429; color:#39d353; border:1px solid #26a641; }
+.ach-strip-item.no  { background:#161b22; color:#484f58; border:1px solid #21262d; }
 .detail-body { padding:14px 20px; display:flex; flex-direction:column; gap:18px; }
 .detail-section-title {
     font-size:0.73rem; font-weight:700; color:#8b949e;
@@ -602,6 +615,37 @@ function getKotelezoDb(s) {
     return KOTELEZO.filter(k => k.count ? (s[k.key]||0) > 0 : !!s[k.key]).length;
 }
 
+const JEGY_LABELS = ['–','Elégtelen','Elégséges','Közepes','Jó','Jeles'];
+
+function javasoltJegy(s) {
+    const done   = getKotelezoDb(s);
+    const total  = KOTELEZO.length; // 9
+    const aktiv  = s.streak || 0;
+    const pyAvg  = s.pythonAvgPct || 0;
+    const webAvg = s.webAvgPct    || 0;
+    const avg    = (pyAvg > 0 && webAvg > 0) ? (pyAvg + webAvg) / 2
+                 : Math.max(pyAvg, webAvg);
+    if (done >= 8 && aktiv >= 10) return 5;
+    if (done >= 7 && aktiv >= 6)  return 4;
+    if (done >= 5 && aktiv >= 3)  return 3;
+    if (done >= 2 || aktiv >= 2)  return 2;
+    return 1;
+}
+
+function peerComparison(s) {
+    const doneCnt = getKotelezoDb(s);
+    const peers = haladásData.filter(x =>
+        x.email !== s.email &&
+        x.osztaly === s.osztaly && x.csoport === s.csoport
+    );
+    if (!peers.length) return null;
+    const better = peers.filter(x => getKotelezoDb(x) > doneCnt).length;
+    const equal  = peers.filter(x => getKotelezoDb(x) === doneCnt).length;
+    const rank   = better + 1;
+    const total  = peers.length + 1;
+    return { rank, total, equal };
+}
+
 // Kártya státusz meghatározása
 // piros  = sosem csinált semmi érdemi munkát (csak regisztrált)
 // sarga  = van aktivitás, de csak Python VAGY csak WEB
@@ -820,6 +864,31 @@ function renderDetail(s) {
     const csLabel = s.csoport==='info'?'info csoport':(s.csoport?s.csoport+'. csoport':'ismeretlen csoport');
     const evozLabel=[s.evfolyam,s.osztaly].filter(Boolean).join('.')||'?';
 
+    // ── Jegyjavaslat + peer comparison ─────────────────────────────────────
+    const jegy  = javasoltJegy(s);
+    const peer  = peerComparison(s);
+    const streakT = (s.streak||0)>=30?'Élő Legenda':(s.streak||0)>=14?'Kitartó Harcos':(s.streak||0)>=7?'Heti Hős':(s.streak||0)>=3?'Ügyes Kezdő':null;
+
+    const extraHtml = `<div class="detail-extra">
+        <span class="jegy-pill jegy-${jegy}"><i class="fas fa-graduation-cap" style="font-size:.7rem"></i> Javasolt: ${jegy} – ${JEGY_LABELS[jegy]}</span>
+        ${peer ? `<span class="peer-info"><i class="fas fa-users" style="margin-right:4px;color:#484f58"></i>
+            Csoportban: <span class="peer-rank">${peer.rank}. hely</span> (${peer.total} főből · ${doneCnt}/${total} kötelező)</span>` : ''}
+        ${streakT ? `<span class="peer-info"><i class="fas fa-fire" style="margin-right:4px;color:#f97316"></i>${s.streak} aktív nap · <strong style="color:#c9d1d9">${streakT}</strong></span>` : ''}
+    </div>`;
+
+    // ── Kulcs achievement sáv ───────────────────────────────────────────────
+    const achItems = [
+        { ok:!!s.tananyagHtml&&!!s.tananyagCss&&!!s.tananyagBootstrap, icon:'fab fa-bootstrap', label:'WEB kötelező tananyagok' },
+        { ok:!!s.pythonKezdo&&!!s.pythonHalado,                        icon:'fab fa-python',    label:'Python kötelező szintek' },
+        { ok:(s.webAgazatiSessions||0)>0&&(s.pythonSessions||0)>0,     icon:'fas fa-fire',      label:'Mindkét ágazati feladat' },
+        { ok:(s.interaktivDb||0)>0,                                    icon:'fas fa-brain',     label:'Interaktív teszt' },
+        { ok:(s.tudasproBestPct||0)>=80,                               icon:'fas fa-medal',     label:'Tudáspróba 80%+ legjobb' },
+    ];
+    const achStripHtml = `<div class="ach-strip">${
+        achItems.map(a=>`<span class="ach-strip-item ${a.ok?'yes':'no'}">
+            <i class="${a.icon}" style="font-size:.7rem"></i>${a.label}</span>`).join('')
+    }</div>`;
+
     // ── KÖTELEZŐ sorok ──────────────────────────────────────────────────────
     const kotWebRows =
         checkRow('fab fa-html5',           '#e34c26', 'HTML tananyag',             !!s.tananyagHtml,        formatDate(s.tananyagHtml)||'') +
@@ -909,7 +978,8 @@ function renderDetail(s) {
                 <div class="szamonkeres-list">${szamonkHtml}</div>
             </div>
 
-        </div>`;
+        </div>
+        ${achStripHtml}`;
 
     panel.innerHTML = `
         <div class="detail-header">
@@ -919,6 +989,7 @@ function renderDetail(s) {
                 <span><i class="fas fa-circle" style="font-size:.55rem;color:${actClr};margin-right:4px"></i>${act.long}</span>
                 <span style="font-weight:700;color:${stColor.color}">Kötelező: ${doneCnt}/${total}</span>
             </div>
+            ${extraHtml}
         </div>
         <div class="detail-tabs">
             <button class="detail-tab active" id="tab-haladas" onclick="switchDetailTab('haladas')">
