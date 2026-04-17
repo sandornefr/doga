@@ -1364,6 +1364,10 @@ function napiCalNav(dir) {
     _napiCalMonth += dir;
     if (_napiCalMonth < 0)  { _napiCalMonth = 11; _napiCalYear--; }
     if (_napiCalMonth > 11) { _napiCalMonth = 0;  _napiCalYear++; }
+    // Nem mehet 2026. március elé
+    if (_napiCalYear < 2026 || (_napiCalYear === 2026 && _napiCalMonth < 2)) {
+        _napiCalYear = 2026; _napiCalMonth = 2;
+    }
     renderNapiView();
 }
 

@@ -283,9 +283,7 @@ function buildHeatmap(activeDates) {
     activeDates.forEach(d => { dayMap[d] = (dayMap[d]||0) + 1; });
 
     const today = new Date();
-    // 52 hét visszafelé
-    const start = new Date(today);
-    start.setDate(start.getDate() - 364);
+    const start = new Date('2026-03-01');
     // Hétfőre igazítjuk
     const dow = start.getDay();
     start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
