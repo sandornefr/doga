@@ -1460,18 +1460,32 @@
 
         async function loadNevsors() {
             await Promise.all(CSOPORT_GROUPS.map(async g => {
+                const local = localStorage.getItem('nevsor_' + g.key) || '';
                 try {
                     const res = await authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`);
                     if (res.ok) {
                         const data = await res.json();
-                        _nevsors[g.key] = data.value || '';
-                        // localStorage szinkron (offline fallback)
-                        if (data.value) localStorage.setItem('nevsor_' + g.key, data.value);
+                        const serverVal = data.value || '';
+                        if (serverVal) {
+                            // Szerveren van adat – azt használjuk, localStorage-t is frissítjük
+                            _nevsors[g.key] = serverVal;
+                            localStorage.setItem('nevsor_' + g.key, serverVal);
+                        } else if (local) {
+                            // Szerveren még nincs, de localStorage-ban van – feltöltjük a szerverre
+                            _nevsors[g.key] = local;
+                            authFetch(`${RAILWAY_URL}/api/user-state/${NEVSOR_ADMIN_EMAIL}/nevsor_${g.key}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ value: local })
+                            }).catch(() => {});
+                        } else {
+                            _nevsors[g.key] = '';
+                        }
                     } else {
-                        _nevsors[g.key] = localStorage.getItem('nevsor_' + g.key) || '';
+                        _nevsors[g.key] = local;
                     }
                 } catch(e) {
-                    _nevsors[g.key] = localStorage.getItem('nevsor_' + g.key) || '';
+                    _nevsors[g.key] = local;
                 }
             }));
         }
