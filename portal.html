@@ -788,8 +788,7 @@
         </div>
         <div id="vizsga-badge"><i class="fas fa-circle" style="font-size:0.55rem;vertical-align:middle;margin-bottom:1px;color:#ef4444;"></i> VIZSGA MÓD</div>
         <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
-        <button class="eredmenyek-btn" id="btn-eredmenyek-topbar" onclick="openEredmenyek()" style="display:none" title="Elért eredmények"><i class="fas fa-medal"></i> Eredmények</button>
-        <button class="delete-btn" onclick="openDeleteModal()" title="Fiók törlése">Fiók törlése</button>
+        <a class="eredmenyek-btn" id="btn-profil-topbar" href="profil.html" style="display:none;text-decoration:none;" title="Profilom"><i class="fas fa-user-circle"></i> Profilom</a>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
 </div>
@@ -1450,7 +1449,7 @@
             document.getElementById('changelog-web').style.display = 'block';
             document.getElementById('changelog-interaktiv').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
-            const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
+            const eredmBtn = document.getElementById('btn-profil-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('otlet-btn').style.display = 'flex';
@@ -1507,7 +1506,7 @@
         const teacher = document.getElementById('teacher-portal');
         const studentWrap = document.getElementById('student-layout-wrap');
         const sub = document.getElementById('portal-sub');
-        const eredmBtn = document.getElementById('btn-eredmenyek-topbar');
+        const eredmBtn = document.getElementById('btn-profil-topbar');
         isTeacherView = !isTeacherView;
         isTeacherPreview = !isTeacherView;
         const clPython     = document.getElementById('changelog-python');
@@ -1723,7 +1722,7 @@
         if (!t) return '';
         return `<div class="ered-streak-row">
             <i class="fas ${t.icon}" style="color:${t.color};margin-right:6px;"></i>
-            <strong>${streak} napos sorozat</strong>
+            <strong>${streak} aktív nap</strong>
             <span class="ered-streak-title" style="color:${t.color};">– ${t.name}</span>
         </div>`;
     }

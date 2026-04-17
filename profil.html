@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profilom – Digitális Tanulási és Számonkérési Rendszer</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 20px;background:#161b22;border-bottom:1px solid #21262d;position:sticky;top:0;z-index:100;}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.topbar-logo img{height:32px;}
+.topbar-logo-text{color:#e0e0e0;font-size:0.95rem;font-weight:700;}
+.topbar-spacer{flex:1;}
+.topbar-btn{background:none;border:1px solid #30363d;color:#8b949e;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:0.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:border-color .15s,color .15s;}
+.topbar-btn:hover{border-color:#58a6ff;color:#58a6ff;}
+.topbar-btn.danger{border-color:#30363d;color:#f85149;}
+.topbar-btn.danger:hover{border-color:#f85149;background:rgba(248,81,73,.08);}
+
+/* ── Layout ── */
+.page{max-width:820px;margin:32px auto;padding:0 16px 60px;}
+.section{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:22px 24px;margin-bottom:18px;}
+.section-title{font-size:0.8rem;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.section-title i{font-size:0.85rem;}
+
+/* ── Hero kártya ── */
+.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.hero-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1f6feb,#a371f7);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#fff;flex-shrink:0;}
+.hero-info h2{font-size:1.2rem;font-weight:700;color:#e0e0e0;margin-bottom:4px;}
+.hero-info .hero-email{font-size:0.8rem;color:#8b949e;margin-bottom:6px;}
+.hero-info .hero-meta{display:flex;flex-wrap:wrap;gap:8px;}
+.hero-tag{background:#21262d;border:1px solid #30363d;border-radius:20px;padding:2px 10px;font-size:0.75rem;color:#c9d1d9;}
+.hero-tag.role-tanulo{border-color:#3b82f6;color:#93c5fd;}
+.hero-tag.role-oktato{border-color:#a371f7;color:#c4b5fd;}
+
+/* ── Visszaszámló ── */
+.countdown-bar{background:linear-gradient(90deg,rgba(31,111,235,.15),rgba(163,113,247,.1));border:1px solid #1f6feb44;border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:0.88rem;}
+.countdown-days{font-size:1.4rem;font-weight:800;color:#58a6ff;}
+.countdown-text{color:#c9d1d9;}
+.countdown-sub{font-size:0.72rem;color:#8b949e;}
+
+/* ── Aktív napok ── */
+.aktivnap-row{display:flex;align-items:center;gap:14px;}
+.aktivnap-fire{font-size:2rem;}
+.aktivnap-num{font-size:2rem;font-weight:800;color:#f97316;}
+.aktivnap-label{font-size:0.78rem;color:#8b949e;}
+.aktivnap-badge{padding:3px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;}
+
+/* ── Haladás ── */
+.progress-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:540px){.progress-grid{grid-template-columns:1fr;}}
+.prog-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px 16px;}
+.prog-card-title{font-size:0.72rem;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+.prog-level{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.prog-level-icon{font-size:1.5rem;}
+.prog-level-name{font-size:0.88rem;font-weight:700;color:#e0e0e0;}
+.prog-level-sub{font-size:0.72rem;color:#8b949e;}
+.prog-bar-bg{background:#21262d;border-radius:4px;height:6px;overflow:hidden;margin-bottom:6px;}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.prog-bar-fill.web{background:linear-gradient(90deg,#f97316,#fbbf24);}
+.prog-bar-fill.python{background:linear-gradient(90deg,#3b82f6,#a371f7);}
+.prog-stats{font-size:0.72rem;color:#8b949e;}
+.prog-rank{margin-top:8px;font-size:0.72rem;color:#8b949e;display:flex;flex-direction:column;gap:2px;}
+.prog-rank-row{display:flex;align-items:center;gap:5px;}
+
+/* ── Kitűzők ── */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.ach-item{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px 10px 8px;text-align:center;transition:border-color .15s;}
+.ach-item.unlocked{border-color:#30363d;}
+.ach-item.unlocked:hover{border-color:#58a6ff;}
+.ach-item.locked{opacity:.35;filter:grayscale(1);}
+.ach-icon{font-size:1.6rem;display:block;margin-bottom:4px;}
+.ach-name{font-size:0.68rem;color:#c9d1d9;line-height:1.3;}
+.ach-item.unlocked .ach-name{color:#e0e0e0;font-weight:600;}
+
+/* ── Heatmap ── */
+.heatmap-wrap{overflow-x:auto;}
+.heatmap-months{display:flex;gap:0;margin-bottom:4px;font-size:0.65rem;color:#484f58;}
+.heatmap-month-label{flex:none;}
+.heatmap-grid{display:flex;gap:3px;}
+.heatmap-week{display:flex;flex-direction:column;gap:3px;}
+.heatmap-day{width:11px;height:11px;border-radius:2px;background:#161b22;border:1px solid #21262d;}
+.heatmap-day.d1{background:#0e4429;border-color:#0e4429;}
+.heatmap-day.d2{background:#006d32;border-color:#006d32;}
+.heatmap-day.d3{background:#26a641;border-color:#26a641;}
+.heatmap-day.d4{background:#39d353;border-color:#39d353;}
+.heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:0.65rem;color:#484f58;justify-content:flex-end;}
+.heatmap-legend .heatmap-day{width:10px;height:10px;flex-shrink:0;}
+
+/* ── Legjobb eredmények ── */
+.best-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.best-card{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;}
+.best-card-label{font-size:0.68rem;color:#8b949e;margin-bottom:4px;}
+.best-card-val{font-size:1.3rem;font-weight:800;color:#58a6ff;}
+.best-card-sub{font-size:0.7rem;color:#484f58;margin-top:2px;}
+
+/* ── Töltött idő ── */
+.time-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.time-item{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px 14px;font-size:0.78rem;}
+.time-item strong{color:#e0e0e0;}
+.time-item span{color:#8b949e;}
+
+/* ── Jelszóváltás ── */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:0.78rem;color:#8b949e;margin-bottom:6px;}
+.form-input{width:100%;background:#0d1117;border:1px solid #30363d;color:#e0e0e0;padding:8px 12px;border-radius:6px;font-size:0.88rem;}
+.form-input:focus{outline:none;border-color:#58a6ff;}
+.form-btn{background:#1f6feb;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600;}
+.form-btn:hover{background:#388bfd;}
+.form-btn:disabled{opacity:.5;cursor:not-allowed;}
+.form-msg{font-size:0.8rem;margin-top:8px;display:none;}
+.form-msg.ok{color:#3fb950;}
+.form-msg.err{color:#f85149;}
+
+/* ── Veszélyzóna ── */
+.danger-zone{border-color:#f8514933 !important;}
+.danger-zone .section-title{color:#f85149;}
+.danger-desc{font-size:0.82rem;color:#8b949e;margin-bottom:14px;line-height:1.5;}
+.danger-btn{background:transparent;border:1px solid #f85149;color:#f85149;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600;}
+.danger-btn:hover{background:#f8514915;}
+
+/* ── Spinner / Loading ── */
+.page-loading{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:14px;color:#484f58;}
+.page-loading i{font-size:2rem;}
+.spin{animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Törlés modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:999;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:28px 30px;width:100%;max-width:380px;}
+.modal-box h3{font-size:1rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.modal-box p{font-size:0.85rem;color:#8b949e;margin-bottom:16px;line-height:1.5;}
+.modal-btns{display:flex;gap:10px;margin-top:16px;}
+.modal-cancel{background:none;border:1px solid #30363d;color:#8b949e;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:0.85rem;}
+.modal-cancel:hover{border-color:#e0e0e0;color:#e0e0e0;}
+.modal-danger-confirm{background:#f85149;color:#fff;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:600;}
+.modal-danger-confirm:hover{background:#ff6b6b;}
+.modal-danger-confirm:disabled{opacity:.5;cursor:not-allowed;}
+.modal-err{color:#f85149;font-size:0.8rem;margin-top:6px;display:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <a class="topbar-logo" href="portal.html">
+        <img src="kandologo2.png" alt="Kandó" onerror="this.style.display='none'">
+        <span class="topbar-logo-text">Digitális Tanulási és Számonkérési Rendszer</span>
+    </a>
+    <div class="topbar-spacer"></div>
+    <a class="topbar-btn" href="portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+    <button class="topbar-btn" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Kilépés</button>
+</div>
+
+<div class="page" id="page">
+    <div class="page-loading" id="loading">
+        <i class="fas fa-circle-notch spin"></i>
+        <span>Profil betöltése...</span>
+    </div>
+</div>
+
+<!-- Fiók törlése modal -->
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal-box">
+        <h3><i class="fas fa-triangle-exclamation" style="color:#f85149"></i> Fiók törlése</h3>
+        <p>A fiók törlése <strong style="color:#f85149">visszavonhatatlan!</strong> Minden adatod törlődik.<br>Add meg a jelszavadat a megerősítéshez.</p>
+        <input type="password" class="form-input" id="delete-pw" placeholder="Jelszó" autocomplete="current-password">
+        <div class="modal-err" id="delete-err"></div>
+        <div class="modal-btns">
+            <button class="modal-cancel" onclick="closeDeleteModal()">Mégse</button>
+            <button class="modal-danger-confirm" id="delete-confirm-btn" onclick="confirmDelete()">Törlés</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = 'https://agazati.up.railway.app';
+
+function getUser() { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); }
+
+function logout() {
+    sessionStorage.removeItem('kandoUser');
+    localStorage.removeItem('kandoTeacherBackup');
+    window.location.replace('login.html');
+}
+
+function getAuthHeader(u) {
+    let token = u.token;
+    if (!token && u._tesztMod) {
+        const tb = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
+        token = tb.token || '';
+    }
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+async function apiFetch(url, opts = {}) {
+    const u = getUser();
+    return fetch(url, { ...opts, headers: { 'Content-Type':'application/json', ...getAuthHeader(u), ...(opts.headers||{}) }, signal: opts.signal || AbortSignal.timeout(30000) });
+}
+
+// ── Szint számítás ────────────────────────────────────────────────────────
+const PYTHON_LEVELS = [
+    { min:90, icon:'🐍', name:'Python-Bűvölő Félisten', color:'#a371f7' },
+    { min:80, icon:'🏫', name:'Kandó Büszkesége',       color:'#fbbf24' },
+    { min:65, icon:'💎', name:'Kódolók Gyöngye',        color:'#38bdf8' },
+    { min:45, icon:'⚔️', name:'Kód Gladiátor',          color:'#fb923c' },
+    { min:25, icon:'📋', name:'Copy-Paste Mester',      color:'#94a3b8' },
+    { min:0,  icon:'🎨', name:'"Syntax Error" Művész',  color:'#64748b' },
+];
+const WEB_LEVELS = [
+    { min:90, icon:'🌐', name:'Webfejlesztő Félisten',    color:'#a371f7' },
+    { min:80, icon:'🏫', name:'Kandó Büszkesége',         color:'#fbbf24' },
+    { min:65, icon:'⚙️', name:'Webmester',                color:'#38bdf8' },
+    { min:45, icon:'🛡️', name:'Böngésző-Bűvölő Harcos',  color:'#fb923c' },
+    { min:25, icon:'🖌️', name:'Webezgető Művész',         color:'#94a3b8' },
+    { min:0,  icon:'🔨', name:'Junior Kódfaragó',         color:'#64748b' },
+];
+function calcLevel(avg, levels) { return levels.find(l => avg >= l.min) || levels[levels.length-1]; }
+
+const STREAK_TITLES = [
+    { min:30, icon:'fa-fire-flame-curved', color:'#ff4500', name:'Élő Legenda' },
+    { min:14, icon:'fa-fire',              color:'#f97316', name:'Kitartó Harcos' },
+    { min: 7, icon:'fa-fire',              color:'#fbbf24', name:'Heti Hős' },
+    { min: 3, icon:'fa-fire',              color:'#86efac', name:'Ügyes Kezdő' },
+];
+
+const ACHIEVEMENTS = [
+    { id:'first_web',      icon:'🌐', name:'Első lépés – WEB',       check:(p)=> p.web.sessions >= 1 },
+    { id:'first_py',       icon:'🐍', name:'Első lépés – Python',    check:(p)=> p.python.sessions >= 1 },
+    { id:'persist_web',    icon:'🔥', name:'Kitartó – WEB',          check:(p)=> p.web.sessions >= 5 },
+    { id:'persist_py',     icon:'🔥', name:'Kitartó – Python',       check:(p)=> p.python.sessions >= 5 },
+    { id:'adv_web',        icon:'⚡', name:'Haladó – WEB',           check:(p)=> p.web.sessions >= 10 },
+    { id:'adv_py',         icon:'⚡', name:'Haladó – Python',        check:(p)=> p.python.sessions >= 10 },
+    { id:'perfect_web',    icon:'💯', name:'Tökéletes WEB',          check:(p)=> p.web.bestPercent >= 99.9 },
+    { id:'perfect_py',     icon:'💯', name:'Tökéletes Python',       check:(p)=> p.python.bestPercent >= 99.9 },
+    { id:'dilig_web',      icon:'🌟', name:'Szorgalmas – WEB',       check:(p)=> p.web.sessions >= 20 },
+    { id:'dilig_py',       icon:'🌟', name:'Szorgalmas – Python',    check:(p)=> p.python.sessions >= 20 },
+    { id:'webmaster',      icon:'👑', name:'Webmester',              check:(p)=> p.web.avgPercent >= 85 },
+    { id:'pymaster',       icon:'🏆', name:'Python Mester',          check:(p)=> p.python.avgPercent >= 85 },
+    { id:'both_ready',     icon:'🎓', name:'Teljes felkészültség',   check:(p)=> p.web.avgPercent >= 75 && p.python.avgPercent >= 75 },
+    { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',        check:(p,items)=> items.some(i=>{ const m=i.datum?.match(/(\d{2}):\d{2}/); return m && (parseInt(m[1])>=20||parseInt(m[1])<5); }) },
+    { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',           check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const d=new Date(i.datum.replace(' ','T')); return d.getDay()===0||d.getDay()===6; }) },
+    { id:'tiz_aktiv_nap',  icon:'📅', name:'10 aktív nap',           check:(p,_,streak)=> streak >= 10 },
+    { id:'huszon_aktiv',   icon:'🗓️', name:'20 aktív nap',           check:(p,_,streak)=> streak >= 20 },
+];
+
+// ── Heatmap ───────────────────────────────────────────────────────────────
+function buildHeatmap(activeDates) {
+    const dayMap = {};
+    activeDates.forEach(d => { dayMap[d] = (dayMap[d]||0) + 1; });
+
+    const today = new Date();
+    // 52 hét visszafelé
+    const start = new Date(today);
+    start.setDate(start.getDate() - 364);
+    // Hétfőre igazítjuk
+    const dow = start.getDay();
+    start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
+
+    const HU_MONTHS = ['Jan','Feb','Már','Ápr','Máj','Jún','Júl','Aug','Sze','Okt','Nov','Dec'];
+    const weeks = [];
+    let cur = new Date(start);
+    let monthLabels = [];
+    let prevMonth = -1;
+    let totalCells = 0;
+
+    while (cur <= today) {
+        const week = [];
+        for (let d = 0; d < 7; d++) {
+            if (cur > today) { week.push(null); cur.setDate(cur.getDate()+1); continue; }
+            const ds = cur.toISOString().substring(0,10);
+            const cnt = dayMap[ds] || 0;
+            week.push({ ds, cnt });
+            if (cur.getMonth() !== prevMonth) {
+                monthLabels.push({ weekIdx: weeks.length, label: HU_MONTHS[cur.getMonth()] });
+                prevMonth = cur.getMonth();
+            }
+            cur.setDate(cur.getDate()+1);
+            totalCells++;
+        }
+        weeks.push(week);
+    }
+
+    // month label row
+    let monthHtml = '<div class="heatmap-months" style="margin-left:0;">';
+    let lastIdx = 0;
+    monthLabels.forEach((ml, i) => {
+        const gap = (ml.weekIdx - lastIdx) * 14;
+        monthHtml += `<span class="heatmap-month-label" style="width:${gap}px;display:inline-block;">${i===0?'':ml.label}</span>`;
+        lastIdx = ml.weekIdx;
+    });
+    monthHtml += '</div>';
+
+    let gridHtml = '<div class="heatmap-grid">';
+    weeks.forEach(week => {
+        gridHtml += '<div class="heatmap-week">';
+        week.forEach(day => {
+            if (!day) { gridHtml += '<div class="heatmap-day"></div>'; return; }
+            const cls = day.cnt === 0 ? '' : day.cnt === 1 ? 'd1' : day.cnt <= 3 ? 'd2' : day.cnt <= 6 ? 'd3' : 'd4';
+            const title = day.cnt > 0 ? `${day.ds}: ${day.cnt} tevékenység` : day.ds;
+            gridHtml += `<div class="heatmap-day ${cls}" title="${title}"></div>`;
+        });
+        gridHtml += '</div>';
+    });
+    gridHtml += '</div>';
+
+    return `<div class="heatmap-wrap">
+        ${monthHtml}
+        ${gridHtml}
+        <div class="heatmap-legend">
+            <span>Kevesebb</span>
+            <div class="heatmap-day"></div>
+            <div class="heatmap-day d1"></div>
+            <div class="heatmap-day d2"></div>
+            <div class="heatmap-day d3"></div>
+            <div class="heatmap-day d4"></div>
+            <span>Több</span>
+        </div>
+    </div>`;
+}
+
+// ── Visszaszámló ──────────────────────────────────────────────────────────
+function examCountdownHtml() {
+    const deadline = new Date('2026-06-01T00:00:00');
+    const diff = Math.ceil((deadline - new Date()) / 86400000);
+    if (diff <= 0) return `<div class="countdown-bar"><i class="fas fa-graduation-cap" style="color:#58a6ff;font-size:1.2rem"></i><div><div class="countdown-text">Az ágazati alapvizsga időszaka megkezdődött!</div></div></div>`;
+    return `<div class="countdown-bar">
+        <i class="fas fa-calendar-days" style="color:#58a6ff;font-size:1.2rem"></i>
+        <div>
+            <div><span class="countdown-days">${diff}</span> <span class="countdown-text">nap van hátra az alapvizsgáig</span></div>
+            <div class="countdown-sub">Felkészülési határidő: 2026. június 1.</div>
+        </div>
+    </div>`;
+}
+
+// ── Főoldal render ────────────────────────────────────────────────────────
+async function loadProfile() {
+    const u = getUser();
+    if (!u.email) { window.location.replace('login.html'); return; }
+
+    const page = document.getElementById('page');
+    const isTanulo = u.szerep === 'tanulo' || u._tesztMod;
+    const isOktato = u.szerep === 'oktato';
+
+    if (isTanulo) await loadTanuloProfile(u, page);
+    else if (isOktato) await loadOktatoProfile(u, page);
+    else { page.innerHTML = `<div class="page-loading"><i class="fas fa-lock"></i><span>Nem elérhető</span></div>`; }
+}
+
+// ── TANULÓ profil ─────────────────────────────────────────────────────────
+async function loadTanuloProfile(u, page) {
+    page.innerHTML = `<div class="page-loading" id="loading"><i class="fas fa-circle-notch spin"></i><span>Betöltés...</span></div>`;
+
+    const email = (u.email || '').replace('@kkszki.hu','');
+    const TO = 30000;
+    try {
+        const [progRes, rankRes, sessRes, itemsRes, quizRes] = await Promise.all([
+            apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
+            apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
+            apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
+            apiFetch(`${API}/api/progress/${encodeURIComponent(u.email)}/items`).catch(()=>null),
+            apiFetch(`${API}/api/quiz-results/${encodeURIComponent(u.email)}`).catch(()=>null),
+        ]);
+
+        if (!progRes || progRes.status === 503 || progRes.status === 502) {
+            page.innerHTML = `<div class="page-loading"><i class="fas fa-server" style="color:#f97316"></i><span style="color:#8b949e">A szerver most ébred fel.<br><button onclick="loadProfile()" style="margin-top:12px;padding:6px 18px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:8px;color:#93c5fd;cursor:pointer;font-size:0.85rem;">Újrapróbálás</button></span></div>`;
+            return;
+        }
+        if (progRes.status === 401) {
+            sessionStorage.removeItem('kandoUser');
+            window.location.replace('login.html');
+            return;
+        }
+
+        const p       = await progRes.json();
+        const rankData = rankRes?.ok  ? await rankRes.json()  : null;
+        const sessData = sessRes?.ok  ? await sessRes.json()  : [];
+        const items    = itemsRes?.ok ? await itemsRes.json() : [];
+        const quizItems= quizRes?.ok  ? await quizRes.json()  : [];
+
+        const progress = {
+            web:    { sessions:p.web?.sessions??0,    avgPercent:p.web?.avgPercent??0,    bestPercent:p.web?.bestPercent??0,    lastSession:p.web?.lastSession??null },
+            python: { sessions:p.python?.sessions??0, avgPercent:p.python?.avgPercent??0, bestPercent:p.python?.bestPercent??0, lastSession:p.python?.lastSession??null }
+        };
+
+        const streak = rankData?.streak ?? 0;
+        const streakTitle = STREAK_TITLES.find(s => streak >= s.min) || null;
+
+        // Aktív napok heatmap adatokhoz
+        const activeDates = [];
+        items.forEach(i => { if(i.datum) activeDates.push(i.datum.substring(0,10)); });
+        quizItems.forEach(q => { if(q.submittedAt) activeDates.push(q.submittedAt.substring(0,10)); });
+
+        // Kitűzők
+        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak));
+        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak));
+
+        // Legjobb kvíz
+        const bestQuiz = quizItems.reduce((best, q) => (!best || q.szazalek > best.szazalek) ? q : best, null);
+
+        // Töltött idő
+        const SESS_LABELS = { portal:'Portál', practice:'WEB gyakorló', web:'WEB vizsga', python:'Python vizsga', 'py-basics':'Python Kezdő', 'py-practice':'Python Haladó', 'py-pro':'Python Profi' };
+        function fmtSec(s) { if(!s||s<=0) return '0p'; const h=Math.floor(s/3600),m=Math.floor((s%3600)/60); return h>0?`${h}ó ${m}p`:`${m}p`; }
+        const totalSec = sessData.reduce((s,x)=>s+(x.totalSec||0), 0);
+
+        // Rangsor HTML
+        function rankHtml(rankInfo, icon) {
+            if (!rankInfo || !rankInfo.rank) return '';
+            return `<div class="prog-rank-row"><i class="fas ${icon}" style="color:#8b949e;width:14px;text-align:center;"></i> <span>${rankInfo.groupLabel}ban <strong style="color:#e0e0e0;">${rankInfo.rank}. hely</strong> (${rankInfo.groupSize} főből)</span></div>`;
+        }
+
+        const initials = (u.nev||u.email||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+        page.innerHTML = `
+        <!-- Hero -->
+        <div class="section">
+            <div class="hero">
+                <div class="hero-avatar">${initials}</div>
+                <div class="hero-info">
+                    <h2>${u.nev || u.email}</h2>
+                    <div class="hero-email">${u.email}</div>
+                    <div class="hero-meta">
+                        ${u.osztaly ? `<span class="hero-tag">${u.osztaly}</span>` : ''}
+                        ${u.csoport ? `<span class="hero-tag">${u.csoport}. csoport</span>` : ''}
+                        <span class="hero-tag role-tanulo"><i class="fas fa-graduation-cap" style="margin-right:4px"></i>Tanuló</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visszaszámló -->
+        ${examCountdownHtml()}
+
+        <!-- Aktív napok -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-fire"></i> Aktivitás</div>
+            <div class="aktivnap-row">
+                <div class="aktivnap-fire"><i class="fas fa-fire" style="color:${streakTitle?.color||'#484f58'}"></i></div>
+                <div>
+                    <div><span class="aktivnap-num">${streak}</span> <span style="font-size:0.85rem;color:#8b949e;">aktív nap</span></div>
+                    <div class="aktivnap-label">Összesen ennyi napon dolgoztál a rendszerben</div>
+                </div>
+                ${streakTitle ? `<span class="aktivnap-badge" style="background:${streakTitle.color}22;color:${streakTitle.color};border:1px solid ${streakTitle.color}44;">
+                    <i class="fas ${streakTitle.icon}" style="margin-right:4px"></i>${streakTitle.name}</span>` : ''}
+            </div>
+        </div>
+
+        <!-- Haladás -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-chart-line"></i> Haladás</div>
+            <div class="progress-grid">
+                ${renderProgCard(progress.python, 'Python feladat', 'python', PYTHON_LEVELS, rankData?.python)}
+                ${renderProgCard(progress.web, 'WEB feladat', 'web', WEB_LEVELS, rankData?.web)}
+            </div>
+        </div>
+
+        <!-- Aktivitás heatmap -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-calendar-days"></i> Aktivitás az elmúlt évben</div>
+            ${buildHeatmap(activeDates)}
+        </div>
+
+        <!-- Kitűzők -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-trophy"></i> Kitűzők (${unlocked.length}/${ACHIEVEMENTS.length})</div>
+            <div class="ach-grid">
+                ${[...unlocked,...locked].map(a => `
+                <div class="ach-item ${unlocked.includes(a)?'unlocked':'locked'}">
+                    <span class="ach-icon">${a.icon}</span>
+                    <div class="ach-name">${a.name}</div>
+                </div>`).join('')}
+            </div>
+        </div>
+
+        <!-- Legjobb eredmények -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-medal"></i> Legjobb eredmények</div>
+            <div class="best-grid">
+                <div class="best-card">
+                    <div class="best-card-label"><i class="fab fa-python" style="color:#3b82f6"></i> Python – legjobb</div>
+                    <div class="best-card-val">${Math.round(progress.python.bestPercent)}%</div>
+                    <div class="best-card-sub">${progress.python.sessions} alkalom · átlag ${Math.round(progress.python.avgPercent)}%</div>
+                </div>
+                <div class="best-card">
+                    <div class="best-card-label"><i class="fas fa-code" style="color:#f97316"></i> WEB – legjobb</div>
+                    <div class="best-card-val">${Math.round(progress.web.bestPercent)}%</div>
+                    <div class="best-card-sub">${progress.web.sessions} alkalom · átlag ${Math.round(progress.web.avgPercent)}%</div>
+                </div>
+                ${bestQuiz ? `<div class="best-card">
+                    <div class="best-card-label"><i class="fas fa-brain" style="color:#10b981"></i> Interaktív teszt – legjobb</div>
+                    <div class="best-card-val">${bestQuiz.szazalek}%</div>
+                    <div class="best-card-sub">${bestQuiz.pont}/${bestQuiz.maxPont} pont · ${quizItems.length} alkalom</div>
+                </div>` : ''}
+                <div class="best-card">
+                    <div class="best-card-label"><i class="fas fa-clock" style="color:#60a5fa"></i> Töltött idő</div>
+                    <div class="best-card-val">${fmtSec(totalSec)}</div>
+                    <div class="best-card-sub">összesen a rendszerben</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jelszóváltás -->
+        <div class="section">
+            <div class="section-title"><i class="fas fa-key"></i> Jelszó módosítása</div>
+            <div style="max-width:340px">
+                <div class="form-group">
+                    <label class="form-label">Jelenlegi jelszó</label>
+                    <input type="password" class="form-input" id="pw-old" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Új jelszó (min. 6 karakter)</label>
+                    <input type="password" class="form-input" id="pw-new" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Új jelszó megerősítése</label>
+                    <input type="password" class="form-input" id="pw-new2" autocomplete="new-password">
+                </div>
+                <button class="form-btn" id="pw-btn" onclick="changePassword()">Jelszó módosítása</button>
+                <div class="form-msg ok" id="pw-ok"><i class="fas fa-check"></i> Jelszó sikeresen megváltoztatva!</div>
+                <div class="form-msg err" id="pw-err"></div>
+            </div>
+        </div>
+
+        <!-- Veszélyzóna -->
+        <div class="section danger-zone">
+            <div class="section-title"><i class="fas fa-triangle-exclamation"></i> Veszélyzóna</div>
+            <p class="danger-desc">A fiók törlése visszavonhatatlan. Az összes adatod, eredményed és haladásod véglegesen törlődik.</p>
+            <button class="danger-btn" onclick="openDeleteModal()"><i class="fas fa-trash" style="margin-right:6px"></i>Fiók törlése</button>
+        </div>`;
+    } catch(err) {
+        page.innerHTML = `<div class="page-loading"><i class="fas fa-triangle-exclamation" style="color:#f85149"></i><span style="color:#8b949e">Hiba: ${err.message||'Ismeretlen hiba'}</span></div>`;
+    }
+}
+
+function renderProgCard(data, label, targy, levels, rankInfo) {
+    const lv = calcLevel(data.avgPercent, levels);
+    const barPct = data.sessions > 0 ? Math.min(100, Math.round(data.avgPercent)) : 0;
+    const icon = targy === 'python' ? 'fab fa-python' : 'fas fa-code';
+    const color = targy === 'python' ? '#3b82f6' : '#f97316';
+    const rankRows = [
+        { r:rankInfo?.csoport,  icon:'fa-users' },
+        { r:rankInfo?.osztaly,  icon:'fa-chalkboard-user' },
+        { r:rankInfo?.evfolyam, icon:'fa-graduation-cap' },
+    ].filter(x=>x.r?.rank>0).map(x=>`<div class="prog-rank-row"><i class="fas ${x.icon}" style="color:#484f58;width:14px;text-align:center;font-size:.7rem"></i> <span style="font-size:.7rem;color:#8b949e">${x.r.groupLabel}ban <strong style="color:#c9d1d9">${x.r.rank}. hely</strong></span></div>`).join('');
+    return `<div class="prog-card">
+        <div class="prog-card-title"><i class="${icon}" style="color:${color};margin-right:5px"></i>${label}</div>
+        <div class="prog-level">
+            <div class="prog-level-icon">${lv.icon}</div>
+            <div>
+                <div class="prog-level-name" style="color:${lv.color}">${lv.name}</div>
+                <div class="prog-level-sub">${data.sessions} alkalom${data.lastSession ? ' · '+data.lastSession : ''}</div>
+            </div>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill ${targy}" style="width:${barPct}%"></div></div>
+        <div class="prog-stats">Átlag: ${Math.round(data.avgPercent)}% · Legjobb: ${Math.round(data.bestPercent)}%</div>
+        ${rankRows ? `<div class="prog-rank">${rankRows}</div>` : ''}
+    </div>`;
+}
+
+// ── OKTATÓ profil ─────────────────────────────────────────────────────────
+async function loadOktatoProfile(u, page) {
+    const initials = (u.nev||u.email||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    page.innerHTML = `
+    <!-- Hero -->
+    <div class="section">
+        <div class="hero">
+            <div class="hero-avatar" style="background:linear-gradient(135deg,#7c3aed,#a371f7)">${initials}</div>
+            <div class="hero-info">
+                <h2>${u.nev || u.email}</h2>
+                <div class="hero-email">${u.email}</div>
+                <div class="hero-meta">
+                    <span class="hero-tag role-oktato"><i class="fas fa-chalkboard-user" style="margin-right:4px"></i>Oktató</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gyors linkek -->
+    <div class="section">
+        <div class="section-title"><i class="fas fa-link"></i> Gyors elérés</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <a href="oktato-haladas.html" class="topbar-btn" style="padding:10px 18px;font-size:0.85rem;"><i class="fas fa-chart-line"></i> Tanulói haladás</a>
+            <a href="oktato-portal.html"  class="topbar-btn" style="padding:10px 18px;font-size:0.85rem;"><i class="fas fa-home"></i> Oktatói portál</a>
+        </div>
+    </div>
+
+    <!-- Jelszóváltás -->
+    <div class="section">
+        <div class="section-title"><i class="fas fa-key"></i> Jelszó módosítása</div>
+        <div style="max-width:340px">
+            <div class="form-group">
+                <label class="form-label">Jelenlegi jelszó</label>
+                <input type="password" class="form-input" id="pw-old" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Új jelszó (min. 6 karakter)</label>
+                <input type="password" class="form-input" id="pw-new" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Új jelszó megerősítése</label>
+                <input type="password" class="form-input" id="pw-new2" autocomplete="new-password">
+            </div>
+            <button class="form-btn" id="pw-btn" onclick="changePassword()">Jelszó módosítása</button>
+            <div class="form-msg ok" id="pw-ok"><i class="fas fa-check"></i> Jelszó sikeresen megváltoztatva!</div>
+            <div class="form-msg err" id="pw-err"></div>
+        </div>
+    </div>
+
+    <!-- Veszélyzóna -->
+    <div class="section danger-zone">
+        <div class="section-title"><i class="fas fa-triangle-exclamation"></i> Veszélyzóna</div>
+        <p class="danger-desc">A fiók törlése visszavonhatatlan.</p>
+        <button class="danger-btn" onclick="openDeleteModal()"><i class="fas fa-trash" style="margin-right:6px"></i>Fiók törlése</button>
+    </div>`;
+}
+
+// ── Jelszóváltás ──────────────────────────────────────────────────────────
+async function changePassword() {
+    const u = getUser();
+    const old = document.getElementById('pw-old')?.value || '';
+    const nw  = document.getElementById('pw-new')?.value || '';
+    const nw2 = document.getElementById('pw-new2')?.value || '';
+    const btn = document.getElementById('pw-btn');
+    const okEl = document.getElementById('pw-ok');
+    const errEl= document.getElementById('pw-err');
+    okEl.style.display = 'none';
+    errEl.style.display = 'none';
+    if (!old || !nw || !nw2) { errEl.textContent='Minden mező kitöltése kötelező!'; errEl.style.display='block'; return; }
+    if (nw !== nw2) { errEl.textContent='A két jelszó nem egyezik!'; errEl.style.display='block'; return; }
+    if (nw.length < 6) { errEl.textContent='A jelszó legalább 6 karakter legyen!'; errEl.style.display='block'; return; }
+    btn.disabled = true;
+    try {
+        const res = await apiFetch(`${API}/api/auth/change-own-password`, {
+            method:'POST',
+            body: JSON.stringify({ email: u.email, oldPassword: old, newPassword: nw })
+        });
+        if (res.ok) {
+            okEl.style.display='block';
+            document.getElementById('pw-old').value='';
+            document.getElementById('pw-new').value='';
+            document.getElementById('pw-new2').value='';
+        } else {
+            const d = await res.json().catch(()=>({}));
+            errEl.textContent = d.error || 'Hibás jelenlegi jelszó.';
+            errEl.style.display='block';
+        }
+    } catch { errEl.textContent='Kapcsolati hiba.'; errEl.style.display='block'; }
+    btn.disabled = false;
+}
+
+// ── Törlés ────────────────────────────────────────────────────────────────
+function openDeleteModal()  { document.getElementById('delete-modal').classList.add('open'); }
+function closeDeleteModal() { document.getElementById('delete-modal').classList.remove('open'); document.getElementById('delete-err').style.display='none'; document.getElementById('delete-pw').value=''; }
+
+async function confirmDelete() {
+    const u = getUser();
+    const pw  = document.getElementById('delete-pw').value;
+    const btn = document.getElementById('delete-confirm-btn');
+    const err = document.getElementById('delete-err');
+    err.style.display='none';
+    if (!pw) { err.textContent='Add meg a jelszavadat!'; err.style.display='block'; return; }
+    btn.disabled = true;
+    try {
+        const res = await fetch(`${API}/api/auth/delete-account`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ email: u.email, password: pw })
+        });
+        if (res.ok) {
+            sessionStorage.removeItem('kandoUser');
+            localStorage.clear();
+            window.location.replace('login.html');
+        } else {
+            const d = await res.json().catch(()=>({}));
+            err.textContent = d.error || 'Hibás jelszó.';
+            err.style.display='block';
+        }
+    } catch { err.textContent='Kapcsolati hiba.'; err.style.display='block'; }
+    btn.disabled = false;
+}
+
+loadProfile();
+</script>
+</body>
+</html>

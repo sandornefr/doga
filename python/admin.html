@@ -3026,7 +3026,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     <td style="text-align:center;">${showLv.icon} <span style="font-size:0.78rem;color:#aaa;">${escHtml(showLv.name)}</span></td>
                     <td style="text-align:center;">${p.streak >= 3
                         ? `<span style="color:#f97316;font-weight:700;"><i class="fas fa-fire"></i> ${p.streak}</span><br><span style="font-size:0.72rem;color:#888;white-space:nowrap;">${p.streak>=30?'Élő Legenda':p.streak>=14?'Kitartó Harcos':p.streak>=7?'Heti Hős':'Ügyes Kezdő'}</span>`
-                        : `<span style="color:#444;">${p.streak > 0 ? p.streak : '–'}</span>`
+                        : `<span style="color:#484f58;">${p.streak > 0 ? p.streak + ' nap' : '–'}</span>`
                     }</td>
                 </tr>`;
             }).join('');

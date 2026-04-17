@@ -1419,17 +1419,8 @@ public class Database
 
     private static int CalcStreak(List<DateTime> datesDesc)
     {
-        if (datesDesc.Count == 0) return 0;
-        var today     = DateTime.Today;
-        var yesterday = today.AddDays(-1);
-        if (datesDesc[0] != today && datesDesc[0] != yesterday) return 0;
-        int streak = 1;
-        for (int i = 1; i < datesDesc.Count; i++)
-        {
-            if ((datesDesc[i - 1] - datesDesc[i]).TotalDays == 1) streak++;
-            else break;
-        }
-        return streak;
+        // Aktív napok összesített száma (nem egymást követő, nem veszíthető el)
+        return datesDesc.Count;
     }
 
     public bool UpdatePassword(string email, string newHash)
