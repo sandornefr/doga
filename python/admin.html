@@ -3001,7 +3001,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             const medalColors = ['','#fbbf24','#94a3b8','#cd7f32'];
             const medalTextColors = ['','#78350f','#0f172a','#431407'];
             function rankMedal(r) {
-                if (r <= 3) return `<span style="display:inline-flex;align-items:center;justify-content:center;width:1.4em;height:1.4em;border-radius:50%;background:${medalColors[r]};color:${medalTextColors[r]};font-weight:800;font-size:0.85em;vertical-align:middle;line-height:1">${r}</span>`;
+                const emojis = ['','🥇','🥈','🥉'];
+                if (r <= 3) return `<span style="font-size:1.2em;vertical-align:middle">${emojis[r]}</span>`;
                 return `<span style="font-weight:700;color:#c9d1d9">${r}.</span>`;
             }
             tbody.innerHTML = data.map((p, idx) => {
