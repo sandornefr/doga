@@ -545,21 +545,54 @@ async function loadTanuloProfile(u, page) {
             </div>
         </div>
 
-        <!-- Szint teljesítési statisztika -->
-        ${kotelezoStats && kotelezoStats.total > 0 ? `
-        <div class="section">
-            <div class="section-title"><i class="fas fa-users"></i> Hogyan állnak a többiek? <span style="font-size:0.72rem;font-weight:400;color:#484f58">(${kotelezoStats.total} tanuló, ugyanaz a csoport)</span></div>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-            ${kotelezoStats.items.map(it => `
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:160px;font-size:0.75rem;color:#8b949e;flex-shrink:0;">${it.label}</div>
-                    <div style="flex:1;background:#21262d;border-radius:4px;height:8px;overflow:hidden;">
-                        <div style="width:${it.pct}%;height:100%;background:${it.pct>=70?'#26a641':it.pct>=40?'#d29922':'#da3633'};border-radius:4px;transition:width .4s;"></div>
-                    </div>
-                    <div style="font-size:0.73rem;color:#c9d1d9;width:60px;text-align:right;flex-shrink:0;">${it.done}/${it.total} (${it.pct}%)</div>
-                </div>`).join('')}
-            </div>
-        </div>` : ''}
+        <!-- Helyezések -->
+        ${(()=>{
+            const scopes = [
+                { key:'csoport',  icon:'fa-users',           label:'Csoportod',   py: rankData?.python?.csoport,  web: rankData?.web?.csoport  },
+                { key:'osztaly',  icon:'fa-chalkboard-user', label:'Osztályod',   py: rankData?.python?.osztaly,  web: rankData?.web?.osztaly  },
+                { key:'evfolyam', icon:'fa-graduation-cap',  label:'Évfolyamod',  py: rankData?.python?.evfolyam, web: rankData?.web?.evfolyam },
+            ].filter(s => s.py || s.web);
+            if (!scopes.length) return '';
+            function medal(rank) {
+                if (rank === 1) return '<i class="fas fa-trophy" style="color:#fbbf24"></i>';
+                if (rank <= 3) return '<i class="fas fa-medal" style="color:#94a3b8"></i>';
+                return `<span style="font-weight:700;color:#c9d1d9">${rank}.</span>`;
+            }
+            function rankCell(r) {
+                if (!r) return '<td style="color:#484f58;font-size:0.75rem;text-align:center">–</td>';
+                const top = Math.round(r.rank / r.groupSize * 100);
+                return `<td style="text-align:center;padding:6px 12px;">
+                    <div style="font-size:0.95rem">${medal(r.rank)} <span style="font-size:0.8rem;color:#8b949e">/ ${r.groupSize}</span></div>
+                    <div style="font-size:0.65rem;color:#484f58;margin-top:2px;">top ${top}%</div>
+                </td>`;
+            }
+            const evfPy  = rankData?.python?.evfolyam;
+            const evfWeb = rankData?.web?.evfolyam;
+            const evfNote = [
+                evfPy  ? `Python: <strong style="color:#c9d1d9">${evfPy.groupSize - evfPy.rank + 1}</strong> tanuló ért el legalább ilyen eredményt a(z) ${evfPy.groupSize} főből` : '',
+                evfWeb ? `WEB: <strong style="color:#c9d1d9">${evfWeb.groupSize - evfWeb.rank + 1}</strong> tanuló ért el legalább ilyen eredményt a(z) ${evfWeb.groupSize} főből` : '',
+            ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+            return `<div class="section">
+                <div class="section-title"><i class="fas fa-ranking-star"></i> Helyezéseid</div>
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead><tr>
+                        <th style="text-align:left;font-size:0.7rem;color:#484f58;padding:4px 8px;font-weight:400;">Kör</th>
+                        <th style="text-align:center;font-size:0.7rem;color:#3b82f6;padding:4px 8px;font-weight:400;"><i class="fab fa-python"></i> Python</th>
+                        <th style="text-align:center;font-size:0.7rem;color:#f97316;padding:4px 8px;font-weight:400;"><i class="fas fa-code"></i> WEB</th>
+                    </tr></thead>
+                    <tbody>
+                    ${scopes.map(s=>`<tr style="border-top:1px solid #21262d;">
+                        <td style="padding:6px 8px;font-size:0.78rem;color:#8b949e;white-space:nowrap;">
+                            <i class="fas ${s.icon}" style="width:14px;margin-right:5px;color:#484f58"></i>${s.label}
+                        </td>
+                        ${rankCell(s.py)}
+                        ${rankCell(s.web)}
+                    </tr>`).join('')}
+                    </tbody>
+                </table>
+                ${evfNote ? `<div style="margin-top:10px;font-size:0.73rem;color:#8b949e;padding:8px 10px;background:#0d1117;border-radius:6px;border:1px solid #21262d;">${evfNote}</div>` : ''}
+            </div>`;
+        })()}
 
         <!-- Aktivitás heatmap -->
         <div class="section">
