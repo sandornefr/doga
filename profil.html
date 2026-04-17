@@ -312,13 +312,12 @@ function buildHeatmap(activeDates) {
         weeks.push(week);
     }
 
-    // month label row
-    let monthHtml = '<div class="heatmap-months" style="margin-left:0;">';
-    let lastIdx = 0;
-    monthLabels.forEach((ml, i) => {
-        const gap = (ml.weekIdx - lastIdx) * 14;
-        monthHtml += `<span class="heatmap-month-label" style="width:${gap}px;display:inline-block;">${i===0?'':ml.label}</span>`;
-        lastIdx = ml.weekIdx;
+    // month label row – abszolút pozícionálás, hogy ne folyjon egymásra
+    let monthHtml = '<div class="heatmap-months" style="position:relative;height:14px;">';
+    monthLabels.forEach((ml) => {
+        if (ml.label === 'Feb' || ml.label === 'Jan') return; // igazítási töltőhetek, ne jelenjen meg
+        const leftPx = ml.weekIdx * 14;
+        monthHtml += `<span style="position:absolute;left:${leftPx}px;">${ml.label}</span>`;
     });
     monthHtml += '</div>';
 
