@@ -370,9 +370,20 @@ async function loadProfile() {
     if (!u.email) { window.location.replace('login.html'); return; }
 
     const page = document.getElementById('page');
-    const isTanulo = u.szerep === 'tanulo' || u._tesztMod;
     const isOktato = u.szerep === 'oktato';
 
+    // Oktató megtekintheti bármelyik tanuló profilját: profil.html?email=...
+    const targetEmail = new URLSearchParams(window.location.search).get('email');
+    if (isOktato && targetEmail) {
+        const fakeU = { email: targetEmail, nev: targetEmail, szerep: 'tanulo', token: u.token, _oktatoNez: true };
+        // Név lekérése a haladás adatból
+        const nRes = await apiFetch(`${API}/api/haladas/tanulo/${encodeURIComponent(targetEmail)}`).catch(()=>null);
+        if (nRes?.ok) { const d = await nRes.json(); fakeU.nev = d.nev || targetEmail; fakeU.osztaly = d.osztaly; fakeU.csoport = d.csoport; fakeU.evfolyam = d.evfolyam; }
+        await loadTanuloProfile(fakeU, page);
+        return;
+    }
+
+    const isTanulo = u.szerep === 'tanulo' || u._tesztMod;
     if (isTanulo) await loadTanuloProfile(u, page);
     else if (isOktato) await loadOktatoProfile(u, page);
     else { page.innerHTML = `<div class="page-loading"><i class="fas fa-lock"></i><span>Nem elérhető</span></div>`; }

@@ -1029,6 +1029,9 @@ function renderDetail(s) {
             <button class="detail-tab" id="tab-napi" onclick="switchDetailTab('napi')">
                 <i class="fas fa-calendar-day" style="margin-right:5px"></i>Napi aktivitás
             </button>
+            <a class="detail-tab" href="profil.html?email=${encodeURIComponent(s.email)}" target="_blank" style="margin-left:auto;text-decoration:none;">
+                <i class="fas fa-user-circle" style="margin-right:5px"></i>Profil
+            </a>
         </div>
         <div id="detail-content">${haladasHtml}</div>`;
 }
