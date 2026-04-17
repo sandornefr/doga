@@ -2199,6 +2199,7 @@ async function ensurePyodide() {
 // Load Pyodide in background when page loads
 window.addEventListener('load', () => {
   if (window.loadPyodide) ensurePyodide().catch(() => {});
+  syncStateFromBackend();
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2334,6 +2335,44 @@ function saveCompletion(key){
 function saveState() {
   localStorage.setItem('py_practice_status', JSON.stringify(st.status));
   localStorage.setItem('py_practice_done', JSON.stringify(st.completedOnce));
+  saveStateToBackend();
+}
+
+function saveStateToBackend() {
+  if (!u.token) return;
+  const payload = JSON.stringify({ status: st.status, done: st.completedOnce });
+  fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/py_practice`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+    body: JSON.stringify({ value: payload })
+  }).catch(() => {});
+}
+
+async function syncStateFromBackend() {
+  if (!u.token) return;
+  try {
+    const res = await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/py_practice`, {
+      headers: { 'Authorization': 'Bearer ' + u.token }
+    });
+    if (!res.ok) return;
+    const { value } = await res.json();
+    if (!value) return;
+    const remote = JSON.parse(value);
+    if (!remote.done || !remote.status) return;
+    let changed = false;
+    remote.done.forEach((d, i) => {
+      if (d && !st.completedOnce[i]) {
+        st.completedOnce[i] = true;
+        st.status[i] = 'done';
+        changed = true;
+      }
+    });
+    if (changed) {
+      localStorage.setItem('py_practice_status', JSON.stringify(st.status));
+      localStorage.setItem('py_practice_done', JSON.stringify(st.completedOnce));
+      updatePills();
+    }
+  } catch(e) {}
 }
 
 function saveCurrentCode() {
