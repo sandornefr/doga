@@ -238,7 +238,7 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 
     <div class="topbar">
         <a class="topbar-logo" href="oktato-portal.html">
-            <i class="fas fa-graduation-cap"></i> Kandó Teszt
+            <i class="fas fa-graduation-cap"></i> Digitális számonkérési rendszer
         </a>
         <div class="topbar-title"><strong>Tanulói haladás</strong></div>
         <a class="topbar-back" href="profil.html" style="margin-right:4px">
@@ -258,8 +258,8 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <select id="csoport-select"  onchange="applyFilters()"><option value="">Összes</option></select>
         <div class="filter-sep"></div>
         <div class="stat-pill"><i class="fas fa-users"></i> Tanuló: <strong id="cnt-osszes">–</strong></div>
-        <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Mindkettő: <strong id="cnt-zold">–</strong></div>
-        <div class="stat-pill warn"><i class="fas fa-circle" style="font-size:.55rem;color:#d29922"></i> Hiányos: <strong id="cnt-sarga">–</strong></div>
+        <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Aktív: <strong id="cnt-zold">–</strong></div>
+        <div class="stat-pill warn"><i class="fas fa-circle" style="font-size:.55rem;color:#d29922"></i> Halad: <strong id="cnt-sarga">–</strong></div>
         <div class="stat-pill danger"><i class="fas fa-circle" style="font-size:.55rem;color:#f85149"></i> Inaktív: <strong id="cnt-gyenge">–</strong></div>
     </div>
 
@@ -540,8 +540,8 @@ function makeCard(s) {
     const badge    = status==='piros'
         ? '<span class="lemarad-badge">Lemarad</span>'
         : status==='sarga'
-            ? '<span class="lemarad-badge" style="background:#d29922">Hiányos</span>'
-            : '';
+            ? '<span class="lemarad-badge" style="background:#d29922">Halad</span>'
+            : '<span class="lemarad-badge" style="background:#3fb950">Aktív</span>';
 
     // Mini kötelező dot-ok (8 db)
     const kDots = KOTELEZO.map(k => {
