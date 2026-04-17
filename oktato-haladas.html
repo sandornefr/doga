@@ -650,10 +650,25 @@ function javasoltJegy(s) {
     return 1;
 }
 
+function peerScore(s) {
+    // Összetett pontszám: kötelező tier az elsődleges, azon belül munkamenetek döntenek
+    const done   = getKotelezoDb(s);
+    const pyS    = s.pythonSessions     || 0;
+    const webS   = s.webAgazatiSessions || 0;
+    const pyAvg  = s.pythonAvgPct       || 0;
+    const webAvg = s.webAvgPct          || 0;
+    const ikt    = s.interaktivDb       || 0;
+    return done * 10000
+         + pyS  * 50
+         + webS * 150
+         + Math.round(pyAvg + webAvg)
+         + ikt  * 30;
+}
+
 function peerComparison(s) {
     // Ha hiányzik a csoportinfo, nem tudunk rangsorolni
     if (!s.evfolyam || !s.osztaly || !s.csoport) return null;
-    const doneCnt = getKotelezoDb(s);
+    const myScore = peerScore(s);
     const sEf  = s.evfolyam.toLowerCase();
     const sOsz = s.osztaly.toLowerCase();
     const sCso = s.csoport.toLowerCase();
@@ -665,11 +680,10 @@ function peerComparison(s) {
         x.csoport.toLowerCase()  === sCso
     );
     if (!peers.length) return null;
-    const better = peers.filter(x => getKotelezoDb(x) > doneCnt).length;
-    const equal  = peers.filter(x => getKotelezoDb(x) === doneCnt).length;
+    const better = peers.filter(x => peerScore(x) > myScore).length;
     const rank   = better + 1;
     const total  = peers.length + 1;
-    return { rank, total, equal };
+    return { rank, total };
 }
 
 // Kártya státusz meghatározása
