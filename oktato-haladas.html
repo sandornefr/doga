@@ -634,7 +634,7 @@ function javasoltJegy(s) {
 
 function peerComparison(s) {
     const doneCnt = getKotelezoDb(s);
-    const peers = haladásData.filter(x =>
+    const peers = allData.filter(x =>
         x.email !== s.email &&
         x.osztaly === s.osztaly && x.csoport === s.csoport
     );
