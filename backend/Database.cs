@@ -756,8 +756,8 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO progress (email, nev, osztaly, targy, feladat, pont, max_pont, mode)
-            VALUES ($email, $nev, $osztaly, $targy, $feladat, $pont, $max_pont, $mode)";
+            INSERT INTO progress (email, nev, osztaly, targy, feladat, pont, max_pont, mode, datum)
+            VALUES ($email, $nev, $osztaly, $targy, $feladat, $pont, $max_pont, $mode, datetime('now', 'localtime'))";
         cmd.Parameters.AddWithValue("$email",   r.Email.ToLower().Trim());
         cmd.Parameters.AddWithValue("$nev",     (object?)r.Nev     ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$osztaly", (object?)r.Osztaly ?? DBNull.Value);

@@ -303,6 +303,8 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
 .napi-date-input:focus { outline:none; border-color:#58a6ff; }
 .napi-act-list { padding:0 20px 20px; display:flex; flex-direction:column; gap:6px; }
 .napi-act-row { background:#0d1117; border-radius:7px; padding:9px 12px; display:flex; align-items:flex-start; gap:10px; font-size:0.83rem; }
+.napi-act-time { width:36px; flex-shrink:0; font-size:0.72rem; font-weight:700; color:#58a6ff; font-family:monospace; margin-top:2px; text-align:right; }
+.napi-act-time--empty { opacity:0; }
 .napi-act-icon { width:20px; text-align:center; flex-shrink:0; margin-top:1px; }
 .napi-act-body { flex:1; }
 .napi-act-title { color:#e0e0e0; font-weight:600; }
@@ -1141,18 +1143,27 @@ async function renderNapiContent(s, dateStr) {
     const picker = document.getElementById('napi-date-picker');
     const effectiveDate = picker ? picker.value : dateStr;
 
+    // ts: "2025-04-17 10:35:22" vagy "2025-04-17" → "10:35" vagy ""
+    function fmtIdo(ts) {
+        if (!ts) return '';
+        const m = ts.match(/\d{2}:\d{2}/);
+        return m ? m[0] : '';
+    }
+
     const acts = [];
 
     // Online volt-e
     if (s.lastActive && s.lastActive.substring(0,10) === effectiveDate) {
-        acts.push({ icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'' });
+        const t = fmtIdo(s.lastActive);
+        acts.push({ ts: s.lastActive, icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'', ido: t });
     }
 
     // Számonkérések
     s.szamonkeres?.forEach(sz => {
         if (sz.submittedAt?.substring(0,10) === effectiveDate) {
+            const t = fmtIdo(sz.submittedAt);
             acts.push({
-                icon:'fas fa-file-alt', color:'#58a6ff', title: sz.cim,
+                ts: sz.submittedAt, icon:'fas fa-file-alt', color:'#58a6ff', title: sz.cim, ido: t,
                 sub:`${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>`
             });
         }
@@ -1172,15 +1183,17 @@ async function renderNapiContent(s, dateStr) {
     ];
     tananyagMap.forEach(t => {
         if (s[t.key]?.substring(0,10) === effectiveDate) {
-            acts.push({ icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve' });
+            const ido = fmtIdo(s[t.key]);
+            acts.push({ ts: s[t.key], icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve', ido });
         }
     });
 
     // Web ágazati feladatok ezen a napon
     progressItems.filter(p => p.targy==='web' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
         const label = AGAZATI_LABELS[p.feladat] || p.feladat;
+        const ido = fmtIdo(p.datum);
         acts.push({
-            icon:'fas fa-code', color:'#f472b6',
+            ts: p.datum, icon:'fas fa-code', color:'#f472b6', ido,
             title:`WEB ágazati: ${label}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
         });
@@ -1189,24 +1202,28 @@ async function renderNapiContent(s, dateStr) {
     // Python ágazati beadások ezen a napon
     progressItems.filter(p => p.targy==='python' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
         const feladatNev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
+        const ido = fmtIdo(p.datum);
         acts.push({
-            icon:'fab fa-python', color:'#3b82f6',
+            ts: p.datum, icon:'fab fa-python', color:'#3b82f6', ido,
             title:`Python ágazati: ${feladatNev}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
         });
     });
 
     // Kvíz alkalmak ezen a napon
-    const napiQuiz = quizItems.filter(q => q.submittedAt?.substring(0,10)===effectiveDate);
-    napiQuiz.forEach(q => {
+    quizItems.filter(q => q.submittedAt?.substring(0,10)===effectiveDate).forEach(q => {
         const label = QUIZ_LABELS[q.tipus] || q.tipus;
-        const ido = q.idoMp ? ` · ${Math.floor(q.idoMp/60)}p ${q.idoMp%60}mp` : '';
+        const idoMpStr = q.idoMp ? ` · ${Math.floor(q.idoMp/60)}p ${q.idoMp%60}mp` : '';
+        const ido = fmtIdo(q.submittedAt);
         acts.push({
-            icon:'fas fa-brain', color:'#10b981',
+            ts: q.submittedAt, icon:'fas fa-brain', color:'#10b981', ido,
             title:label,
-            sub:`${q.pont}/${q.maxPont} pont · ${q.szazalek}%${ido}`
+            sub:`${q.pont}/${q.maxPont} pont · ${q.szazalek}%${idoMpStr}`
         });
     });
+
+    // Időrend szerint rendezés
+    acts.sort((a, b) => (a.ts || '') < (b.ts || '') ? -1 : 1);
 
     // ── Render ──
     const reContentEl = document.getElementById('detail-content');
@@ -1220,6 +1237,7 @@ async function renderNapiContent(s, dateStr) {
            </div>`
         : acts.map(a => `
             <div class="napi-act-row">
+                ${a.ido ? `<div class="napi-act-time">${a.ido}</div>` : '<div class="napi-act-time napi-act-time--empty"></div>'}
                 <div class="napi-act-icon"><i class="${a.icon}" style="color:${a.color}"></i></div>
                 <div class="napi-act-body">
                     <div class="napi-act-title">${a.title}</div>
