@@ -1094,6 +1094,19 @@ function switchDetailTab(tab) {
     renderNapiContent(currentDetailData, today);
 }
 
+const PYTHON_FELADAT_LABELS = {
+    '1':'Kisebb-nagyobb','2':'Kő-papír-olló','3':'Nettó-bruttó kalkulátor',
+    '4':'Napszak köszöntő','5':'Lázmérő','6':'Sebességkategória',
+    '7':'Nyitvatartás','8':'Évszakok','9':'Dolgozat pontszám',
+    '10':'BMI kalkulátor','11':'Jegyek átlaga','12':'Étterem értékelő',
+    '13':'Csekkbefizetés','14':'Könyvtári bírság','15':'Lépésszámláló',
+    '16':'Magasugrás','17':'Italautomata','18':'Iskolai büfé',
+    '19':'Mozijegy','20':'Pizza rendelés','21':'Ruhaméret',
+    '22':'Taxi ár kalkulátor','23':'Szállodai szoba','24':'Kutya életkor kalkulátor',
+    '25':'Traffipax','26':'Űrhajó Rakomány','27':'Mobiladat Túllépés',
+    '28':'Alkimista Varázsital','29':'Okosotthon fűtés','30':'Hiányzás kalkulátor',
+    '31':'Töri évszám kvíz','32':'Forgalomszámlálás','33':'Állatok'
+};
 const AGAZATI_LABELS = {
     bogyos:'Bogyós gyümölcsök', humanoid:'Humanoid robotok', baglyok:'Baglyok',
     egijelensegek:'Égi jelenségek', evmadarai:'Az év madarai', gombak:'Gombák',
@@ -1175,9 +1188,10 @@ async function renderNapiContent(s, dateStr) {
 
     // Python ágazati beadások ezen a napon
     progressItems.filter(p => p.targy==='python' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
+        const feladatNev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
         acts.push({
             icon:'fab fa-python', color:'#3b82f6',
-            title:`Python ágazati beadás`,
+            title:`Python ágazati: ${feladatNev}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`
         });
     });
