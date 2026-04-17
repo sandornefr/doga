@@ -418,9 +418,10 @@ async function loadTanuloProfile(u, page) {
         const streakTitle = STREAK_TITLES.find(s => streak >= s.min) || null;
 
         // Aktív napok heatmap adatokhoz
+        const ACTIVITY_START = '2026-03-01';
         const activeDates = [];
-        items.forEach(i => { if(i.datum) activeDates.push(i.datum.substring(0,10)); });
-        quizItems.forEach(q => { if(q.submittedAt) activeDates.push(q.submittedAt.substring(0,10)); });
+        items.forEach(i => { if(i.datum && i.datum.substring(0,10) >= ACTIVITY_START) activeDates.push(i.datum.substring(0,10)); });
+        quizItems.forEach(q => { if(q.submittedAt && q.submittedAt.substring(0,10) >= ACTIVITY_START) activeDates.push(q.submittedAt.substring(0,10)); });;
 
         const maxConsec = calcMaxConsecutive(activeDates);
 
