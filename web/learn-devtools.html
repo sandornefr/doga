@@ -517,5 +517,16 @@
 </div>
 
 <script src="../special-roles.js"></script>
+<script>
+(function saveDevtoolsCompletion() {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!u.token || !u.email) return;
+    fetch(`https://agazati.up.railway.app/api/user-state/${encodeURIComponent(u.email)}/tananyag_devtools`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+        body: JSON.stringify({ value: new Date().toISOString().substring(0, 10) })
+    }).catch(() => {});
+})();
+</script>
 </body>
 </html>

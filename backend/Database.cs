@@ -1162,13 +1162,20 @@ public class Database
         SELECT
             u.vezeteknev || ' ' || u.keresztnev AS nev,
             u.email, u.evfolyam, u.osztaly, u.csoport,
-            MAX(CASE WHEN s.state_key='tananyag_html'       THEN s.state_value END),
-            MAX(CASE WHEN s.state_key='tananyag_css'        THEN s.state_value END),
-            MAX(CASE WHEN s.state_key='tananyag_bootstrap'  THEN s.state_value END),
-            MAX(CASE WHEN s.state_key='tananyag_emmet'      THEN s.state_value END),
-            MAX(CASE WHEN s.state_key='tananyag_javascript' THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_html'          THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_css'           THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_bootstrap'     THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_emmet'         THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_javascript'    THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='tananyag_devtools'      THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='python_kezdo'           THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='python_halado'          THEN s.state_value END),
+            MAX(CASE WHEN s.state_key='python_pro_algoritmus'  THEN s.state_value END),
             COALESCE(py.sessions,0), COALESCE(py.avg_pct,0), COALESCE(py.best_pct,0), py.last_date,
-            COALESCE(wb.sessions,0), COALESCE(wb.avg_pct,0), COALESCE(wb.best_pct,0), wb.last_date
+            COALESCE(wb.sessions,0), COALESCE(wb.avg_pct,0), COALESCE(wb.best_pct,0), wb.last_date,
+            COALESCE(wag.sessions,0),
+            COALESCE(ikt.db,0), COALESCE(ikt.best_pct,0),
+            COALESCE(tp.best_pct,0)
         FROM users u
         LEFT JOIN user_state s ON LOWER(u.email)=LOWER(s.email)
         LEFT JOIN (
@@ -1185,41 +1192,79 @@ public class Database
                    MAX(datum) as last_date
             FROM progress WHERE targy='web' GROUP BY LOWER(email)
         ) wb ON LOWER(u.email)=LOWER(wb.email)
+        LEFT JOIN (
+            SELECT LOWER(email) as email, COUNT(*) as sessions
+            FROM progress
+            WHERE targy='web' AND feladat IN (
+                'bogyos','humanoid','baglyok','egijelensegek','evmadarai',
+                'gombak','hobbiallatok','hullok','tropusi_gyumolcsok')
+            GROUP BY LOWER(email)
+        ) wag ON LOWER(u.email)=wag.email
+        LEFT JOIN (
+            SELECT LOWER(email) as email, COUNT(*) as db,
+                   ROUND(MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as best_pct
+            FROM quiz_results WHERE tipus='interaktiv' GROUP BY LOWER(email)
+        ) ikt ON LOWER(u.email)=ikt.email
+        LEFT JOIN (
+            SELECT LOWER(email) as email,
+                   ROUND(MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as best_pct
+            FROM quiz_results WHERE tipus IN ('html','css','bootstrap') GROUP BY LOWER(email)
+        ) tp ON LOWER(u.email)=tp.email
         WHERE u.szerep='tanulo'";
 
     static HaladasItem ReadHaladasRow(Microsoft.Data.Sqlite.SqliteDataReader r)
     {
-        var pyLast = r.IsDBNull(13) ? null : r.GetString(13);
-        var wbLast = r.IsDBNull(17) ? null : r.GetString(17);
-        var th = r.IsDBNull(5) ? null : r.GetString(5);
-        var tc = r.IsDBNull(6) ? null : r.GetString(6);
-        var tb = r.IsDBNull(7) ? null : r.GetString(7);
-        var te = r.IsDBNull(8) ? null : r.GetString(8);
-        var tj = r.IsDBNull(9) ? null : r.GetString(9);
-        // Legkésőbbi aktivitás: tananyag dátumok + practice dátumok közül a maximum
-        var dates = new[] { th, tc, tb, te, tj, pyLast, wbLast }
+        // col 0-4: nev, email, evfolyam, osztaly, csoport
+        // col 5-9:  tananyag_html/css/bootstrap/emmet/javascript
+        // col 10:   tananyag_devtools
+        // col 11-13: python_kezdo, python_halado, python_pro_algoritmus
+        // col 14-17: py sessions/avg/best/last
+        // col 18-21: wb sessions/avg/best/last
+        // col 22: wag sessions (web ágazati 9 feladat)
+        // col 23-24: ikt db, ikt best_pct
+        // col 25: tp best_pct
+        var th = r.IsDBNull(5)  ? null : r.GetString(5);
+        var tc = r.IsDBNull(6)  ? null : r.GetString(6);
+        var tb = r.IsDBNull(7)  ? null : r.GetString(7);
+        var te = r.IsDBNull(8)  ? null : r.GetString(8);
+        var tj = r.IsDBNull(9)  ? null : r.GetString(9);
+        var td = r.IsDBNull(10) ? null : r.GetString(10);
+        var pk = r.IsDBNull(11) ? null : r.GetString(11);
+        var ph = r.IsDBNull(12) ? null : r.GetString(12);
+        var pp = r.IsDBNull(13) ? null : r.GetString(13);
+        var pyLast = r.IsDBNull(17) ? null : r.GetString(17);
+        var wbLast = r.IsDBNull(21) ? null : r.GetString(21);
+        var dates = new[] { th, tc, tb, te, tj, td, pk, ph, pp, pyLast, wbLast }
                         .Where(d => d != null).ToList();
         string? lastActive = dates.Count > 0 ? dates.Max() : null;
         return new HaladasItem {
-            Nev               = r.IsDBNull(0) ? null : r.GetString(0),
-            Email             = r.GetString(1),
-            Evfolyam          = r.IsDBNull(2) ? null : r.GetString(2),
-            Osztaly           = r.IsDBNull(3) ? null : r.GetString(3),
-            Csoport           = r.IsDBNull(4) ? null : r.GetString(4),
-            TananyagHtml      = th,
-            TananyagCss       = tc,
-            TananyagBootstrap = tb,
-            TananyagEmmet     = te,
-            TananyagJavascript= tj,
-            PythonSessions    = r.GetInt32(10),
-            PythonAvgPct      = r.GetDouble(11),
-            PythonBestPct     = r.GetDouble(12),
-            PythonLastDate    = pyLast,
-            WebSessions       = r.GetInt32(14),
-            WebAvgPct         = r.GetDouble(15),
-            WebBestPct        = r.GetDouble(16),
-            WebLastDate       = wbLast,
-            LastActive        = lastActive
+            Nev                = r.IsDBNull(0) ? null : r.GetString(0),
+            Email              = r.GetString(1),
+            Evfolyam           = r.IsDBNull(2) ? null : r.GetString(2),
+            Osztaly            = r.IsDBNull(3) ? null : r.GetString(3),
+            Csoport            = r.IsDBNull(4) ? null : r.GetString(4),
+            TananyagHtml       = th,
+            TananyagCss        = tc,
+            TananyagBootstrap  = tb,
+            TananyagEmmet      = te,
+            TananyagJavascript = tj,
+            TananyagDevtools   = td,
+            PythonKezdo        = pk,
+            PythonHalado       = ph,
+            PythonProAlgoritmus= pp,
+            PythonSessions     = r.GetInt32(14),
+            PythonAvgPct       = r.GetDouble(15),
+            PythonBestPct      = r.GetDouble(16),
+            PythonLastDate     = pyLast,
+            WebSessions        = r.GetInt32(18),
+            WebAvgPct          = r.GetDouble(19),
+            WebBestPct         = r.GetDouble(20),
+            WebLastDate        = wbLast,
+            WebAgazatiSessions = r.GetInt32(22),
+            InteraktivDb       = r.GetInt32(23),
+            InteraktivBestPct  = r.GetDouble(24),
+            TudasproBestPct    = r.GetDouble(25),
+            LastActive         = lastActive
         };
     }
 

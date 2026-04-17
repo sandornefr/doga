@@ -415,13 +415,18 @@ public class HaladasItem
     public string? Evfolyam           { get; set; }
     public string? Osztaly            { get; set; }
     public string? Csoport            { get; set; }
-    // Tananyag szintek teljesítési dátuma (null = nem teljesítette)
+    // WEB tananyag szintek (null = nem teljesítette)
     public string? TananyagHtml       { get; set; }
     public string? TananyagCss        { get; set; }
     public string? TananyagBootstrap  { get; set; }
     public string? TananyagEmmet      { get; set; }
     public string? TananyagJavascript { get; set; }
-    // Ágazati Python practice
+    public string? TananyagDevtools   { get; set; }
+    // Python szintek (null = nem teljesítette)
+    public string? PythonKezdo         { get; set; }
+    public string? PythonHalado        { get; set; }
+    public string? PythonProAlgoritmus { get; set; }
+    // Python Ágazati practice
     public int     PythonSessions     { get; set; }
     public double  PythonAvgPct       { get; set; }
     public double  PythonBestPct      { get; set; }
@@ -431,7 +436,14 @@ public class HaladasItem
     public double  WebAvgPct          { get; set; }
     public double  WebBestPct         { get; set; }
     public string? WebLastDate        { get; set; }
-    // Utolsó aktivitás (legkésőbbi dátum az összes forrásból)
+    // WEB Ágazati alapvizsga feladatok (9 forrásfeladat)
+    public int     WebAgazatiSessions { get; set; }
+    // Interaktív teszt
+    public int     InteraktivDb       { get; set; }
+    public double  InteraktivBestPct  { get; set; }
+    // Tudáspróba (HTML+CSS+Bootstrap quiz)
+    public double  TudasproBestPct    { get; set; }
+    // Utolsó aktivitás
     public string? LastActive         { get; set; }
 }
 
