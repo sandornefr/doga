@@ -155,6 +155,8 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
     background:#0d1117; position:sticky; top:0; z-index:10;
 }
 .detail-name { font-size:1.05rem; font-weight:700; color:#e0e0e0; }
+.tesztelő-badge { display:inline-flex;align-items:center;gap:4px;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.4);border-radius:20px;padding:1px 8px;font-size:0.7rem;font-weight:700;color:#fbbf24;vertical-align:middle;margin-left:6px; }
+.feladatkeszito-badge { display:inline-flex;align-items:center;gap:4px;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.4);border-radius:20px;padding:1px 8px;font-size:0.7rem;font-weight:700;color:#2dd4bf;vertical-align:middle;margin-left:6px; }
 .detail-meta { font-size:0.78rem; color:#8b949e; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; }
 .detail-extra { margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .jegy-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; }
@@ -847,9 +849,16 @@ async function loadDetail(email) {
     const panel = document.getElementById('detail-panel');
     panel.innerHTML = '<div class="loading-msg"><i class="fas fa-circle-notch spin"></i> Betöltés...</div>';
     try {
-        const res = await authFetch(`${API}/api/haladas/tanulo/${encodeURIComponent(email)}`);
+        const [res, tRes, fRes] = await Promise.all([
+            authFetch(`${API}/api/haladas/tanulo/${encodeURIComponent(email)}`),
+            authFetch(`${API}/api/tesztelok/check?email=${encodeURIComponent(email)}`).catch(()=>null),
+            authFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(email)}`).catch(()=>null),
+        ]);
         if (!res.ok) throw new Error();
-        renderDetail(await res.json());
+        const data = await res.json();
+        data._isTesztelő      = tRes?.ok  ? (await tRes.json()).isTesztelő       : false;
+        data._isFeladatkeszito= fRes?.ok  ? (await fRes.json()).isFeladatkeszito  : false;
+        renderDetail(data);
     } catch(e) {
         panel.innerHTML = '<div class="loading-msg"><i class="fas fa-exclamation-triangle" style="color:#f85149"></i> Nem sikerült betölteni.</div>';
     }
@@ -999,7 +1008,11 @@ function renderDetail(s) {
 
     panel.innerHTML = `
         <div class="detail-header">
-            <div class="detail-name">${s.nev||s.email}</div>
+            <div class="detail-name">
+                ${s.nev||s.email}
+                ${s._isTesztelő       ? `<span class="tesztelő-badge"><i class="fas fa-flask"></i> Tesztelő</span>` : ''}
+                ${s._isFeladatkeszito ? `<span class="feladatkeszito-badge"><i class="fas fa-pen-nib"></i> Feladatkészítő</span>` : ''}
+            </div>
             <div class="detail-meta">
                 <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${evozLabel} · ${csLabel}</span>
                 <span><i class="fas fa-circle" style="font-size:.55rem;color:${actClr};margin-right:4px"></i>${act.long}</span>
