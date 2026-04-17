@@ -1040,14 +1040,16 @@ public class Database
         var osztaly  = user?.Osztaly;
         var evfolyam = user?.Evfolyam;
 
-        var (wcso, pcso) = csoport != null && osztaly != null
-            ? GetRankInScope(email, "LOWER(COALESCE(u.csoport,''))=LOWER($cs) AND LOWER(COALESCE(u.osztaly,''))=LOWER($o)",
-                new() { {"$cs", csoport}, {"$o", osztaly} }, $"{osztaly}/{csoport}-es csoport")
+        var (wcso, pcso) = csoport != null && osztaly != null && evfolyam != null
+            ? GetRankInScope(email,
+                "LOWER(COALESCE(u.evfolyam,''))=LOWER($ef) AND LOWER(COALESCE(u.osztaly,''))=LOWER($o) AND LOWER(COALESCE(u.csoport,''))=LOWER($cs)",
+                new() { {"$ef", evfolyam}, {"$o", osztaly}, {"$cs", csoport} }, $"{evfolyam}.{osztaly}/{csoport}-es csoport")
             : (null, null);
 
-        var (wosz, posz) = osztaly != null
-            ? GetRankInScope(email, "LOWER(COALESCE(u.osztaly,''))=LOWER($o)",
-                new() { {"$o", osztaly} }, $"{osztaly} osztály")
+        var (wosz, posz) = osztaly != null && evfolyam != null
+            ? GetRankInScope(email,
+                "LOWER(COALESCE(u.evfolyam,''))=LOWER($ef) AND LOWER(COALESCE(u.osztaly,''))=LOWER($o)",
+                new() { {"$ef", evfolyam}, {"$o", osztaly} }, $"{evfolyam}.{osztaly} osztály")
             : (null, null);
 
         var (wevf, pevf) = evfolyam != null
@@ -1266,6 +1268,45 @@ public class Database
             TudasproBestPct    = r.GetDouble(25),
             LastActive         = lastActive
         };
+    }
+
+    public object GetKotelezoStats(string? evfolyam, string? osztaly, string? csoport)
+    {
+        var all = GetHaladasByOsztaly(null);
+        var scope = all.Where(s =>
+            (evfolyam == null || string.Equals(s.Evfolyam, evfolyam, StringComparison.OrdinalIgnoreCase)) &&
+            (osztaly  == null || string.Equals(s.Osztaly,  osztaly,  StringComparison.OrdinalIgnoreCase)) &&
+            (csoport  == null || string.Equals(s.Csoport,  csoport,  StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+        int total = scope.Count;
+        if (total == 0) return new { total = 0, items = Array.Empty<object>() };
+        var keys = new[] {
+            ("tananyagHtml",      "HTML tananyag"),
+            ("tananyagCss",       "CSS tananyag"),
+            ("tananyagBootstrap", "Bootstrap tananyag"),
+            ("webAgazati",        "Ágazati WEB feladatok"),
+            ("tudasproBest",      "Tudáspróba"),
+            ("pythonKezdo",       "Python Kezdő szint"),
+            ("pythonHalado",      "Python Haladó szint"),
+            ("pythonSessions",    "Python Ágazati feladatok"),
+            ("interaktiv",        "Interaktív teszt"),
+        };
+        var items = keys.Select(k => {
+            int done = k.Item1 switch {
+                "tananyagHtml"      => scope.Count(s => s.TananyagHtml      != null),
+                "tananyagCss"       => scope.Count(s => s.TananyagCss       != null),
+                "tananyagBootstrap" => scope.Count(s => s.TananyagBootstrap != null),
+                "webAgazati"        => scope.Count(s => s.WebAgazatiSessions > 0),
+                "tudasproBest"      => scope.Count(s => s.TudasproBestPct   > 0),
+                "pythonKezdo"       => scope.Count(s => s.PythonKezdo       != null),
+                "pythonHalado"      => scope.Count(s => s.PythonHalado      != null),
+                "pythonSessions"    => scope.Count(s => s.PythonSessions     > 0),
+                "interaktiv"        => scope.Count(s => s.InteraktivDb       > 0),
+                _                   => 0
+            };
+            return new { key = k.Item1, label = k.Item2, done, total, pct = total > 0 ? (int)Math.Round(done * 100.0 / total) : 0 };
+        }).ToArray();
+        return new { total, items };
     }
 
     public List<HaladasItem> GetHaladasByOsztaly(string? osztaly)

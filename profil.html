@@ -385,7 +385,12 @@ async function loadTanuloProfile(u, page) {
     const email = (u.email || '').replace('@kkszki.hu','');
     const TO = 30000;
     try {
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes] = await Promise.all([
+        const statsParams = new URLSearchParams();
+        if (u.evfolyam) statsParams.set('evfolyam', u.evfolyam);
+        if (u.osztaly)  statsParams.set('osztaly',  u.osztaly);
+        if (u.csoport)  statsParams.set('csoport',  u.csoport);
+
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -393,6 +398,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/quiz-results/${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/tesztelok/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
+            apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -412,6 +418,7 @@ async function loadTanuloProfile(u, page) {
         const quizItems= quizRes?.ok  ? await quizRes.json()  : [];
         const isTesztelő      = teszteloRes?.ok  ? (await teszteloRes.json()).isTesztelő      : false;
         const isFeladatkeszito= feladatKeszRes?.ok? (await feladatKeszRes.json()).isFeladatkeszito : false;
+        const kotelezoStats   = statsRes?.ok      ? (await statsRes.json())                      : null;
 
         const progress = {
             web:    { sessions:p.web?.sessions??0,    avgPercent:p.web?.avgPercent??0,    bestPercent:p.web?.bestPercent??0,    lastSession:p.web?.lastSession??null },
@@ -537,6 +544,22 @@ async function loadTanuloProfile(u, page) {
                 ${renderProgCard(progress.web, 'WEB feladat', 'web', WEB_LEVELS, rankData?.web)}
             </div>
         </div>
+
+        <!-- Szint teljesítési statisztika -->
+        ${kotelezoStats && kotelezoStats.total > 0 ? `
+        <div class="section">
+            <div class="section-title"><i class="fas fa-users"></i> Hogyan állnak a többiek? <span style="font-size:0.72rem;font-weight:400;color:#484f58">(${kotelezoStats.total} tanuló, ugyanaz a csoport)</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+            ${kotelezoStats.items.map(it => `
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:160px;font-size:0.75rem;color:#8b949e;flex-shrink:0;">${it.label}</div>
+                    <div style="flex:1;background:#21262d;border-radius:4px;height:8px;overflow:hidden;">
+                        <div style="width:${it.pct}%;height:100%;background:${it.pct>=70?'#26a641':it.pct>=40?'#d29922':'#da3633'};border-radius:4px;transition:width .4s;"></div>
+                    </div>
+                    <div style="font-size:0.73rem;color:#c9d1d9;width:60px;text-align:right;flex-shrink:0;">${it.done}/${it.total} (${it.pct}%)</div>
+                </div>`).join('')}
+            </div>
+        </div>` : ''}
 
         <!-- Aktivitás heatmap -->
         <div class="section">

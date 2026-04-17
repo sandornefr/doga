@@ -654,7 +654,9 @@ function peerComparison(s) {
     const doneCnt = getKotelezoDb(s);
     const peers = allData.filter(x =>
         x.email !== s.email &&
-        x.osztaly === s.osztaly && x.csoport === s.csoport
+        x.evfolyam === s.evfolyam &&
+        x.osztaly  === s.osztaly  &&
+        x.csoport  === s.csoport
     );
     if (!peers.length) return null;
     const better = peers.filter(x => getKotelezoDb(x) > doneCnt).length;

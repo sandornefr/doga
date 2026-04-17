@@ -1367,6 +1367,17 @@ app.MapGet("/api/haladas", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetHaladasByOsztaly(osztaly));
 });
 
+// Kötelező elemek teljesítési statisztikája (tanuló token is elég – nincs PII)
+app.MapGet("/api/stats/kotelezo", (HttpContext ctx, Database db) =>
+{
+    var (valid, _, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var evfolyam = ctx.Request.Query["evfolyam"].FirstOrDefault();
+    var osztaly  = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport  = ctx.Request.Query["csoport"].FirstOrDefault();
+    return Results.Ok(db.GetKotelezoStats(evfolyam, osztaly, csoport));
+});
+
 app.MapGet("/api/haladas/osszesito", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
