@@ -2741,7 +2741,10 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         // ── Feladatsor kezelés ─────────────────────────────────────────────
 
         async function loadTaskSets() {
-            document.getElementById('ts-loading').style.display = 'block';
+            const tsLoading = document.getElementById('ts-loading');
+            const tsTbody  = document.getElementById('ts-tbody');
+            if (!tsLoading || !tsTbody) return; // elem még nincs a DOM-ban
+            tsLoading.style.display = 'block';
             try {
                 const res = await fetch(`${RAILWAY_URL}/api/tasksets`, {
                     headers: { 'Authorization': 'Bearer ' + authToken }
@@ -2750,10 +2753,10 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 const list = await res.json();
                 renderTaskSets(list);
             } catch(e) {
-                document.getElementById('ts-tbody').innerHTML =
+                tsTbody.innerHTML =
                     '<tr><td colspan="8" style="color:#e94560;">Betöltési hiba</td></tr>';
             } finally {
-                document.getElementById('ts-loading').style.display = 'none';
+                tsLoading.style.display = 'none';
             }
         }
 
