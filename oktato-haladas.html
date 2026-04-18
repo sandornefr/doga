@@ -1055,9 +1055,9 @@ function renderDetail(s) {
             <button class="detail-tab" id="tab-napi" onclick="switchDetailTab('napi')">
                 <i class="fas fa-calendar-day" style="margin-right:5px"></i>Napi aktivitás
             </button>
-            <a class="detail-tab" href="profil.html?email=${encodeURIComponent(s.email)}" style="margin-left:auto;text-decoration:none;">
+            <button class="detail-tab" id="tab-profil" onclick="switchDetailTab('profil')" style="margin-left:auto;">
                 <i class="fas fa-user-circle" style="margin-right:5px"></i>Profil
-            </a>
+            </button>
         </div>
         <div id="detail-content">${haladasHtml}</div>`;
 }
@@ -1234,8 +1234,17 @@ function switchDetailTab(tab) {
     currentDetailTab = tab;
     document.getElementById('tab-haladas').classList.toggle('active', tab==='haladas');
     document.getElementById('tab-napi').classList.toggle('active', tab==='napi');
+    document.getElementById('tab-profil').classList.toggle('active', tab==='profil');
     if (tab === 'haladas') {
         if (selectedEmail) loadDetail(selectedEmail);
+        return;
+    }
+    if (tab === 'profil') {
+        const el = document.getElementById('detail-content');
+        const email = encodeURIComponent(currentDetailData.email);
+        el.innerHTML = `<iframe src="profil.html?email=${email}&embed=true"
+            style="width:100%;height:calc(100vh - 200px);border:none;border-radius:0 0 8px 8px;background:#0d1117;"
+            loading="lazy"></iframe>`;
         return;
     }
     const today = new Date().toISOString().substring(0,10);
