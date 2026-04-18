@@ -2441,8 +2441,8 @@ public class Database
 
         // Győztes meghatározás
         string? winner = null;
-        double cp = d.ChallengerMax > 0 ? (double)d.ChallengerScore / d.ChallengerMax : 0;
-        double op = d.OpponentMax   > 0 ? (double)d.OpponentScore   / d.OpponentMax   : 0;
+        double cp = (d.ChallengerMax ?? 0) > 0 ? (double)d.ChallengerScore!.Value / d.ChallengerMax!.Value : 0;
+        double op = (d.OpponentMax   ?? 0) > 0 ? (double)d.OpponentScore!.Value   / d.OpponentMax!.Value   : 0;
         if      (cp > op)  winner = d.ChallengerEmail;
         else if (op > cp)  winner = d.OpponentEmail;
         // Döntetlen: winner = null
