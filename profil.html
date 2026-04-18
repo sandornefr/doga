@@ -10,6 +10,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+*{scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#484f58;}
 
 /* ── Topbar ── */
 .topbar{display:flex;align-items:center;gap:14px;padding:10px 20px;background:#161b22;border-bottom:1px solid #21262d;position:sticky;top:0;z-index:100;}
