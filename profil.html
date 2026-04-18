@@ -412,7 +412,7 @@ async function loadTanuloProfile(u, page) {
         if (u.osztaly)  statsParams.set('osztaly',  u.osztaly);
         if (u.csoport)  statsParams.set('csoport',  u.csoport);
 
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes] = await Promise.all([
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -421,6 +421,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/tesztelok/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
+            apiFetch(`${API}/api/duel/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -440,7 +441,8 @@ async function loadTanuloProfile(u, page) {
         const quizItems= quizRes?.ok  ? await quizRes.json()  : [];
         const isTesztelő      = teszteloRes?.ok  ? (await teszteloRes.json()).isTesztelő      : false;
         const isFeladatkeszito= feladatKeszRes?.ok? (await feladatKeszRes.json()).isFeladatkeszito : false;
-        const kotelezoStats   = statsRes?.ok      ? (await statsRes.json())                      : null;
+        const kotelezoStats   = statsRes?.ok  ? (await statsRes.json()) : null;
+        const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
 
         const progress = {
             web:    { sessions:p.web?.sessions??0,    avgPercent:p.web?.avgPercent??0,    bestPercent:p.web?.bestPercent??0,    lastSession:p.web?.lastSession??null },
@@ -660,6 +662,30 @@ async function loadTanuloProfile(u, page) {
                 }).join('')}
             </div>
         </div>
+
+        <!-- Kódpárbaj statisztika -->
+        ${duelStats && duelStats.total > 0 ? `
+        <div class="section">
+            <div class="section-title"><i class="fas fa-swords"></i> Kódpárbaj</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+                <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:800;color:#22c55e;">${duelStats.wins}</div>
+                    <div style="font-size:0.72rem;color:#8b949e;margin-top:2px;">Győzelem</div>
+                </div>
+                <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:800;color:#ef4444;">${duelStats.losses}</div>
+                    <div style="font-size:0.72rem;color:#8b949e;margin-top:2px;">Vereség</div>
+                </div>
+                <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:800;color:#f59e0b;">${duelStats.total}</div>
+                    <div style="font-size:0.72rem;color:#8b949e;margin-top:2px;">Összes meccs</div>
+                </div>
+            </div>
+            <div style="margin-top:8px;font-size:0.78rem;color:#6b7280;">
+                Winrate: <strong style="color:#c9d1d9;">${duelStats.total>0?Math.round(duelStats.wins/duelStats.total*100):0}%</strong>
+                · ${duelStats.total - duelStats.wins - duelStats.losses} döntetlen
+            </div>
+        </div>` : ''}
 
         <!-- Legjobb eredmények -->
         <div class="section">
