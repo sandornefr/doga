@@ -261,6 +261,14 @@
             return;
         }
         mySzerep = isOktato ? 'oktato' : 'tesztelő';
+        // Ha az Ötlet gomb is jelen van ugyanazon a pozíción, eltoljuk balra
+        const otletWrap = document.querySelector('.otlet-fab-wrap');
+        if (otletWrap) {
+            const otletW = otletWrap.offsetWidth || 130;
+            const offset = 24 + otletW + 12;
+            fab.style.right = offset + 'px';
+            panel.style.right = '24px'; // panel maradhat jobbra, elég széles
+        }
         fab.style.display = 'flex';
         pollTimer = setTimeout(poll, 2000);
     }
