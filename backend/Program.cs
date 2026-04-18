@@ -1428,14 +1428,15 @@ app.MapGet("/api/gas/get-megoldasok", async (HttpContext ctx) =>
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 // Üzenetek lekérése (tesztelő vagy oktató)
-app.MapGet("/api/chat", (HttpContext ctx, Database db, int since_id = 0) =>
+app.MapGet("/api/chat", (HttpContext ctx, Database db) =>
 {
     var (valid, identity, role) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     var email = NormalizeSchoolEmail(identity);
     var isTesztelő = db.IsTesztelő(email);
     if (!IsPrivilegedRole(role) && !isTesztelő) return Results.Forbid();
-    return Results.Ok(db.GetChatMessages(since_id));
+    var sinceId = int.TryParse(ctx.Request.Query["since_id"], out var s) ? s : 0;
+    return Results.Ok(db.GetChatMessages(sinceId));
 });
 
 // Üzenet küldése (tesztelő vagy oktató)
