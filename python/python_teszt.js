@@ -3293,7 +3293,6 @@ function showHintToast(text, level, title) {
             <button onclick="document.getElementById('hint-toast').remove()" style="background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:4px;padding:2px 10px;cursor:pointer;font-size:0.8rem;">Bezár</button>
         </div>`;
     document.body.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 12000);
 }
 
 function showSolution() {
