@@ -172,7 +172,7 @@
 
     async function poll() {
         try {
-            const res = await fetch(`${API}/api/chat?since_id=${sinceId}`, { headers: getHeaders() });
+            const res = await fetch(`${CHAT_API}/api/chat?since_id=${sinceId}`, { headers: getHeaders() });
             if (!res.ok) return;
             const msgs = await res.json();
             if (isOpen) {
@@ -196,7 +196,7 @@
         btn.disabled = true;
         try {
             const headers = { 'Content-Type':'application/json', ...getHeaders() };
-            const res = await fetch(`${API}/api/chat`, {
+            const res = await fetch(`${CHAT_API}/api/chat`, {
                 method:'POST', headers,
                 body: JSON.stringify({ message: text })
             });
@@ -242,24 +242,28 @@
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
 
-    // ── Inicializálás ─────────────────────────────────────────────────────────
-    async function init() {
-        // Várjuk meg hogy az authHeaders/API globálisok beállódjanak
-        await new Promise(r => setTimeout(r, 800));
+    const CHAT_API = 'https://agazati.up.railway.app';
 
+    // ── Inicializálás (polling amíg a sessionStorage be nem áll) ──────────────
+    function tryInit(attempt) {
         const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-        if (!u || !u.email) return;
+        if (!u || !u.email) {
+            if (attempt < 20) setTimeout(() => tryInit(attempt + 1), 500);
+            return;
+        }
+        myEmail = u.email;
+        const isOktato   = u.szerep === 'oktato';
+        const isTesztelő = sessionStorage.getItem('kandoIsTesztelő') === '1';
 
-        myEmail  = u.email;
-        const isOktato    = u.szerep === 'oktato';
-        const isTesztelő  = sessionStorage.getItem('kandoIsTesztelő') === '1';
-
-        if (!isOktato && !isTesztelő) return;
-
+        if (!isOktato && !isTesztelő) {
+            // special-roles.js még nem futott le — várunk még pár kísérletet
+            if (attempt < 20) setTimeout(() => tryInit(attempt + 1), 500);
+            return;
+        }
         mySzerep = isOktato ? 'oktato' : 'tesztelő';
         fab.style.display = 'flex';
         pollTimer = setTimeout(poll, 2000);
     }
 
-    init();
+    setTimeout(() => tryInit(0), 300);
 })();
