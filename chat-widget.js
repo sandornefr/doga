@@ -337,12 +337,19 @@
             return;
         }
         mySzerep = isOktato ? 'oktato' : 'tesztelő';
+        // Admin (sandornef) mindkét csatornát látja; többi oktató csak az oktatóit
+        const isAdmin = u.email === 'sandornef@kkszki.hu';
 
-        // Oktatóknak tab-váltó + mindkét csatorna látható
-        if (isOktato) {
+        if (isOktato && isAdmin) {
+            // Tab-váltó mindkét csatornához
             document.getElementById('chat-tabs').style.display = 'flex';
             document.getElementById('chat-title').textContent = 'Chat';
+        } else if (isOktato) {
+            // Csak oktatói csatorna, nincs tab
+            currentChannel = 'oktatok';
+            document.getElementById('chat-title').textContent = 'Oktatói chat';
         } else {
+            // Tesztelő: csak tesztelők csatorna
             document.getElementById('chat-title').textContent = 'Tesztelői chat';
         }
 
