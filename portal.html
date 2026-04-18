@@ -212,10 +212,10 @@
             flex-direction: column;
             gap: 16px;
         }
-        /* Kártyák + changelog: háromoszlopos rács */
+        /* Kártyák + changelog: négyoszlopos rács */
         .student-two-col {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 16px;
             align-items: start;
         }
@@ -233,7 +233,23 @@
         .option-card.interaktiv:hover { border-color: #14b8a6; box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
         .option-card.interaktiv .icon { color: #0d9488; }
 
-        @media (max-width: 700px) {
+        .option-card.duel { border-color: #92400e; cursor:default; }
+        .option-card.duel:hover { border-color: #f59e0b; box-shadow: 0 8px 24px rgba(245,158,11,0.2); transform:translateY(-3px); }
+        .option-card.duel .icon { color: #f59e0b; }
+        .duel-online-inner { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+        .duel-member-btn {
+            display:flex; align-items:center; gap:7px; padding:6px 10px;
+            background:#0f172a; border:1px solid #374151; border-radius:8px;
+            color:#c9d1d9; font-size:0.78rem; cursor:pointer; transition:border-color .15s;
+            width:100%; text-align:left; font-family:inherit;
+        }
+        .duel-member-btn:hover { border-color:#f59e0b; color:#fcd34d; }
+        .duel-no-members { color:#4b5563; font-size:0.78rem; font-style:italic; margin-top:6px; }
+
+        @media (max-width: 900px) {
+            .student-two-col { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 500px) {
             .student-two-col { grid-template-columns: 1fr; }
         }
 
@@ -851,18 +867,21 @@
                     <div class="changelog-item">Modern tech (MI, felhő), Git, projektmenedzsment</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Kódpárbaj szekció (tanulóknak) – közvetlenül a kártyák alatt -->
-        <div id="duel-section" style="display:none;width:100%;max-width:960px;margin-bottom:8px;">
-            <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 20px;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                    <i class="fas fa-swords" style="color:#f59e0b;font-size:1rem;"></i>
-                    <span style="font-weight:700;color:#e0e0e0;">Kódpárbaj – Csoportod online tagjai</span>
-                    <span id="duel-online-count" style="background:#21262d;border:1px solid #30363d;border-radius:20px;padding:1px 10px;font-size:0.72rem;color:#8b949e;margin-left:auto;"></span>
-                </div>
-                <div id="duel-online-list" style="display:flex;flex-wrap:wrap;gap:8px;">
-                    <span style="color:#6b7280;font-size:0.82rem;">Nincs online csoporttárs.</span>
+            <!-- Kódpárbaj oszlop (4. kártya, csak tanulóknak) -->
+            <div class="student-col" id="duel-section" style="display:none;">
+                <div class="option-card duel">
+                    <span class="icon"><i class="fas fa-swords"></i></span>
+                    <span class="label">KÓDPÁRBAJ</span>
+                    <span class="desc">Versenyezz csoporttársaiddal Python feladatban</span>
+                    <div class="duel-online-inner">
+                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:2px;">
+                            <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;"></i>
+                            <span id="duel-online-count" style="font-size:0.72rem;color:#8b949e;"></span>
+                        </div>
+                        <div id="duel-online-list">
+                            <div class="duel-no-members">Nincs online csoporttárs.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2681,18 +2700,16 @@ if (location.hash === '#web-tanulas') {
             const list = document.getElementById('duel-online-list');
             const cnt  = document.getElementById('duel-online-count');
             if (!list) return;
-            cnt.textContent = `${members.length} online`;
+            cnt.textContent = `${members.length} fő online`;
             if (members.length === 0) {
-                list.innerHTML = '<span style="color:#6b7280;font-size:0.82rem;">Nincs online csoporttárs.</span>';
+                list.innerHTML = '<div class="duel-no-members">Nincs online csoporttárs.</div>';
                 return;
             }
             list.innerHTML = members.map(m => `
-                <button onclick="sendDuelInvite('${m.email}','${escJs(m.nev)}')"
-                    style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:8px;transition:border-color .15s;"
-                    onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#30363d'">
-                    <i class="fas fa-circle" style="font-size:.5rem;color:#22c55e;"></i>
-                    ${escHtml(m.nev)}
-                    <span style="margin-left:4px;color:#f59e0b;font-size:0.75rem;font-weight:700;"><i class="fas fa-swords"></i> Kihívom</span>
+                <button class="duel-member-btn" onclick="sendDuelInvite('${m.email}','${escJs(m.nev)}')">
+                    <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;flex-shrink:0;"></i>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(m.nev)}</span>
+                    <span style="color:#f59e0b;font-size:0.72rem;font-weight:700;flex-shrink:0;"><i class="fas fa-swords"></i></span>
                 </button>`).join('');
         } catch {}
     }
