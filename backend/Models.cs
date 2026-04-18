@@ -523,7 +523,7 @@ public class OnlineUser
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
-public record ChatSendRequest(string Message);
+public record ChatSendRequest(string Message, string Channel = "tesztelok");
 
 public class ChatMessage
 {
@@ -532,5 +532,6 @@ public class ChatMessage
     public string SenderNev   { get; set; } = "";
     public string SenderSzerep{ get; set; } = "";
     public string Message     { get; set; } = "";
+    public string Channel     { get; set; } = "tesztelok";
     public string CreatedAt   { get; set; } = "";
 }

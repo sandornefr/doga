@@ -177,6 +177,7 @@ public class Database
                 sender_nev     TEXT NOT NULL DEFAULT '',
                 sender_szerep  TEXT NOT NULL DEFAULT '',
                 message        TEXT NOT NULL,
+                channel        TEXT NOT NULL DEFAULT 'tesztelok',
                 created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime'))
             );
             CREATE TABLE IF NOT EXISTS password_reset_requests (
@@ -2515,12 +2516,23 @@ public class Database
 
     // ── Chat ──────────────────────────────────────────────────────────────────
 
-    public List<ChatMessage> GetChatMessages(int sinceId = 0)
+    public void MigrateChatChannel()
+    {
+        try
+        {
+            using var conn = Open();
+            Exec(conn, "ALTER TABLE chat_messages ADD COLUMN channel TEXT NOT NULL DEFAULT 'tesztelok'");
+        }
+        catch { /* oszlop már létezik */ }
+    }
+
+    public List<ChatMessage> GetChatMessages(int sinceId, string channel)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, sender_email, sender_nev, sender_szerep, message, created_at FROM chat_messages WHERE id > $sid ORDER BY id ASC LIMIT 200";
+        cmd.CommandText = "SELECT id, sender_email, sender_nev, sender_szerep, message, channel, created_at FROM chat_messages WHERE id > $sid AND channel=$ch ORDER BY id ASC LIMIT 200";
         cmd.Parameters.AddWithValue("$sid", sinceId);
+        cmd.Parameters.AddWithValue("$ch", channel);
         using var r = cmd.ExecuteReader();
         var list = new List<ChatMessage>();
         while (r.Read())
@@ -2530,20 +2542,22 @@ public class Database
                 SenderNev    = r.IsDBNull(2) ? "" : r.GetString(2),
                 SenderSzerep = r.IsDBNull(3) ? "" : r.GetString(3),
                 Message      = r.GetString(4),
-                CreatedAt    = r.GetString(5)
+                Channel      = r.IsDBNull(5) ? "tesztelok" : r.GetString(5),
+                CreatedAt    = r.GetString(6)
             });
         return list;
     }
 
-    public int SendChatMessage(string email, string nev, string szerep, string message)
+    public int SendChatMessage(string email, string nev, string szerep, string message, string channel)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO chat_messages (sender_email, sender_nev, sender_szerep, message) VALUES ($e,$n,$s,$m) RETURNING id";
+        cmd.CommandText = "INSERT INTO chat_messages (sender_email, sender_nev, sender_szerep, message, channel) VALUES ($e,$n,$s,$m,$ch) RETURNING id";
         cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
         cmd.Parameters.AddWithValue("$n", nev);
         cmd.Parameters.AddWithValue("$s", szerep);
         cmd.Parameters.AddWithValue("$m", message.Trim());
+        cmd.Parameters.AddWithValue("$ch", channel);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 }

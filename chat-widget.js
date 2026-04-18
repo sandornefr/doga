@@ -1,15 +1,21 @@
-// Chat widget – tesztelők és oktatók számára
-// Használat: <script src="chat-widget.js"></script> (az API és authHeaders globálisak kell legyenek)
-
+// Chat widget – tesztelők és oktatók számára, csatornánként elkülönítve
 (function () {
     const POLL_OPEN   = 5000;
     const POLL_CLOSED = 30000;
+    const CHAT_API    = 'https://agazati.up.railway.app';
 
-    let sinceId    = 0;
-    let isOpen     = false;
-    let pollTimer  = null;
-    let myEmail    = '';
-    let mySzerep   = '';
+    let myEmail       = '';
+    let mySzerep      = '';
+    let isOktato      = false;
+    let isOpen        = false;
+    let pollTimer     = null;
+    let currentChannel = 'tesztelok';
+
+    // Per-csatorna állapot
+    const ch = {
+        tesztelok: { sinceId: 0, messages: [], unread: 0 },
+        oktatok:   { sinceId: 0, messages: [], unread: 0 }
+    };
 
     // ── Stílus ────────────────────────────────────────────────────────────────
     const style = document.createElement('style');
@@ -18,7 +24,7 @@
         position:fixed; bottom:24px; right:24px; z-index:9000;
         width:52px; height:52px; border-radius:50%;
         background:linear-gradient(135deg,#4f46e5,#7c3aed);
-        border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+        border:none; cursor:pointer; display:none; align-items:center; justify-content:center;
         box-shadow:0 4px 18px rgba(79,70,229,.5); transition:transform .15s;
         color:#fff; font-size:1.2rem;
     }
@@ -31,7 +37,7 @@
     }
     #chat-panel {
         position:fixed; bottom:86px; right:24px; z-index:9000;
-        width:340px; max-height:480px;
+        width:340px; max-height:500px;
         background:#161b22; border:1px solid #30363d; border-radius:12px;
         display:none; flex-direction:column;
         box-shadow:0 8px 32px rgba(0,0,0,.5);
@@ -39,9 +45,9 @@
     }
     #chat-panel.open { display:flex; }
     #chat-header {
-        padding:12px 16px; border-bottom:1px solid #21262d;
+        padding:10px 14px; border-bottom:1px solid #21262d;
         font-weight:700; color:#e0e0e0; font-size:0.9rem;
-        display:flex; align-items:center; gap:8px;
+        display:flex; align-items:center; gap:8px; flex-shrink:0;
     }
     #chat-header i { color:#7c3aed; }
     #chat-header span { flex:1; }
@@ -49,6 +55,26 @@
         background:none; border:none; color:#8b949e; cursor:pointer; font-size:1rem; padding:0;
     }
     #chat-close:hover { color:#e0e0e0; }
+    #chat-tabs {
+        display:flex; border-bottom:1px solid #21262d; flex-shrink:0;
+    }
+    .chat-tab {
+        flex:1; padding:7px 0; background:none; border:none; color:#8b949e;
+        font-size:0.8rem; font-weight:600; cursor:pointer; transition:color .15s;
+        position:relative;
+    }
+    .chat-tab.active { color:#e0e0e0; }
+    .chat-tab.active::after {
+        content:''; position:absolute; bottom:0; left:10%; width:80%; height:2px;
+        background:#7c3aed; border-radius:2px;
+    }
+    .chat-tab:hover:not(.active) { color:#c9d1d9; }
+    .chat-tab-badge {
+        display:inline-flex; align-items:center; justify-content:center;
+        background:#ef4444; color:#fff; border-radius:50%;
+        width:14px; height:14px; font-size:0.6rem; font-weight:700;
+        margin-left:4px; vertical-align:middle;
+    }
     #chat-messages {
         flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px;
         scrollbar-width:thin; scrollbar-color:#30363d transparent;
@@ -73,7 +99,7 @@
     .chat-msg.mine .chat-meta { text-align:right; }
     .chat-empty { color:#8b949e; font-size:0.8rem; text-align:center; margin:auto; }
     #chat-input-row {
-        padding:10px 12px; border-top:1px solid #21262d; display:flex; gap:8px;
+        padding:10px 12px; border-top:1px solid #21262d; display:flex; gap:8px; flex-shrink:0;
     }
     #chat-input {
         flex:1; background:#0d1117; border:1px solid #30363d; border-radius:8px;
@@ -95,7 +121,7 @@
     // ── HTML ──────────────────────────────────────────────────────────────────
     const fab = document.createElement('button');
     fab.id = 'chat-fab';
-    fab.title = 'Chat – tesztelők & oktató';
+    fab.title = 'Chat';
     fab.innerHTML = '<i class="fas fa-comments"></i><span id="chat-badge"></span>';
 
     const panel = document.createElement('div');
@@ -103,8 +129,16 @@
     panel.innerHTML = `
         <div id="chat-header">
             <i class="fas fa-comments"></i>
-            <span>Tesztelői chat</span>
+            <span id="chat-title">Chat</span>
             <button id="chat-close" title="Bezár"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="chat-tabs" style="display:none;">
+            <button class="chat-tab active" id="tab-btn-tesztelok" onclick="chatSwitchChannel('tesztelok')">
+                <i class="fas fa-flask" style="margin-right:3px;font-size:.7rem;"></i>Tesztelők<span id="tab-badge-tesztelok" class="chat-tab-badge" style="display:none;"></span>
+            </button>
+            <button class="chat-tab" id="tab-btn-oktatok" onclick="chatSwitchChannel('oktatok')">
+                <i class="fas fa-chalkboard-teacher" style="margin-right:3px;font-size:.7rem;"></i>Oktatók<span id="tab-badge-oktatok" class="chat-tab-badge" style="display:none;"></span>
+            </button>
         </div>
         <div id="chat-messages"><div class="chat-empty">Üzenetek betöltése...</div></div>
         <div id="chat-input-row">
@@ -127,10 +161,15 @@
             : `<i class="fas fa-flask" style="font-size:.65rem;margin-right:3px;color:#eab308"></i>${msg.senderNev || msg.senderEmail}`;
     }
 
+    function escHtml(t) {
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     function renderMessages(msgs) {
         const el = document.getElementById('chat-messages');
         const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
         const existing = new Set([...el.querySelectorAll('[data-id]')].map(e => e.dataset.id));
+        let added = 0;
         msgs.forEach(m => {
             if (existing.has(String(m.id))) return;
             const mine = m.senderEmail.toLowerCase() === myEmail.toLowerCase();
@@ -142,48 +181,91 @@
                 <div class="chat-bubble">${escHtml(m.message)}</div>
                 <div class="chat-meta">${fmtTime(m.createdAt)}</div>`;
             el.appendChild(div);
-            if (m.id > sinceId) sinceId = m.id;
+            if (m.id > ch[currentChannel].sinceId) ch[currentChannel].sinceId = m.id;
+            added++;
         });
         const empty = el.querySelector('.chat-empty');
-        if (msgs.length > 0 && empty) empty.remove();
-        if (msgs.length === 0 && el.children.length === 0) {
+        if (added > 0 && empty) empty.remove();
+        if (el.querySelectorAll('[data-id]').length === 0) {
             el.innerHTML = '<div class="chat-empty">Még nincs üzenet – írj elsőként!</div>';
         }
         if (wasAtBottom || msgs.some(m => m.senderEmail.toLowerCase() === myEmail.toLowerCase()))
             el.scrollTop = el.scrollHeight;
     }
 
-    function escHtml(t) {
-        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function updateBadge(count) {
+    function updateBadge() {
         const b = document.getElementById('chat-badge');
         if (!b) return;
-        if (count > 0) { b.textContent = count > 9 ? '9+' : count; b.style.display = 'flex'; }
+        const total = ch.tesztelok.unread + ch.oktatok.unread;
+        if (total > 0) { b.textContent = total > 9 ? '9+' : total; b.style.display = 'flex'; }
         else b.style.display = 'none';
+
+        if (isOktato) {
+            ['tesztelok','oktatok'].forEach(c => {
+                const tb = document.getElementById(`tab-badge-${c}`);
+                if (!tb) return;
+                if (ch[c].unread > 0) { tb.textContent = ch[c].unread; tb.style.display = 'inline-flex'; }
+                else tb.style.display = 'none';
+            });
+        }
     }
+
+    // ── Tab váltás (oktatóknak) ───────────────────────────────────────────────
+    window.chatSwitchChannel = function(channel) {
+        if (channel === currentChannel) return;
+        currentChannel = channel;
+        ch[channel].unread = 0;
+        ['tesztelok','oktatok'].forEach(c => {
+            document.getElementById(`tab-btn-${c}`)?.classList.toggle('active', c === channel);
+        });
+        updateBadge();
+        // Üzenetek újrarenderelés az új csatorna cache-ből
+        const el = document.getElementById('chat-messages');
+        el.innerHTML = '<div class="chat-empty">Üzenetek betöltése...</div>';
+        clearTimeout(pollTimer);
+        poll();
+    };
 
     // ── Polling ───────────────────────────────────────────────────────────────
     function getHeaders() {
         const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-        return u?.token ? { 'Authorization': `Bearer ${u.token}` } : {};
+        let token = u?.token || '';
+        if (!token && u?._tesztMod) {
+            const backup = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
+            token = backup.token || '';
+        }
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+    async function pollChannel(channel) {
+        try {
+            const state = ch[channel];
+            const res = await fetch(`${CHAT_API}/api/chat?since_id=${state.sinceId}&channel=${channel}`, { headers: getHeaders() });
+            if (!res.ok) return;
+            const msgs = await res.json();
+            if (!msgs.length) return;
+            // Frissíti a sinceId-t
+            msgs.forEach(m => { if (m.id > state.sinceId) state.sinceId = m.id; });
+
+            if (isOpen && channel === currentChannel) {
+                renderMessages(msgs);
+                ch[channel].unread = 0;
+            } else {
+                const fromOthers = msgs.filter(m => m.senderEmail.toLowerCase() !== myEmail.toLowerCase());
+                ch[channel].unread += fromOthers.length;
+            }
+            updateBadge();
+        } catch {}
     }
 
     async function poll() {
-        try {
-            const res = await fetch(`${CHAT_API}/api/chat?since_id=${sinceId}`, { headers: getHeaders() });
-            if (!res.ok) return;
-            const msgs = await res.json();
-            if (isOpen) {
-                renderMessages(msgs);
-                updateBadge(0);
-            } else {
-                const newFromOthers = msgs.filter(m => m.senderEmail.toLowerCase() !== myEmail.toLowerCase());
-                if (newFromOthers.length) updateBadge(newFromOthers.length);
-                newFromOthers.forEach(m => { if (m.id > sinceId) sinceId = m.id; });
-            }
-        } catch {}
+        if (isOpen) {
+            await pollChannel(currentChannel);
+        } else {
+            // Csukva: mindkét csatorna olvasása oktatónak, csak a saját tesztelőnek
+            await pollChannel('tesztelok');
+            if (isOktato) await pollChannel('oktatok');
+        }
         pollTimer = setTimeout(poll, isOpen ? POLL_OPEN : POLL_CLOSED);
     }
 
@@ -198,7 +280,7 @@
             const headers = { 'Content-Type':'application/json', ...getHeaders() };
             const res = await fetch(`${CHAT_API}/api/chat`, {
                 method:'POST', headers,
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ message: text, channel: currentChannel })
             });
             if (res.ok) {
                 input.value = '';
@@ -214,10 +296,10 @@
     // ── Megnyitás / zárás ─────────────────────────────────────────────────────
     function openChat() {
         isOpen = true;
+        ch[currentChannel].unread = 0;
+        updateBadge();
         panel.classList.add('open');
-        updateBadge(0);
         clearTimeout(pollTimer);
-        // Első betöltésnél az összes üzenet (sinceId=0)
         poll();
     }
 
@@ -230,45 +312,49 @@
 
     fab.addEventListener('click', () => isOpen ? closeChat() : openChat());
     document.getElementById('chat-close').addEventListener('click', closeChat);
-
     document.getElementById('chat-send').addEventListener('click', sendMessage);
     document.getElementById('chat-input').addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
-
-    // Auto-resize textarea
     document.getElementById('chat-input').addEventListener('input', function() {
         this.style.height = '36px';
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
 
-    const CHAT_API = 'https://agazati.up.railway.app';
-
-    // ── Inicializálás (polling amíg a sessionStorage be nem áll) ──────────────
+    // ── Inicializálás ─────────────────────────────────────────────────────────
     function tryInit(attempt) {
         const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
         if (!u || !u.email) {
             if (attempt < 20) setTimeout(() => tryInit(attempt + 1), 500);
             return;
         }
-        myEmail = u.email;
-        const isOktato   = u.szerep === 'oktato';
+        myEmail  = u.email;
+        isOktato = u.szerep === 'oktato';
         const isTesztelő = sessionStorage.getItem('kandoIsTesztelő') === '1';
 
         if (!isOktato && !isTesztelő) {
-            // special-roles.js még nem futott le — várunk még pár kísérletet
             if (attempt < 20) setTimeout(() => tryInit(attempt + 1), 500);
             return;
         }
         mySzerep = isOktato ? 'oktato' : 'tesztelő';
+
+        // Oktatóknak tab-váltó + mindkét csatorna látható
+        if (isOktato) {
+            document.getElementById('chat-tabs').style.display = 'flex';
+            document.getElementById('chat-title').textContent = 'Chat';
+        } else {
+            document.getElementById('chat-title').textContent = 'Tesztelői chat';
+        }
+
         // Ha az Ötlet gomb is jelen van ugyanazon a pozíción, eltoljuk balra
         const otletWrap = document.querySelector('.otlet-fab-wrap');
         if (otletWrap) {
             const otletW = otletWrap.offsetWidth || 130;
             const offset = 24 + otletW + 12;
             fab.style.right = offset + 'px';
-            panel.style.right = '24px'; // panel maradhat jobbra, elég széles
+            panel.style.right = '24px';
         }
+
         fab.style.display = 'flex';
         pollTimer = setTimeout(poll, 2000);
     }

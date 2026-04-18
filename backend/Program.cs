@@ -51,6 +51,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 
 // Adatbázis inicializálás
 db.Initialize();
+db.MigrateChatChannel();
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
@@ -1508,16 +1509,20 @@ app.MapGet("/api/duel/online", (HttpContext ctx, Database db) =>
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
-// Üzenetek lekérése (tesztelő vagy oktató)
+// Üzenetek lekérése (tesztelő vagy oktató) – channel: 'tesztelok' | 'oktatok'
 app.MapGet("/api/chat", (HttpContext ctx, Database db) =>
 {
     var (valid, identity, role) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     var email = NormalizeSchoolEmail(identity);
     var isTesztelő = db.IsTesztelő(email);
-    if (!IsPrivilegedRole(role) && !isTesztelő) return Results.Forbid();
+    var isOktato = IsPrivilegedRole(role);
+    if (!isOktato && !isTesztelő) return Results.Forbid();
     var sinceId = int.TryParse(ctx.Request.Query["since_id"], out var s) ? s : 0;
-    return Results.Ok(db.GetChatMessages(sinceId));
+    var channelParam = ctx.Request.Query["channel"].ToString();
+    // Tesztelő csak a tesztelok csatornát olvashatja
+    var channel = (channelParam == "oktatok" && isOktato) ? "oktatok" : "tesztelok";
+    return Results.Ok(db.GetChatMessages(sinceId, channel));
 });
 
 // Üzenet küldése (tesztelő vagy oktató)
@@ -1527,13 +1532,16 @@ app.MapPost("/api/chat", (HttpContext ctx, ChatSendRequest req, Database db) =>
     if (!valid) return Results.Unauthorized();
     var email = NormalizeSchoolEmail(identity);
     var isTesztelő = db.IsTesztelő(email);
-    if (!IsPrivilegedRole(role) && !isTesztelő) return Results.Forbid();
+    var isOktato = IsPrivilegedRole(role);
+    if (!isOktato && !isTesztelő) return Results.Forbid();
     if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Length > 2000)
         return Results.BadRequest(new { error = "Érvénytelen üzenet" });
     var u = db.GetUserByEmail(email);
     var nev = u != null ? $"{u.Vezeteknev} {u.Keresztnev}".Trim() : email;
-    var szerep = IsPrivilegedRole(role) ? "oktato" : "tesztelő";
-    var id = db.SendChatMessage(email, nev, szerep, req.Message);
+    var szerep = isOktato ? "oktato" : "tesztelő";
+    // Tesztelő mindig a tesztelok csatornába ír; oktató választhat
+    var channel = (!isOktato || req.Channel != "oktatok") ? "tesztelok" : "oktatok";
+    var id = db.SendChatMessage(email, nev, szerep, req.Message, channel);
     return Results.Ok(new { id });
 });
 
