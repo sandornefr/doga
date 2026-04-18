@@ -142,10 +142,15 @@ let started    = false;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-if (!u || !u.token || !duelId) { location.href = 'portal.html'; }
+let _duelToken = u ? u.token : '';
+if (!_duelToken && u && u._tesztMod) {
+    const _backup = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
+    _duelToken = _backup.token || '';
+}
+if (!u || !_duelToken || !duelId) { location.href = 'portal.html'; }
 myEmail = u.email;
 myNev   = u.nev || u.email;
-const authH = { 'Authorization': `Bearer ${u.token}` };
+const authH = { 'Authorization': `Bearer ${_duelToken}` };
 
 // ── Monaco ────────────────────────────────────────────────────────────────────
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });

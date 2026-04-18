@@ -2652,14 +2652,19 @@ if (location.hash === '#web-tanulas') {
     async function initDuel() {
         await new Promise(r => setTimeout(r, 1500));
         u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-        if (!u || u.szerep !== 'tanulo' || u._tesztMod) return;
-        authH = { 'Authorization': `Bearer ${u.token}` };
+        if (!u || u.szerep !== 'tanulo') return;
+        let token = u.token;
+        if (!token && u._tesztMod) {
+            const backup = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
+            token = backup.token || '';
+        }
+        authH = { 'Authorization': `Bearer ${token}` };
 
         // Online tagok mutatása
+        document.getElementById('duel-section').style.display = '';
         if (u.evfolyam && u.osztaly && u.csoport) {
             loadOnlineMembers();
             setInterval(loadOnlineMembers, 20000);
-            document.getElementById('duel-section').style.display = '';
         }
 
         // Bejövő kihívások poll
