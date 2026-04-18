@@ -153,6 +153,14 @@ public class Database
                 logout_at      TEXT,
                 duration_sec   INTEGER NOT NULL DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_email   TEXT NOT NULL,
+                sender_nev     TEXT NOT NULL DEFAULT '',
+                sender_szerep  TEXT NOT NULL DEFAULT '',
+                message        TEXT NOT NULL,
+                created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
             CREATE TABLE IF NOT EXISTS password_reset_requests (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 email      TEXT NOT NULL,
@@ -2330,6 +2338,40 @@ public class Database
                 SubmittedAt = r.GetString(11)
             });
         return list;
+    }
+
+    // ── Chat ──────────────────────────────────────────────────────────────────
+
+    public List<ChatMessage> GetChatMessages(int sinceId = 0)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, sender_email, sender_nev, sender_szerep, message, created_at FROM chat_messages WHERE id > $sid ORDER BY id ASC LIMIT 200";
+        cmd.Parameters.AddWithValue("$sid", sinceId);
+        using var r = cmd.ExecuteReader();
+        var list = new List<ChatMessage>();
+        while (r.Read())
+            list.Add(new ChatMessage {
+                Id           = r.GetInt32(0),
+                SenderEmail  = r.GetString(1),
+                SenderNev    = r.IsDBNull(2) ? "" : r.GetString(2),
+                SenderSzerep = r.IsDBNull(3) ? "" : r.GetString(3),
+                Message      = r.GetString(4),
+                CreatedAt    = r.GetString(5)
+            });
+        return list;
+    }
+
+    public int SendChatMessage(string email, string nev, string szerep, string message)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT INTO chat_messages (sender_email, sender_nev, sender_szerep, message) VALUES ($e,$n,$s,$m) RETURNING id";
+        cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$n", nev);
+        cmd.Parameters.AddWithValue("$s", szerep);
+        cmd.Parameters.AddWithValue("$m", message.Trim());
+        return Convert.ToInt32(cmd.ExecuteScalar());
     }
 }
 

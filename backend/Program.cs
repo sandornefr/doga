@@ -1425,6 +1425,36 @@ app.MapGet("/api/gas/get-megoldasok", async (HttpContext ctx) =>
     return Results.Content(body, "application/json");
 });
 
+// ── Chat ──────────────────────────────────────────────────────────────────────
+
+// Üzenetek lekérése (tesztelő vagy oktató)
+app.MapGet("/api/chat", (HttpContext ctx, Database db, int since_id = 0) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var isTesztelő = db.IsTesztelő(email);
+    if (!IsPrivilegedRole(role) && !isTesztelő) return Results.Forbid();
+    return Results.Ok(db.GetChatMessages(since_id));
+});
+
+// Üzenet küldése (tesztelő vagy oktató)
+app.MapPost("/api/chat", (HttpContext ctx, ChatSendRequest req, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var isTesztelő = db.IsTesztelő(email);
+    if (!IsPrivilegedRole(role) && !isTesztelő) return Results.Forbid();
+    if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Length > 2000)
+        return Results.BadRequest(new { error = "Érvénytelen üzenet" });
+    var u = db.GetUserByEmail(email);
+    var nev = u != null ? $"{u.Vezeteknev} {u.Keresztnev}".Trim() : email;
+    var szerep = IsPrivilegedRole(role) ? "oktato" : "tesztelő";
+    var id = db.SendChatMessage(email, nev, szerep, req.Message);
+    return Results.Ok(new { id });
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 

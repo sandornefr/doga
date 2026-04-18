@@ -481,3 +481,17 @@ public class HaladasOsztalyStat
     public double PythonFeladAtlag { get; set; } // átlag Python practice feladatok száma
     public double WebFeladAtlag   { get; set; }  // átlag WEB practice feladatok száma
 }
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+
+public record ChatSendRequest(string Message);
+
+public class ChatMessage
+{
+    public int    Id          { get; set; }
+    public string SenderEmail { get; set; } = "";
+    public string SenderNev   { get; set; } = "";
+    public string SenderSzerep{ get; set; } = "";
+    public string Message     { get; set; } = "";
+    public string CreatedAt   { get; set; } = "";
+}
