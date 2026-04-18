@@ -1177,9 +1177,14 @@ public class Database
             COALESCE(wb.sessions,0), COALESCE(wb.avg_pct,0), COALESCE(wb.best_pct,0), wb.last_date,
             COALESCE(wag.sessions,0),
             COALESCE(ikt.db,0), COALESCE(ikt.best_pct,0),
-            COALESCE(tp.best_pct,0)
+            COALESCE(tp.best_pct,0),
+            sess.last_login
         FROM users u
         LEFT JOIN user_state s ON LOWER(u.email)=LOWER(s.email)
+        LEFT JOIN (
+            SELECT LOWER(user_email) as email, MAX(login_at) as last_login
+            FROM sessions GROUP BY LOWER(user_email)
+        ) sess ON LOWER(u.email)=sess.email
         LEFT JOIN (
             SELECT email, COUNT(*) as sessions,
                    ROUND(AVG(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as avg_pct,
@@ -1225,6 +1230,7 @@ public class Database
         // col 22: wag sessions (web ágazati 9 feladat)
         // col 23-24: ikt db, ikt best_pct
         // col 25: tp best_pct
+        // col 26: last_login (sessions tábla)
         var th = r.IsDBNull(5)  ? null : r.GetString(5);
         var tc = r.IsDBNull(6)  ? null : r.GetString(6);
         var tb = r.IsDBNull(7)  ? null : r.GetString(7);
@@ -1234,9 +1240,10 @@ public class Database
         var pk = r.IsDBNull(11) ? null : r.GetString(11);
         var ph = r.IsDBNull(12) ? null : r.GetString(12);
         var pp = r.IsDBNull(13) ? null : r.GetString(13);
-        var pyLast = r.IsDBNull(17) ? null : r.GetString(17);
-        var wbLast = r.IsDBNull(21) ? null : r.GetString(21);
-        var dates = new[] { th, tc, tb, te, tj, td, pk, ph, pp, pyLast, wbLast }
+        var pyLast    = r.IsDBNull(17) ? null : r.GetString(17);
+        var wbLast    = r.IsDBNull(21) ? null : r.GetString(21);
+        var lastLogin = r.IsDBNull(26) ? null : r.GetString(26);
+        var dates = new[] { th, tc, tb, te, tj, td, pk, ph, pp, pyLast, wbLast, lastLogin }
                         .Where(d => d != null).ToList();
         string? lastActive = dates.Count > 0 ? dates.Max() : null;
         return new HaladasItem {
