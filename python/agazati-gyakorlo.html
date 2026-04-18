@@ -124,6 +124,10 @@
       background:transparent; border:1.5px solid #374151; color:#9ca3af;
       font-size:0.84rem; cursor:pointer; transition:all .2s; font-family:var(--font); }
     .btn-sol:hover { border-color:#6b7280; color:var(--text); }
+    .btn-bug { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px;
+      background:transparent; border:1.5px solid rgba(239,68,68,.4); color:#f87171;
+      font-size:0.84rem; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-bug:hover { background:rgba(239,68,68,.1); border-color:#ef4444; color:#fca5a5; }
     .bottom-spacer { flex:1; }
     #run-spinner { display:none; }
 
@@ -262,6 +266,9 @@
   </button>
   <button class="btn-sol" onclick="showSolution()">
     <i class="fas fa-lightbulb"></i> Megoldás
+  </button>
+  <button class="btn-bug" id="btn-bug" style="display:none;" onclick="reportTaskBug()">
+    <i class="fas fa-bug"></i> Hiba a feladatban
   </button>
   <div class="bottom-spacer"></div>
   <div class="input-wrap" title="Ha a kód input()-ot tartalmaz, ide add meg az értékeket. Minden sor egy input() hívás értéke.">
@@ -596,6 +603,25 @@ function showSolution() {
 document.getElementById('solution-modal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// TESZTELŐI HIBABEJELENTÉS
+// ═══════════════════════════════════════════════════════════════════
+(function() {
+  if (sessionStorage.getItem('kandoIsTesztelő') === '1') {
+    const btn = document.getElementById('btn-bug');
+    if (btn) btn.style.display = 'flex';
+  }
+})();
+
+function reportTaskBug() {
+  if (!currentTask) return;
+  if (typeof window._srHibaOpenFeladat === 'function') {
+    window._srHibaOpenFeladat(currentTask.id, currentTask.cim);
+  } else if (typeof window._srHibaOpen === 'function') {
+    window._srHibaOpen();
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT

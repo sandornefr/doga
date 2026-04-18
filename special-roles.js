@@ -257,6 +257,23 @@
     window._srHibaClose = function () {
         document.getElementById('sr-hiba-modal').classList.remove('open');
     };
+    let _srHibaFeladatKontextus = null; // { szam, cim } ha feladatból nyitják
+
+    window._srHibaOpenFeladat = function (szam, cim) {
+        _srHibaFeladatKontextus = { szam, cim };
+        const titleEl = document.querySelector('#sr-hiba-modal h3');
+        if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-bug"></i> Hibajelentés – ${szam}. feladat: ${cim}`;
+        window._srHibaOpen();
+    };
+
+    const _origHibaClose = window._srHibaClose;
+    window._srHibaClose = function () {
+        _srHibaFeladatKontextus = null;
+        const titleEl = document.querySelector('#sr-hiba-modal h3');
+        if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-bug"></i> Hibajelentés';
+        _origHibaClose && _origHibaClose();
+    };
+
     window._srHibaSend = async function () {
         const user   = getUser();
         const szoveg = document.getElementById('sr-hiba-szoveg').value.trim();
@@ -266,6 +283,9 @@
         const kepBase64 = _srHibaKep || null;
 
         const oldal = window.location.pathname.split('/').pop() || 'oldal';
+        const feladatPrefix = _srHibaFeladatKontextus
+            ? `[FELADATHIBA – ${_srHibaFeladatKontextus.szam}. feladat: ${_srHibaFeladatKontextus.cim}] `
+            : `[HIBAJELENTÉS – ${oldal}] `;
         try {
             const res = await fetch(`${API}/api/otlet`, {
                 method: 'POST',
@@ -273,7 +293,7 @@
                 body: JSON.stringify({
                     email: user.email || '', nev: user.nev || '',
                     osztaly: user.osztaly || null,
-                    szoveg: '[HIBAJELENTÉS – ' + oldal + '] ' + szoveg,
+                    szoveg: feladatPrefix + szoveg,
                     kepBase64, tipus: 'hiba'
                 })
             });
