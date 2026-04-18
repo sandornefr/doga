@@ -863,6 +863,20 @@
             <div class="megvalasult-nav" id="megvalasult-nav"></div>
         </div>
 
+        <!-- Kódpárbaj szekció (tanulóknak) -->
+        <div id="duel-section" style="display:none;width:100%;max-width:960px;margin-bottom:8px;">
+            <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 20px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                    <i class="fas fa-swords" style="color:#f59e0b;font-size:1rem;"></i>
+                    <span style="font-weight:700;color:#e0e0e0;">Kódpárbaj – Csoportod online tagjai</span>
+                    <span id="duel-online-count" style="background:#21262d;border:1px solid #30363d;border-radius:20px;padding:1px 10px;font-size:0.72rem;color:#8b949e;margin-left:auto;"></span>
+                </div>
+                <div id="duel-online-list" style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <span style="color:#6b7280;font-size:0.82rem;">Nincs online csoporttárs.</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Tesztelői üzenetek (csak tesztelőknek) -->
         <div id="teszteloi-uzenetek-box" class="teszteloi-uzenet-box" style="display:none">
             <div class="teszteloi-uzenet-title">🔬 Tesztelői üzenetek</div>
@@ -2587,6 +2601,199 @@ if (location.hash === '#web-tanulas') {
       }
     } catch(e) {}
   }));
+})();
+</script>
+
+<!-- Kódpárbaj értesítő widget -->
+<div id="duel-notify" style="display:none;position:fixed;bottom:86px;right:24px;z-index:8000;width:320px;background:#161b22;border:2px solid #f59e0b;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.6);font-family:'Segoe UI',system-ui,sans-serif;font-size:0.85rem;overflow:hidden;">
+  <div style="background:#f59e0b22;padding:12px 16px;border-bottom:1px solid #f59e0b44;display:flex;align-items:center;gap:8px;">
+    <i class="fas fa-swords" style="color:#f59e0b;"></i>
+    <span style="font-weight:700;color:#fcd34d;flex:1;">Kódpárbaj kihívás!</span>
+    <span id="duel-countdown" style="font-size:0.78rem;color:#f59e0b;font-weight:700;font-variant-numeric:tabular-nums;"></span>
+  </div>
+  <div style="padding:14px 16px;">
+    <div id="duel-notify-text" style="color:#c9d1d9;margin-bottom:12px;line-height:1.5;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="respondDuel(true)" style="flex:1;background:#16a34a;border:none;color:#fff;padding:8px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;"><i class="fas fa-check" style="margin-right:4px;"></i>Elfogadom</button>
+      <button onclick="respondDuel(false)" style="flex:1;background:#374151;border:1px solid #4b5563;color:#9ca3af;padding:8px;border-radius:8px;cursor:pointer;font-size:0.82rem;"><i class="fas fa-times" style="margin-right:4px;"></i>Elutasítom</button>
+    </div>
+    <div style="margin-top:8px;font-size:0.72rem;color:#6b7280;line-height:1.4;">Az elutasítás esetén a kihívó <strong>nem</strong> kap automatikus győzelmet — a párbaj egyszerűen elmarad.</div>
+  </div>
+</div>
+
+<script>
+(function () {
+    const API_BASE = 'https://agazati.up.railway.app';
+    let u, authH, tasks8 = [];
+    let pendingDuelId = null, countdownInt = null;
+
+    // Feladatok betöltése (8 pontos, nem feladatkészítő)
+    fetch('python/feladatok.txt').then(r => r.text()).then(txt => {
+        tasks8 = parseDuelTasks(txt).filter(t => t.pont === 8 && !t.feladatkeszito);
+    }).catch(() => {});
+
+    function parseDuelTasks(txt) {
+        const lines = txt.split('\n'), tasks = [];
+        let cur = null, sec = null;
+        const flush = () => { if (cur) { tasks.push(cur); cur = null; } };
+        for (const line of lines) {
+            const lt = line.trim();
+            const tm = lt.match(/^Feladat:\s*(\d+)/);
+            if (tm) { flush(); cur = { number:+tm[1], cim:'', pont:8, feladatkeszito:false }; sec='text'; continue; }
+            if (!cur) continue;
+            if (lt.startsWith('Cim:'))  { cur.cim = lt.slice(4).trim(); continue; }
+            if (lt.startsWith('Pont:')) { cur.pont = +lt.slice(5).trim(); continue; }
+            if (lt.startsWith('Feladatkeszito:')) { cur.feladatkeszito = lt.slice(16).trim().toLowerCase()==='igen'; continue; }
+        }
+        flush();
+        return tasks;
+    }
+
+    async function initDuel() {
+        await new Promise(r => setTimeout(r, 1500));
+        u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+        if (!u || u.szerep !== 'tanulo' || u._tesztMod) return;
+        authH = { 'Authorization': `Bearer ${u.token}` };
+
+        // Online tagok mutatása
+        if (u.evfolyam && u.osztaly && u.csoport) {
+            loadOnlineMembers();
+            setInterval(loadOnlineMembers, 20000);
+            document.getElementById('duel-section').style.display = '';
+        }
+
+        // Bejövő kihívások poll
+        pollIncoming();
+        setInterval(pollIncoming, 8000);
+    }
+
+    async function loadOnlineMembers() {
+        try {
+            const url = `${API_BASE}/api/duel/online?evfolyam=${encodeURIComponent(u.evfolyam)}&osztaly=${encodeURIComponent(u.osztaly)}&csoport=${encodeURIComponent(u.csoport)}`;
+            const res = await fetch(url, { headers: authH });
+            if (!res.ok) return;
+            const members = await res.json();
+            const list = document.getElementById('duel-online-list');
+            const cnt  = document.getElementById('duel-online-count');
+            if (!list) return;
+            cnt.textContent = `${members.length} online`;
+            if (members.length === 0) {
+                list.innerHTML = '<span style="color:#6b7280;font-size:0.82rem;">Nincs online csoporttárs.</span>';
+                return;
+            }
+            list.innerHTML = members.map(m => `
+                <button onclick="sendDuelInvite('${m.email}','${escJs(m.nev)}')"
+                    style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:8px;transition:border-color .15s;"
+                    onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#30363d'">
+                    <i class="fas fa-circle" style="font-size:.5rem;color:#22c55e;"></i>
+                    ${escHtml(m.nev)}
+                    <span style="margin-left:4px;color:#f59e0b;font-size:0.75rem;font-weight:700;"><i class="fas fa-swords"></i> Kihívom</span>
+                </button>`).join('');
+        } catch {}
+    }
+
+    window.sendDuelInvite = async function(opponentEmail, opponentNev) {
+        if (tasks8.length === 0) { alert('Feladatok betöltése folyamatban, kérlek várj.'); return; }
+        const task = tasks8[Math.floor(Math.random() * tasks8.length)];
+        if (!confirm(`Kihívod ${opponentNev} kódpárbajra?\n\nFeladat: ${task.cim} (8 pont, 10 perc)`)) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/duel/invite`, {
+                method: 'POST',
+                headers: { ...authH, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ opponentEmail, taskNumber: task.number, taskTitle: task.cim })
+            });
+            if (res.ok) {
+                const d = await res.json();
+                alert(`Kihívás elküldve! Várd meg, amíg ${opponentNev} elfogadja (max 2 perc).`);
+                // Poll hogy elfogadta-e
+                waitForAccept(d.id);
+            } else { alert('Nem sikerült elküldeni a kihívást.'); }
+        } catch { alert('Hálózati hiba.'); }
+    };
+
+    async function waitForAccept(duelId) {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            try {
+                const res = await fetch(`${API_BASE}/api/duel/${duelId}/status`, { headers: authH });
+                if (!res.ok) { clearInterval(interval); return; }
+                const d = await res.json();
+                if (d.status === 'active') {
+                    clearInterval(interval);
+                    location.href = `duel.html?id=${duelId}`;
+                } else if (d.status === 'declined') {
+                    clearInterval(interval);
+                    alert('Az ellenfél elutasította a kihívást. A párbaj elmarad.');
+                } else if (d.status === 'expired' || attempts > 25) {
+                    clearInterval(interval);
+                    alert('A kihívás lejárt (2 perc). Az ellenfél nem válaszolt.');
+                }
+            } catch {}
+        }, 5000);
+    }
+
+    async function pollIncoming() {
+        if (pendingDuelId) return; // már van aktív értesítő
+        try {
+            const res = await fetch(`${API_BASE}/api/duel/incoming`, { headers: authH });
+            if (!res.ok) return;
+            const duels = await res.json();
+            if (duels.length === 0) return;
+            const d = duels[0];
+            pendingDuelId = d.id;
+            showDuelNotify(d);
+        } catch {}
+    }
+
+    function showDuelNotify(d) {
+        const created = new Date(d.createdAt.replace(' ', 'T'));
+        const expiresAt = new Date(created.getTime() + 2 * 60 * 1000);
+        document.getElementById('duel-notify-text').innerHTML =
+            `<strong>${escHtml(d.challengerNev)}</strong> párbajra hív téged!<br>
+            <span style="color:#8b949e;font-size:0.78rem;">Feladat: <strong>${escHtml(d.taskTitle)}</strong> · 8 pont · 10 perc</span>`;
+        document.getElementById('duel-notify').style.display = '';
+        if (countdownInt) clearInterval(countdownInt);
+        countdownInt = setInterval(() => {
+            const rem = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+            const m = Math.floor(rem / 60).toString().padStart(2,'0');
+            const s = (rem % 60).toString().padStart(2,'0');
+            document.getElementById('duel-countdown').textContent = `${m}:${s}`;
+            if (rem === 0) { clearInterval(countdownInt); hideDuelNotify(); pendingDuelId = null; }
+        }, 1000);
+    }
+
+    function hideDuelNotify() {
+        document.getElementById('duel-notify').style.display = 'none';
+    }
+
+    window.respondDuel = async function(accept) {
+        if (!pendingDuelId) return;
+        if (!accept) {
+            if (!confirm('Biztosan elutasítod a kihívást? A párbaj elmarad (nem kapsz vereséget).')) return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/duel/${pendingDuelId}/respond`, {
+                method: 'POST',
+                headers: { ...authH, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accept })
+            });
+            if (res.ok && accept) {
+                const id = pendingDuelId;
+                hideDuelNotify();
+                pendingDuelId = null;
+                location.href = `duel.html?id=${id}`;
+            } else {
+                hideDuelNotify();
+                pendingDuelId = null;
+            }
+        } catch {}
+    };
+
+    function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escJs(t)   { return String(t).replace(/'/g,"\\'"); }
+
+    initDuel();
 })();
 </script>
 </body>

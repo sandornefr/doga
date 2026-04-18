@@ -1425,6 +1425,87 @@ app.MapGet("/api/gas/get-megoldasok", async (HttpContext ctx) =>
     return Results.Content(body, "application/json");
 });
 
+// ── Kódpárbaj ────────────────────────────────────────────────────────────────
+
+app.MapPost("/api/duel/invite", (HttpContext ctx, DuelInviteRequest req, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var u = db.GetUserByEmail(email);
+    if (u == null) return Results.Unauthorized();
+    var nev = $"{u.Vezeteknev} {u.Keresztnev}".Trim();
+    var opponent = db.GetUserByEmail(NormalizeSchoolEmail(req.OpponentEmail));
+    var opNev = opponent != null ? $"{opponent.Vezeteknev} {opponent.Keresztnev}".Trim() : req.OpponentEmail;
+    var id = db.CreateDuel(email, nev, NormalizeSchoolEmail(req.OpponentEmail), opNev, req.TaskNumber, req.TaskTitle);
+    return Results.Ok(new { id });
+});
+
+app.MapGet("/api/duel/incoming", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    return Results.Ok(db.GetIncomingDuels(email));
+});
+
+app.MapPost("/api/duel/{id}/respond", (int id, HttpContext ctx, DuelRespondRequest req, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var ok = db.RespondDuel(id, email, req.Accept);
+    return ok ? Results.Ok(new { ok = true }) : Results.BadRequest(new { error = "Nem sikerült" });
+});
+
+app.MapGet("/api/duel/{id}/status", (int id, HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var d = db.GetDuel(id);
+    if (d == null) return Results.NotFound();
+    var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                     || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
+    if (!isParticipant) return Results.Forbid();
+    // Lejárt pending → expired
+    if (d.Status == "pending")
+    {
+        var created = DateTime.Parse(d.CreatedAt);
+        if ((DateTime.Now - created).TotalMinutes > 2) { db.RespondDuel(id, d.OpponentEmail, false); d = db.GetDuel(id)!; d.Status = "expired"; }
+    }
+    return Results.Ok(d);
+});
+
+app.MapPost("/api/duel/{id}/submit", (int id, HttpContext ctx, DuelSubmitRequest req, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var (ok, winner) = db.SubmitDuelScore(id, email, req.Score, req.MaxScore);
+    return ok ? Results.Ok(new { ok = true, winner }) : Results.BadRequest(new { error = "Nem sikerült" });
+});
+
+app.MapGet("/api/duel/stats/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    var (valid, _, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    return Results.Ok(db.GetDuelStats(NormalizeSchoolEmail(email)));
+});
+
+app.MapGet("/api/duel/online", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var ef = ctx.Request.Query["evfolyam"].ToString();
+    var oz = ctx.Request.Query["osztaly"].ToString();
+    var cs = ctx.Request.Query["csoport"].ToString();
+    if (string.IsNullOrEmpty(ef) || string.IsNullOrEmpty(oz) || string.IsNullOrEmpty(cs))
+        return Results.BadRequest(new { error = "evfolyam, osztaly, csoport kötelező" });
+    var email = NormalizeSchoolEmail(identity);
+    return Results.Ok(db.GetOnlineGroupMembers(ef, oz, cs, email));
+});
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 // Üzenetek lekérése (tesztelő vagy oktató)

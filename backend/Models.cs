@@ -482,6 +482,45 @@ public class HaladasOsztalyStat
     public double WebFeladAtlag   { get; set; }  // átlag WEB practice feladatok száma
 }
 
+// ── Kódpárbaj ────────────────────────────────────────────────────────────────
+
+public record DuelInviteRequest(string OpponentEmail, int TaskNumber, string TaskTitle);
+public record DuelRespondRequest(bool Accept);
+public record DuelSubmitRequest(int Score, int MaxScore);
+
+public class DuelRecord
+{
+    public int     Id               { get; set; }
+    public string  ChallengerEmail  { get; set; } = "";
+    public string  ChallengerNev    { get; set; } = "";
+    public string  OpponentEmail    { get; set; } = "";
+    public string  OpponentNev      { get; set; } = "";
+    public int     TaskNumber       { get; set; }
+    public string  TaskTitle        { get; set; } = "";
+    public string  Status           { get; set; } = ""; // pending/active/finished/expired/declined
+    public int?    ChallengerScore  { get; set; }
+    public int?    ChallengerMax    { get; set; }
+    public int?    OpponentScore    { get; set; }
+    public int?    OpponentMax      { get; set; }
+    public string? WinnerEmail      { get; set; }
+    public string  CreatedAt        { get; set; } = "";
+    public string? AcceptedAt       { get; set; }
+    public string? FinishedAt       { get; set; }
+}
+
+public class DuelStats
+{
+    public int Wins        { get; set; }
+    public int Losses      { get; set; }
+    public int Total       { get; set; }
+}
+
+public class OnlineUser
+{
+    public string Email    { get; set; } = "";
+    public string Nev      { get; set; } = "";
+}
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 public record ChatSendRequest(string Message);

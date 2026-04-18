@@ -153,6 +153,24 @@ public class Database
                 logout_at      TEXT,
                 duration_sec   INTEGER NOT NULL DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS duels (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                challenger_email   TEXT NOT NULL,
+                challenger_nev     TEXT NOT NULL DEFAULT '',
+                opponent_email     TEXT NOT NULL,
+                opponent_nev       TEXT NOT NULL DEFAULT '',
+                task_number        INTEGER NOT NULL,
+                task_title         TEXT NOT NULL DEFAULT '',
+                status             TEXT NOT NULL DEFAULT 'pending',
+                challenger_score   INTEGER,
+                challenger_max     INTEGER,
+                opponent_score     INTEGER,
+                opponent_max       INTEGER,
+                winner_email       TEXT,
+                created_at         TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                accepted_at        TEXT,
+                finished_at        TEXT
+            );
             CREATE TABLE IF NOT EXISTS chat_messages (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
                 sender_email   TEXT NOT NULL,
@@ -2339,6 +2357,161 @@ public class Database
             });
         return list;
     }
+
+    // ── Kódpárbaj ─────────────────────────────────────────────────────────────
+
+    public int CreateDuel(string challengerEmail, string challengerNev, string opponentEmail, string opponentNev, int taskNumber, string taskTitle)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO duels (challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title)
+            VALUES ($ce,$cn,$oe,$on,$tn,$tt) RETURNING id";
+        cmd.Parameters.AddWithValue("$ce", challengerEmail.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$cn", challengerNev);
+        cmd.Parameters.AddWithValue("$oe", opponentEmail.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$on", opponentNev);
+        cmd.Parameters.AddWithValue("$tn", taskNumber);
+        cmd.Parameters.AddWithValue("$tt", taskTitle);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public DuelRecord? GetDuel(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,opponent_score,opponent_max,winner_email,created_at,accepted_at,finished_at FROM duels WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return ReadDuelRow(r);
+    }
+
+    public List<DuelRecord> GetIncomingDuels(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        // Lejárt (>2 perc) pending meghívók automatikusan expired-dé válnak
+        using var expCmd = conn.CreateCommand();
+        expCmd.CommandText = "UPDATE duels SET status='expired' WHERE status='pending' AND (julianday('now') - julianday(created_at))*1440 > 2";
+        expCmd.ExecuteNonQuery();
+
+        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,opponent_score,opponent_max,winner_email,created_at,accepted_at,finished_at FROM duels WHERE LOWER(opponent_email)=LOWER($e) AND status='pending' ORDER BY id DESC";
+        cmd.Parameters.AddWithValue("$e", email);
+        using var r = cmd.ExecuteReader();
+        var list = new List<DuelRecord>();
+        while (r.Read()) list.Add(ReadDuelRow(r));
+        return list;
+    }
+
+    public bool RespondDuel(int id, string opponentEmail, bool accept)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        var newStatus = accept ? "active" : "declined";
+        var acceptedAt = accept ? "datetime('now','localtime')" : "NULL";
+        cmd.CommandText = $"UPDATE duels SET status='{newStatus}', accepted_at={acceptedAt} WHERE id=$id AND LOWER(opponent_email)=LOWER($e) AND status='pending'";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$e", opponentEmail);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public (bool ok, string? winner) SubmitDuelScore(int id, string email, int score, int maxScore)
+    {
+        using var conn = Open();
+        var d = GetDuel(id);
+        if (d == null || d.Status != "active") return (false, null);
+
+        bool isChallenger = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
+        bool isOpponent   = d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
+        if (!isChallenger && !isOpponent) return (false, null);
+
+        using var upd = conn.CreateCommand();
+        if (isChallenger)
+            upd.CommandText = "UPDATE duels SET challenger_score=$s, challenger_max=$m WHERE id=$id";
+        else
+            upd.CommandText = "UPDATE duels SET opponent_score=$s, opponent_max=$m WHERE id=$id";
+        upd.Parameters.AddWithValue("$s", score);
+        upd.Parameters.AddWithValue("$m", maxScore);
+        upd.Parameters.AddWithValue("$id", id);
+        upd.ExecuteNonQuery();
+
+        // Ellenőrzés: mindkettő beadott-e?
+        d = GetDuel(id)!;
+        if (d.ChallengerScore == null || d.OpponentScore == null) return (true, null);
+
+        // Győztes meghatározás
+        string? winner = null;
+        double cp = d.ChallengerMax > 0 ? (double)d.ChallengerScore / d.ChallengerMax : 0;
+        double op = d.OpponentMax   > 0 ? (double)d.OpponentScore   / d.OpponentMax   : 0;
+        if      (cp > op)  winner = d.ChallengerEmail;
+        else if (op > cp)  winner = d.OpponentEmail;
+        // Döntetlen: winner = null
+
+        using var fin = conn.CreateCommand();
+        fin.CommandText = "UPDATE duels SET status='finished', winner_email=$w, finished_at=datetime('now','localtime') WHERE id=$id";
+        fin.Parameters.AddWithValue("$w", winner ?? (object)DBNull.Value);
+        fin.Parameters.AddWithValue("$id", id);
+        fin.ExecuteNonQuery();
+        return (true, winner);
+    }
+
+    public DuelStats GetDuelStats(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT
+            COUNT(CASE WHEN winner_email IS NOT NULL AND LOWER(winner_email)=LOWER($e) THEN 1 END) as wins,
+            COUNT(CASE WHEN status='finished' AND winner_email IS NOT NULL AND LOWER(winner_email)!=LOWER($e) THEN 1 END) as losses,
+            COUNT(CASE WHEN status='finished' THEN 1 END) as total
+            FROM duels WHERE LOWER(challenger_email)=LOWER($e) OR LOWER(opponent_email)=LOWER($e)";
+        cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return new DuelStats();
+        return new DuelStats { Wins = r.GetInt32(0), Losses = r.GetInt32(1), Total = r.GetInt32(2) };
+    }
+
+    public List<OnlineUser> GetOnlineGroupMembers(string evfolyam, string osztaly, string csoport, string excludeEmail)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT DISTINCT u.email, u.vezeteknev||' '||u.keresztnev
+            FROM users u
+            JOIN sessions s ON LOWER(u.email)=LOWER(s.user_email)
+            WHERE u.szerep='tanulo'
+              AND u.evfolyam=$ef AND u.osztaly=$oz AND u.csoport=$cs
+              AND LOWER(u.email) != LOWER($ex)
+              AND s.logout_at IS NULL
+              AND (julianday('now') - julianday(s.last_heartbeat))*86400 < 300";
+        cmd.Parameters.AddWithValue("$ef", evfolyam);
+        cmd.Parameters.AddWithValue("$oz", osztaly);
+        cmd.Parameters.AddWithValue("$cs", csoport);
+        cmd.Parameters.AddWithValue("$ex", excludeEmail.ToLower().Trim());
+        using var r = cmd.ExecuteReader();
+        var list = new List<OnlineUser>();
+        while (r.Read()) list.Add(new OnlineUser { Email = r.GetString(0), Nev = r.IsDBNull(1) ? "" : r.GetString(1) });
+        return list;
+    }
+
+    private static DuelRecord ReadDuelRow(Microsoft.Data.Sqlite.SqliteDataReader r) => new()
+    {
+        Id              = r.GetInt32(0),
+        ChallengerEmail = r.GetString(1),
+        ChallengerNev   = r.IsDBNull(2) ? "" : r.GetString(2),
+        OpponentEmail   = r.GetString(3),
+        OpponentNev     = r.IsDBNull(4) ? "" : r.GetString(4),
+        TaskNumber      = r.GetInt32(5),
+        TaskTitle       = r.IsDBNull(6) ? "" : r.GetString(6),
+        Status          = r.GetString(7),
+        ChallengerScore = r.IsDBNull(8)  ? null : r.GetInt32(8),
+        ChallengerMax   = r.IsDBNull(9)  ? null : r.GetInt32(9),
+        OpponentScore   = r.IsDBNull(10) ? null : r.GetInt32(10),
+        OpponentMax     = r.IsDBNull(11) ? null : r.GetInt32(11),
+        WinnerEmail     = r.IsDBNull(12) ? null : r.GetString(12),
+        CreatedAt       = r.GetString(13),
+        AcceptedAt      = r.IsDBNull(14) ? null : r.GetString(14),
+        FinishedAt      = r.IsDBNull(15) ? null : r.GetString(15),
+    };
 
     // ── Chat ──────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kódpárbaj – Digitális Tanulási és Számonkérési Rendszer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+*{scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px;}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#161b22;border-bottom:1px solid #21262d;position:sticky;top:0;z-index:100;}
+.topbar-title{font-weight:700;color:#e0e0e0;font-size:0.95rem;flex:1;}
+.topbar-btn{background:none;border:1px solid #30363d;color:#8b949e;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:0.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.topbar-btn:hover{border-color:#58a6ff;color:#58a6ff;}
+
+/* Timer */
+.timer-bar{background:#161b22;border-bottom:1px solid #21262d;padding:8px 20px;display:flex;align-items:center;gap:20px;}
+.timer-main{font-size:1.6rem;font-weight:800;color:#f97316;font-variant-numeric:tabular-nums;min-width:60px;}
+.timer-main.urgent{color:#ef4444;animation:pulse .8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.vs-info{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.vs-badge{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:5px 14px;font-size:0.82rem;display:flex;align-items:center;gap:6px;}
+.vs-badge.me{border-color:#4f46e5;color:#a5b4fc;}
+.vs-badge.opp{border-color:#374151;color:#9ca3af;}
+.vs-badge.opp.done{border-color:#22c55e;color:#86efac;}
+.vs-sep{color:#6b7280;font-weight:700;font-size:1.1rem;}
+
+/* Layout */
+.main{display:flex;flex:1;overflow:hidden;height:calc(100vh - 110px);}
+.left-panel{width:340px;min-width:280px;border-right:1px solid #21262d;display:flex;flex-direction:column;overflow:hidden;}
+.task-header{padding:12px 16px;border-bottom:1px solid #21262d;background:#161b22;}
+.task-title{font-size:0.95rem;font-weight:700;color:#e0e0e0;}
+.task-points{font-size:0.75rem;color:#f59e0b;font-weight:700;margin-top:2px;}
+.task-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:0.85rem;line-height:1.7;color:#c9d1d9;}
+.task-body pre{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:10px;font-size:0.8rem;overflow-x:auto;margin:8px 0;}
+.right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.editor-wrap{flex:1;position:relative;}
+.toolbar{padding:8px 12px;border-top:1px solid #21262d;display:flex;align-items:center;gap:8px;background:#161b22;}
+.btn-run{background:#1d4ed8;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:6px;font-weight:600;}
+.btn-run:hover{background:#1e40af;}
+.btn-run:disabled{background:#374151;cursor:default;}
+.btn-submit{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:700;display:flex;align-items:center;gap:6px;margin-left:auto;}
+.btn-submit:hover{filter:brightness(1.1);}
+.btn-submit:disabled{background:#374151;cursor:default;filter:none;}
+.output-wrap{height:140px;background:#0d1117;border-top:1px solid #21262d;padding:10px 14px;font-family:monospace;font-size:0.8rem;overflow-y:auto;color:#9ca3af;white-space:pre-wrap;}
+.output-wrap.error{color:#f87171;}
+.output-wrap.ok{color:#86efac;}
+
+/* Result overlay */
+.result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;}
+.result-overlay.show{display:flex;}
+.result-box{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:36px 40px;text-align:center;max-width:440px;width:90%;}
+.result-icon{font-size:3.5rem;margin-bottom:16px;}
+.result-title{font-size:1.5rem;font-weight:800;margin-bottom:8px;}
+.result-sub{color:#8b949e;font-size:0.9rem;margin-bottom:24px;line-height:1.6;}
+.result-scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.result-score-card{background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:14px;}
+.result-score-card.winner-card{border-color:#f59e0b;}
+.result-score-name{font-size:0.75rem;color:#8b949e;margin-bottom:6px;}
+.result-score-val{font-size:1.4rem;font-weight:800;color:#e0e0e0;}
+.result-btn{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:700;}
+.result-btn:hover{filter:brightness(1.1);}
+
+/* Loading */
+.loading-screen{position:fixed;inset:0;background:#0d1117;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-screen.hide{display:none;}
+.loading-spinner{font-size:2rem;color:#4f46e5;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading-screen">
+  <i class="fas fa-code loading-spinner"></i>
+  <div style="color:#8b949e;font-size:0.9rem;">Párbaj betöltése...</div>
+</div>
+
+<div class="topbar">
+  <i class="fas fa-swords" style="color:#f59e0b;font-size:1.1rem;"></i>
+  <span class="topbar-title">Kódpárbaj</span>
+  <a class="topbar-btn" href="portal.html"><i class="fas fa-arrow-left"></i> Portál</a>
+</div>
+
+<div class="timer-bar">
+  <i class="fas fa-clock" style="color:#f97316;"></i>
+  <div class="timer-main" id="timer">10:00</div>
+  <div style="font-size:0.8rem;color:#6b7280;">Hátralévő idő</div>
+  <div class="vs-info">
+    <div class="vs-badge me" id="my-badge"><i class="fas fa-user"></i> <span id="my-name">Te</span>: <span id="my-score">–</span></div>
+    <span class="vs-sep">VS</span>
+    <div class="vs-badge opp" id="opp-badge"><i class="fas fa-user"></i> <span id="opp-name">Ellenfél</span>: <span id="opp-score">–</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="left-panel">
+    <div class="task-header">
+      <div class="task-title" id="task-title">Feladat betöltése...</div>
+      <div class="task-points"><i class="fas fa-star" style="color:#f59e0b;margin-right:4px;"></i>8 pontos feladat</div>
+    </div>
+    <div class="task-body" id="task-body"></div>
+  </div>
+  <div class="right-panel">
+    <div class="editor-wrap" id="editor-wrap"></div>
+    <div class="toolbar">
+      <button class="btn-run" id="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Futtatás</button>
+      <div style="flex:1"></div>
+      <button class="btn-submit" id="btn-submit" onclick="submitResult()" disabled><i class="fas fa-flag-checkered"></i> Beadás</button>
+    </div>
+    <div class="output-wrap" id="output">Nyomd meg a Futtatás gombot a kód végrehajtásához.</div>
+  </div>
+</div>
+
+<div class="result-overlay" id="result-overlay">
+  <div class="result-box">
+    <div class="result-icon" id="result-icon">🏆</div>
+    <div class="result-title" id="result-title">Eredmény</div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-scores" id="result-scores"></div>
+    <button class="result-btn" onclick="location.href='portal.html'"><i class="fas fa-home" style="margin-right:6px;"></i>Vissza a portálra</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script>
+const API       = 'https://agazati.up.railway.app';
+const DUEL_MINS = 10;
+const params    = new URLSearchParams(location.search);
+const duelId    = parseInt(params.get('id') || '0');
+
+let editor, pyodide, task, duelData, myEmail, myNev;
+let timerSec   = DUEL_MINS * 60;
+let timerInt   = null;
+let pollInt    = null;
+let submitted  = false;
+let started    = false;
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+if (!u || !u.token || !duelId) { location.href = 'portal.html'; }
+myEmail = u.email;
+myNev   = u.nev || u.email;
+const authH = { 'Authorization': `Bearer ${u.token}` };
+
+// ── Monaco ────────────────────────────────────────────────────────────────────
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+require(['vs/editor/editor.main'], () => {
+    editor = monaco.editor.create(document.getElementById('editor-wrap'), {
+        value: '# Írd ide a megoldásod!\n',
+        language: 'python',
+        theme: 'vs-dark',
+        fontSize: 14,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        wordWrap: 'on',
+    });
+    initDuel();
+});
+
+// ── Pyodide ───────────────────────────────────────────────────────────────────
+async function loadPyodide() {
+    if (pyodide) return;
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js';
+    document.head.appendChild(script);
+    await new Promise(r => script.onload = r);
+    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/' });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function initDuel() {
+    try {
+        const res = await fetch(`${API}/api/duel/${duelId}/status`, { headers: authH });
+        if (!res.ok) throw new Error('Párbaj nem található');
+        duelData = await res.json();
+        if (duelData.status !== 'active') {
+            showError('Ez a párbaj már nem aktív.');
+            return;
+        }
+        await loadTask(duelData.taskNumber);
+        setupNames();
+        hideLoading();
+        startTimer();
+        startPoll();
+        loadPyodide();
+    } catch (e) {
+        showError(e.message);
+    }
+}
+
+async function loadTask(num) {
+    const txt = await fetch('python/feladatok.txt').then(r => r.text());
+    const tasks = parseTasks(txt);
+    task = tasks.find(t => t.number === num);
+    if (!task) throw new Error('Feladat nem található');
+    document.getElementById('task-title').textContent = task.cim;
+    document.getElementById('task-body').innerHTML = renderTaskBody(task);
+}
+
+function setupNames() {
+    const isChallenger = duelData.challengerEmail.toLowerCase() === myEmail.toLowerCase();
+    const oppNev = isChallenger ? duelData.opponentNev : duelData.challengerNev;
+    document.getElementById('my-name').textContent = myNev.split(' ').pop();
+    document.getElementById('opp-name').textContent = oppNev.split(' ').pop();
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+    // Timer a párbaj elfogadási idejétől számít
+    if (duelData.acceptedAt) {
+        const accepted = new Date(duelData.acceptedAt.replace(' ', 'T'));
+        const elapsed  = Math.floor((Date.now() - accepted.getTime()) / 1000);
+        timerSec = Math.max(0, DUEL_MINS * 60 - elapsed);
+    }
+    renderTimer();
+    timerInt = setInterval(() => {
+        timerSec--;
+        renderTimer();
+        if (timerSec <= 0) {
+            clearInterval(timerInt);
+            if (!submitted) autoSubmit();
+        }
+    }, 1000);
+}
+
+function renderTimer() {
+    const m = Math.floor(timerSec / 60).toString().padStart(2, '0');
+    const s = (timerSec % 60).toString().padStart(2, '0');
+    const el = document.getElementById('timer');
+    el.textContent = `${m}:${s}`;
+    el.classList.toggle('urgent', timerSec <= 60);
+}
+
+// ── Poll ──────────────────────────────────────────────────────────────────────
+function startPoll() {
+    pollInt = setInterval(pollStatus, 4000);
+}
+
+async function pollStatus() {
+    try {
+        const res = await fetch(`${API}/api/duel/${duelId}/status`, { headers: authH });
+        if (!res.ok) return;
+        const d = await res.json();
+        duelData = d;
+        updateOpponentBadge(d);
+        if (d.status === 'finished') {
+            clearInterval(pollInt);
+            clearInterval(timerInt);
+            showResult(d);
+        }
+    } catch {}
+}
+
+function updateOpponentBadge(d) {
+    const isChallenger = d.challengerEmail.toLowerCase() === myEmail.toLowerCase();
+    const oppScore = isChallenger ? d.opponentScore : d.challengerScore;
+    const oppMax   = isChallenger ? d.opponentMax   : d.challengerMax;
+    const badge = document.getElementById('opp-badge');
+    if (oppScore !== null && oppScore !== undefined) {
+        document.getElementById('opp-score').textContent = `${oppScore}/${oppMax}p`;
+        badge.classList.add('done');
+    }
+}
+
+// ── Futtatás ──────────────────────────────────────────────────────────────────
+async function runCode() {
+    const btn = document.getElementById('btn-run');
+    const out = document.getElementById('output');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Futtatás...';
+    out.className = 'output-wrap';
+    out.textContent = '';
+    if (!pyodide) { out.textContent = 'Pyodide betöltése folyamatban, kérlek várj...'; btn.disabled=false; btn.innerHTML='<i class="fas fa-play"></i> Futtatás'; return; }
+    try {
+        const code = editor.getValue();
+        let stdout = '';
+        pyodide.setStdout({ batched: s => stdout += s + '\n' });
+        pyodide.setStderr({ batched: s => stdout += s + '\n' });
+        await pyodide.runPythonAsync(code);
+        out.textContent = stdout || '(Nincs kimenet)';
+        out.className = 'output-wrap ok';
+        document.getElementById('btn-submit').disabled = false;
+    } catch(e) {
+        out.textContent = e.message;
+        out.className = 'output-wrap error';
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-play"></i> Futtatás';
+}
+
+// ── Beadás ────────────────────────────────────────────────────────────────────
+async function submitResult() {
+    if (submitted) return;
+    if (!confirm('Biztosan beadod a megoldásod? Ezt nem lehet visszavonni.')) return;
+    submitted = true;
+    document.getElementById('btn-submit').disabled = true;
+
+    const code   = editor.getValue();
+    const result = await scoreCode(code);
+    const score  = result.score;
+    const max    = result.max;
+
+    document.getElementById('my-score').textContent = `${score}/${max}p`;
+
+    await fetch(`${API}/api/duel/${duelId}/submit`, {
+        method: 'POST',
+        headers: { ...authH, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score, maxScore: max })
+    });
+
+    document.getElementById('output').textContent = `Beadva: ${score}/${max} pont. Várakozás az ellenfélre...`;
+}
+
+async function autoSubmit() {
+    if (submitted) return;
+    submitted = true;
+    const code   = editor.getValue();
+    const result = await scoreCode(code);
+    await fetch(`${API}/api/duel/${duelId}/submit`, {
+        method: 'POST',
+        headers: { ...authH, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: result.score, maxScore: result.max })
+    });
+}
+
+// ── Pontozás ──────────────────────────────────────────────────────────────────
+async function scoreCode(code) {
+    if (!task || !task.criteria || !pyodide) return { score: 0, max: task?.pont || 8 };
+    let score = 0;
+    const max = task.pont || 8;
+    try {
+        for (const crit of task.criteria) {
+            if (await checkCrit(crit, code)) score++;
+        }
+    } catch {}
+    return { score, max };
+}
+
+async function checkCrit(crit, code) {
+    try {
+        const [type, ...args] = crit.split(':');
+        switch (type) {
+            case 'bekeres':    return (code.match(/\binput\s*\(/g)||[]).length >= parseInt(args[0]);
+            case 'int_float':  return /\bint\s*\(|\bfloat\s*\(/.test(code);
+            case 'import':     return new RegExp(`\\bimport\\s+${args[0]}`).test(code);
+            case 'if':         return /\bif\b/.test(code);
+            case 'elif':       return /\belif\b/.test(code);
+            case 'def':        return /\bdef\b/.test(code);
+            case 'return':     return /\breturn\b/.test(code);
+            case 'while':      return /\bwhile\b/.test(code);
+            case 'for':        return /\bfor\b/.test(code);
+            case 'tartalmaz':  return code.includes(args.join(':'));
+            case 'teszt': {
+                const inp   = args[0].split(',');
+                const exp   = args.slice(1).join(':').trim();
+                let out = '';
+                pyodide.setStdout({ batched: s => out += s + '\n' });
+                let idx = 0;
+                pyodide.globals.set('input', () => inp[idx++] || '');
+                await pyodide.runPythonAsync(code);
+                return out.trim().includes(exp.trim());
+            }
+            default: return false;
+        }
+    } catch { return false; }
+}
+
+// ── Eredmény ──────────────────────────────────────────────────────────────────
+function showResult(d) {
+    const isChallenger = d.challengerEmail.toLowerCase() === myEmail.toLowerCase();
+    const myScore   = isChallenger ? d.challengerScore : d.opponentScore;
+    const myMax     = isChallenger ? d.challengerMax   : d.opponentMax;
+    const oppScore  = isChallenger ? d.opponentScore   : d.challengerScore;
+    const oppMax    = isChallenger ? d.opponentMax     : d.challengerMax;
+    const oppNev    = isChallenger ? d.opponentNev     : d.challengerNev;
+    const iWon      = d.winnerEmail && d.winnerEmail.toLowerCase() === myEmail.toLowerCase();
+    const isDraw    = d.status === 'finished' && !d.winnerEmail;
+
+    document.getElementById('result-icon').textContent  = isDraw ? '🤝' : iWon ? '🏆' : '😤';
+    document.getElementById('result-title').textContent = isDraw ? 'Döntetlen!' : iWon ? 'Győzelem!' : 'Vereség!';
+    document.getElementById('result-sub').textContent   = isDraw
+        ? 'Mindketten ugyanannyi pontot értetek el.'
+        : iWon ? 'Gratulálok, megnyerted a párbajt!' : `${oppNev} jobban teljesített ezúttal.`;
+    document.getElementById('result-scores').innerHTML  = `
+        <div class="result-score-card ${iWon?'winner-card':''}">
+            <div class="result-score-name">Te</div>
+            <div class="result-score-val">${myScore ?? 0}/${myMax ?? 8}p</div>
+        </div>
+        <div class="result-score-card ${!iWon&&!isDraw?'winner-card':''}">
+            <div class="result-score-name">${oppNev.split(' ').pop()}</div>
+            <div class="result-score-val">${oppScore ?? 0}/${oppMax ?? 8}p</div>
+        </div>`;
+    document.getElementById('result-overlay').classList.add('show');
+}
+
+function showError(msg) {
+    document.getElementById('loading-screen').innerHTML = `
+        <i class="fas fa-triangle-exclamation" style="font-size:2rem;color:#ef4444;"></i>
+        <div style="color:#8b949e;">${msg}</div>
+        <a href="portal.html" style="color:#58a6ff;font-size:0.85rem;">← Vissza a portálra</a>`;
+}
+
+function hideLoading() {
+    document.getElementById('loading-screen').classList.add('hide');
+}
+
+// ── feladatok.txt parser (ugyanaz mint python_teszt.js-ben) ───────────────────
+function parseTasks(txt) {
+    const lines = txt.split('\n');
+    const tasks = [];
+    let cur = null, sec = null;
+    const textL=[], critL=[], tippL=[], solL=[];
+
+    const flush = () => {
+        if (!cur) return;
+        cur.description = textL.join('\n').trim();
+        cur.criteria    = critL.filter(Boolean);
+        cur.hints       = tippL.filter(Boolean);
+        cur.solution    = solL.join('\n').trim();
+        tasks.push(cur);
+        textL.length=critL.length=tippL.length=solL.length=0;
+    };
+
+    for (const line of lines) {
+        const lt = line.trim();
+        const tm = lt.match(/^Feladat:\s*(\d+)/);
+        if (tm) { flush(); cur = { number:+tm[1], cim:'', pont:8, criteria:[], hints:[], solution:'' }; sec='text'; continue; }
+        if (!cur) continue;
+        if (lt.startsWith('Cim:'))      { cur.cim = lt.slice(4).trim(); continue; }
+        if (lt.startsWith('Pont:'))     { cur.pont = +lt.slice(5).trim(); continue; }
+        if (lt.startsWith('Feladatkeszito:')) { cur.feladatkeszito = lt.slice(16).trim().toLowerCase()==='igen'; continue; }
+        if (lt === 'Pontozas:') { sec='crit'; continue; }
+        if (lt === 'Tippek:')   { sec='tipp'; continue; }
+        if (lt === 'Megoldas:') { sec='sol';  continue; }
+        if (sec==='text') textL.push(line);
+        else if (sec==='crit' && lt) critL.push(lt);
+        else if (sec==='tipp' && lt) tippL.push(lt);
+        else if (sec==='sol')        solL.push(line);
+    }
+    flush();
+    return tasks;
+}
+
+function renderTaskBody(t) {
+    if (!t.description) return '<em style="color:#6b7280">Nincs leírás.</em>';
+    return t.description
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
