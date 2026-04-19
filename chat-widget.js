@@ -36,7 +36,7 @@
         display:none; align-items:center; justify-content:center;
     }
     #chat-panel {
-        position:fixed; bottom:86px; right:24px; z-index:9000;
+        position:fixed; top:62px; right:16px; z-index:9000;
         width:340px; max-height:500px;
         background:#161b22; border:1px solid #30363d; border-radius:12px;
         display:none; flex-direction:column;
@@ -195,10 +195,16 @@
 
     function updateBadge() {
         const b = document.getElementById('chat-badge');
-        if (!b) return;
         const total = ch.tesztelok.unread + ch.oktatok.unread;
-        if (total > 0) { b.textContent = total > 9 ? '9+' : total; b.style.display = 'flex'; }
-        else b.style.display = 'none';
+        if (b) {
+            if (total > 0) { b.textContent = total > 9 ? '9+' : total; b.style.display = 'flex'; }
+            else b.style.display = 'none';
+        }
+        const tb = document.getElementById('topbar-chat-badge');
+        if (tb) {
+            if (total > 0) { tb.textContent = total > 9 ? '9+' : total; tb.style.display = 'flex'; }
+            else tb.style.display = 'none';
+        }
 
         if (isOktato) {
             ['tesztelok','oktatok'].forEach(c => {
@@ -362,9 +368,16 @@
             panel.style.right = '24px';
         }
 
-        fab.style.display = 'flex';
+        // Topbar chat gomb megjelenítése (FAB helyett)
+        const topbarBtn = document.getElementById('topbar-chat-btn');
+        if (topbarBtn) topbarBtn.style.display = 'inline-flex';
         pollTimer = setTimeout(poll, 2000);
     }
+
+    // Topbar gombból hívható toggle
+    window.chatOpenFromTopbar = function() {
+        isOpen ? closeChat() : openChat();
+    };
 
     setTimeout(() => tryInit(0), 300);
 })();

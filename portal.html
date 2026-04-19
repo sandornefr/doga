@@ -200,12 +200,25 @@
             transition: all 0.2s;
         }
         .eredmenyek-btn:hover { background: #f5a623; color: #1a1a2e; }
+        .topbar-icon-btn {
+            background: none; border: 1px solid #30363d; color: #8b949e;
+            padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+            display: none; align-items: center; justify-content: center;
+            position: relative; transition: border-color .2s, color .2s;
+        }
+        .topbar-icon-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+        #topbar-chat-badge, #topbar-csatl-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: #ef4444; color: #fff; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 0.6rem; font-weight: 700;
+            display: none; align-items: center; justify-content: center;
+        }
 
         .portal {
             margin-top: 56px;
             width: 100%;
             max-width: 1320px;
-            padding: 20px 24px 90px;
+            padding: 20px 24px 20px;
         }
 
         /* ── Tanulói elrendezés ── */
@@ -853,6 +866,9 @@
         <div id="vizsga-badge"><i class="fas fa-circle" style="font-size:0.55rem;vertical-align:middle;margin-bottom:1px;color:#ef4444;"></i> VIZSGA MÓD</div>
         <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
         <a class="eredmenyek-btn" id="btn-profil-topbar" href="profil.html" style="display:none;text-decoration:none;" title="Profilom"><i class="fas fa-user-circle"></i> Profilom</a>
+        <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
+        <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
+        <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
 </div>
@@ -1208,14 +1224,10 @@
     </div>
 </div>
 
-<!-- Lebegő gombok (jobb alsó sarok) -->
-<div class="otlet-fab-wrap">
-    <button class="otlet-btn" id="csatlakozas-btn" onclick="openCsatlakozasModal()" style="display:none; background:#4f46e5; box-shadow:0 4px 18px rgba(79,70,229,.45);">
-        🤝 Csatlakozás
-    </button>
-    <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()">
-        <i class="fa-regular fa-lightbulb"></i> Ötletláda
-    </button>
+<!-- FAB gombok (rejtve – topbarba kerültek) -->
+<div class="otlet-fab-wrap" style="display:none;">
+    <button class="otlet-btn" id="csatlakozas-btn" onclick="openCsatlakozasModal()" style="display:none;">🤝 Csatlakozás</button>
+    <button class="otlet-btn" id="otlet-btn" onclick="openOtletModal()" style="display:none;"><i class="fa-regular fa-lightbulb"></i> Ötletláda</button>
 </div>
 
 <div style="position:fixed;bottom:8px;left:12px;font-size:0.7rem;color:rgba(255,255,255,0.22);pointer-events:none;user-select:none;z-index:9999;letter-spacing:0.4px;"><i class="fas fa-keyboard"></i> Tervezte és fejleszti: <strong style="color:rgba(255,255,255,0.32);font-weight:600;">Sándorné Feke Réka</strong></div>
@@ -1505,7 +1517,7 @@
                     document.getElementById('changelog-interaktiv').style.display = 'block';
                     document.getElementById('changelog-duel').style.display = 'block';
                     document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
-                    document.getElementById('otlet-btn').style.display = 'flex';
+                    document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
                     const cardWeb = document.getElementById('card-web');
                     if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
                 }
@@ -1533,7 +1545,7 @@
             const eredmBtn = document.getElementById('btn-profil-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
-            document.getElementById('otlet-btn').style.display = 'flex';
+            document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
             loadTeszteloInfo(user);
             loadFeladatkeszitoInfo(user);
@@ -1621,8 +1633,8 @@
             btn.textContent = 'Oktatói felület';
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             // Oktató tanulói előnézetben látja a Csatlakozás gombot is
-            const csBtn = document.getElementById('csatlakozas-btn');
-            if (csBtn) csBtn.style.display = 'flex';
+            const csBtn = document.getElementById('topbar-csatl-btn');
+            if (csBtn) csBtn.style.display = 'inline-flex';
             // Python kártya → gyakorló választó (mint vendég/Teszt Elek módban)
             const cardPy = document.getElementById('card-python');
             if (cardPy) cardPy.onclick = function(e) { e.preventDefault(); document.getElementById('vendeg-python-modal').style.display = 'flex'; };
@@ -2359,8 +2371,8 @@
             ]);
             const isTesztelő      = tRes.ok  && (await tRes.json()).isTesztelő;
             const isFeladatkeszito= fRes.ok  && (await fRes.json()).isFeladatkeszito;
-            const btn = document.getElementById('csatlakozas-btn');
-            if (btn && !isFeladatkeszito) btn.style.display = 'flex';
+            const btn = document.getElementById('topbar-csatl-btn');
+            if (btn && !isFeladatkeszito) btn.style.display = 'inline-flex';
             // Kártyák állapota a modalban
             if (isTesztelő) {
                 const card = document.getElementById('csatl-tesztelő-card');
@@ -2742,10 +2754,14 @@ if (location.hash === '#web-tanulas') {
         return tasks;
     }
 
+    let _duelInitTry = 0;
     async function initDuel() {
-        await new Promise(r => setTimeout(r, 1500));
         u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-        if (!u || u.szerep !== 'tanulo') return;
+        if (!u || !u.email) {
+            if (_duelInitTry++ < 15) setTimeout(initDuel, 300);
+            return;
+        }
+        if (u.szerep !== 'tanulo') return;
         let token = u.token;
         if (!token && u._tesztMod) {
             const backup = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
