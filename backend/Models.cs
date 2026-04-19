@@ -486,7 +486,7 @@ public class HaladasOsztalyStat
 
 public record DuelInviteRequest(string OpponentEmail, int TaskNumber, string TaskTitle);
 public record DuelRespondRequest(bool Accept);
-public record DuelSubmitRequest(int Score, int MaxScore);
+public record DuelSubmitRequest(int Score, int MaxScore, int ElapsedSeconds = 600);
 
 public class DuelRecord
 {
@@ -497,11 +497,13 @@ public class DuelRecord
     public string  OpponentNev      { get; set; } = "";
     public int     TaskNumber       { get; set; }
     public string  TaskTitle        { get; set; } = "";
-    public string  Status           { get; set; } = ""; // pending/active/finished/expired/declined
+    public string  Status           { get; set; } = "";
     public int?    ChallengerScore  { get; set; }
     public int?    ChallengerMax    { get; set; }
+    public int?    ChallengerTime   { get; set; } // másodpercek accepted_at-tól
     public int?    OpponentScore    { get; set; }
     public int?    OpponentMax      { get; set; }
+    public int?    OpponentTime     { get; set; }
     public string? WinnerEmail      { get; set; }
     public string  CreatedAt        { get; set; } = "";
     public string? AcceptedAt       { get; set; }

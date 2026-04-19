@@ -164,8 +164,10 @@ public class Database
                 status             TEXT NOT NULL DEFAULT 'pending',
                 challenger_score   INTEGER,
                 challenger_max     INTEGER,
+                challenger_time    INTEGER,
                 opponent_score     INTEGER,
                 opponent_max       INTEGER,
+                opponent_time      INTEGER,
                 winner_email       TEXT,
                 created_at         TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 accepted_at        TEXT,
@@ -2380,7 +2382,7 @@ public class Database
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,opponent_score,opponent_max,winner_email,created_at,accepted_at,finished_at FROM duels WHERE id=$id";
+        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,challenger_time,opponent_score,opponent_max,opponent_time,winner_email,created_at,accepted_at,finished_at FROM duels WHERE id=$id";
         cmd.Parameters.AddWithValue("$id", id);
         using var r = cmd.ExecuteReader();
         if (!r.Read()) return null;
@@ -2396,7 +2398,7 @@ public class Database
         expCmd.CommandText = "UPDATE duels SET status='expired' WHERE status='pending' AND (julianday('now') - julianday(created_at))*1440 > 2";
         expCmd.ExecuteNonQuery();
 
-        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,opponent_score,opponent_max,winner_email,created_at,accepted_at,finished_at FROM duels WHERE LOWER(opponent_email)=LOWER($e) AND status='pending' ORDER BY id DESC";
+        cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,challenger_time,opponent_score,opponent_max,opponent_time,winner_email,created_at,accepted_at,finished_at FROM duels WHERE LOWER(opponent_email)=LOWER($e) AND status='pending' ORDER BY id DESC";
         cmd.Parameters.AddWithValue("$e", email);
         using var r = cmd.ExecuteReader();
         var list = new List<DuelRecord>();
@@ -2416,7 +2418,13 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
-    public (bool ok, string? winner) SubmitDuelScore(int id, string email, int score, int maxScore)
+    public void MigrateDuelTime()
+    {
+        try { using var c = Open(); Exec(c, "ALTER TABLE duels ADD COLUMN challenger_time INTEGER"); } catch {}
+        try { using var c = Open(); Exec(c, "ALTER TABLE duels ADD COLUMN opponent_time INTEGER");   } catch {}
+    }
+
+    public (bool ok, string? winner) SubmitDuelScore(int id, string email, int score, int maxScore, int elapsedSeconds)
     {
         using var conn = Open();
         var d = GetDuel(id);
@@ -2428,25 +2436,33 @@ public class Database
 
         using var upd = conn.CreateCommand();
         if (isChallenger)
-            upd.CommandText = "UPDATE duels SET challenger_score=$s, challenger_max=$m WHERE id=$id";
+            upd.CommandText = "UPDATE duels SET challenger_score=$s, challenger_max=$m, challenger_time=$t WHERE id=$id";
         else
-            upd.CommandText = "UPDATE duels SET opponent_score=$s, opponent_max=$m WHERE id=$id";
+            upd.CommandText = "UPDATE duels SET opponent_score=$s, opponent_max=$m, opponent_time=$t WHERE id=$id";
         upd.Parameters.AddWithValue("$s", score);
         upd.Parameters.AddWithValue("$m", maxScore);
+        upd.Parameters.AddWithValue("$t", elapsedSeconds);
         upd.Parameters.AddWithValue("$id", id);
         upd.ExecuteNonQuery();
 
-        // Ellenőrzés: mindkettő beadott-e?
         d = GetDuel(id)!;
         if (d.ChallengerScore == null || d.OpponentScore == null) return (true, null);
 
-        // Győztes meghatározás
+        // Győztes: nagyobb %, egyenlő % esetén kevesebb idő
         string? winner = null;
         double cp = (d.ChallengerMax ?? 0) > 0 ? (double)d.ChallengerScore!.Value / d.ChallengerMax!.Value : 0;
         double op = (d.OpponentMax   ?? 0) > 0 ? (double)d.OpponentScore!.Value   / d.OpponentMax!.Value   : 0;
-        if      (cp > op)  winner = d.ChallengerEmail;
-        else if (op > cp)  winner = d.OpponentEmail;
-        // Döntetlen: winner = null
+        if (cp > op) winner = d.ChallengerEmail;
+        else if (op > cp) winner = d.OpponentEmail;
+        else
+        {
+            // Pontegyenlőség → gyorsabb nyer (kisebb idő)
+            int ct = d.ChallengerTime ?? 600;
+            int ot = d.OpponentTime   ?? 600;
+            if      (ct < ot) winner = d.ChallengerEmail;
+            else if (ot < ct) winner = d.OpponentEmail;
+            // Teljesen egyforma: winner = null (rendkívül ritka)
+        }
 
         using var fin = conn.CreateCommand();
         fin.CommandText = "UPDATE duels SET status='finished', winner_email=$w, finished_at=datetime('now','localtime') WHERE id=$id";
@@ -2498,20 +2514,22 @@ public class Database
     {
         Id              = r.GetInt32(0),
         ChallengerEmail = r.GetString(1),
-        ChallengerNev   = r.IsDBNull(2) ? "" : r.GetString(2),
+        ChallengerNev   = r.IsDBNull(2)  ? "" : r.GetString(2),
         OpponentEmail   = r.GetString(3),
-        OpponentNev     = r.IsDBNull(4) ? "" : r.GetString(4),
+        OpponentNev     = r.IsDBNull(4)  ? "" : r.GetString(4),
         TaskNumber      = r.GetInt32(5),
-        TaskTitle       = r.IsDBNull(6) ? "" : r.GetString(6),
+        TaskTitle       = r.IsDBNull(6)  ? "" : r.GetString(6),
         Status          = r.GetString(7),
         ChallengerScore = r.IsDBNull(8)  ? null : r.GetInt32(8),
         ChallengerMax   = r.IsDBNull(9)  ? null : r.GetInt32(9),
-        OpponentScore   = r.IsDBNull(10) ? null : r.GetInt32(10),
-        OpponentMax     = r.IsDBNull(11) ? null : r.GetInt32(11),
-        WinnerEmail     = r.IsDBNull(12) ? null : r.GetString(12),
-        CreatedAt       = r.GetString(13),
-        AcceptedAt      = r.IsDBNull(14) ? null : r.GetString(14),
-        FinishedAt      = r.IsDBNull(15) ? null : r.GetString(15),
+        ChallengerTime  = r.IsDBNull(10) ? null : r.GetInt32(10),
+        OpponentScore   = r.IsDBNull(11) ? null : r.GetInt32(11),
+        OpponentMax     = r.IsDBNull(12) ? null : r.GetInt32(12),
+        OpponentTime    = r.IsDBNull(13) ? null : r.GetInt32(13),
+        WinnerEmail     = r.IsDBNull(14) ? null : r.GetString(14),
+        CreatedAt       = r.GetString(15),
+        AcceptedAt      = r.IsDBNull(16) ? null : r.GetString(16),
+        FinishedAt      = r.IsDBNull(17) ? null : r.GetString(17),
     };
 
     // ── Chat ──────────────────────────────────────────────────────────────────

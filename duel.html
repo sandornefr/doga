@@ -71,9 +71,23 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .loading-screen.hide{display:none;}
 .loading-spinner{font-size:2rem;color:#4f46e5;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Tab warning */
+.tab-warning{position:fixed;inset:0;background:rgba(239,68,68,.92);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;}
+.tab-warning.show{display:flex;}
+.tab-warning-title{font-size:1.6rem;font-weight:800;color:#fff;}
+.tab-warning-sub{font-size:1rem;color:#fee2e2;max-width:420px;line-height:1.6;}
+.tab-warning-countdown{font-size:3rem;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
+
+<div class="tab-warning" id="tab-warning">
+  <i class="fas fa-triangle-exclamation" style="font-size:3rem;color:#fff;"></i>
+  <div class="tab-warning-title">Elhagytad a párbaj ablakát!</div>
+  <div class="tab-warning-sub">A kódpárbaj alatt nem hagyhatsz el a lapot. Térj vissza azonnal, különben <strong>automatikusan beadjuk</strong> a jelenlegi megoldásod!</div>
+  <div class="tab-warning-countdown" id="tab-countdown">10</div>
+</div>
 
 <div class="loading-screen" id="loading-screen">
   <i class="fas fa-code loading-spinner"></i>
@@ -134,11 +148,13 @@ const params    = new URLSearchParams(location.search);
 const duelId    = parseInt(params.get('id') || '0');
 
 let editor, pyodide, task, duelData, myEmail, myNev;
-let timerSec   = DUEL_MINS * 60;
-let timerInt   = null;
-let pollInt    = null;
-let submitted  = false;
-let started    = false;
+let timerSec        = DUEL_MINS * 60;
+let timerInt        = null;
+let pollInt         = null;
+let submitted       = false;
+let started         = false;
+let tabWarnInt      = null;
+let tabWarnSec      = 10;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
@@ -217,12 +233,12 @@ function setupNames() {
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
 function startTimer() {
-    // Timer a párbaj elfogadási idejétől számít
     if (duelData.acceptedAt) {
         const accepted = new Date(duelData.acceptedAt.replace(' ', 'T'));
         const elapsed  = Math.floor((Date.now() - accepted.getTime()) / 1000);
         timerSec = Math.max(0, DUEL_MINS * 60 - elapsed);
     }
+    started = true;
     renderTimer();
     timerInt = setInterval(() => {
         timerSec--;
@@ -233,6 +249,26 @@ function startTimer() {
         }
     }, 1000);
 }
+
+// ── Tab anti-cheat ────────────────────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && !submitted && started) {
+        tabWarnSec = 10;
+        document.getElementById('tab-countdown').textContent = tabWarnSec;
+        document.getElementById('tab-warning').classList.add('show');
+        tabWarnInt = setInterval(() => {
+            tabWarnSec--;
+            document.getElementById('tab-countdown').textContent = tabWarnSec;
+            if (tabWarnSec <= 0) {
+                clearInterval(tabWarnInt);
+                autoSubmit();
+            }
+        }, 1000);
+    } else {
+        clearInterval(tabWarnInt);
+        document.getElementById('tab-warning').classList.remove('show');
+    }
+});
 
 function renderTimer() {
     const m = Math.floor(timerSec / 60).toString().padStart(2, '0');
@@ -304,19 +340,22 @@ async function submitResult() {
     if (submitted) return;
     if (!confirm('Biztosan beadod a megoldásod? Ezt nem lehet visszavonni.')) return;
     submitted = true;
+    clearInterval(tabWarnInt);
+    document.getElementById('tab-warning').classList.remove('show');
     document.getElementById('btn-submit').disabled = true;
 
-    const code   = editor.getValue();
-    const result = await scoreCode(code);
-    const score  = result.score;
-    const max    = result.max;
+    const code           = editor.getValue();
+    const result         = await scoreCode(code);
+    const score          = result.score;
+    const max            = result.max;
+    const elapsedSeconds = DUEL_MINS * 60 - timerSec;
 
     document.getElementById('my-score').textContent = `${score}/${max}p`;
 
     await fetch(`${API}/api/duel/${duelId}/submit`, {
         method: 'POST',
         headers: { ...authH, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score, maxScore: max })
+        body: JSON.stringify({ score, maxScore: max, elapsedSeconds })
     });
 
     document.getElementById('output').textContent = `Beadva: ${score}/${max} pont. Várakozás az ellenfélre...`;
@@ -325,12 +364,15 @@ async function submitResult() {
 async function autoSubmit() {
     if (submitted) return;
     submitted = true;
-    const code   = editor.getValue();
-    const result = await scoreCode(code);
+    clearInterval(tabWarnInt);
+    document.getElementById('tab-warning').classList.remove('show');
+    const code           = editor.getValue();
+    const result         = await scoreCode(code);
+    const elapsedSeconds = DUEL_MINS * 60 - timerSec;
     await fetch(`${API}/api/duel/${duelId}/submit`, {
         method: 'POST',
         headers: { ...authH, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score: result.score, maxScore: result.max })
+        body: JSON.stringify({ score: result.score, maxScore: result.max, elapsedSeconds })
     });
 }
 

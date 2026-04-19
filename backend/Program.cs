@@ -52,6 +52,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 // Adatbázis inicializálás
 db.Initialize();
 db.MigrateChatChannel();
+db.MigrateDuelTime();
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
@@ -1483,7 +1484,7 @@ app.MapPost("/api/duel/{id}/submit", (int id, HttpContext ctx, DuelSubmitRequest
     var (valid, identity, _) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     var email = NormalizeSchoolEmail(identity);
-    var (ok, winner) = db.SubmitDuelScore(id, email, req.Score, req.MaxScore);
+    var (ok, winner) = db.SubmitDuelScore(id, email, req.Score, req.MaxScore, req.ElapsedSeconds);
     return ok ? Results.Ok(new { ok = true, winner }) : Results.BadRequest(new { error = "Nem sikerült" });
 });
 
