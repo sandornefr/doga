@@ -2828,8 +2828,12 @@ if (location.hash === '#web-tanulas') {
 
     window.sendDuelInvite = async function(opponentEmail, opponentNev) {
         if (tasks8.length === 0) { alert('Feladatok betöltése folyamatban, kérlek várj.'); return; }
+        const isBot = opponentEmail.toLowerCase() === 'bot@kkszki.hu';
         const task = tasks8[Math.floor(Math.random() * tasks8.length)];
-        if (!confirm(`Kihívod ${opponentNev} kódpárbajra?\n\nFeladat: ${task.cim} (8 pont, 10 perc)`)) return;
+        const confirmMsg = isBot
+            ? `Gép elleni meccs?\n\nFeladat: ${task.cim} (8 pont, 10 perc)\n\nA gép automatikusan elfogadja – azonnal kezdődhetsz!`
+            : `Kihívod ${opponentNev} kódpárbajra?\n\nFeladat: ${task.cim} (8 pont, 10 perc)`;
+        if (!confirm(confirmMsg)) return;
         try {
             const res = await fetch(`${API_BASE}/api/duel/invite`, {
                 method: 'POST',
@@ -2838,9 +2842,13 @@ if (location.hash === '#web-tanulas') {
             });
             if (res.ok) {
                 const d = await res.json();
-                alert(`Kihívás elküldve! Várd meg, amíg ${opponentNev} elfogadja (max 2 perc).`);
-                // Poll hogy elfogadta-e
-                waitForAccept(d.id);
+                if (isBot) {
+                    // Bot azonnal elfogad – mehet egyenesen a duel oldalra
+                    location.href = `duel.html?id=${d.id}`;
+                } else {
+                    alert(`Kihívás elküldve! Várd meg, amíg ${opponentNev} elfogadja (max 2 perc).`);
+                    waitForAccept(d.id);
+                }
             } else { alert('Nem sikerült elküldeni a kihívást.'); }
         } catch { alert('Hálózati hiba.'); }
     };
