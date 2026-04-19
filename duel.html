@@ -220,6 +220,8 @@ async function initDuel() {
             const timerLabel = document.getElementById('timer-label');
             rajtBtn.style.display = 'flex';
             timerLabel.style.display = 'none';
+            editor.updateOptions({ readOnly: true });
+            document.getElementById('btn-run').disabled = true;
         } else {
             startTimer();
         }
@@ -235,6 +237,8 @@ function startGame() {
     const timerLabel = document.getElementById('timer-label');
     rajtBtn.style.display = 'none';
     timerLabel.style.display = '';
+    editor.updateOptions({ readOnly: false });
+    document.getElementById('btn-run').disabled = false;
     timerSec = DUEL_MINS * 60;
     started = true;
     renderTimer();
