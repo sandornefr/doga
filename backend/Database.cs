@@ -2460,7 +2460,7 @@ public class Database
         {
             var rng = new Random();
             int botScore = (int)Math.Round(maxScore * (0.3 + rng.NextDouble() * 0.6));
-            int botTime  = rng.Next(90, 560);
+            int botTime  = rng.Next(300, 560);
             using var botUpd = conn.CreateCommand();
             botUpd.CommandText = "UPDATE duels SET opponent_score=$s, opponent_max=$m, opponent_time=$t WHERE id=$id";
             botUpd.Parameters.AddWithValue("$s", botScore);
