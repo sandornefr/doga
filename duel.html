@@ -89,6 +89,17 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .duel-modal-btn-cancel{flex:1;background:none;border:1px solid #374151;color:#6b7280;padding:9px;border-radius:8px;cursor:pointer;font-size:0.85rem;}
 .duel-modal-btn-cancel:hover{border-color:#6b7280;color:#9ca3af;}
 
+/* Editor-lock overlay (Rajt! előtt) */
+#editor-lock-overlay{position:absolute;inset:0;z-index:10;background:rgba(13,17,23,.72);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;backdrop-filter:blur(1px);}
+#editor-lock-overlay.show{display:flex;}
+.elo-icon{font-size:2rem;color:#f59e0b;}
+.elo-msg{font-size:0.9rem;color:#e0e0e0;font-weight:600;text-align:center;line-height:1.5;}
+.elo-sub{font-size:0.78rem;color:#6b7280;text-align:center;}
+.elo-arrow{font-size:1.5rem;color:#f59e0b;animation:bounce-up .9s ease infinite;}
+@keyframes bounce-up{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes rajt-pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.7)}70%{box-shadow:0 0 0 10px rgba(245,158,11,0)}}
+.rajt-highlight{animation:rajt-pulse .7s ease 3;}
+
 /* Tab warning */
 .tab-warning{position:fixed;inset:0;background:rgba(239,68,68,.92);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;}
 .tab-warning.show{display:flex;}
@@ -140,7 +151,14 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
     <div class="task-body" id="task-body"></div>
   </div>
   <div class="right-panel">
-    <div class="editor-wrap" id="editor-wrap"></div>
+    <div class="editor-wrap" id="editor-wrap">
+      <div id="editor-lock-overlay" onclick="highlightRajtBtn()">
+        <i class="fas fa-lock elo-icon"></i>
+        <div class="elo-msg">A szerkesztő zárolva van</div>
+        <div class="elo-sub">Kattints a <strong style="color:#f59e0b;">Rajt!</strong> gombra a megkezdéshez</div>
+        <i class="fas fa-arrow-up elo-arrow"></i>
+      </div>
+    </div>
     <div class="toolbar">
       <button class="btn-run" id="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Futtatás</button>
       <div style="flex:1"></div>
@@ -372,6 +390,7 @@ async function initDuel() {
             timerLabel.style.display = 'none';
             editor.updateOptions({ readOnly: true });
             document.getElementById('btn-run').disabled = true;
+            document.getElementById('editor-lock-overlay').classList.add('show');
         } else {
             startTimer();
         }
@@ -382,9 +401,17 @@ async function initDuel() {
     }
 }
 
+function highlightRajtBtn() {
+    const btn = document.getElementById('rajt-btn');
+    btn.classList.remove('rajt-highlight');
+    void btn.offsetWidth; // reflow az animáció újraindításához
+    btn.classList.add('rajt-highlight');
+}
+
 function startGame() {
     const rajtBtn = document.getElementById('rajt-btn');
     const timerLabel = document.getElementById('timer-label');
+    document.getElementById('editor-lock-overlay').classList.remove('show');
     rajtBtn.style.display = 'none';
     timerLabel.style.display = '';
     editor.updateOptions({ readOnly: false });
