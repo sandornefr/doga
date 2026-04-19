@@ -253,7 +253,7 @@ function startTimer() {
 // ── Tab anti-cheat ────────────────────────────────────────────────────────────
 document.addEventListener('visibilitychange', () => {
     if (document.hidden && !submitted && started) {
-        tabWarnSec = 10;
+        tabWarnSec = 3;
         document.getElementById('tab-countdown').textContent = tabWarnSec;
         document.getElementById('tab-warning').classList.add('show');
         tabWarnInt = setInterval(() => {
