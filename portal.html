@@ -224,6 +224,10 @@
             flex-direction: column;
             gap: 12px;
         }
+        /* Felső kártyasor egyforma magasság */
+        .student-two-col .student-col > .option-card {
+            min-height: 160px;
+        }
         /* Changelog egy oszlophoz igazítva */
         .changelog-box.python-col    { border-color: rgba(55,118,171,0.4); }
         .changelog-box.web-col       { border-color: rgba(228,77,38,0.4); }
@@ -234,10 +238,14 @@
         .option-card.interaktiv:hover { border-color: #14b8a6; box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
         .option-card.interaktiv .icon { color: #0d9488; }
 
+        .option-card {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
         .option-card.duel {
             border-color: #b45309;
             background: linear-gradient(160deg, #1c1200 0%, #16213e 60%);
-            cursor: default;
+            cursor: pointer;
         }
         .option-card.duel:hover {
             border-color: #fbbf24;
@@ -248,15 +256,41 @@
         .option-card.duel .icon { color: #fbbf24; }
         .option-card.duel .label { color: #fcd34d; }
         .option-card.duel .desc  { color: #92400e; }
-        .duel-online-inner { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+        .duel-online-badge {
+            margin-top: 10px; display:flex; align-items:center; gap:5px;
+            font-size:0.72rem; color:#8b949e;
+            background:rgba(0,0,0,.3); border:1px solid #374151;
+            border-radius:20px; padding:3px 10px;
+        }
+        /* Kódpárbaj modal */
+        #duel-online-modal {
+            display:none; position:fixed; inset:0; background:rgba(0,0,0,.75);
+            z-index:3000; align-items:center; justify-content:center; padding:16px;
+        }
+        #duel-online-modal.open { display:flex; }
+        .duel-modal-box {
+            background:#161b22; border:1.5px solid #b45309; border-radius:16px;
+            padding:24px; width:100%; max-width:420px; font-family:'Segoe UI',system-ui,sans-serif;
+        }
+        .duel-modal-title {
+            display:flex; align-items:center; gap:10px; margin-bottom:16px;
+            font-size:1rem; font-weight:700; color:#fcd34d;
+        }
+        .duel-modal-list { display:flex; flex-direction:column; gap:8px; min-height:60px; }
         .duel-member-btn {
-            display:flex; align-items:center; gap:7px; padding:6px 10px;
-            background:#0f172a; border:1px solid #374151; border-radius:8px;
-            color:#c9d1d9; font-size:0.78rem; cursor:pointer; transition:border-color .15s;
+            display:flex; align-items:center; gap:10px; padding:10px 14px;
+            background:#0f172a; border:1.5px solid #374151; border-radius:10px;
+            color:#c9d1d9; font-size:0.85rem; cursor:pointer; transition:all .15s;
             width:100%; text-align:left; font-family:inherit;
         }
-        .duel-member-btn:hover { border-color:#f59e0b; color:#fcd34d; }
-        .duel-no-members { color:#4b5563; font-size:0.78rem; font-style:italic; margin-top:6px; }
+        .duel-member-btn:hover { border-color:#f59e0b; color:#fcd34d; background:#1c1200; }
+        .duel-no-members { color:#6b7280; font-size:0.85rem; text-align:center; padding:16px 0; }
+        .duel-modal-close {
+            margin-top:16px; width:100%; padding:8px; background:transparent;
+            border:1px solid #374151; border-radius:8px; color:#8b949e;
+            cursor:pointer; font-size:0.85rem; font-family:inherit; transition:border-color .15s;
+        }
+        .duel-modal-close:hover { border-color:#6b7280; color:#e0e0e0; }
 
         @media (max-width: 900px) {
             .student-two-col { grid-template-columns: 1fr 1fr; }
@@ -881,26 +915,20 @@
             </div>
             <!-- Kódpárbaj oszlop (4. kártya, csak tanulóknak) -->
             <div class="student-col" id="duel-section" style="display:none;">
-                <div class="option-card duel">
+                <div class="option-card duel" onclick="document.getElementById('duel-online-modal').classList.add('open')">
                     <span class="icon"><i class="fas fa-code-compare"></i></span>
                     <span class="label">KÓDPÁRBAJ</span>
-                    <span class="desc">Versenyezz csoporttársaiddal Python feladatban</span>
-                    <div class="duel-online-inner">
-                        <div style="display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:2px;">
-                            <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;"></i>
-                            <span id="duel-online-count" style="font-size:0.72rem;color:#8b949e;"></span>
-                        </div>
-                        <div id="duel-online-list">
-                            <div class="duel-no-members">Nincs online csoporttárs.</div>
-                        </div>
+                    <span class="desc">Python verseny csoporttársak ellen</span>
+                    <div class="duel-online-badge">
+                        <i class="fas fa-circle" style="font-size:.4rem;color:#22c55e;"></i>
+                        <span id="duel-online-count">0 fő online</span>
                     </div>
                 </div>
                 <div id="changelog-duel" class="changelog-box duel-col" style="display:none;">
                     <div class="changelog-title"><i class="fas fa-code-compare" style="color:#f59e0b;"></i> Hogyan működik?</div>
-                    <div class="changelog-item"><strong>Kihívás:</strong> kattints egy online csoporttárs nevére – azonnal kap egy meghívót</div>
-                    <div class="changelog-item"><strong>Feladat:</strong> mindketten ugyanazt a 8 pontos Python feladatot kapjátok, <strong>10 perc</strong> áll rendelkezésre</div>
-                    <div class="changelog-item"><strong>Győztes:</strong> aki a feladat pontszámának nagyobb százalékát teljesíti – döntetlen is lehetséges</div>
-                    <div class="changelog-item"><strong>Meghívó</strong> 2 percig érvényes, elutasítás esetén a párbaj elmarad, <strong>nem jár automatikus győzelem</strong></div>
+                    <div class="changelog-item"><i class="fas fa-hand-pointer" style="color:#f59e0b;margin-right:4px;"></i>Kattints a kártyára, válassz online csoporttársat</div>
+                    <div class="changelog-item"><i class="fas fa-clock" style="color:#f59e0b;margin-right:4px;"></i>Ugyanaz a 8 pontos Python feladat – <strong>10 perc</strong></div>
+                    <div class="changelog-item"><i class="fas fa-trophy" style="color:#f59e0b;margin-right:4px;"></i>Győz aki nagyobb <strong>%-ot teljesít</strong> – döntetlen is lehetséges</div>
                 </div>
             </div>
         </div>
@@ -2647,6 +2675,23 @@ if (location.hash === '#web-tanulas') {
 })();
 </script>
 
+<!-- Kódpárbaj online tagok modal -->
+<div id="duel-online-modal">
+    <div class="duel-modal-box">
+        <div class="duel-modal-title">
+            <i class="fas fa-code-compare"></i>
+            <span>Kódpárbaj – Online csoporttársak</span>
+            <span id="duel-modal-count" style="margin-left:auto;font-size:0.75rem;font-weight:400;color:#8b949e;"></span>
+        </div>
+        <div class="duel-modal-list" id="duel-online-list">
+            <div class="duel-no-members"><i class="fas fa-moon" style="margin-right:6px;opacity:.5;"></i>Jelenleg nincs online csoporttárs.</div>
+        </div>
+        <button class="duel-modal-close" onclick="document.getElementById('duel-online-modal').classList.remove('open')">
+            <i class="fas fa-times" style="margin-right:6px;"></i>Bezárás
+        </button>
+    </div>
+</div>
+
 <!-- Kódpárbaj értesítő widget -->
 <div id="duel-notify" style="display:none;position:fixed;bottom:86px;right:24px;z-index:8000;width:320px;background:#161b22;border:2px solid #f59e0b;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.6);font-family:'Segoe UI',system-ui,sans-serif;font-size:0.85rem;overflow:hidden;">
   <div style="background:#f59e0b22;padding:12px 16px;border-bottom:1px solid #f59e0b44;display:flex;align-items:center;gap:8px;">
@@ -2722,18 +2767,20 @@ if (location.hash === '#web-tanulas') {
             if (!res.ok) return;
             const members = await res.json();
             const list = document.getElementById('duel-online-list');
-            const cnt  = document.getElementById('duel-online-count');
             if (!list) return;
-            cnt.textContent = `${members.length} fő online`;
+            const cntBadge = document.getElementById('duel-online-count');
+            const modalCnt = document.getElementById('duel-modal-count');
+            if (cntBadge) cntBadge.textContent = `${members.length} fő online`;
+            if (modalCnt) modalCnt.textContent = members.length > 0 ? `${members.length} online` : '';
             if (members.length === 0) {
-                list.innerHTML = '<div class="duel-no-members">Nincs online csoporttárs.</div>';
+                list.innerHTML = '<div class="duel-no-members"><i class="fas fa-moon" style="margin-right:6px;opacity:.5;"></i>Jelenleg nincs online csoporttárs.</div>';
                 return;
             }
             list.innerHTML = members.map(m => `
-                <button class="duel-member-btn" onclick="sendDuelInvite('${m.email}','${escJs(m.nev)}')">
+                <button class="duel-member-btn" onclick="document.getElementById('duel-online-modal').classList.remove('open'); sendDuelInvite('${m.email}','${escJs(m.nev)}')">
                     <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;flex-shrink:0;"></i>
-                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(m.nev)}</span>
-                    <span style="color:#f59e0b;font-size:0.72rem;font-weight:700;flex-shrink:0;"><i class="fas fa-code-compare"></i></span>
+                    <span style="flex:1;">${escHtml(m.nev)}</span>
+                    <span style="color:#f59e0b;font-size:0.78rem;font-weight:700;"><i class="fas fa-code-compare" style="margin-right:4px;"></i>Kihívom</span>
                 </button>`).join('');
         } catch {}
     }
