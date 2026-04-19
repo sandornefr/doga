@@ -72,6 +72,23 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .loading-spinner{font-size:2rem;color:#4f46e5;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Egyedi modalok (input-gyűjtő + beadás-megerősítő) */
+.duel-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.duel-modal-overlay.show{display:flex;}
+.duel-modal-box{background:#161b22;border:1.5px solid #30363d;border-radius:14px;padding:24px 24px 20px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.7);}
+.duel-modal-head{font-size:0.78rem;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.duel-modal-body{font-size:0.9rem;color:#c9d1d9;margin-bottom:18px;line-height:1.55;}
+.duel-modal-field{width:100%;background:#0d1117;border:1px solid #30363d;color:#e0e0e0;padding:8px 10px;border-radius:7px;font-size:0.9rem;outline:none;font-family:inherit;margin-top:4px;}
+.duel-modal-field:focus{border-color:#4f46e5;}
+.duel-modal-label{display:block;font-size:0.78rem;color:#8b949e;margin-bottom:2px;margin-top:12px;}
+.duel-modal-label:first-child{margin-top:0;}
+.duel-modal-btns{display:flex;gap:8px;margin-top:18px;}
+.duel-modal-btn-ok{flex:1;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;color:#fff;padding:9px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.88rem;}
+.duel-modal-btn-ok:hover{filter:brightness(1.1);}
+.duel-modal-btn-ok.danger{background:linear-gradient(135deg,#dc2626,#b91c1c);}
+.duel-modal-btn-cancel{flex:1;background:none;border:1px solid #374151;color:#6b7280;padding:9px;border-radius:8px;cursor:pointer;font-size:0.85rem;}
+.duel-modal-btn-cancel:hover{border-color:#6b7280;color:#9ca3af;}
+
 /* Tab warning */
 .tab-warning{position:fixed;inset:0;background:rgba(239,68,68,.92);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;}
 .tab-warning.show{display:flex;}
@@ -140,6 +157,30 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
     <div class="result-sub" id="result-sub"></div>
     <div class="result-scores" id="result-scores"></div>
     <button class="result-btn" onclick="location.href='portal.html'"><i class="fas fa-home" style="margin-right:6px;"></i>Vissza a portálra</button>
+  </div>
+</div>
+
+<!-- Input-gyűjtő modal -->
+<div class="duel-modal-overlay" id="input-modal">
+  <div class="duel-modal-box">
+    <div class="duel-modal-head"><i class="fas fa-keyboard"></i>Adatok megadása</div>
+    <div id="input-modal-fields"></div>
+    <div class="duel-modal-btns">
+      <button class="duel-modal-btn-cancel" id="input-modal-cancel">Mégse</button>
+      <button class="duel-modal-btn-ok" id="input-modal-ok"><i class="fas fa-play" style="margin-right:5px;"></i>Futtatás</button>
+    </div>
+  </div>
+</div>
+
+<!-- Beadás-megerősítő modal -->
+<div class="duel-modal-overlay" id="submit-modal">
+  <div class="duel-modal-box" style="border-color:#dc2626;">
+    <div class="duel-modal-head" style="color:#f87171;"><i class="fas fa-flag-checkered"></i>Beadás megerősítése</div>
+    <div class="duel-modal-body">Biztosan beadod a megoldásod?<br><span style="font-size:0.8rem;color:#6b7280;">Ezt nem lehet visszavonni.</span></div>
+    <div class="duel-modal-btns">
+      <button class="duel-modal-btn-cancel" id="submit-modal-no">Mégse</button>
+      <button class="duel-modal-btn-ok danger" id="submit-modal-yes"><i class="fas fa-flag-checkered" style="margin-right:5px;"></i>Igen, beadom!</button>
+    </div>
   </div>
 </div>
 
@@ -355,6 +396,45 @@ function updateOpponentBadge(d) {
     }
 }
 
+// ── Input-gyűjtő modal ────────────────────────────────────────────────────────
+function collectInputs(code) {
+    const matches = [...code.matchAll(/input\s*\(\s*(?:f?["']([^"']*?)["'])?\s*\)/g)];
+    if (matches.length === 0) return Promise.resolve([]);
+    return new Promise((resolve, reject) => {
+        const container = document.getElementById('input-modal-fields');
+        container.innerHTML = '';
+        matches.forEach((m, i) => {
+            const label = document.createElement('label');
+            label.className = 'duel-modal-label';
+            label.textContent = m[1] || `${i + 1}. érték:`;
+            const field = document.createElement('input');
+            field.type = 'text';
+            field.className = 'duel-modal-field';
+            field.id = `ic-${i}`;
+            field.placeholder = 'Írd be az értéket...';
+            container.appendChild(label);
+            container.appendChild(field);
+        });
+        const modal = document.getElementById('input-modal');
+        modal.classList.add('show');
+        document.getElementById(`ic-0`)?.focus();
+
+        const ok = document.getElementById('input-modal-ok');
+        const cancel = document.getElementById('input-modal-cancel');
+        const doOk = () => {
+            modal.classList.remove('show');
+            resolve(matches.map((_, i) => document.getElementById(`ic-${i}`).value));
+        };
+        const doCancel = () => { modal.classList.remove('show'); reject(); };
+        ok.onclick = doOk;
+        cancel.onclick = doCancel;
+        // Enter az utolsó mezőn
+        document.getElementById(`ic-${matches.length - 1}`)?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') doOk();
+        });
+    });
+}
+
 // ── Futtatás ──────────────────────────────────────────────────────────────────
 async function runCode() {
     const btn = document.getElementById('btn-run');
@@ -364,12 +444,16 @@ async function runCode() {
     out.className = 'output-wrap';
     out.textContent = '';
     if (!pyodide) { out.textContent = 'Pyodide betöltése folyamatban, kérlek várj...'; btn.disabled=false; btn.innerHTML='<i class="fas fa-play"></i> Futtatás'; return; }
+    const code = editor.getValue();
+    let inputs = [];
+    try { inputs = await collectInputs(code); }
+    catch { btn.disabled=false; btn.innerHTML='<i class="fas fa-play"></i> Futtatás'; return; }
     try {
-        const code = editor.getValue();
         let stdout = '';
         pyodide.setStdout({ batched: s => stdout += s + '\n' });
         pyodide.setStderr({ batched: s => stdout += s + '\n' });
-        pyodide.globals.set('input', (msg) => window.prompt(msg ?? '') ?? '');
+        let idx = 0;
+        pyodide.globals.set('input', (msg) => inputs[idx++] ?? '');
         await pyodide.runPythonAsync(code);
         out.textContent = stdout || '(Nincs kimenet)';
         out.className = 'output-wrap ok';
@@ -382,10 +466,20 @@ async function runCode() {
     btn.innerHTML = '<i class="fas fa-play"></i> Futtatás';
 }
 
+// ── Beadás-megerősítő modal ───────────────────────────────────────────────────
+function confirmSubmit() {
+    return new Promise(resolve => {
+        const modal = document.getElementById('submit-modal');
+        modal.classList.add('show');
+        document.getElementById('submit-modal-yes').onclick = () => { modal.classList.remove('show'); resolve(true); };
+        document.getElementById('submit-modal-no').onclick  = () => { modal.classList.remove('show'); resolve(false); };
+    });
+}
+
 // ── Beadás ────────────────────────────────────────────────────────────────────
 async function submitResult() {
     if (submitted) return;
-    if (!confirm('Biztosan beadod a megoldásod? Ezt nem lehet visszavonni.')) return;
+    if (!await confirmSubmit()) return;
     submitted = true;
     clearInterval(tabWarnInt);
     document.getElementById('tab-warning').classList.remove('show');
