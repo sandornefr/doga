@@ -676,26 +676,47 @@
         .option-card.eredmenyek { border-color: #fbbf24; }
         .option-card.eredmenyek:hover { border-color: #fde68a; box-shadow: 0 8px 24px rgba(251,191,36,0.25); }
         .option-card.eredmenyek .icon { color: #fbbf24; }
-        /* ── Oktatói role-switcher ──────────────────────────────────── */
-        .teacher-role-sw {
-            display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap;
+        /* ── Oktatói főkártyák ──────────────────────────────────────── */
+        .teacher-main-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
         }
-        .teacher-role-btn {
-            flex: 1; min-width: 140px;
-            padding: 13px 16px; border-radius: 12px;
-            border: 1.5px solid #21262d; background: #16213e;
-            color: #94a3b8; font-size: 0.88rem; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; gap: 10px;
-            transition: all .2s; font-family: inherit;
+        .teacher-main-card {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 18px;
+            padding: 32px 20px 28px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            transition: all 0.2s;
+            color: inherit;
+            font-family: inherit; border: none;
         }
-        .teacher-role-btn i { font-size: 1rem; width: 18px; text-align: center; }
-        .teacher-role-btn:hover { color: #e0e0e0; background: #1c2128; }
-        .teacher-role-btn.tr-active-admin  { border-color: #e94560; color: #f87171; background: rgba(233,69,96,.1); }
-        .teacher-role-btn.tr-active-oktato { border-color: #a371f7; color: #c4b5fd; background: rgba(163,113,247,.1); }
-        .teacher-role-btn.tr-active-teszt  { border-color: #3fb950; color: #86efac; background: rgba(63,185,80,.1); }
-        .tr-sub { font-size: 0.72rem; font-weight: 400; opacity: .7; margin-top: 2px; }
-        .teacher-section { display: none; }
-        .teacher-section.active { display: block; }
+        .teacher-main-card:hover { transform: translateY(-4px); }
+        .teacher-main-card .tmc-icon { font-size: 2.6rem; margin-bottom: 4px; }
+        .teacher-main-card .tmc-label { font-size: 1.15rem; font-weight: 800; color: #e0e0e0; }
+        .teacher-main-card .tmc-desc  { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+        .tmc-admin  { border: 2px solid #e94560 !important; }
+        .tmc-admin:hover  { box-shadow: 0 8px 28px rgba(233,69,96,.25); border-color: #ff6b81 !important; }
+        .tmc-admin .tmc-icon  { color: #e94560; }
+        .tmc-oktato { border: 2px solid #a371f7 !important; }
+        .tmc-oktato:hover { box-shadow: 0 8px 28px rgba(163,113,247,.25); border-color: #c4b5fd !important; }
+        .tmc-oktato .tmc-icon { color: #a371f7; }
+        .tmc-teszt  { border: 2px solid #3fb950 !important; }
+        .tmc-teszt:hover  { box-shadow: 0 8px 28px rgba(63,185,80,.25); border-color: #86efac !important; }
+        .tmc-teszt .tmc-icon  { color: #3fb950; }
+        .teacher-sub-view { display: none; }
+        .teacher-sub-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: none; border: 1px solid #30363d; color: #8b949e;
+            padding: 7px 16px; border-radius: 8px; cursor: pointer;
+            font-size: 0.85rem; font-family: inherit; margin-bottom: 18px;
+            transition: all .2s;
+        }
+        .teacher-sub-back:hover { border-color: #a371f7; color: #c4b5fd; }
 
         .option-card.javitas { border-color: #2ed573; }
         .option-card.javitas:hover { border-color: #7bed9f; box-shadow: 0 8px 24px rgba(46,213,115,0.25); }
@@ -1053,41 +1074,36 @@
     <!-- Oktatói nézet -->
     <div id="teacher-portal" style="display:none">
 
-        <!-- Szerepkör-váltó -->
-        <div class="teacher-role-sw">
-            <button class="teacher-role-btn tr-active-admin" id="tr-btn-admin" onclick="switchTeacherRole('admin')">
-                <i class="fas fa-shield-halved"></i>
-                <div><div>Admin</div><div class="tr-sub">Javítás, beállítások</div></div>
+        <!-- 3 főkártya -->
+        <div class="teacher-main-cards" id="teacher-main-cards">
+            <button class="teacher-main-card tmc-admin" onclick="location.href='python/admin.html'">
+                <i class="fas fa-screwdriver-wrench tmc-icon"></i>
+                <span class="tmc-label">Admin</span>
+                <span class="tmc-desc">Mód beállítása, statisztikák, beadások kezelése</span>
             </button>
-            <button class="teacher-role-btn" id="tr-btn-oktato" onclick="switchTeacherRole('oktato')">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <div><div>Oktató</div><div class="tr-sub">Számonkérés, bemutató, haladás</div></div>
+            <button class="teacher-main-card tmc-oktato" onclick="showTeacherSub()">
+                <i class="fas fa-chalkboard-teacher tmc-icon"></i>
+                <span class="tmc-label">Oktató</span>
+                <span class="tmc-desc">Számonkérés kiadása, bemutató, tanulói haladás, javítás</span>
             </button>
-            <button class="teacher-role-btn" id="tr-btn-teszt" onclick="switchTeacherRole('teszt')">
-                <i class="fas fa-user-graduate"></i>
-                <div><div>Teszt Elek</div><div class="tr-sub">Diáknézet kipróbálása</div></div>
+            <button class="teacher-main-card tmc-teszt" onclick="enterStudentTestMode()">
+                <i class="fas fa-user-graduate tmc-icon"></i>
+                <span class="tmc-label">Teszt Elek</span>
+                <span class="tmc-desc">Belépés a diáknézetbe – logóra kattintva visszatérhetsz</span>
             </button>
         </div>
 
-        <!-- Admin szekció -->
-        <div class="teacher-section active" id="tr-section-admin">
+        <!-- Oktató alkártyák -->
+        <div class="teacher-sub-view" id="teacher-sub-view">
+            <button class="teacher-sub-back" onclick="hideTeacherSub()">
+                <i class="fas fa-arrow-left"></i> Vissza
+            </button>
             <div class="options-grid">
                 <a class="option-card javitas" href="review.html">
                     <span class="icon"><i class="fas fa-circle-check"></i></span>
                     <span class="label">Javítás</span>
                     <span class="desc">Beadott dolgozatok megtekintése és értékelése</span>
                 </a>
-                <a class="option-card admin" href="python/admin.html">
-                    <span class="icon"><i class="fas fa-screwdriver-wrench"></i></span>
-                    <span class="label">Admin panel</span>
-                    <span class="desc">Mód beállítása, statisztikák, jelszócsere</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Oktató szekció -->
-        <div class="teacher-section" id="tr-section-oktato">
-            <div class="options-grid">
                 <a class="option-card" href="python/szamonkeres.html" style="border-color:#6366f1">
                     <span class="icon"><i class="fas fa-file-pen" style="color:#818cf8"></i></span>
                     <span class="label">Számonkérés kiadása</span>
@@ -1103,24 +1119,6 @@
                     <span class="label">Tanulói haladás</span>
                     <span class="desc">Előrehaladás, aktivitás, lemaradók</span>
                 </a>
-            </div>
-        </div>
-
-        <!-- Teszt Elek szekció -->
-        <div class="teacher-section" id="tr-section-teszt">
-            <div style="text-align:center;padding:32px 16px;">
-                <div style="display:inline-flex;flex-direction:column;align-items:center;gap:14px;background:#16213e;border:1.5px solid #238636;border-radius:16px;padding:36px 44px;max-width:400px;width:100%;">
-                    <i class="fas fa-user-graduate" style="font-size:2.6rem;color:#3fb950;"></i>
-                    <div style="font-size:1.15rem;font-weight:800;color:#e0e0e0;">Teszt Elek – Diáknézet</div>
-                    <div style="font-size:0.85rem;color:#8b949e;line-height:1.6;text-align:center;">Lépj be diák módba és nézd meg a rendszert a tanulók szemével.<br>A logóra kattintva visszatérhetsz.</div>
-                    <a class="option-card diak-mod" href="#" onclick="event.preventDefault(); enterStudentTestMode()" style="width:100%;margin:0;padding:14px 20px;display:flex;align-items:center;gap:12px;text-align:left;">
-                        <span class="icon" style="margin:0;font-size:1.5rem;"><i class="fas fa-right-to-bracket"></i></span>
-                        <div>
-                            <span class="label" style="display:block;">Belépés diáknézetbe</span>
-                            <span class="desc">Teljes diáknézet – logóra kattintva visszatérhetsz</span>
-                        </div>
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -1604,8 +1602,6 @@
                 // Rendszergazda: teljes tanári felület
                 document.getElementById('teacher-portal').style.display = 'block';
                 document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
-                const savedTR = localStorage.getItem('teacher_role') || 'admin';
-                switchTeacherRole(savedTR);
                 document.getElementById('toggle-view-btn').style.display = 'block';
             } else {
                 // Többi oktató: ha nem ?mode=student paraméterrel jöttek, irányítsd az oktatói portálra
@@ -1668,15 +1664,14 @@
         document.getElementById('web-modal-gyakorlo').style.display = 'block';
     }
 
-    // ── Oktatói szerepkör-váltó ───────────────────────────────────────────────
-    function switchTeacherRole(role) {
-        ['admin','oktato','teszt'].forEach(r => {
-            const b = document.getElementById(`tr-btn-${r}`);
-            if (b) b.className = `teacher-role-btn${r === role ? ` tr-active-${r}` : ''}`;
-            const s = document.getElementById(`tr-section-${r}`);
-            if (s) s.classList.toggle('active', r === role);
-        });
-        localStorage.setItem('teacher_role', role);
+    // ── Oktatói al-nézet ─────────────────────────────────────────────────────
+    function showTeacherSub() {
+        document.getElementById('teacher-main-cards').style.display = 'none';
+        document.getElementById('teacher-sub-view').style.display = 'block';
+    }
+    function hideTeacherSub() {
+        document.getElementById('teacher-sub-view').style.display = 'none';
+        document.getElementById('teacher-main-cards').style.display = 'grid';
     }
 
     // ── Diák teszt mód ────────────────────────────────────────────────────────
