@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 *{scrollbar-width:thin;scrollbar-color:#30363d transparent;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px;}
@@ -31,7 +31,7 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .vs-sep{color:#6b7280;font-weight:700;font-size:1.1rem;}
 
 /* Layout */
-.main{display:flex;flex:1;overflow:hidden;height:calc(100vh - 110px);}
+.main{display:flex;flex:1;overflow:hidden;min-height:0;}
 .left-panel{width:340px;min-width:280px;border-right:1px solid #21262d;display:flex;flex-direction:column;overflow:hidden;}
 .task-header{padding:12px 16px;border-bottom:1px solid #21262d;background:#161b22;}
 .task-title{font-size:0.95rem;font-weight:700;color:#e0e0e0;}
