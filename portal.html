@@ -2538,10 +2538,14 @@
             _megv.timer = setInterval(() => _megvShow(_megv.cur + 1), 5000);
     };
 
-    async function loadMegvalasultOtletek() {
+    async function loadMegvalasultOtletek(retry = 0) {
         try {
             const res = await fetch(`${API_BASE}/api/otlet/public`);
-            if (!res.ok) return;
+            if (!res.ok) {
+                // Railway cold-start: próba újra 15mp múlva, max 3x
+                if (retry < 3) setTimeout(() => loadMegvalasultOtletek(retry + 1), 15000);
+                return;
+            }
             const lista = await res.json();
             const box = document.getElementById('megvalasult-box');
             if (!lista || lista.length === 0) { box.style.display = 'none'; return; }
@@ -2553,7 +2557,9 @@
                 if (_megv.timer) clearInterval(_megv.timer);
                 _megv.timer = setInterval(() => _megvShow(_megv.cur + 1), 5000);
             }
-        } catch {}
+        } catch {
+            if (retry < 3) setTimeout(() => loadMegvalasultOtletek(retry + 1), 15000);
+        }
     }
     // ──────────────────────────────────────────────────────────────────────────
 
