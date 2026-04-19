@@ -521,6 +521,7 @@ public class OnlineUser
 {
     public string Email    { get; set; } = "";
     public string Nev      { get; set; } = "";
+    public bool   IsBot    { get; set; } = false;
 }
 
 // ── Chat ──────────────────────────────────────────────────────────────────────

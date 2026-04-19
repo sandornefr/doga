@@ -2375,7 +2375,16 @@ public class Database
         cmd.Parameters.AddWithValue("$on", opponentNev);
         cmd.Parameters.AddWithValue("$tn", taskNumber);
         cmd.Parameters.AddWithValue("$tt", taskTitle);
-        return Convert.ToInt32(cmd.ExecuteScalar());
+        var id = Convert.ToInt32(cmd.ExecuteScalar());
+        // Bot automatikusan elfogadja
+        if (opponentEmail.Trim().ToLower() == "bot@kkszki.hu")
+        {
+            using var accept = conn.CreateCommand();
+            accept.CommandText = "UPDATE duels SET status='active', accepted_at=datetime('now','localtime') WHERE id=$id";
+            accept.Parameters.AddWithValue("$id", id);
+            accept.ExecuteNonQuery();
+        }
+        return id;
     }
 
     public DuelRecord? GetDuel(int id)
@@ -2446,6 +2455,21 @@ public class Database
         upd.ExecuteNonQuery();
 
         d = GetDuel(id)!;
+        // Bot auto-submit: ha a kihívó beadott és a bot még nem
+        if (isChallenger && d.OpponentEmail.Equals("bot@kkszki.hu", StringComparison.OrdinalIgnoreCase) && d.OpponentScore == null)
+        {
+            var rng = new Random();
+            int botScore = (int)Math.Round(maxScore * (0.3 + rng.NextDouble() * 0.6));
+            int botTime  = rng.Next(90, 560);
+            using var botUpd = conn.CreateCommand();
+            botUpd.CommandText = "UPDATE duels SET opponent_score=$s, opponent_max=$m, opponent_time=$t WHERE id=$id";
+            botUpd.Parameters.AddWithValue("$s", botScore);
+            botUpd.Parameters.AddWithValue("$m", maxScore);
+            botUpd.Parameters.AddWithValue("$t", botTime);
+            botUpd.Parameters.AddWithValue("$id", id);
+            botUpd.ExecuteNonQuery();
+            d = GetDuel(id)!;
+        }
         if (d.ChallengerScore == null || d.OpponentScore == null) return (true, null);
 
         // Győztes: nagyobb %, egyenlő % esetén kevesebb idő
@@ -2507,6 +2531,8 @@ public class Database
         using var r = cmd.ExecuteReader();
         var list = new List<OnlineUser>();
         while (r.Read()) list.Add(new OnlineUser { Email = r.GetString(0), Nev = r.IsDBNull(1) ? "" : r.GetString(1) });
+        // Kandó Bot mindig "online"
+        list.Add(new OnlineUser { Email = "bot@kkszki.hu", Nev = "Kandó Bot", IsBot = true });
         return list;
     }
 

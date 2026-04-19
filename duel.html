@@ -226,9 +226,17 @@ async function loadTask(num) {
 
 function setupNames() {
     const isChallenger = duelData.challengerEmail.toLowerCase() === myEmail.toLowerCase();
-    const oppNev = isChallenger ? duelData.opponentNev : duelData.challengerNev;
+    const oppEmail = isChallenger ? duelData.opponentEmail : duelData.challengerEmail;
+    const oppNev   = isChallenger ? duelData.opponentNev   : duelData.challengerNev;
+    const isBot    = oppEmail.toLowerCase() === 'bot@kkszki.hu';
     document.getElementById('my-name').textContent = myNev.split(' ').pop();
-    document.getElementById('opp-name').textContent = oppNev.split(' ').pop();
+    if (isBot) {
+        document.getElementById('opp-name').innerHTML = '<i class="fas fa-robot" style="margin-right:4px;"></i>Kandó Bot';
+        document.querySelector('.topbar-title').innerHTML = '<i class="fas fa-robot" style="color:#f59e0b;margin-right:6px;"></i>Kódpárbaj – Gép ellen';
+        document.getElementById('opp-badge').style.borderColor = '#b45309';
+    } else {
+        document.getElementById('opp-name').textContent = oppNev.split(' ').pop();
+    }
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────────

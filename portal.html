@@ -207,6 +207,10 @@
             position: relative; transition: border-color .2s, color .2s;
         }
         .topbar-icon-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+        #topbar-otlet-btn { border-color: #b45309; color: #fbbf24; }
+        #topbar-otlet-btn:hover { border-color: #fbbf24; color: #fef08a; box-shadow: 0 0 8px rgba(251,191,36,.4); }
+        #topbar-chat-btn  { border-color: #0369a1; color: #38bdf8; }
+        #topbar-chat-btn:hover  { border-color: #38bdf8; color: #7dd3fc; box-shadow: 0 0 8px rgba(56,189,248,.4); }
         #topbar-chat-badge, #topbar-csatl-badge {
             position: absolute; top: -5px; right: -5px;
             background: #ef4444; color: #fff; border-radius: 50%;
@@ -471,15 +475,17 @@
         }
         .megvalasult-item {
             background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.2);
-            border-radius: 8px; padding: 10px 14px; font-size: 0.83rem;
+            border-radius: 8px; padding: 7px 14px; font-size: 0.82rem;
             animation: megvFadeIn 0.35s ease;
+            display: flex; align-items: center; gap: 0; flex-wrap: nowrap;
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
         @keyframes megvFadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .megvalasult-who { color: #86efac; font-weight: 700; }
-        .megvalasult-text { color: #b0b8c8; margin-top: 3px; }
+        .megvalasult-who { color: #86efac; font-weight: 700; flex-shrink: 0; }
+        .megvalasult-text { color: #b0b8c8; overflow: hidden; text-overflow: ellipsis; }
         .megvalasult-nav {
             display: flex; align-items: center; justify-content: center;
             gap: 5px; margin-top: 8px;
@@ -2522,10 +2528,10 @@
         const o = _megv.lista[_megv.cur];
         cont.innerHTML = `
             <div class="megvalasult-item">
-                <div class="megvalasult-who">
-                    🙌 ${escHtml(o.nev)}${o.osztaly ? ` <span style="font-weight:400;color:#86efac;">(${escHtml(o.osztaly)})</span>` : ''} javaslatára:
-                </div>
-                <div class="megvalasult-text">${escHtml(o.megvalositvaSzoveg || '')}</div>
+                <i class="fas fa-trophy" style="color:#22c55e;margin-right:8px;font-size:.75rem;flex-shrink:0;"></i>
+                <span class="megvalasult-who">${escHtml(o.nev)}${o.osztaly ? ` (${escHtml(o.osztaly)})` : ''}</span>
+                <span style="color:#4ade80;margin:0 8px;flex-shrink:0;">–</span>
+                <span class="megvalasult-text">${escHtml(o.megvalositvaSzoveg || '')}</span>
             </div>`;
         counter.textContent = `${_megv.cur + 1} / ${_megv.lista.length}`;
         // dots + prev/next
@@ -2790,19 +2796,25 @@ if (location.hash === '#web-tanulas') {
             const list = document.getElementById('duel-online-list');
             if (!list) return;
             const cntBadge = document.getElementById('duel-online-count');
+            const humans = members.filter(m => !m.isBot);
+            const bot    = members.find(m => m.isBot);
             const modalCnt = document.getElementById('duel-modal-count');
-            if (cntBadge) cntBadge.textContent = `${members.length} fő online`;
-            if (modalCnt) modalCnt.textContent = members.length > 0 ? `${members.length} online` : '';
-            if (members.length === 0) {
-                list.innerHTML = '<div class="duel-no-members"><i class="fas fa-moon" style="margin-right:6px;opacity:.5;"></i>Jelenleg nincs online csoporttárs.</div>';
-                return;
-            }
-            list.innerHTML = members.map(m => `
+            if (cntBadge) cntBadge.textContent = humans.length > 0 ? `${humans.length} fő online` : '0 fő online';
+            if (modalCnt) modalCnt.textContent = humans.length > 0 ? `${humans.length} online` : '';
+            const humanHtml = humans.map(m => `
                 <button class="duel-member-btn" onclick="document.getElementById('duel-online-modal').classList.remove('open'); sendDuelInvite('${m.email}','${escJs(m.nev)}')">
                     <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;flex-shrink:0;"></i>
                     <span style="flex:1;">${escHtml(m.nev)}</span>
                     <span style="color:#f59e0b;font-size:0.78rem;font-weight:700;"><i class="fas fa-code-compare" style="margin-right:4px;"></i>Kihívom</span>
                 </button>`).join('');
+            const noHumanMsg = humans.length === 0 ? '<div class="duel-no-members"><i class="fas fa-moon" style="margin-right:6px;opacity:.5;"></i>Jelenleg nincs online csoporttárs.</div>' : '';
+            const botHtml = bot ? `
+                <button class="duel-member-btn" style="border-color:#b45309;margin-top:4px;" onclick="document.getElementById('duel-online-modal').classList.remove('open'); sendDuelInvite('${bot.email}','${escJs(bot.nev)}')">
+                    <i class="fas fa-robot" style="font-size:.85rem;color:#f59e0b;flex-shrink:0;"></i>
+                    <span style="flex:1;">${escHtml(bot.nev)} <span style="font-size:0.72rem;color:#8b949e;">– mindig kész a meccsre!</span></span>
+                    <span style="color:#f59e0b;font-size:0.78rem;font-weight:700;"><i class="fas fa-robot" style="margin-right:4px;"></i>Gép ellen</span>
+                </button>` : '';
+            list.innerHTML = noHumanMsg + humanHtml + botHtml;
         } catch {}
     }
 

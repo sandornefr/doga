@@ -53,6 +53,8 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 db.Initialize();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
+// Kandó Bot – gép elleni meccshez (mindig létezik)
+db.UpsertUser("Kandó", "Bot", "bot@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("KandoBotNemBelephet!2024"), "tanulo");
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
