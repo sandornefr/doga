@@ -1909,27 +1909,19 @@
         }
 
         function switchRole(role) {
-            // Gombok állapota
             ['admin','oktato','teszt'].forEach(r => {
                 const b = document.getElementById(`role-btn-${r}`);
                 if (b) b.className = `role-btn${r === role ? ` active-${r}` : ''}`;
             });
-            // Nézetek váltása
             document.getElementById('admin-tab-nav').style.display  = role === 'admin'  ? '' : 'none';
             document.getElementById('oktato-view').style.display    = role === 'oktato' ? '' : 'none';
             document.getElementById('tesztelek-view').style.display = role === 'teszt'  ? '' : 'none';
-            // Admin panelek (data-tab attribútummal) csak admin módban láthatók
-            document.querySelectorAll('[data-tab]').forEach(el => {
-                el.style.display = role === 'admin' ? (el.dataset.wasVisible === 'true' ? 'block' : 'none') : 'none';
-            });
+            // data-tab panelek: csak admin nézetben, és csak az aktív tab-é látszik
+            document.querySelectorAll('[data-tab]').forEach(el => el.style.display = 'none');
             if (role === 'admin') {
-                // Az aktuális aktív tab paneljét megmutatjuk
-                const activeTabName = document.querySelector('.tab-btn.active')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
-                if (activeTabName) {
-                    document.querySelectorAll(`[data-tab="${activeTabName}"]`).forEach(el => el.style.display = 'block');
-                } else {
-                    document.querySelectorAll('[data-tab="vezerlot"]').forEach(el => el.style.display = 'block');
-                }
+                const activeBtn = document.querySelector('.tab-btn.active');
+                const activeTabName = activeBtn?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1] || 'vezerlot';
+                document.querySelectorAll(`[data-tab="${activeTabName}"]`).forEach(el => el.style.display = 'block');
             }
             localStorage.setItem('admin_role', role);
         }

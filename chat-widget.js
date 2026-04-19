@@ -11,10 +11,17 @@
     let pollTimer     = null;
     let currentChannel = 'tesztelok';
 
-    // Per-csatorna állapot (messages: cache a háttérpollhoz, hogy megnyitáskor azonnal látszódjon)
+    // sinceId localStorage-ból visszaállítva → oldal-újratöltés után nem jön vissza a badge
+    function loadSinceId(channel) {
+        return parseInt(localStorage.getItem(`chat_since_${channel}`) || '0');
+    }
+    function saveSinceId(channel, id) {
+        localStorage.setItem(`chat_since_${channel}`, id);
+    }
+
     const ch = {
-        tesztelok: { sinceId: 0, messages: [], unread: 0 },
-        oktatok:   { sinceId: 0, messages: [], unread: 0 }
+        tesztelok: { sinceId: loadSinceId('tesztelok'), messages: [], unread: 0 },
+        oktatok:   { sinceId: loadSinceId('oktatok'),   messages: [], unread: 0 }
     };
 
     // ── Stílus ────────────────────────────────────────────────────────────────
@@ -225,15 +232,10 @@
             document.getElementById(`tab-btn-${c}`)?.classList.toggle('active', c === channel);
         });
         updateBadge();
-        // Üzenetek újrarenderelés az új csatorna cache-ből
         const el = document.getElementById('chat-messages');
         const cached = ch[channel].messages;
-        if (cached.length > 0) {
-            el.innerHTML = '';
-            renderMessages(cached);
-        } else {
-            el.innerHTML = '<div class="chat-empty">Üzenetek betöltése...</div>';
-        }
+        el.innerHTML = cached.length > 0 ? '' : '<div class="chat-empty">Üzenetek betöltése...</div>';
+        if (cached.length > 0) renderMessages(cached);
         clearTimeout(pollTimer);
         poll();
     };
@@ -255,11 +257,27 @@
             const res = await fetch(`${CHAT_API}/api/chat?since_id=${state.sinceId}&channel=${channel}`, { headers: getHeaders() });
             if (!res.ok) return;
             const msgs = await res.json();
-            if (!msgs.length) return;
-            // Frissíti a sinceId-t
-            msgs.forEach(m => { if (m.id > state.sinceId) state.sinceId = m.id; });
 
-            // Mindig cache-eljük (megnyitáskor azonnal megjelenítjük)
+            if (msgs.length === 0) {
+                // Nincs új üzenet – ha a loading szöveg még látszik, cseréljük ki
+                if (isOpen && channel === currentChannel) {
+                    const el = document.getElementById('chat-messages');
+                    if (el && el.querySelectorAll('[data-id]').length === 0) {
+                        el.innerHTML = '<div class="chat-empty">Még nincs üzenet – írj elsőként!</div>';
+                    }
+                }
+                return;
+            }
+
+            // sinceId frissítése + localStorage mentés (badge nem jön vissza újratöltés után)
+            msgs.forEach(m => {
+                if (m.id > state.sinceId) {
+                    state.sinceId = m.id;
+                    saveSinceId(channel, m.id);
+                }
+            });
+
+            // Cache (megnyitáskor azonnal megjelenítjük)
             msgs.forEach(m => {
                 if (!state.messages.find(sm => sm.id === m.id)) state.messages.push(m);
             });
@@ -317,15 +335,10 @@
         updateBadge();
         panel.classList.add('open');
         clearTimeout(pollTimer);
-        // Cache-ből azonnal megjelenítjük a korábbi üzeneteket
         const el = document.getElementById('chat-messages');
         const cached = ch[currentChannel].messages;
-        if (cached.length > 0) {
-            el.innerHTML = '';
-            renderMessages(cached);
-        } else {
-            el.innerHTML = '<div class="chat-empty">Még nincs üzenet – írj elsőként!</div>';
-        }
+        el.innerHTML = cached.length > 0 ? '' : '<div class="chat-empty">Üzenetek betöltése...</div>';
+        if (cached.length > 0) renderMessages(cached);
         poll();
     }
 
