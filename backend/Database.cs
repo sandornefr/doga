@@ -2531,8 +2531,8 @@ public class Database
         using var r = cmd.ExecuteReader();
         var list = new List<OnlineUser>();
         while (r.Read()) list.Add(new OnlineUser { Email = r.GetString(0), Nev = r.IsDBNull(1) ? "" : r.GetString(1) });
-        // Kandó Bot mindig "online"
-        list.Add(new OnlineUser { Email = "bot@kkszki.hu", Nev = "Kandó Bot", IsBot = true });
+        // Piton Professzor mindig "online"
+        list.Add(new OnlineUser { Email = "bot@kkszki.hu", Nev = "Piton Professzor", IsBot = true });
         return list;
     }
 
