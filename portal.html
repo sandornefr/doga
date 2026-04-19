@@ -2827,7 +2827,13 @@ if (location.hash === '#web-tanulas') {
     }
 
     window.sendDuelInvite = async function(opponentEmail, opponentNev) {
-        if (tasks8.length === 0) { alert('Feladatok betöltése folyamatban, kérlek várj.'); return; }
+        if (tasks8.length === 0) {
+            try {
+                const txt = await fetch('python/feladatok.txt').then(r => r.text());
+                tasks8 = parseDuelTasks(txt).filter(t => t.pont === 8 && !t.feladatkeszito);
+            } catch {}
+            if (tasks8.length === 0) { alert('Nem sikerült betölteni a feladatokat. Próbáld újra!'); return; }
+        }
         const isBot = opponentEmail.toLowerCase() === 'bot@kkszki.hu';
         const task = tasks8[Math.floor(Math.random() * tasks8.length)];
         const confirmMsg = isBot
