@@ -215,6 +215,113 @@ const authH = { 'Authorization': `Bearer ${_duelToken}` };
 // ── Monaco ────────────────────────────────────────────────────────────────────
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 require(['vs/editor/editor.main'], () => {
+
+    // F-string tokenizer – Monaco alapból nem kezeli helyesen
+    monaco.languages.setMonarchTokensProvider('python', {
+        defaultToken: '',
+        tokenPostfix: '.python',
+        keywords: ['False','None','True','and','as','assert','async','await','break',
+                   'class','continue','def','del','elif','else','except','finally',
+                   'for','from','global','if','import','in','is','lambda','nonlocal',
+                   'not','or','pass','raise','return','try','while','with','yield'],
+        builtins: ['print','input','len','range','int','float','str','bool','list',
+                   'dict','tuple','set','type','isinstance','enumerate','zip','map',
+                   'filter','sorted','reversed','sum','min','max','abs','round','open',
+                   'super','any','all','format','repr','vars','dir','id','chr','ord'],
+        tokenizer: {
+            root: [
+                [/#.*$/,                 'comment'],
+                [/"""/, { token:'string', next:'@string_triple_d' }],
+                [/'''/,  { token:'string', next:'@string_triple_s' }],
+                [/[fFrRbBuU]{1,2}"""/,  { token:'string', next:'@fstring_triple_d' }],
+                [/[fFrRbBuU]{1,2}'''/,  { token:'string', next:'@fstring_triple_s' }],
+                [/[fF]"/,  { token:'string', next:'@fstring_d' }],
+                [/[fF]'/,  { token:'string', next:'@fstring_s' }],
+                [/[rRbBuU]*"/, { token:'string', next:'@string_d' }],
+                [/[rRbBuU]*'/, { token:'string', next:'@string_s' }],
+                [/\d+\.\d*([eE][+-]?\d+)?j?/, 'number.float'],
+                [/\d+[eE][+-]?\d+j?/,          'number.float'],
+                [/0[xX][0-9a-fA-F]+/,          'number.hex'],
+                [/0[oO][0-7]+/,                'number.octal'],
+                [/0[bB][01]+/,                 'number.binary'],
+                [/\d+j?/,                      'number'],
+                [/[a-zA-Z_]\w*/, { cases: { '@keywords':'keyword', '@builtins':'type.identifier', '@default':'identifier' } }],
+                [/[+\-*/%@&|^~<>=!]+/, 'operator'],
+                [/[{}()\[\]]/,         '@brackets'],
+                [/[,;.]/,              'delimiter'],
+                [/\s+/,                ''],
+            ],
+            // f-string egysoros (dupla / szimpla idézőjel)
+            fstring_d: [
+                [/{{/,'string'],[/}}/,'string'],
+                [/{/,  { token:'variable', next:'@fexpr' }],
+                [/\\./,'string.escape'],
+                [/"/,  { token:'string', next:'@pop' }],
+                [/[^{}"\\]+/, 'string'],
+            ],
+            fstring_s: [
+                [/{{/,'string'],[/}}/,'string'],
+                [/{/,  { token:'variable', next:'@fexpr' }],
+                [/\\./,'string.escape'],
+                [/'/,  { token:'string', next:'@pop' }],
+                [/[^{}'\\]+/, 'string'],
+            ],
+            // f-string háromszoros idézőjel
+            fstring_triple_d: [
+                [/{{/,'string'],[/}}/,'string'],
+                [/{/,  { token:'variable', next:'@fexpr' }],
+                [/"""/,{ token:'string', next:'@pop' }],
+                [/[^{}"]+|./, 'string'],
+            ],
+            fstring_triple_s: [
+                [/{{/,'string'],[/}}/,'string'],
+                [/{/,  { token:'variable', next:'@fexpr' }],
+                [/'''/,{ token:'string', next:'@pop' }],
+                [/[^{}']|./, 'string'],
+            ],
+            // f-string kifejezés (pl. {nev:.2f})
+            fexpr: [
+                [/}/,  { token:'variable', next:'@pop' }],
+                [/{/,  { token:'variable', next:'@fexpr' }],   // beágyazott
+                [/[^{}]+/, 'identifier'],
+            ],
+            // sima string
+            string_d: [
+                [/[^"\\]+/, 'string'],[/\\./, 'string.escape'],
+                [/"/,  { token:'string', next:'@pop' }],
+            ],
+            string_s: [
+                [/[^'\\]+/, 'string'],[/\\./, 'string.escape'],
+                [/'/,  { token:'string', next:'@pop' }],
+            ],
+            string_triple_d: [
+                [/"""/,{ token:'string', next:'@pop' }],
+                [/[^"]+|./, 'string'],
+            ],
+            string_triple_s: [
+                [/'''/,{ token:'string', next:'@pop' }],
+                [/[^']+|./, 'string'],
+            ],
+        }
+    });
+
+    monaco.languages.setLanguageConfiguration('python', {
+        autoClosingPairs: [
+            { open:'{', close:'}' }, { open:'[', close:']' }, { open:'(', close:')' },
+            { open:'"', close:'"', notIn:['string'] },
+            { open:"'", close:"'", notIn:['string','comment'] },
+        ],
+        surroundingPairs: [
+            { open:'{', close:'}' }, { open:'[', close:']' }, { open:'(', close:')' },
+            { open:'"', close:'"' }, { open:"'", close:"'" },
+        ],
+        indentationRules: {
+            increaseIndentPattern: /^\s*(def|class|if|elif|else|for|while|try|except|finally|with)\b.*:\s*$/,
+            decreaseIndentPattern: /^\s*(elif|else|except|finally)\b/,
+        },
+        comments: { lineComment: '#' },
+    });
+
     editor = monaco.editor.create(document.getElementById('editor-wrap'), {
         value: '# Írd ide a megoldásod!\n',
         language: 'python',
@@ -224,6 +331,8 @@ require(['vs/editor/editor.main'], () => {
         scrollBeyondLastLine: false,
         automaticLayout: true,
         wordWrap: 'on',
+        tabSize: 4,
+        insertSpaces: true,
     });
     initDuel();
 });
