@@ -381,6 +381,7 @@ async function runCode() {
         let stdout = '';
         pyodide.setStdout({ batched: s => stdout += s + '\n' });
         pyodide.setStderr({ batched: s => stdout += s + '\n' });
+        pyodide.globals.set('input', (msg) => window.prompt(msg ?? '') ?? '');
         await pyodide.runPythonAsync(code);
         out.textContent = stdout || '(Nincs kimenet)';
         out.className = 'output-wrap ok';
