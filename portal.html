@@ -202,8 +202,8 @@
         .portal {
             margin-top: 56px;
             width: 100%;
-            max-width: 1000px;
-            padding: 20px 20px;
+            max-width: 1320px;
+            padding: 20px 24px;
         }
 
         /* ── Tanulói elrendezés ── */
@@ -233,9 +233,20 @@
         .option-card.interaktiv:hover { border-color: #14b8a6; box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
         .option-card.interaktiv .icon { color: #0d9488; }
 
-        .option-card.duel { border-color: #92400e; cursor:default; }
-        .option-card.duel:hover { border-color: #f59e0b; box-shadow: 0 8px 24px rgba(245,158,11,0.2); transform:translateY(-3px); }
-        .option-card.duel .icon { color: #f59e0b; }
+        .option-card.duel {
+            border-color: #b45309;
+            background: linear-gradient(160deg, #1c1200 0%, #16213e 60%);
+            cursor: default;
+        }
+        .option-card.duel:hover {
+            border-color: #fbbf24;
+            background: linear-gradient(160deg, #291a00 0%, #16213e 60%);
+            box-shadow: 0 8px 28px rgba(251,191,36,0.25);
+            transform: translateY(-3px);
+        }
+        .option-card.duel .icon { color: #fbbf24; }
+        .option-card.duel .label { color: #fcd34d; }
+        .option-card.duel .desc  { color: #92400e; }
         .duel-online-inner { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
         .duel-member-btn {
             display:flex; align-items:center; gap:7px; padding:6px 10px;
@@ -812,7 +823,7 @@
 <div class="portal">
     <div class="portal-title" id="portal-title" style="text-align:center; margin-bottom:4px;">Üdvözöllek!</div>
     <div class="portal-sub" id="portal-sub" style="text-align:center; margin-bottom:20px;">Válassz az alábbi lehetőségek közül:</div>
-    <div id="grade-threshold-notice" style="display:none;margin:0 auto 14px;max-width:960px;padding:10px 18px;border-radius:10px;font-size:0.85rem;text-align:center;"></div>
+    <div id="grade-threshold-notice" style="display:none;margin:0 auto 14px;max-width:1280px;padding:10px 18px;border-radius:10px;font-size:0.85rem;text-align:center;"></div>
 
     <!-- Tanulói elrendezés -->
     <div id="student-layout-wrap" class="student-layout" style="display:none">
@@ -903,11 +914,11 @@
         </div>
 
         <!-- Számonkérés értesítő (tanulóknak, ha van aktív) -->
-        <div id="szamonkeres-banner" style="display:none;margin-top:16px;width:100%;max-width:960px"></div>
+        <div id="szamonkeres-banner" style="display:none;margin-top:16px;width:100%;max-width:1280px"></div>
 
         <!-- Számonkérés-kezelő gomb (oktatóknak, nem-sandornef) -->
         <a id="szamonkeres-oktato-btn" href="python/szamonkeres.html"
-           style="display:none;margin-top:16px;width:100%;max-width:960px;padding:14px 20px;background:#16213e;border:1px solid #6366f1;border-radius:12px;text-decoration:none;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
+           style="display:none;margin-top:16px;width:100%;max-width:1280px;padding:14px 20px;background:#16213e;border:1px solid #6366f1;border-radius:12px;text-decoration:none;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
            onmouseover="this.style.borderColor='#818cf8'" onmouseout="this.style.borderColor='#6366f1'">
             <i class="fas fa-file-pen" style="color:#818cf8;font-size:1.4rem"></i>
             <div>
@@ -919,7 +930,7 @@
 
         <!-- Tanulói haladás gomb (oktatóknak) -->
         <a id="haladas-oktato-btn" href="oktato-haladas.html"
-           style="display:none;margin-top:12px;width:100%;max-width:960px;padding:14px 20px;background:#0d2416;border:1px solid #238636;border-radius:12px;text-decoration:none;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
+           style="display:none;margin-top:12px;width:100%;max-width:1280px;padding:14px 20px;background:#0d2416;border:1px solid #238636;border-radius:12px;text-decoration:none;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s"
            onmouseover="this.style.borderColor='#3fb950'" onmouseout="this.style.borderColor='#238636'">
             <i class="fas fa-chart-line" style="color:#3fb950;font-size:1.4rem"></i>
             <div>
