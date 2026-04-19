@@ -11,7 +11,7 @@
     let pollTimer     = null;
     let currentChannel = 'tesztelok';
 
-    // Per-csatorna állapot
+    // Per-csatorna állapot (messages: cache a háttérpollhoz, hogy megnyitáskor azonnal látszódjon)
     const ch = {
         tesztelok: { sinceId: 0, messages: [], unread: 0 },
         oktatok:   { sinceId: 0, messages: [], unread: 0 }
@@ -227,7 +227,13 @@
         updateBadge();
         // Üzenetek újrarenderelés az új csatorna cache-ből
         const el = document.getElementById('chat-messages');
-        el.innerHTML = '<div class="chat-empty">Üzenetek betöltése...</div>';
+        const cached = ch[channel].messages;
+        if (cached.length > 0) {
+            el.innerHTML = '';
+            renderMessages(cached);
+        } else {
+            el.innerHTML = '<div class="chat-empty">Üzenetek betöltése...</div>';
+        }
         clearTimeout(pollTimer);
         poll();
     };
@@ -252,6 +258,11 @@
             if (!msgs.length) return;
             // Frissíti a sinceId-t
             msgs.forEach(m => { if (m.id > state.sinceId) state.sinceId = m.id; });
+
+            // Mindig cache-eljük (megnyitáskor azonnal megjelenítjük)
+            msgs.forEach(m => {
+                if (!state.messages.find(sm => sm.id === m.id)) state.messages.push(m);
+            });
 
             if (isOpen && channel === currentChannel) {
                 renderMessages(msgs);
@@ -306,6 +317,15 @@
         updateBadge();
         panel.classList.add('open');
         clearTimeout(pollTimer);
+        // Cache-ből azonnal megjelenítjük a korábbi üzeneteket
+        const el = document.getElementById('chat-messages');
+        const cached = ch[currentChannel].messages;
+        if (cached.length > 0) {
+            el.innerHTML = '';
+            renderMessages(cached);
+        } else {
+            el.innerHTML = '<div class="chat-empty">Még nincs üzenet – írj elsőként!</div>';
+        }
         poll();
     }
 
