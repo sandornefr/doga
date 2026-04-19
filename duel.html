@@ -438,9 +438,15 @@ async function scoreCode(code) {
 
 async function checkCrit(crit, code) {
     try {
-        const [type, ...args] = crit.split(':');
+        // A feltétel sora: "type:arg1:arg2|leírás|tipp|siker" – a | utáni rész csak display
+        const core = crit.split('|')[0];
+        const [type, ...args] = core.split(':');
         switch (type) {
-            case 'bekeres':    return (code.match(/\binput\s*\(/g)||[]).length >= parseInt(args[0]);
+            case 'bekeres': {
+                // args.join(':') visszaállítja a prompt szövegét (lehet benne ':')
+                const prompt = args.join(':');
+                return code.includes(`input("${prompt}"`) || code.includes(`input('${prompt}'`);
+            }
             case 'int_float':  return /\bint\s*\(|\bfloat\s*\(/.test(code);
             case 'import':     return new RegExp(`\\bimport\\s+${args[0]}`).test(code);
             case 'if':         return /\bif\b/.test(code);
