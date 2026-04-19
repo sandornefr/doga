@@ -380,89 +380,6 @@
 
         .stat-label { font-size: 0.82rem; color: #888; }
 
-        /* ── Szerepkör-váltó ───────────────────────────────────────────── */
-        .role-switcher {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 22px;
-            flex-wrap: wrap;
-        }
-        .role-btn {
-            flex: 1;
-            min-width: 160px;
-            padding: 14px 18px;
-            border-radius: 12px;
-            border: 1.5px solid #21262d;
-            background: #161b22;
-            color: #8b949e;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all .2s;
-        }
-        .role-btn i { font-size: 1.1rem; width: 20px; text-align: center; }
-        .role-btn:hover { color: #e0e0e0; background: #1c2128; }
-        .role-btn.active-admin  { border-color: #e94560; color: #f87171; background: rgba(233,69,96,.1); }
-        .role-btn.active-oktato { border-color: #a371f7; color: #c4b5fd; background: rgba(163,113,247,.1); }
-        .role-btn.active-teszt  { border-color: #3fb950; color: #86efac; background: rgba(63,185,80,.1); }
-        .role-desc { font-size: 0.74rem; font-weight: 400; color: inherit; opacity: .7; margin-top: 2px; }
-
-        /* ── Oktató nézet kártyák ──────────────────────────────────────── */
-        #oktato-view { display: none; }
-        .oktato-cards { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px; }
-        .oktato-card {
-            flex: 1; min-width: 220px; max-width: 340px;
-            background: #161b22; border: 1.5px solid #21262d;
-            border-radius: 14px; padding: 28px 24px;
-            text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; gap: 0;
-            transition: border-color .2s, transform .2s, box-shadow .2s;
-            cursor: pointer;
-        }
-        .oktato-card:hover { transform: translateY(-3px); }
-        .oktato-card-icon {
-            width: 50px; height: 50px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; margin-bottom: 16px;
-        }
-        .oktato-card-title { font-size: 1.05rem; font-weight: 700; color: #e0e0e0; margin-bottom: 8px; }
-        .oktato-card-desc  { font-size: 0.85rem; color: #8b949e; line-height: 1.6; flex: 1; }
-        .oktato-card-arrow { margin-top: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; opacity: .5; transition: opacity .2s; }
-        .oktato-card:hover .oktato-card-arrow { opacity: 1; }
-        .card-oc-szamonkeres { border-color: #2d1b5e; }
-        .card-oc-szamonkeres:hover { border-color: #a371f7; box-shadow: 0 6px 24px rgba(163,113,247,.15); }
-        .card-oc-szamonkeres .oktato-card-icon { background: #1e1040; color: #a371f7; }
-        .card-oc-szamonkeres .oktato-card-arrow { color: #a371f7; }
-        .card-oc-bemutato { border-color: #1a3045; }
-        .card-oc-bemutato:hover { border-color: #58a6ff; box-shadow: 0 6px 24px rgba(88,166,255,.15); }
-        .card-oc-bemutato .oktato-card-icon { background: #0d2a45; color: #58a6ff; }
-        .card-oc-bemutato .oktato-card-arrow { color: #58a6ff; }
-        .card-oc-haladas { border-color: #0f2a1a; }
-        .card-oc-haladas:hover { border-color: #3fb950; box-shadow: 0 6px 24px rgba(63,185,80,.15); }
-        .card-oc-haladas .oktato-card-icon { background: #0b2016; color: #3fb950; }
-        .card-oc-haladas .oktato-card-arrow { color: #3fb950; }
-
-        /* ── Teszt Elek nézet ─────────────────────────────────────────── */
-        #tesztelek-view { display: none; text-align: center; padding: 48px 24px; }
-        .te-card {
-            display: inline-flex; flex-direction: column; align-items: center; gap: 16px;
-            background: #161b22; border: 1.5px solid #238636;
-            border-radius: 18px; padding: 40px 48px; max-width: 420px; width: 100%;
-        }
-        .te-icon { font-size: 3rem; color: #3fb950; }
-        .te-title { font-size: 1.3rem; font-weight: 800; color: #e0e0e0; }
-        .te-desc  { font-size: 0.88rem; color: #8b949e; line-height: 1.6; }
-        .te-btn {
-            padding: 12px 32px; background: linear-gradient(135deg,#238636,#2ea043);
-            border: none; border-radius: 10px; color: #fff;
-            font-size: 0.95rem; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; gap: 8px; transition: filter .2s;
-        }
-        .te-btn:hover { filter: brightness(1.1); }
-
         /* Tab navigáció */
         .tab-nav {
             display: flex;
@@ -553,70 +470,8 @@
 
         <input type="hidden" id="api-url">
 
-        <!-- Szerepkör-váltó -->
-        <div class="role-switcher">
-            <button class="role-btn active-admin" id="role-btn-admin" onclick="switchRole('admin')">
-                <i class="fas fa-shield-halved"></i>
-                <div>
-                    <div>Admin</div>
-                    <div class="role-desc">Teljes vezérlőpult, beadások, felhasználók</div>
-                </div>
-            </button>
-            <button class="role-btn" id="role-btn-oktato" onclick="switchRole('oktato')">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <div>
-                    <div>Oktató</div>
-                    <div class="role-desc">Számonkérés, bemutató, tanulói haladás</div>
-                </div>
-            </button>
-            <button class="role-btn" id="role-btn-teszt" onclick="switchRole('teszt')">
-                <i class="fas fa-user-graduate"></i>
-                <div>
-                    <div>Teszt Elek</div>
-                    <div class="role-desc">Diáknézet kipróbálása tanárként</div>
-                </div>
-            </button>
-        </div>
-
-        <!-- Oktató nézet -->
-        <div id="oktato-view">
-            <h2 style="margin-bottom:18px;font-size:1.1rem;color:#c4b5fd;"><i class="fas fa-chalkboard-teacher" style="margin-right:8px;"></i>Oktatói eszközök</h2>
-            <div class="oktato-cards">
-                <a class="oktato-card card-oc-szamonkeres" href="szamonkeres.html">
-                    <div class="oktato-card-icon"><i class="fas fa-file-pen"></i></div>
-                    <div class="oktato-card-title">Számonkérés kiadása</div>
-                    <div class="oktato-card-desc">Adj ki feladatokat a tanulóknak, kövesd a beadásokat és értékeld az eredményeket.</div>
-                    <div class="oktato-card-arrow">Megnyitás <i class="fas fa-arrow-right"></i></div>
-                </a>
-                <a class="oktato-card card-oc-bemutato" href="../portal.html?mode=student">
-                    <div class="oktato-card-icon"><i class="fas fa-laptop-code"></i></div>
-                    <div class="oktato-card-title">Bemutató</div>
-                    <div class="oktato-card-desc">Mutasd be a diákoknak a feladatokat, próbáld ki a rendszert tanulói nézetből.</div>
-                    <div class="oktato-card-arrow">Megnyitás <i class="fas fa-arrow-right"></i></div>
-                </a>
-                <a class="oktato-card card-oc-haladas" href="../oktato-haladas.html">
-                    <div class="oktato-card-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="oktato-card-title">Tanulói haladás</div>
-                    <div class="oktato-card-desc">Kövesd nyomon a tanulók előrehaladását, aktivitását, és azonosítsd a lemaradókat.</div>
-                    <div class="oktato-card-arrow">Megnyitás <i class="fas fa-arrow-right"></i></div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Teszt Elek nézet -->
-        <div id="tesztelek-view">
-            <div class="te-card">
-                <i class="fas fa-user-graduate te-icon"></i>
-                <div class="te-title">Teszt Elek – Diáknézet</div>
-                <div class="te-desc">Lépj be diák módba "Teszt Elek" névvel és nézd meg a rendszert a tanulók szemével. A portálra visszanavigálva visszakapod az oktatói nézetet.</div>
-                <button class="te-btn" onclick="enterTesztElek()">
-                    <i class="fas fa-right-to-bracket"></i> Belépés diáknézetbe
-                </button>
-            </div>
-        </div>
-
         <!-- Tab navigáció -->
-        <div class="tab-nav" id="admin-tab-nav">
+        <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('vezerlot', this)"><i class="fas fa-gauge-high"></i> Vezérlőpult</button>
             <button class="tab-btn" onclick="switchTab('beadasok', this)"><i class="fas fa-clipboard-list"></i> Beadások</button>
             <button class="tab-btn" onclick="switchTab('felhasznalok', this)"><i class="fas fa-users"></i> Felhasználók</button>
@@ -1350,7 +1205,6 @@
 
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('admin-content').style.display = 'block';
-                    switchRole('admin');
                     switchTab('vezerlot');
                     loadConfig();
                     loadSubmissions();
@@ -1378,12 +1232,8 @@
             if (isAuthenticated && authToken) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
-                const savedRole = localStorage.getItem('admin_role') || 'admin';
-                switchRole(savedRole);
-                if (savedRole === 'admin') {
-                    const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
-                    switchTab(savedTab);
-                }
+                const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
+                switchTab(savedTab);
                 loadConfig();
                 loadSubmissions();
                 loadUsers();
@@ -1407,12 +1257,8 @@
                         localStorage.setItem('admin_username', data.username);
                         document.getElementById('login-screen').style.display = 'none';
                         document.getElementById('admin-content').style.display = 'block';
-                        const savedRole = localStorage.getItem('admin_role') || 'admin';
-                        switchRole(savedRole);
-                        if (savedRole === 'admin') {
-                            const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
-                            switchTab(savedTab);
-                        }
+                        const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
+                        switchTab(savedTab);
                         loadConfig();
                         loadSubmissions();
                         loadUsers();
@@ -1906,37 +1752,6 @@
             localStorage.clear();
             authToken = '';
             location.reload();
-        }
-
-        function switchRole(role) {
-            ['admin','oktato','teszt'].forEach(r => {
-                const b = document.getElementById(`role-btn-${r}`);
-                if (b) b.className = `role-btn${r === role ? ` active-${r}` : ''}`;
-            });
-            document.getElementById('admin-tab-nav').style.display  = role === 'admin'  ? '' : 'none';
-            document.getElementById('oktato-view').style.display    = role === 'oktato' ? '' : 'none';
-            document.getElementById('tesztelek-view').style.display = role === 'teszt'  ? '' : 'none';
-            // data-tab panelek: csak admin nézetben, és csak az aktív tab-é látszik
-            document.querySelectorAll('[data-tab]').forEach(el => el.style.display = 'none');
-            if (role === 'admin') {
-                const activeBtn = document.querySelector('.tab-btn.active');
-                const activeTabName = activeBtn?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1] || 'vezerlot';
-                document.querySelectorAll(`[data-tab="${activeTabName}"]`).forEach(el => el.style.display = 'block');
-            }
-            localStorage.setItem('admin_role', role);
-        }
-
-        function enterTesztElek() {
-            const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
-            if (u) localStorage.setItem('kandoTeacherBackup', JSON.stringify(u));
-            sessionStorage.setItem('kandoUser', JSON.stringify({
-                nev: 'Teszt Elek',
-                email: 'teszt.elek@kkszki.hu',
-                szerep: 'tanulo',
-                token: '',
-                _tesztMod: true
-            }));
-            location.href = '../portal.html';
         }
 
         function switchTab(name, btn) {
