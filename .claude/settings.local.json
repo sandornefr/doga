@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(javascript-obfuscator \"c:/Users/feker/Desktop/Rékának/python_teszt.js\" --output \"c:/Users/feker/Desktop/HTML_PYTHON_szamonkeres/doga/python/python_teszt.obfuscated.js\" --compact true --string-array true --string-array-encoding base64 --identifier-names-generator hexadecimal --self-defending false)",
+      "Bash(npx javascript-obfuscator python_teszt.js --output python_teszt.obfuscated.js --compact true --self-defending false --control-flow-flattening false --string-array true --string-array-threshold 0.5)",
+      "Bash(node -e \"console.log\\(btoa\\(''kandooktato''\\)\\)\")",
+      "Bash(npx javascript-obfuscator python_teszt.js --output python_teszt.obfuscated.js --compact true --string-array true --string-array-encoding base64)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3:*)",
+      "Bash(wc -l grep -n \"^ },\" \"c:\\\\Users\\\\feker\\\\Desktop\\\\HTML_PYTHON_szamonkeres\\\\doga\\\\web\\\\app.js\")",
+      "Bash(node --check \"c:\\\\Users\\\\feker\\\\Desktop\\\\HTML_PYTHON_szamonkeres\\\\doga\\\\web\\\\app.js\")",
+      "Bash(node -e \":*)",
+      "Bash(ls \"c:\\\\Users\\\\feker\\\\Desktop\\\\HTML_PYTHON_szamonkeres\\\\doga\"\" 2>/dev/null || dir /b \"c:UsersfekerDesktopHTML_PYTHON_szamonkeresdoga\"\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npx javascript-obfuscator:*)",
+      "Bash(javascript-obfuscator \"/c/Users/feker/Desktop/Rékának/python_teszt.js\" --output \"/c/Users/feker/Desktop/HTML_PYTHON_szamonkeres/doga/python/python_teszt.obfuscated.js\" --compact true --string-array true --rotate-string-array true --self-defending false)",
+      "Bash(javascript-obfuscator \"/c/Users/feker/Desktop/Rékának/python_teszt.js\" --output \"/c/Users/feker/Desktop/HTML_PYTHON_szamonkeres/doga/python/python_teszt.obfuscated.js\" --compact true --string-array true --self-defending false)",
+      "Bash(cd:*)",
+      "Bash(cp:*)",
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "Bash(grep:*)",
+      "Bash(javascript-obfuscator:*)",
+      "Bash(sed:*)",
+      "Bash(where javascript-obfuscator:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $f ===\")",
+      "Read(//c/Users/feker/Desktop/ÁGAZATI_WEB/**)",
+      "Bash(done)",
+      "Bash(for dir:*)",
+      "Bash(echo \"=== $dir ===\")",
+      "Bash(find:*)"
+    ]
+  }
+}
