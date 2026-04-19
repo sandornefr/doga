@@ -484,7 +484,11 @@ function showResult(d) {
     const myMax     = isChallenger ? d.challengerMax   : d.opponentMax;
     const oppScore  = isChallenger ? d.opponentScore   : d.challengerScore;
     const oppMax    = isChallenger ? d.opponentMax     : d.challengerMax;
-    const oppNev    = isChallenger ? d.opponentNev     : d.challengerNev;
+    const oppEmail  = isChallenger ? d.opponentEmail    : d.challengerEmail;
+    const oppNevRaw = isChallenger ? d.opponentNev      : d.challengerNev;
+    const isBot     = oppEmail?.toLowerCase() === 'bot@kkszki.hu';
+    const oppNev    = isBot ? 'Piton Professzor' : oppNevRaw;
+    const oppLabel  = isBot ? 'Piton Professzor' : oppNevRaw.split(' ').pop();
     const iWon      = d.winnerEmail && d.winnerEmail.toLowerCase() === myEmail.toLowerCase();
     const isDraw    = d.status === 'finished' && !d.winnerEmail;
 
@@ -499,7 +503,7 @@ function showResult(d) {
             <div class="result-score-val">${myScore ?? 0}/${myMax ?? 8}p</div>
         </div>
         <div class="result-score-card ${!iWon&&!isDraw?'winner-card':''}">
-            <div class="result-score-name">${oppNev.split(' ').pop()}</div>
+            <div class="result-score-name">${oppLabel}</div>
             <div class="result-score-val">${oppScore ?? 0}/${oppMax ?? 8}p</div>
         </div>`;
     document.getElementById('result-overlay').classList.add('show');
