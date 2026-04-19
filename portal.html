@@ -7,7 +7,9 @@
     <link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
     <link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: #30363d transparent; }
+        *::-webkit-scrollbar { width: 5px; height: 5px; }
+        *::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
 
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -203,7 +205,7 @@
             margin-top: 56px;
             width: 100%;
             max-width: 1320px;
-            padding: 20px 24px;
+            padding: 20px 24px 90px;
         }
 
         /* ── Tanulói elrendezés ── */
@@ -255,7 +257,7 @@
         }
         .option-card.duel .icon { color: #fbbf24; }
         .option-card.duel .label { color: #fcd34d; }
-        .option-card.duel .desc  { color: #92400e; }
+        .option-card.duel .desc  { color: #666; }
         .duel-online-badge {
             margin-top: 10px; display:flex; align-items:center; gap:5px;
             font-size:0.72rem; color:#8b949e;
@@ -876,9 +878,7 @@
                 <div id="changelog-python" class="changelog-box python-col" style="display:none">
                     <div class="changelog-title"><i class="fab fa-python" style="color:#3776ab"></i> Python újdonságok</div>
                     <div class="changelog-item">Elérhetők <strong>középszintű érettségi vizsgafeladatok</strong> is<span class="badge-hot">ÚJ</span></div>
-                    <div class="changelog-item">Érkeztek <strong>18 pontos feladatok</strong> – nehezebb, összetettebb kihívások</div>
-                    <div class="changelog-item">A <strong>Kezdő</strong> és <strong>Haladó</strong> szint lefedi az Ágazati alapvizsgához szükséges ismereteket</div>
-                    <div class="changelog-item">Az <strong>Egyéni összeállítás</strong> megújult megjelenést kapott</div>
+                    <div class="changelog-item">A <strong>Kezdő</strong> és <strong>Haladó</strong> szint lefedi az <strong>Ágazati alapvizsga</strong> anyagát</div>
                     <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek a gyakorló feladatok közé</div>
                 </div>
             </div>
@@ -935,7 +935,7 @@
         <!-- Sor 3: Megvalósult ötletek – teljes szélesség -->
         <div id="megvalasult-box" class="megvalasult-box" style="display:none">
             <div class="megvalasult-title">
-                <span>🏆 Megvalósult ötletek</span>
+                <span><i class="fas fa-trophy" style="color:#22c55e;margin-right:6px;"></i>Megvalósult ötletek</span>
                 <span class="megvalasult-counter" id="megvalasult-counter"></span>
             </div>
             <div id="megvalasult-lista"></div>
