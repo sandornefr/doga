@@ -2749,7 +2749,7 @@ if (location.hash === '#web-tanulas') {
         const flush = () => { if (cur) { tasks.push(cur); cur = null; } };
         for (const line of lines) {
             const lt = line.trim();
-            const tm = lt.match(/^Feladat:\s*(\d+)/);
+            const tm = lt.match(/^(\d+)\.\s*feladat/i);
             if (tm) { flush(); cur = { number:+tm[1], cim:'', pont:8, feladatkeszito:false }; sec='text'; continue; }
             if (!cur) continue;
             if (lt.startsWith('Cim:'))  { cur.cim = lt.slice(4).trim(); continue; }

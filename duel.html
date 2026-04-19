@@ -484,12 +484,13 @@ function parseTasks(txt) {
 
     for (const line of lines) {
         const lt = line.trim();
-        const tm = lt.match(/^Feladat:\s*(\d+)/);
+        const tm = lt.match(/^(\d+)\.\s*feladat/i);
         if (tm) { flush(); cur = { number:+tm[1], cim:'', pont:8, criteria:[], hints:[], solution:'' }; sec='text'; continue; }
         if (!cur) continue;
         if (lt.startsWith('Cim:'))      { cur.cim = lt.slice(4).trim(); continue; }
         if (lt.startsWith('Pont:'))     { cur.pont = +lt.slice(5).trim(); continue; }
         if (lt.startsWith('Feladatkeszito:')) { cur.feladatkeszito = lt.slice(16).trim().toLowerCase()==='igen'; continue; }
+        if (lt.startsWith('Tipus:') || lt.startsWith('Nehezseg:') || lt.startsWith('Uj:')) continue;
         if (lt === 'Pontozas:') { sec='crit'; continue; }
         if (lt === 'Tippek:')   { sec='tipp'; continue; }
         if (lt === 'Megoldas:') { sec='sol';  continue; }
