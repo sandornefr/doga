@@ -281,6 +281,35 @@
             background:rgba(0,0,0,.3); border:1px solid #374151;
             border-radius:20px; padding:3px 10px;
         }
+        /* Kódpárbaj megerősítő modal */
+        #duel-confirm-modal {
+            display:none; position:fixed; inset:0; background:rgba(0,0,0,.78);
+            z-index:9100; align-items:center; justify-content:center; padding:16px;
+        }
+        #duel-confirm-modal.open { display:flex; }
+        .dcm-box {
+            background:#161b22; border:1.5px solid #f59e0b; border-radius:18px;
+            padding:28px 28px 22px; max-width:420px; width:100%; text-align:center;
+            box-shadow:0 12px 48px rgba(0,0,0,.7);
+        }
+        .dcm-icon { font-size:2.2rem; color:#f59e0b; margin-bottom:10px; }
+        .dcm-title { font-size:0.8rem; font-weight:600; color:#8b949e; text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+        .dcm-task { font-size:1.25rem; font-weight:800; color:#e0e0e0; margin-bottom:8px; line-height:1.3; }
+        .dcm-meta { font-size:0.8rem; color:#6b7280; margin-bottom:22px; display:flex; justify-content:center; gap:14px; }
+        .dcm-meta span { display:flex; align-items:center; gap:5px; }
+        .dcm-btns { display:flex; gap:10px; }
+        .dcm-btn-go {
+            flex:1; background:linear-gradient(135deg,#f59e0b,#d97706); border:none;
+            color:#0d1117; padding:11px; border-radius:9px; cursor:pointer;
+            font-weight:800; font-size:0.95rem; display:flex; align-items:center; justify-content:center; gap:7px;
+        }
+        .dcm-btn-go:hover { filter:brightness(1.1); }
+        .dcm-btn-cancel {
+            flex:1; background:none; border:1px solid #374151; color:#6b7280;
+            padding:11px; border-radius:9px; cursor:pointer; font-size:0.85rem;
+        }
+        .dcm-btn-cancel:hover { border-color:#6b7280; color:#9ca3af; }
+
         /* Kódpárbaj modal */
         #duel-online-modal {
             display:none; position:fixed; inset:0; background:rgba(0,0,0,.75);
@@ -2698,6 +2727,23 @@ if (location.hash === '#web-tanulas') {
 })();
 </script>
 
+<!-- Kódpárbaj megerősítő modal -->
+<div id="duel-confirm-modal">
+  <div class="dcm-box">
+    <div class="dcm-icon" id="dcm-icon"><i class="fas fa-robot"></i></div>
+    <div class="dcm-title" id="dcm-title">Gép elleni meccs</div>
+    <div class="dcm-task" id="dcm-task"></div>
+    <div class="dcm-meta">
+      <span><i class="fas fa-star" style="color:#f59e0b;"></i>8 pont</span>
+      <span><i class="fas fa-clock" style="color:#6b7280;"></i>10 perc</span>
+    </div>
+    <div class="dcm-btns">
+      <button class="dcm-btn-cancel" onclick="document.getElementById('duel-confirm-modal').classList.remove('open')"><i class="fas fa-times" style="margin-right:5px;"></i>Mégse</button>
+      <button class="dcm-btn-go" id="dcm-go-btn"><i class="fas fa-play"></i>Indítás!</button>
+    </div>
+  </div>
+</div>
+
 <!-- Kódpárbaj online tagok modal -->
 <div id="duel-online-modal">
     <div class="duel-modal-box">
@@ -2836,27 +2882,40 @@ if (location.hash === '#web-tanulas') {
         }
         const isBot = opponentEmail.toLowerCase() === 'bot@kkszki.hu';
         const task = tasks8[Math.floor(Math.random() * tasks8.length)];
-        const confirmMsg = isBot
-            ? `Gép elleni meccs?\n\nFeladat: ${task.cim} (8 pont, 10 perc)\n\nA gép automatikusan elfogadja – azonnal kezdődhetsz!`
-            : `Kihívod ${opponentNev} kódpárbajra?\n\nFeladat: ${task.cim} (8 pont, 10 perc)`;
-        if (!confirm(confirmMsg)) return;
-        try {
-            const res = await fetch(`${API_BASE}/api/duel/invite`, {
-                method: 'POST',
-                headers: { ...authH, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ opponentEmail, taskNumber: task.number, taskTitle: task.cim })
-            });
-            if (res.ok) {
-                const d = await res.json();
-                if (isBot) {
-                    // Bot azonnal elfogad – mehet egyenesen a duel oldalra
-                    location.href = `duel.html?id=${d.id}`;
-                } else {
-                    alert(`Kihívás elküldve! Várd meg, amíg ${opponentNev} elfogadja (max 2 perc).`);
-                    waitForAccept(d.id);
-                }
-            } else { alert('Nem sikerült elküldeni a kihívást.'); }
-        } catch { alert('Hálózati hiba.'); }
+
+        const modal = document.getElementById('duel-confirm-modal');
+        document.getElementById('dcm-task').textContent = task.cim;
+        if (isBot) {
+            document.getElementById('dcm-icon').innerHTML = '<i class="fas fa-robot"></i>';
+            document.getElementById('dcm-title').textContent = 'Gép elleni meccs – Piton Professzor';
+        } else {
+            document.getElementById('dcm-icon').innerHTML = '<i class="fas fa-code-compare"></i>';
+            document.getElementById('dcm-title').textContent = `Kihívás: ${escHtml(opponentNev)}`;
+        }
+        const goBtn = document.getElementById('dcm-go-btn');
+        const newGoBtn = goBtn.cloneNode(true);
+        goBtn.parentNode.replaceChild(newGoBtn, goBtn);
+        newGoBtn.onclick = async () => {
+            modal.classList.remove('open');
+            newGoBtn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE}/api/duel/invite`, {
+                    method: 'POST',
+                    headers: { ...authH, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ opponentEmail, taskNumber: task.number, taskTitle: task.cim })
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    if (isBot) {
+                        location.href = `duel.html?id=${d.id}`;
+                    } else {
+                        alert(`Kihívás elküldve! Várd meg, amíg ${opponentNev} elfogadja (max 2 perc).`);
+                        waitForAccept(d.id);
+                    }
+                } else { alert('Nem sikerült elküldeni a kihívást.'); }
+            } catch { alert('Hálózati hiba.'); }
+        };
+        modal.classList.add('open');
     };
 
     async function waitForAccept(duelId) {

@@ -72,6 +72,18 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .loading-spinner{font-size:2rem;color:#4f46e5;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Start screen (gép ellen – rajt gomb) */
+.start-screen{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:250;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;}
+.start-screen.hide{display:none;}
+.start-vs-icon{font-size:3rem;color:#f59e0b;}
+.start-title{font-size:1.2rem;font-weight:800;color:#e0e0e0;}
+.start-task{font-size:1.05rem;color:#f59e0b;font-weight:700;text-align:center;max-width:380px;}
+.start-hint{font-size:0.82rem;color:#6b7280;text-align:center;max-width:340px;line-height:1.5;}
+.start-btn{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#0d1117;padding:13px 40px;border-radius:10px;cursor:pointer;font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:9px;margin-top:6px;}
+.start-btn:hover{filter:brightness(1.1);}
+.start-meta{font-size:0.78rem;color:#6b7280;display:flex;gap:16px;}
+.start-meta span{display:flex;align-items:center;gap:5px;}
+
 /* Tab warning */
 .tab-warning{position:fixed;inset:0;background:rgba(239,68,68,.92);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;}
 .tab-warning.show{display:flex;}
@@ -92,6 +104,18 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 <div class="loading-screen" id="loading-screen">
   <i class="fas fa-code loading-spinner"></i>
   <div style="color:#8b949e;font-size:0.9rem;">Párbaj betöltése...</div>
+</div>
+
+<div class="start-screen hide" id="start-screen">
+  <div class="start-vs-icon"><i class="fas fa-robot"></i></div>
+  <div class="start-title">Kódpárbaj – Piton Professzor ellen</div>
+  <div class="start-task" id="start-task-name"></div>
+  <div class="start-meta">
+    <span><i class="fas fa-star" style="color:#f59e0b;"></i>8 pont</span>
+    <span><i class="fas fa-clock" style="color:#6b7280;"></i>10 perc</span>
+  </div>
+  <div class="start-hint">Olvasd el a feladatot a bal panelen, majd kattints a Rajt! gombra – a visszaszámlálás csak akkor indul!</div>
+  <button class="start-btn" onclick="startGame()"><i class="fas fa-play"></i>Rajt!</button>
 </div>
 
 <div class="topbar">
@@ -207,12 +231,37 @@ async function initDuel() {
         await loadTask(duelData.taskNumber);
         setupNames();
         hideLoading();
-        startTimer();
+
+        const isChallenger = duelData.challengerEmail.toLowerCase() === myEmail.toLowerCase();
+        const oppEmail = isChallenger ? duelData.opponentEmail : duelData.challengerEmail;
+        const isBot = oppEmail.toLowerCase() === 'bot@kkszki.hu';
+
+        if (isBot) {
+            document.getElementById('start-task-name').textContent = task ? task.cim : '';
+            document.getElementById('start-screen').classList.remove('hide');
+        } else {
+            startTimer();
+        }
         startPoll();
         loadPyodide();
     } catch (e) {
         showError(e.message);
     }
+}
+
+function startGame() {
+    document.getElementById('start-screen').classList.add('hide');
+    timerSec = DUEL_MINS * 60;
+    started = true;
+    renderTimer();
+    timerInt = setInterval(() => {
+        timerSec--;
+        renderTimer();
+        if (timerSec <= 0) {
+            clearInterval(timerInt);
+            if (!submitted) autoSubmit();
+        }
+    }, 1000);
 }
 
 async function loadTask(num) {
@@ -242,7 +291,8 @@ function setupNames() {
 // ── Timer ─────────────────────────────────────────────────────────────────────
 function startTimer() {
     if (duelData.acceptedAt) {
-        const accepted = new Date(duelData.acceptedAt.replace(' ', 'T'));
+        // +Z: Railway UTC-ben tárol, timezone-suffix nélkül – browser helyi időként értelmezné
+        const accepted = new Date(duelData.acceptedAt.replace(' ', 'T') + 'Z');
         const elapsed  = Math.floor((Date.now() - accepted.getTime()) / 1000);
         timerSec = Math.max(0, DUEL_MINS * 60 - elapsed);
     }
