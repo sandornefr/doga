@@ -1670,6 +1670,8 @@ function saveState(){
 }
 
 function saveStateToBackend(){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  const API='https://agazati.up.railway.app';
   if(!u.token) return;
   const payload=JSON.stringify({status:st.status,done:st.completedOnce});
   fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/py_basics`,{
@@ -1680,6 +1682,8 @@ function saveStateToBackend(){
 }
 
 async function syncStateFromBackend(){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  const API='https://agazati.up.railway.app';
   if(!u.token) return;
   try{
     const res=await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/py_basics`,{
