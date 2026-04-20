@@ -2903,7 +2903,7 @@ if (location.hash === '#web-tanulas') {
 
         // Bejövő kihívások poll
         pollIncoming();
-        setInterval(pollIncoming, 8000);
+        setInterval(pollIncoming, 2000);
     }
 
     const BOT_HTML = `
@@ -3012,7 +3012,7 @@ if (location.hash === '#web-tanulas') {
                     alert('A kihívás lejárt (2 perc). Az ellenfél nem válaszolt.');
                 }
             } catch {}
-        }, 5000);
+        }, 2000);
     }
 
     async function pollIncoming() {

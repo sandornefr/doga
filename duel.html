@@ -352,6 +352,7 @@ require(['vs/editor/editor.main'], () => {
         tabSize: 4,
         insertSpaces: true,
     });
+    loadPyodide(); // azonnal elindul, párhuzamosan az initDuel-lel
     initDuel();
 });
 
@@ -395,7 +396,6 @@ async function initDuel() {
             startTimer();
         }
         startPoll();
-        loadPyodide();
     } catch (e) {
         showError(e.message);
     }
@@ -503,7 +503,7 @@ function renderTimer() {
 
 // ── Poll ──────────────────────────────────────────────────────────────────────
 function startPoll() {
-    pollInt = setInterval(pollStatus, 4000);
+    pollInt = setInterval(pollStatus, 2000);
 }
 
 async function pollStatus() {
