@@ -746,6 +746,10 @@ require(['vs/editor/editor.main'], function() {
       window.emmetMonaco.emmetHTML(m);
     }
 
+    const wrapAction = { id:'wrap-with-abbreviation', label:'Wrap with Abbreviation', run: ed => _wrapWithAbbreviation(ed) };
+    state.editors.html.addAction(wrapAction);
+    state.editors.css.addAction(wrapAction);
+
     state.editors.html.onDidChangeModelContent(() => schedulePreview());
     state.editors.css.onDidChangeModelContent(() => schedulePreview());
 
@@ -1280,6 +1284,73 @@ function restartPractice() {
   const keys = Object.keys(localStorage).filter(k => k.startsWith('practice_'));
   keys.forEach(k => localStorage.removeItem(k));
   location.reload();
+}
+
+// ── Wrap with Abbreviation (F1) ──────────────────────────────────────
+function _parseTagAbbr(abbr){
+  const tagMatch=abbr.match(/^([a-zA-Z][\w-]*)/);
+  const classMatch=abbr.match(/\.([a-zA-Z0-9_-]+)/g);
+  const idMatch=abbr.match(/#([a-zA-Z0-9_-]+)/);
+  return{tag:tagMatch?tagMatch[1]:'div',id:idMatch?idMatch[1]:'',className:classMatch?classMatch.map(c=>c.substring(1)).join(' '):''};
+}
+function _buildTag(parsed,content,indent=''){
+  let open=`<${parsed.tag}`;
+  if(parsed.id) open+=` id="${parsed.id}"`;
+  if(parsed.className) open+=` class="${parsed.className}"`;
+  open+='>';
+  const close=`</${parsed.tag}>`;
+  if(content.includes('\n')) return `${open}\n${indent}  ${content.split('\n').join('\n'+indent+'  ')}\n${indent}${close}`;
+  return `${open}${content}${close}`;
+}
+function _showWrapWidget(editor,onConfirm){
+  const WID='wrap-abbr-input-widget';
+  try{editor.removeOverlayWidget({getId:()=>WID});}catch(e){}
+  const dom=document.createElement('div');
+  dom.style.cssText='position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:#2d2d2d;border:1px solid #007acc;border-top:none;padding:8px 16px;font-family:Consolas,monospace;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.6);z-index:100;';
+  const label=document.createElement('span');
+  label.textContent='Wrap with Abbreviation:';
+  label.style.cssText='color:#cccccc;white-space:nowrap;font-size:14px;';
+  const input=document.createElement('input');
+  input.type='text';input.value='div';
+  input.style.cssText='background:#3c3c3c;border:1px solid #555;color:#d4d4d4;padding:5px 10px;font-size:14px;font-family:Consolas,monospace;outline:none;width:220px;';
+  dom.appendChild(label);dom.appendChild(input);
+  const widget={getId:()=>WID,getDomNode:()=>dom,getPosition:()=>null};
+  editor.addOverlayWidget(widget);
+  setTimeout(()=>{input.focus();input.select();},50);
+  function close(){try{editor.removeOverlayWidget(widget);}catch(e){} editor.focus();}
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){const a=input.value.trim();close();if(a)onConfirm(a);}
+    else if(e.key==='Escape') close();
+    e.stopPropagation();
+  });
+  input.addEventListener('blur',()=>{setTimeout(()=>{try{editor.removeOverlayWidget(widget);}catch(e){}},150);});
+}
+function _wrapWithAbbreviation(editor,abbreviation){
+  const selection=editor.getSelection();
+  const model=editor.getModel();
+  const selectedText=(selection&&!selection.isEmpty()?model.getValueInRange(selection):'').trim();
+  if(!selectedText){alert('Jelölj ki szöveget a becsomagoláshoz!');return;}
+  if(!abbreviation){_showWrapWidget(editor,a=>_wrapWithAbbreviation(editor,a));return;}
+  const lines=selectedText.split('\n').filter(l=>l.trim()!=='');
+  let wrappedText;
+  const wrapEachMatch=abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)>([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
+  const wrapEachSimple=abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
+  if(wrapEachMatch){
+    const outer=_parseTagAbbr(wrapEachMatch[1]),inner=_parseTagAbbr(wrapEachMatch[2]);
+    const items=lines.map(l=>`  ${_buildTag(inner,l.trim())}`).join('\n');
+    wrappedText=_buildTag(outer,'\n'+items+'\n','');
+  }else if(wrapEachSimple){
+    const parsed=_parseTagAbbr(wrapEachSimple[1]);
+    wrappedText=lines.map(l=>_buildTag(parsed,l.trim())).join('\n');
+  }else if(abbreviation.includes('>')){
+    let content=selectedText;
+    const parts=abbreviation.split('>');
+    for(let i=parts.length-1;i>=0;i--) content=_buildTag(_parseTagAbbr(parts[i]),content,'');
+    wrappedText=content;
+  }else{
+    wrappedText=_buildTag(_parseTagAbbr(abbreviation),selectedText,'');
+  }
+  editor.executeEdits('wrap-with-abbreviation',[{range:selection,text:wrappedText,forceMoveMarkers:true}]);
 }
 </script>
 <script src="../special-roles.js"></script>
