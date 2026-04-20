@@ -3816,7 +3816,7 @@ function showWrapWidget(editor, onConfirm) {
 function wrapWithAbbreviation(editor, monaco, abbreviation) {
   const selection = editor.getSelection();
   const model = editor.getModel();
-  const selectedText = selection && !selection.isEmpty() ? model.getValueInRange(selection) : '';
+  const selectedText = (selection && !selection.isEmpty() ? model.getValueInRange(selection) : '').trim();
 
   if (!selectedText) {
     alert('Jelölj ki szöveget a becsomagoláshoz!');
