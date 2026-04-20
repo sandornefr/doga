@@ -6,3 +6,6 @@ startCommand = "dotnet /app/out/KandoTest.dll"
 healthcheckPath = "/"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
+
+[variables]
+TZ = "Europe/Budapest"
