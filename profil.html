@@ -440,7 +440,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/progress/${encodeURIComponent(u.email)}/items`).catch(()=>null),
-            apiFetch(`${API}/api/quiz-results/${encodeURIComponent(u.email)}`).catch(()=>null),
+            apiFetch(`${API}/api/my-quiz-results`).catch(()=>null),
             apiFetch(`${API}/api/tesztelok/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
@@ -524,7 +524,7 @@ async function loadTanuloProfile(u, page) {
         const initials = (u.nev||u.email||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
         const isOwnProfile = !u._oktatoNez;
         const avatarHtml = avatarSeed
-            ? `<div class="hero-avatar-img" style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(avatarSeed)}&size=128')"></div>`
+            ? `<div class="hero-avatar-img" style="background-image:url('${avatarDataUri(avatarSeed)}')"></div>`
             : `<div class="hero-avatar">${initials}</div>`;
         const avatarEditBtn = isOwnProfile
             ? `<div class="hero-avatar-edit" onclick="openAvatarPicker('${u.email}')" title="Profilkép módosítása"><i class="fas fa-pen"></i></div>`
@@ -603,10 +603,10 @@ async function loadTanuloProfile(u, page) {
 
         <!-- Helyezések -->
         ${(()=>{
-            const anyRank = rankData && (rankData.python || rankData.web);
+            const anyRank = rankData && (rankData.python || rankData.web || rankData.quiz);
             const noData = !anyRank || (
-                !rankData?.python?.kando && !rankData?.web?.kando &&
-                !rankData?.python?.csoport && !rankData?.web?.csoport
+                !rankData?.python?.kando && !rankData?.web?.kando && !rankData?.quiz?.kando &&
+                !rankData?.python?.csoport && !rankData?.web?.csoport && !rankData?.quiz?.csoport
             );
             function medal(rank) {
                 const emojis = ['','🥇','🥈','🥉'];
@@ -622,25 +622,28 @@ async function loadTanuloProfile(u, page) {
                 </td>`;
             }
             const scopes = [
-                { icon:'fa-users',           label:'Csoportod',   py: rankData?.python?.csoport,  web: rankData?.web?.csoport  },
-                { icon:'fa-chalkboard-user', label:'Osztályod',   py: rankData?.python?.osztaly,  web: rankData?.web?.osztaly  },
-                { icon:'fa-graduation-cap',  label:'Évfolyamod',  py: rankData?.python?.evfolyam, web: rankData?.web?.evfolyam },
-                { icon:'fa-school',          label:'Kandó',        py: rankData?.python?.kando,    web: rankData?.web?.kando    },
+                { icon:'fa-users',           label:'Csoportod',   py: rankData?.python?.csoport,  web: rankData?.web?.csoport,  quiz: rankData?.quiz?.csoport  },
+                { icon:'fa-chalkboard-user', label:'Osztályod',   py: rankData?.python?.osztaly,  web: rankData?.web?.osztaly,  quiz: rankData?.quiz?.osztaly  },
+                { icon:'fa-graduation-cap',  label:'Évfolyamod',  py: rankData?.python?.evfolyam, web: rankData?.web?.evfolyam, quiz: rankData?.quiz?.evfolyam },
+                { icon:'fa-school',          label:'Kandó',        py: rankData?.python?.kando,    web: rankData?.web?.kando,    quiz: rankData?.quiz?.kando    },
             ];
-            const evfPy  = rankData?.python?.evfolyam;
-            const evfWeb = rankData?.web?.evfolyam;
+            const evfPy   = rankData?.python?.evfolyam;
+            const evfWeb  = rankData?.web?.evfolyam;
+            const evfQuiz = rankData?.quiz?.evfolyam;
             const evfNote = [
-                evfPy  ? `Python: az évfolyam <strong style="color:#c9d1d9">${evfPy.groupSize}</strong> aktív tanulójából <strong style="color:#c9d1d9">${evfPy.groupSize - evfPy.rank + 1}</strong> ért el legalább ilyen eredményt` : '',
-                evfWeb ? `WEB: az évfolyam <strong style="color:#c9d1d9">${evfWeb.groupSize}</strong> aktív tanulójából <strong style="color:#c9d1d9">${evfWeb.groupSize - evfWeb.rank + 1}</strong> ért el legalább ilyen eredményt` : '',
+                evfPy   ? `Python: az évfolyam <strong style="color:#c9d1d9">${evfPy.groupSize}</strong> aktív tanulójából <strong style="color:#c9d1d9">${evfPy.groupSize - evfPy.rank + 1}</strong> ért el legalább ilyen eredményt` : '',
+                evfWeb  ? `WEB: az évfolyam <strong style="color:#c9d1d9">${evfWeb.groupSize}</strong> aktív tanulójából <strong style="color:#c9d1d9">${evfWeb.groupSize - evfWeb.rank + 1}</strong> ért el legalább ilyen eredményt` : '',
+                evfQuiz ? `Interaktív teszt: az évfolyam <strong style="color:#c9d1d9">${evfQuiz.groupSize}</strong> aktív tanulójából <strong style="color:#c9d1d9">${evfQuiz.groupSize - evfQuiz.rank + 1}</strong> ért el legalább ilyen eredményt` : '',
             ].filter(Boolean).join('<br>');
             return `<div class="section">
                 <div class="section-title"><i class="fas fa-ranking-star"></i> Helyezéseid</div>
-                ${noData ? `<div style="font-size:0.82rem;color:#484f58;padding:8px 0;">Még nincs beadott ágazati feladat – helyezés akkor jelenik meg, ha legalább egy Python vagy WEB feladatot beadsz.</div>` : `
+                ${noData ? `<div style="font-size:0.82rem;color:#484f58;padding:8px 0;">Még nincs beadott feladat – helyezés akkor jelenik meg, ha legalább egy Python, WEB vagy interaktív tesztet kitöltesz.</div>` : `
                 <table style="width:100%;border-collapse:collapse;">
                     <thead><tr>
                         <th style="text-align:left;font-size:0.7rem;color:#484f58;padding:4px 8px;font-weight:400;"></th>
                         <th style="text-align:center;font-size:0.7rem;color:#3b82f6;padding:4px 8px;font-weight:400;"><i class="fab fa-python"></i> Python</th>
                         <th style="text-align:center;font-size:0.7rem;color:#f97316;padding:4px 8px;font-weight:400;"><i class="fas fa-code"></i> WEB</th>
+                        <th style="text-align:center;font-size:0.7rem;color:#10b981;padding:4px 8px;font-weight:400;"><i class="fas fa-brain"></i> Teszt</th>
                     </tr></thead>
                     <tbody>
                     ${scopes.map(s=>`<tr style="border-top:1px solid #21262d;">
@@ -649,6 +652,7 @@ async function loadTanuloProfile(u, page) {
                         </td>
                         ${rankCell(s.py)}
                         ${rankCell(s.web)}
+                        ${rankCell(s.quiz)}
                     </tr>`).join('')}
                     </tbody>
                 </table>
@@ -935,14 +939,39 @@ const AVATAR_SEEDS = [
     'yoyo','zebra','anker','bence','csilla','dora'
 ];
 
+function avatarDataUri(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = Math.imul(h * 31 + seed.charCodeAt(i), 1) | 0;
+    const abs = n => n < 0 ? -n : n;
+    const palettes = [
+        ['#4f46e5','#a5b4fc'],['#0ea5e9','#7dd3fc'],['#10b981','#6ee7b7'],
+        ['#f59e0b','#fde68a'],['#ef4444','#fca5a5'],['#8b5cf6','#ddd6fe'],
+        ['#14b8a6','#99f6e4'],['#f97316','#fed7aa'],['#ec4899','#fbcfe8'],
+        ['#06b6d4','#a5f3fc'],
+    ];
+    const [bg, acc] = palettes[abs(h) % palettes.length];
+    // 5x3 grid (mirrored → 5x5), symmetric pixel identicon
+    const bits = [];
+    for (let i = 0; i < 15; i++) bits.push((abs(h >> i) & 1));
+    const cells = [];
+    const cs = 14, pad = 10;
+    for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 5; col++) {
+            const idx = row * 3 + (col < 3 ? col : 4 - col);
+            if (bits[idx]) cells.push(`<rect x="${pad+col*cs}" y="${pad+row*cs}" width="${cs-2}" height="${cs-2}" rx="2" fill="${acc}"/>`);
+        }
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="${bg}"/>${cells.join('')}</svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
 function openAvatarPicker(email) {
     if (document.getElementById('avatarPickerModal')) return;
-    const u = JSON.parse(localStorage.getItem('felhasznalo') || '{}');
     const current = localStorage.getItem('avatar_seed_' + email) || '';
 
     const gridHtml = AVATAR_SEEDS.map(seed => `
         <div class="avatar-option${seed===current?' selected':''}" data-seed="${seed}"
-             style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${seed}&size=96')"
+             style="background-image:url('${avatarDataUri(seed)}')"
              onclick="selectAvatarOption(this)" title="${seed}"></div>`).join('');
 
     const modal = document.createElement('div');
@@ -992,7 +1021,7 @@ async function saveAvatar(email) {
     if (wrap) {
         const imgDiv = wrap.querySelector('.hero-avatar-img, .hero-avatar');
         if (imgDiv) {
-            imgDiv.outerHTML = `<div class="hero-avatar-img" style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(seed)}&size=128')"></div>`;
+            imgDiv.outerHTML = `<div class="hero-avatar-img" style="background-image:url('${avatarDataUri(seed)}')"></div>`;
         }
     }
 }

@@ -1088,11 +1088,58 @@ public class Database
 
         var (wkando, pkando) = GetRankInScope(email, null, new(), "Kandó");
 
+        var qcso  = csoport != null && osztaly != null && evfolyam != null
+            ? GetQuizRankInScope(email,
+                "LOWER(COALESCE(u.evfolyam,''))=LOWER($ef) AND LOWER(COALESCE(u.osztaly,''))=LOWER($o) AND LOWER(COALESCE(u.csoport,''))=LOWER($cs)",
+                new() { {"$ef", evfolyam}, {"$o", osztaly}, {"$cs", csoport} }, $"{evfolyam}.{osztaly}/{csoport}-es csoport")
+            : null;
+        var qosz  = osztaly != null && evfolyam != null
+            ? GetQuizRankInScope(email,
+                "LOWER(COALESCE(u.evfolyam,''))=LOWER($ef) AND LOWER(COALESCE(u.osztaly,''))=LOWER($o)",
+                new() { {"$ef", evfolyam}, {"$o", osztaly} }, $"{evfolyam}.{osztaly} osztály")
+            : null;
+        var qevf  = evfolyam != null
+            ? GetQuizRankInScope(email, "LOWER(COALESCE(u.evfolyam,''))=LOWER($ef)",
+                new() { {"$ef", evfolyam} }, $"{evfolyam}. évfolyam")
+            : null;
+        var qkando = GetQuizRankInScope(email, null, new(), "Kandó");
+
         return new StudentRankResult(
             new ThreeScopeRanks(wcso, wosz, wevf, wkando),
             new ThreeScopeRanks(pcso, posz, pevf, pkando),
+            new ThreeScopeRanks(qcso, qosz, qevf, qkando),
             GetStreak(email)
         );
+    }
+
+    private RankInfo? GetQuizRankInScope(
+        string email, string? whereClause,
+        Dictionary<string, string?> parms, string groupLabel)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+
+        foreach (var kv in parms)
+            cmd.Parameters.AddWithValue(kv.Key, (object?)kv.Value ?? DBNull.Value);
+
+        cmd.CommandText = $@"
+            SELECT qr.email, MAX(qr.szazalek) as best_pct
+            FROM quiz_results qr
+            LEFT JOIN users u ON LOWER(qr.email) = LOWER(u.email)
+            WHERE qr.email IS NOT NULL AND qr.email != ''
+            {(whereClause != null ? "AND " + whereClause : "")}
+            GROUP BY qr.email";
+
+        var results = new List<(string email, int best)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            results.Add((r.GetString(0), r.IsDBNull(1) ? 0 : r.GetInt32(1)));
+
+        results = results.OrderByDescending(x => x.best).ToList();
+        var idx = results.FindIndex(x => x.email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        if (idx < 0) return null;
+
+        return new RankInfo(idx + 1, results.Count, groupLabel, results[idx].best);
     }
 
     private (RankInfo? web, RankInfo? python) GetRankInScope(

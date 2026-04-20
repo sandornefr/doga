@@ -191,6 +191,7 @@ public record ThreeScopeRanks(
 public record StudentRankResult(
     ThreeScopeRanks Web,
     ThreeScopeRanks Python,
+    ThreeScopeRanks Quiz,
     int Streak
 );
 

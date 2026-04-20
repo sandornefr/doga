@@ -1194,6 +1194,16 @@ app.MapGet("/api/quiz-results/{email}", (string email, HttpContext ctx, Database
     return Results.Ok(db.GetStudentQuizResults(decoded));
 });
 
+// Saját quiz eredmények (tanuló – saját token alapján)
+app.MapGet("/api/my-quiz-results", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(db.GetStudentQuizResults(email));
+});
+
 // Per-student progress detail items (oktató)
 app.MapGet("/api/progress/{email}/items", (string email, HttpContext ctx, Database db) =>
 {
