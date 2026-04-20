@@ -574,13 +574,25 @@ function applyFilters() {
 
 // ── Segédfüggvények ───────────────────────────────────────────────────────────
 
+// UTC string → Budapest dátum (YYYY-MM-DD)
+function utcDate(ts) {
+    if (!ts) return '';
+    return new Date(ts.replace(' ','T')+'Z').toLocaleDateString('sv-SE', { timeZone:'Europe/Budapest' });
+}
+// Ma Budapest szerint
+function todayBp() {
+    return new Date().toLocaleDateString('sv-SE', { timeZone:'Europe/Budapest' });
+}
+
 function daysSince(d) {
     if (!d) return Infinity;
-    return Math.floor((new Date()-new Date(d))/86400000);
+    return Math.floor((new Date(todayBp()) - new Date(utcDate(d))) / 86400000);
 }
 function formatDate(d) {
     if (!d) return null;
-    return new Date(d).toLocaleDateString('hu-HU',{year:'numeric',month:'short',day:'numeric'});
+    return new Date(d.replace(' ','T')+'Z').toLocaleDateString('hu-HU',{
+        year:'numeric', month:'short', day:'numeric', timeZone:'Europe/Budapest'
+    });
 }
 function actLabel(d) {
     const n = daysSince(d);
@@ -1247,7 +1259,7 @@ function switchDetailTab(tab) {
             loading="lazy"></iframe>`;
         return;
     }
-    const today = new Date().toISOString().substring(0,10);
+    const today = todayBp();
     renderNapiContent(currentDetailData, today);
 }
 
@@ -1282,19 +1294,20 @@ let _napiSelDate  = null;
 
 function fmtIdo(ts) {
     if (!ts) return '';
-    const m = ts.match(/\d{2}:\d{2}/);
-    return m ? m[0] : '';
+    return new Date(ts.replace(' ','T')+'Z').toLocaleTimeString('hu-HU', {
+        hour:'2-digit', minute:'2-digit', timeZone:'Europe/Budapest'
+    });
 }
 
 function buildActiveDays(s, progressItems, quizItems) {
     const days = new Set();
-    progressItems.forEach(p => { if (p.datum) days.add(p.datum.substring(0,10)); });
-    quizItems.forEach(q => { if (q.submittedAt) days.add(q.submittedAt.substring(0,10)); });
-    s.szamonkeres?.forEach(sz => { if (sz.submittedAt) days.add(sz.submittedAt.substring(0,10)); });
-    if (s.lastActive) days.add(s.lastActive.substring(0,10));
+    progressItems.forEach(p => { if (p.datum) days.add(utcDate(p.datum)); });
+    quizItems.forEach(q => { if (q.submittedAt) days.add(utcDate(q.submittedAt)); });
+    s.szamonkeres?.forEach(sz => { if (sz.submittedAt) days.add(utcDate(sz.submittedAt)); });
+    if (s.lastActive) days.add(utcDate(s.lastActive));
     ['tananyagHtml','tananyagCss','tananyagBootstrap','tananyagEmmet','tananyagJavascript',
      'tananyagDevtools','pythonKezdo','pythonHalado','pythonProAlgoritmus'].forEach(k => {
-        if (s[k]) days.add(s[k].substring(0,10));
+        if (s[k]) days.add(utcDate(s[k]));
     });
     return days;
 }
@@ -1345,34 +1358,34 @@ function buildActsForDate(s, progressItems, quizItems, effectiveDate) {
         { key:'pythonProAlgoritmus', icon:'fas fa-star',               color:'#f472b6', label:'Python Profi szint teljesítve' },
     ];
 
-    if (s.lastActive?.substring(0,10) === effectiveDate)
+    if (s.lastActive && utcDate(s.lastActive) === effectiveDate)
         acts.push({ ts:s.lastActive, icon:'fas fa-circle', color:'#3fb950', title:'Online volt a felületen', sub:'', ido:fmtIdo(s.lastActive) });
 
     s.szamonkeres?.forEach(sz => {
-        if (sz.submittedAt?.substring(0,10) === effectiveDate)
+        if (sz.submittedAt && utcDate(sz.submittedAt) === effectiveDate)
             acts.push({ ts:sz.submittedAt, icon:'fas fa-file-alt', color:'#58a6ff', title:sz.cim, ido:fmtIdo(sz.submittedAt),
                 sub:`${sz.osszPont}/${sz.maxPont} pont · <span class="szamonkeres-szaz ${gradeColor(sz.szazalek)}" style="padding:1px 6px">${gradeLabel(sz.szazalek)} (${sz.szazalek}%)</span>` });
     });
 
     TANANYAG_MAP.forEach(t => {
-        if (s[t.key]?.substring(0,10) === effectiveDate)
+        if (s[t.key] && utcDate(s[t.key]) === effectiveDate)
             acts.push({ ts:s[t.key], icon:t.icon, color:t.color, title:t.label, sub:'Szint teljesítve', ido:fmtIdo(s[t.key]) });
     });
 
-    progressItems.filter(p => p.targy==='web' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
+    progressItems.filter(p => p.targy==='web' && utcDate(p.datum)===effectiveDate).forEach(p => {
         acts.push({ ts:p.datum, icon:'fas fa-code', color:'#f472b6', ido:fmtIdo(p.datum),
             title:`WEB ágazati: ${AGAZATI_LABELS[p.feladat] || p.feladat}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
-    progressItems.filter(p => p.targy==='python' && p.datum?.substring(0,10)===effectiveDate).forEach(p => {
+    progressItems.filter(p => p.targy==='python' && utcDate(p.datum)===effectiveDate).forEach(p => {
         const nev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
         acts.push({ ts:p.datum, icon:'fab fa-python', color:'#3b82f6', ido:fmtIdo(p.datum),
             title:`Python ágazati: ${nev}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
-    quizItems.filter(q => q.submittedAt?.substring(0,10)===effectiveDate).forEach(q => {
+    quizItems.filter(q => q.submittedAt && utcDate(q.submittedAt)===effectiveDate).forEach(q => {
         const idoMpStr = q.idoMp ? ` · ${Math.floor(q.idoMp/60)}p ${q.idoMp%60}mp` : '';
         acts.push({ ts:q.submittedAt, icon:'fas fa-brain', color:'#10b981', ido:fmtIdo(q.submittedAt),
             title:QUIZ_LABELS[q.tipus] || q.tipus,

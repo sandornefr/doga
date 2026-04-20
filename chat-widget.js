@@ -159,8 +159,8 @@
 
     // ── Segédfüggvények ───────────────────────────────────────────────────────
     function fmtTime(dt) {
-        const d = new Date(dt.replace(' ', 'T'));
-        return d.toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit' });
+        const d = new Date(dt.replace(' ', 'T') + 'Z');
+        return d.toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/Budapest' });
     }
 
     function fmtLabel(msg) {

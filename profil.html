@@ -266,8 +266,8 @@ const ACHIEVEMENTS = [
     { id:'webmaster',      icon:'👑', name:'Webmester',                  check:(p)=> p.web.avgPercent >= 85 },
     { id:'pymaster',       icon:'🏆', name:'Python Mester',              check:(p)=> p.python.avgPercent >= 85 },
     { id:'both_ready',     icon:'🎓', name:'Teljes felkészültség',       check:(p)=> p.web.avgPercent >= 75 && p.python.avgPercent >= 75 },
-    { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',            check:(p,items)=> items.some(i=>{ const m=i.datum?.match(/(\d{2}):\d{2}/); return m&&(parseInt(m[1])>=20||parseInt(m[1])<5); }) },
-    { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',               check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const d=new Date(i.datum.replace(' ','T')); return d.getDay()===0||d.getDay()===6; }) },
+    { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',            check:(p,items)=> items.some(i=>{ if(!i.datum) return false; const d=new Date(i.datum.replace(' ','T')+'Z'); const h=parseInt(d.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'Europe/Budapest'})); return h>=20||h<5; }) },
+    { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',               check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const dn=new Date(i.datum.replace(' ','T')+'Z').toLocaleDateString('en-US',{weekday:'long',timeZone:'Europe/Budapest'}); return dn==='Saturday'||dn==='Sunday'; }) },
     { id:'tiz_aktiv_nap',  icon:'📅', name:'10 aktív nap',               check:(p,_,streak)=> streak >= 10 },
     { id:'huszon_aktiv',   icon:'🗓️', name:'20 aktív nap',               check:(p,_,streak)=> streak >= 20 },
     // Egymást követő napok
@@ -281,6 +281,12 @@ const ACHIEVEMENTS = [
     { id:'py_kotelezo_pack',   icon:'🐍', name:'Python kötelező csomag',  check:(p,items,s,mc,u)=> !!u.pythonKezdo && !!u.pythonHalado },
     { id:'vizsgakesz',         icon:'🎓', name:'Vizsga-kész!',            check:(p,items,s,mc,u)=> !!u.tananyagHtml && !!u.tananyagCss && !!u.tananyagBootstrap && !!u.pythonKezdo && !!u.pythonHalado && (p.web.sessions>0||p.python.sessions>0) },
 ];
+
+// ── Segédfüggvény: UTC string → Budapest dátum (YYYY-MM-DD) ──────────────
+function utcDate(ts) {
+    if (!ts) return '';
+    return new Date(ts.replace(' ','T')+'Z').toLocaleDateString('sv-SE', { timeZone:'Europe/Budapest' });
+}
 
 // ── Heatmap ───────────────────────────────────────────────────────────────
 function buildHeatmap(activeDates) {
@@ -304,7 +310,7 @@ function buildHeatmap(activeDates) {
         const week = [];
         for (let d = 0; d < 7; d++) {
             if (cur > today) { week.push(null); cur.setDate(cur.getDate()+1); continue; }
-            const ds = cur.toISOString().substring(0,10);
+            const ds = cur.toLocaleDateString('sv-SE', { timeZone:'Europe/Budapest' });
             const cnt = dayMap[ds] || 0;
             week.push({ ds, cnt });
             if (cur.getMonth() !== prevMonth) {
@@ -455,8 +461,8 @@ async function loadTanuloProfile(u, page) {
         // Aktív napok heatmap adatokhoz
         const ACTIVITY_START = '2026-03-01';
         const activeDates = [];
-        items.forEach(i => { if(i.datum && i.datum.substring(0,10) >= ACTIVITY_START) activeDates.push(i.datum.substring(0,10)); });
-        quizItems.forEach(q => { if(q.submittedAt && q.submittedAt.substring(0,10) >= ACTIVITY_START) activeDates.push(q.submittedAt.substring(0,10)); });;
+        items.forEach(i => { if(i.datum) { const d=utcDate(i.datum); if(d>=ACTIVITY_START) activeDates.push(d); } });
+        quizItems.forEach(q => { if(q.submittedAt) { const d=utcDate(q.submittedAt); if(d>=ACTIVITY_START) activeDates.push(d); } });
 
         const maxConsec = calcMaxConsecutive(activeDates);
 
