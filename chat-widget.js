@@ -7,6 +7,7 @@
     let myEmail       = '';
     let mySzerep      = '';
     let isOktato      = false;
+    let isAdmin       = false;
     let isOpen        = false;
     let pollTimer     = null;
     let currentChannel = 'tesztelok';
@@ -297,8 +298,8 @@
         if (isOpen) {
             await pollChannel(currentChannel);
         } else {
-            // Csukva: mindkét csatorna olvasása oktatónak, csak a saját tesztelőnek
-            await pollChannel('tesztelok');
+            // Csukva: tesztelők mindig tesztelők csatornát; admin mindkettőt; sima oktató csak oktatóit
+            if (!isOktato || isAdmin) await pollChannel('tesztelok');
             if (isOktato) await pollChannel('oktatok');
         }
         pollTimer = setTimeout(poll, isOpen ? POLL_OPEN : POLL_CLOSED);
@@ -377,7 +378,7 @@
         }
         mySzerep = isOktato ? 'oktato' : 'tesztelő';
         // Admin (sandornef) mindkét csatornát látja; többi oktató csak az oktatóit
-        const isAdmin = u.email === 'sandornef@kkszki.hu';
+        isAdmin = u.email === 'sandornef@kkszki.hu';
 
         if (isOktato && isAdmin) {
             // Tab-váltó mindkét csatornához

@@ -2887,7 +2887,8 @@ if (location.hash === '#web-tanulas') {
             if (_duelInitTry++ < 15) setTimeout(initDuel, 300);
             return;
         }
-        if (u.szerep !== 'tanulo') return;
+        const urlMode = new URLSearchParams(location.search).get('mode');
+        if (u.szerep !== 'tanulo' && !(u.szerep === 'oktato' && urlMode === 'student')) return;
         let token = u.token;
         if (!token && u._tesztMod) {
             const backup = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}');
