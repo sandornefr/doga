@@ -2280,6 +2280,7 @@ function runChecks() {
     st.status[st.cur] = 'done';
     st.completedOnce[st.cur] = true;
     saveState();
+    sendPracticeProgress('python', `halado_${st.cur+1}`, passed, total);
     triggerConfetti();
     const banner = document.getElementById('success-banner');
     banner.textContent = '✓ Kiváló! Lépj tovább!';
@@ -2327,6 +2328,23 @@ function saveCompletion(key){
     method:'PUT',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
     body:JSON.stringify({value:new Date().toISOString().substring(0,10)})
+  }).catch(()=>{});
+}
+
+function sendPracticeProgress(targy, feladat, pont, maxPont){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  if(!u.token||!u.email) return;
+  const lsKey=`pp_${targy}_${feladat}_${u.email}`;
+  if(localStorage.getItem(lsKey)) return;
+  localStorage.setItem(lsKey,'1');
+  fetch('https://agazati.up.railway.app/api/progress',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
+    body:JSON.stringify({
+      email:u.email, nev:u.nev||'',
+      osztaly:u.osztaly?`${u.evfolyam||''}.${u.osztaly}`:'',
+      targy, feladat, pont, maxPont, mode:'practice'
+    })
   }).catch(()=>{});
 }
 

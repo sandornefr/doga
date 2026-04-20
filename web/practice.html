@@ -979,6 +979,7 @@ function runChecks() {
     state.taskStatus[state.currentTask] = 'done';
     if (!state.completedOnce[state.currentTask]) {
       state.completedOnce[state.currentTask] = true;
+      sendPracticeProgress('web', `kavezos_${state.currentTask + 1}`, passed, total);
       triggerConfetti();
       checkAllComplete();
     }
@@ -1284,6 +1285,24 @@ function restartPractice() {
   const keys = Object.keys(localStorage).filter(k => k.startsWith('practice_'));
   keys.forEach(k => localStorage.removeItem(k));
   location.reload();
+}
+
+// ── Napi aktivitás progress mentés ───────────────────────────────────
+function sendPracticeProgress(targy, feladat, pont, maxPont){
+  const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+  if(!u.token||!u.email) return;
+  const lsKey=`pp_${targy}_${feladat}_${u.email}`;
+  if(localStorage.getItem(lsKey)) return;
+  localStorage.setItem(lsKey,'1');
+  fetch('https://agazati.up.railway.app/api/progress',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
+    body:JSON.stringify({
+      email:u.email, nev:u.nev||'',
+      osztaly:u.osztaly?`${u.evfolyam||''}.${u.osztaly}`:'',
+      targy, feladat, pont, maxPont, mode:'practice'
+    })
+  }).catch(()=>{});
 }
 
 // ── Wrap with Abbreviation (F1) ──────────────────────────────────────

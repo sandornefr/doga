@@ -1373,15 +1373,23 @@ function buildActsForDate(s, progressItems, quizItems, effectiveDate) {
     });
 
     progressItems.filter(p => p.targy==='web' && utcDate(p.datum)===effectiveDate).forEach(p => {
-        acts.push({ ts:p.datum, icon:'fas fa-code', color:'#f472b6', ido:fmtIdo(p.datum),
-            title:`WEB ágazati: ${AGAZATI_LABELS[p.feladat] || p.feladat}`,
+        const isKavezos = p.feladat && p.feladat.startsWith('kavezos_');
+        const webNev = AGAZATI_LABELS[p.feladat]
+            || (isKavezos ? `Kávézós – ${p.feladat.replace('kavezos_','')}. feladat` : p.feladat);
+        acts.push({ ts:p.datum, icon:'fas fa-code', color: isKavezos ? '#22c55e' : '#f472b6', ido:fmtIdo(p.datum),
+            title:`${isKavezos ? 'WEB kávézó' : 'WEB ágazati'}: ${webNev}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
     progressItems.filter(p => p.targy==='python' && utcDate(p.datum)===effectiveDate).forEach(p => {
-        const nev = PYTHON_FELADAT_LABELS[p.feladat] || (p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
-        acts.push({ ts:p.datum, icon:'fab fa-python', color:'#3b82f6', ido:fmtIdo(p.datum),
-            title:`Python ágazati: ${nev}`,
+        const isPractice = p.feladat && /^(kezdo|halado|pro)_/.test(p.feladat);
+        const nev = PYTHON_FELADAT_LABELS[p.feladat]
+            || (p.feladat.startsWith('kezdo_')  ? `Kezdő – ${p.feladat.replace('kezdo_','')}. feladat`
+              : p.feladat.startsWith('halado_') ? `Haladó – ${p.feladat.replace('halado_','')}. feladat`
+              : p.feladat.startsWith('pro_')    ? `Profi – ${p.feladat.replace('pro_','')}. feladat`
+              : p.feladat ? `${p.feladat}. feladat` : 'Python ágazati beadás');
+        acts.push({ ts:p.datum, icon:'fab fa-python', color: isPractice ? '#f59e0b' : '#3b82f6', ido:fmtIdo(p.datum),
+            title:`${isPractice ? 'Python gyakorló' : 'Python ágazati'}: ${nev}`,
             sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
     });
 
