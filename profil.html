@@ -37,8 +37,7 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .hero-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1f6feb,#a371f7);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#fff;flex-shrink:0;}
 .hero-avatar-wrap{position:relative;flex-shrink:0;width:64px;}
-.hero-avatar-img{width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid #30363d;background:#161b22;display:flex;align-items:center;justify-content:center;}
-.hero-avatar-img img{width:100%;height:100%;object-fit:cover;}
+.hero-avatar-img{width:64px;height:64px;border-radius:50%;border:2px solid #30363d;background:#161b22 center/cover no-repeat;}
 .hero-avatar-edit{position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#4f46e5;border:2px solid #0d1117;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.55rem;color:#fff;}
 .hero-avatar-edit:hover{background:#7c3aed;}
 .hero-info h2{font-size:1.2rem;font-weight:700;color:#e0e0e0;margin-bottom:4px;}
@@ -52,10 +51,9 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .avatar-modal-box{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:24px;max-width:420px;width:100%;}
 .avatar-modal-title{font-size:1rem;font-weight:700;color:#e0e0e0;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
-.avatar-option{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#21262d;transition:border-color .15s,transform .1s;}
+.avatar-option{width:52px;height:52px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:#21262d center/cover no-repeat;transition:border-color .15s,transform .1s;}
 .avatar-option:hover{border-color:#4f46e5;transform:scale(1.08);}
 .avatar-option.selected{border-color:#22c55e;box-shadow:0 0 0 2px #22c55e44;}
-.avatar-option img{width:100%;height:100%;object-fit:cover;}
 .avatar-modal-btns{display:flex;justify-content:flex-end;gap:10px;}
 .btn-avatar-cancel{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.85rem;}
 .btn-avatar-cancel:hover{border-color:#6b7280;color:#e0e0e0;}
@@ -526,7 +524,7 @@ async function loadTanuloProfile(u, page) {
         const initials = (u.nev||u.email||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
         const isOwnProfile = !u._oktatoNez;
         const avatarHtml = avatarSeed
-            ? `<div class="hero-avatar-img"><img src="https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(avatarSeed)}&size=128" alt="avatar" loading="lazy"></div>`
+            ? `<div class="hero-avatar-img" style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(avatarSeed)}&size=128')"></div>`
             : `<div class="hero-avatar">${initials}</div>`;
         const avatarEditBtn = isOwnProfile
             ? `<div class="hero-avatar-edit" onclick="openAvatarPicker('${u.email}')" title="Profilkép módosítása"><i class="fas fa-pen"></i></div>`
@@ -943,9 +941,9 @@ function openAvatarPicker(email) {
     const current = localStorage.getItem('avatar_seed_' + email) || '';
 
     const gridHtml = AVATAR_SEEDS.map(seed => `
-        <div class="avatar-option${seed===current?' selected':''}" data-seed="${seed}" onclick="selectAvatarOption(this)">
-            <img src="https://api.dicebear.com/9.x/lego/svg?seed=${seed}&size=96" alt="${seed}" loading="lazy">
-        </div>`).join('');
+        <div class="avatar-option${seed===current?' selected':''}" data-seed="${seed}"
+             style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${seed}&size=96')"
+             onclick="selectAvatarOption(this)" title="${seed}"></div>`).join('');
 
     const modal = document.createElement('div');
     modal.id = 'avatarPickerModal';
@@ -994,7 +992,7 @@ async function saveAvatar(email) {
     if (wrap) {
         const imgDiv = wrap.querySelector('.hero-avatar-img, .hero-avatar');
         if (imgDiv) {
-            imgDiv.outerHTML = `<div class="hero-avatar-img"><img src="https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(seed)}&size=128" alt="avatar"></div>`;
+            imgDiv.outerHTML = `<div class="hero-avatar-img" style="background-image:url('https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(seed)}&size=128')"></div>`;
         }
     }
 }
