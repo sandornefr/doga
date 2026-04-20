@@ -21,8 +21,8 @@
     }
 
     const ch = {
-        tesztelok: { sinceId: loadSinceId('tesztelok'), messages: [], unread: 0 },
-        oktatok:   { sinceId: loadSinceId('oktatok'),   messages: [], unread: 0 }
+        tesztelok: { sinceId: loadSinceId('tesztelok'), messages: [], unread: 0, historyLoaded: false },
+        oktatok:   { sinceId: loadSinceId('oktatok'),   messages: [], unread: 0, historyLoaded: false }
     };
 
     // ── Stílus ────────────────────────────────────────────────────────────────
@@ -159,6 +159,7 @@
 
     // ── Segédfüggvények ───────────────────────────────────────────────────────
     function fmtTime(dt) {
+        if (!dt) return '';
         const d = new Date(dt.replace(' ', 'T') + 'Z');
         return d.toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit', timeZone:'Europe/Budapest' });
     }
@@ -255,12 +256,19 @@
     async function pollChannel(channel) {
         try {
             const state = ch[channel];
-            const res = await fetch(`${CHAT_API}/api/chat?since_id=${state.sinceId}&channel=${channel}`, { headers: getHeaders() });
-            if (!res.ok) return;
+            // Első megnyitáskor history betöltése (since_id=0), hogy a korábbi üzenetek is látszódjanak
+            const isHistoryFetch = isOpen && channel === currentChannel && !state.historyLoaded && state.messages.length === 0;
+            const fetchSince = isHistoryFetch ? 0 : state.sinceId;
+            const res = await fetch(`${CHAT_API}/api/chat?since_id=${fetchSince}&channel=${channel}`, { headers: getHeaders() });
+            if (!res.ok) {
+                if (isHistoryFetch) state.historyLoaded = true;
+                return;
+            }
             const msgs = await res.json();
 
+            if (isHistoryFetch) state.historyLoaded = true;
+
             if (msgs.length === 0) {
-                // Nincs új üzenet – ha a loading szöveg még látszik, cseréljük ki
                 if (isOpen && channel === currentChannel) {
                     const el = document.getElementById('chat-messages');
                     if (el && el.querySelectorAll('[data-id]').length === 0) {
@@ -270,7 +278,10 @@
                 return;
             }
 
-            // sinceId frissítése + localStorage mentés (badge nem jön vissza újratöltés után)
+            // Mentjük az előző sinceId-t az olvasatlan számoláshoz
+            const prevSinceId = state.sinceId;
+
+            // sinceId frissítése + localStorage mentés
             msgs.forEach(m => {
                 if (m.id > state.sinceId) {
                     state.sinceId = m.id;
@@ -278,7 +289,7 @@
                 }
             });
 
-            // Cache (megnyitáskor azonnal megjelenítjük)
+            // Cache
             msgs.forEach(m => {
                 if (!state.messages.find(sm => sm.id === m.id)) state.messages.push(m);
             });
@@ -287,7 +298,8 @@
                 renderMessages(msgs);
                 ch[channel].unread = 0;
             } else {
-                const fromOthers = msgs.filter(m => m.senderEmail.toLowerCase() !== myEmail.toLowerCase());
+                // Csak azok számítanak olvasatlannak, amelyek újabbak az utoljára látottnál
+                const fromOthers = msgs.filter(m => m.id > prevSinceId && m.senderEmail.toLowerCase() !== myEmail.toLowerCase());
                 ch[channel].unread += fromOthers.length;
             }
             updateBadge();
