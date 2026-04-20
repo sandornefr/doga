@@ -1595,12 +1595,9 @@
         document.getElementById('user-name').textContent = user.nev || user.email;
         document.getElementById('user-role').textContent = user.szerep === 'oktato' ? 'Oktató' : user.szerep === 'vendeg' ? 'Vendég' : 'Tanuló';
         if (user.szerep === 'tanulo' && user.email) {
-            const avatarSeed = localStorage.getItem('avatar_seed_' + user.email);
-            if (avatarSeed) {
-                const av = document.getElementById('topbar-avatar');
-                av.style.backgroundImage = `url('${portalAvatarUri(avatarSeed)}')`;
-                av.style.display = 'block';
-            }
+            const av = document.getElementById('topbar-avatar');
+            av.style.backgroundImage = `url('${portalAvatarUri(user.nev, user.email)}')`;
+            av.style.display = 'block';
         }
         checkMustChangePassword();
         const nevReszek = (user.nev || '').trim().split(' ');
@@ -3098,46 +3095,24 @@ if (location.hash === '#web-tanulas') {
 })();
 </script>
 <script>
-function portalAvatarUri(seed) {
-    let s = 5381;
-    for (let i = 0; i < seed.length; i++) s = (Math.imul(s, 33) ^ seed.charCodeAt(i)) | 0;
-    s = s || 1;
-    function r(n) { s^=s<<13; s^=s>>17; s^=s<<5; return Math.abs(s)%n; }
-    const BG   = ['#0f172a','#1e1b4b','#0c1a3a','#12102a','#0a1f2e','#101820','#1a0d1a','#141414'][r(8)];
-    const HEAD = ['#FFD700','#FFC107','#FFDB4D','#F5C518','#FFE033'][r(5)];
-    const HAIR = ['#1a1008','#3d1f0d','#7a3b1e','#c47a1e','#e8c87a','#bb2020','#606060','#efefef','#1a3a8a','#0a5c30'][r(10)];
-    const HAT  = ['#c0392b','#1a3a8a','#155c2a','#2c2c2c','#6c3483','#b5700a'][r(6)];
-    const LIPS = ['#c0392b','#e74c3c','#922b21'][r(3)];
-    const ht=r(7),et=r(4),mt=r(5),bt=r(3),gl=r(7)===0,rc=r(5)===0,HB='#9A7D0A',HY=58,HR=30;
-    let p=[];
-    p.push(`<circle cx="48" cy="48" r="48" fill="${BG}"/>`);
-    p.push(`<circle cx="48" cy="${HY}" r="${HR}" fill="${HEAD}" stroke="${HB}" stroke-width="1.5"/>`);
-    const SY=HY-HR;
-    p.push(`<rect x="41" y="${SY-9}" width="14" height="11" fill="${HEAD}"/>`);
-    p.push(`<ellipse cx="48" cy="${SY-9}" rx="7" ry="4" fill="${HEAD}" stroke="${HB}" stroke-width="1.5"/>`);
-    p.push(`<ellipse cx="48" cy="${SY}" rx="7" ry="3.5" fill="${HEAD}"/>`);
-    if(ht===1){p.push(`<path d="M22 ${SY+2} Q24 ${SY-18} 48 ${SY-20} Q72 ${SY-18} 74 ${SY+2} Q60 ${SY+6} 48 ${SY+5} Q36 ${SY+6} 22 ${SY+2}Z" fill="${HAIR}"/>`);}
-    else if(ht===2){p.push(`<rect x="33" y="2" width="30" height="${SY+4}" rx="8" fill="${HAIR}"/>`);}
-    else if(ht===3){p.push(`<path d="M24 ${SY+4} Q26 ${SY-16} 52 ${SY-18} Q66 ${SY-16} 72 ${SY+2} Q56 ${SY+4} 24 ${SY+4}Z" fill="${HAIR}"/>`);}
-    else if(ht===4){for(const[cx,cy,rx,ry]of[[48,SY-16,20,14],[34,SY-10,12,10],[62,SY-10,12,10],[48,SY-4,22,8]])p.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${HAIR}"/>`);}
-    else if(ht===5){p.push(`<path d="M44 ${SY+2} Q46 0 48 0 Q50 0 52 ${SY+2} Q50 ${SY+4} 48 ${SY+3} Q46 ${SY+4} 44 ${SY+2}Z" fill="${HAIR}"/>`);}
-    else if(ht===6){p.push(`<rect x="28" y="6" width="40" height="${SY+4}" rx="10" fill="${HAT}"/><rect x="18" y="${SY+2}" width="60" height="8" rx="4" fill="${HAT}"/>`);}
-    const EY=HY-5,MY=HY+10,BY=HY-14;
-    if(bt===1){p.push(`<line x1="37" y1="${BY}" x2="44" y2="${BY}" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/><line x1="52" y1="${BY}" x2="59" y2="${BY}" stroke="#2a2a2a" stroke-width="2.5" stroke-linecap="round"/>`);}
-    else if(bt===2){p.push(`<path d="M37 ${BY+1} Q40.5 ${BY-3} 44 ${BY+1}" stroke="#2a2a2a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M52 ${BY+1} Q55.5 ${BY-3} 59 ${BY+1}" stroke="#2a2a2a" stroke-width="2" fill="none" stroke-linecap="round"/>`);}
-    if(et===0){p.push(`<circle cx="41" cy="${EY}" r="4" fill="#1a1a1a"/><circle cx="55" cy="${EY}" r="4" fill="#1a1a1a"/><circle cx="42.5" cy="${EY-1.5}" r="1.4" fill="white"/><circle cx="56.5" cy="${EY-1.5}" r="1.4" fill="white"/>`);}
-    else if(et===1){p.push(`<path d="M38 ${EY+1} Q41 ${EY-4} 44 ${EY+1}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M52 ${EY+1} Q55 ${EY-4} 58 ${EY+1}" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>`);}
-    else if(et===2){p.push(`<circle cx="41" cy="${EY}" r="5.5" fill="#1a1a1a"/><circle cx="55" cy="${EY}" r="5.5" fill="#1a1a1a"/><circle cx="43" cy="${EY-2}" r="2" fill="white"/><circle cx="57" cy="${EY-2}" r="2" fill="white"/>`);}
-    else{p.push(`<circle cx="41" cy="${EY}" r="4" fill="#1a1a1a"/><circle cx="55" cy="${EY}" r="4" fill="#1a1a1a"/><rect x="37" y="${EY-4}" width="8" height="5" rx="1" fill="${HEAD}"/><rect x="51" y="${EY-4}" width="8" height="5" rx="1" fill="${HEAD}"/><circle cx="42.5" cy="${EY-1}" r="1.2" fill="white"/><circle cx="56.5" cy="${EY-1}" r="1.2" fill="white"/>`);}
-    if(gl){p.push(`<rect x="33" y="${EY-5}" width="15" height="12" rx="5" fill="none" stroke="#2a2a2a" stroke-width="2"/><rect x="50" y="${EY-5}" width="15" height="12" rx="5" fill="none" stroke="#2a2a2a" stroke-width="2"/><line x1="48" y1="${EY}" x2="50" y2="${EY}" stroke="#2a2a2a" stroke-width="2"/><line x1="33" y1="${EY}" x2="28" y2="${EY+1}" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/><line x1="65" y1="${EY}" x2="70" y2="${EY+1}" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/>`);}
-    if(mt===0){p.push(`<path d="M36 ${MY} Q48 ${MY+13} 60 ${MY}" stroke="#1a1a1a" stroke-width="2" fill="${LIPS}" stroke-linecap="round" stroke-linejoin="round"/>`);}
-    else if(mt===1){p.push(`<path d="M40 ${MY} Q48 ${MY+7} 56 ${MY}" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);}
-    else if(mt===2){p.push(`<line x1="40" y1="${MY+2}" x2="56" y2="${MY+2}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>`);}
-    else if(mt===3){p.push(`<path d="M40 ${MY+2} Q45 ${MY-1} 56 ${MY+1}" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);}
-    else{p.push(`<path d="M36 ${MY} Q48 ${MY+13} 60 ${MY} L60 ${MY+5} Q48 ${MY+17} 36 ${MY+5}Z" fill="${LIPS}"/><rect x="40" y="${MY}" width="16" height="6" rx="1" fill="white"/><line x1="48" y1="${MY}" x2="48" y2="${MY+6}" stroke="${LIPS}" stroke-width="1.5"/>`);}
-    if(rc){p.push(`<circle cx="32" cy="${EY+6}" r="5.5" fill="rgba(255,110,110,0.3)"/><circle cx="64" cy="${EY+6}" r="5.5" fill="rgba(255,110,110,0.3)"/>`);}
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">${p.join('')}</svg>`;
-    return 'data:image/svg+xml,'+encodeURIComponent(svg);
+function portalAvatarUri(name, email) {
+    const words = (name || email || '?').trim().split(/\s+/).filter(Boolean);
+    const ini = words.length >= 2
+        ? (words[0][0] + words[words.length-1][0]).toUpperCase()
+        : (words[0] || '?').substring(0, 2).toUpperCase();
+    let h = 0;
+    const str = email || name || '';
+    for (let i = 0; i < str.length; i++) h = (Math.imul(h, 31) + str.charCodeAt(i)) | 0;
+    const grads = [
+        ['#1e3a8a','#3b82f6'],['#5b21b6','#a78bfa'],['#064e3b','#34d399'],
+        ['#7f1d1d','#f87171'],['#78350f','#fbbf24'],['#831843','#f472b6'],
+        ['#134e4a','#2dd4bf'],['#1e1b4b','#818cf8'],['#0c4a6e','#38bdf8'],
+        ['#3b0764','#c084fc'],['#14532d','#86efac'],['#7c2d12','#fb923c'],
+    ];
+    const [c1, c2] = grads[Math.abs(h) % grads.length];
+    const fs = ini.length > 1 ? 34 : 40;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs><circle cx="48" cy="48" r="48" fill="url(#g)"/><text x="48" y="${48 + fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="system-ui,sans-serif" fill="white" letter-spacing="2">${ini}</text></svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 </script>
 </body>
