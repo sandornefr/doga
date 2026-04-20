@@ -36,12 +36,31 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 /* ── Hero kártya ── */
 .hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 .hero-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1f6feb,#a371f7);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#fff;flex-shrink:0;}
+.hero-avatar-wrap{position:relative;flex-shrink:0;width:64px;}
+.hero-avatar-img{width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid #30363d;background:#161b22;display:flex;align-items:center;justify-content:center;}
+.hero-avatar-img img{width:100%;height:100%;object-fit:cover;}
+.hero-avatar-edit{position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:#4f46e5;border:2px solid #0d1117;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.55rem;color:#fff;}
+.hero-avatar-edit:hover{background:#7c3aed;}
 .hero-info h2{font-size:1.2rem;font-weight:700;color:#e0e0e0;margin-bottom:4px;}
 .hero-info .hero-email{font-size:0.8rem;color:#8b949e;margin-bottom:6px;}
 .hero-info .hero-meta{display:flex;flex-wrap:wrap;gap:8px;}
 .hero-tag{background:#21262d;border:1px solid #30363d;border-radius:20px;padding:2px 10px;font-size:0.75rem;color:#c9d1d9;}
 .hero-tag.role-tanulo{border-color:#3b82f6;color:#93c5fd;}
 .hero-tag.role-oktato{border-color:#a371f7;color:#c4b5fd;}
+/* ── Avatar picker modal ── */
+.avatar-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;}
+.avatar-modal-box{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:24px;max-width:420px;width:100%;}
+.avatar-modal-title{font-size:1rem;font-weight:700;color:#e0e0e0;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
+.avatar-option{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#21262d;transition:border-color .15s,transform .1s;}
+.avatar-option:hover{border-color:#4f46e5;transform:scale(1.08);}
+.avatar-option.selected{border-color:#22c55e;box-shadow:0 0 0 2px #22c55e44;}
+.avatar-option img{width:100%;height:100%;object-fit:cover;}
+.avatar-modal-btns{display:flex;justify-content:flex-end;gap:10px;}
+.btn-avatar-cancel{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.85rem;}
+.btn-avatar-cancel:hover{border-color:#6b7280;color:#e0e0e0;}
+.btn-avatar-save{background:#4f46e5;border:none;color:#fff;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.85rem;font-weight:700;}
+.btn-avatar-save:hover{background:#7c3aed;}
 
 /* ── Visszaszámló ── */
 .countdown-bar{background:linear-gradient(90deg,rgba(31,111,235,.15),rgba(163,113,247,.1));border:1px solid #1f6feb44;border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:0.88rem;}
@@ -418,7 +437,7 @@ async function loadTanuloProfile(u, page) {
         if (u.osztaly)  statsParams.set('osztaly',  u.osztaly);
         if (u.csoport)  statsParams.set('csoport',  u.csoport);
 
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes] = await Promise.all([
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, avatarRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -428,6 +447,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
             apiFetch(`${API}/api/duel/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
+            apiFetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/avatar_seed`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -449,6 +469,7 @@ async function loadTanuloProfile(u, page) {
         const isFeladatkeszito= feladatKeszRes?.ok? (await feladatKeszRes.json()).isFeladatkeszito : false;
         const kotelezoStats   = statsRes?.ok  ? (await statsRes.json()) : null;
         const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
+        const avatarSeed      = avatarRes?.ok ? ((await avatarRes.json()).value || '') : (localStorage.getItem('avatar_seed_'+u.email)||'');
 
         const progress = {
             web:    { sessions:p.web?.sessions??0,    avgPercent:p.web?.avgPercent??0,    bestPercent:p.web?.bestPercent??0,    lastSession:p.web?.lastSession??null },
@@ -503,12 +524,19 @@ async function loadTanuloProfile(u, page) {
         }
 
         const initials = (u.nev||u.email||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+        const isOwnProfile = !u._oktatoNez;
+        const avatarHtml = avatarSeed
+            ? `<div class="hero-avatar-img"><img src="https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(avatarSeed)}&size=128" alt="avatar" loading="lazy"></div>`
+            : `<div class="hero-avatar">${initials}</div>`;
+        const avatarEditBtn = isOwnProfile
+            ? `<div class="hero-avatar-edit" onclick="openAvatarPicker('${u.email}')" title="Profilkép módosítása"><i class="fas fa-pen"></i></div>`
+            : '';
 
         page.innerHTML = `
         <!-- Hero -->
         <div class="section">
             <div class="hero">
-                <div class="hero-avatar">${initials}</div>
+                <div class="hero-avatar-wrap">${avatarHtml}${avatarEditBtn}</div>
                 <div class="hero-info">
                     <h2>${u.nev || u.email}</h2>
                     <div class="hero-email">${u.email}</div>
@@ -899,6 +927,78 @@ async function confirmDelete() {
     } catch { err.textContent='Kapcsolati hiba.'; err.style.display='block'; }
     btn.disabled = false;
 }
+
+
+// ── Avatar picker ──────────────────────────────────────────────
+const AVATAR_SEEDS = [
+    'alma','barack','cseresznye','dinnye','eper','fuge','gomba','here',
+    'iker','joker','kivi','lemon','mogyoro','narancs','obama','paprika',
+    'quill','robot','sajt','tigris','uborka','vilag','whisky','xray',
+    'yoyo','zebra','anker','bence','csilla','dora'
+];
+
+function openAvatarPicker(email) {
+    if (document.getElementById('avatarPickerModal')) return;
+    const u = JSON.parse(localStorage.getItem('felhasznalo') || '{}');
+    const current = localStorage.getItem('avatar_seed_' + email) || '';
+
+    const gridHtml = AVATAR_SEEDS.map(seed => `
+        <div class="avatar-option${seed===current?' selected':''}" data-seed="${seed}" onclick="selectAvatarOption(this)">
+            <img src="https://api.dicebear.com/9.x/lego/svg?seed=${seed}&size=96" alt="${seed}" loading="lazy">
+        </div>`).join('');
+
+    const modal = document.createElement('div');
+    modal.id = 'avatarPickerModal';
+    modal.className = 'avatar-modal';
+    modal.innerHTML = `
+        <div class="avatar-modal-box">
+            <div class="avatar-modal-title"><i class="fas fa-user-circle"></i> Válassz profilképet</div>
+            <div class="avatar-grid">${gridHtml}</div>
+            <div class="avatar-modal-btns">
+                <button class="btn-avatar-cancel" onclick="closeAvatarPicker()">Mégse</button>
+                <button class="btn-avatar-save" onclick="saveAvatar('${email}')">Mentés</button>
+            </div>
+        </div>`;
+    modal.addEventListener('click', e => { if (e.target === modal) closeAvatarPicker(); });
+    document.body.appendChild(modal);
+}
+
+function selectAvatarOption(el) {
+    document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function closeAvatarPicker() {
+    document.getElementById('avatarPickerModal')?.remove();
+}
+
+async function saveAvatar(email) {
+    const selected = document.querySelector('.avatar-option.selected');
+    if (!selected) { closeAvatarPicker(); return; }
+    const seed = selected.dataset.seed;
+
+    localStorage.setItem('avatar_seed_' + email, seed);
+
+    try {
+        await apiFetch(`${API}/api/user-state/${encodeURIComponent(email)}/avatar_seed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: seed })
+        });
+    } catch { /* ha offline, a localStorage már mentve */ }
+
+    closeAvatarPicker();
+
+    // hero frissítése újratöltés nélkül
+    const wrap = document.querySelector('.hero-avatar-wrap');
+    if (wrap) {
+        const imgDiv = wrap.querySelector('.hero-avatar-img, .hero-avatar');
+        if (imgDiv) {
+            imgDiv.outerHTML = `<div class="hero-avatar-img"><img src="https://api.dicebear.com/9.x/lego/svg?seed=${encodeURIComponent(seed)}&size=128" alt="avatar"></div>`;
+        }
+    }
+}
+// ───────────────────────────────────────────────────────────────
 
 loadProfile();
 </script>
