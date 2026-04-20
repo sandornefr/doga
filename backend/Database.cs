@@ -1157,10 +1157,14 @@ public class Database
                 MAX(CASE WHEN s.state_key='tananyag_html'          THEN s.state_value END),
                 MAX(CASE WHEN s.state_key='tananyag_css'           THEN s.state_value END),
                 MAX(CASE WHEN s.state_key='tananyag_bootstrap'     THEN s.state_value END),
-                MAX(CASE WHEN s.state_key='tananyag_emmet'         THEN s.state_value END),
+                (SELECT CASE WHEN COUNT(DISTINCT tipus) >= 3 THEN MIN(submitted_at) ELSE NULL END
+                 FROM quiz_results WHERE LOWER(email)=LOWER(u.email) AND tipus IN ('html','css','bootstrap')),
+                (SELECT MIN(datum) FROM progress
+                 WHERE LOWER(email)=LOWER(u.email) AND targy='web'
+                 AND feladat IN ('bogyos','humanoid','baglyok','egijelensegek','evmadarai','gombak','hobbiallatok','hullok','tropusi_gyumolcsok')),
                 MAX(CASE WHEN s.state_key='python_kezdo'           THEN s.state_value END),
                 MAX(CASE WHEN s.state_key='python_halado'          THEN s.state_value END),
-                MAX(CASE WHEN s.state_key='python_pro_algoritmus'  THEN s.state_value END)
+                MAX(CASE WHEN s.state_key='python_agazati_done'    THEN s.state_value END)
             FROM users u
             LEFT JOIN user_state s ON LOWER(u.email) = LOWER(s.email)
             WHERE u.szerep = 'tanulo'
@@ -1171,18 +1175,19 @@ public class Database
         using var r = cmd.ExecuteReader();
         while (r.Read())
             list.Add(new CompletionStatItem {
-                Email               = r.GetString(0),
-                Nev                 = r.IsDBNull(1)  ? null : r.GetString(1),
-                Evfolyam            = r.IsDBNull(2)  ? null : r.GetString(2),
-                Osztaly             = r.IsDBNull(3)  ? null : r.GetString(3),
-                Csoport             = r.IsDBNull(4)  ? null : r.GetString(4),
-                TananyagHtml        = r.IsDBNull(5)  ? null : r.GetString(5),
-                TananyagCss         = r.IsDBNull(6)  ? null : r.GetString(6),
-                TananyagBootstrap   = r.IsDBNull(7)  ? null : r.GetString(7),
-                TananyagEmmet       = r.IsDBNull(8)  ? null : r.GetString(8),
-                PythonKezdo         = r.IsDBNull(9)  ? null : r.GetString(9),
-                PythonHalado        = r.IsDBNull(10) ? null : r.GetString(10),
-                PythonProAlgoritmus = r.IsDBNull(11) ? null : r.GetString(11),
+                Email              = r.GetString(0),
+                Nev                = r.IsDBNull(1)  ? null : r.GetString(1),
+                Evfolyam           = r.IsDBNull(2)  ? null : r.GetString(2),
+                Osztaly            = r.IsDBNull(3)  ? null : r.GetString(3),
+                Csoport            = r.IsDBNull(4)  ? null : r.GetString(4),
+                TananyagHtml       = r.IsDBNull(5)  ? null : r.GetString(5),
+                TananyagCss        = r.IsDBNull(6)  ? null : r.GetString(6),
+                TananyagBootstrap  = r.IsDBNull(7)  ? null : r.GetString(7),
+                WebTudasproba      = r.IsDBNull(8)  ? null : r.GetString(8),
+                WebAgazati         = r.IsDBNull(9)  ? null : r.GetString(9),
+                PythonKezdo        = r.IsDBNull(10) ? null : r.GetString(10),
+                PythonHalado       = r.IsDBNull(11) ? null : r.GetString(11),
+                PythonAgazatiDone  = r.IsDBNull(12) ? null : r.GetString(12),
             });
         return list;
     }

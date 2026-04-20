@@ -570,10 +570,26 @@ async function runCode() {
     lastOutput = output.trim();
     term.textContent = lastOutput || (hasError ? '' : '(Nincs kimenet)');
     term.className = hasError ? 'has-error' : '';
+    if (!hasError) saveAgazatiDone();
   } catch(e) {
     term.textContent = 'Pyodide hiba: ' + e.message;
     term.className = 'has-error';
   } finally { btn.disabled = false; spinner.style.display = 'none'; }
+}
+
+let _agazatiSaved = false;
+async function saveAgazatiDone() {
+    if (_agazatiSaved) return;
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!u.email || u.szerep === 'vendeg' || u._tesztMod) return;
+    _agazatiSaved = true;
+    try {
+        await fetch(`https://agazati.up.railway.app/api/user-state/${encodeURIComponent(u.email)}/python_agazati_done`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (u.token || '') },
+            body: JSON.stringify({ value: new Date().toISOString() })
+        });
+    } catch(e) {}
 }
 
 function flashInputHint() {

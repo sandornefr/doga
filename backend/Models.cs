@@ -205,10 +205,11 @@ public class CompletionStatItem {
     public string? TananyagHtml      { get; set; }
     public string? TananyagCss       { get; set; }
     public string? TananyagBootstrap { get; set; }
-    public string? TananyagEmmet     { get; set; }
+    public string? WebTudasproba     { get; set; }
+    public string? WebAgazati        { get; set; }
     public string? PythonKezdo       { get; set; }
     public string? PythonHalado      { get; set; }
-    public string? PythonProAlgoritmus { get; set; }
+    public string? PythonAgazatiDone { get; set; }
 }
 
 // ── Task Ratings / Feedback ────────────────────────────────────────────────

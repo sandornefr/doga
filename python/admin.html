@@ -710,18 +710,19 @@
                         <tr>
                             <th>Név</th>
                             <th style="text-align:center;">Osztály</th>
-                            <th style="text-align:center;" title="HTML Tananyag">🌐 HTML</th>
-                            <th style="text-align:center;" title="CSS Tananyag">🎨 CSS</th>
-                            <th style="text-align:center;" title="Bootstrap Tananyag">🅱️ Bootstrap</th>
-                            <th style="text-align:center;" title="Emmet Tananyag">⚡ Emmet</th>
-                            <th style="text-align:center;" title="Python Kezdő">🐍 Kezdő</th>
-                            <th style="text-align:center;" title="Python Haladó">🐍 Haladó</th>
-                            <th style="text-align:center;" title="Python Profi – Algoritmus">🐍 Algoritmus</th>
+                            <th style="text-align:center;" title="HTML Tananyag"><i class="fas fa-code"></i> HTML</th>
+                            <th style="text-align:center;" title="CSS Tananyag"><i class="fas fa-palette"></i> CSS</th>
+                            <th style="text-align:center;" title="Bootstrap Tananyag"><i class="fab fa-bootstrap"></i> Bootstrap</th>
+                            <th style="text-align:center;" title="Web-Tudáspróba (mind 3 szintből legalább 1)"><i class="fas fa-graduation-cap"></i> Tudáspróba</th>
+                            <th style="text-align:center;" title="Ágazati vizsgafeladatok – WEB (legalább 1 feladat)"><i class="fas fa-laptop-code"></i> WEB Ágazati</th>
+                            <th style="text-align:center;" title="Python Kezdő tananyag"><i class="fab fa-python"></i> Py Kezdő</th>
+                            <th style="text-align:center;" title="Python Haladó tananyag"><i class="fab fa-python"></i> Py Haladó</th>
+                            <th style="text-align:center;" title="Python Ágazati gyakorló feladatok (legalább 1 hibamentes futtatás)"><i class="fab fa-python"></i> Py Ágazati</th>
                             <th style="text-align:center;">Összesítés</th>
                         </tr>
                     </thead>
                     <tbody id="kov-tbody">
-                        <tr><td colspan="10" class="loading">Nincs adat</td></tr>
+                        <tr><td colspan="11" class="loading">Nincs adat</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1275,7 +1276,7 @@
 
         // ── Követelmények ──────────────────────────────────────────────────────
         let kovData = [];
-        const KOV_KEYS = ['tananyagHtml','tananyagCss','tananyagBootstrap','tananyagEmmet','pythonKezdo','pythonHalado','pythonProAlgoritmus'];
+        const KOV_KEYS = ['tananyagHtml','tananyagCss','tananyagBootstrap','webTudasproba','webAgazati','pythonKezdo','pythonHalado','pythonAgazatiDone'];
 
         async function loadKovetelmenyek() {
             document.getElementById('kov-loading').style.display = 'block';
@@ -1292,7 +1293,7 @@
 
                 renderKovetelmenyek(kovData);
             } catch(e) {
-                document.getElementById('kov-tbody').innerHTML = `<tr><td colspan="10" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
+                document.getElementById('kov-tbody').innerHTML = `<tr><td colspan="11" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
             } finally {
                 document.getElementById('kov-loading').style.display = 'none';
             }
@@ -1312,7 +1313,7 @@
         function renderKovetelmenyek(rows) {
             const ok  = v => v ? `<span title="${v}" style="color:#22c55e;font-size:1.1rem;">✅</span>` : `<span style="color:#475569;font-size:1rem;">–</span>`;
             const tbody = document.getElementById('kov-tbody');
-            if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="loading">Nincs találat</td></tr>'; return; }
+            if (!rows.length) { tbody.innerHTML = '<tr><td colspan="11" class="loading">Nincs találat</td></tr>'; return; }
 
             const teljesTotal = rows.filter(r => KOV_KEYS.every(k => r[k])).length;
             document.getElementById('kov-osszesito').textContent =
@@ -1328,10 +1329,11 @@
                     <td style="text-align:center;">${ok(r.tananyagHtml)}</td>
                     <td style="text-align:center;">${ok(r.tananyagCss)}</td>
                     <td style="text-align:center;">${ok(r.tananyagBootstrap)}</td>
-                    <td style="text-align:center;">${ok(r.tananyagEmmet)}</td>
+                    <td style="text-align:center;">${ok(r.webTudasproba)}</td>
+                    <td style="text-align:center;">${ok(r.webAgazati)}</td>
                     <td style="text-align:center;">${ok(r.pythonKezdo)}</td>
                     <td style="text-align:center;">${ok(r.pythonHalado)}</td>
-                    <td style="text-align:center;">${ok(r.pythonProAlgoritmus)}</td>
+                    <td style="text-align:center;">${ok(r.pythonAgazatiDone)}</td>
                     <td style="text-align:center;">
                         <div style="display:flex;align-items:center;gap:6px;">
                             <div style="flex:1;background:#1e293b;border-radius:4px;height:8px;min-width:60px;">
