@@ -940,28 +940,117 @@ const AVATAR_SEEDS = [
 ];
 
 function avatarDataUri(seed) {
-    let h = 0;
-    for (let i = 0; i < seed.length; i++) h = Math.imul(h * 31 + seed.charCodeAt(i), 1) | 0;
-    const abs = n => n < 0 ? -n : n;
-    const palettes = [
-        ['#4f46e5','#a5b4fc'],['#0ea5e9','#7dd3fc'],['#10b981','#6ee7b7'],
-        ['#f59e0b','#fde68a'],['#ef4444','#fca5a5'],['#8b5cf6','#ddd6fe'],
-        ['#14b8a6','#99f6e4'],['#f97316','#fed7aa'],['#ec4899','#fbcfe8'],
-        ['#06b6d4','#a5f3fc'],
-    ];
-    const [bg, acc] = palettes[abs(h) % palettes.length];
-    // 5x3 grid (mirrored → 5x5), symmetric pixel identicon
-    const bits = [];
-    for (let i = 0; i < 15; i++) bits.push((abs(h >> i) & 1));
-    const cells = [];
-    const cs = 14, pad = 10;
-    for (let row = 0; row < 5; row++) {
-        for (let col = 0; col < 5; col++) {
-            const idx = row * 3 + (col < 3 ? col : 4 - col);
-            if (bits[idx]) cells.push(`<rect x="${pad+col*cs}" y="${pad+row*cs}" width="${cs-2}" height="${cs-2}" rx="2" fill="${acc}"/>`);
-        }
+    let s = 5381;
+    for (let i = 0; i < seed.length; i++) s = (Math.imul(s, 33) ^ seed.charCodeAt(i)) | 0;
+    s = s || 1;
+    function r(n) { s^=s<<13; s^=s>>17; s^=s<<5; return Math.abs(s)%n; }
+
+    const BG   = ['#0f172a','#1e1b4b','#0c1445','#1a0a2e','#0a1f2e','#0d2818','#2d0a0a','#181818'][r(8)];
+    const HEAD = ['#FFD700','#FFC107','#FFDB4D','#F5C518'][r(4)];
+    const HAIR = ['#111','#3d1f0d','#8B4513','#c47a1e','#deb887','#cc2222','#777','#f0f0f0','#1a3a8a','#006644'][r(10)];
+    const HAT  = ['#c0392b','#1a3a8a','#1a5c2a','#333','#6c3483'][r(5)];
+    const LIPS = ['#cc2222','#e74c3c','#a93226'][r(3)];
+    const ht = r(8); const et = r(6); const mt = r(7); const bt = r(4);
+    const gl = r(5)===0; const rc = r(4)===0;
+    const HB = '#9A7D0A';
+    let p = [];
+
+    p.push(`<circle cx="48" cy="48" r="48" fill="${BG}"/>`);
+    if (ht===7) {
+        p.push(`<rect x="16" y="32" width="11" height="44" rx="5" fill="${HAIR}"/>`);
+        p.push(`<rect x="69" y="32" width="11" height="44" rx="5" fill="${HAIR}"/>`);
     }
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="${bg}"/>${cells.join('')}</svg>`;
+    p.push(`<circle cx="48" cy="56" r="27" fill="${HEAD}" stroke="${HB}" stroke-width="1.5"/>`);
+    p.push(`<rect x="40" y="20" width="16" height="10" fill="${HEAD}"/>`);
+    p.push(`<ellipse cx="48" cy="20" rx="8" ry="5" fill="${HEAD}" stroke="${HB}" stroke-width="1.5"/>`);
+    p.push(`<rect x="41" y="27" width="14" height="4" fill="${HEAD}"/>`);
+
+    if (ht===1) {
+        p.push(`<rect x="30" y="8" width="36" height="16" rx="6" fill="${HAIR}"/>`);
+        p.push(`<ellipse cx="48" cy="8" rx="18" ry="5" fill="${HAIR}"/>`);
+    } else if (ht===2) {
+        p.push(`<rect x="32" y="0" width="32" height="23" rx="6" fill="${HAIR}"/>`);
+    } else if (ht===3) {
+        p.push(`<path d="M26 24 Q30 4 58 6 L60 24 Q48 18 26 24Z" fill="${HAIR}"/>`);
+    } else if (ht===4) {
+        p.push(`<ellipse cx="48" cy="12" rx="22" ry="16" fill="${HAIR}"/>`);
+        p.push(`<rect x="26" y="12" width="44" height="14" fill="${HAIR}"/>`);
+    } else if (ht===5) {
+        p.push(`<rect x="44" y="0" width="8" height="24" rx="4" fill="${HAIR}"/>`);
+    } else if (ht===6) {
+        p.push(`<rect x="30" y="4" width="36" height="26" rx="8" fill="${HAT}"/>`);
+        p.push(`<rect x="22" y="28" width="52" height="7" rx="3" fill="${HAT}"/>`);
+    }
+
+    if (bt===1) {
+        p.push(`<line x1="36" y1="45" x2="44" y2="45" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`);
+        p.push(`<line x1="52" y1="45" x2="60" y2="45" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`);
+    } else if (bt===2) {
+        p.push(`<path d="M36 46 Q40 42 44 46" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+        p.push(`<path d="M52 46 Q56 42 60 46" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+    } else if (bt===3) {
+        p.push(`<path d="M36 44 Q40 47 44 46" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+        p.push(`<path d="M52 46 Q56 47 60 44" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+    }
+
+    if (et===0) {
+        p.push(`<circle cx="40" cy="53" r="3.5" fill="#1a1a1a"/><circle cx="56" cy="53" r="3.5" fill="#1a1a1a"/>`);
+        p.push(`<circle cx="41.5" cy="51.5" r="1.2" fill="white"/><circle cx="57.5" cy="51.5" r="1.2" fill="white"/>`);
+    } else if (et===1) {
+        p.push(`<path d="M37 55 Q40 50 43 55" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+        p.push(`<path d="M53 55 Q56 50 59 55" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+    } else if (et===2) {
+        p.push(`<circle cx="40" cy="53" r="5" fill="#1a1a1a"/><circle cx="56" cy="53" r="5" fill="#1a1a1a"/>`);
+        p.push(`<circle cx="42" cy="51" r="1.8" fill="white"/><circle cx="58" cy="51" r="1.8" fill="white"/>`);
+    } else if (et===3) {
+        p.push(`<circle cx="40" cy="53" r="3.5" fill="#1a1a1a"/><circle cx="56" cy="53" r="3.5" fill="#1a1a1a"/>`);
+        p.push(`<rect x="36.5" y="49" width="7" height="4.5" fill="${HEAD}"/><rect x="52.5" y="49" width="7" height="4.5" fill="${HEAD}"/>`);
+    } else if (et===4) {
+        [[40,53],[56,53]].forEach(([cx,cy]) => {
+            p.push(`<line x1="${cx-3.5}" y1="${cy-3.5}" x2="${cx+3.5}" y2="${cy+3.5}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>`);
+            p.push(`<line x1="${cx+3.5}" y1="${cy-3.5}" x2="${cx-3.5}" y2="${cy+3.5}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>`);
+        });
+    } else {
+        p.push(`<circle cx="40" cy="53" r="3.5" fill="#1a1a1a"/><circle cx="56" cy="53" r="3.5" fill="#1a1a1a"/>`);
+        [[38,49.5,36,47],[40,49,40,46.5],[42,49.5,44,47],[54,49.5,52,47],[56,49,56,46.5],[58,49.5,60,47]].forEach(([x1,y1,x2,y2]) =>
+            p.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>`)
+        );
+        p.push(`<circle cx="41.5" cy="51.5" r="1.2" fill="white"/><circle cx="57.5" cy="51.5" r="1.2" fill="white"/>`);
+    }
+
+    if (gl) {
+        p.push(`<rect x="32" y="48" width="14" height="11" rx="4" fill="none" stroke="#333" stroke-width="2"/>`);
+        p.push(`<rect x="50" y="48" width="14" height="11" rx="4" fill="none" stroke="#333" stroke-width="2"/>`);
+        p.push(`<line x1="46" y1="53.5" x2="50" y2="53.5" stroke="#333" stroke-width="2"/>`);
+        p.push(`<line x1="32" y1="53.5" x2="27" y2="55" stroke="#333" stroke-width="2" stroke-linecap="round"/>`);
+        p.push(`<line x1="64" y1="53.5" x2="69" y2="55" stroke="#333" stroke-width="2" stroke-linecap="round"/>`);
+    }
+
+    if (mt===0) {
+        p.push(`<path d="M37 63 Q48 75 59 63" stroke="#1a1a1a" stroke-width="2" fill="${LIPS}" stroke-linecap="round"/>`);
+    } else if (mt===1) {
+        p.push(`<path d="M42 64 Q48 70 54 64" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+    } else if (mt===2) {
+        p.push(`<line x1="41" y1="65" x2="55" y2="65" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>`);
+    } else if (mt===3) {
+        p.push(`<path d="M41 65 Q46 62 55 64" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+    } else if (mt===4) {
+        p.push(`<path d="M41 67 Q48 63 55 67" stroke="#1a1a1a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`);
+    } else if (mt===5) {
+        p.push(`<ellipse cx="48" cy="65" rx="5" ry="4" fill="#1a1a1a"/>`);
+        p.push(`<ellipse cx="48" cy="65" rx="3.5" ry="2.5" fill="${LIPS}"/>`);
+    } else {
+        p.push(`<path d="M37 62 Q48 75 59 62 L59 66 Q48 78 37 66 Z" fill="${LIPS}"/>`);
+        p.push(`<rect x="41" y="62" width="14" height="5" rx="1" fill="white"/>`);
+        p.push(`<line x1="48" y1="62" x2="48" y2="67" stroke="${LIPS}" stroke-width="1.5"/>`);
+    }
+
+    if (rc) {
+        p.push(`<circle cx="33" cy="60" r="5" fill="rgba(255,120,120,0.35)"/>`);
+        p.push(`<circle cx="63" cy="60" r="5" fill="rgba(255,120,120,0.35)"/>`);
+    }
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">${p.join('')}</svg>`;
     return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
