@@ -1164,7 +1164,8 @@ public class Database
                  AND feladat IN ('bogyos','humanoid','baglyok','egijelensegek','evmadarai','gombak','hobbiallatok','hullok','tropusi_gyumolcsok')),
                 MAX(CASE WHEN s.state_key='python_kezdo'           THEN s.state_value END),
                 MAX(CASE WHEN s.state_key='python_halado'          THEN s.state_value END),
-                MAX(CASE WHEN s.state_key='python_agazati_done'    THEN s.state_value END)
+                (SELECT MIN(datum) FROM progress
+                 WHERE LOWER(email)=LOWER(u.email) AND targy='python')
             FROM users u
             LEFT JOIN user_state s ON LOWER(u.email) = LOWER(s.email)
             WHERE u.szerep = 'tanulo'
