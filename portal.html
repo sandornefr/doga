@@ -2857,6 +2857,7 @@ if (location.hash === '#web-tanulas') {
     const API_BASE = 'https://agazati.up.railway.app';
     let u, authH, tasks8 = [];
     let pendingDuelId = null, countdownInt = null;
+    const seenDuelIds = new Set(); // már látott/lejárt kihívások – nem mutatjuk újra
 
     // Feladatok betöltése (8 pontos, nem feladatkészítő)
     fetch('python/feladatok.txt').then(r => r.text()).then(txt => {
@@ -3023,14 +3024,15 @@ if (location.hash === '#web-tanulas') {
             const duels = await res.json();
             if (duels.length === 0) return;
             const d = duels[0];
+            if (seenDuelIds.has(d.id)) return; // már láttuk/lejárt, nem mutatjuk újra
             pendingDuelId = d.id;
             showDuelNotify(d);
         } catch {}
     }
 
     function showDuelNotify(d) {
-        const created = new Date(d.createdAt.replace(' ', 'T'));
-        const expiresAt = new Date(created.getTime() + 2 * 60 * 1000);
+        // Lejárat: most + 2 perc (elkerüli az időzóna-problémát a createdAt értelmezésekor)
+        const expiresAt = Date.now() + 2 * 60 * 1000;
         document.getElementById('duel-notify-text').innerHTML =
             `<strong>${escHtml(d.challengerNev)}</strong> párbajra hív téged!<br>
             <span style="color:#8b949e;font-size:0.78rem;">Feladat: <strong>${escHtml(d.taskTitle)}</strong> · 8 pont · 10 perc</span>`;
@@ -3041,7 +3043,12 @@ if (location.hash === '#web-tanulas') {
             const m = Math.floor(rem / 60).toString().padStart(2,'0');
             const s = (rem % 60).toString().padStart(2,'0');
             document.getElementById('duel-countdown').textContent = `${m}:${s}`;
-            if (rem === 0) { clearInterval(countdownInt); hideDuelNotify(); pendingDuelId = null; }
+            if (rem === 0) {
+                clearInterval(countdownInt);
+                seenDuelIds.add(pendingDuelId); // ne mutassuk újra
+                hideDuelNotify();
+                pendingDuelId = null;
+            }
         }, 1000);
     }
 
@@ -3062,10 +3069,12 @@ if (location.hash === '#web-tanulas') {
             });
             if (res.ok && accept) {
                 const id = pendingDuelId;
+                seenDuelIds.add(id);
                 hideDuelNotify();
                 pendingDuelId = null;
                 location.href = `duel.html?id=${id}`;
             } else {
+                seenDuelIds.add(pendingDuelId);
                 hideDuelNotify();
                 pendingDuelId = null;
             }
