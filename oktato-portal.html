@@ -409,8 +409,14 @@ body {
         if (u.email === 'sandornef@kkszki.hu') { location.href = 'portal.html'; return; }
         document.getElementById('greeting-name').textContent = u.nev || u.email;
         if (u.email === 'sandorp@kkszki.hu') {
+            // Sándor Péter: főmenü (Ágazati alapoktatás + Távközlés)
             const card = document.getElementById('card-tavolkozles');
             if (card) card.style.display = 'flex';
+            // view-main már látható, view-agazati rejtett – nem kell változtatni
+        } else {
+            // Többi oktató: egyből az alkártyák (eredeti 3 kártya), nincs extra kattintás
+            document.getElementById('view-main').style.display = 'none';
+            document.getElementById('view-agazati').style.display = 'flex';
         }
     } catch(e) { location.href = 'login.html'; }
 })();
