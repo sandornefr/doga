@@ -131,6 +131,22 @@ body {
 }
 .big-card:hover::before { opacity:1; }
 
+/* Fő-kártyák stílusai */
+.card-agazatialap { border-color:#1d4f7a; }
+.card-agazatialap:hover { border-color:#58a6ff; box-shadow:0 8px 32px rgba(88,166,255,.15); }
+.card-agazatialap::before { background:linear-gradient(90deg,#58a6ff,#388bfd); }
+.icon-agazatialap { background:#0d2a45; color:#58a6ff; }
+.bullet-agazatialap i { color:#58a6ff; }
+.card-agazatialap .card-arrow { color:#58a6ff; }
+
+.card-tavolkozles { border-color:#4a2a0a; }
+.card-tavolkozles:hover { border-color:#f59e0b; box-shadow:0 8px 32px rgba(245,158,11,.15); }
+.card-tavolkozles::before { background:linear-gradient(90deg,#f59e0b,#d97706); }
+.icon-tavolkozles { background:#2a1800; color:#f59e0b; }
+.bullet-tavolkozles i { color:#f59e0b; }
+.card-tavolkozles .card-arrow { color:#f59e0b; }
+
+/* Alkártyák stílusai */
 .card-agazati { border-color:#1d4f7a; }
 .card-agazati:hover { border-color:#58a6ff; box-shadow:0 8px 32px rgba(88,166,255,.15); }
 .card-agazati::before { background:linear-gradient(90deg,#58a6ff,#388bfd); }
@@ -142,13 +158,6 @@ body {
 .card-haladas { border-color:#1a3a2a; }
 .card-haladas:hover { border-color:#3fb950; box-shadow:0 8px 32px rgba(63,185,80,.15); }
 .card-haladas::before { background:linear-gradient(90deg,#3fb950,#238636); }
-
-.card-tavolkozles { border-color:#4a2a0a; }
-.card-tavolkozles:hover { border-color:#f59e0b; box-shadow:0 8px 32px rgba(245,158,11,.15); }
-.card-tavolkozles::before { background:linear-gradient(90deg,#f59e0b,#d97706); }
-.icon-tavolkozles { background:#2a1800; color:#f59e0b; }
-.bullet-tavolkozles i { color:#f59e0b; }
-.card-tavolkozles .card-arrow { color:#f59e0b; }
 
 .card-icon-wrap {
     width:58px;
@@ -215,6 +224,14 @@ body {
 .card-agazati .card-arrow    { color:#58a6ff; }
 .card-szamonkeres .card-arrow { color:#a371f7; }
 .card-haladas .card-arrow    { color:#3fb950; }
+
+.btn-back-hero {
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 16px;border-radius:7px;border:1px solid #30363d;
+    background:transparent;color:#8b949e;font-size:0.85rem;cursor:pointer;
+    margin-bottom:20px;
+}
+.btn-back-hero:hover { border-color:#58a6ff; color:#58a6ff; }
 </style>
 </head>
 <body>
@@ -234,11 +251,74 @@ body {
     </button>
 </div>
 
+<!-- ════ FŐNÉZET ════ -->
+<div id="view-main" style="display:flex;flex-direction:column;flex:1">
 <div class="hero">
     <h1>Mit szeretnél csinálni?</h1>
     <p>Válaszd ki az alábbi lehetőségek közül</p>
 </div>
+<div class="cards-row">
 
+    <!-- Ágazati alapoktatás (összefoglaló kártya) -->
+    <div class="big-card card-agazatialap" onclick="showAgazati()">
+        <div class="card-icon-wrap icon-agazatialap">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <div class="card-title">Ágazati alapoktatás</div>
+        <div class="card-desc">
+            Kezelj feladatokat, kövesd a tanulók haladását, és értékeld az eredményeket.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet bullet-agazatialap">
+                <i class="fas fa-laptop-code"></i> Ágazati alapvizsga
+            </div>
+            <div class="card-bullet bullet-agazatialap">
+                <i class="fas fa-file-pen"></i> Számonkérés
+            </div>
+            <div class="card-bullet bullet-agazatialap">
+                <i class="fas fa-chart-line"></i> Tanulói haladás
+            </div>
+        </div>
+        <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </div>
+
+    <!-- Távközlés – csak sandorp@kkszki.hu -->
+    <a class="big-card card-tavolkozles" href="tavkozles/review.html" id="card-tavolkozles" style="display:none">
+        <div class="card-icon-wrap icon-tavolkozles">
+            <i class="fas fa-tower-broadcast"></i>
+        </div>
+        <div class="card-title">Távközlés</div>
+        <div class="card-desc">
+            A tanulók gyakorló vizsga eredményei – ki mit válaszolt, témakörönkénti bontás.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet bullet-tavolkozles">
+                <i class="fas fa-list-check"></i> Összesítő lista
+            </div>
+            <div class="card-bullet bullet-tavolkozles">
+                <i class="fas fa-chart-bar"></i> Témakörönkénti bontás
+            </div>
+            <div class="card-bullet bullet-tavolkozles">
+                <i class="fas fa-table"></i> CSV export
+            </div>
+        </div>
+        <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+</div>
+</div><!-- /view-main -->
+
+<!-- ════ ÁGAZATI ALKÁRTYÁK ════ -->
+<div id="view-agazati" style="display:none;flex-direction:column;flex:1">
+<div class="hero">
+    <button class="btn-back-hero" onclick="showMain()"><i class="fas fa-arrow-left"></i> Vissza</button>
+    <h1>Ágazati alapoktatás</h1>
+    <p>Válassz az alábbi lehetőségek közül</p>
+</div>
 <div class="cards-row">
 
     <!-- Ágazati alapvizsga -->
@@ -291,31 +371,6 @@ body {
         </div>
     </a>
 
-    <!-- Távközlési vizsga eredmények – csak sandorp@kkszki.hu -->
-    <a class="big-card card-tavolkozles" href="tavolkozles/review.html" id="card-tavolkozles" style="display:none">
-        <div class="card-icon-wrap icon-tavolkozles">
-            <i class="fas fa-tower-broadcast"></i>
-        </div>
-        <div class="card-title">Távközlési vizsga</div>
-        <div class="card-desc">
-            A tanulók gyakorló vizsga eredményei – ki mit válaszolt, témakörönkénti bontás.
-        </div>
-        <div class="card-bullets">
-            <div class="card-bullet bullet-tavolkozles">
-                <i class="fas fa-list-check"></i> Összesítő lista
-            </div>
-            <div class="card-bullet bullet-tavolkozles">
-                <i class="fas fa-chart-bar"></i> Témakörönkénti bontás
-            </div>
-            <div class="card-bullet bullet-tavolkozles">
-                <i class="fas fa-table"></i> CSV export
-            </div>
-        </div>
-        <div class="card-arrow">
-            Megnyitás <i class="fas fa-arrow-right"></i>
-        </div>
-    </a>
-
     <!-- Tanulói haladás -->
     <a class="big-card card-haladas" href="oktato-haladas.html">
         <div class="card-icon-wrap icon-haladas">
@@ -342,25 +397,33 @@ body {
     </a>
 
 </div>
+</div><!-- /view-agazati -->
 
 <script>
-// Bejelentkezés ellenőrzése
 (function() {
     const saved = sessionStorage.getItem('kandoUser');
     if (!saved) { location.href = 'login.html'; return; }
     try {
         const u = JSON.parse(saved);
         if (u.szerep !== 'oktato') { location.href = 'portal.html'; return; }
-        // Admin (sandornef) a saját portálját kapja
         if (u.email === 'sandornef@kkszki.hu') { location.href = 'portal.html'; return; }
         document.getElementById('greeting-name').textContent = u.nev || u.email;
-        // Sandor Péter: Távközlési vizsga kártya megjelenítése
         if (u.email === 'sandorp@kkszki.hu') {
             const card = document.getElementById('card-tavolkozles');
             if (card) card.style.display = 'flex';
         }
     } catch(e) { location.href = 'login.html'; }
 })();
+
+function showAgazati() {
+    document.getElementById('view-main').style.display = 'none';
+    document.getElementById('view-agazati').style.display = 'flex';
+}
+
+function showMain() {
+    document.getElementById('view-agazati').style.display = 'none';
+    document.getElementById('view-main').style.display = 'flex';
+}
 
 function logout() {
     sessionStorage.removeItem('kandoUser');
