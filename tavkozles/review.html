@@ -147,7 +147,7 @@ let openDetailId = null;
     document.getElementById('loading').style.display = 'none';
     return;
   }
-  const token = localStorage.getItem('admin_token') || '';
+  const token = user.token || '';
   await loadResults(token);
 })();
 
