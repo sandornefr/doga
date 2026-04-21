@@ -473,11 +473,21 @@ const QUESTIONS = [
 const BACKEND = 'https://agazati.up.railway.app';
 
 let current = 0;
+let shuffledQuestions = [];
 let answers = new Array(QUESTIONS.length).fill(null);
 let timerInterval = null;
 let secondsLeft = 60 * 60;
 let studentName = '';
 let secondsUsed = 0;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // INDÍTÁS
@@ -498,7 +508,9 @@ function startQuiz() {
   const sq = document.getElementById('screen-quiz');
   sq.style.display = 'flex';
   current = 0;
-  answers = new Array(QUESTIONS.length).fill(null);
+  // Minden kérdés opciói véletlenszerű sorrendbe kerülnek
+  shuffledQuestions = QUESTIONS.map(q => ({ ...q, opts: shuffle(q.opts) }));
+  answers = new Array(shuffledQuestions.length).fill(null);
   secondsLeft = 60 * 60;
   secondsUsed = 0;
   buildQmap();
@@ -534,7 +546,7 @@ function startTimer() {
 // KÉRDÉS MEGJELENÍTÉSE
 // ════════════════════════════════════════════════════════════════════════════
 function renderQuestion() {
-  const q = QUESTIONS[current];
+  const q = shuffledQuestions[current];
   const letters = ['A','B','C','D'];
 
   // badge
@@ -571,7 +583,7 @@ function renderQuestion() {
   // nav buttons
   document.getElementById('btn-prev').disabled = current === 0;
   const btnNext = document.getElementById('btn-next');
-  const isLast = current === QUESTIONS.length - 1;
+  const isLast = current === shuffledQuestions.length - 1;
   if (isLast) {
     btnNext.className = 'btn-submit';
     btnNext.innerHTML = '<i class="fas fa-flag-checkered"></i> Befejezés';
@@ -586,7 +598,7 @@ function renderQuestion() {
 
   // progress
   const answered = answers.filter(a => a !== null).length;
-  document.getElementById('progress-fill').style.width = `${answered / QUESTIONS.length * 100}%`;
+  document.getElementById('progress-fill').style.width = `${answered / shuffledQuestions.length * 100}%`;
   document.getElementById('q-answered-count').textContent = answered;
 
   updateQmap();
@@ -605,7 +617,7 @@ function selectAnswer(opt) {
 // ════════════════════════════════════════════════════════════════════════════
 function navigate(dir) {
   const next = current + dir;
-  if (next >= 0 && next < QUESTIONS.length) {
+  if (next >= 0 && next < shuffledQuestions.length) {
     current = next;
     renderQuestion();
   }
@@ -622,7 +634,7 @@ function goToQuestion(idx) {
 function buildQmap() {
   const grid = document.getElementById('qmap-grid');
   grid.innerHTML = '';
-  QUESTIONS.forEach((q, i) => {
+  shuffledQuestions.forEach((q, i) => {
     const btn = document.createElement('button');
     btn.className = 'qmap-btn' + (q.calc ? ' calc-q' : '');
     btn.id = `qmap-${i}`;
@@ -635,8 +647,8 @@ function buildQmap() {
 
 function updateQmap() {
   const answered = answers.filter(a => a !== null).length;
-  document.getElementById('qmap-stats').textContent = `${answered}/30 megválaszolva`;
-  QUESTIONS.forEach((q, i) => {
+  document.getElementById('qmap-stats').textContent = `${answered}/${shuffledQuestions.length} megválaszolva`;
+  shuffledQuestions.forEach((q, i) => {
     const btn = document.getElementById(`qmap-${i}`);
     if (!btn) return;
     btn.className = 'qmap-btn' + (q.calc ? ' calc-q' : '');
@@ -671,7 +683,7 @@ function finishQuiz() {
 
 async function submitToBackend() {
   try {
-    const valaszok = QUESTIONS.map((q, i) => ({
+    const valaszok = shuffledQuestions.map((q, i) => ({
       id: q.id, tema: q.topic, kerdes: q.q,
       valasz: answers[i] ?? null,
       helyes_valasz: q.ans,
@@ -687,7 +699,7 @@ async function submitToBackend() {
         nev: studentName,
         datum: new Date().toLocaleString('hu-HU'),
         felhasznaltIdo: `${Math.round(secondsUsed / 60)} perc`,
-        eredmeny: { helyes: correct, helytelen: wrong, ures, osszesen: QUESTIONS.length, szazalek: Math.round(correct / QUESTIONS.length * 100) },
+        eredmeny: { helyes: correct, helytelen: wrong, ures, osszesen: shuffledQuestions.length, szazalek: Math.round(correct / shuffledQuestions.length * 100) },
         valaszok
       })
     });
@@ -704,13 +716,13 @@ function showResult() {
   sr.style.alignItems = 'center';
 
   let correct = 0, wrong = 0, empty = 0;
-  QUESTIONS.forEach((q, i) => {
+  shuffledQuestions.forEach((q, i) => {
     if (answers[i] === null) empty++;
     else if (answers[i] === q.ans) correct++;
     else wrong++;
   });
 
-  const pct = Math.round(correct / QUESTIONS.length * 100);
+  const pct = Math.round(correct / shuffledQuestions.length * 100);
   const pass = pct >= 40;
 
   document.getElementById('result-name').textContent = studentName;
@@ -718,7 +730,7 @@ function showResult() {
   pctEl.textContent = `${pct}%`;
   pctEl.className = 'result-pct ' + (pass ? 'pass' : 'fail');
   document.getElementById('result-label').textContent =
-    `${correct} / ${QUESTIONS.length} helyes válasz · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
+    `${correct} / ${shuffledQuestions.length} helyes válasz · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
 
   document.getElementById('stat-correct').textContent = correct;
   document.getElementById('stat-wrong').textContent = wrong;
@@ -726,7 +738,7 @@ function showResult() {
 
   const list = document.getElementById('review-list');
   list.innerHTML = '';
-  QUESTIONS.forEach((q, i) => {
+  shuffledQuestions.forEach((q, i) => {
     const ok = answers[i] === q.ans;
     const unanswered = answers[i] === null;
     const div = document.createElement('div');
@@ -751,7 +763,7 @@ function showResult() {
 
 function downloadResult() {
   let correct = 0, wrong = 0, empty = 0;
-  const valaszok = QUESTIONS.map((q, i) => {
+  const valaszok = shuffledQuestions.map((q, i) => {
     const ures = answers[i] === null;
     const ok = !ures && answers[i] === q.ans;
     if (ures) empty++; else if (ok) correct++; else wrong++;
@@ -773,8 +785,8 @@ function downloadResult() {
       helyes: correct,
       helytelen: wrong,
       ures: empty,
-      osszesen: QUESTIONS.length,
-      szazalek: Math.round(correct / QUESTIONS.length * 100)
+      osszesen: shuffledQuestions.length,
+      szazalek: Math.round(correct / shuffledQuestions.length * 100)
     },
     valaszok
   };
