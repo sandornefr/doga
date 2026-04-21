@@ -470,6 +470,8 @@ const QUESTIONS = [
 // ════════════════════════════════════════════════════════════════════════════
 // ÁLLAPOT
 // ════════════════════════════════════════════════════════════════════════════
+const BACKEND = 'https://agazati.up.railway.app';
+
 let current = 0;
 let answers = new Array(QUESTIONS.length).fill(null);
 let timerInterval = null;
@@ -664,6 +666,32 @@ function finishQuiz() {
   closeOverlay();
   document.getElementById('screen-quiz').style.display = 'none';
   showResult();
+  submitToBackend();
+}
+
+async function submitToBackend() {
+  try {
+    const valaszok = QUESTIONS.map((q, i) => ({
+      id: q.id, tema: q.topic, kerdes: q.q,
+      valasz: answers[i] ?? null,
+      helyes_valasz: q.ans,
+      eredmeny: answers[i] === null ? 'üres' : answers[i] === q.ans ? 'helyes' : 'helytelen'
+    }));
+    let correct = valaszok.filter(v => v.eredmeny === 'helyes').length;
+    let wrong   = valaszok.filter(v => v.eredmeny === 'helytelen').length;
+    let ures    = valaszok.filter(v => v.eredmeny === 'üres').length;
+    await fetch(`${BACKEND}/api/tavolkozles/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nev: studentName,
+        datum: new Date().toLocaleString('hu-HU'),
+        felhasznaltIdo: `${Math.round(secondsUsed / 60)} perc`,
+        eredmeny: { helyes: correct, helytelen: wrong, ures, osszesen: QUESTIONS.length, szazalek: Math.round(correct / QUESTIONS.length * 100) },
+        valaszok
+      })
+    });
+  } catch { /* silent – standalone oldal, nincs login */ }
 }
 
 // ════════════════════════════════════════════════════════════════════════════

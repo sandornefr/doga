@@ -191,6 +191,21 @@ public class Database
                 created_at TEXT DEFAULT (datetime('now','localtime'))
             );
         ");
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS tavolkozles_results (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                nev             TEXT NOT NULL,
+                datum           TEXT NOT NULL,
+                felhasznalt_ido TEXT,
+                helyes          INTEGER NOT NULL,
+                helytelen       INTEGER NOT NULL,
+                ures            INTEGER NOT NULL,
+                osszesen        INTEGER NOT NULL,
+                szazalek        INTEGER NOT NULL,
+                valaszok_json   TEXT NOT NULL DEFAULT '[]',
+                submitted_at    TEXT DEFAULT (datetime('now','localtime'))
+            );
+        ");
         try { Exec(conn, "ALTER TABLE submissions ADD COLUMN subject TEXT"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
@@ -2656,6 +2671,55 @@ public class Database
         cmd.Parameters.AddWithValue("$m", message.Trim());
         cmd.Parameters.AddWithValue("$ch", channel);
         return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    // ── Távközlési technikus vizsga ───────────────────────────────────────────
+    public int SaveTavolkozlesResult(TavolkozlesSubmitRequest req, string valaszokJson)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO tavolkozles_results
+            (nev,datum,felhasznalt_ido,helyes,helytelen,ures,osszesen,szazalek,valaszok_json)
+            VALUES ($nev,$datum,$ido,$helyes,$helytelen,$ures,$osszesen,$szazalek,$valaszok)";
+        cmd.Parameters.AddWithValue("$nev",       req.Nev.Trim());
+        cmd.Parameters.AddWithValue("$datum",     req.Datum ?? DateTime.Now.ToString("yyyy.MM.dd. HH:mm"));
+        cmd.Parameters.AddWithValue("$ido",       (object?)req.FelhasznaltIdo ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$helyes",    req.Eredmeny.Helyes);
+        cmd.Parameters.AddWithValue("$helytelen", req.Eredmeny.Helytelen);
+        cmd.Parameters.AddWithValue("$ures",      req.Eredmeny.Ures);
+        cmd.Parameters.AddWithValue("$osszesen",  req.Eredmeny.Osszesen);
+        cmd.Parameters.AddWithValue("$szazalek",  req.Eredmeny.Szazalek);
+        cmd.Parameters.AddWithValue("$valaszok",  valaszokJson);
+        cmd.ExecuteNonQuery();
+        using var idCmd = conn.CreateCommand();
+        idCmd.CommandText = "SELECT last_insert_rowid()";
+        return (int)(long)idCmd.ExecuteScalar()!;
+    }
+
+    public List<TavolkozlesResultItem> GetTavolkozlesResults()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT id,nev,datum,felhasznalt_ido,helyes,helytelen,ures,osszesen,szazalek,valaszok_json,submitted_at
+            FROM tavolkozles_results ORDER BY submitted_at DESC";
+        using var r = cmd.ExecuteReader();
+        var list = new List<TavolkozlesResultItem>();
+        while (r.Read())
+            list.Add(new TavolkozlesResultItem
+            {
+                Id            = r.GetInt32(0),
+                Nev           = r.GetString(1),
+                Datum         = r.GetString(2),
+                FelhasznaltIdo = r.IsDBNull(3) ? null : r.GetString(3),
+                Helyes        = r.GetInt32(4),
+                Helytelen     = r.GetInt32(5),
+                Ures          = r.GetInt32(6),
+                Osszesen      = r.GetInt32(7),
+                Szazalek      = r.GetInt32(8),
+                ValaszokJson  = r.IsDBNull(9) ? "[]" : r.GetString(9),
+                SubmittedAt   = r.GetString(10)
+            });
+        return list;
     }
 }
 

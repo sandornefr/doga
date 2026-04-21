@@ -1558,6 +1558,25 @@ app.MapPost("/api/chat", (HttpContext ctx, ChatSendRequest req, Database db) =>
     return Results.Ok(new { id });
 });
 
+// ── Távközlési technikus vizsga ───────────────────────────────────────────────
+
+app.MapPost("/api/tavolkozles/submit", (TavolkozlesSubmitRequest req, Database db) =>
+{
+    if (string.IsNullOrWhiteSpace(req.Nev))
+        return Results.BadRequest(new { error = "Nev megadása kötelező" });
+    var valaszokJson = JsonSerializer.Serialize(req.Valaszok ?? new List<TavolkozlesValaszDto>());
+    var id = db.SaveTavolkozlesResult(req, valaszokJson);
+    return Results.Ok(new { id });
+});
+
+app.MapGet("/api/tavolkozles/results", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid || !identity.Equals("sandorp@kkszki.hu", StringComparison.OrdinalIgnoreCase))
+        return Results.Unauthorized();
+    return Results.Ok(db.GetTavolkozlesResults());
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 

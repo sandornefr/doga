@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Távközlési vizsga – Eredmények</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e0;min-height:100vh;}
+
+.topbar{background:#161b22;border-bottom:1px solid #21262d;padding:12px 24px;display:flex;align-items:center;gap:14px;}
+.topbar-title{font-size:1rem;font-weight:700;color:#e0e0e0;flex:1;}
+.topbar-sub{font-size:0.8rem;color:#8b949e;}
+.btn-back{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1px solid #30363d;background:transparent;color:#8b949e;text-decoration:none;font-size:0.82rem;cursor:pointer;}
+.btn-back:hover{border-color:#58a6ff;color:#58a6ff;}
+
+.content{max-width:960px;margin:0 auto;padding:28px 20px;}
+
+.loading{text-align:center;padding:80px 20px;color:#8b949e;}
+.loading i{font-size:2rem;margin-bottom:12px;display:block;color:#30363d;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.error-box{background:#161b22;border:1px solid #f85149;border-radius:10px;padding:24px;text-align:center;color:#f85149;margin-bottom:24px;}
+.error-box i{font-size:1.5rem;margin-bottom:8px;display:block;}
+
+.summary-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.summary-stat{text-align:center;}
+.summary-stat strong{display:block;font-size:1.6rem;font-weight:900;}
+.summary-stat span{font-size:0.72rem;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;}
+.summary-stat.blue strong{color:#58a6ff;}
+.summary-stat.green strong{color:#22c55e;}
+.summary-stat.red strong{color:#ef4444;}
+.summary-stat.amber strong{color:#f59e0b;}
+
+.actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.btn-action{padding:8px 16px;border-radius:7px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:6px;}
+.btn-action:hover{border-color:#58a6ff;color:#58a6ff;}
+
+table{width:100%;border-collapse:collapse;font-size:0.86rem;margin-bottom:32px;}
+th{background:#161b22;color:#8b949e;padding:10px 12px;text-align:left;border-bottom:2px solid #30363d;white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:#c9d1d9;}
+th .sort-icon{margin-left:4px;opacity:.4;}
+th.sorted .sort-icon{opacity:1;color:#58a6ff;}
+td{padding:9px 12px;border-bottom:1px solid #21262d;vertical-align:middle;}
+tr:hover td{background:#161b22;}
+
+.pct-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:0.75rem;font-weight:700;}
+.pct-pass{background:#14532d33;color:#22c55e;border:1px solid #22c55e44;}
+.pct-mid {background:#78350f33;color:#f59e0b;border:1px solid #f59e0b44;}
+.pct-fail{background:#7f1d1d33;color:#ef4444;border:1px solid #ef4444aa;}
+
+.btn-detail{padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;font-size:0.75rem;}
+.btn-detail:hover{border-color:#58a6ff;color:#58a6ff;}
+
+/* Detail panel */
+.detail-panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:32px;display:none;}
+.detail-panel.open{display:block;}
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+.detail-name{font-size:1.05rem;font-weight:700;}
+.detail-meta{font-size:0.78rem;color:#8b949e;margin-top:3px;}
+.btn-close-detail{padding:5px 12px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;font-size:0.78rem;white-space:nowrap;}
+.btn-close-detail:hover{border-color:#ef4444;color:#ef4444;}
+
+.topic-bars{margin-bottom:18px;}
+.topic-bars h4{font-size:0.75rem;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.topic-line{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:0.8rem;}
+.topic-name{width:220px;flex-shrink:0;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topic-track{flex:1;height:7px;background:#21262d;border-radius:4px;overflow:hidden;}
+.topic-fill{height:100%;background:#1f6feb;border-radius:4px;}
+.topic-score{width:44px;text-align:right;color:#8b949e;font-size:0.75rem;}
+
+.answer-list{display:flex;flex-direction:column;gap:0;}
+.answer-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #21262d;align-items:flex-start;}
+.answer-row:last-child{border-bottom:none;}
+.ans-num{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px;}
+.ans-num.ok{background:#14532d;color:#22c55e;}
+.ans-num.bad{background:#7f1d1d;color:#ef4444;}
+.ans-num.empty{background:#21262d;color:#6b7280;}
+.ans-q{font-size:0.81rem;color:#c9d1d9;margin-bottom:3px;}
+.ans-a{font-size:0.76rem;color:#8b949e;}
+.ans-a .ok{color:#22c55e;}
+.ans-a .bad{color:#ef4444;}
+
+.stats-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.stat-chip{background:#0d1117;border:1px solid #21262d;border-radius:7px;padding:8px 14px;font-size:0.82rem;}
+.stat-chip strong{display:block;font-size:1.1rem;font-weight:800;}
+.stat-chip.ok strong{color:#22c55e;}
+.stat-chip.bad strong{color:#ef4444;}
+.stat-chip.empty strong{color:#8b949e;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="btn-back" href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <div>
+    <div class="topbar-title"><i class="fas fa-tower-broadcast" style="color:#f59e0b;margin-right:7px"></i>Távközlési technikus – Eredmények</div>
+    <div class="topbar-sub" id="topbar-sub">Betöltés…</div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="loading" id="loading">
+    <i class="fas fa-spinner"></i>
+    <div>Eredmények betöltése…</div>
+  </div>
+  <div id="error-section"></div>
+  <div id="main-section" style="display:none">
+    <div class="summary-card" id="summary-card"></div>
+    <div class="actions">
+      <button class="btn-action" onclick="exportCSV()"><i class="fas fa-table"></i> Exportálás CSV-be</button>
+    </div>
+    <div id="detail-panel" class="detail-panel"></div>
+    <div style="overflow-x:auto"><table id="results-table">
+      <thead><tr>
+        <th onclick="sortBy('nev')" id="th-nev"># &nbsp;Név <i class="fas fa-sort sort-icon"></i></th>
+        <th onclick="sortBy('submittedAt')" id="th-date">Dátum <i class="fas fa-sort sort-icon"></i></th>
+        <th onclick="sortBy('felhasznaltIdo')" id="th-ido">Idő <i class="fas fa-sort sort-icon"></i></th>
+        <th onclick="sortBy('helyes')" id="th-helyes">Helyes <i class="fas fa-sort sort-icon"></i></th>
+        <th onclick="sortBy('helytelen')" id="th-wrong">Helytelen <i class="fas fa-sort sort-icon"></i></th>
+        <th onclick="sortBy('szazalek')" id="th-pct" class="sorted">Eredmény <i class="fas fa-sort-down sort-icon"></i></th>
+        <th></th>
+      </tr></thead>
+      <tbody id="results-body"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const API = 'https://agazati.up.railway.app';
+let allResults = [];
+let sortKey = 'szazalek';
+let sortAsc = false;
+let openDetailId = null;
+
+// ── Auth check ───────────────────────────────────────────────────────────────
+(async function init() {
+  const saved = sessionStorage.getItem('kandoUser');
+  if (!saved) { location.href = '../login.html'; return; }
+  let user;
+  try { user = JSON.parse(saved); } catch { location.href = '../login.html'; return; }
+  if (!user || user.email !== 'sandorp@kkszki.hu') {
+    showError('Ehhez az oldalhoz csak Sándor Péter férhet hozzá.');
+    document.getElementById('loading').style.display = 'none';
+    return;
+  }
+  const token = localStorage.getItem('admin_token') || '';
+  await loadResults(token);
+})();
+
+async function loadResults(token) {
+  try {
+    const res = await fetch(`${API}/api/tavolkozles/results`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (res.status === 401) { showError('Hitelesítési hiba – próbálj újra bejelentkezni.'); return; }
+    if (!res.ok) { showError(`Szerver hiba: ${res.status}`); return; }
+    allResults = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-section').style.display = 'block';
+    document.getElementById('topbar-sub').textContent = `${allResults.length} beküldés`;
+    renderSummary();
+    renderTable();
+  } catch(e) {
+    showError('Nem sikerült kapcsolódni a szerverhez. Ellenőrizd az internet-kapcsolatot.');
+  }
+}
+
+function renderSummary() {
+  if (!allResults.length) return;
+  const avg = Math.round(allResults.reduce((s,r)=>s+r.szazalek,0)/allResults.length);
+  const pass = allResults.filter(r=>r.szazalek>=40).length;
+  const best = Math.max(...allResults.map(r=>r.szazalek));
+  document.getElementById('summary-card').innerHTML = `
+    <div class="summary-stat blue"><strong>${allResults.length}</strong><span>beküldés</span></div>
+    <div style="width:1px;height:40px;background:#21262d;flex-shrink:0"></div>
+    <div class="summary-stat green"><strong>${avg}%</strong><span>átlag</span></div>
+    <div class="summary-stat amber"><strong>${best}%</strong><span>legjobb</span></div>
+    <div class="summary-stat ${pass===allResults.length?'green':'red'}"><strong>${pass}/${allResults.length}</strong><span>megfelelt (≥40%)</span></div>`;
+}
+
+function renderTable() {
+  const sorted = [...allResults].sort((a,b) => {
+    let av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
+    if (typeof av === 'number') return sortAsc ? av-bv : bv-av;
+    return sortAsc ? String(av).localeCompare(String(bv),'hu') : String(bv).localeCompare(String(av),'hu');
+  });
+
+  const tbody = document.getElementById('results-body');
+  tbody.innerHTML = '';
+  sorted.forEach((r, i) => {
+    const pct = r.szazalek;
+    const cls = pct>=60?'pct-pass':pct>=40?'pct-mid':'pct-fail';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="color:#6b7280;margin-right:6px">${i+1}</span><strong>${esc(r.nev)}</strong></td>
+      <td style="color:#8b949e;font-size:0.8rem">${esc(r.submittedAt)}</td>
+      <td style="color:#8b949e">${esc(r.felhasznaltIdo??'—')}</td>
+      <td style="color:#22c55e;font-weight:700">${r.helyes}</td>
+      <td style="color:#ef4444;font-weight:700">${r.helytelen}</td>
+      <td><span class="pct-badge ${cls}">${pct}%</span></td>
+      <td><button class="btn-detail" onclick="toggleDetail(${r.id})"><i class="fas fa-eye"></i> Részletek</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function sortBy(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = false; }
+  renderTable();
+}
+
+function toggleDetail(id) {
+  if (openDetailId === id) {
+    document.getElementById('detail-panel').classList.remove('open');
+    openDetailId = null;
+    return;
+  }
+  openDetailId = id;
+  const r = allResults.find(x => x.id === id);
+  if (!r) return;
+
+  let valaszok = [];
+  try { valaszok = JSON.parse(r.valaszokJson || '[]'); } catch {}
+
+  const topicMap = {};
+  valaszok.forEach(v => {
+    if (!topicMap[v.tema]) topicMap[v.tema] = { ok:0, total:0 };
+    topicMap[v.tema].total++;
+    if (v.eredmeny === 'helyes') topicMap[v.tema].ok++;
+  });
+
+  let topicHtml = '<div class="topic-bars"><h4>Teljesítmény témakörönként</h4>';
+  Object.entries(topicMap).forEach(([t,s]) => {
+    const p = Math.round(s.ok/s.total*100);
+    topicHtml += `<div class="topic-line">
+      <div class="topic-name" title="${esc(t)}">${esc(t)}</div>
+      <div class="topic-track"><div class="topic-fill" style="width:${p}%"></div></div>
+      <div class="topic-score">${s.ok}/${s.total}</div>
+    </div>`;
+  });
+  topicHtml += '</div>';
+
+  const answersHtml = valaszok.map((v, i) => {
+    const ok = v.eredmeny === 'helyes', empty = v.eredmeny === 'üres';
+    const cls = ok ? 'ok' : empty ? 'empty' : 'bad';
+    const icon = ok ? 'fa-check' : empty ? 'fa-minus' : 'fa-times';
+    let aLine = empty
+      ? `Nem válaszolt &nbsp;·&nbsp; Helyes: <span class="ok">${esc(v.helyes_valasz)}</span>`
+      : ok ? `<span class="ok"><i class="fas fa-check"></i> ${esc(v.valasz)}</span>`
+           : `Válasza: <span class="bad">${esc(v.valasz)}</span> &nbsp;·&nbsp; Helyes: <span class="ok">${esc(v.helyes_valasz)}</span>`;
+    return `<div class="answer-row">
+      <div class="ans-num ${cls}"><i class="fas ${icon}"></i></div>
+      <div><div class="ans-q">${i+1}. ${esc(v.kerdes)}</div><div class="ans-a">${aLine}</div></div>
+    </div>`;
+  }).join('');
+
+  const pct = r.szazalek;
+  const cls = pct>=60?'pct-pass':pct>=40?'pct-mid':'pct-fail';
+  const panel = document.getElementById('detail-panel');
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-name"><i class="fas fa-user" style="color:#58a6ff;margin-right:6px"></i>${esc(r.nev)}</div>
+        <div class="detail-meta">${esc(r.submittedAt)} &nbsp;·&nbsp; ${esc(r.felhasznaltIdo??'—')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="pct-badge ${cls}" style="font-size:0.95rem;padding:5px 14px">${pct}%</span>
+        <button class="btn-close-detail" onclick="toggleDetail(${r.id})"><i class="fas fa-times"></i> Bezárás</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-chip ok"><strong>${r.helyes}</strong>Helyes</div>
+      <div class="stat-chip bad"><strong>${r.helytelen}</strong>Helytelen</div>
+      <div class="stat-chip empty"><strong>${r.ures}</strong>Üres</div>
+    </div>
+    ${topicHtml}
+    <div style="font-size:0.75rem;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Kérdésenkénti válaszok</div>
+    <div class="answer-list">${answersHtml}</div>`;
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function exportCSV() {
+  const cols = ['Név','Beküldve','Idő','Helyes','Helytelen','Üres','Összesen','%'];
+  const rows = allResults.map(r => [
+    `"${r.nev}"`, `"${r.submittedAt}"`, `"${r.felhasznaltIdo??''}"`,
+    r.helyes, r.helytelen, r.ures, r.osszesen, r.szazalek
+  ]);
+  const csv = [cols,...rows].map(r=>r.join(';')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tavolkozles_eredmenyek_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error-section').innerHTML = `<div class="error-box"><i class="fas fa-lock"></i>${msg}</div>`;
+}
+
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

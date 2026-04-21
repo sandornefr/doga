@@ -417,6 +417,38 @@ public class BeadasItem
 
 public record SetBeadasPontRequest(int Pont, string? Megjegyzes);
 
+// ── Távközlési technikus vizsga ───────────────────────────────────────────────
+
+public record TavolkozlesValaszDto(
+    string Id, string Tema, string Kerdes,
+    string? Valasz, string Helyes_valasz, string Eredmeny
+);
+
+public record TavolkozlesEredmenyDto(int Helyes, int Helytelen, int Ures, int Osszesen, int Szazalek);
+
+public record TavolkozlesSubmitRequest(
+    string Nev,
+    string? Datum,
+    string? FelhasznaltIdo,
+    TavolkozlesEredmenyDto Eredmeny,
+    List<TavolkozlesValaszDto>? Valaszok
+);
+
+public class TavolkozlesResultItem
+{
+    public int     Id            { get; set; }
+    public string  Nev           { get; set; } = "";
+    public string  Datum         { get; set; } = "";
+    public string? FelhasznaltIdo { get; set; }
+    public int     Helyes        { get; set; }
+    public int     Helytelen     { get; set; }
+    public int     Ures          { get; set; }
+    public int     Osszesen      { get; set; }
+    public int     Szazalek      { get; set; }
+    public string  ValaszokJson  { get; set; } = "[]";
+    public string  SubmittedAt   { get; set; } = "";
+}
+
 // ── Oktatói haladás dashboard ─────────────────────────────────────────────────
 
 public class HaladasItem
