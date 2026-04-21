@@ -109,6 +109,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 .btn-cancel{padding:9px 22px;border-radius:7px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;}
 .btn-confirm{padding:9px 22px;border-radius:7px;border:none;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;}
 
+.name-wrap{margin-bottom:18px;}
+.name-wrap label{display:block;font-size:0.8rem;color:#8b949e;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.name-input{width:100%;padding:11px 14px;background:#0d1117;border:1.5px solid #30363d;border-radius:8px;color:#e0e0e0;font-size:0.95rem;outline:none;transition:border-color .15s;}
+.name-input:focus{border-color:#58a6ff;}
+.name-input.error{border-color:#ef4444;}
+.name-error{font-size:0.78rem;color:#ef4444;margin-top:5px;display:none;}
+.name-error.show{display:block;}
+
+.btn-download{padding:12px 24px;border-radius:8px;border:1px solid #30363d;background:#1c2128;color:#c9d1d9;font-size:0.9rem;font-weight:600;cursor:pointer;}
+.btn-download:hover{border-color:#58a6ff;color:#58a6ff;}
+
 @media(max-width:500px){
   .topic-grid{grid-template-columns:1fr;}
   .result-stats{grid-template-columns:1fr 1fr;}
@@ -129,8 +140,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
       <li><i class="fas fa-arrow-left"></i> <span>Visszaléphetsz korábbi kérdésekhez, és módosíthatod a válaszodat</span></li>
       <li><i class="fas fa-map-signs"></i> <span>A kérdéstérképen látod, melyik kérdésre válaszoltál már</span></li>
       <li><i class="fas fa-calculator" style="color:#f59e0b"></i> <span><strong style="color:#f59e0b">10 számolási feladat</strong> is szerepel – érdemes ceruzát és papírt készíteni</span></li>
-      <li><i class="fas fa-flag-checkered"></i> <span>Bármikor befejezheted a tesztet – az eredmény és a megoldások azonnal megjelennek</span></li>
+      <li><i class="fas fa-flag-checkered"></i> <span>A <strong>30. kérdésnél</strong> jelenik meg a "Befejezés" gomb – addig kérdésről kérdésre haladhatsz</span></li>
     </ul>
+
+    <div class="name-wrap">
+      <label for="student-name"><i class="fas fa-user" style="margin-right:5px"></i>Teljes neved</label>
+      <input type="text" id="student-name" class="name-input" placeholder="pl. Kovács János" autocomplete="name">
+      <div class="name-error" id="name-error">Kérjük, add meg a nevedet a teszt indítása előtt.</div>
+    </div>
 
     <div style="font-size:0.78rem;color:#8b949e;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Témakörok</div>
     <div class="topic-grid">
@@ -178,9 +195,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
       <button class="btn-nav" id="btn-prev" onclick="navigate(-1)" disabled>
         <i class="fas fa-chevron-left"></i> Előző
       </button>
-      <button class="btn-submit" onclick="confirmSubmit()">
-        <i class="fas fa-flag-checkered"></i> Befejezés
-      </button>
       <button class="btn-nav" id="btn-next" onclick="navigate(1)">
         Következő <i class="fas fa-chevron-right"></i>
       </button>
@@ -188,7 +202,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 
     <div class="qmap-wrap">
       <div class="qmap-title">
-        <span>Kérdéstérkép</span>
+        <span>Kérdéstérkép &nbsp;<span style="color:#58a6ff;font-weight:400">– kattints egy számra az ugráshoz</span></span>
         <span id="qmap-stats"></span>
       </div>
       <div class="qmap-grid" id="qmap-grid"></div>
@@ -211,6 +225,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
   </div>
   <div class="result-card">
     <div class="result-score">
+      <div style="font-size:0.85rem;color:#8b949e;margin-bottom:4px" id="result-name"></div>
       <div class="result-pct" id="result-pct">—</div>
       <div class="result-label" id="result-label"></div>
     </div>
@@ -230,8 +245,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
     </div>
     <div style="font-size:0.8rem;color:#8b949e;margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Részletes kiértékelés</div>
     <div class="review-list" id="review-list"></div>
-    <div style="text-align:center;">
+    <div style="text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
       <button class="btn-restart" onclick="restartQuiz()"><i class="fas fa-redo" style="margin-right:6px"></i>Újrakezdés</button>
+      <button class="btn-download" onclick="downloadResult()"><i class="fas fa-download" style="margin-right:6px"></i>Eredmény letöltése (JSON)</button>
     </div>
   </div>
 </div>
@@ -458,17 +474,31 @@ let current = 0;
 let answers = new Array(QUESTIONS.length).fill(null);
 let timerInterval = null;
 let secondsLeft = 60 * 60;
+let studentName = '';
+let secondsUsed = 0;
 
 // ════════════════════════════════════════════════════════════════════════════
 // INDÍTÁS
 // ════════════════════════════════════════════════════════════════════════════
 function startQuiz() {
+  const inp = document.getElementById('student-name');
+  const err = document.getElementById('name-error');
+  studentName = inp.value.trim();
+  if (!studentName) {
+    inp.classList.add('error');
+    err.classList.add('show');
+    inp.focus();
+    return;
+  }
+  inp.classList.remove('error');
+  err.classList.remove('show');
   document.getElementById('screen-intro').style.display = 'none';
   const sq = document.getElementById('screen-quiz');
   sq.style.display = 'flex';
   current = 0;
   answers = new Array(QUESTIONS.length).fill(null);
   secondsLeft = 60 * 60;
+  secondsUsed = 0;
   buildQmap();
   renderQuestion();
   startTimer();
@@ -486,6 +516,7 @@ function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     secondsLeft--;
+    secondsUsed++;
     const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
     const s = (secondsLeft % 60).toString().padStart(2,'0');
     document.getElementById('timer-text').textContent = `${m}:${s}`;
@@ -537,7 +568,19 @@ function renderQuestion() {
 
   // nav buttons
   document.getElementById('btn-prev').disabled = current === 0;
-  document.getElementById('btn-next').disabled = current === QUESTIONS.length - 1;
+  const btnNext = document.getElementById('btn-next');
+  const isLast = current === QUESTIONS.length - 1;
+  if (isLast) {
+    btnNext.className = 'btn-submit';
+    btnNext.innerHTML = '<i class="fas fa-flag-checkered"></i> Befejezés';
+    btnNext.onclick = confirmSubmit;
+    btnNext.disabled = false;
+  } else {
+    btnNext.className = 'btn-nav';
+    btnNext.innerHTML = 'Következő <i class="fas fa-chevron-right"></i>';
+    btnNext.onclick = () => navigate(1);
+    btnNext.disabled = false;
+  }
 
   // progress
   const answered = answers.filter(a => a !== null).length;
@@ -642,6 +685,7 @@ function showResult() {
   const pct = Math.round(correct / QUESTIONS.length * 100);
   const pass = pct >= 40;
 
+  document.getElementById('result-name').textContent = studentName;
   const pctEl = document.getElementById('result-pct');
   pctEl.textContent = `${pct}%`;
   pctEl.className = 'result-pct ' + (pass ? 'pass' : 'fail');
@@ -675,6 +719,44 @@ function showResult() {
 
   sr.scrollTop = 0;
   window.scrollTo(0,0);
+}
+
+function downloadResult() {
+  let correct = 0, wrong = 0, empty = 0;
+  const valaszok = QUESTIONS.map((q, i) => {
+    const ures = answers[i] === null;
+    const ok = !ures && answers[i] === q.ans;
+    if (ures) empty++; else if (ok) correct++; else wrong++;
+    return {
+      id: q.id,
+      tema: q.topic,
+      kerdes: q.q,
+      valasz: answers[i] ?? '(nem válaszolt)',
+      helyes_valasz: q.ans,
+      eredmeny: ures ? 'üres' : ok ? 'helyes' : 'helytelen'
+    };
+  });
+  const percUsed = Math.round(secondsUsed / 60);
+  const data = {
+    nev: studentName,
+    datum: new Date().toLocaleString('hu-HU'),
+    felhasznalt_ido: `${percUsed} perc`,
+    eredmeny: {
+      helyes: correct,
+      helytelen: wrong,
+      ures: empty,
+      osszesen: QUESTIONS.length,
+      szazalek: Math.round(correct / QUESTIONS.length * 100)
+    },
+    valaszok
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tavolkozles_${studentName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 </script>
 </body>

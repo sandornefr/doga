@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Távközlési technikus – Eredmény néző</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e0;min-height:100vh;padding:24px;}
+h1{font-size:1.3rem;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.subtitle{font-size:0.85rem;color:#8b949e;margin-bottom:28px;}
+
+/* Drop zone */
+.dropzone{border:2px dashed #30363d;border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:.2s;background:#161b22;margin-bottom:24px;max-width:700px;}
+.dropzone:hover,.dropzone.over{border-color:#58a6ff;background:#1c2128;}
+.dropzone i{font-size:2rem;color:#58a6ff;margin-bottom:10px;}
+.dropzone p{color:#8b949e;font-size:0.9rem;}
+.dropzone strong{color:#c9d1d9;}
+#file-input{display:none;}
+
+/* Summary table */
+.summary-table{width:100%;border-collapse:collapse;max-width:900px;margin-bottom:32px;font-size:0.88rem;}
+.summary-table th{background:#161b22;color:#8b949e;padding:10px 14px;text-align:left;border-bottom:2px solid #30363d;white-space:nowrap;}
+.summary-table td{padding:9px 14px;border-bottom:1px solid #21262d;vertical-align:middle;}
+.summary-table tr:hover td{background:#161b22;}
+.pct-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;}
+.pct-pass{background:#14532d33;color:#22c55e;border:1px solid #22c55e44;}
+.pct-fail{background:#7f1d1d33;color:#ef4444;border:1px solid #ef4444aa;}
+.pct-mid{background:#78350f33;color:#f59e0b;border:1px solid #f59e0b44;}
+
+/* Detail panel */
+.detail-section{max-width:900px;margin-bottom:32px;}
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.detail-title{font-size:1rem;font-weight:700;color:#e0e0e0;}
+.btn-close{padding:6px 14px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;font-size:0.82rem;}
+.btn-close:hover{border-color:#58a6ff;color:#58a6ff;}
+
+.answer-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #21262d;align-items:flex-start;}
+.answer-row:last-child{border-bottom:none;}
+.ans-num{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;margin-top:1px;}
+.ans-num.ok{background:#14532d;color:#22c55e;}
+.ans-num.bad{background:#7f1d1d;color:#ef4444;}
+.ans-num.empty{background:#21262d;color:#6b7280;}
+.ans-q{font-size:0.82rem;color:#c9d1d9;margin-bottom:3px;}
+.ans-given{font-size:0.78rem;color:#8b949e;}
+.ans-given .ok{color:#22c55e;}
+.ans-given .bad{color:#ef4444;}
+
+.stats-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.stat-chip{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 16px;font-size:0.85rem;}
+.stat-chip strong{display:block;font-size:1.1rem;font-weight:800;}
+.stat-chip.ok strong{color:#22c55e;}
+.stat-chip.bad strong{color:#ef4444;}
+.stat-chip.empty strong{color:#8b949e;}
+
+.topic-bar{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px 18px;margin-bottom:18px;}
+.topic-bar h4{font-size:0.78rem;color:#8b949e;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.topic-line{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:0.8rem;}
+.topic-name{width:200px;flex-shrink:0;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topic-track{flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden;}
+.topic-fill{height:100%;background:#1f6feb;border-radius:4px;}
+.topic-score{width:50px;text-align:right;color:#8b949e;}
+
+.empty-state{text-align:center;padding:60px 20px;color:#8b949e;}
+.empty-state i{font-size:2.5rem;margin-bottom:12px;display:block;color:#30363d;}
+
+.actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.btn-action{padding:8px 16px;border-radius:7px;border:1px solid #30363d;background:#161b22;color:#c9d1d9;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:6px;}
+.btn-action:hover{border-color:#58a6ff;color:#58a6ff;}
+.btn-action.danger:hover{border-color:#ef4444;color:#ef4444;}
+</style>
+</head>
+<body>
+
+<h1><i class="fas fa-chart-bar" style="color:#58a6ff"></i> Eredmény néző – Távközlési technikus</h1>
+<div class="subtitle">Töltsd be a tanulók JSON fájljait az eredmények megtekintéséhez</div>
+
+<!-- Drop zone -->
+<div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+  <input type="file" id="file-input" accept=".json" multiple>
+  <i class="fas fa-file-import"></i>
+  <p><strong>Kattints ide</strong> vagy húzd ide a JSON fájl(oka)t</p>
+  <p style="font-size:0.78rem;margin-top:6px">Egyszerre több fájl is betölthető</p>
+</div>
+
+<!-- Actions -->
+<div class="actions" id="actions" style="display:none">
+  <button class="btn-action" onclick="exportCSV()"><i class="fas fa-table"></i> Exportálás CSV-be</button>
+  <button class="btn-action danger" onclick="clearAll()"><i class="fas fa-trash"></i> Összes törlése</button>
+</div>
+
+<!-- Summary table -->
+<div id="summary-section" style="overflow-x:auto;max-width:900px;"></div>
+
+<!-- Detail panel -->
+<div class="detail-section" id="detail-section" style="display:none"></div>
+
+<script>
+'use strict';
+
+let loaded = []; // array of parsed JSON objects
+
+// ── DROP + FILE INPUT ────────────────────────────────────────────────────────
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('file-input');
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('over');
+  handleFiles(e.dataTransfer.files);
+});
+fi.addEventListener('change', () => handleFiles(fi.files));
+
+function handleFiles(files) {
+  Array.from(files).forEach(f => {
+    if (!f.name.endsWith('.json')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.nev && data.valaszok) {
+          const exists = loaded.findIndex(x => x.nev === data.nev && x.datum === data.datum);
+          if (exists >= 0) loaded[exists] = data; else loaded.push(data);
+          renderAll();
+        }
+      } catch { /* invalid JSON */ }
+    };
+    reader.readAsText(f);
+  });
+}
+
+// ── RENDER SUMMARY ───────────────────────────────────────────────────────────
+function renderAll() {
+  document.getElementById('actions').style.display = loaded.length ? 'flex' : 'none';
+  const sec = document.getElementById('summary-section');
+  if (!loaded.length) { sec.innerHTML = ''; return; }
+
+  const sorted = [...loaded].sort((a, b) => b.eredmeny.szazalek - a.eredmeny.szazalek);
+
+  let html = `<table class="summary-table">
+    <thead><tr>
+      <th>#</th><th>Név</th><th>Dátum</th><th>Helyes</th><th>Helytelen</th><th>Üres</th><th>Idő</th><th>Eredmény</th><th></th>
+    </tr></thead><tbody>`;
+
+  sorted.forEach((d, i) => {
+    const pct = d.eredmeny.szazalek;
+    const cls = pct >= 60 ? 'pct-pass' : pct >= 40 ? 'pct-mid' : 'pct-fail';
+    html += `<tr>
+      <td style="color:#6b7280">${i+1}</td>
+      <td style="font-weight:600;color:#e0e0e0">${esc(d.nev)}</td>
+      <td style="color:#8b949e;font-size:0.8rem">${esc(d.datum)}</td>
+      <td style="color:#22c55e;font-weight:700">${d.eredmeny.helyes}</td>
+      <td style="color:#ef4444;font-weight:700">${d.eredmeny.helytelen}</td>
+      <td style="color:#8b949e">${d.eredmeny.ures}</td>
+      <td style="color:#8b949e;font-size:0.8rem">${esc(d.felhasznalt_ido ?? '—')}</td>
+      <td><span class="pct-badge ${cls}">${pct}%</span></td>
+      <td><button class="btn-action" onclick="showDetail(${loaded.indexOf(d)})" style="padding:5px 10px;font-size:0.78rem"><i class="fas fa-eye"></i> Részletek</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  sec.innerHTML = html;
+}
+
+// ── DETAIL VIEW ──────────────────────────────────────────────────────────────
+function showDetail(idx) {
+  const d = loaded[idx];
+  const sec = document.getElementById('detail-section');
+  sec.style.display = 'block';
+
+  // topic stats
+  const topicMap = {};
+  d.valaszok.forEach(v => {
+    if (!topicMap[v.tema]) topicMap[v.tema] = { ok: 0, total: 0 };
+    topicMap[v.tema].total++;
+    if (v.eredmeny === 'helyes') topicMap[v.tema].ok++;
+  });
+
+  let topicHtml = `<div class="topic-bar"><h4>Teljesítmény témakörönként</h4>`;
+  Object.entries(topicMap).forEach(([t, s]) => {
+    const pct = Math.round(s.ok / s.total * 100);
+    topicHtml += `<div class="topic-line">
+      <div class="topic-name" title="${esc(t)}">${esc(t)}</div>
+      <div class="topic-track"><div class="topic-fill" style="width:${pct}%"></div></div>
+      <div class="topic-score">${s.ok}/${s.total}</div>
+    </div>`;
+  });
+  topicHtml += '</div>';
+
+  let answersHtml = d.valaszok.map((v, i) => {
+    const cls = v.eredmeny === 'helyes' ? 'ok' : v.eredmeny === 'üres' ? 'empty' : 'bad';
+    const icon = cls === 'ok' ? 'fa-check' : cls === 'bad' ? 'fa-times' : 'fa-minus';
+    let ansLine = '';
+    if (v.eredmeny === 'üres') {
+      ansLine = `Nem válaszolt &nbsp;·&nbsp; Helyes: <span class="ok">${esc(v.helyes_valasz)}</span>`;
+    } else if (v.eredmeny === 'helyes') {
+      ansLine = `<span class="ok"><i class="fas fa-check"></i> ${esc(v.valasz)}</span>`;
+    } else {
+      ansLine = `Válasza: <span class="bad">${esc(v.valasz)}</span> &nbsp;·&nbsp; Helyes: <span class="ok">${esc(v.helyes_valasz)}</span>`;
+    }
+    return `<div class="answer-row">
+      <div class="ans-num ${cls}"><i class="fas ${icon}"></i></div>
+      <div>
+        <div class="ans-q">${i+1}. ${esc(v.kerdes)}</div>
+        <div class="ans-given">${ansLine}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const pct = d.eredmeny.szazalek;
+  const cls = pct >= 60 ? 'pct-pass' : pct >= 40 ? 'pct-mid' : 'pct-fail';
+
+  sec.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-title"><i class="fas fa-user" style="color:#58a6ff;margin-right:6px"></i>${esc(d.nev)}</div>
+        <div style="font-size:0.78rem;color:#8b949e;margin-top:3px">${esc(d.datum)} &nbsp;·&nbsp; ${esc(d.felhasznalt_ido ?? '—')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="pct-badge ${cls}" style="font-size:1rem;padding:6px 16px">${pct}%</span>
+        <button class="btn-close" onclick="document.getElementById('detail-section').style.display='none'"><i class="fas fa-times"></i> Bezárás</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-chip ok"><strong>${d.eredmeny.helyes}</strong>Helyes</div>
+      <div class="stat-chip bad"><strong>${d.eredmeny.helytelen}</strong>Helytelen</div>
+      <div class="stat-chip empty"><strong>${d.eredmeny.ures}</strong>Üres</div>
+    </div>
+    ${topicHtml}
+    <div style="font-size:0.78rem;color:#8b949e;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Kérdésenkénti válaszok</div>
+    <div>${answersHtml}</div>`;
+
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── CSV EXPORT ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  const cols = ['Név','Dátum','Idő','Helyes','Helytelen','Üres','Összesen','%'];
+  const rows = loaded.map(d => [
+    `"${d.nev}"`, `"${d.datum}"`, `"${d.felhasznalt_ido ?? ''}"`,
+    d.eredmeny.helyes, d.eredmeny.helytelen, d.eredmeny.ures,
+    d.eredmeny.osszesen, d.eredmeny.szazalek
+  ]);
+  const csv = [cols, ...rows].map(r => r.join(';')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tavolkozles_eredmenyek_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function clearAll() {
+  if (!confirm('Törlöd az összes betöltött eredményt?')) return;
+  loaded = [];
+  document.getElementById('detail-section').style.display = 'none';
+  renderAll();
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
