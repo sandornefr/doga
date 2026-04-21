@@ -1566,6 +1566,26 @@
     const API      = 'https://agazati.up.railway.app';
     const API_BASE = 'https://agazati.up.railway.app';
 
+    function portalAvatarUri(name, email) {
+        const words = (name || email || '?').trim().split(/\s+/).filter(Boolean);
+        const ini = words.length >= 2
+            ? (words[0][0] + words[words.length-1][0]).toUpperCase()
+            : (words[0] || '?').substring(0, 2).toUpperCase();
+        let h = 0;
+        const str = email || name || '';
+        for (let i = 0; i < str.length; i++) h = (Math.imul(h, 31) + str.charCodeAt(i)) | 0;
+        const grads = [
+            ['#1e3a8a','#3b82f6'],['#5b21b6','#a78bfa'],['#064e3b','#34d399'],
+            ['#7f1d1d','#f87171'],['#78350f','#fbbf24'],['#831843','#f472b6'],
+            ['#134e4a','#2dd4bf'],['#1e1b4b','#818cf8'],['#0c4a6e','#38bdf8'],
+            ['#3b0764','#c084fc'],['#14532d','#86efac'],['#7c2d12','#fb923c'],
+        ];
+        const [c1, c2] = grads[Math.abs(h) % grads.length];
+        const fs = ini.length > 1 ? 34 : 40;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs><circle cx="48" cy="48" r="48" fill="url(#g)"/><text x="48" y="${48 + fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="system-ui,sans-serif" fill="white" letter-spacing="2">${ini}</text></svg>`;
+        return 'data:image/svg+xml,' + encodeURIComponent(svg);
+    }
+
     // ── Session tracking ──────────────────────────────────────────────────────
     let _sessionId = null;
     async function startSessionTracking(email, page) {
@@ -3093,27 +3113,6 @@ if (location.hash === '#web-tanulas') {
 
     initDuel();
 })();
-</script>
-<script>
-function portalAvatarUri(name, email) {
-    const words = (name || email || '?').trim().split(/\s+/).filter(Boolean);
-    const ini = words.length >= 2
-        ? (words[0][0] + words[words.length-1][0]).toUpperCase()
-        : (words[0] || '?').substring(0, 2).toUpperCase();
-    let h = 0;
-    const str = email || name || '';
-    for (let i = 0; i < str.length; i++) h = (Math.imul(h, 31) + str.charCodeAt(i)) | 0;
-    const grads = [
-        ['#1e3a8a','#3b82f6'],['#5b21b6','#a78bfa'],['#064e3b','#34d399'],
-        ['#7f1d1d','#f87171'],['#78350f','#fbbf24'],['#831843','#f472b6'],
-        ['#134e4a','#2dd4bf'],['#1e1b4b','#818cf8'],['#0c4a6e','#38bdf8'],
-        ['#3b0764','#c084fc'],['#14532d','#86efac'],['#7c2d12','#fb923c'],
-    ];
-    const [c1, c2] = grads[Math.abs(h) % grads.length];
-    const fs = ini.length > 1 ? 34 : 40;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs><circle cx="48" cy="48" r="48" fill="url(#g)"/><text x="48" y="${48 + fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="system-ui,sans-serif" fill="white" letter-spacing="2">${ini}</text></svg>`;
-    return 'data:image/svg+xml,' + encodeURIComponent(svg);
-}
 </script>
 </body>
 </html>
