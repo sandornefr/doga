@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Távközlési technikus – Gyakorló vizsga</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e0;min-height:100vh;}
+
+/* ── INTRO ── */
+#screen-intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.intro-card{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 36px;max-width:620px;width:100%;}
+.intro-title{font-size:1.5rem;font-weight:800;color:#e0e0e0;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.intro-subtitle{font-size:0.9rem;color:#8b949e;margin-bottom:28px;}
+.intro-rules{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.intro-rules li{display:flex;align-items:center;gap:10px;font-size:0.9rem;color:#c9d1d9;background:#0d1117;border-radius:8px;padding:10px 14px;border:1px solid #21262d;}
+.intro-rules i{color:#58a6ff;width:18px;text-align:center;flex-shrink:0;}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:28px;}
+.topic-tag{background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:0.75rem;color:#8b949e;}
+.topic-tag strong{color:#c9d1d9;display:block;font-size:0.82rem;}
+.btn-start{width:100%;padding:14px;background:linear-gradient(135deg,#1f6feb,#388bfd);border:none;border-radius:10px;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.btn-start:hover{opacity:.9;}
+
+/* ── QUIZ ── */
+#screen-quiz{display:none;flex-direction:column;min-height:100vh;}
+.quiz-header{background:#161b22;border-bottom:1px solid #30363d;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+.quiz-header-title{font-size:0.85rem;color:#8b949e;flex:1;min-width:160px;}
+.quiz-header-title strong{color:#e0e0e0;display:block;font-size:0.95rem;}
+.timer{display:flex;align-items:center;gap:6px;font-size:1.1rem;font-weight:800;color:#22c55e;font-variant-numeric:tabular-nums;}
+.timer.warning{color:#f59e0b;}
+.timer.danger{color:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.progress-bar-wrap{width:100%;height:4px;background:#21262d;border-radius:2px;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#1f6feb,#388bfd);border-radius:2px;transition:width .3s;}
+
+.quiz-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 16px;gap:16px;}
+.question-counter{font-size:0.78rem;color:#8b949e;align-self:flex-start;max-width:700px;width:100%;}
+.question-counter span{color:#58a6ff;font-weight:700;}
+
+.question-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:28px;max-width:700px;width:100%;}
+.question-badge{display:inline-flex;align-items:center;gap:5px;background:#1c2128;border:1px solid #30363d;border-radius:20px;padding:3px 10px;font-size:0.72rem;color:#8b949e;margin-bottom:14px;}
+.question-badge.calc{border-color:#f59e0b44;color:#f59e0b;background:#78350f22;}
+.question-text{font-size:1.05rem;line-height:1.6;color:#e0e0e0;margin-bottom:20px;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:2px solid #30363d;border-radius:9px;cursor:pointer;transition:border-color .15s,background .15s;}
+.option:hover{border-color:#58a6ff;background:#1c2128;}
+.option.selected{border-color:#1f6feb;background:#1c2c4a;}
+.option.correct{border-color:#22c55e;background:#14532d33;}
+.option.wrong{border-color:#ef4444;background:#7f1d1d33;}
+.opt-letter{width:28px;height:28px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;color:#8b949e;flex-shrink:0;}
+.option.selected .opt-letter{background:#1f6feb;color:#fff;}
+.option.correct .opt-letter{background:#22c55e;color:#fff;}
+.option.wrong .opt-letter{background:#ef4444;color:#fff;}
+.opt-text{font-size:0.92rem;color:#c9d1d9;line-height:1.5;padding-top:3px;}
+.formula-hint{background:#0d1117;border:1px solid #f59e0b33;border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#fbbf24;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;}
+
+.nav-row{display:flex;align-items:center;justify-content:space-between;max-width:700px;width:100%;gap:10px;flex-wrap:wrap;}
+.btn-nav{padding:10px 22px;border-radius:8px;border:1px solid #30363d;background:#1c2128;color:#c9d1d9;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s,background .15s;}
+.btn-nav:hover:not(:disabled){border-color:#58a6ff;color:#58a6ff;}
+.btn-nav:disabled{opacity:.3;cursor:default;}
+.btn-submit{padding:10px 22px;border-radius:8px;border:none;background:linear-gradient(135deg,#166534,#22c55e);color:#fff;font-size:0.88rem;font-weight:700;cursor:pointer;}
+.btn-submit:hover{opacity:.9;}
+
+/* Question map */
+.qmap-wrap{max-width:700px;width:100%;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px;}
+.qmap-title{font-size:0.75rem;color:#8b949e;margin-bottom:10px;display:flex;justify-content:space-between;}
+.qmap-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.qmap-btn{width:34px;height:34px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#8b949e;font-size:0.78rem;font-weight:600;cursor:pointer;transition:.15s;}
+.qmap-btn:hover{border-color:#58a6ff;color:#58a6ff;}
+.qmap-btn.answered{border-color:#1f6feb44;background:#1c2c4a;color:#58a6ff;}
+.qmap-btn.current{border-color:#58a6ff;background:#1f6feb;color:#fff;}
+.qmap-btn.calc-q{border-color:#f59e0b44;}
+.qmap-legend{display:flex;gap:14px;font-size:0.72rem;color:#6b7280;margin-top:10px;}
+.qmap-legend span{display:flex;align-items:center;gap:4px;}
+.dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+/* ── RESULT ── */
+#screen-result{display:none;flex-direction:column;align-items:center;min-height:100vh;padding:24px;}
+.result-card{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:32px;max-width:700px;width:100%;margin-bottom:24px;}
+.result-score{text-align:center;margin-bottom:24px;}
+.result-pct{font-size:3rem;font-weight:900;line-height:1;}
+.result-pct.pass{color:#22c55e;}
+.result-pct.fail{color:#ef4444;}
+.result-label{font-size:0.9rem;color:#8b949e;margin-top:6px;}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.stat-box{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center;}
+.stat-val{font-size:1.5rem;font-weight:800;}
+.stat-lbl{font-size:0.72rem;color:#8b949e;margin-top:3px;}
+.review-list{display:flex;flex-direction:column;gap:8px;}
+.review-item{background:#0d1117;border-radius:8px;padding:12px 14px;border-left:3px solid #30363d;}
+.review-item.ok{border-color:#22c55e;}
+.review-item.bad{border-color:#ef4444;}
+.review-q{font-size:0.82rem;color:#c9d1d9;margin-bottom:4px;}
+.review-a{font-size:0.78rem;color:#8b949e;}
+.review-a span.ok{color:#22c55e;}
+.review-a span.bad{color:#ef4444;}
+.btn-restart{padding:12px 32px;border-radius:8px;border:none;background:#1f6feb;color:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;margin-top:16px;}
+.btn-restart:hover{background:#388bfd;}
+
+/* Confirm overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.active{display:flex;}
+.overlay-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:28px;max-width:420px;width:100%;text-align:center;}
+.overlay-box h3{font-size:1.1rem;margin-bottom:10px;}
+.overlay-box p{font-size:0.88rem;color:#8b949e;margin-bottom:20px;line-height:1.5;}
+.overlay-btns{display:flex;gap:10px;justify-content:center;}
+.btn-cancel{padding:9px 22px;border-radius:7px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;}
+.btn-confirm{padding:9px 22px;border-radius:7px;border:none;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;}
+
+@media(max-width:500px){
+  .topic-grid{grid-template-columns:1fr;}
+  .result-stats{grid-template-columns:1fr 1fr;}
+  .intro-card{padding:24px 18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ INTRO ════ -->
+<div id="screen-intro">
+  <div class="intro-card">
+    <div class="intro-title"><i class="fas fa-tower-broadcast" style="color:#58a6ff"></i> Távközlési technikus</div>
+    <div class="intro-subtitle">Szakmai ismeret – Gyakorló vizsga &nbsp;|&nbsp; 30 kérdés</div>
+
+    <ul class="intro-rules">
+      <li><i class="fas fa-clock"></i> <span><strong>60 perces</strong> visszaszámláló – a teszt automatikusan befejeződik lejártakor</span></li>
+      <li><i class="fas fa-arrow-left"></i> <span>Visszaléphetsz korábbi kérdésekhez, és módosíthatod a válaszodat</span></li>
+      <li><i class="fas fa-map-signs"></i> <span>A kérdéstérképen látod, melyik kérdésre válaszoltál már</span></li>
+      <li><i class="fas fa-calculator" style="color:#f59e0b"></i> <span><strong style="color:#f59e0b">10 számolási feladat</strong> is szerepel – érdemes ceruzát és papírt készíteni</span></li>
+      <li><i class="fas fa-flag-checkered"></i> <span>Bármikor befejezheted a tesztet – az eredmény és a megoldások azonnal megjelennek</span></li>
+    </ul>
+
+    <div style="font-size:0.78rem;color:#8b949e;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Témakörok</div>
+    <div class="topic-grid">
+      <div class="topic-tag"><strong>Elektrotechnika</strong>10%</div>
+      <div class="topic-tag"><strong>Távközlési elektronika</strong>15%</div>
+      <div class="topic-tag"><strong>Távközlési ismeretek</strong>15%</div>
+      <div class="topic-tag"><strong>IP hálózatok</strong>10%</div>
+      <div class="topic-tag"><strong>Mobil távközlő rendszerek</strong>15%</div>
+      <div class="topic-tag"><strong>Műsorszóró rendszerek</strong>5%</div>
+      <div class="topic-tag"><strong>Vez. nélküli adatátvitel</strong>5%</div>
+      <div class="topic-tag"><strong>Nagytávolságú IP hálózatok</strong>10%</div>
+      <div class="topic-tag"><strong>Digit. rendszerek üzemeltetése</strong>10%</div>
+      <div class="topic-tag"><strong>Távközlési architektúrák</strong>5%</div>
+    </div>
+
+    <button class="btn-start" onclick="startQuiz()"><i class="fas fa-play" style="margin-right:8px"></i>Teszt indítása</button>
+  </div>
+</div>
+
+<!-- ════ QUIZ ════ -->
+<div id="screen-quiz">
+  <div class="quiz-header">
+    <div class="quiz-header-title">
+      <strong>Távközlési technikus – Gyakorló vizsga</strong>
+      <span id="header-topic"></span>
+    </div>
+    <div class="timer" id="timer"><i class="fas fa-clock" style="font-size:.85rem"></i> <span id="timer-text">60:00</span></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <div class="quiz-body">
+    <div class="question-counter">
+      <span id="q-num">1</span>/30. kérdés
+      &nbsp;·&nbsp; <span id="q-answered-count">0</span> megválaszolva
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div id="q-badge" class="question-badge"></div>
+      <div id="q-formula" class="formula-hint" style="display:none"></div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="q-options"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-nav" id="btn-prev" onclick="navigate(-1)" disabled>
+        <i class="fas fa-chevron-left"></i> Előző
+      </button>
+      <button class="btn-submit" onclick="confirmSubmit()">
+        <i class="fas fa-flag-checkered"></i> Befejezés
+      </button>
+      <button class="btn-nav" id="btn-next" onclick="navigate(1)">
+        Következő <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="qmap-wrap">
+      <div class="qmap-title">
+        <span>Kérdéstérkép</span>
+        <span id="qmap-stats"></span>
+      </div>
+      <div class="qmap-grid" id="qmap-grid"></div>
+      <div class="qmap-legend">
+        <span><span class="dot" style="background:#1f6feb;border:1px solid #58a6ff"></span> Jelenlegi</span>
+        <span><span class="dot" style="background:#1c2c4a;border:1px solid #1f6feb44"></span> Megválaszolt</span>
+        <span><span class="dot" style="background:#0d1117;border:1px solid #30363d"></span> Üres</span>
+        <span><span class="dot" style="background:#0d1117;border:1px solid #f59e0b44"></span> Számolás</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULT ════ -->
+<div id="screen-result">
+  <div style="max-width:700px;width:100%;margin-top:32px;margin-bottom:8px;">
+    <div style="font-size:1.2rem;font-weight:800;color:#e0e0e0;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-poll" style="color:#58a6ff"></i> Eredmény
+    </div>
+  </div>
+  <div class="result-card">
+    <div class="result-score">
+      <div class="result-pct" id="result-pct">—</div>
+      <div class="result-label" id="result-label"></div>
+    </div>
+    <div class="result-stats">
+      <div class="stat-box">
+        <div class="stat-val" id="stat-correct" style="color:#22c55e">—</div>
+        <div class="stat-lbl">Helyes</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-wrong" style="color:#ef4444">—</div>
+        <div class="stat-lbl">Helytelen</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-empty" style="color:#8b949e">—</div>
+        <div class="stat-lbl">Üres</div>
+      </div>
+    </div>
+    <div style="font-size:0.8rem;color:#8b949e;margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Részletes kiértékelés</div>
+    <div class="review-list" id="review-list"></div>
+    <div style="text-align:center;">
+      <button class="btn-restart" onclick="restartQuiz()"><i class="fas fa-redo" style="margin-right:6px"></i>Újrakezdés</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm overlay -->
+<div class="overlay" id="overlay-confirm">
+  <div class="overlay-box">
+    <h3>Befejezed a tesztet?</h3>
+    <p id="overlay-msg">Ha most befejezed, az eredményed azonnal megjelenik. Üres kérdések nem kapnak pontot.</p>
+    <div class="overlay-btns">
+      <button class="btn-cancel" onclick="closeOverlay()">Mégsem</button>
+      <button class="btn-confirm" onclick="finishQuiz()">Befejezés</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════════════════════
+// KÉRDÉSBANK – 30 kérdés (10 számolás + 20 tudás)
+// ════════════════════════════════════════════════════════════════════════════
+const QUESTIONS = [
+
+  // ── SZÁMOLÁSI FELADATOK ──────────────────────────────────────────────────
+  {
+    id:'S1', topic:'Elektrotechnika', calc:true,
+    formula:'U = R · I',
+    q:'Egy 220 Ω-os ellenálláson 0,5 A áramerősség folyik át. Mekkora a rajta eső feszültség?',
+    opts:['44 V','110 V','220 V','440 V'],
+    ans:'110 V'
+  },
+  {
+    id:'S2', topic:'Elektrotechnika', calc:true,
+    formula:'I = U / R',
+    q:'Egy 230 V-os hálózathoz 1150 Ω-os ellenállást kapcsolnak. Mekkora áramerősség folyik az áramkörben?',
+    opts:['0,02 A','0,1 A','0,2 A','2 A'],
+    ans:'0,2 A'
+  },
+  {
+    id:'S3', topic:'Elektrotechnika', calc:true,
+    formula:'Párhuzamos: 1/R = 1/R₁ + 1/R₂',
+    q:'Két egyenként 100 Ω-os ellenállást párhuzamosan kapcsolnak. Mekkora az eredő ellenállás?',
+    opts:['200 Ω','100 Ω','50 Ω','25 Ω'],
+    ans:'50 Ω'
+  },
+  {
+    id:'S4', topic:'Elektrotechnika', calc:true,
+    formula:'P = U · I',
+    q:'Egy eszköz 12 V-os tápfeszültségen üzemel, és 3 A áramot vesz fel. Mekkora a teljesítménye?',
+    opts:['4 W','15 W','36 W','360 W'],
+    ans:'36 W'
+  },
+  {
+    id:'S5', topic:'Távközlési elektronika', calc:true,
+    formula:'Erősítés (dB) = 10 · log₁₀(P₂ / P₁)',
+    q:'Egy erősítő bemeneti teljesítménye 1 mW, kimeneti teljesítménye 1 W. Mekkora az erősítés dB-ben?',
+    opts:['10 dB','20 dB','30 dB','40 dB'],
+    ans:'30 dB'
+  },
+  {
+    id:'S6', topic:'Távközlési elektronika', calc:true,
+    formula:'3 dB csillapítás ≈ teljesítmény felezése',
+    q:'Egy kábel csillapítása 3 dB. Ha a bemeneti jel teljesítménye 100 mW, mekkora a kimeneti teljesítmény?',
+    opts:['97 mW','75 mW','50 mW','25 mW'],
+    ans:'50 mW'
+  },
+  {
+    id:'S7', topic:'IP hálózatok', calc:true,
+    formula:'Hosztok száma = 2ⁿ − 2  (n = hostbitek száma)',
+    q:'A 192.168.1.0/24 alhálózatban hány használható (hosztnak kiosztható) IP-cím van?',
+    opts:['252','254','255','256'],
+    ans:'254'
+  },
+  {
+    id:'S8', topic:'IP hálózatok', calc:true,
+    formula:'/26 → 6 hostbit → 2⁶ − 2 = 62',
+    q:'Egy /26 prefixű alhálózatban hány hoszt kaphat érvényes IP-címet?',
+    opts:['30','62','64','126'],
+    ans:'62'
+  },
+  {
+    id:'S9', topic:'IP hálózatok', calc:true,
+    formula:'/28 → maszk: 255.255.255.240 → blokk: 16',
+    q:'Mi a 192.168.10.100/28 cím hálózati (alhálózati) címe?',
+    opts:['192.168.10.0','192.168.10.80','192.168.10.96','192.168.10.112'],
+    ans:'192.168.10.96'
+  },
+  {
+    id:'S10', topic:'Távközlési ismeretek', calc:true,
+    formula:'λ = c / f   (c ≈ 3 × 10⁸ m/s)',
+    q:'Egy rádióhullám frekvenciája 900 MHz. Mekkora a hullámhossza?',
+    opts:['3,3 cm','33 cm','3,3 m','33 m'],
+    ans:'33 cm'
+  },
+
+  // ── TUDÁSKÉRDÉSEK ────────────────────────────────────────────────────────
+  {
+    id:'T1', topic:'Elektrotechnika',
+    q:'Melyik Kirchhoff-törvény mondja ki, hogy egy csomópontba befolyó áramok összege egyenlő a kifolyó áramok összegével?',
+    opts:['Ohm törvénye','Kirchhoff feszültségtörvénye (KVL)','Kirchhoff áramtörvénye (KCL)','Faraday indukciótörvénye'],
+    ans:'Kirchhoff áramtörvénye (KCL)'
+  },
+  {
+    id:'T2', topic:'Elektrotechnika',
+    q:'Mi a különbség a váltóáram (AC) és az egyenáram (DC) között?',
+    opts:['A DC mindig magasabb feszültségű','A váltóáram periodikusan változtatja az irányát, az egyenáram állandó irányú','A DC csak egyenirányítón átmenve vezethető','A váltóáram csak hálózati berendezésekben fordul elő'],
+    ans:'A váltóáram periodikusan változtatja az irányát, az egyenáram állandó irányú'
+  },
+  {
+    id:'T3', topic:'Távközlési elektronika',
+    q:'Mit jelent a moduláció a távközlésben?',
+    opts:['A jel felerősítését a vevőnél','A vivőhullám valamelyik jellemzőjének (pl. amplitúdó, frekvencia) változtatása az információ átviteléhez','A jel analóg–digitális átalakítását','Az antenna sugárzási irányának beállítását'],
+    ans:'A vivőhullám valamelyik jellemzőjének (pl. amplitúdó, frekvencia) változtatása az információ átviteléhez'
+  },
+  {
+    id:'T4', topic:'Távközlési elektronika',
+    q:'Mi az FM (frekvenciamoduláció) legfőbb előnye az AM-mel (amplitúdómodulációval) szemben?',
+    opts:['Nagyobb hatótávolság','Kisebb sávszélesség-igény','Jobb zajállóság – zajos környezetben is tisztább hang','Egyszerűbb adó-vevő felépítés'],
+    ans:'Jobb zajállóság – zajos környezetben is tisztább hang'
+  },
+  {
+    id:'T5', topic:'Távközlési ismeretek',
+    q:'Mit jelent a szimplex adatátviteli mód?',
+    opts:['Egyidejű kétirányú átvitel (pl. telefon)','Felváltva kétirányú átvitel (pl. walkie-talkie)','Csak egyirányú átvitel lehetséges (pl. rádióadás)','Egyszerre több felhasználó adhat'],
+    ans:'Csak egyirányú átvitel lehetséges (pl. rádióadás)'
+  },
+  {
+    id:'T6', topic:'Távközlési ismeretek',
+    q:'Mit jelent a PSTN rövidítés?',
+    opts:['Csomagkapcsolt telefonhálózat','Nyilvános kapcsolt telefonhálózat (Public Switched Telephone Network)','Titkosított magánhálózat','Protokollszabvány adathálózatokhoz'],
+    ans:'Nyilvános kapcsolt telefonhálózat (Public Switched Telephone Network)'
+  },
+  {
+    id:'T7', topic:'Távközlési ismeretek',
+    q:'Mi a legfőbb különbség az analóg és a digitális jel között?',
+    opts:['Az analóg jel gyorsabb','A digitális jel folytonos értékeket vesz fel','Az analóg jel folytonos, a digitális csak meghatározott (diszkrét) értékeket vehet fel','A digitális jel érzékenyebb a zajra'],
+    ans:'Az analóg jel folytonos, a digitális csak meghatározott (diszkrét) értékeket vehet fel'
+  },
+  {
+    id:'T8', topic:'IP hálózatok',
+    q:'Hány rétegből áll az OSI modell, és mi a 3. réteg neve?',
+    opts:['5 réteg – Adatkapcsolati réteg','7 réteg – Hálózati réteg (Network Layer)','7 réteg – Szállítási réteg (Transport Layer)','4 réteg – Internet réteg'],
+    ans:'7 réteg – Hálózati réteg (Network Layer)'
+  },
+  {
+    id:'T9', topic:'IP hálózatok',
+    q:'Mi a NAT (Network Address Translation) fő feladata?',
+    opts:['DNS névfeloldás gyorsítása','Privát IP-cím átfordítása nyilvános IP-címre (és vissza)','A hálózati forgalom titkosítása','IP-csomagok prioritásának beállítása'],
+    ans:'Privát IP-cím átfordítása nyilvános IP-címre (és vissza)'
+  },
+  {
+    id:'T10', topic:'Mobil távközlő rendszerek',
+    q:'Melyik mobilhálózati generáció vezette be a GPRS csomagkapcsolt adatátvitelt?',
+    opts:['1G (NMT)','2G – GSM/GPRS','3G – UMTS','4G – LTE'],
+    ans:'2G – GSM/GPRS'
+  },
+  {
+    id:'T11', topic:'Mobil távközlő rendszerek',
+    q:'Melyik frekvenciasávban (uplink / downlink) működik a GSM 900 rendszer?',
+    opts:['450–470 MHz / 460–480 MHz','890–915 MHz / 935–960 MHz','1710–1785 MHz / 1805–1880 MHz','1920–1980 MHz / 2110–2170 MHz'],
+    ans:'890–915 MHz / 935–960 MHz'
+  },
+  {
+    id:'T12', topic:'Mobil távközlő rendszerek',
+    q:'Mit jelent a cellás felépítés a mobilhálózatokban?',
+    opts:['Egyetlen nagy antenna fedi le az egész területet','A területet kisebb cellákra osztják, minden cellának saját bázisállomása van, és a frekvenciák szomszéd cellákban újra felhasználhatók','A felhasználók műholdon keresztül kommunikálnak','Csak beltéri használatra tervezett rendszer'],
+    ans:'A területet kisebb cellákra osztják, minden cellának saját bázisállomása van, és a frekvenciák szomszéd cellákban újra felhasználhatók'
+  },
+  {
+    id:'T13', topic:'Műsorszóró rendszerek',
+    q:'Mi a DVB-T2 legfőbb előnye a DVB-T-vel szemben?',
+    opts:['Kisebb adóteljesítményt igényel','Teljesen más frekvenciasávban működik','Nagyobb adatátviteli kapacitás – HD és 4K tartalom is sugározható','Egyszerűbb vevőkészülék szükséges hozzá'],
+    ans:'Nagyobb adatátviteli kapacitás – HD és 4K tartalom is sugározható'
+  },
+  {
+    id:'T14', topic:'Műsorszóró rendszerek',
+    q:'Melyik frekvenciatartományban sugároz a magyarországi DVB-T2 (digitális földi televízió)?',
+    opts:['FM rádió sáv (87,5–108 MHz)','VHF III. sáv (174–230 MHz)','UHF sáv (470–790 MHz)','L-sáv (1452–1492 MHz)'],
+    ans:'UHF sáv (470–790 MHz)'
+  },
+  {
+    id:'T15', topic:'Vezeték nélküli adatátvitel',
+    q:'Melyik frekvenciasávban működik a Wi-Fi 5 (802.11ac) szabvány?',
+    opts:['900 MHz','2,4 GHz','5 GHz','60 GHz'],
+    ans:'5 GHz'
+  },
+  {
+    id:'T16', topic:'Vezeték nélküli adatátvitel',
+    q:'Mi a BLE (Bluetooth Low Energy) legfőbb jellemzője?',
+    opts:['Nagyobb hatótávolság a hagyományos Bluetooth-nál','Nagyon kis energiafogyasztás – okoseszközökhöz, IoT szenzorokhoz ideális','Gyorsabb adatátviteli sebesség','Csak hangátvitelre alkalmas'],
+    ans:'Nagyon kis energiafogyasztás – okoseszközökhöz, IoT szenzorokhoz ideális'
+  },
+  {
+    id:'T17', topic:'Nagytávolságú IP hálózatok',
+    q:'Mi az MPLS (Multiprotocol Label Switching) fő előnye a hagyományos IP-routinghoz képest?',
+    opts:['Minden forgalmat titkosít','Csak IPv6-tal kompatibilis','Előre meghatározott útvonalon, garantált sávszélességgel és QoS-sel szállítja az adatokat','Helyettesíti a tűzfalat a hálózat határán'],
+    ans:'Előre meghatározott útvonalon, garantált sávszélességgel és QoS-sel szállítja az adatokat'
+  },
+  {
+    id:'T18', topic:'Digitális távközlési rendszerek üzemeltetése',
+    q:'Mit jelent a QoS (Quality of Service) a hálózatokban?',
+    opts:['A biztonsági protokollok összessége','A forgalom titkosításának szintje','A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése','Az adatátvitel maximális sebessége'],
+    ans:'A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése'
+  },
+  {
+    id:'T19', topic:'Digitális távközlési rendszerek üzemeltetése',
+    q:'Melyik protokoll biztosítja az IP hálózatokon a megbízható, kapcsolatorientált adatátvitelt?',
+    opts:['UDP','ICMP','TCP','ARP'],
+    ans:'TCP'
+  },
+  {
+    id:'T20', topic:'Távközlési architektúrák',
+    q:'Mi a különbség a kapcsoltköri (circuit-switched) és a csomagkapcsolt (packet-switched) hálózat között?',
+    opts:['A kapcsoltköri hálózat csak digitális adatot visz','Kapcsoltköri hálózatban a hívás teljes idejére lefoglalnak egy útvonalat; csomagkapcsoltban az adatot kis csomagokra bontják és megosztott útvonalon küldik','A csomagkapcsolt hálózat mindig megbízhatóbb','Napjainkban nincs köztük lényeges különbség'],
+    ans:'Kapcsoltköri hálózatban a hívás teljes idejére lefoglalnak egy útvonalat; csomagkapcsoltban az adatot kis csomagokra bontják és megosztott útvonalon küldik'
+  },
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// ÁLLAPOT
+// ════════════════════════════════════════════════════════════════════════════
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let timerInterval = null;
+let secondsLeft = 60 * 60;
+
+// ════════════════════════════════════════════════════════════════════════════
+// INDÍTÁS
+// ════════════════════════════════════════════════════════════════════════════
+function startQuiz() {
+  document.getElementById('screen-intro').style.display = 'none';
+  const sq = document.getElementById('screen-quiz');
+  sq.style.display = 'flex';
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  secondsLeft = 60 * 60;
+  buildQmap();
+  renderQuestion();
+  startTimer();
+}
+
+function restartQuiz() {
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-intro').style.display = 'flex';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+    const s = (secondsLeft % 60).toString().padStart(2,'0');
+    document.getElementById('timer-text').textContent = `${m}:${s}`;
+    const el = document.getElementById('timer');
+    el.className = 'timer';
+    if (secondsLeft <= 300) el.classList.add('warning');
+    if (secondsLeft <= 60)  { el.classList.remove('warning'); el.classList.add('danger'); }
+    if (secondsLeft <= 0)   { clearInterval(timerInterval); finishQuiz(); }
+  }, 1000);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// KÉRDÉS MEGJELENÍTÉSE
+// ════════════════════════════════════════════════════════════════════════════
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  const letters = ['A','B','C','D'];
+
+  // badge
+  const badge = document.getElementById('q-badge');
+  badge.className = 'question-badge' + (q.calc ? ' calc' : '');
+  badge.innerHTML = q.calc
+    ? `<i class="fas fa-calculator"></i> SZÁMOLÁS – ${q.topic}`
+    : `<i class="fas fa-book-open"></i> ${q.topic}`;
+
+  // formula hint
+  const fhint = document.getElementById('q-formula');
+  if (q.formula) {
+    fhint.style.display = 'flex';
+    fhint.innerHTML = `<i class="fas fa-lightbulb" style="margin-top:2px;flex-shrink:0"></i><span><strong>Képlet:</strong> ${q.formula}</span>`;
+  } else {
+    fhint.style.display = 'none';
+  }
+
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-num').textContent = current + 1;
+  document.getElementById('header-topic').textContent = q.topic;
+
+  // options
+  const container = document.getElementById('q-options');
+  container.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option' + (answers[current] === opt ? ' selected' : '');
+    div.innerHTML = `<div class="opt-letter">${letters[i]}</div><div class="opt-text">${opt}</div>`;
+    div.addEventListener('click', () => selectAnswer(opt));
+    container.appendChild(div);
+  });
+
+  // nav buttons
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === QUESTIONS.length - 1;
+
+  // progress
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('progress-fill').style.width = `${answered / QUESTIONS.length * 100}%`;
+  document.getElementById('q-answered-count').textContent = answered;
+
+  updateQmap();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// VÁLASZ KIVÁLASZTÁSA
+// ════════════════════════════════════════════════════════════════════════════
+function selectAnswer(opt) {
+  answers[current] = opt;
+  renderQuestion();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// NAVIGÁCIÓ
+// ════════════════════════════════════════════════════════════════════════════
+function navigate(dir) {
+  const next = current + dir;
+  if (next >= 0 && next < QUESTIONS.length) {
+    current = next;
+    renderQuestion();
+  }
+}
+
+function goToQuestion(idx) {
+  current = idx;
+  renderQuestion();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// KÉRDÉSTÉRKÉP
+// ════════════════════════════════════════════════════════════════════════════
+function buildQmap() {
+  const grid = document.getElementById('qmap-grid');
+  grid.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'qmap-btn' + (q.calc ? ' calc-q' : '');
+    btn.id = `qmap-${i}`;
+    btn.textContent = i + 1;
+    btn.title = q.topic;
+    btn.addEventListener('click', () => goToQuestion(i));
+    grid.appendChild(btn);
+  });
+}
+
+function updateQmap() {
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('qmap-stats').textContent = `${answered}/30 megválaszolva`;
+  QUESTIONS.forEach((q, i) => {
+    const btn = document.getElementById(`qmap-${i}`);
+    if (!btn) return;
+    btn.className = 'qmap-btn' + (q.calc ? ' calc-q' : '');
+    if (i === current)          btn.classList.add('current');
+    else if (answers[i] !== null) btn.classList.add('answered');
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BEFEJEZÉS
+// ════════════════════════════════════════════════════════════════════════════
+function confirmSubmit() {
+  const empty = answers.filter(a => a === null).length;
+  const msg = empty > 0
+    ? `Még <strong>${empty} kérdés</strong> megválaszolatlan. Ha most befejezed, ezek nem kapnak pontot.`
+    : 'Minden kérdésre válaszoltál. Biztosan befejezed?';
+  document.getElementById('overlay-msg').innerHTML = msg;
+  document.getElementById('overlay-confirm').classList.add('active');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay-confirm').classList.remove('active');
+}
+
+function finishQuiz() {
+  clearInterval(timerInterval);
+  closeOverlay();
+  document.getElementById('screen-quiz').style.display = 'none';
+  showResult();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EREDMÉNY
+// ════════════════════════════════════════════════════════════════════════════
+function showResult() {
+  const sr = document.getElementById('screen-result');
+  sr.style.display = 'flex';
+  sr.style.flexDirection = 'column';
+  sr.style.alignItems = 'center';
+
+  let correct = 0, wrong = 0, empty = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] === null) empty++;
+    else if (answers[i] === q.ans) correct++;
+    else wrong++;
+  });
+
+  const pct = Math.round(correct / QUESTIONS.length * 100);
+  const pass = pct >= 40;
+
+  const pctEl = document.getElementById('result-pct');
+  pctEl.textContent = `${pct}%`;
+  pctEl.className = 'result-pct ' + (pass ? 'pass' : 'fail');
+  document.getElementById('result-label').textContent =
+    `${correct} / ${QUESTIONS.length} helyes válasz · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
+
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-empty').textContent = empty;
+
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const ok = answers[i] === q.ans;
+    const unanswered = answers[i] === null;
+    const div = document.createElement('div');
+    div.className = 'review-item ' + (unanswered ? '' : ok ? 'ok' : 'bad');
+    let answerLine = '';
+    if (unanswered) {
+      answerLine = `<div class="review-a">Nem válaszolt · Helyes: <span class="ok">${q.ans}</span></div>`;
+    } else if (ok) {
+      answerLine = `<div class="review-a"><span class="ok"><i class="fas fa-check"></i> ${q.ans}</span></div>`;
+    } else {
+      answerLine = `<div class="review-a">Válaszod: <span class="bad">${answers[i]}</span> · Helyes: <span class="ok">${q.ans}</span></div>`;
+    }
+    div.innerHTML = `<div class="question-badge ${q.calc?'calc':''}" style="margin-bottom:6px;font-size:0.7rem">
+      ${q.calc?'<i class="fas fa-calculator"></i> SZÁMOLÁS':'<i class="fas fa-book-open"></i>'} ${q.topic}</div>
+      <div class="review-q">${i+1}. ${q.q}</div>${answerLine}`;
+    list.appendChild(div);
+  });
+
+  sr.scrollTop = 0;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
