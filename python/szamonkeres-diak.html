@@ -103,7 +103,10 @@
     <div id="diak-szam-cim"></div>
     <div id="diak-nav"></div>
     <span id="diak-pyodide-status"></span>
-    <button onclick="closeDiakOverlay()" style="margin-left:6px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
+    <button id="diak-vissza-btn" onclick="closeDiakOverlay()" style="display:none;margin-left:6px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
+      <i class="fas fa-list"></i> Lista
+    </button>
+    <button onclick="closeDiakOverlay()" style="margin-left:4px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
       <i class="fas fa-xmark"></i> Bezár
     </button>
   </div>
@@ -180,15 +183,8 @@
     <div style="margin-top:12px;font-size:0.8rem">Ha a tanárod számonkérést indít, az itt jelenik majd meg.</div>
   </div>
 
-  <!-- Overlay bezárása után megnyíló összesítő -->
-  <div id="main-ui" style="display:none">
-    <div style="text-align:center;padding:40px 20px">
-      <i class="fas fa-circle-check" style="font-size:3rem;color:#22c55e;display:block;margin-bottom:16px"></i>
-      <div style="font-size:1.3rem;font-weight:700;color:#e0e0e0;margin-bottom:8px">Beadások rögzítve</div>
-      <div style="font-size:0.9rem;color:#64748b;margin-bottom:24px">A tanár hamarosan értékeli a munkádat.</div>
-      <a href="../portal.html" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Vissza a portálra</a>
-    </div>
-  </div>
+  <!-- Számonkérés választó / összesítő -->
+  <div id="main-ui" style="display:none"></div>
 
   <div id="eredmeny-ui" style="display:none;margin-top:32px"></div>
 </div>
@@ -247,8 +243,14 @@ async function init() {
 
     if (szamonkeresek.length) {
       await loadOsszesSajatBeadas();
-      // Az első aktív számonkérést overlay-ben nyitjuk meg
-      openDiakOverlay(szamonkeresek[0]);
+      if (szamonkeresek.length === 1) {
+        // Egyetlen számonkérés → rögtön megnyitjuk
+        openDiakOverlay(szamonkeresek[0]);
+      } else {
+        // Több számonkérés → választó képernyő
+        renderKivalaszto();
+        document.getElementById('main-ui').style.display = 'block';
+      }
     } else {
       document.getElementById('empty-state').style.display='block';
     }
@@ -405,7 +407,12 @@ function openDiakOverlay(sz) {
     `<button class="diak-nav-btn${f.beadva ? ' done' : ''}" id="diak-nb-${i}" onclick="diakGoTo(${i})">${i+1}.</button>`
   ).join('');
 
+  document.getElementById('main-ui').style.display = 'none';
   document.getElementById('diak-overlay').style.display = 'flex';
+
+  // "Lista" gomb csak ha több számonkérés van
+  const vissza = document.getElementById('diak-vissza-btn');
+  if (vissza) vissza.style.display = szamonkeresek.length > 1 ? 'inline-block' : 'none';
 
   // Az első be nem adott feladatra ugrunk
   const firstOpen = diakState.feladatok.findIndex(f => !f.beadva);
@@ -564,9 +571,60 @@ async function diakBekules() {
   diakSubmitting = false;
 }
 
+function renderKivalaszto() {
+  const el = document.getElementById('main-ui');
+  el.innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:1rem;font-weight:700;color:#e0e0e0;margin-bottom:6px"><i class="fas fa-file-pen" style="color:#3b82f6;margin-right:8px"></i>Aktív számonkérések</div>
+      <div style="font-size:0.83rem;color:#64748b">Válaszd ki, melyiket szeretnéd megnyitni:</div>
+    </div>
+    ${szamonkeresek.map(sz => {
+      const feladatok = JSON.parse(sz.feladatok || '[]');
+      const beadasok = sajatBeadasok[sz.id] || [];
+      const beadottDb = feladatok.filter((f, i) => beadasok.some(b => b.feladatId === getFeladatId(f, i))).length;
+      const mindenBeadva = beadottDb === feladatok.length && feladatok.length > 0;
+      const progress = feladatok.length ? Math.round(beadottDb / feladatok.length * 100) : 0;
+      return `
+        <div onclick="openDiakOverlay(szamonkeresek.find(s=>s.id===${sz.id}))"
+          style="background:#16213e;border:1px solid ${mindenBeadva ? '#15803d' : '#1d4ed8'};border-radius:12px;padding:18px 20px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:border-color .2s"
+          onmouseover="this.style.borderColor='${mindenBeadva ? '#4ade80' : '#3b82f6'}'"
+          onmouseout="this.style.borderColor='${mindenBeadva ? '#15803d' : '#1d4ed8'}'">
+          <i class="fas ${mindenBeadva ? 'fa-circle-check' : 'fa-file-pen'}" style="font-size:1.6rem;color:${mindenBeadva ? '#4ade80' : '#60a5fa'};flex-shrink:0"></i>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:1rem;color:#e0e0e0;margin-bottom:4px">${escH(sz.cim)}</div>
+            <div style="font-size:0.8rem;color:#64748b">${feladatok.length} feladat &nbsp;·&nbsp; ${beadottDb} / ${feladatok.length} beadva</div>
+            <div style="margin-top:6px;height:4px;background:#1f2937;border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${progress}%;background:${mindenBeadva ? '#22c55e' : '#3b82f6'};border-radius:2px;transition:width .3s"></div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right" style="color:#64748b;flex-shrink:0"></i>
+        </div>`;
+    }).join('')}`;
+}
+
 function closeDiakOverlay() {
   document.getElementById('diak-overlay').style.display = 'none';
-  document.getElementById('main-ui').style.display = 'block';
+  if (szamonkeresek.length === 1) {
+    // Egyetlen számonkérés: összesítő üzenet
+    const el = document.getElementById('main-ui');
+    const allDone = diakState.feladatok.every(f => f.beadva);
+    el.innerHTML = allDone
+      ? `<div style="text-align:center;padding:40px 20px">
+           <i class="fas fa-circle-check" style="font-size:3rem;color:#22c55e;display:block;margin-bottom:16px"></i>
+           <div style="font-size:1.3rem;font-weight:700;color:#e0e0e0;margin-bottom:8px">Beadások rögzítve</div>
+           <div style="font-size:0.9rem;color:#64748b;margin-bottom:24px">A tanár hamarosan értékeli a munkádat.</div>
+           <a href="../portal.html" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Vissza a portálra</a>
+         </div>`
+      : `<div style="text-align:center;padding:40px 20px">
+           <div style="font-size:1rem;color:#fcd34d;margin-bottom:20px"><i class="fas fa-triangle-exclamation"></i> Van még be nem adott feladat</div>
+           <button class="btn btn-primary" onclick="openDiakOverlay(szamonkeresek[0])"><i class="fas fa-arrow-right"></i> Folytatás</button>
+         </div>`;
+    el.style.display = 'block';
+  } else {
+    // Több számonkérés: vissza a listához
+    renderKivalaszto();
+    document.getElementById('main-ui').style.display = 'block';
+  }
   loadEredmenyek();
 }
 
