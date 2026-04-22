@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Számonkérés – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -25,57 +26,59 @@
     .msg-ok{background:#14532d;border:1px solid #16a34a;color:#86efac}
     .empty-state{text-align:center;color:#64748b;padding:60px 20px;font-size:0.95rem}
     .empty-state i{font-size:2.5rem;margin-bottom:14px;display:block}
+    .loader{text-align:center;padding:50px;color:#64748b}
+    .loader i{font-size:2rem;margin-bottom:12px;display:block}
 
-    /* Számonkérés kártya */
-    .szam-header{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:20px 24px;margin-bottom:20px}
-    .szam-title{font-size:1.2rem;font-weight:700;color:#e0e0e0;margin-bottom:6px}
-    .szam-meta{font-size:0.82rem;color:#64748b;display:flex;gap:16px;flex-wrap:wrap}
-    .szam-meta span{display:flex;align-items:center;gap:5px}
-
-    /* Feladat kártya */
-    .feladat-card{background:#16213e;border:1px solid #1f2937;border-radius:12px;margin-bottom:16px;overflow:hidden}
-    .feladat-card-header{padding:16px 20px;border-bottom:1px solid #1f2937;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-    .feladat-card-num{font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-    .feladat-card-cim{font-size:1rem;font-weight:700;color:#e0e0e0}
-    .feladat-card-pont{font-size:0.8rem;background:#0b1120;border:1px solid #374151;border-radius:8px;padding:4px 10px;color:#94a3b8;white-space:nowrap;flex-shrink:0}
-    .feladat-card-body{padding:16px 20px}
-    .feladat-leiras{background:#0b1120;border:1px solid #374151;border-radius:8px;padding:12px 14px;font-size:0.88rem;line-height:1.6;color:#cbd5e1;margin-bottom:14px;white-space:pre-wrap}
-    .code-editor{width:100%;min-height:180px;padding:12px;background:#060d1a;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-family:'Consolas','Courier New',monospace;font-size:0.9rem;line-height:1.55;resize:vertical;outline:none;transition:border .2s}
-    .code-editor:focus{border-color:#3b82f6}
-    .feladat-card-footer{padding:12px 20px;border-top:1px solid #1f2937;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-
-    /* Beadott állapot */
-    .beadott-sav{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:0.87rem;margin-bottom:12px}
-    .beadott-sav.ok{background:#14532d40;border:1px solid #15803d;color:#86efac}
-    .beadott-sav.pending{background:#1e3a5f40;border:1px solid #1d4ed8;color:#93c5fd}
-    .pont-display{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:0.9rem;padding:4px 12px;border-radius:8px;background:#0b1120;border:1px solid #374151}
-    .pont-display.auto{color:#fcd34d}
-    .pont-display.manual{color:#86efac}
-    .pont-display.pending{color:#93c5fd}
-
-    /* Feladat típus badge */
-    .tipus-badge{font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:8px;vertical-align:middle}
-    .tipus-sajat{background:#1e1b4b;color:#a5b4fc}
-    .tipus-rendszer{background:#0f172a;color:#64748b}
-
-    /* Összesítő */
-    .osszes-bar{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:16px 20px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-    .osszes-label{font-size:0.85rem;color:#64748b}
-    .osszes-pont{font-size:1.6rem;font-weight:900;color:#e0e0e0}
-    .osszes-bar .jegy{font-size:2rem;font-weight:900;padding:8px 20px;border-radius:10px;text-align:center;min-width:60px}
+    /* Kiadott eredmény kártyák */
     .jegy-1{background:#7f1d1d;color:#fca5a5}
     .jegy-2{background:#7f1d1d;color:#fca5a5}
     .jegy-3{background:#78350f;color:#fcd34d}
     .jegy-4{background:#1a3a1a;color:#86efac}
     .jegy-5{background:#1e3a5f;color:#93c5fd}
 
-    .szam-section-sep{height:1px;background:#1f2937;margin:24px 0}
-    .loader{text-align:center;padding:50px;color:#64748b}
-    .loader i{font-size:2rem;margin-bottom:12px;display:block}
+    /* ── Teljes képernyős overlay ── */
+    #diak-overlay{position:fixed;inset:0;z-index:1000;background:#0b1120;display:none;flex-direction:column;overflow:hidden}
 
-    @media(max-width:600px){
-      .feladat-card-header{flex-direction:column}
-      .feladat-card-pont{align-self:flex-start}
+    .diak-nav-btn{padding:4px 12px;border-radius:6px;border:1px solid #374151;background:transparent;color:#64748b;cursor:pointer;font-size:0.82rem;font-weight:600;transition:.15s;white-space:nowrap}
+    .diak-nav-btn:hover{border-color:#3b82f6;color:#93c5fd}
+    .diak-nav-btn.active{border-color:#3b82f6;background:#1e3a5f;color:#93c5fd}
+    .diak-nav-btn.done{border-color:#15803d;color:#4ade80;background:#0a2a1a}
+
+    #diak-overlay-topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #1f2937;background:#16213e;flex-shrink:0;min-height:52px}
+    #diak-szam-cim{font-weight:700;font-size:0.9rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;flex-shrink:0}
+    #diak-nav{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+    #diak-pyodide-status{font-size:0.73rem;color:#64748b;white-space:nowrap;flex-shrink:0}
+
+    #diak-task-desc{padding:10px 16px 8px;border-bottom:1px solid #1f2937;flex-shrink:0;background:#0d1626}
+    #diak-task-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+    #diak-task-num{font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+    #diak-task-cim{font-size:0.97rem;font-weight:700;color:#e0e0e0}
+    #diak-task-pont{font-size:0.78rem;color:#94a3b8;margin-left:auto;white-space:nowrap}
+    #diak-task-leiras{font-size:0.88rem;color:#cbd5e1;line-height:1.65;white-space:pre-wrap;overflow-y:auto;max-height:35vh}
+    #diak-beadott-sav{margin-top:8px;padding:6px 12px;background:#0a2a1a;border:1px solid #15803d;border-radius:8px;font-size:0.83rem;color:#4ade80;display:none;align-items:center;gap:8px}
+
+    #diak-two-col{display:flex;flex:1;min-height:0;overflow:hidden}
+    #diak-editor-col{flex:1;display:flex;flex-direction:column;border-right:1px solid #1f2937;min-width:0}
+    .diak-col-header{padding:6px 12px;border-bottom:1px solid #1f2937;font-size:0.78rem;color:#64748b;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#111827}
+    #diak-readonly-badge{font-size:0.7rem;padding:1px 7px;background:#1e3a5f;color:#93c5fd;border-radius:10px}
+    #diak-monaco-editor{flex:1;min-height:0}
+
+    #diak-pyodide-col{width:360px;flex-shrink:0;display:flex;flex-direction:column;background:#060d1a}
+    #diak-inputs-wrap{padding:6px 10px;border-bottom:1px solid #1f2937;background:#0b1120;flex-shrink:0}
+    #diak-inputs{width:100%;padding:5px 8px;background:#060d1a;border:1px solid #374151;border-radius:6px;color:#e0e0e0;font-family:monospace;font-size:0.82rem;resize:none;outline:none}
+    #diak-output{flex:1;overflow-y:auto;padding:12px;font-family:monospace;font-size:0.85rem;color:#4ade80;background:#060d1a;margin:0;white-space:pre-wrap;min-height:0;line-height:1.5}
+
+    #diak-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid #1f2937;background:#16213e;flex-shrink:0;gap:10px}
+    #diak-bekules-btn{padding:7px 22px;background:#1d4ed8;border:none;border-radius:8px;color:#fff;font-size:0.88rem;font-weight:700;cursor:pointer;transition:background .2s}
+    #diak-bekules-btn:hover:not(:disabled){background:#2563eb}
+    #diak-bekules-btn.beadva{background:#15803d;cursor:default}
+    #diak-prev-btn,#diak-next-btn{padding:6px 18px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.85rem;transition:.2s}
+    #diak-prev-btn:hover,#diak-next-btn:hover{border-color:#6b7280;color:#e0e0e0}
+    #diak-next-btn.green{background:#15803d;border-color:#15803d;color:#fff;font-weight:700}
+
+    @media(max-width:700px){
+      #diak-pyodide-col{display:none}
+      #diak-szam-cim{max-width:140px}
     }
   </style>
 </head>
@@ -91,6 +94,75 @@
     <a href="../portal.html" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i> Portál</a>
   </div>
 </div>
+
+<!-- ── Teljes képernyős vizsga overlay ── -->
+<div id="diak-overlay">
+
+  <!-- Fejléc: számonkérés neve, feladat navigáció, Pyodide státusz -->
+  <div id="diak-overlay-topbar">
+    <div id="diak-szam-cim"></div>
+    <div id="diak-nav"></div>
+    <span id="diak-pyodide-status"></span>
+    <button onclick="closeDiakOverlay()" style="margin-left:6px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
+      <i class="fas fa-xmark"></i> Bezár
+    </button>
+  </div>
+
+  <!-- Feladat leírás -->
+  <div id="diak-task-desc">
+    <div id="diak-task-header">
+      <span id="diak-task-num"></span>
+      <span id="diak-task-cim"></span>
+      <span id="diak-task-pont"></span>
+    </div>
+    <div id="diak-task-leiras"></div>
+    <div id="diak-beadott-sav"></div>
+  </div>
+
+  <!-- Kéthasábos terület: Monaco + Pyodide -->
+  <div id="diak-two-col">
+
+    <!-- Monaco szerkesztő -->
+    <div id="diak-editor-col">
+      <div class="diak-col-header">
+        <i class="fas fa-code"></i> Kódszerkesztő
+        <span id="diak-readonly-badge" style="display:none">csak olvasható</span>
+      </div>
+      <div id="diak-monaco-editor"></div>
+    </div>
+
+    <!-- Pyodide futtatópanel -->
+    <div id="diak-pyodide-col">
+      <div class="diak-col-header" style="justify-content:space-between">
+        <span><i class="fas fa-terminal"></i> Futtatás</span>
+        <button id="diak-run-btn" onclick="diakRunCode()" style="padding:3px 14px;background:#15803d;border:none;border-radius:6px;color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer">
+          <i class="fas fa-play"></i> Futtatás
+        </button>
+      </div>
+      <div id="diak-inputs-wrap" style="display:none">
+        <div style="font-size:0.75rem;color:#64748b;margin-bottom:4px">input() értékek (soronként):</div>
+        <textarea id="diak-inputs" rows="2" placeholder="pl: 5&#10;Éva"></textarea>
+      </div>
+      <pre id="diak-output">(Nyomj Futtatás gombot a kód teszteléséhez)</pre>
+    </div>
+
+  </div>
+
+  <!-- Lábléc: navigáció + beküldés -->
+  <div id="diak-footer">
+    <button id="diak-prev-btn" onclick="diakGoTo(diakState.currentIdx - 1)">
+      <i class="fas fa-arrow-left"></i> Előző
+    </button>
+    <button id="diak-bekules-btn" onclick="diakBekules()">
+      <i class="fas fa-paper-plane"></i> Beküldés
+    </button>
+    <button id="diak-next-btn" onclick="diakNext()">
+      Következő <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+
+</div>
+<!-- ── overlay vége ── -->
 
 <div class="container">
   <div id="auth-error" class="msg msg-err" style="display:none">
@@ -108,17 +180,25 @@
     <div style="margin-top:12px;font-size:0.8rem">Ha a tanárod számonkérést indít, az itt jelenik majd meg.</div>
   </div>
 
-  <div id="main-ui" style="display:none"></div>
+  <!-- Overlay bezárása után megnyíló összesítő -->
+  <div id="main-ui" style="display:none">
+    <div style="text-align:center;padding:40px 20px">
+      <i class="fas fa-circle-check" style="font-size:3rem;color:#22c55e;display:block;margin-bottom:16px"></i>
+      <div style="font-size:1.3rem;font-weight:700;color:#e0e0e0;margin-bottom:8px">Beadások rögzítve</div>
+      <div style="font-size:0.9rem;color:#64748b;margin-bottom:24px">A tanár hamarosan értékeli a munkádat.</div>
+      <a href="../portal.html" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Vissza a portálra</a>
+    </div>
+  </div>
+
   <div id="eredmeny-ui" style="display:none;margin-top:32px"></div>
 </div>
 
 <script>
 const API = 'https://agazati.up.railway.app';
 let currentUser = null;
-let feladatokMap = {};   // num → task object (feladatok.txt-ből)
-let szamonkeresek = [];  // aktív számonkérések listája
-let sajatBeadasok = {};  // szamonkeresId → [{feladat_id, auto_pont, manualis_pont, max_pont, ...}]
-let submitting = new Set(); // folyamatban lévő beküldések
+let feladatokMap = {};
+let szamonkeresek = [];
+let sajatBeadasok = {};
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 (function(){
@@ -128,7 +208,6 @@ let submitting = new Set(); // folyamatban lévő beküldések
     document.getElementById('auth-error').style.display='block';
     return;
   }
-  // vendég nem láthatja
   if (u.szerep === 'vendeg') {
     document.getElementById('loading-state').style.display='none';
     document.getElementById('auth-error').style.display='block';
@@ -168,17 +247,36 @@ async function init() {
 
     if (szamonkeresek.length) {
       await loadOsszesSajatBeadas();
-      renderAll();
-      document.getElementById('main-ui').style.display='block';
+      // Az első aktív számonkérést overlay-ben nyitjuk meg
+      openDiakOverlay(szamonkeresek[0]);
     } else {
       document.getElementById('empty-state').style.display='block';
     }
 
-    // Kiadott eredmények betöltése (aktív számonkérések mellett vagy helyett)
     await loadEredmenyek();
   } catch(e) {
-    document.getElementById('loading-state').innerHTML = `<div class="msg msg-err"><i class="fas fa-triangle-exclamation"></i> Hiba a betöltés során: ${escH(e.message)}</div>`;
+    document.getElementById('loading-state').innerHTML =
+      `<div class="msg msg-err"><i class="fas fa-triangle-exclamation"></i> Hiba: ${escH(e.message)}</div>`;
   }
+}
+
+async function loadAktivSzamonkeresek() {
+  const u = currentUser;
+  const params = new URLSearchParams({ email: u.email || '' });
+  if (u.osztaly) params.append('osztaly', u.osztaly);
+  if (u.csoport) params.append('csoport', u.csoport);
+  const res = await authFetch(`${API}/api/szamonkeres/aktiv?${params}`);
+  if (!res.ok) { szamonkeresek = []; return; }
+  szamonkeresek = await res.json();
+}
+
+async function loadOsszesSajatBeadas() {
+  await Promise.all(szamonkeresek.map(async sz => {
+    try {
+      const res = await authFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(currentUser.email)}`);
+      sajatBeadasok[sz.id] = res.ok ? await res.json() : [];
+    } catch { sajatBeadasok[sz.id] = []; }
+  }));
 }
 
 async function loadEredmenyek() {
@@ -192,7 +290,7 @@ async function loadEredmenyek() {
 }
 
 function calcJegy(szaz, ph) {
-  if (szaz >= (ph.ot  || 85)) return 5;
+  if (szaz >= (ph.ot   || 85)) return 5;
   if (szaz >= (ph.negy || 70)) return 4;
   if (szaz >= (ph.harom|| 55)) return 3;
   if (szaz >= (ph.ket  || 40)) return 2;
@@ -232,26 +330,6 @@ function renderEredmenyek(list) {
   el.style.display = 'block';
 }
 
-async function loadAktivSzamonkeresek() {
-  const u = currentUser;
-  const params = new URLSearchParams({ email: u.email || '' });
-  if (u.osztaly) params.append('osztaly', u.osztaly);
-  if (u.csoport) params.append('csoport', u.csoport);
-  const res = await authFetch(`${API}/api/szamonkeres/aktiv?${params}`);
-  if (!res.ok) { szamonkeresek = []; return; }
-  szamonkeresek = await res.json();
-}
-
-async function loadOsszesSajatBeadas() {
-  await Promise.all(szamonkeresek.map(async sz => {
-    try {
-      const res = await authFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(currentUser.email)}`);
-      if (res.ok) sajatBeadasok[sz.id] = await res.json();
-      else sajatBeadasok[sz.id] = [];
-    } catch { sajatBeadasok[sz.id] = []; }
-  }));
-}
-
 // ── Feladatok.txt parse ───────────────────────────────────────────────────────
 function parseFeladatok(txt) {
   const map = {};
@@ -281,253 +359,329 @@ function parseFeladatok(txt) {
   return map;
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() {
-  const el = document.getElementById('main-ui');
-  el.innerHTML = '';
-
-  szamonkeresek.forEach((sz, idx) => {
-    if (idx > 0) {
-      const sep = document.createElement('div');
-      sep.className = 'szam-section-sep';
-      el.appendChild(sep);
-    }
-    el.appendChild(renderSzamonkeres(sz));
-  });
-}
-
-function renderSzamonkeres(sz) {
-  const feladatok = JSON.parse(sz.feladatok || '[]');
-  const csoportok = JSON.parse(sz.csoportok || '[]').join(', ');
-  const beadasok = sajatBeadasok[sz.id] || [];
-  const ponthatarak = JSON.parse(sz.ponthatarak || '{}');
-
-  const wrap = document.createElement('div');
-
-  // Fejléc
-  const header = document.createElement('div');
-  header.className = 'szam-header';
-  header.innerHTML = `
-    <div class="szam-title"><i class="fas fa-file-pen" style="color:#3b82f6;margin-right:8px"></i>${escH(sz.cim)}</div>
-    <div class="szam-meta">
-      <span><i class="fas fa-users"></i> ${escH(csoportok)}</span>
-      <span><i class="fas fa-list-check"></i> ${feladatok.length} feladat</span>
-      <span><i class="fas fa-calendar"></i> ${sz.createdAt?.substring(0,10) || ''}</span>
-    </div>`;
-  wrap.appendChild(header);
-
-  // Feladatok
-  feladatok.forEach((f, i) => {
-    const meglevo = beadasok.find(b => b.feladatId === getFeladatId(f, i));
-    wrap.appendChild(renderFeladat(sz, f, i, meglevo));
-  });
-
-  // Összesítő (ha van beadás)
-  if (beadasok.length > 0) {
-    wrap.appendChild(renderOsszes(beadasok, feladatok, ponthatarak));
-  }
-
-  return wrap;
-}
-
 function getFeladatId(f, i) {
-  // Összhangban a backend beadas.feladat_id mezőjével
   return f.tipus === 'rendszer' ? `r_${f.feladat_szam}` : `s_${i}`;
 }
 
-function renderFeladat(sz, f, i, meglevo) {
-  const feladatId = getFeladatId(f, i);
-  const isRendszer = f.tipus === 'rendszer';
-  const taskInfo = isRendszer ? feladatokMap[f.feladat_szam] : null;
-  const leiras = isRendszer ? (taskInfo?.leiras || '') : (f.szoveg || '');
-  const cim = f.cim || (taskInfo?.cim) || `${i+1}. feladat`;
+// ─────────────────────────────────────────────────────────────────────────────
+// Overlay állapot
+// ─────────────────────────────────────────────────────────────────────────────
+const diakState = {
+  szamonkeres: null,
+  feladatok: [],   // enriched: {feladatId, cim, leiras, pont, beadva, beadas}
+  currentIdx: 0,
+  drafts: {},      // feladatId → kód szöveg (mentett piszkozat navigálásnál)
+};
+let diakMonaco = null;
+let diakPyodide = null;
+let diakPyodideLoading = false;
+let diakSubmitting = false;
 
-  const card = document.createElement('div');
-  card.className = 'feladat-card';
-  card.id = `card-${sz.id}-${feladatId}`;
+function openDiakOverlay(sz) {
+  const rawFeladatok = JSON.parse(sz.feladatok || '[]');
+  const beadasok = sajatBeadasok[sz.id] || [];
 
-  const tipusBadge = isRendszer
-    ? `<span class="tipus-badge tipus-rendszer"><i class="fas fa-robot"></i> Automatikus</span>`
-    : `<span class="tipus-badge tipus-sajat"><i class="fas fa-pen"></i> Saját feladat</span>`;
-
-  card.innerHTML = `
-    <div class="feladat-card-header">
-      <div>
-        <div class="feladat-card-num">${i+1}. feladat ${tipusBadge}</div>
-        <div class="feladat-card-cim">${escH(cim)}</div>
-      </div>
-      <div class="feladat-card-pont"><i class="fas fa-star" style="color:#eab308"></i> ${f.pont} pont</div>
-    </div>
-    <div class="feladat-card-body">
-      ${leiras ? `<div class="feladat-leiras">${escH(leiras)}</div>` : ''}
-      <div id="status-${sz.id}-${feladatId}"></div>
-      ${meglevo ? '' : `<textarea class="code-editor" id="editor-${sz.id}-${feladatId}" placeholder="Ide írd a Python kódodat..."></textarea>`}
-    </div>
-    <div class="feladat-card-footer" id="footer-${sz.id}-${feladatId}"></div>`;
-
-  const statusEl = card.querySelector(`#status-${sz.id}-${feladatId}`);
-  const footerEl = card.querySelector(`#footer-${sz.id}-${feladatId}`);
-
-  if (meglevo) {
-    renderBeadottAllapot(statusEl, footerEl, meglevo, isRendszer);
-  } else {
-    footerEl.innerHTML = `
-      <span style="font-size:0.8rem;color:#64748b"><i class="fas fa-circle-info"></i> ${isRendszer ? 'Automatikusan értékelve' : 'Tanár értékeli'}</span>
-      <button class="btn btn-primary btn-sm" id="bekuldBtn-${sz.id}-${feladatId}"
-        onclick="bekuldFeladat(${sz.id}, '${escH(feladatId)}', '${escH(f.cim)}', ${f.pont})">
-        <i class="fas fa-paper-plane"></i> Beküldés
-      </button>`;
-  }
-
-  return card;
-}
-
-function renderBeadottAllapot(statusEl, footerEl, b, isRendszer) {
-  const veglegesPont = b.manualisPont !== null && b.manualisPont !== undefined ? b.manualisPont : b.autoPont;
-  const vanManualis = b.manualisPont !== null && b.manualisPont !== undefined;
-
-  let pontHtml;
-  if (isRendszer) {
-    pontHtml = `<span class="pont-display auto"><i class="fas fa-star"></i> ${b.autoPont} / ${b.maxPont} pt</span>`;
-  } else if (vanManualis) {
-    pontHtml = `<span class="pont-display manual"><i class="fas fa-star"></i> ${b.manualisPont} / ${b.maxPont} pt (tanár értékelte)</span>`;
-  } else {
-    pontHtml = `<span class="pont-display pending"><i class="fas fa-hourglass-half"></i> Értékelésre vár</span>`;
-  }
-
-  statusEl.innerHTML = `
-    <div class="beadott-sav ${vanManualis || isRendszer ? 'ok' : 'pending'}">
-      <i class="fas ${vanManualis || isRendszer ? 'fa-circle-check' : 'fa-hourglass-half'}"></i>
-      <span>Beadva ${b.submittedAt ? b.submittedAt.substring(0,16) : ''}</span>
-      ${pontHtml}
-    </div>`;
-
-  if (b.kod) {
-    footerEl.innerHTML = `
-      <button class="btn btn-ghost btn-sm" onclick="toggleKod('kod-${b.id}')">
-        <i class="fas fa-code"></i> Beadott kód megtekintése
-      </button>`;
-    const kodDiv = document.createElement('div');
-    kodDiv.className = 'feladat-card-body';
-    kodDiv.style.paddingTop = '0';
-    kodDiv.innerHTML = `<pre id="kod-${b.id}" style="display:none;background:#060d1a;border:1px solid #374151;border-radius:8px;padding:12px;font-size:0.85rem;white-space:pre-wrap;color:#e0e0e0;font-family:monospace;max-height:300px;overflow-y:auto">${escH(b.kod)}</pre>`;
-    footerEl.closest('.feladat-card').appendChild(kodDiv);
-  } else {
-    footerEl.innerHTML = '';
-  }
-}
-
-function toggleKod(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-function renderOsszes(beadasok, feladatok, ponthatarak) {
-  const maxOssz = feladatok.reduce((s, f) => s + (f.pont || 0), 0);
-  let elertOssz = 0;
-  beadasok.forEach(b => {
-    const pont = b.manualisPont !== null && b.manualisPont !== undefined ? b.manualisPont : b.autoPont;
-    elertOssz += pont || 0;
+  diakState.szamonkeres = sz;
+  diakState.currentIdx = 0;
+  diakState.drafts = {};
+  diakState.feladatok = rawFeladatok.map((f, i) => {
+    const feladatId = getFeladatId(f, i);
+    const isRendszer = f.tipus === 'rendszer';
+    const taskInfo = isRendszer ? feladatokMap[f.feladat_szam] : null;
+    return {
+      feladatId,
+      cim:     f.cim || taskInfo?.cim || `${i+1}. feladat`,
+      leiras:  isRendszer ? (taskInfo?.leiras || '') : (f.szoveg || ''),
+      pont:    f.pont,
+      beadva:  beadasok.some(b => b.feladatId === feladatId),
+      beadas:  beadasok.find(b => b.feladatId === feladatId) || null,
+    };
   });
 
-  const szazalek = maxOssz > 0 ? Math.round(elertOssz / maxOssz * 100) : 0;
-  let jegy = 1;
-  if (szazalek >= (ponthatarak.ot || 85)) jegy = 5;
-  else if (szazalek >= (ponthatarak.negy || 70)) jegy = 4;
-  else if (szazalek >= (ponthatarak.harom || 55)) jegy = 3;
-  else if (szazalek >= (ponthatarak.ket || 40)) jegy = 2;
+  document.getElementById('diak-szam-cim').textContent = sz.cim;
 
-  const vanFuggoErtekel = beadasok.some(b => b.manualisPont === null || b.manualisPont === undefined);
-  const note = vanFuggoErtekel ? '<div style="font-size:0.78rem;color:#64748b;margin-top:6px"><i class="fas fa-circle-info"></i> Egyes feladatokat még a tanár értékeli – az eredmény változhat</div>' : '';
+  const navEl = document.getElementById('diak-nav');
+  navEl.innerHTML = diakState.feladatok.map((f, i) =>
+    `<button class="diak-nav-btn${f.beadva ? ' done' : ''}" id="diak-nb-${i}" onclick="diakGoTo(${i})">${i+1}.</button>`
+  ).join('');
 
-  const div = document.createElement('div');
-  div.className = 'osszes-bar';
-  div.innerHTML = `
-    <div>
-      <div class="osszes-label">Összesített eredmény (${beadasok.length} / ${feladatok.length} feladatból)</div>
-      <div class="osszes-pont">${elertOssz} / ${maxOssz} pont &nbsp;<span style="font-size:1rem;color:#64748b">(${szazalek}%)</span></div>
-      ${note}
-    </div>
-    <div class="jegy jegy-${jegy}">${jegy}</div>`;
-  return div;
+  document.getElementById('diak-overlay').style.display = 'flex';
+
+  // Az első be nem adott feladatra ugrunk
+  const firstOpen = diakState.feladatok.findIndex(f => !f.beadva);
+  diakGoTo(firstOpen >= 0 ? firstOpen : 0);
+
+  initDiakMonaco();
+  loadDiakPyodide();
 }
 
-// ── Beküldés ──────────────────────────────────────────────────────────────────
-async function bekuldFeladat(szamonkeresId, feladatId, feladatNev, maxPont) {
-  const editorId = `editor-${szamonkeresId}-${feladatId}`;
-  const btnId = `bekuldBtn-${szamonkeresId}-${feladatId}`;
-  const editor = document.getElementById(editorId);
-  const btn = document.getElementById(btnId);
+function diakGoTo(idx) {
+  if (idx < 0 || idx >= diakState.feladatok.length) return;
 
-  if (!editor || submitting.has(`${szamonkeresId}-${feladatId}`)) return;
+  // Piszkozat mentése az elhagyott feladathoz (ha még nem adta be)
+  const prev = diakState.feladatok[diakState.currentIdx];
+  if (diakMonaco && !prev.beadva) {
+    diakState.drafts[prev.feladatId] = diakMonaco.getValue();
+  }
 
-  const kod = editor.value.trim();
+  diakState.currentIdx = idx;
+  const t = diakState.feladatok[idx];
+  const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
+
+  // Navigáció gombok
+  document.querySelectorAll('.diak-nav-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+
+  // Feladat fejléc
+  document.getElementById('diak-task-num').textContent = `${idx + 1}. feladat`;
+  document.getElementById('diak-task-cim').textContent = t.cim;
+  document.getElementById('diak-task-pont').textContent = `${t.pont} pont`;
+  document.getElementById('diak-task-leiras').textContent = t.leiras || '(nincs leírás)';
+
+  // Beadott állapot sáv
+  const sav = document.getElementById('diak-beadott-sav');
+  if (t.beadva) {
+    const b = t.beadas;
+    const pont = b?.manualisPont != null ? b.manualisPont : b?.autoPont;
+    const pontSzov = pont != null ? ` · ${pont} / ${t.pont} pont` : '';
+    sav.style.display = 'flex';
+    sav.innerHTML = `<i class="fas fa-circle-check"></i> Beadva${pontSzov}`;
+  } else {
+    sav.style.display = 'none';
+  }
+
+  // Monaco tartalom és módja
+  if (diakMonaco) {
+    diakMonaco.setValue(kod);
+    diakMonaco.updateOptions({ readOnly: t.beadva });
+  }
+  const ro = document.getElementById('diak-readonly-badge');
+  if (ro) ro.style.display = t.beadva ? 'inline' : 'none';
+
+  // input() mező láthatósága
+  document.getElementById('diak-inputs-wrap').style.display =
+    kod.includes('input(') ? 'block' : 'none';
+
+  // Kimenet törlése
+  document.getElementById('diak-output').textContent =
+    '(Nyomj Futtatás gombot a kód teszteléséhez)';
+
+  // Beküldés gomb
+  const bekulesBtn = document.getElementById('diak-bekules-btn');
+  bekulesBtn.disabled = t.beadva;
+  bekulesBtn.className = t.beadva ? 'beadva' : '';
+  bekulesBtn.innerHTML = t.beadva
+    ? '<i class="fas fa-circle-check"></i> Beadva'
+    : '<i class="fas fa-paper-plane"></i> Beküldés';
+
+  // Navigáció gombok
+  const isFirst = idx === 0;
+  const isLast  = idx === diakState.feladatok.length - 1;
+  document.getElementById('diak-prev-btn').style.visibility = isFirst ? 'hidden' : 'visible';
+
+  const nextBtn = document.getElementById('diak-next-btn');
+  if (isLast) {
+    const mindenBeadva = diakState.feladatok.every(f => f.beadva);
+    nextBtn.textContent = mindenBeadva ? 'Összesítő' : 'Bezárás';
+    nextBtn.className = mindenBeadva ? 'green' : '';
+  } else {
+    nextBtn.innerHTML = 'Következő <i class="fas fa-arrow-right"></i>';
+    nextBtn.className = '';
+  }
+}
+
+function diakNext() {
+  const isLast = diakState.currentIdx === diakState.feladatok.length - 1;
+  if (isLast) {
+    closeDiakOverlay();
+  } else {
+    diakGoTo(diakState.currentIdx + 1);
+  }
+}
+
+async function diakBekules() {
+  if (diakSubmitting) return;
+  const idx = diakState.currentIdx;
+  const t = diakState.feladatok[idx];
+  if (t.beadva) return;
+
+  const kod = diakMonaco ? diakMonaco.getValue().trim() : '';
   if (!kod) { alert('Írd be a megoldásodat mielőtt beküldöd!'); return; }
 
-  submitting.add(`${szamonkeresId}-${feladatId}`);
+  diakSubmitting = true;
+  const btn = document.getElementById('diak-bekules-btn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
 
   try {
-    const res = await authFetch(`${API}/api/szamonkeres/${szamonkeresId}/beadas`, {
+    const sz = diakState.szamonkeres;
+    const res = await authFetch(`${API}/api/szamonkeres/${sz.id}/beadas`, {
       method: 'POST',
       body: JSON.stringify({
         tanuloEmail: currentUser.email,
-        tanuloNev: currentUser.nev || currentUser.email,
-        osztaly: currentUser.osztaly || null,
-        csoport: currentUser.csoport || null,
-        feladatId,
+        tanuloNev:   currentUser.nev || currentUser.email,
+        osztaly:     currentUser.osztaly || null,
+        csoport:     currentUser.csoport || null,
+        feladatId:   t.feladatId,
         kod,
-        autoPont: 0,    // automatikus pontozás nincs: szerver értékeli (rendszer feladatoknál alapból 0 a beküldés, tanár állítja)
-        maxPont
+        autoPont:    0,
+        maxPont:     t.pont,
       })
     });
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Hiba a beküldés során');
 
-    // Frissítjük a lokális állapotot
-    if (!sajatBeadasok[szamonkeresId]) sajatBeadasok[szamonkeresId] = [];
-    sajatBeadasok[szamonkeresId].push({
+    // Állapot frissítés
+    t.beadva = true;
+    t.beadas = {
       id: data.id || 0,
-      feladatId,
+      feladatId: t.feladatId,
       kod,
       autoPont: data.autoPont || 0,
       manualisPont: data.manualisPont ?? null,
-      maxPont,
-      submittedAt: new Date().toISOString()
-    });
+      maxPont: t.pont,
+      submittedAt: new Date().toISOString(),
+    };
 
-    // Újrarendereljük a kártyát
-    const cardEl = document.getElementById(`card-${szamonkeresId}-${feladatId}`);
-    if (cardEl) {
-      const sz = szamonkeresek.find(s => s.id === szamonkeresId);
-      if (sz) {
-        const feladatok = JSON.parse(sz.feladatok || '[]');
-        const idx = feladatok.findIndex((_, i) => getFeladatId(_, i) === feladatId);
-        if (idx >= 0) {
-          const newCard = renderFeladat(sz, feladatok[idx], idx, sajatBeadasok[szamonkeresId].find(b => b.feladatId === feladatId));
-          cardEl.replaceWith(newCard);
-        }
-      }
-    }
+    // Nav gomb zöld
+    const navBtn = document.getElementById(`diak-nb-${idx}`);
+    if (navBtn) navBtn.classList.add('done');
 
-    // Összesítő frissítése
-    const sz = szamonkeresek.find(s => s.id === szamonkeresId);
-    if (sz) {
-      const existingBar = document.querySelector('.osszes-bar');
-      const feladatok = JSON.parse(sz.feladatok || '[]');
-      const ponthatarak = JSON.parse(sz.ponthatarak || '{}');
-      const newBar = renderOsszes(sajatBeadasok[szamonkeresId], feladatok, ponthatarak);
-      if (existingBar) existingBar.replaceWith(newBar);
-      else document.getElementById('main-ui').appendChild(newBar);
-    }
+    // Megjelenítés frissítése
+    diakGoTo(idx);
+
+    // Auto-lépés a következő be nem adott feladatra
+    const next = diakState.feladatok.findIndex((f, i) => i > idx && !f.beadva);
+    if (next >= 0) setTimeout(() => diakGoTo(next), 400);
 
   } catch(e) {
     alert('Hiba: ' + e.message);
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-paper-plane"></i> Beküldés';
-    submitting.delete(`${szamonkeresId}-${feladatId}`);
+  }
+  diakSubmitting = false;
+}
+
+function closeDiakOverlay() {
+  document.getElementById('diak-overlay').style.display = 'none';
+  document.getElementById('main-ui').style.display = 'block';
+  loadEredmenyek();
+}
+
+// ── Pyodide futtatás ──────────────────────────────────────────────────────────
+async function diakRunCode() {
+  const outputEl = document.getElementById('diak-output');
+  const kod = diakMonaco ? diakMonaco.getValue() : '';
+
+  if (!diakPyodide) {
+    outputEl.textContent = diakPyodideLoading
+      ? 'Python betöltése folyamatban, kérlek várj...'
+      : 'Python nem töltődött be.';
+    return;
+  }
+
+  outputEl.textContent = '▶ Futtatás...\n';
+
+  const rawInputs = document.getElementById('diak-inputs')?.value || '';
+  const inputQueue = rawInputs.split('\n').map(s => s.trim()).filter(Boolean);
+
+  try {
+    diakPyodide.globals.set('_diak_input_queue', diakPyodide.toPy(inputQueue));
+
+    await diakPyodide.runPythonAsync(`
+import sys, builtins
+from io import StringIO
+_stdout = StringIO()
+_stderr = StringIO()
+sys.stdout = _stdout
+sys.stderr = _stderr
+_q = list(_diak_input_queue)
+_qi = [0]
+def _input(prompt=''):
+    sys.stdout.write(str(prompt))
+    if _qi[0] < len(_q):
+        v = _q[_qi[0]]; _qi[0] += 1
+        sys.stdout.write(v + '\\n')
+        return v
+    return ''
+builtins.input = _input
+`);
+
+    await diakPyodide.runPythonAsync(kod);
+
+    const stdout = diakPyodide.runPython('_stdout.getvalue()');
+    const stderr = diakPyodide.runPython('_stderr.getvalue()');
+    outputEl.textContent = stdout || '(nincs kimenet)';
+    if (stderr) outputEl.textContent += '\n⚠ Hibák:\n' + stderr;
+  } catch(e) {
+    outputEl.textContent = '✗ Hiba:\n' + e.message;
+  } finally {
+    try { diakPyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__'); } catch {}
+  }
+
+  // input() mező láthatósága az aktuális kódhoz
+  document.getElementById('diak-inputs-wrap').style.display =
+    kod.includes('input(') ? 'block' : 'none';
+}
+
+// ── Monaco inicializálás ──────────────────────────────────────────────────────
+function initDiakMonaco() {
+  if (diakMonaco) {
+    // Már inicializálva van, csak frissítjük a tartalmat
+    const t = diakState.feladatok[diakState.currentIdx];
+    const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
+    diakMonaco.setValue(kod);
+    diakMonaco.updateOptions({ readOnly: t.beadva });
+    return;
+  }
+  if (typeof require === 'undefined') return;
+  require(['vs/editor/editor.main'], () => {
+    const container = document.getElementById('diak-monaco-editor');
+    if (!container || !diakState.feladatok.length) return;
+    const t = diakState.feladatok[diakState.currentIdx];
+    const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
+    diakMonaco = monaco.editor.create(container, {
+      value: kod,
+      language: 'python',
+      theme: 'vs-dark',
+      readOnly: t.beadva,
+      minimap: { enabled: false },
+      fontSize: 14,
+      lineNumbers: 'on',
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+    });
+    // input() mező frissítése gépelés közben
+    diakMonaco.onDidChangeModelContent(() => {
+      const v = diakMonaco.getValue();
+      document.getElementById('diak-inputs-wrap').style.display =
+        v.includes('input(') ? 'block' : 'none';
+    });
+  });
+}
+
+// ── Pyodide betöltés ──────────────────────────────────────────────────────────
+async function loadDiakPyodide() {
+  if (diakPyodide || diakPyodideLoading) return;
+  diakPyodideLoading = true;
+  const statusEl = document.getElementById('diak-pyodide-status');
+  if (statusEl) statusEl.textContent = 'Python betöltése...';
+  try {
+    if (typeof loadPyodide === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    diakPyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' });
+    if (statusEl) statusEl.textContent = 'Python kész';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Python betöltési hiba';
+    diakPyodideLoading = false;
   }
 }
 

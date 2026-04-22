@@ -2858,7 +2858,9 @@
             topbarBtn.style.display = 'inline-flex';
             if (!vanAktiv) topbarBtn.classList.add('eredmeny');
             const badge = document.getElementById('topbar-szamonkeres-badge');
-            if (badge) { badge.style.display = 'flex'; badge.textContent = aktivak.length + eredmenyek.length; }
+            // Badge: csak az aktuálisan megjelenített kategória száma
+            const badgeCount = vanAktiv ? aktivak.length : eredmenyek.length;
+            if (badge && badgeCount > 0) { badge.style.display = 'flex'; badge.textContent = badgeCount; }
         }
 
         // Modal csak akkor ugrik fel automatikusan, ha még nem látta ebben a munkamenetben
@@ -2876,6 +2878,9 @@
     function openSzamonkeresModal() {
         if (!_szamModalData) return;
         const { aktivak, eredmenyek, vanAktiv } = _szamModalData;
+        // Badge eltüntetése: a felhasználó megnyitotta, látta a tartalmat
+        const badge = document.getElementById('topbar-szamonkeres-badge');
+        if (badge) badge.style.display = 'none';
 
         const box = document.getElementById('szamonkeres-modal-box');
         const titleEl = document.getElementById('szam-modal-title');
