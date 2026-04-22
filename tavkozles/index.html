@@ -91,10 +91,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 .review-list{display:flex;flex-direction:column;gap:8px;}
 .review-item{background:#0d1117;border-radius:8px;padding:12px 14px;border-left:3px solid #30363d;}
 .review-item.ok{border-color:#22c55e;}
+.review-item.partial{border-color:#f59e0b;}
 .review-item.bad{border-color:#ef4444;}
 .review-q{font-size:0.82rem;color:#c9d1d9;margin-bottom:4px;}
 .review-a{font-size:0.78rem;color:#8b949e;}
 .review-a span.ok{color:#22c55e;}
+.review-a span.partial{color:#f59e0b;}
 .review-a span.bad{color:#ef4444;}
 .btn-restart{padding:12px 32px;border-radius:8px;border:none;background:#1f6feb;color:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;margin-top:16px;}
 .btn-restart:hover{background:#388bfd;}
@@ -249,10 +251,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
       <div class="result-pct" id="result-pct">—</div>
       <div class="result-label" id="result-label"></div>
     </div>
-    <div class="result-stats" style="grid-template-columns:repeat(4,1fr);">
+    <div class="result-stats" style="grid-template-columns:repeat(5,1fr);">
       <div class="stat-box">
         <div class="stat-val" id="stat-correct" style="color:#22c55e">—</div>
-        <div class="stat-lbl">Helyes</div>
+        <div class="stat-lbl">Teljes</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-partial" style="color:#f59e0b">—</div>
+        <div class="stat-lbl">Részleges</div>
       </div>
       <div class="stat-box">
         <div class="stat-val" id="stat-wrong" style="color:#ef4444">—</div>
@@ -1473,10 +1479,16 @@ function calcPoints(q, ans) {
   }
   if (q.type === 'multiple') {
     if (!ans || ans.length === 0) return 0;
-    return [...ans].sort().join('|') === [...q.ans].sort().join('|') ? q.points : 0;
+    const correctSel = ans.filter(a => q.ans.includes(a)).length;
+    const wrongSel   = ans.filter(a => !q.ans.includes(a)).length;
+    const raw = (correctSel - wrongSel) / q.ans.length * q.points;
+    return Math.max(0, Math.round(raw * 10) / 10);
   }
   if (q.type === 'ranking') {
-    return JSON.stringify(ans) === JSON.stringify(q.ans) ? q.points : 0;
+    if (!ans) return 0;
+    const correctPos = ans.filter((item, i) => item === q.ans[i]).length;
+    const raw = correctPos / q.ans.length * q.points;
+    return Math.round(raw * 10) / 10;
   }
   return 0;
 }
@@ -1587,13 +1599,16 @@ function showResult() {
   sr.style.flexDirection = 'column';
   sr.style.alignItems = 'center';
 
-  let correct = 0, wrong = 0, empty = 0, earned = 0;
+  let correct = 0, partial = 0, wrong = 0, empty = 0, earned = 0;
   const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
 
   shuffledQuestions.forEach((q, i) => {
     if (!isAnswered(i)) { empty++; return; }
     const pts = calcPoints(q, answers[i]);
-    if (pts > 0) { correct++; earned += pts; } else wrong++;
+    earned += pts;
+    if (pts === q.points) correct++;
+    else if (pts > 0)     partial++;
+    else                  wrong++;
   });
 
   const pct = Math.round(earned / totalPts * 100);
@@ -1607,6 +1622,7 @@ function showResult() {
     `${earned} / ${totalPts} pont · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
 
   document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-partial').textContent = partial;
   document.getElementById('stat-wrong').textContent = wrong;
   document.getElementById('stat-empty').textContent = empty;
   document.getElementById('stat-points').textContent = `${earned}/${totalPts}`;
@@ -1616,9 +1632,10 @@ function showResult() {
   shuffledQuestions.forEach((q, i) => {
     const answered = isAnswered(i);
     const pts = answered ? calcPoints(q, answers[i]) : 0;
-    const ok = pts > 0;
+    const full = pts === q.points;
+    const part = pts > 0 && !full;
     const div = document.createElement('div');
-    div.className = 'review-item ' + (!answered ? '' : ok ? 'ok' : 'bad');
+    div.className = 'review-item ' + (!answered ? '' : full ? 'ok' : part ? 'partial' : 'bad');
 
     const fmtAns = a => {
       if (q.type === 'multiple') return a && a.length ? a.join(', ') : '(nem válaszolt)';
@@ -1631,11 +1648,16 @@ function showResult() {
       return q.ans;
     };
 
-    let answerLine = !answered
-      ? `<div class="review-a">Nem válaszolt · Helyes: <span class="ok">${fmtCorrect()}</span></div>`
-      : ok
-        ? `<div class="review-a"><span class="ok"><i class="fas fa-check"></i> ${fmtAns(answers[i])}</span> <span style="color:#fbbf24">+${pts} pont</span></div>`
-        : `<div class="review-a">Válaszod: <span class="bad">${fmtAns(answers[i])}</span> · Helyes: <span class="ok">${fmtCorrect()}</span></div>`;
+    let answerLine;
+    if (!answered) {
+      answerLine = `<div class="review-a">Nem válaszolt · Helyes: <span class="ok">${fmtCorrect()}</span></div>`;
+    } else if (full) {
+      answerLine = `<div class="review-a"><span class="ok"><i class="fas fa-check"></i> ${fmtAns(answers[i])}</span> <span style="color:#fbbf24">+${pts} pont</span></div>`;
+    } else if (part) {
+      answerLine = `<div class="review-a"><span class="partial"><i class="fas fa-check-circle"></i> Részleges: ${fmtAns(answers[i])}</span> · Helyes: <span class="ok">${fmtCorrect()}</span> <span style="color:#fbbf24">+${pts} pont</span></div>`;
+    } else {
+      answerLine = `<div class="review-a">Válaszod: <span class="bad">${fmtAns(answers[i])}</span> · Helyes: <span class="ok">${fmtCorrect()}</span></div>`;
+    }
 
     div.innerHTML = `<div class="question-badge ${q.calc?'calc':''}" style="margin-bottom:6px;font-size:0.7rem">
       ${q.calc?'<i class="fas fa-calculator"></i> SZÁMOLÁS':'<i class="fas fa-book-open"></i>'} ${q.topic}
@@ -1650,17 +1672,18 @@ function showResult() {
 
 function downloadResult() {
   const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
-  let correct = 0, wrong = 0, empty = 0;
+  let correct = 0, partial = 0, wrong = 0, empty = 0;
   const valaszok = shuffledQuestions.map((q, i) => {
     const answered = isAnswered(i);
     const pts = answered ? calcPoints(q, answers[i]) : 0;
-    const ok = pts > 0;
-    if (!answered) empty++; else if (ok) correct++; else wrong++;
+    const full = pts === q.points;
+    const part = pts > 0 && !full;
+    if (!answered) empty++; else if (full) correct++; else if (part) partial++; else wrong++;
     return {
       id: q.id, tema: q.topic, kerdes: q.q, tipus: q.type,
       valasz: answers[i] ?? '(nem válaszolt)', helyes_valasz: q.ans,
       pontszam: pts, max_pont: q.points,
-      eredmeny: !answered ? 'üres' : ok ? 'helyes' : 'helytelen'
+      eredmeny: !answered ? 'üres' : full ? 'helyes' : part ? 'részleges' : 'helytelen'
     };
   });
   const earned = valaszok.reduce((s, v) => s + v.pontszam, 0);
