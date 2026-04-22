@@ -2861,8 +2861,16 @@
             if (badge) { badge.style.display = 'flex'; badge.textContent = aktivak.length + eredmenyek.length; }
         }
 
-        // Modal megnyitása automatikusan
-        openSzamonkeresModal();
+        // Modal csak akkor ugrik fel automatikusan, ha még nem látta ebben a munkamenetben
+        const seenKey = 'szamModalSeen';
+        const seenIds = new Set((sessionStorage.getItem(seenKey) || '').split(',').filter(Boolean));
+        const currentIds = [...aktivak, ...eredmenyek].map(sz => String(sz.id));
+        const hasNew = currentIds.some(id => !seenIds.has(id));
+        if (hasNew) {
+            currentIds.forEach(id => seenIds.add(id));
+            sessionStorage.setItem(seenKey, [...seenIds].join(','));
+            openSzamonkeresModal();
+        }
     }
 
     function openSzamonkeresModal() {
