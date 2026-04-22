@@ -1215,6 +1215,48 @@ const QUESTION_BANK = [
 
   // ── NEHEZEBB SZÁMOLÁSI FELADATOK ──────────────────────────────────────────
   {
+    id:'S21', type:'single', topic:'Elektrotechnika', calc:true, points:5,
+    formula:'Id = IDSS · (1 − VGS / VP)²',
+    q:'Egy J-FET tranzisztor adatai: IDSS = 8 mA, VP = −4 V. Ha VGS = −2 V, mekkora a drain áram (Id)?',
+    opts:['0,5 mA','1 mA','2 mA','4 mA'],
+    ans:'2 mA'
+  },
+  {
+    id:'S22', type:'single', topic:'Távközlési elektronika', calc:true, points:5,
+    formula:'Av = gm · RD   (forrás-erősítő kapcsolás)',
+    q:'Egy J-FET forrás-erősítő kapcsolásban gm = 4 mS és RD = 1,5 kΩ. Mekkora a feszültségerősítés abszolút értéke?',
+    opts:['2','4','6','8'],
+    ans:'6'
+  },
+  {
+    id:'S23', type:'single', topic:'Elektrotechnika', calc:true, points:4,
+    formula:'τ = R · C',
+    q:'Egy RC szűrőben R = 10 kΩ és C = 100 μF. Mekkora az időállandó (τ)?',
+    opts:['0,1 s','0,5 s','1 s','10 s'],
+    ans:'1 s'
+  },
+  {
+    id:'S24', type:'single', topic:'Távközlési elektronika', calc:true, points:5,
+    formula:'f₀ = 1 / (2π · √(L · C))',
+    q:'Egy soros LC kör elemei: L = 100 μH, C = 100 pF. Mekkora a rezonanciafrekvencia (közelítve)?',
+    opts:['160 kHz','1,6 MHz','16 MHz','160 MHz'],
+    ans:'1,6 MHz'
+  },
+  {
+    id:'S25', type:'single', topic:'Elektrotechnika', calc:true, points:4,
+    formula:'U₂ / U₁ = N₂ / N₁',
+    q:'Egy transzformátor primer tekercse 1000 menetből áll, szekunder tekercse 50 menetből. A primer feszültség 230 V. Mekkora a szekunder feszültség?',
+    opts:['4,6 V','11,5 V','23 V','46 V'],
+    ans:'11,5 V'
+  },
+  {
+    id:'S26', type:'single', topic:'Távközlési elektronika', calc:true, points:4,
+    formula:'Xc = 1 / (2π · f · C)',
+    q:'Egy 100 nF-os kondenzátor reaktanciája 1 kHz-es frekvencián (közelítve)?',
+    opts:['16 Ω','160 Ω','1,6 kΩ','16 kΩ'],
+    ans:'1,6 kΩ'
+  },
+  {
     id:'S18', type:'single', topic:'Elektrotechnika', calc:true, points:4,
     formula:'Vegyes: R_par = (R₂·R₃)/(R₂+R₃), majd R = R₁ + R_par',
     q:'R₁ = 60 Ω sorba van kötve R₂ = 120 Ω és R₃ = 60 Ω párhuzamos kombinációjával. Mekkora az eredő ellenállás?',
@@ -1237,6 +1279,48 @@ const QUESTION_BANK = [
   },
 
   // ── NEHEZEBB ELMÉLETI KÉRDÉSEK ────────────────────────────────────────────
+  {
+    id:'T66', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Milyen magasságban keringenek a GPS műholdak, és milyen pályatípuson?',
+    opts:['~800 km – LEO (Low Earth Orbit)','~20 200 km – MEO (Medium Earth Orbit)','~35 786 km – GEO (Geostacionárius)','~1 500 km – LEO, az Iridium rendszerrel megegyező pályán'],
+    ans:'~20 200 km – MEO (Medium Earth Orbit)'
+  },
+  {
+    id:'T67', type:'single', topic:'Távközlési ismeretek', points:3,
+    q:'A GPS rendszerben minimálisan hány műholdat kell egyszerre "látni" a pontos háromdimenziós helymeghatározáshoz, és miért?',
+    opts:['2 műhold – elegendő a szélességi és hosszúsági koordinátához','3 műhold – kettő a síkbeli, egy a magassági koordinátához','4 műhold – három a térbeli pozícióhoz, egy negyedik az órahiba korrekciójához','6 műhold – minden pályasíkból legalább egy szükséges'],
+    ans:'4 műhold – három a térbeli pozícióhoz, egy negyedik az órahiba korrekciójához'
+  },
+  {
+    id:'T68', type:'single', topic:'Távközlési ismeretek', points:3,
+    q:'Miért nem alkalmas a GEO (geostacionárius) műhold valós idejű hangtelefonálásra, és mi a tipikus keringési magassága?',
+    opts:['Nincs elegendő sávszélessége – max. 1 Mbit/s; ~1 200 km magasságban kering','~35 786 km-es magasságból eredő nagy jelkésés (kb. 250 ms egy irányban) miatt, ami kettős irányú hívásban ~500 ms-os késleltetést jelent','Kizárólag analóg jeleket képes közvetíteni; ~800 km magasságban kering','A GEO műholdak nem láthatók a sarkkörön túl; ~20 200 km magasságban keringenek'],
+    ans:'~35 786 km-es magasságból eredő nagy jelkésés (kb. 250 ms egy irányban) miatt, ami kettős irányú hívásban ~500 ms-os késleltetést jelent'
+  },
+  {
+    id:'T69', type:'single', topic:'Távközlési elektronika', points:3,
+    q:'Mi a J-FET és a MOSFET (szigetelt kapu tranzisztor) közötti legfontosabb különbség?',
+    opts:['Csak a méret különbözik – funkcionalitásban azonosak','A J-FET gate-je p-n átmenettel csatolódik a csatornához; a MOSFET gate-je vékony oxidréteggel (SiO₂) van szigetelve – ezért a MOSFET bemeneti ellenállása nagyságrendekkel magasabb','A J-FET csak N-csatornás lehet; a MOSFET csak P-csatornás','A J-FET nagyobb teljesítményű; a MOSFET kizárólag kis jelekre alkalmas'],
+    ans:'A J-FET gate-je p-n átmenettel csatolódik a csatornához; a MOSFET gate-je vékony oxidréteggel (SiO₂) van szigetelve – ezért a MOSFET bemeneti ellenállása nagyságrendekkel magasabb'
+  },
+  {
+    id:'T70', type:'single', topic:'Digitális rendszerek üzemeltetése', points:3,
+    q:'Mi a különbség az IPsec Transport módja és Tunnel módja között?',
+    opts:['Transport módban a teljes IP-csomag, Tunnel módban csak az adatmező titkosítódik','Transport módban az eredeti IP-fejléc megmarad és csak az adatmező titkosítódik; Tunnel módban az egész IP-csomag titkosítódik és új IP-fejlécet kap – ez jellemző a VPN alagutakra','A két mód között nincs érdemi különbség, csak a konfiguráció neve eltérő','Tunnel módot kizárólag IPv6-hoz, Transport módot kizárólag IPv4-hez alkalmazzák'],
+    ans:'Transport módban az eredeti IP-fejléc megmarad és csak az adatmező titkosítódik; Tunnel módban az egész IP-csomag titkosítódik és új IP-fejlécet kap – ez jellemző a VPN alagutakra'
+  },
+  {
+    id:'T71', type:'single', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Mit jelent az MPLS-ben a "push", "swap" és "pop" művelet?',
+    opts:['Push = csomag küldése; Swap = csomag másolása; Pop = csomag törlése','Push = MPLS-cimke hozzáadása a kerethez; Swap = cimke cseréje a következő LSR routeren; Pop = cimke eltávolítása a célállomás előtt','Mindhárom az adattitkosítás egy-egy fázisa az MPLS hálózatban','Push = prioritás növelése; Swap = QoS frissítése; Pop = csomag ejtése'],
+    ans:'Push = MPLS-cimke hozzáadása a kerethez; Swap = cimke cseréje a következő LSR routeren; Pop = cimke eltávolítása a célállomás előtt'
+  },
+  {
+    id:'T72', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mit jelent az antenna dBi értéke?',
+    opts:['A decibel értéke a bemeneti és kimeneti teljesítmény arányaként','Az antenna iránynyeresége egy elméleti, minden irányban egyenletesen sugárzó (izotróp) antennához képest – minél nagyobb a dBi, annál irányítottabb a sugárzás','Az antenna fizikai méretét kifejező érték','Az adó és a vevő közötti összesített csillapítás dB-ben'],
+    ans:'Az antenna iránynyeresége egy elméleti, minden irányban egyenletesen sugárzó (izotróp) antennához képest – minél nagyobb a dBi, annál irányítottabb a sugárzás'
+  },
   {
     id:'T61', type:'single', topic:'Távközlési elektronika', points:3,
     q:'Mit mond ki a Nyquist–Shannon mintavételi tétel?',
