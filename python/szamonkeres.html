@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Számonkérés-kezelő – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -121,6 +122,14 @@
     .wizard-label{font-size:0.75rem;color:#64748b;font-weight:600;white-space:nowrap;text-align:center}
     .wizard-step.active .wizard-label,.wizard-step.done .wizard-label{color:#94a3b8}
     .wizard-line{flex:1;height:2px;background:#374151;margin-top:19px;transition:background .3s;min-width:20px}
+    /* ── Javítás overlay ── */
+    #javitas-overlay{position:fixed;inset:0;z-index:2000;background:#0b1120;flex-direction:column;overflow:hidden}
+    .jav-nav-btn{padding:4px 14px;border-radius:6px;border:1px solid #374151;background:transparent;color:#64748b;cursor:pointer;font-size:0.82rem;font-weight:600;transition:.15s}
+    .jav-nav-btn:hover{border-color:#3b82f6;color:#93c5fd}
+    .jav-nav-btn.active{border-color:#3b82f6;background:#1e3a5f;color:#93c5fd}
+    .jav-nav-btn.done{border-color:#15803d55;color:#4ade80}
+    .javitas-btn{padding:4px 14px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:6px;color:#93c5fd;cursor:pointer;font-size:0.82rem;font-weight:600;transition:.15s;white-space:nowrap}
+    .javitas-btn:hover{background:#2a4a7f}
     .wizard-line.done{background:#16a34a}
     .wizard-panel{display:none}.wizard-panel.active{display:block}
     .wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid #1f2937}
@@ -365,7 +374,7 @@
       <div style="font-weight:700;font-size:0.9rem;margin-bottom:8px">Összesített eredmények</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Tanuló</th><th>Csoport</th><th>Összpont</th><th>Max</th><th>%</th><th>Jegy</th></tr></thead>
+          <thead><tr><th>Tanuló</th><th>Csoport</th><th>Összpont</th><th>Max</th><th>%</th><th>Jegy</th><th></th></tr></thead>
           <tbody id="osszes-tbody"></tbody>
         </table>
       </div>
@@ -381,6 +390,65 @@
       <button class="close-btn" onclick="document.getElementById('kod-modal').classList.remove('open')"><i class="fas fa-xmark"></i></button>
     </div>
     <pre id="kod-modal-content" style="background:#0b1120;border-radius:8px;padding:14px;font-size:0.85rem;overflow-x:auto;white-space:pre-wrap;color:#e0e0e0;max-height:70vh;overflow-y:auto"></pre>
+  </div>
+</div>
+
+<!-- ── Javítás overlay ─────────────────────────────────────────────────────── -->
+<div id="javitas-overlay" style="display:none">
+
+  <!-- Header: cím + navigáció + bezárás -->
+  <div style="background:#16213e;border-bottom:1px solid #1f2937;padding:9px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div id="jav-title" style="font-weight:700;font-size:0.9rem;color:#e0e0e0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis"></div>
+    <div id="jav-nav" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+    <span id="jav-pyodide-status" style="font-size:0.73rem;color:#64748b;white-space:nowrap"></span>
+    <button onclick="closeJavitas()" style="background:transparent;border:1px solid #374151;border-radius:6px;color:#94a3b8;cursor:pointer;padding:4px 12px;font-size:0.82rem;white-space:nowrap;flex-shrink:0"><i class="fas fa-xmark"></i> Bezárás</button>
+  </div>
+
+  <!-- Feladat leírás -->
+  <div style="background:#0d1a2e;border-bottom:1px solid #1f2937;padding:10px 20px;flex-shrink:0">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px">
+      <span id="jav-task-num" style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em"></span>
+      <span id="jav-task-cim" style="font-size:0.97rem;font-weight:700;color:#e0e0e0"></span>
+      <span id="jav-task-pont" style="font-size:0.78rem;color:#94a3b8;margin-left:auto;white-space:nowrap"></span>
+    </div>
+    <div id="jav-task-leiras" style="font-size:0.85rem;color:#cbd5e1;line-height:1.6;white-space:pre-wrap;max-height:72px;overflow-y:auto"></div>
+  </div>
+
+  <!-- Kéthasábos terület -->
+  <div style="display:flex;flex:1;min-height:0;overflow:hidden">
+
+    <!-- Bal: Monaco szerkesztő -->
+    <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #1f2937;min-width:0">
+      <div style="background:#0d1117;padding:6px 12px;font-size:0.75rem;color:#64748b;border-bottom:1px solid #1f2937;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span><i class="fas fa-code"></i> Beadott kód (szerkeszthető a futtatáshoz)</span>
+      </div>
+      <div id="jav-monaco-editor" style="flex:1;min-height:0"></div>
+    </div>
+
+    <!-- Jobb: Pyodide futtatás -->
+    <div style="width:380px;flex-shrink:0;display:flex;flex-direction:column;background:#060d1a;min-width:0">
+      <div style="padding:6px 12px;font-size:0.75rem;color:#64748b;border-bottom:1px solid #1f2937;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span><i class="fas fa-terminal"></i> Kimenet</span>
+        <button id="jav-run-btn" onclick="javRunCode()" style="padding:3px 14px;background:#15803d;border:none;border-radius:6px;color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer"><i class="fas fa-play"></i> Futtatás</button>
+      </div>
+      <div id="jav-inputs-wrap" style="display:none;padding:6px 10px;border-bottom:1px solid #1f2937;background:#0b1120;flex-shrink:0">
+        <label style="font-size:0.72rem;color:#64748b;display:block;margin-bottom:3px"><i class="fas fa-keyboard"></i> Tesztbemenetek (soronként 1 érték):</label>
+        <textarea id="jav-inputs" rows="2" style="width:100%;padding:5px 8px;background:#060d1a;border:1px solid #374151;border-radius:6px;color:#e0e0e0;font-family:monospace;font-size:0.82rem;resize:none;outline:none"></textarea>
+      </div>
+      <pre id="jav-output" style="flex:1;overflow-y:auto;padding:12px;font-family:monospace;font-size:0.85rem;color:#4ade80;background:#060d1a;margin:0;white-space:pre-wrap;min-height:0;line-height:1.5"></pre>
+    </div>
+  </div>
+
+  <!-- Lábléc: pontszám + navigáció -->
+  <div style="background:#16213e;border-top:1px solid #1f2937;padding:9px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <label style="font-size:0.85rem;color:#94a3b8;margin:0">Pontszám:</label>
+      <input id="jav-pont-input" type="number" min="0" style="width:62px;padding:5px 8px;background:#0b1120;border:1px solid #374151;border-radius:6px;color:#e0e0e0;text-align:center;font-size:0.95rem;font-weight:700;outline:none">
+      <span style="font-size:0.85rem;color:#64748b">/ <span id="jav-pont-max">0</span> pont</span>
+    </div>
+    <div style="flex:1"></div>
+    <button id="jav-prev-btn" onclick="javGoTo(javState.currentIdx - 1)" style="padding:6px 18px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.85rem"><i class="fas fa-arrow-left"></i> Előző</button>
+    <button id="jav-next-btn" onclick="javNext()" style="padding:6px 22px;background:#1d4ed8;border:none;border-radius:8px;color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer">Következő <i class="fas fa-arrow-right"></i></button>
   </div>
 </div>
 
@@ -951,10 +1019,14 @@ function renderOsszes(beadasok, feladatok, ph, maxOssz) {
     if (!byStudent[b.tanuloEmail]) byStudent[b.tanuloEmail] = {nev:b.tanuloNev, osztaly:b.osztaly, csoport:b.csoport, ossz:0, max:maxOssz};
     byStudent[b.tanuloEmail].ossz += b.manualisPont ?? b.autoPont;
   });
+  const isKiadva = currentSzamonkeres?.statusz === 'kiadva';
   const rows = Object.entries(byStudent).map(([email,s]) => {
     const szaz = maxOssz > 0 ? Math.round(s.ossz/maxOssz*100) : 0;
     const jegy = szaz>=ph.ot?5:szaz>=ph.negy?4:szaz>=ph.harom?3:szaz>=ph.ket?2:1;
     const jColors = ['','#ef4444','#f97316','#eab308','#22c55e'];
+    const javBtn = !isKiadva
+      ? `<button class="javitas-btn" onclick="openJavitas('${escH(email)}')"><i class="fas fa-pen-to-square"></i> Javítás</button>`
+      : `<span style="font-size:0.75rem;color:#64748b">kiadva</span>`;
     return `<tr>
       <td><strong>${escH(s.nev)}</strong><br><span style="font-size:0.75rem;color:#64748b">${escH(email)}</span></td>
       <td>${escH(s.osztaly||'')}${s.csoport?'/'+escH(s.csoport):''}</td>
@@ -962,6 +1034,7 @@ function renderOsszes(beadasok, feladatok, ph, maxOssz) {
       <td style="text-align:center">${maxOssz}</td>
       <td style="text-align:center">${szaz}%</td>
       <td style="text-align:center;font-weight:900;font-size:1.2rem;color:${jColors[jegy]}">${jegy}</td>
+      <td style="text-align:center">${javBtn}</td>
     </tr>`;
   });
   document.getElementById('osszes-tbody').innerHTML = rows.join('');
@@ -1029,6 +1102,265 @@ function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
 // Kód modal bezárás kattintásra
 document.getElementById('kod-modal').addEventListener('click', e => { if(e.target.id==='kod-modal') e.target.classList.remove('open'); });
 document.getElementById('detail-modal').addEventListener('click', e => { if(e.target.id==='detail-modal') closeDetail(); });
+
+// ── Monaco konfiguráció ───────────────────────────────────────────────────────
+if (typeof require !== 'undefined') {
+  require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+}
+
+// ── Javítás overlay ───────────────────────────────────────────────────────────
+let javState = null;   // { tasks, currentIdx, scores, monacoEditor, tanuloNev, tanuloEmail }
+let javPyodide = null;
+let javPyodideLoading = false;
+let javFeladatokCache = null;
+
+function getJavFeladatId(f, i) {
+  return f.tipus === 'rendszer' ? `r_${f.feladat_szam}` : `s_${i}`;
+}
+
+async function loadJavFeladatok() {
+  if (javFeladatokCache) return javFeladatokCache;
+  try {
+    const res = await fetch('feladatok.txt');
+    const txt = await res.text();
+    const tasks = parseTasks(txt);
+    javFeladatokCache = {};
+    tasks.forEach(t => { javFeladatokCache[t.num] = t; });
+  } catch { javFeladatokCache = {}; }
+  return javFeladatokCache;
+}
+
+async function openJavitas(tanuloEmail) {
+  const beadasok = allBeadasok.filter(b => b.tanuloEmail === tanuloEmail);
+  if (!beadasok.length) { alert('Nincs beadás ettől a tanulótól.'); return; }
+
+  const tanuloNev = beadasok[0].tanuloNev;
+  const feladatok = JSON.parse(currentSzamonkeres.feladatok || '[]');
+  const allTasks = await loadJavFeladatok();
+
+  const tasks = feladatok.map((f, i) => {
+    const fid = getJavFeladatId(f, i);
+    const b = beadasok.find(x => x.feladatId === fid);
+    const isRendszer = f.tipus === 'rendszer';
+    const taskData = isRendszer ? allTasks[f.feladat_szam] : null;
+    return {
+      index: i,
+      feladatId: fid,
+      cim: f.cim || taskData?.cim || `${i+1}. feladat`,
+      leiras: isRendszer ? (taskData?.leiras || '') : (f.szoveg || ''),
+      maxPont: f.pont,
+      beadasId: b?.id ?? null,
+      kod: b?.kod || '',
+      autoPont: b?.autoPont ?? 0,
+      manualisPont: b?.manualisPont ?? null,
+    };
+  });
+
+  javState = {
+    tasks,
+    tanuloEmail,
+    tanuloNev,
+    currentIdx: 0,
+    scores: tasks.map(t => t.manualisPont ?? t.autoPont),
+    monacoEditor: null,
+  };
+
+  document.getElementById('jav-title').textContent = `Javítás – ${tanuloNev}`;
+
+  const navEl = document.getElementById('jav-nav');
+  navEl.innerHTML = tasks.map((t, i) =>
+    `<button class="jav-nav-btn" id="jav-nb-${i}" onclick="javGoTo(${i})">${i+1}. feladat</button>`
+  ).join('');
+
+  document.getElementById('javitas-overlay').style.display = 'flex';
+  javGoTo(0);
+  initJavMonaco();
+  loadJavPyodide();
+}
+
+function javGoTo(idx) {
+  if (!javState) return;
+  const pontInput = document.getElementById('jav-pont-input');
+  if (pontInput) {
+    const v = parseInt(pontInput.value);
+    javState.scores[javState.currentIdx] = isNaN(v) ? 0 : v;
+  }
+
+  javState.currentIdx = idx;
+  const t = javState.tasks[idx];
+
+  document.querySelectorAll('.jav-nav-btn').forEach((btn, i) => btn.classList.toggle('active', i === idx));
+
+  document.getElementById('jav-task-num').textContent = `${idx + 1}. feladat`;
+  document.getElementById('jav-task-cim').textContent = t.cim;
+  document.getElementById('jav-task-pont').textContent = `max ${t.maxPont} pont`;
+  document.getElementById('jav-task-leiras').textContent = t.leiras || '(nincs leírás)';
+  document.getElementById('jav-pont-input').value = javState.scores[idx];
+  document.getElementById('jav-pont-max').textContent = t.maxPont;
+  document.getElementById('jav-output').textContent = '';
+
+  if (javState.monacoEditor) {
+    javState.monacoEditor.setValue(t.kod || '# Nincs beadott kód');
+  }
+
+  const hasInput = (t.kod || '').includes('input(');
+  document.getElementById('jav-inputs-wrap').style.display = hasInput ? 'block' : 'none';
+
+  const isFirst = idx === 0;
+  const isLast = idx === javState.tasks.length - 1;
+  document.getElementById('jav-prev-btn').style.visibility = isFirst ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('jav-next-btn');
+  if (isLast) {
+    nextBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Mentés';
+    nextBtn.style.background = '#15803d';
+  } else {
+    nextBtn.innerHTML = 'Következő <i class="fas fa-arrow-right"></i>';
+    nextBtn.style.background = '#1d4ed8';
+  }
+}
+
+function javNext() {
+  if (!javState) return;
+  const isLast = javState.currentIdx === javState.tasks.length - 1;
+  if (isLast) javMentes();
+  else javGoTo(javState.currentIdx + 1);
+}
+
+async function javRunCode() {
+  if (!javState) return;
+  const outputEl = document.getElementById('jav-output');
+  const code = javState.monacoEditor ? javState.monacoEditor.getValue() : (javState.tasks[javState.currentIdx].kod || '');
+
+  if (!javPyodide) {
+    outputEl.textContent = javPyodideLoading ? 'Pyodide betöltése folyamatban, kérlek várj...' : 'Pyodide nem töltődött be.';
+    return;
+  }
+
+  outputEl.textContent = '▶ Futtatás...\n';
+
+  const rawInputs = document.getElementById('jav-inputs')?.value || '';
+  const inputQueue = rawInputs.split('\n').map(s => s.trim()).filter(Boolean);
+
+  try {
+    javPyodide.globals.set('_jav_input_queue', javPyodide.toPy(inputQueue));
+    javPyodide.globals.set('_jav_input_idx', 0);
+
+    await javPyodide.runPythonAsync(`
+import sys, builtins
+from io import StringIO
+_stdout = StringIO()
+_stderr = StringIO()
+sys.stdout = _stdout
+sys.stderr = _stderr
+_q = list(_jav_input_queue)
+_qi = [0]
+def _input(prompt=''):
+    sys.stdout.write(str(prompt))
+    if _qi[0] < len(_q):
+        v = _q[_qi[0]]; _qi[0] += 1
+        sys.stdout.write(v + '\\n')
+        return v
+    return ''
+builtins.input = _input
+`);
+
+    await javPyodide.runPythonAsync(code);
+
+    const stdout = javPyodide.runPython('_stdout.getvalue()');
+    const stderr = javPyodide.runPython('_stderr.getvalue()');
+    outputEl.textContent = stdout || '(nincs kimenet)';
+    if (stderr) outputEl.textContent += '\n⚠ Hibák:\n' + stderr;
+  } catch (e) {
+    outputEl.textContent = '✗ Hiba:\n' + e.message;
+  } finally {
+    try { javPyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__'); } catch {}
+  }
+}
+
+async function javMentes() {
+  if (!javState) return;
+  const pontInput = document.getElementById('jav-pont-input');
+  if (pontInput) {
+    const v = parseInt(pontInput.value);
+    javState.scores[javState.currentIdx] = isNaN(v) ? 0 : v;
+  }
+
+  const nextBtn = document.getElementById('jav-next-btn');
+  if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Mentés...'; }
+
+  for (let i = 0; i < javState.tasks.length; i++) {
+    const t = javState.tasks[i];
+    if (!t.beadasId) continue;
+    const pont = Math.max(0, Math.min(javState.scores[i], t.maxPont));
+    try {
+      await authFetch(`${API}/api/szamonkeres/beadas/${t.beadasId}/pont`, {
+        method: 'PATCH',
+        body: JSON.stringify({ pont, megjegyzes: null })
+      });
+      const b = allBeadasok.find(x => x.id === t.beadasId);
+      if (b) b.manualisPont = pont;
+      // nav gomb zöld jelzése
+      const nb = document.getElementById(`jav-nb-${i}`);
+      if (nb) nb.classList.add('done');
+    } catch {}
+  }
+
+  if (currentSzamonkeres) {
+    renderDetail(currentSzamonkeres, allBeadasok);
+  }
+
+  closeJavitas();
+}
+
+function closeJavitas() {
+  document.getElementById('javitas-overlay').style.display = 'none';
+  if (javState?.monacoEditor) {
+    javState.monacoEditor.dispose();
+  }
+  javState = null;
+}
+
+function initJavMonaco() {
+  if (typeof require === 'undefined') return;
+  require(['vs/editor/editor.main'], () => {
+    if (!javState) return;
+    const container = document.getElementById('jav-monaco-editor');
+    if (!container) return;
+    javState.monacoEditor = monaco.editor.create(container, {
+      value: javState.tasks[0].kod || '# Nincs beadott kód',
+      language: 'python',
+      theme: 'vs-dark',
+      readOnly: false,
+      minimap: { enabled: false },
+      fontSize: 14,
+      lineNumbers: 'on',
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+    });
+  });
+}
+
+async function loadJavPyodide() {
+  if (javPyodide || javPyodideLoading) return;
+  javPyodideLoading = true;
+  const statusEl = document.getElementById('jav-pyodide-status');
+  if (statusEl) statusEl.textContent = 'Python betöltése...';
+  try {
+    if (typeof loadPyodide === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    javPyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' });
+    if (statusEl) statusEl.textContent = 'Python kész';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Python betöltési hiba';
+    javPyodideLoading = false;
+  }
+}
 </script>
 </body>
 </html>
