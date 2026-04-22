@@ -1212,6 +1212,61 @@ const QUESTION_BANK = [
     q:'Rendezd a következő tárolt energia mértékegységeit növekvő sorrendbe! (1 = legkisebb)',
     ans:['mWh (milliwatt-óra)','Wh (watt-óra)','kWh (kilowatt-óra)','MWh (megawatt-óra)']
   },
+
+  // ── NEHEZEBB SZÁMOLÁSI FELADATOK ──────────────────────────────────────────
+  {
+    id:'S18', type:'single', topic:'Elektrotechnika', calc:true, points:4,
+    formula:'Vegyes: R_par = (R₂·R₃)/(R₂+R₃), majd R = R₁ + R_par',
+    q:'R₁ = 60 Ω sorba van kötve R₂ = 120 Ω és R₃ = 60 Ω párhuzamos kombinációjával. Mekkora az eredő ellenállás?',
+    opts:['40 Ω','80 Ω','100 Ω','240 Ω'],
+    ans:'100 Ω'
+  },
+  {
+    id:'S19', type:'single', topic:'Elektrotechnika', calc:true, points:4,
+    formula:'P = U² / R',
+    q:'Egy 50 Ω-os antennát 10 V RMS feszültségű jellel hajtunk meg. Mekkora a kisugárzott teljesítmény?',
+    opts:['0,2 W','2 W','5 W','500 mW'],
+    ans:'2 W'
+  },
+  {
+    id:'S20', type:'single', topic:'Távközlési elektronika', calc:true, points:5,
+    formula:'C = B · log₂(1 + S/N)  –  Shannon-tétel',
+    q:'Egy csatorna sávszélessége 4 MHz, jel-zaj viszonya S/N = 63. A Shannon-tétel alapján mekkora a maximális adatátviteli sebesség?',
+    opts:['4 Mbit/s','12 Mbit/s','24 Mbit/s','48 Mbit/s'],
+    ans:'24 Mbit/s'
+  },
+
+  // ── NEHEZEBB ELMÉLETI KÉRDÉSEK ────────────────────────────────────────────
+  {
+    id:'T61', type:'single', topic:'Távközlési elektronika', points:3,
+    q:'Mit mond ki a Nyquist–Shannon mintavételi tétel?',
+    opts:['A jel maximális frekvenciájánál 10-szer nagyobb mintavételezési frekvencia szükséges','A mintavételezési frekvenciának legalább kétszeresének kell lennie a jel legmagasabb frekvenciájánál – különben aliasing (torzítás) lép fel','A digitális jel mindig zajmentesebb, mint az analóg','A bitsebesség megegyezik a mintavételezési frekvenciával'],
+    ans:'A mintavételezési frekvenciának legalább kétszeresének kell lennie a jel legmagasabb frekvenciájánál – különben aliasing (torzítás) lép fel'
+  },
+  {
+    id:'T62', type:'single', topic:'IP hálózatok', points:3,
+    q:'Mi a TCP-kapcsolat felépítésének helyes sorrendje (three-way handshake)?',
+    opts:['ACK → SYN → SYN-ACK','SYN → SYN-ACK → ACK','SYN → ACK → SYN-ACK','SYN-ACK → SYN → FIN'],
+    ans:'SYN → SYN-ACK → ACK'
+  },
+  {
+    id:'T63', type:'single', topic:'IP hálózatok', points:3,
+    q:'Mi a VLAN (Virtual LAN) működési elve, és melyik szabvány írja le a trunk (törzsvonali) keretjelölést?',
+    opts:['Fizikailag szétválasztott hálózatok kombinációja; 802.3 szabvány','Logikai szegmentálás switcheken belül; a 802.1Q szabvány szerint VLAN-tageket fűznek az Ethernet keretekhez','Routerek által szétválasztott broadcast tartományok; 802.11 szabvány','Kizárólag száloptikai hálózatokban alkalmazható; SDH keretben valósul meg'],
+    ans:'Logikai szegmentálás switcheken belül; a 802.1Q szabvány szerint VLAN-tageket fűznek az Ethernet keretekhez'
+  },
+  {
+    id:'T64', type:'single', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Mi a legfontosabb különbség az OSPF és a BGP útválasztó protokoll között?',
+    opts:['OSPF távolság-vektor alapú; BGP link-state alapú','OSPF egy autonóm rendszeren belüli (IGP) protokoll; BGP autonóm rendszerek közötti (EGP) protokoll – az internet gerincén alkalmazzák','BGP sokkal gyorsabb konvergenciájú, mint az OSPF','Az OSPF és BGP teljesen felcserélhető; a különbség csak adminisztratív'],
+    ans:'OSPF egy autonóm rendszeren belüli (IGP) protokoll; BGP autonóm rendszerek közötti (EGP) protokoll – az internet gerincén alkalmazzák'
+  },
+  {
+    id:'T65', type:'single', topic:'Távközlési elektronika', points:3,
+    q:'Mi az OFDM (Orthogonal Frequency Division Multiplexing) alapelve, és hol alkalmazzák?',
+    opts:['Egyetlen széles sávú vivőn soros adatátvitel; csak optikai szálban alkalmazható','Sok ortogonális (egymást nem zavaró) vivőfrekvencián párhuzamos adatátvitel – 4G LTE, Wi-Fi (802.11a/g/n/ac) és DVB-T szabványokban alkalmazzák','Frekvenciaváltásos moduláció analóg hangjeleknél; FM rádióban és GSM-ben alkalmazzák','Időosztásos multiplexelés digitális rendszerekben; kizárólag műholdas kommunikációban használatos'],
+    ans:'Sok ortogonális (egymást nem zavaró) vivőfrekvencián párhuzamos adatátvitel – 4G LTE, Wi-Fi (802.11a/g/n/ac) és DVB-T szabványokban alkalmazzák'
+  },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
