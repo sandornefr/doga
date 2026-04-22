@@ -212,6 +212,47 @@
         #topbar-otlet-btn:hover { border-color: #fde68a; color: #fde68a; background: rgba(251,191,36,.25); box-shadow: 0 0 10px rgba(251,191,36,.5); }
         #topbar-chat-btn  { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,.12); font-weight: 700; }
         #topbar-chat-btn:hover  { border-color: #7dd3fc; color: #7dd3fc; background: rgba(56,189,248,.22); box-shadow: 0 0 10px rgba(56,189,248,.5); }
+        #topbar-szamonkeres-btn { border-color: #f97316; color: #f97316; background: rgba(249,115,22,.12); font-weight: 700; }
+        #topbar-szamonkeres-btn:hover { border-color: #fb923c; color: #fb923c; background: rgba(249,115,22,.22); box-shadow: 0 0 10px rgba(249,115,22,.5); }
+        #topbar-szamonkeres-btn.eredmeny { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,.12); }
+        #topbar-szamonkeres-btn.eredmeny:hover { border-color: #4ade80; color: #4ade80; background: rgba(34,197,94,.22); box-shadow: 0 0 10px rgba(34,197,94,.5); }
+        #topbar-szamonkeres-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: #f97316; color: #fff; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 0.6rem; font-weight: 700;
+            display: none; align-items: center; justify-content: center;
+        }
+        /* Számonkérés modal */
+        #szamonkeres-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 9000;
+            background: rgba(0,0,0,.75); align-items: center; justify-content: center;
+            animation: fadeIn .2s;
+        }
+        #szamonkeres-modal-overlay.open { display: flex; }
+        #szamonkeres-modal-box {
+            background: #16213e; border-radius: 18px; padding: 32px 28px 28px;
+            max-width: 460px; width: 94%; border: 1.5px solid #f97316;
+            box-shadow: 0 0 40px rgba(249,115,22,.35);
+            animation: slideUp .25s ease;
+        }
+        #szamonkeres-modal-box.eredmeny-modal { border-color: #22c55e; box-shadow: 0 0 40px rgba(34,197,94,.3); }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .szam-modal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .szam-modal-icon { font-size: 2.2rem; flex-shrink: 0; }
+        .szam-modal-title { font-size: 1.1rem; font-weight: 700; color: #fcd34d; }
+        .szam-modal-title.eredmeny { color: #4ade80; }
+        .szam-modal-subtitle { font-size: 0.85rem; color: #94a3b8; margin-top: 3px; }
+        .szam-modal-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+        .szam-modal-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #0f172a; border-radius: 10px; }
+        .szam-modal-item-name { font-weight: 600; color: #e0e0e0; font-size: 0.95rem; }
+        .szam-modal-item-sub { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+        .szam-modal-btns { display: flex; gap: 10px; }
+        .szam-modal-go { flex: 1; padding: 12px; background: #f97316; color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: background .2s; }
+        .szam-modal-go:hover { background: #ea6c0a; }
+        .szam-modal-go.eredmeny { background: #16a34a; }
+        .szam-modal-go.eredmeny:hover { background: #15803d; }
+        .szam-modal-later { padding: 12px 18px; background: transparent; color: #64748b; border: 1px solid #334155; border-radius: 10px; font-size: 0.9rem; cursor: pointer; transition: color .2s, border-color .2s; }
+        .szam-modal-later:hover { color: #94a3b8; border-color: #475569; }
         #topbar-chat-badge, #topbar-csatl-badge {
             position: absolute; top: -5px; right: -5px;
             background: #ef4444; color: #fff; border-radius: 50%;
@@ -947,6 +988,7 @@
         <a class="eredmenyek-btn" id="btn-profil-topbar" href="profil.html" style="display:none;text-decoration:none;" title="Profilom"><i class="fas fa-user-circle"></i> Profilom</a>
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
+        <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
         <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
@@ -1043,8 +1085,25 @@
             <div id="teszteloi-uzenetek-lista"></div>
         </div>
 
-        <!-- Számonkérés értesítő (tanulóknak, ha van aktív) -->
-        <div id="szamonkeres-banner" style="display:none;margin-top:16px;width:100%;max-width:1280px"></div>
+        <!-- Számonkérés értesítő modal -->
+        <div id="szamonkeres-modal-overlay">
+            <div id="szamonkeres-modal-box">
+                <div class="szam-modal-header">
+                    <div class="szam-modal-icon" id="szam-modal-icon"><i class="fas fa-file-pen" style="color:#f97316"></i></div>
+                    <div>
+                        <div class="szam-modal-title" id="szam-modal-title">Aktív számonkérés</div>
+                        <div class="szam-modal-subtitle" id="szam-modal-subtitle">Nyisd meg és add be a megoldásaidat!</div>
+                    </div>
+                </div>
+                <div class="szam-modal-list" id="szam-modal-list"></div>
+                <div class="szam-modal-btns">
+                    <button class="szam-modal-go" id="szam-modal-go-btn" onclick="location.href='python/szamonkeres-diak.html'">
+                        <i class="fas fa-arrow-right"></i> Megnyitás
+                    </button>
+                    <button class="szam-modal-later" onclick="closeSzamonkeresModal()">Később</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Számonkérés-kezelő gomb (oktatóknak, nem-sandornef) -->
         <a id="szamonkeres-oktato-btn" href="python/szamonkeres.html"
@@ -2757,6 +2816,9 @@
         return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // Számonkérés modal adatai (globálisan tárolva, hogy a topbar gomb is meg tudja nyitni)
+    let _szamModalData = null;
+
     async function checkAktivSzamonkeres(user) {
         if (!user.token && !user._tesztMod) return;
         const tok = user.token || (() => {
@@ -2764,10 +2826,9 @@
             return b.token || '';
         })();
         const authHdr = tok ? { 'Authorization': 'Bearer ' + tok } : {};
-        const banner = document.getElementById('szamonkeres-banner');
-        if (!banner) return;
 
-        let html = '';
+        let aktivak = [];
+        let eredmenyek = [];
 
         // Aktív számonkérések
         try {
@@ -2775,52 +2836,86 @@
             if (user.osztaly) params.append('osztaly', user.osztaly);
             if (user.csoport) params.append('csoport', user.csoport);
             const res = await fetch(`${API_BASE}/api/szamonkeres/aktiv?${params}`, { headers: authHdr });
-            if (res.ok) {
-                const list = await res.json();
-                html += (list || []).map(sz => {
-                    const feladatok = JSON.parse(sz.feladatok || '[]');
-                    const csoportok = JSON.parse(sz.csoportok || '[]').join(', ');
-                    return `<a href="python/szamonkeres-diak.html"
-                        style="display:flex;align-items:center;gap:14px;padding:14px 20px;background:#16213e;border:1px solid #d97706;border-radius:12px;text-decoration:none;margin-bottom:10px;transition:border-color .2s"
-                        onmouseover="this.style.borderColor='#fbbf24'" onmouseout="this.style.borderColor='#d97706'">
-                        <i class="fas fa-file-pen" style="color:#fbbf24;font-size:1.5rem;flex-shrink:0"></i>
-                        <div style="flex:1">
-                            <div style="font-weight:700;color:#fcd34d;font-size:0.95rem"><i class="fas fa-circle-exclamation" style="font-size:0.8rem"></i> Aktív számonkérés</div>
-                            <div style="color:#e0e0e0;font-size:0.9rem;margin-top:2px">${escHtml(sz.cim)}</div>
-                            <div style="color:#64748b;font-size:0.78rem;margin-top:2px">${escHtml(csoportok)} &nbsp;·&nbsp; ${feladatok.length} feladat</div>
-                        </div>
-                        <i class="fas fa-chevron-right" style="color:#64748b"></i>
-                    </a>`;
-                }).join('');
-            }
+            if (res.ok) aktivak = (await res.json()) || [];
         } catch {}
 
-        // Kiadott eredmények (csak ha van token – tanuló)
+        // Kiadott eredmények (csak tanulónak)
         if (tok && user.szerep === 'tanulo') {
             try {
                 const res = await fetch(`${API_BASE}/api/szamonkeres/eredmeny`, { headers: authHdr });
-                if (res.ok) {
-                    const list = await res.json();
-                    if (list && list.length) {
-                        html += `<a href="python/szamonkeres-diak.html"
-                            style="display:flex;align-items:center;gap:14px;padding:14px 20px;background:#16213e;border:1px solid #22c55e;border-radius:12px;text-decoration:none;margin-bottom:10px;transition:border-color .2s"
-                            onmouseover="this.style.borderColor='#4ade80'" onmouseout="this.style.borderColor='#22c55e'">
-                            <i class="fas fa-circle-check" style="color:#22c55e;font-size:1.5rem;flex-shrink:0"></i>
-                            <div style="flex:1">
-                                <div style="font-weight:700;color:#4ade80;font-size:0.95rem">Kiadott eredmény</div>
-                                <div style="color:#e0e0e0;font-size:0.9rem;margin-top:2px">${list.length === 1 ? escHtml(list[0].cim) : list.length + ' számonkérés eredménye elérhető'}</div>
-                            </div>
-                            <i class="fas fa-chevron-right" style="color:#64748b"></i>
-                        </a>`;
-                    }
-                }
+                if (res.ok) eredmenyek = (await res.json()) || [];
             } catch {}
         }
 
-        if (html) {
-            banner.innerHTML = html;
-            banner.style.display = 'block';
+        if (!aktivak.length && !eredmenyek.length) return;
+
+        const vanAktiv = aktivak.length > 0;
+        _szamModalData = { aktivak, eredmenyek, vanAktiv };
+
+        // Topbar gomb bekapcsolása
+        const topbarBtn = document.getElementById('topbar-szamonkeres-btn');
+        if (topbarBtn) {
+            topbarBtn.style.display = 'inline-flex';
+            if (!vanAktiv) topbarBtn.classList.add('eredmeny');
+            const badge = document.getElementById('topbar-szamonkeres-badge');
+            if (badge) { badge.style.display = 'flex'; badge.textContent = aktivak.length + eredmenyek.length; }
         }
+
+        // Modal megnyitása automatikusan
+        openSzamonkeresModal();
+    }
+
+    function openSzamonkeresModal() {
+        if (!_szamModalData) return;
+        const { aktivak, eredmenyek, vanAktiv } = _szamModalData;
+
+        const box = document.getElementById('szamonkeres-modal-box');
+        const titleEl = document.getElementById('szam-modal-title');
+        const subEl = document.getElementById('szam-modal-subtitle');
+        const iconEl = document.getElementById('szam-modal-icon');
+        const listEl = document.getElementById('szam-modal-list');
+        const goBtn = document.getElementById('szam-modal-go-btn');
+
+        if (vanAktiv) {
+            box.classList.remove('eredmeny-modal');
+            iconEl.innerHTML = '<i class="fas fa-file-pen" style="color:#f97316"></i>';
+            titleEl.className = 'szam-modal-title';
+            titleEl.textContent = aktivak.length === 1 ? 'Aktív számonkérés' : aktivak.length + ' aktív számonkérés';
+            subEl.textContent = 'Nyisd meg és add be a megoldásaidat!';
+            goBtn.className = 'szam-modal-go';
+            goBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Megnyitás';
+        } else {
+            box.classList.add('eredmeny-modal');
+            iconEl.innerHTML = '<i class="fas fa-circle-check" style="color:#22c55e"></i>';
+            titleEl.className = 'szam-modal-title eredmeny';
+            titleEl.textContent = eredmenyek.length === 1 ? 'Kiadott eredmény' : eredmenyek.length + ' kiadott eredmény';
+            subEl.textContent = 'Az oktató kiértékelte a munkádat!';
+            goBtn.className = 'szam-modal-go eredmeny';
+            goBtn.innerHTML = '<i class="fas fa-medal"></i> Eredmények megtekintése';
+        }
+
+        const items = vanAktiv ? aktivak : eredmenyek;
+        listEl.innerHTML = items.map(sz => {
+            const feladatok = JSON.parse(sz.feladatok || '[]');
+            const csoportok = JSON.parse(sz.csoportok || '[]').join(', ');
+            const sub = vanAktiv
+                ? (csoportok ? csoportok + ' · ' : '') + feladatok.length + ' feladat'
+                : (sz.szazalek != null ? Math.round(sz.szazalek) + '% · ' : '') + escHtml(sz.cim || '');
+            const name = vanAktiv ? escHtml(sz.cim) : escHtml(sz.cim);
+            return `<div class="szam-modal-item">
+                <i class="fas ${vanAktiv ? 'fa-file-code' : 'fa-star'}" style="color:${vanAktiv ? '#f97316' : '#22c55e'};font-size:1.2rem;flex-shrink:0"></i>
+                <div>
+                    <div class="szam-modal-item-name">${name}</div>
+                    <div class="szam-modal-item-sub">${sub}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('szamonkeres-modal-overlay').classList.add('open');
+    }
+
+    function closeSzamonkeresModal() {
+        document.getElementById('szamonkeres-modal-overlay').classList.remove('open');
     }
 </script>
 <script src="special-roles.js"></script>
