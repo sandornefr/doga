@@ -1564,7 +1564,8 @@ app.MapPost("/api/tavolkozles/submit", (TavolkozlesSubmitRequest req, Database d
 {
     if (string.IsNullOrWhiteSpace(req.Nev))
         return Results.BadRequest(new { error = "Nev megadása kötelező" });
-    var valaszokJson = JsonSerializer.Serialize(req.Valaszok ?? new List<TavolkozlesValaszDto>());
+    var valaszokJson = JsonSerializer.Serialize(req.Valaszok ?? new List<TavolkozlesValaszDto>(),
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var id = db.SaveTavolkozlesResult(req, valaszokJson);
     return Results.Ok(new { id });
 });
