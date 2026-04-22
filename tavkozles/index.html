@@ -111,11 +111,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 .btn-cancel{padding:9px 22px;border-radius:7px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;}
 .btn-confirm{padding:9px 22px;border-radius:7px;border:none;background:#22c55e;color:#fff;font-weight:700;cursor:pointer;}
 
-.name-wrap{margin-bottom:18px;}
+.name-wrap{margin-bottom:18px;padding:16px 18px;border-radius:12px;border:2px solid #388bfd;background:rgba(31,111,235,0.07);box-shadow:0 0 12px rgba(56,139,253,0.25),0 0 28px rgba(56,139,253,0.1);}
+.name-wrap-heading{font-size:0.82rem;color:#58a6ff;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
 .name-wrap label{display:block;font-size:0.8rem;color:#8b949e;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-.name-input{width:100%;padding:11px 14px;background:#0d1117;border:1.5px solid #30363d;border-radius:8px;color:#e0e0e0;font-size:0.95rem;outline:none;transition:border-color .15s;}
-.name-input:focus{border-color:#58a6ff;}
-.name-input.error{border-color:#ef4444;}
+.name-input{width:100%;padding:11px 14px;background:#0d1117;border:1.5px solid #388bfd;border-radius:8px;color:#e0e0e0;font-size:0.95rem;outline:none;transition:border-color .15s,box-shadow .15s;}
+.name-input:focus{border-color:#58a6ff;box-shadow:0 0 0 3px rgba(88,166,255,0.2);}
+.name-input.error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.2);}
 .name-error{font-size:0.78rem;color:#ef4444;margin-top:5px;display:none;}
 .name-error.show{display:block;}
 
@@ -165,6 +166,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
     </ul>
 
     <div class="name-wrap">
+      <div class="name-wrap-heading"><i class="fas fa-circle-exclamation"></i> A teszt kezdéséhez add meg a nevedet!</div>
       <label for="student-name"><i class="fas fa-user" style="margin-right:5px"></i>Teljes neved</label>
       <input type="text" id="student-name" class="name-input" placeholder="pl. Kovács János" autocomplete="name">
       <div class="name-error" id="name-error">Kérjük, add meg a nevedet a teszt indítása előtt.</div>
