@@ -283,6 +283,16 @@ function toggleDetail(id) {
   let valaszok = [];
   try { valaszok = JSON.parse(r.valaszokJson || '[]'); } catch {}
 
+  // Régi DB rekordok PascalCase kulcsait is kezeli
+  valaszok = valaszok.map(v => ({
+    id:            v.id            ?? v.Id,
+    tema:          v.tema          ?? v.Tema,
+    kerdes:        v.kerdes        ?? v.Kerdes,
+    valasz:        v.valasz        ?? v.Valasz,
+    helyes_valasz: v.helyes_valasz ?? v.Helyes_valasz,
+    eredmeny:      v.eredmeny      ?? v.Eredmeny,
+  }));
+
   const topicMap = {};
   valaszok.forEach(v => {
     if (!topicMap[v.tema]) topicMap[v.tema] = { ok:0, total:0 };
