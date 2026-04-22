@@ -52,6 +52,12 @@ tr:hover td{background:#161b22;}
 
 .btn-detail{padding:4px 10px;border-radius:6px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;font-size:0.75rem;}
 .btn-detail:hover{border-color:#58a6ff;color:#58a6ff;}
+.btn-import{padding:8px 16px;border-radius:7px;border:1px solid #22c55e55;background:#14532d22;color:#22c55e;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:6px;}
+.btn-import:hover{border-color:#22c55e;background:#14532d44;}
+.imported-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.68rem;font-weight:700;background:#78350f33;color:#f59e0b;border:1px solid #f59e0b44;margin-left:6px;vertical-align:middle;}
+.import-toast{display:none;padding:9px 14px;border-radius:7px;font-size:0.82rem;margin-bottom:14px;align-items:center;gap:8px;}
+.import-toast.ok{display:flex;background:#14532d33;border:1px solid #22c55e55;color:#22c55e;}
+.import-toast.err{display:flex;background:#7f1d1d33;border:1px solid #ef4444;color:#ef4444;}
 
 /* Detail panel */
 .detail-panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:32px;display:none;}
@@ -109,8 +115,12 @@ tr:hover td{background:#161b22;}
   <div id="main-section" style="display:none">
     <div class="summary-card" id="summary-card"></div>
     <div class="actions">
-      <button class="btn-action" onclick="exportCSV()"><i class="fas fa-table"></i> Exportálás CSV-be</button>
+      <button class="btn-import" onclick="document.getElementById('json-file-input').click()">
+        <i class="fas fa-file-import"></i> JSON betöltése
+      </button>
+      <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="handleJSONFile(event)">
     </div>
+    <div class="import-toast" id="import-toast"></div>
     <div id="detail-panel" class="detail-panel"></div>
     <div style="overflow-x:auto"><table id="results-table">
       <thead><tr>
@@ -242,8 +252,9 @@ function renderTable() {
     const cls = pct>=60?'pct-pass':pct>=40?'pct-mid':'pct-fail';
     const grade = calcGrade(pct);
     const tr = document.createElement('tr');
+    const importBadge = r.imported ? '<span class="imported-badge"><i class="fas fa-file-import"></i> Importált</span>' : '';
     tr.innerHTML = `
-      <td><span style="color:#6b7280;margin-right:6px">${i+1}</span><strong>${esc(r.nev)}</strong></td>
+      <td><span style="color:#6b7280;margin-right:6px">${i+1}</span><strong>${esc(r.nev)}</strong>${importBadge}</td>
       <td style="color:#8b949e;font-size:0.8rem">${esc(r.submittedAt)}</td>
       <td style="color:#8b949e">${esc(r.felhasznaltIdo??'—')}</td>
       <td style="color:#22c55e;font-weight:700">${r.helyes}</td>
@@ -362,18 +373,54 @@ function toggleDetail(id) {
   panel.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-function exportCSV() {
-  const cols = ['Név','Beküldve','Idő','Helyes','Helytelen','Üres','Összesen','%'];
-  const rows = allResults.map(r => [
-    `"${r.nev}"`, `"${r.submittedAt}"`, `"${r.felhasznaltIdo??''}"`,
-    r.helyes, r.helytelen, r.ures, r.osszesen, r.szazalek
-  ]);
-  const csv = [cols,...rows].map(r=>r.join(';')).join('\n');
-  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `tavolkozles_eredmenyek_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+let importedCounter = 0;
+
+function handleJSONFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.nev || !data.eredmeny || !Array.isArray(data.valaszok)) {
+        showImportToast('Érvénytelen JSON fájl – nem megfelelő formátum.', 'err');
+        return;
+      }
+      data.valaszok.forEach(v => {
+        if (Array.isArray(v.valasz)) v.valasz = v.valasz.join(', ');
+        if (Array.isArray(v.helyes_valasz)) v.helyes_valasz = v.helyes_valasz.join(', ');
+      });
+      importedCounter--;
+      allResults.unshift({
+        id: importedCounter,
+        nev: data.nev,
+        submittedAt: data.datum || '—',
+        felhasznaltIdo: data.felhasznalt_ido || data.felhasznaltIdo || '—',
+        helyes: data.eredmeny.helyes ?? 0,
+        helytelen: data.eredmeny.helytelen ?? 0,
+        ures: data.eredmeny.ures ?? 0,
+        osszesen: data.eredmeny.osszesen ?? data.valaszok.length,
+        szazalek: data.eredmeny.szazalek ?? 0,
+        valaszokJson: JSON.stringify(data.valaszok),
+        imported: true
+      });
+      renderSummary();
+      renderTable();
+      showImportToast('„' + esc(data.nev) + '” eredménye sikeresen betöltve.', 'ok');
+    } catch {
+      showImportToast('Nem sikerült beolvasni a fájlt. Ellenőrizd, hogy érvényes JSON.', 'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showImportToast(msg, type) {
+  const t = document.getElementById('import-toast');
+  t.className = 'import-toast ' + type;
+  t.innerHTML = `<i class="fas ${type==='ok'?'fa-circle-check':'fa-triangle-exclamation'}"></i> ${msg}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'import-toast'; }, 6000);
 }
 
 function showError(msg) {
