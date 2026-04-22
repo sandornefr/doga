@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#0d1117" rx="8"/>
+  <!-- Réteg blokkok (7→1 alulról felfelé, vizuálisan felülről lefelé) -->
+  <!-- 7. Alkalmazási -->
+  <rect x="60" y="18" width="280" height="30" rx="4" fill="#1c2128" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="80" y="37" fill="#8b949e" font-size="11" font-family="monospace">7.</text>
+  <text x="100" y="37" fill="#c9d1d9" font-size="11" font-family="monospace">Alkalmazási réteg</text>
+  <text x="310" y="37" fill="#8b949e" font-size="9" font-family="monospace">HTTP, FTP, DNS</text>
+  <!-- 6. Megjelenítési -->
+  <rect x="60" y="55" width="280" height="30" rx="4" fill="#1c2128" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="80" y="74" fill="#8b949e" font-size="11" font-family="monospace">6.</text>
+  <text x="100" y="74" fill="#c9d1d9" font-size="11" font-family="monospace">Megjelenítési réteg</text>
+  <text x="310" y="74" fill="#8b949e" font-size="9" font-family="monospace">SSL, kódolás</text>
+  <!-- 5. Munkamenet -->
+  <rect x="60" y="92" width="280" height="30" rx="4" fill="#1c2128" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="80" y="111" fill="#8b949e" font-size="11" font-family="monospace">5.</text>
+  <text x="100" y="111" fill="#c9d1d9" font-size="11" font-family="monospace">Munkamenet-réteg</text>
+  <text x="310" y="111" fill="#8b949e" font-size="9" font-family="monospace">NetBIOS</text>
+  <!-- 4. Szállítási -->
+  <rect x="60" y="129" width="280" height="30" rx="4" fill="#1c2128" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="80" y="148" fill="#8b949e" font-size="11" font-family="monospace">4.</text>
+  <text x="100" y="148" fill="#c9d1d9" font-size="11" font-family="monospace">Szállítási réteg</text>
+  <text x="310" y="148" fill="#8b949e" font-size="9" font-family="monospace">TCP, UDP</text>
+  <!-- 3. Hálózati – KIEMELVE -->
+  <rect x="60" y="166" width="280" height="30" rx="4" fill="#1c2c4a" stroke="#1f6feb" stroke-width="2.5"/>
+  <text x="80" y="185" fill="#58a6ff" font-size="11" font-family="monospace" font-weight="bold">3.</text>
+  <text x="100" y="185" fill="#58a6ff" font-size="11" font-family="monospace" font-weight="bold">Hálózati réteg</text>
+  <text x="310" y="185" fill="#58a6ff" font-size="9" font-family="monospace">IP, ICMP</text>
+  <!-- 2. Adatkapcsolati -->
+  <rect x="60" y="203" width="280" height="30" rx="4" fill="#1c2128" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="80" y="222" fill="#8b949e" font-size="11" font-family="monospace">2.</text>
+  <text x="100" y="222" fill="#c9d1d9" font-size="11" font-family="monospace">Adatkapcsolati réteg</text>
+  <text x="310" y="222" fill="#8b949e" font-size="9" font-family="monospace">Ethernet, MAC</text>
+  <!-- 1. Fizikai -->
+  <rect x="60" y="240" width="280" height="30" rx="4" fill="#1c2128" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="80" y="259" fill="#8b949e" font-size="11" font-family="monospace">1.</text>
+  <text x="100" y="259" fill="#c9d1d9" font-size="11" font-family="monospace">Fizikai réteg</text>
+  <text x="310" y="259" fill="#8b949e" font-size="9" font-family="monospace">Kábel, jel</text>
+  <!-- Nyilak -->
+  <text x="22" y="85" fill="#8b949e" font-size="18" font-family="monospace">↕</text>
+  <text x="8" y="14" fill="#8b949e" font-size="10" font-family="sans-serif">OSI modell (7 réteg)</text>
+  <!-- Jelmagyarázat -->
+  <text x="62" y="290" fill="#1f6feb" font-size="9" font-family="sans-serif">▶ Kék keret = kérdéses réteg</text>
+</svg>

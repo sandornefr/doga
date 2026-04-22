@@ -120,6 +120,25 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 .btn-download{padding:12px 24px;border-radius:8px;border:1px solid #30363d;background:#1c2128;color:#c9d1d9;font-size:0.9rem;font-weight:600;cursor:pointer;}
 .btn-download:hover{border-color:#58a6ff;color:#58a6ff;}
 
+/* ── Rangsorolásos ── */
+.ranking-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #30363d;border-radius:9px;margin-bottom:8px;background:#0d1117;}
+.rank-num{width:28px;height:28px;border-radius:50%;background:#1f6feb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0;}
+.rank-text{flex:1;font-size:0.88rem;color:#c9d1d9;line-height:1.5;}
+.rank-btns{display:flex;flex-direction:column;gap:3px;}
+.rank-btn{width:28px;height:24px;border:1px solid #30363d;border-radius:4px;background:#1c2128;color:#8b949e;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;transition:.15s;}
+.rank-btn:hover:not([disabled]){border-color:#58a6ff;color:#58a6ff;}
+.rank-btn[disabled]{opacity:.3;cursor:default;}
+/* ── Több helyes ── */
+.type-hint{font-size:0.76rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:5px 10px;margin-bottom:12px;display:flex;align-items:center;gap:6px;color:#f59e0b;}
+.option.multi-sel{border-color:#1f6feb;background:#1c2c4a;}
+.option.multi-sel .opt-letter{background:#1f6feb;color:#fff;}
+/* ── Képes kérdés ── */
+.q-image{width:100%;max-height:260px;object-fit:contain;border-radius:8px;border:1px solid #30363d;margin-bottom:14px;background:#0d1117;}
+/* ── Pont jelvény ── */
+.pts-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:2px 7px;font-size:0.7rem;color:#fbbf24;margin-left:8px;vertical-align:middle;}
+/* ── Igaz/Hamis ── */
+.tf-hint{font-size:0.76rem;color:#58a6ff;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.2);border-radius:6px;padding:5px 10px;margin-bottom:12px;}
+
 @media(max-width:500px){
   .topic-grid{grid-template-columns:1fr;}
   .result-stats{grid-template-columns:1fr 1fr;}
@@ -133,14 +152,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 <div id="screen-intro">
   <div class="intro-card">
     <div class="intro-title"><i class="fas fa-tower-broadcast" style="color:#58a6ff"></i> Távközlési technikus</div>
-    <div class="intro-subtitle">Szakmai ismeret – Gyakorló vizsga &nbsp;|&nbsp; 30 kérdés</div>
+    <div class="intro-subtitle">Szakmai ismeret – Vizsga &nbsp;|&nbsp; <span id="intro-qcount">30</span> kérdés &nbsp;|&nbsp; <span id="intro-pts">0</span> pont</div>
 
     <ul class="intro-rules">
       <li><i class="fas fa-clock"></i> <span><strong>60 perces</strong> visszaszámláló – a teszt automatikusan befejeződik lejártakor</span></li>
-      <li><i class="fas fa-arrow-left"></i> <span>Visszaléphetsz korábbi kérdésekhez, és módosíthatod a válaszodat</span></li>
-      <li><i class="fas fa-map-signs"></i> <span>A kérdéstérképen látod, melyik kérdésre válaszoltál már</span></li>
-      <li><i class="fas fa-calculator" style="color:#f59e0b"></i> <span><strong style="color:#f59e0b">10 számolási feladat</strong> is szerepel – érdemes ceruzát és papírt készíteni</span></li>
-      <li><i class="fas fa-flag-checkered"></i> <span>A <strong>30. kérdésnél</strong> jelenik meg a "Befejezés" gomb – addig kérdésről kérdésre haladhatsz</span></li>
+      <li><i class="fas fa-layer-group" style="color:#a78bfa"></i> <span>Kérdéstípusok: <strong>egyes választós</strong>, <strong>igaz/hamis</strong>, <strong>több helyes</strong>, <strong>rangsorolásos</strong>, <strong>kapcsolási rajzos</strong></span></li>
+      <li><i class="fas fa-star" style="color:#fbbf24"></i> <span>A kérdések <strong>1–5 pontot</strong> érnek – a pontszám tükrözi az összetettséget</span></li>
+      <li><i class="fas fa-calculator" style="color:#f59e0b"></i> <span>Számolási feladatoknál érdemes ceruzát és papírt előkészíteni</span></li>
+      <li><i class="fas fa-flag-checkered"></i> <span>Az utolsó kérdésnél jelenik meg a "Befejezés" gomb</span></li>
     </ul>
 
     <div class="name-wrap">
@@ -180,8 +199,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 
   <div class="quiz-body">
     <div class="question-counter">
-      <span id="q-num">1</span>/30. kérdés
+      <span id="q-num">1</span>/<span id="q-total">30</span>. kérdés
       &nbsp;·&nbsp; <span id="q-answered-count">0</span> megválaszolva
+      &nbsp;·&nbsp; <span id="q-pts-live" style="color:#fbbf24;font-weight:700">0</span>/<span id="q-pts-total" style="color:#fbbf24">0</span> pont
     </div>
 
     <div class="question-card" id="question-card">
@@ -229,7 +249,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
       <div class="result-pct" id="result-pct">—</div>
       <div class="result-label" id="result-label"></div>
     </div>
-    <div class="result-stats">
+    <div class="result-stats" style="grid-template-columns:repeat(4,1fr);">
       <div class="stat-box">
         <div class="stat-val" id="stat-correct" style="color:#22c55e">—</div>
         <div class="stat-lbl">Helyes</div>
@@ -241,6 +261,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
       <div class="stat-box">
         <div class="stat-val" id="stat-empty" style="color:#8b949e">—</div>
         <div class="stat-lbl">Üres</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stat-points" style="color:#fbbf24">—</div>
+        <div class="stat-lbl">Szerzett pont</div>
       </div>
     </div>
     <div style="font-size:0.8rem;color:#8b949e;margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Részletes kiértékelés</div>
@@ -268,76 +292,77 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
 'use strict';
 
 // ════════════════════════════════════════════════════════════════════════════
-// KÉRDÉSBANK – 30 kérdés (10 számolás + 20 tudás)
+// KÉRDÉSBANK – 150 kérdés (egyes, igaz/hamis, több helyes, rangsorolásos, képes)
+// Típusok: 'single' | 'truefalse' | 'multiple' | 'ranking' | 'image-q'
 // ════════════════════════════════════════════════════════════════════════════
-const QUESTIONS = [
+const QUESTION_BANK = [
 
-  // ── SZÁMOLÁSI FELADATOK ──────────────────────────────────────────────────
+  // ── SZÁMOLÁSI FELADATOK (egyes választós) ────────────────────────────────
   {
-    id:'S1', topic:'Elektrotechnika', calc:true,
+    id:'S1', type:'single', topic:'Elektrotechnika', calc:true, points:2,
     formula:'U = R · I',
     q:'Egy 220 Ω-os ellenálláson 0,5 A áramerősség folyik át. Mekkora a rajta eső feszültség?',
     opts:['44 V','110 V','220 V','440 V'],
     ans:'110 V'
   },
   {
-    id:'S2', topic:'Elektrotechnika', calc:true,
+    id:'S2', type:'single', topic:'Elektrotechnika', calc:true, points:2,
     formula:'I = U / R',
     q:'Egy 230 V-os hálózathoz 1150 Ω-os ellenállást kapcsolnak. Mekkora áramerősség folyik az áramkörben?',
     opts:['0,02 A','0,1 A','0,2 A','2 A'],
     ans:'0,2 A'
   },
   {
-    id:'S3', topic:'Elektrotechnika', calc:true,
+    id:'S3', type:'single', topic:'Elektrotechnika', calc:true, points:2,
     formula:'Párhuzamos: 1/R = 1/R₁ + 1/R₂',
     q:'Két egyenként 100 Ω-os ellenállást párhuzamosan kapcsolnak. Mekkora az eredő ellenállás?',
     opts:['200 Ω','100 Ω','50 Ω','25 Ω'],
     ans:'50 Ω'
   },
   {
-    id:'S4', topic:'Elektrotechnika', calc:true,
+    id:'S4', type:'single', topic:'Elektrotechnika', calc:true, points:2,
     formula:'P = U · I',
     q:'Egy eszköz 12 V-os tápfeszültségen üzemel, és 3 A áramot vesz fel. Mekkora a teljesítménye?',
     opts:['4 W','15 W','36 W','360 W'],
     ans:'36 W'
   },
   {
-    id:'S5', topic:'Távközlési elektronika', calc:true,
+    id:'S5', type:'single', topic:'Távközlési elektronika', calc:true, points:3,
     formula:'Erősítés (dB) = 10 · log₁₀(P₂ / P₁)',
     q:'Egy erősítő bemeneti teljesítménye 1 mW, kimeneti teljesítménye 1 W. Mekkora az erősítés dB-ben?',
     opts:['10 dB','20 dB','30 dB','40 dB'],
     ans:'30 dB'
   },
   {
-    id:'S6', topic:'Távközlési elektronika', calc:true,
+    id:'S6', type:'single', topic:'Távközlési elektronika', calc:true, points:3,
     formula:'3 dB csillapítás ≈ teljesítmény felezése',
     q:'Egy kábel csillapítása 3 dB. Ha a bemeneti jel teljesítménye 100 mW, mekkora a kimeneti teljesítmény?',
     opts:['97 mW','75 mW','50 mW','25 mW'],
     ans:'50 mW'
   },
   {
-    id:'S7', topic:'IP hálózatok', calc:true,
+    id:'S7', type:'single', topic:'IP hálózatok', calc:true, points:3,
     formula:'Hosztok száma = 2ⁿ − 2  (n = hostbitek száma)',
     q:'A 192.168.1.0/24 alhálózatban hány használható (hosztnak kiosztható) IP-cím van?',
     opts:['252','254','255','256'],
     ans:'254'
   },
   {
-    id:'S8', topic:'IP hálózatok', calc:true,
+    id:'S8', type:'single', topic:'IP hálózatok', calc:true, points:3,
     formula:'/26 → 6 hostbit → 2⁶ − 2 = 62',
     q:'Egy /26 prefixű alhálózatban hány hoszt kaphat érvényes IP-címet?',
     opts:['30','62','64','126'],
     ans:'62'
   },
   {
-    id:'S9', topic:'IP hálózatok', calc:true,
+    id:'S9', type:'single', topic:'IP hálózatok', calc:true, points:4,
     formula:'/28 → maszk: 255.255.255.240 → blokk: 16',
     q:'Mi a 192.168.10.100/28 cím hálózati (alhálózati) címe?',
     opts:['192.168.10.0','192.168.10.80','192.168.10.96','192.168.10.112'],
     ans:'192.168.10.96'
   },
   {
-    id:'S10', topic:'Távközlési ismeretek', calc:true,
+    id:'S10', type:'single', topic:'Távközlési ismeretek', calc:true, points:3,
     formula:'λ = c / f   (c ≈ 3 × 10⁸ m/s)',
     q:'Egy rádióhullám frekvenciája 900 MHz. Mekkora a hullámhossza?',
     opts:['3,3 cm','33 cm','3,3 m','33 m'],
@@ -346,124 +371,838 @@ const QUESTIONS = [
 
   // ── TUDÁSKÉRDÉSEK ────────────────────────────────────────────────────────
   {
-    id:'T1', topic:'Elektrotechnika',
+    id:'T1', type:'single', topic:'Elektrotechnika', points:2,
     q:'Melyik Kirchhoff-törvény mondja ki, hogy egy csomópontba befolyó áramok összege egyenlő a kifolyó áramok összegével?',
     opts:['Ohm törvénye','Kirchhoff feszültségtörvénye (KVL)','Kirchhoff áramtörvénye (KCL)','Faraday indukciótörvénye'],
     ans:'Kirchhoff áramtörvénye (KCL)'
   },
   {
-    id:'T2', topic:'Elektrotechnika',
+    id:'T2', type:'single', topic:'Elektrotechnika', points:1,
     q:'Mi a különbség a váltóáram (AC) és az egyenáram (DC) között?',
     opts:['A DC mindig magasabb feszültségű','A váltóáram periodikusan változtatja az irányát, az egyenáram állandó irányú','A DC csak egyenirányítón átmenve vezethető','A váltóáram csak hálózati berendezésekben fordul elő'],
     ans:'A váltóáram periodikusan változtatja az irányát, az egyenáram állandó irányú'
   },
   {
-    id:'T3', topic:'Távközlési elektronika',
+    id:'T3', type:'single', topic:'Távközlési elektronika', points:2,
     q:'Mit jelent a moduláció a távközlésben?',
     opts:['A jel felerősítését a vevőnél','A vivőhullám valamelyik jellemzőjének (pl. amplitúdó, frekvencia) változtatása az információ átviteléhez','A jel analóg–digitális átalakítását','Az antenna sugárzási irányának beállítását'],
     ans:'A vivőhullám valamelyik jellemzőjének (pl. amplitúdó, frekvencia) változtatása az információ átviteléhez'
   },
   {
-    id:'T4', topic:'Távközlési elektronika',
+    id:'T4', type:'single', topic:'Távközlési elektronika', points:2,
     q:'Mi az FM (frekvenciamoduláció) legfőbb előnye az AM-mel (amplitúdómodulációval) szemben?',
     opts:['Nagyobb hatótávolság','Kisebb sávszélesség-igény','Jobb zajállóság – zajos környezetben is tisztább hang','Egyszerűbb adó-vevő felépítés'],
     ans:'Jobb zajállóság – zajos környezetben is tisztább hang'
   },
   {
-    id:'T5', topic:'Távközlési ismeretek',
+    id:'T5', type:'single', topic:'Távközlési ismeretek', points:2,
     q:'Mit jelent a szimplex adatátviteli mód?',
     opts:['Egyidejű kétirányú átvitel (pl. telefon)','Felváltva kétirányú átvitel (pl. walkie-talkie)','Csak egyirányú átvitel lehetséges (pl. rádióadás)','Egyszerre több felhasználó adhat'],
     ans:'Csak egyirányú átvitel lehetséges (pl. rádióadás)'
   },
   {
-    id:'T6', topic:'Távközlési ismeretek',
+    id:'T6', type:'single', topic:'Távközlési ismeretek', points:1,
     q:'Mit jelent a PSTN rövidítés?',
     opts:['Csomagkapcsolt telefonhálózat','Nyilvános kapcsolt telefonhálózat (Public Switched Telephone Network)','Titkosított magánhálózat','Protokollszabvány adathálózatokhoz'],
     ans:'Nyilvános kapcsolt telefonhálózat (Public Switched Telephone Network)'
   },
   {
-    id:'T7', topic:'Távközlési ismeretek',
+    id:'T7', type:'single', topic:'Távközlési ismeretek', points:1,
     q:'Mi a legfőbb különbség az analóg és a digitális jel között?',
     opts:['Az analóg jel gyorsabb','A digitális jel folytonos értékeket vesz fel','Az analóg jel folytonos, a digitális csak meghatározott (diszkrét) értékeket vehet fel','A digitális jel érzékenyebb a zajra'],
     ans:'Az analóg jel folytonos, a digitális csak meghatározott (diszkrét) értékeket vehet fel'
   },
   {
-    id:'T8', topic:'IP hálózatok',
+    id:'T8', type:'single', topic:'IP hálózatok', points:2,
     q:'Hány rétegből áll az OSI modell, és mi a 3. réteg neve?',
     opts:['5 réteg – Adatkapcsolati réteg','7 réteg – Hálózati réteg (Network Layer)','7 réteg – Szállítási réteg (Transport Layer)','4 réteg – Internet réteg'],
     ans:'7 réteg – Hálózati réteg (Network Layer)'
   },
   {
-    id:'T9', topic:'IP hálózatok',
+    id:'T9', type:'single', topic:'IP hálózatok', points:2,
     q:'Mi a NAT (Network Address Translation) fő feladata?',
     opts:['DNS névfeloldás gyorsítása','Privát IP-cím átfordítása nyilvános IP-címre (és vissza)','A hálózati forgalom titkosítása','IP-csomagok prioritásának beállítása'],
     ans:'Privát IP-cím átfordítása nyilvános IP-címre (és vissza)'
   },
   {
-    id:'T10', topic:'Mobil távközlő rendszerek',
+    id:'T10', type:'single', topic:'Mobil távközlő rendszerek', points:2,
     q:'Melyik mobilhálózati generáció vezette be a GPRS csomagkapcsolt adatátvitelt?',
     opts:['1G (NMT)','2G – GSM/GPRS','3G – UMTS','4G – LTE'],
     ans:'2G – GSM/GPRS'
   },
   {
-    id:'T11', topic:'Mobil távközlő rendszerek',
+    id:'T11', type:'single', topic:'Mobil távközlő rendszerek', points:3,
     q:'Melyik frekvenciasávban (uplink / downlink) működik a GSM 900 rendszer?',
     opts:['450–470 MHz / 460–480 MHz','890–915 MHz / 935–960 MHz','1710–1785 MHz / 1805–1880 MHz','1920–1980 MHz / 2110–2170 MHz'],
     ans:'890–915 MHz / 935–960 MHz'
   },
   {
-    id:'T12', topic:'Mobil távközlő rendszerek',
+    id:'T12', type:'single', topic:'Mobil távközlő rendszerek', points:2,
     q:'Mit jelent a cellás felépítés a mobilhálózatokban?',
     opts:['Egyetlen nagy antenna fedi le az egész területet','A területet kisebb cellákra osztják, minden cellának saját bázisállomása van, és a frekvenciák szomszéd cellákban újra felhasználhatók','A felhasználók műholdon keresztül kommunikálnak','Csak beltéri használatra tervezett rendszer'],
     ans:'A területet kisebb cellákra osztják, minden cellának saját bázisállomása van, és a frekvenciák szomszéd cellákban újra felhasználhatók'
   },
   {
-    id:'T13', topic:'Műsorszóró rendszerek',
+    id:'T13', type:'single', topic:'Műsorszóró rendszerek', points:2,
     q:'Mi a DVB-T2 legfőbb előnye a DVB-T-vel szemben?',
     opts:['Kisebb adóteljesítményt igényel','Teljesen más frekvenciasávban működik','Nagyobb adatátviteli kapacitás – HD és 4K tartalom is sugározható','Egyszerűbb vevőkészülék szükséges hozzá'],
     ans:'Nagyobb adatátviteli kapacitás – HD és 4K tartalom is sugározható'
   },
   {
-    id:'T14', topic:'Műsorszóró rendszerek',
+    id:'T14', type:'single', topic:'Műsorszóró rendszerek', points:2,
     q:'Melyik frekvenciatartományban sugároz a magyarországi DVB-T2 (digitális földi televízió)?',
     opts:['FM rádió sáv (87,5–108 MHz)','VHF III. sáv (174–230 MHz)','UHF sáv (470–790 MHz)','L-sáv (1452–1492 MHz)'],
     ans:'UHF sáv (470–790 MHz)'
   },
   {
-    id:'T15', topic:'Vezeték nélküli adatátvitel',
+    id:'T15', type:'single', topic:'Vezeték nélküli adatátvitel', points:1,
     q:'Melyik frekvenciasávban működik a Wi-Fi 5 (802.11ac) szabvány?',
     opts:['900 MHz','2,4 GHz','5 GHz','60 GHz'],
     ans:'5 GHz'
   },
   {
-    id:'T16', topic:'Vezeték nélküli adatátvitel',
+    id:'T16', type:'single', topic:'Vezeték nélküli adatátvitel', points:2,
     q:'Mi a BLE (Bluetooth Low Energy) legfőbb jellemzője?',
     opts:['Nagyobb hatótávolság a hagyományos Bluetooth-nál','Nagyon kis energiafogyasztás – okoseszközökhöz, IoT szenzorokhoz ideális','Gyorsabb adatátviteli sebesség','Csak hangátvitelre alkalmas'],
     ans:'Nagyon kis energiafogyasztás – okoseszközökhöz, IoT szenzorokhoz ideális'
   },
   {
-    id:'T17', topic:'Nagytávolságú IP hálózatok',
+    id:'T17', type:'single', topic:'Nagytávolságú IP hálózatok', points:3,
     q:'Mi az MPLS (Multiprotocol Label Switching) fő előnye a hagyományos IP-routinghoz képest?',
     opts:['Minden forgalmat titkosít','Csak IPv6-tal kompatibilis','Előre meghatározott útvonalon, garantált sávszélességgel és QoS-sel szállítja az adatokat','Helyettesíti a tűzfalat a hálózat határán'],
     ans:'Előre meghatározott útvonalon, garantált sávszélességgel és QoS-sel szállítja az adatokat'
   },
   {
-    id:'T18', topic:'Digitális távközlési rendszerek üzemeltetése',
+    id:'T18', type:'single', topic:'Digitális távközlési rendszerek üzemeltetése', points:2,
     q:'Mit jelent a QoS (Quality of Service) a hálózatokban?',
     opts:['A biztonsági protokollok összessége','A forgalom titkosításának szintje','A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése','Az adatátvitel maximális sebessége'],
     ans:'A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése'
   },
   {
-    id:'T19', topic:'Digitális távközlési rendszerek üzemeltetése',
+    id:'T19', type:'single', topic:'Digitális távközlési rendszerek üzemeltetése', points:1,
     q:'Melyik protokoll biztosítja az IP hálózatokon a megbízható, kapcsolatorientált adatátvitelt?',
     opts:['UDP','ICMP','TCP','ARP'],
     ans:'TCP'
   },
   {
-    id:'T20', topic:'Távközlési architektúrák',
+    id:'T20', type:'single', topic:'Távközlési architektúrák', points:3,
     q:'Mi a különbség a kapcsoltköri (circuit-switched) és a csomagkapcsolt (packet-switched) hálózat között?',
     opts:['A kapcsoltköri hálózat csak digitális adatot visz','Kapcsoltköri hálózatban a hívás teljes idejére lefoglalnak egy útvonalat; csomagkapcsoltban az adatot kis csomagokra bontják és megosztott útvonalon küldik','A csomagkapcsolt hálózat mindig megbízhatóbb','Napjainkban nincs köztük lényeges különbség'],
     ans:'Kapcsoltköri hálózatban a hívás teljes idejére lefoglalnak egy útvonalat; csomagkapcsoltban az adatot kis csomagokra bontják és megosztott útvonalon küldik'
+  },
+
+  // ── IGAZ / HAMIS ────────────────────────────────────────────────────────
+  {
+    id:'TF1', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'Ohm törvénye szerint az áramerősség egyenesen arányos az ellenállással (állandó feszültség esetén).',
+    ans:'Hamis'
+  },
+  {
+    id:'TF2', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'Soros kapcsolásban az összes elemen ugyanakkora áramerősség folyik át.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF3', type:'truefalse', topic:'Távközlési elektronika', points:1,
+    q:'A frekvenciamoduláció (FM) esetén a vivőhullám amplitúdója változik az információ hatására.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF4', type:'truefalse', topic:'Távközlési elektronika', points:1,
+    q:'A négyes PSK (QPSK) moduláció egyidejűleg 2 bitet kódol egy szimbólumba.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF5', type:'truefalse', topic:'Távközlési ismeretek', points:1,
+    q:'A duplex üzemmód egyszerre teszi lehetővé az adást és a vételt mindkét fél számára.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF6', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'Az IPv6 cím 32 bites, hexadecimálisan írják fel.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF7', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'A TCP protokoll kapcsolatorientált, megbízható adatátvitelt biztosít.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF8', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'A router a 2. (adatkapcsolati) rétegen működik, MAC-cím alapján továbbítja a kereteket.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF9', type:'truefalse', topic:'Mobil távközlő rendszerek', points:1,
+    q:'Az LTE (4G) rendszer kizárólag TDD (időosztásos duplex) módban működik.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF10', type:'truefalse', topic:'Mobil távközlő rendszerek', points:1,
+    q:'A SIM kártya tárolja az IMSI számot, amely egyedileg azonosítja az előfizetőt.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF11', type:'truefalse', topic:'Műsorszóró rendszerek', points:1,
+    q:'Az FM rádió adások sugárzási frekvenciája 470–790 MHz közé esik.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF12', type:'truefalse', topic:'Műsorszóró rendszerek', points:1,
+    q:'A DVB-T2 az OFDM modulációt alkalmazza a jel sugárzásához.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF13', type:'truefalse', topic:'Vezeték nélküli adatátvitel', points:1,
+    q:'A Bluetooth 2,4 GHz-es ISM sávban működik, és frekvenciaugrásos (FHSS) technikát alkalmaz.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF14', type:'truefalse', topic:'Vezeték nélküli adatátvitel', points:1,
+    q:'A Wi-Fi 6 (802.11ax) szabvány kizárólag az 5 GHz-es sávban működik.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF15', type:'truefalse', topic:'Nagytávolságú IP hálózatok', points:1,
+    q:'Az SDH (Szinkron Digitális Hierarchia) optikai hálózatokon használt, szinkron átviteli szabvány.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF16', type:'truefalse', topic:'Digitális rendszerek üzemeltetése', points:1,
+    q:'A VLAN (virtuális LAN) segítségével fizikailag különálló eszközök is ugyanabba a szegmensbe tartozhatnak.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF17', type:'truefalse', topic:'Digitális rendszerek üzemeltetése', points:1,
+    q:'A ping parancs a TCP protokollt használja a hálózati elérhetőség teszteléséhez.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF18', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'A kondenzátor egyenáramot átenged, míg a váltóáramot blokkolja.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF19', type:'truefalse', topic:'Távközlési architektúrák', points:1,
+    q:'A VoIP (Voice over IP) az analóg hangot digitalizálja, majd IP-csomagokban továbbítja.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF20', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'A 192.168.0.0/16 tartomány nyilvánosan routolható IP-cím tartomány.',
+    ans:'Hamis'
+  },
+
+  // ── TÖBB HELYES ─────────────────────────────────────────────────────────
+  {
+    id:'M1', type:'multiple', topic:'Elektrotechnika', points:3,
+    q:'Melyek az ellenállás mértékegységei, illetve azok többszörösei? (2 helyes)',
+    opts:['Ω (ohm)','F (farad)','kΩ (kilohm)','H (henry)'],
+    ans:['Ω (ohm)','kΩ (kilohm)']
+  },
+  {
+    id:'M2', type:'multiple', topic:'Távközlési elektronika', points:3,
+    q:'Melyik modulációs technikák tartoznak a szögmoduláció csoportjába? (2 helyes)',
+    opts:['AM (amplitúdómoduláció)','FM (frekvenciamoduláció)','PM (fázismoduláció)','PWM (impulzusszélesség-moduláció)'],
+    ans:['FM (frekvenciamoduláció)','PM (fázismoduláció)']
+  },
+  {
+    id:'M3', type:'multiple', topic:'IP hálózatok', points:3,
+    q:'Melyek privát (RFC 1918) IP-cím tartományok? (2 helyes)',
+    opts:['10.0.0.0/8','172.16.0.0/12','200.0.0.0/8','8.8.8.0/24'],
+    ans:['10.0.0.0/8','172.16.0.0/12']
+  },
+  {
+    id:'M4', type:'multiple', topic:'IP hálózatok', points:3,
+    q:'Az OSI modell melyik rétegei foglalkoznak végpont-végpont szintű kommunikációval? (2 helyes)',
+    opts:['Fizikai réteg (1.)','Hálózati réteg (3.)','Szállítási réteg (4.)','Adatkapcsolati réteg (2.)'],
+    ans:['Hálózati réteg (3.)','Szállítási réteg (4.)']
+  },
+  {
+    id:'M5', type:'multiple', topic:'Mobil távközlő rendszerek', points:3,
+    q:'Melyek a GSM-rendszer fő összetevői? (3 helyes)',
+    opts:['MS (mobilállomás)','BSS (bázisállomás-alrendszer)','NSS (hálózati kapcsolóalrendszer)','DSLAM (DSL access multiplexer)'],
+    ans:['MS (mobilállomás)','BSS (bázisállomás-alrendszer)','NSS (hálózati kapcsolóalrendszer)']
+  },
+  {
+    id:'M6', type:'multiple', topic:'Távközlési ismeretek', points:3,
+    q:'Melyik fizikai közegeken terjedhet az elektromos jel? (2 helyes)',
+    opts:['Réz sodort érpár','Optikai kábel','Vákuum (elektromos értelemben)','Koaxiális kábel'],
+    ans:['Réz sodort érpár','Koaxiális kábel']
+  },
+  {
+    id:'M7', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:3,
+    q:'Melyek a Wi-Fi (IEEE 802.11) szabványcsalád jellemzői? (2 helyes)',
+    opts:['Licencelt frekvenciasávot használ','ISM sávban (2,4 GHz / 5 GHz) működik','Kizárólag pontból pontra (P2P) kapcsolatot tesz lehetővé','CSMA/CA hozzáférési protokollt alkalmaz'],
+    ans:['ISM sávban (2,4 GHz / 5 GHz) működik','CSMA/CA hozzáférési protokollt alkalmaz']
+  },
+  {
+    id:'M8', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:3,
+    q:'Melyek az IPv6 bevezetésének legfontosabb okai? (2 helyes)',
+    opts:['IPv4 cím-kimerülés','Gyorsabb fizikai átvitel','Nagyobb (128 bites) cím-tér','Egyszerűbb TCP-protokoll'],
+    ans:['IPv4 cím-kimerülés','Nagyobb (128 bites) cím-tér']
+  },
+  {
+    id:'M9', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Melyik technológiák alkalmasak nagytávolságú (WAN) összeköttetések kiépítésére? (2 helyes)',
+    opts:['Ethernet (LAN)','MPLS','SDH/SONET','Bluetooth'],
+    ans:['MPLS','SDH/SONET']
+  },
+  {
+    id:'M10', type:'multiple', topic:'Távközlési architektúrák', points:4,
+    q:'Melyek az IMS (IP Multimedia Subsystem) fő jellemzői? (2 helyes)',
+    opts:['Kizárólag GSM-hálózatokban használható','SIP protokollon alapuló munkamenet-vezérlés','IP-alapú multimédiás szolgáltatások kezelése','Csak hangátvitelre alkalmas'],
+    ans:['SIP protokollon alapuló munkamenet-vezérlés','IP-alapú multimédiás szolgáltatások kezelése']
+  },
+  {
+    id:'M11', type:'multiple', topic:'Elektrotechnika', points:3,
+    q:'Melyik állítások igazak a tekercsre (induktivitás) vonatkozóan? (2 helyes)',
+    opts:['Egyenáramot blokkol, váltóáramot átenged','A váltóárammal szemben induktív reaktanciát mutat','Energia mágneses térben tárolódik','Frekvenciától független az impedanciája'],
+    ans:['A váltóárammal szemben induktív reaktanciát mutat','Energia mágneses térben tárolódik']
+  },
+  {
+    id:'M12', type:'multiple', topic:'Mobil távközlő rendszerek', points:3,
+    q:'Az 5G hálózat milyen frekvenciasávokban képes működni? (2 helyes)',
+    opts:['Sub-6 GHz (pl. 700 MHz, 3,5 GHz)','mmWave (pl. 26 GHz, 28 GHz)','Kizárólag 2,4 GHz-en','Kizárólag 900 MHz-en'],
+    ans:['Sub-6 GHz (pl. 700 MHz, 3,5 GHz)','mmWave (pl. 26 GHz, 28 GHz)']
+  },
+
+  // ── RANGSOROLÁS ─────────────────────────────────────────────────────────
+  {
+    id:'R1', type:'ranking', topic:'IP hálózatok', points:4,
+    q:'Rendezd sorba az OSI modell rétegeit alulról felfelé (fizikaitól az alkalmazásig)! (1 = legalsó)',
+    ans:['Fizikai réteg','Adatkapcsolati réteg','Hálózati réteg','Szállítási réteg','Munkamenet-réteg','Megjelenítési réteg','Alkalmazási réteg']
+  },
+  {
+    id:'R2', type:'ranking', topic:'Mobil távközlő rendszerek', points:4,
+    q:'Rendezd időrendi sorrendbe a mobilhálózati generációkat! (1 = legrégebbi)',
+    ans:['1G (NMT – analóg)','2G (GSM – digitális hang)','3G (UMTS – mobil internet)','4G (LTE – szélessávú adat)','5G (NR – ultra-nagysebességű)']
+  },
+  {
+    id:'R3', type:'ranking', topic:'Távközlési ismeretek', points:3,
+    q:'Rendezd növekvő frekvencia szerint a következő rádióhullám-sávokat! (1 = legkisebb frekvencia)',
+    ans:['LF (kis frekvencia, 30–300 kHz)','MF (közép frekvencia, 300 kHz–3 MHz)','HF (nagy frekvencia, 3–30 MHz)','VHF (nagyon nagy frekvencia, 30–300 MHz)','UHF (ultra nagy frekvencia, 300 MHz–3 GHz)']
+  },
+  {
+    id:'R4', type:'ranking', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Rendezd a PDH hierarchia szintjeit növekvő sávszélesség szerint! (1 = legkisebb)',
+    ans:['E1 (2 Mbit/s)','E2 (8 Mbit/s)','E3 (34 Mbit/s)','E4 (140 Mbit/s)']
+  },
+  {
+    id:'R5', type:'ranking', topic:'Digitális rendszerek üzemeltetése', points:3,
+    q:'Egy IP-csomag útja során melyik sorrendben dolgozzák fel a rétegek? (küldő oldalon, 1 = első)',
+    ans:['Alkalmazási réteg (adatgenerálás)','Szállítási réteg (szegmentálás, TCP/UDP fejléc)','Hálózati réteg (IP-fejléc hozzáadása)','Adatkapcsolati réteg (keret létrehozása)','Fizikai réteg (jelátvitel)']
+  },
+
+  // ── SZÁMOLÁSI FELADATOK (kiegészítő) ────────────────────────────────────
+  {
+    id:'S11', type:'single', topic:'Elektrotechnika', calc:true, points:3,
+    formula:'Soros ellenállás: R = R₁ + R₂ + R₃',
+    q:'Három 47 Ω-os ellenállást sorba kapcsolnak. Mi az eredő ellenállás?',
+    opts:['15,7 Ω','47 Ω','94 Ω','141 Ω'],
+    ans:'141 Ω'
+  },
+  {
+    id:'S12', type:'single', topic:'Elektrotechnika', calc:true, points:2,
+    formula:'W = P · t',
+    q:'Egy 100 W-os lámpa 5 óráig ég. Mennyi energiát fogyaszt (kWh-ban)?',
+    opts:['0,2 kWh','0,5 kWh','5 kWh','500 kWh'],
+    ans:'0,5 kWh'
+  },
+  {
+    id:'S13', type:'single', topic:'Távközlési elektronika', calc:true, points:3,
+    formula:'Csillapítás (dB) = 10 · log₁₀(P_ki / P_be)',
+    q:'Egy kábel bemeneti teljesítménye 200 mW, kimeneti teljesítménye 20 mW. Mekkora a csillapítás dB-ben?',
+    opts:['-3 dB','-6 dB','-10 dB','-20 dB'],
+    ans:'-10 dB'
+  },
+  {
+    id:'S14', type:'single', topic:'IP hálózatok', calc:true, points:3,
+    formula:'/25 → 7 hostbit → 2⁷ − 2 = 126',
+    q:'Egy /25 prefixű alhálózatban hány hoszt kaphat érvényes IP-címet?',
+    opts:['62','126','128','254'],
+    ans:'126'
+  },
+  {
+    id:'S15', type:'single', topic:'Távközlési ismeretek', calc:true, points:3,
+    formula:'f = c / λ   (c ≈ 3 × 10⁸ m/s)',
+    q:'Egy rádióhullám hullámhossza 10 cm. Mekkora a frekvenciája?',
+    opts:['300 MHz','3 GHz','30 GHz','300 GHz'],
+    ans:'3 GHz'
+  },
+
+  // ── TUDÁSKÉRDÉSEK (kiegészítő) ───────────────────────────────────────────
+  {
+    id:'T21', type:'single', topic:'Elektrotechnika', points:2,
+    q:'Mit mér az oszcilloszkóp?',
+    opts:['Egyenáramú ellenállást','Feszültség időfüggvényét (hullámformáját)','Teljesítményt','Kapacitást'],
+    ans:'Feszültség időfüggvényét (hullámformáját)'
+  },
+  {
+    id:'T22', type:'single', topic:'Elektrotechnika', points:2,
+    q:'Mi az impedancia?',
+    opts:['Csak az ohmos ellenállás','A váltóáramú áramkör teljes ellenállása (R, XL, XC eredője)','A tekercs ellenállása egyenáramra','A kondenzátor töltési ideje'],
+    ans:'A váltóáramú áramkör teljes ellenállása (R, XL, XC eredője)'
+  },
+  {
+    id:'T23', type:'single', topic:'Távközlési elektronika', points:2,
+    q:'Mi az OFDM moduláció legfőbb előnye?',
+    opts:['Nagyon egyszerű megvalósítás','Ellenálló a frekvenciaszelektív fadinggal és a többutas terjedéssel szemben','Nagyon kis sávszélességet foglal el','Kizárólag optikai szálakon használható'],
+    ans:'Ellenálló a frekvenciaszelektív fadinggal és a többutas terjedéssel szemben'
+  },
+  {
+    id:'T24', type:'single', topic:'Távközlési elektronika', points:2,
+    q:'Mit jelent az SNR (jel-zaj viszony)?',
+    opts:['A jel frekvenciájának és a zaj frekvenciájának aránya','A hasznos jel teljesítményének és a zaj teljesítményének aránya (általában dB-ben)','A jel amplitúdójának és a vivőhullám amplitúdójának aránya','A csatornahasználat hatékonysága'],
+    ans:'A hasznos jel teljesítményének és a zaj teljesítményének aránya (általában dB-ben)'
+  },
+  {
+    id:'T25', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mi a PCM (Pulse Code Modulation) lényege?',
+    opts:['Az analóg jel frekvenciájának digitális kódolása','Az analóg jel mintavételezése, kvantálása és bináris kódolása','A digitális jel analóg vivőre való modulálása','Az adat tömörítése átvitel előtt'],
+    ans:'Az analóg jel mintavételezése, kvantálása és bináris kódolása'
+  },
+  {
+    id:'T26', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mit jelent a Nyquist-tétel (mintavételi tétel) a jelfeldolgozásban?',
+    opts:['A jel maximális csillapítása optikai kábelen','Az analóg jel torzításmentes visszaállításához a mintavételi frekvenciának legalább a jel sávszélességének kétszerese kell legyen','A zaj és a jel egymástól való szétválasztásának módszere','A kvantálási lépések számának meghatározási módja'],
+    ans:'Az analóg jel torzításmentes visszaállításához a mintavételi frekvenciának legalább a jel sávszélességének kétszerese kell legyen'
+  },
+  {
+    id:'T27', type:'single', topic:'IP hálózatok', points:2,
+    q:'Mi a DHCP protokoll feladata?',
+    opts:['Névfeloldás (domain → IP)','Automatikus IP-cím kiosztás hálózati eszközöknek','Titkosított VPN-alagutak létrehozása','E-mail továbbítása'],
+    ans:'Automatikus IP-cím kiosztás hálózati eszközöknek'
+  },
+  {
+    id:'T28', type:'single', topic:'IP hálózatok', points:2,
+    q:'Mi a különbség a switch és a hub között?',
+    opts:['A hub drágább és okosabb eszköz','A switch MAC-cím alapján csak a célportnak továbbít; a hub minden portra elküldi a keretet','A hub Layer 3 eszköz, a switch Layer 2','Napjainkban nincs köztük funkcionális különbség'],
+    ans:'A switch MAC-cím alapján csak a célportnak továbbít; a hub minden portra elküldi a keretet'
+  },
+  {
+    id:'T29', type:'single', topic:'IP hálózatok', points:3,
+    q:'Melyik routing protokoll a linkállapot-alapú (link-state) protokollok közé tartozik?',
+    opts:['RIP','EIGRP','OSPF','BGP'],
+    ans:'OSPF'
+  },
+  {
+    id:'T30', type:'single', topic:'Mobil távközlő rendszerek', points:2,
+    q:'Mit jelent a handover (átadás) a mobilhálózatokban?',
+    opts:['Az előfizető megváltoztatja a SIM-kártyáját','Az aktív hívás vagy adatkapcsolat átadása egyik bázisállomástól a másiknak mozgás közben','A roaming bekapcsolása külföldön','Az SMS-küldési folyamat'],
+    ans:'Az aktív hívás vagy adatkapcsolat átadása egyik bázisállomástól a másiknak mozgás közben'
+  },
+  {
+    id:'T31', type:'single', topic:'Mobil távközlő rendszerek', points:3,
+    q:'Mi az OFDMA szerepe az LTE (4G) rendszerben?',
+    opts:['Titkosítja az adatot a levegőn át','Lehetővé teszi, hogy több felhasználó egyszerre osszon meg frekvencia- és időerőforrásokat','Azonosítja a mobilkészüléket a hálózatban','Az SMS-csatorna modulációs technikája'],
+    ans:'Lehetővé teszi, hogy több felhasználó egyszerre osszon meg frekvencia- és időerőforrásokat'
+  },
+  {
+    id:'T32', type:'single', topic:'Műsorszóró rendszerek', points:2,
+    q:'Mi az SFN (Single Frequency Network) előnye a műsorszórásban?',
+    opts:['Minden adó más frekvencián sugároz, így nincs interferencia','Több adó azonos frekvencián, szinkronizáltan sugároz – jobb lefedettség, hatékonyabb frekvenciahasználat','Csak kis cellájú, beltéri sugárzásra alkalmas','Kizárólag műholdas televíziózásban alkalmazzák'],
+    ans:'Több adó azonos frekvencián, szinkronizáltan sugároz – jobb lefedettség, hatékonyabb frekvenciahasználat'
+  },
+  {
+    id:'T33', type:'single', topic:'Műsorszóró rendszerek', points:2,
+    q:'Melyik tömörítési szabvány alapja a DVB-T2 videó-kódolásnak?',
+    opts:['MPEG-2','MPEG-4 AVC (H.264) / HEVC (H.265)','VP9','AV1'],
+    ans:'MPEG-4 AVC (H.264) / HEVC (H.265)'
+  },
+  {
+    id:'T34', type:'single', topic:'Vezeték nélküli adatátvitel', points:2,
+    q:'Mi a különbség az infrastruktúra és az ad-hoc Wi-Fi üzemmód között?',
+    opts:['Ad-hoc módban csak az internethez lehet csatlakozni','Infrastruktúra módban az eszközök közvetlenül kommunikálnak access point nélkül; ad-hoc módban access pointon keresztül','Infrastruktúra módban access ponton (AP) keresztül zajlik a kommunikáció; ad-hoc módban az eszközök közvetlenül kommunikálnak','Nincs lényeges különbség a két üzemmód között'],
+    ans:'Infrastruktúra módban access ponton (AP) keresztül zajlik a kommunikáció; ad-hoc módban az eszközök közvetlenül kommunikálnak'
+  },
+  {
+    id:'T35', type:'single', topic:'Vezeték nélküli adatátvitel', points:2,
+    q:'Mi a MIMO technológia előnye a Wi-Fi hálózatokban?',
+    opts:['Csökkenti a fogyasztást, de a sebesség is alacsonyabb lesz','Több antenna segítségével párhuzamos adatfolyamok révén növeli az átviteli kapacitást','Csak 2,4 GHz-es sávban alkalmazható','Erősebb titkosítást biztosít'],
+    ans:'Több antenna segítségével párhuzamos adatfolyamok révén növeli az átviteli kapacitást'
+  },
+  {
+    id:'T36', type:'single', topic:'Nagytávolságú IP hálózatok', points:2,
+    q:'Mi az anycast cím feladata az IPv6-ban?',
+    opts:['Egy adott csoporthoz tartozó összes eszközre küld','Egy üzenetet a legközelebbi (legjobb útvonalú) taghoz irányít egy csoportból','Közvetlen felhasználó-felhasználó kommunikációt tesz lehetővé','Csak helyi hálózaton belül érvényes cím'],
+    ans:'Egy üzenetet a legközelebbi (legjobb útvonalú) taghoz irányít egy csoportból'
+  },
+  {
+    id:'T37', type:'single', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Mi a BGP (Border Gateway Protocol) fő feladata?',
+    opts:['Vállalati belső hálózatok routing-táblájának kezelése','Autonóm rendszerek (AS) közötti útvonalválasztás az interneten','IP-cím kiosztás nagyvállalati hálózatokban','Forgalomtitkosítás ISP-k között'],
+    ans:'Autonóm rendszerek (AS) közötti útvonalválasztás az interneten'
+  },
+  {
+    id:'T38', type:'single', topic:'Digitális rendszerek üzemeltetése', points:2,
+    q:'Mit jelent a sávszélesség (bandwidth) az adathálózatokban?',
+    opts:['Az átviteli közeg fizikai szélességét','Az adott időegység alatt átvihető adatmennyiséget (bit/s)','A hálózati kábel maximális hosszát','A jel frekvenciatartományát'],
+    ans:'Az adott időegység alatt átvihető adatmennyiséget (bit/s)'
+  },
+  {
+    id:'T39', type:'single', topic:'Digitális rendszerek üzemeltetése', points:2,
+    q:'Mi a különbség a szimmetrikus és az aszimmetrikus titkosítás között?',
+    opts:['A szimmetrikus titkosítás mindig erősebb','Szimmetrikus esetén ugyanaz a kulcs titkosít és fejt vissza; aszimmetrikusnál két különböző (nyilvános és privát) kulcs van','Aszimmetrikus titkosításban nincs kulcs','Szimmetrikus csak tanúsítványokkal működik'],
+    ans:'Szimmetrikus esetén ugyanaz a kulcs titkosít és fejt vissza; aszimmetrikusnál két különböző (nyilvános és privát) kulcs van'
+  },
+  {
+    id:'T40', type:'single', topic:'Távközlési architektúrák', points:3,
+    q:'Mi az SDN (Software-Defined Networking) alapötlete?',
+    opts:['Az összes hálózati eszközt egyetlen operációs rendszer vezérli','A hálózat vezérlési síkja (control plane) szoftveresen, központilag kezelhető, elkülönítve az adatsíktól (data plane)','Az SDN kizárólag felhőszolgáltatóknak érhető el','Az SDN megszünteti a routerek szükségességét'],
+    ans:'A hálózat vezérlési síkja (control plane) szoftveresen, központilag kezelhető, elkülönítve az adatsíktól (data plane)'
+  },
+
+  // ── KÉPES KÉRDÉSEK (image-q) ─────────────────────────────────────────────
+  {
+    id:'I1', type:'image-q', topic:'Elektrotechnika', calc:true, points:3,
+    img:'img/soros.svg',
+    formula:'R = R₁ + R₂ + R₃',
+    q:'Az ábrán látható soros kapcsolásban R₁ = 15 Ω, R₂ = 25 Ω, R₃ = 40 Ω. Mi az eredő ellenállás?',
+    opts:['13,3 Ω','40 Ω','80 Ω','1500 Ω'],
+    ans:'80 Ω'
+  },
+  {
+    id:'I2', type:'image-q', topic:'Elektrotechnika', calc:true, points:3,
+    img:'img/parhuzamos.svg',
+    formula:'1/R = 1/R₁ + 1/R₂ + 1/R₃',
+    q:'Az ábrán három egyforma 90 Ω-os ellenállás párhuzamosan kapcsolódik. Mekkora az eredő ellenállás?',
+    opts:['270 Ω','90 Ω','45 Ω','30 Ω'],
+    ans:'30 Ω'
+  },
+  {
+    id:'I3', type:'image-q', topic:'IP hálózatok', points:2,
+    img:'img/csillag.svg',
+    q:'Milyen hálózati topológiát ábrázol az ábra?',
+    opts:['Gyűrű (ring) topológia','Busz topológia','Csillag (star) topológia','Teljes háló (mesh) topológia'],
+    ans:'Csillag (star) topológia'
+  },
+  {
+    id:'I4', type:'image-q', topic:'IP hálózatok', points:2,
+    img:'img/busz.svg',
+    q:'Az ábrán látható hálózati topológiának mi a legfőbb hátránya?',
+    opts:['Nagyon drága megvalósítani','Ha a közös adatvezeték meghibásodik, az egész hálózat leáll','Minden eszköznek saját kábele van a központhoz','Nem alkalmas számítógépes hálózatokhoz'],
+    ans:'Ha a közös adatvezeték meghibásodik, az egész hálózat leáll'
+  },
+  {
+    id:'I5', type:'image-q', topic:'Távközlési elektronika', points:3,
+    img:'img/fm.svg',
+    q:'Az ábrán látható jel melyik modulációs technikát szemlélteti?',
+    opts:['AM – amplitúdómoduláció (az amplitúdó változik)','FM – frekvenciamoduláció (a frekvencia változik)','PM – fázismoduláció (a fázis ugrik)','ASK – amplitúdóbillentyűzés (digitális)'],
+    ans:'FM – frekvenciamoduláció (a frekvencia változik)'
+  },
+  {
+    id:'I6', type:'image-q', topic:'IP hálózatok', points:2,
+    img:'img/osi.svg',
+    q:'Az OSI modell ábrán kékkel kiemelt réteg felelős az IP-cím alapú útvonalválasztásért. Melyik ez a réteg?',
+    opts:['2. réteg – Adatkapcsolati','3. réteg – Hálózati','4. réteg – Szállítási','7. réteg – Alkalmazási'],
+    ans:'3. réteg – Hálózati'
+  },
+  {
+    id:'I7', type:'image-q', topic:'Mobil távközlő rendszerek', points:2,
+    img:'img/cellak.svg',
+    q:'Az ábra a mobilhálózatok cellás elrendezését mutatja. Miért hatszög (hexagon) alakú minden cella?',
+    opts:['Az antennák fizikai formájából adódik','A hatszögek lefedik a területet átfedés és hézag nélkül, és közel kör alakúak','Csak hatszög cellákban lehetséges frekvenciaismétlés','Műholdas kommunikációs követelmény'],
+    ans:'A hatszögek lefedik a területet átfedés és hézag nélkül, és közel kör alakúak'
+  },
+  {
+    id:'I8', type:'image-q', topic:'IP hálózatok', points:2,
+    img:'img/ipv4.svg',
+    q:'Az ábra egy IPv4-cím felépítését mutatja. Melyik állítás igaz?',
+    opts:['IPv4-cím 64 bites, 8 oktettből áll','IPv4-cím 32 bites, 4 oktettből áll, minden oktett értéke 0–255','IPv4-cím 128 bites, hexadecimálisan írják','IPv4-cím 32 bites, de csak 3 oktettet használnak'],
+    ans:'IPv4-cím 32 bites, 4 oktettből áll, minden oktett értéke 0–255'
+  },
+
+  // ── KIEGÉSZÍTŐ KÉRDÉSEK (single / truefalse / multiple / ranking) ─────────
+  {
+    id:'T41', type:'single', topic:'Elektrotechnika', points:2,
+    q:'Mi a tranzisztor alapvető felhasználási területe az elektronikában?',
+    opts:['Energia tárolása','Erősítés és kapcsolás (switching)','Feszültség stabilitása kizárólag','Egyenirányítás'],
+    ans:'Erősítés és kapcsolás (switching)'
+  },
+  {
+    id:'T42', type:'single', topic:'Elektrotechnika', points:2,
+    q:'Melyik eszköz teszi lehetővé a váltóáram egyenárammá alakítását?',
+    opts:['Tekercs (induktivitás)','Kondenzátor','Dióda (egyenirányító)','Transzformátor'],
+    ans:'Dióda (egyenirányító)'
+  },
+  {
+    id:'T43', type:'single', topic:'Elektrotechnika', points:2,
+    q:'Mi a transzformátor elsődleges feladata?',
+    opts:['Egyenáram előállítása','Váltófeszültség szintjének megváltoztatása','Jel erősítése','Frekvencia megduplázása'],
+    ans:'Váltófeszültség szintjének megváltoztatása'
+  },
+  {
+    id:'T44', type:'single', topic:'Távközlési elektronika', points:2,
+    q:'Mi a különbség az analóg és a digitális moduláció között?',
+    opts:['Az analóg moduláció gyorsabb','Analóg modulációnál (AM, FM) a vivőjel folytonosan változik; digitálisnál (ASK, FSK, PSK) diszkrét értékek között vált','A digitális moduláció mindig zajosabb','Analóg moduláció csak optikai szálakon alkalmazható'],
+    ans:'Analóg modulációnál (AM, FM) a vivőjel folytonosan változik; digitálisnál (ASK, FSK, PSK) diszkrét értékek között vált'
+  },
+  {
+    id:'T45', type:'single', topic:'Távközlési elektronika', points:3,
+    q:'Mit jelent a QAM (Quadrature Amplitude Modulation)?',
+    opts:['Csak frekvenciaváltozáson alapuló moduláció','Amplitúdó- és fázisváltozást egyszerre alkalmazó moduláció – több bit/szimbólum átvitelére alkalmas','Kizárólag analóg TV-ben alkalmazott technika','Egy speciális antennakonfiguráció elnevezése'],
+    ans:'Amplitúdó- és fázisváltozást egyszerre alkalmazó moduláció – több bit/szimbólum átvitelére alkalmas'
+  },
+  {
+    id:'T46', type:'single', topic:'Távközlési elektronika', points:2,
+    q:'Mire való az erősítő (amplifier) a rádióvevőkben?',
+    opts:['A jel frekvenciájának megváltoztatása','A gyenge antennajel erősítése a feldolgozás előtt','Az analóg jel digitalizálása','Az interferencia megszűrése szoftveresen'],
+    ans:'A gyenge antennajel erősítése a feldolgozás előtt'
+  },
+  {
+    id:'T47', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mi a multiplexelés (multiplex) fogalma a távközlésben?',
+    opts:['Egy jel erősítése több antenna segítségével','Több jel egyidejű átvitele egyetlen fizikai csatornán (pl. TDMA, FDMA, CDMA)','Jel titkosítása az átvitel előtt','Az átviteli vonal végpontjain alkalmazott szűrési módszer'],
+    ans:'Több jel egyidejű átvitele egyetlen fizikai csatornán (pl. TDMA, FDMA, CDMA)'
+  },
+  {
+    id:'T48', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mi a különbség az FDMA és a TDMA hozzáférési módszer között?',
+    opts:['Nincs különbség, mindkettő ugyanazt jelenti','FDMA-ban a felhasználók különböző frekvenciasávokat kapnak; TDMA-ban időréseket osztanak szét','TDMA-ban a felhasználók kódok alapján különülnek el; FDMA-ban antennák alapján','Az FDMA digitális, a TDMA analóg technológia'],
+    ans:'FDMA-ban a felhasználók különböző frekvenciasávokat kapnak; TDMA-ban időréseket osztanak szét'
+  },
+  {
+    id:'T49', type:'single', topic:'Távközlési ismeretek', points:2,
+    q:'Mi az optikai szál fő előnye a rézkábellel szemben adatátvitelre?',
+    opts:['Olcsóbb és könnyebb összekötni','Nem érzékeny elektromágneses interferenciára, és sokkal nagyobb sávszélességet biztosít','Csak analóg jelek átvitelére alkalmas','Jobban bírja a fizikai terhelést'],
+    ans:'Nem érzékeny elektromágneses interferenciára, és sokkal nagyobb sávszélességet biztosít'
+  },
+  {
+    id:'T50', type:'single', topic:'IP hálózatok', points:2,
+    q:'Mi az ARP (Address Resolution Protocol) feladata?',
+    opts:['IP-cím kiosztása DHCP helyett','IP-cím lefordítása MAC-címre a helyi hálózaton','Domain nevek feloldása IP-cím alapján','Csomagok titkosítása az átvitel előtt'],
+    ans:'IP-cím lefordítása MAC-címre a helyi hálózaton'
+  },
+  {
+    id:'T51', type:'single', topic:'IP hálózatok', points:2,
+    q:'Melyik OSI rétegen dolgozik a tűzfal (firewall)?',
+    opts:['Kizárólag az 1. (fizikai) rétegen','A 3–4. (hálózati–szállítási) rétegen, de alkalmazásszintű tűzfal a 7. rétegen is','Csak a 2. (adatkapcsolati) rétegen','Kizárólag a 7. (alkalmazási) rétegen'],
+    ans:'A 3–4. (hálózati–szállítási) rétegen, de alkalmazásszintű tűzfal a 7. rétegen is'
+  },
+  {
+    id:'T52', type:'single', topic:'Mobil távközlő rendszerek', points:2,
+    q:'Mi a roaming a mobiltelefóniában?',
+    opts:['Az előfizető más ország mobilhálózatán is használhatja a készülékét','Az adatátvitel sebessége változik a helytől függően','A SIM kártya automatikusan cserélődik külföldön','A hívás titkosítása aktív'],
+    ans:'Az előfizető más ország mobilhálózatán is használhatja a készülékét'
+  },
+  {
+    id:'T53', type:'single', topic:'Mobil távközlő rendszerek', points:3,
+    q:'Mi a különbség a TDD és az FDD duplex módszerek között az LTE-ben?',
+    opts:['TDD-ben két különböző frekvencián folyik az adás és a vétel egyidejűleg; FDD-ben időrésenként váltják a fel/letöltési irányt','FDD-ben két különböző frekvencián folyik az adás és a vétel; TDD-ben időréseket oszt szét a rendszer a két iránynak','Nincs köztük különbség az LTE-ben','TDD kizárólag beltéri pico-cellákban alkalmazható'],
+    ans:'FDD-ben két különböző frekvencián folyik az adás és a vétel; TDD-ben időréseket oszt szét a rendszer a két iránynak'
+  },
+  {
+    id:'T54', type:'single', topic:'Mobil távközlő rendszerek', points:2,
+    q:'Mi az IMEI szám a mobilkommunikációban?',
+    opts:['Az előfizető azonosítója (SIM-ben tárolt)','A készülék egyedi hardverazonosítója (International Mobile Equipment Identity)','A hálózati szolgáltató kódja','A cellaazonosító szám'],
+    ans:'A készülék egyedi hardverazonosítója (International Mobile Equipment Identity)'
+  },
+  {
+    id:'T55', type:'single', topic:'Műsorszóró rendszerek', points:2,
+    q:'Mi az EPG (Electronic Programme Guide) a digitális televíziózásban?',
+    opts:['Elektronikus felvételkészítő eszköz','A digitális sugárzás titkosítási rendszere','Elektronikus műsorújság – a vevőkészülék a sugárzott adatból közvetlen megjeleníthetővé teszi a műsort','Az adóállomás teljesítményének szabályzója'],
+    ans:'Elektronikus műsorújság – a vevőkészülék a sugárzott adatból közvetlen megjeleníthetővé teszi a műsort'
+  },
+  {
+    id:'T56', type:'single', topic:'Műsorszóró rendszerek', points:2,
+    q:'Mit jelent a DAB (Digital Audio Broadcasting)?',
+    opts:['Digitális műholdas televíziózás','Digitális rádióadás-technológia – jobb hangminőség, több csatorna, adatszolgáltatás is lehetséges','Analóg AM rádió digitális kiegészítője','Digitális tévéjel visszaszórási módszer'],
+    ans:'Digitális rádióadás-technológia – jobb hangminőség, több csatorna, adatszolgáltatás is lehetséges'
+  },
+  {
+    id:'T57', type:'single', topic:'Vezeték nélküli adatátvitel', points:2,
+    q:'Mi a Zigbee protokoll legfőbb jellemzője?',
+    opts:['Nagy hatótávolságú, nagy sebességű adatátvitel','Nagyon alacsony fogyasztású, kis sebességű, IoT és okosotthon eszközökhöz tervezett hálózati protokoll','Kizárólag hangátvitelre alkalmas','A Bluetooth utódja, azzal kompatibilis'],
+    ans:'Nagyon alacsony fogyasztású, kis sebességű, IoT és okosotthon eszközökhöz tervezett hálózati protokoll'
+  },
+  {
+    id:'T58', type:'single', topic:'Nagytávolságú IP hálózatok', points:2,
+    q:'Mi a különbség az ISP (Internet Service Provider) és az IXP (Internet Exchange Point) között?',
+    opts:['Nincs köztük különbség','ISP az internetszolgáltató; IXP egy olyan csomópont, ahol különböző ISP-k hálózatai csatlakoznak egymáshoz','IXP az internetszolgáltató, az ISP az összekapcsolási pont','ISP csak vállalati ügyfeleket szolgál ki'],
+    ans:'ISP az internetszolgáltató; IXP egy olyan csomópont, ahol különböző ISP-k hálózatai csatlakoznak egymáshoz'
+  },
+  {
+    id:'T59', type:'single', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Mi a CDN (Content Delivery Network) szerepe az interneten?',
+    opts:['Az internetes tartalmak titkosítása','Tartalmak (videók, képek, weboldalak) tárolása földrajzilag elosztott szervereken, hogy a felhasználókhoz közelebb kerüljön az adat','Csak DNS-feloldást végez','Elosztott DDoS-védelmi rendszer'],
+    ans:'Tartalmak (videók, képek, weboldalak) tárolása földrajzilag elosztott szervereken, hogy a felhasználókhoz közelebb kerüljön az adat'
+  },
+  {
+    id:'T60', type:'single', topic:'Digitális rendszerek üzemeltetése', points:2,
+    q:'Mi az SLA (Service Level Agreement) a távközlési szerződésekben?',
+    opts:['A hálózati biztonsági protokoll neve','A szolgáltatási szintekre vonatkozó megállapodás – garantált rendelkezésre állás, sávszélesség, válaszidő','Az eszközök fizikai telepítési szabványa','A számlázási rendszer neve'],
+    ans:'A szolgáltatási szintekre vonatkozó megállapodás – garantált rendelkezésre állás, sávszélesség, válaszidő'
+  },
+  {
+    id:'T61', type:'single', topic:'Digitális rendszerek üzemeltetése', points:2,
+    q:'Mit jelent a redundancia a hálózattervezésben?',
+    opts:['Felesleges, üzemen kívüli eszközök jelenléte','Tartalék útvonalak és eszközök biztosítása, hogy meghibásodás esetén a hálózat tovább működhessen','A hálózati forgalom titkosítása','A sávszélesség dinamikus növelése terhelés esetén'],
+    ans:'Tartalék útvonalak és eszközök biztosítása, hogy meghibásodás esetén a hálózat tovább működhessen'
+  },
+  {
+    id:'T62', type:'single', topic:'Távközlési architektúrák', points:3,
+    q:'Mi az NFV (Network Functions Virtualization) lényege?',
+    opts:['Fizikai hálózati eszközök virtuális gépekre helyezése, így a hálózati funkciók (tűzfal, router, terhelés-elosztó) szoftveresen futnak','A hálózat teljes egészének titkosítása','Virtuális LAN (VLAN) szabvány','A hálózati eszközök fizikai összeköttetésének optimalizálása'],
+    ans:'Fizikai hálózati eszközök virtuális gépekre helyezése, így a hálózati funkciók (tűzfal, router, terhelés-elosztó) szoftveresen futnak'
+  },
+
+  // ── Kiegészítő IGAZ/HAMIS ────────────────────────────────────────────────
+  {
+    id:'TF21', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'Egy 100 W-os és egy 60 W-os izzó párhuzamos kapcsolásakor ugyanazon a feszültségen a 100 W-os izzón folyik több áram.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF22', type:'truefalse', topic:'Távközlési elektronika', points:1,
+    q:'A 64-QAM moduláció egyszerre 6 bitet kódol egy szimbólumba (2⁶ = 64 szimbólumállás).',
+    ans:'Igaz'
+  },
+  {
+    id:'TF23', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'A UDP protokoll megbízható, kapcsolatorientált adatátvitelt biztosít, ezért VoIP-ra is használják.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF24', type:'truefalse', topic:'Mobil távközlő rendszerek', points:1,
+    q:'Az NR (New Radio) az 5G szabvány rádióhozzáférési technológiájának neve.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF25', type:'truefalse', topic:'Nagytávolságú IP hálózatok', points:1,
+    q:'A DWDM (Dense Wavelength Division Multiplexing) technika réz koaxiális kábelen alkalmazza a hullámhossz-multiplexelést.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF26', type:'truefalse', topic:'Digitális rendszerek üzemeltetése', points:1,
+    q:'A Spanning Tree Protocol (STP) megakadályozza a hurkok kialakulását a kapcsolt Ethernet hálózatokban.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF27', type:'truefalse', topic:'Távközlési ismeretek', points:1,
+    q:'A félduplex (half-duplex) üzemmódban mindkét fél egyszerre küldhet és fogadhat adatot.',
+    ans:'Hamis'
+  },
+  {
+    id:'TF28', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'Az elektromos ellenállás mértékegysége a Siemens (S).',
+    ans:'Hamis'
+  },
+  {
+    id:'TF29', type:'truefalse', topic:'Mobil távközlő rendszerek', points:1,
+    q:'A CDMA (kódosztásos többszörös hozzáférés) technológiában minden felhasználó azonos frekvencián és időben küld, de egyedi kóddal különülnek el.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF30', type:'truefalse', topic:'Távközlési architektúrák', points:1,
+    q:'A SIP (Session Initiation Protocol) IP-alapú hang- és videóhívások felépítésére és bontására szolgál.',
+    ans:'Igaz'
+  },
+
+  // ── Kiegészítő TÖBB HELYES ──────────────────────────────────────────────
+  {
+    id:'M13', type:'multiple', topic:'Elektrotechnika', points:3,
+    q:'Melyik fizikai mennyiségek mérésére alkalmas a multiméter (univerzális mérőeszköz)? (3 helyes)',
+    opts:['Feszültség (U)','Ellenállás (R)','Frekvencia (f, egyes típusokon)','Hőmérséklet (T, speciális elektromos meghatározáshoz)'],
+    ans:['Feszültség (U)','Ellenállás (R)','Frekvencia (f, egyes típusokon)']
+  },
+  {
+    id:'M14', type:'multiple', topic:'IP hálózatok', points:3,
+    q:'Melyik protokollok alkalmazásrétegi (7. OSI réteg) protokollok? (2 helyes)',
+    opts:['HTTP','TCP','DNS','IP'],
+    ans:['HTTP','DNS']
+  },
+  {
+    id:'M15', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Melyik jellemzők igazak az optikai szálra? (3 helyes)',
+    opts:['Elektromágneses interferenciára nem érzékeny','Rézkábelnél kisebb sávszélesség','Nagyon kis csillapítás nagy távolságon','Fényimpulzusok formájában viszi az adatot'],
+    ans:['Elektromágneses interferenciára nem érzékeny','Nagyon kis csillapítás nagy távolságon','Fényimpulzusok formájában viszi az adatot']
+  },
+  {
+    id:'M16', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:3,
+    q:'Melyik állítások igazak a VPN (Virtual Private Network) technológiára? (2 helyes)',
+    opts:['Titkosított alagút nyilvános hálózaton keresztül','Csak vállalati belső hálózaton belül működik','Lehetővé teszi a biztonságos távoli hozzáférést','Mindig gyorsabb, mint a közvetlen kapcsolat'],
+    ans:['Titkosított alagút nyilvános hálózaton keresztül','Lehetővé teszi a biztonságos távoli hozzáférést']
+  },
+  {
+    id:'M17', type:'multiple', topic:'Mobil távközlő rendszerek', points:4,
+    q:'Az 5G hálózat milyen új képességeket biztosít a 4G-hez képest? (3 helyes)',
+    opts:['Ultra-nagy sebesség (>1 Gbit/s)','Ultra-alacsony késleltetés (<1 ms)','Masszív IoT eszközkapcsolat','Kizárólag beltéri használatra tervezett'],
+    ans:['Ultra-nagy sebesség (>1 Gbit/s)','Ultra-alacsony késleltetés (<1 ms)','Masszív IoT eszközkapcsolat']
+  },
+
+  // ── Kiegészítő RANGSOROLÁS ──────────────────────────────────────────────
+  {
+    id:'R6', type:'ranking', topic:'Távközlési ismeretek', points:3,
+    q:'Rendezd sorba az analóg hang digitalizálásának lépéseit! (1 = első lépés)',
+    ans:['Mintavételezés (sampling)','Kvantálás (quantization)','Kódolás (encoding – bináris)','Tömörítés (pl. MP3)']
+  },
+  {
+    id:'R7', type:'ranking', topic:'Digitális rendszerek üzemeltetése', points:3,
+    q:'Rendezd a következő hálózati eszközöket a legegyszerűbbtől a legokosabbig! (1 = legegyszerűbb)',
+    ans:['Hub (minden portra küld)','Switch (MAC-cím alapú továbbítás)','Router (IP-cím alapú útvonalválasztás)','Tűzfal/UTM (alkalmazásszintű szűrés)']
+  },
+  {
+    id:'R8', type:'ranking', topic:'Nagytávolságú IP hálózatok', points:3,
+    q:'Rendezd növekvő sávszélesség sorrendbe! (1 = legkisebb)',
+    ans:['Analóg modem (56 kbit/s)','ADSL (8 Mbit/s letöltés)','VDSL2 (100 Mbit/s)','GPON optikai (1 Gbit/s+)']
+  },
+  {
+    id:'S16', type:'single', topic:'Elektrotechnika', calc:true, points:3,
+    formula:'R = ρ · l / A   (ρ = fajlagos ellenállás)',
+    q:'Egy réz vezető fajlagos ellenállása 0,017 Ω·mm²/m. Egy 50 m hosszú, 2,5 mm² keresztmetszetű vezető ellenállása:',
+    opts:['0,017 Ω','0,34 Ω','0,85 Ω','1,7 Ω'],
+    ans:'0,34 Ω'
+  },
+  {
+    id:'S17', type:'single', topic:'Távközlési elektronika', calc:true, points:3,
+    formula:'BER = hibás bitek / összes bit',
+    q:'Egy digitális átviteli csatornán 10 000 bitből 5 hibás bit érkezett. Mekkora a BER (Bit Error Rate)?',
+    opts:['5 × 10⁻¹','5 × 10⁻³','5 × 10⁻⁴','5 × 10⁻⁵'],
+    ans:'5 × 10⁻⁴'
+  },
+  {
+    id:'TF31', type:'truefalse', topic:'Távközlési ismeretek', points:1,
+    q:'Az ADSL technológiánál a letöltési sebesség magasabb, mint a feltöltési sebesség.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF32', type:'truefalse', topic:'Digitális rendszerek üzemeltetése', points:1,
+    q:'Az SSH protokoll titkosított parancssori kapcsolatot biztosít, és a Telnet biztonságos utódjaként is használják.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF33', type:'truefalse', topic:'Elektrotechnika', points:1,
+    q:'A frekvencia és a periódusidő egymás reciprokai: f = 1/T.',
+    ans:'Igaz'
+  },
+  {
+    id:'TF34', type:'truefalse', topic:'IP hálózatok', points:1,
+    q:'A 127.0.0.1 IP-cím a számítógép saját loopback (visszacsatoló) interfészére mutat.',
+    ans:'Igaz'
+  },
+  {
+    id:'M18', type:'multiple', topic:'Távközlési ismeretek', points:3,
+    q:'Melyik protokollok biztosítanak titkosított adatátvitelt az interneten? (2 helyes)',
+    opts:['HTTP','HTTPS','FTP','TLS/SSL'],
+    ans:['HTTPS','TLS/SSL']
+  },
+  {
+    id:'M19', type:'multiple', topic:'Műsorszóró rendszerek', points:3,
+    q:'Melyik jellemzők vonatkoznak a DVB szabványcsaládra? (2 helyes)',
+    opts:['Kizárólag analóg jelek sugárzására alkalmas','DVB-T/T2 (terrestrial – földi), DVB-S/S2 (satellite – műholdas), DVB-C (cable – kábeles) változatok léteznek','A DVB-T2 az OFDM modulációt és FEC hibajavítást alkalmaz','Csak Magyarországon használt szabvány'],
+    ans:['DVB-T/T2 (terrestrial – földi), DVB-S/S2 (satellite – műholdas), DVB-C (cable – kábeles) változatok léteznek','A DVB-T2 az OFDM modulációt és FEC hibajavítást alkalmaz']
+  },
+  {
+    id:'M20', type:'multiple', topic:'Távközlési architektúrák', points:4,
+    q:'Melyik protokollok tartoznak a TCP/IP modell alkalmazásrétegéhez? (3 helyes)',
+    opts:['HTTP/HTTPS','SMTP','DNS','IP'],
+    ans:['HTTP/HTTPS','SMTP','DNS']
+  },
+  {
+    id:'R9', type:'ranking', topic:'Elektrotechnika', points:3,
+    q:'Rendezd a következő tárolt energia mértékegységeit növekvő sorrendbe! (1 = legkisebb)',
+    ans:['mWh (milliwatt-óra)','Wh (watt-óra)','kWh (kilowatt-óra)','MWh (megawatt-óra)']
   },
 ];
 
@@ -471,14 +1210,21 @@ const QUESTIONS = [
 // ÁLLAPOT
 // ════════════════════════════════════════════════════════════════════════════
 const BACKEND = 'https://agazati.up.railway.app';
+const QUIZ_SIZE = Math.min(30, QUESTION_BANK.length);
 
 let current = 0;
 let shuffledQuestions = [];
-let answers = new Array(QUESTIONS.length).fill(null);
+let answers = [];
 let timerInterval = null;
 let secondsLeft = 60 * 60;
 let studentName = '';
 let secondsUsed = 0;
+
+// intro frissítése (script a body végén, DOM már elérhető)
+document.getElementById('intro-qcount').textContent = QUIZ_SIZE;
+document.getElementById('intro-pts').textContent = '~' + Math.round(
+  QUESTION_BANK.reduce((s,q)=>s+q.points,0) / QUESTION_BANK.length * QUIZ_SIZE
+);
 
 function shuffle(arr) {
   const a = [...arr];
@@ -508,11 +1254,25 @@ function startQuiz() {
   const sq = document.getElementById('screen-quiz');
   sq.style.display = 'flex';
   current = 0;
-  // Minden kérdés opciói véletlenszerű sorrendbe kerülnek
-  shuffledQuestions = QUESTIONS.map(q => ({ ...q, opts: shuffle(q.opts) }));
-  answers = new Array(shuffledQuestions.length).fill(null);
   secondsLeft = 60 * 60;
   secondsUsed = 0;
+
+  const pool = shuffle(QUESTION_BANK).slice(0, QUIZ_SIZE);
+  shuffledQuestions = pool.map(q => {
+    const qq = { ...q };
+    if (qq.opts) qq.opts = shuffle(qq.opts);
+    return qq;
+  });
+
+  answers = shuffledQuestions.map(q => {
+    if (q.type === 'multiple') return [];
+    if (q.type === 'ranking') return shuffle([...q.ans]);
+    return null;
+  });
+
+  const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
+  document.getElementById('q-pts-total').textContent = totalPts;
+
   buildQmap();
   renderQuestion();
   startTimer();
@@ -547,16 +1307,19 @@ function startTimer() {
 // ════════════════════════════════════════════════════════════════════════════
 function renderQuestion() {
   const q = shuffledQuestions[current];
-  const letters = ['A','B','C','D'];
+  const letters = ['A','B','C','D','E'];
 
-  // badge
   const badge = document.getElementById('q-badge');
   badge.className = 'question-badge' + (q.calc ? ' calc' : '');
-  badge.innerHTML = q.calc
+  let typeLabel = q.type === 'truefalse' ? ' · Igaz/Hamis'
+    : q.type === 'multiple' ? ' · Több helyes'
+    : q.type === 'ranking'  ? ' · Rangsorolás' : '';
+  badge.innerHTML = (q.calc
     ? `<i class="fas fa-calculator"></i> SZÁMOLÁS – ${q.topic}`
-    : `<i class="fas fa-book-open"></i> ${q.topic}`;
+    : `<i class="fas fa-book-open"></i> ${q.topic}`) +
+    typeLabel +
+    ` <span class="pts-badge"><i class="fas fa-star"></i>${q.points} pont</span>`;
 
-  // formula hint
   const fhint = document.getElementById('q-formula');
   if (q.formula) {
     fhint.style.display = 'flex';
@@ -565,22 +1328,46 @@ function renderQuestion() {
     fhint.style.display = 'none';
   }
 
+  const existingImg = document.getElementById('q-dyn-img');
+  if (existingImg) existingImg.remove();
+  if (q.type === 'image-q' && q.img) {
+    const img = document.createElement('img');
+    img.id = 'q-dyn-img';
+    img.className = 'q-image';
+    img.src = q.img;
+    img.alt = 'Kapcsolási rajz';
+    document.getElementById('q-text').before(img);
+  }
+
   document.getElementById('q-text').textContent = q.q;
   document.getElementById('q-num').textContent = current + 1;
   document.getElementById('header-topic').textContent = q.topic;
 
-  // options
   const container = document.getElementById('q-options');
   container.innerHTML = '';
-  q.opts.forEach((opt, i) => {
-    const div = document.createElement('div');
-    div.className = 'option' + (answers[current] === opt ? ' selected' : '');
-    div.innerHTML = `<div class="opt-letter">${letters[i]}</div><div class="opt-text">${opt}</div>`;
-    div.addEventListener('click', () => selectAnswer(opt));
-    container.appendChild(div);
-  });
 
-  // nav buttons
+  if (q.type === 'truefalse') {
+    const hint = document.createElement('div');
+    hint.className = 'tf-hint';
+    hint.innerHTML = '<i class="fas fa-balance-scale" style="margin-right:5px"></i>Igaz/Hamis kérdés – válassz egyet';
+    container.appendChild(hint);
+    renderSingleOpts(q, ['Igaz','Hamis'], container);
+  } else if (q.type === 'multiple') {
+    const hint = document.createElement('div');
+    hint.className = 'type-hint';
+    hint.innerHTML = '<i class="fas fa-check-double"></i> Több helyes válasz – jelöld be az összeset!';
+    container.appendChild(hint);
+    renderMultiOpts(q, letters, container);
+  } else if (q.type === 'ranking') {
+    const hint = document.createElement('div');
+    hint.className = 'type-hint';
+    hint.innerHTML = '<i class="fas fa-sort"></i> Rangsorolás – rendezd a helyes sorrendbe!';
+    container.appendChild(hint);
+    renderRankingOpts(container);
+  } else {
+    renderSingleOpts(q, q.opts, container);
+  }
+
   document.getElementById('btn-prev').disabled = current === 0;
   const btnNext = document.getElementById('btn-next');
   const isLast = current === shuffledQuestions.length - 1;
@@ -596,19 +1383,60 @@ function renderQuestion() {
     btnNext.disabled = false;
   }
 
-  // progress
-  const answered = answers.filter(a => a !== null).length;
-  document.getElementById('progress-fill').style.width = `${answered / shuffledQuestions.length * 100}%`;
-  document.getElementById('q-answered-count').textContent = answered;
-
+  updateProgress();
   updateQmap();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// VÁLASZ KIVÁLASZTÁSA
-// ════════════════════════════════════════════════════════════════════════════
-function selectAnswer(opt) {
-  answers[current] = opt;
+function renderSingleOpts(q, opts, container) {
+  const letters = ['A','B','C','D','E'];
+  opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option' + (answers[current] === opt ? ' selected' : '');
+    div.innerHTML = `<div class="opt-letter">${letters[i]}</div><div class="opt-text">${opt}</div>`;
+    div.addEventListener('click', () => { answers[current] = opt; renderQuestion(); });
+    container.appendChild(div);
+  });
+}
+
+function renderMultiOpts(q, letters, container) {
+  const sel = answers[current] || [];
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option' + (sel.includes(opt) ? ' multi-sel' : '');
+    div.innerHTML = `<div class="opt-letter">${letters[i]}</div><div class="opt-text">${opt}</div>`;
+    div.addEventListener('click', () => {
+      const arr = [...(answers[current] || [])];
+      const idx = arr.indexOf(opt);
+      if (idx === -1) arr.push(opt); else arr.splice(idx, 1);
+      answers[current] = arr;
+      renderQuestion();
+    });
+    container.appendChild(div);
+  });
+}
+
+function renderRankingOpts(container) {
+  const order = answers[current] || [];
+  order.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'ranking-item';
+    row.innerHTML = `
+      <div class="rank-num">${i + 1}</div>
+      <div class="rank-text">${item}</div>
+      <div class="rank-btns">
+        <button class="rank-btn" ${i===0?'disabled':''} onclick="moveRank(${i},-1)"><i class="fas fa-chevron-up"></i></button>
+        <button class="rank-btn" ${i===order.length-1?'disabled':''} onclick="moveRank(${i},1)"><i class="fas fa-chevron-down"></i></button>
+      </div>`;
+    container.appendChild(row);
+  });
+}
+
+function moveRank(idx, dir) {
+  const arr = [...(answers[current] || [])];
+  const ni = idx + dir;
+  if (ni < 0 || ni >= arr.length) return;
+  [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
+  answers[current] = arr;
   renderQuestion();
 }
 
@@ -629,6 +1457,40 @@ function goToQuestion(idx) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// PONTSZÁMÍTÁS & PROGRESS
+// ════════════════════════════════════════════════════════════════════════════
+function isAnswered(i) {
+  const a = answers[i];
+  const q = shuffledQuestions[i];
+  if (q.type === 'multiple') return a && a.length > 0;
+  if (q.type === 'ranking') return true;
+  return a !== null;
+}
+
+function calcPoints(q, ans) {
+  if (q.type === 'single' || q.type === 'truefalse' || q.type === 'image-q') {
+    return ans === q.ans ? q.points : 0;
+  }
+  if (q.type === 'multiple') {
+    if (!ans || ans.length === 0) return 0;
+    return [...ans].sort().join('|') === [...q.ans].sort().join('|') ? q.points : 0;
+  }
+  if (q.type === 'ranking') {
+    return JSON.stringify(ans) === JSON.stringify(q.ans) ? q.points : 0;
+  }
+  return 0;
+}
+
+function updateProgress() {
+  const answered = answers.filter((_, i) => isAnswered(i)).length;
+  document.getElementById('progress-fill').style.width = `${answered / shuffledQuestions.length * 100}%`;
+  document.getElementById('q-answered-count').textContent = answered;
+  let pts = 0;
+  shuffledQuestions.forEach((q, i) => { if (isAnswered(i)) pts += calcPoints(q, answers[i]); });
+  document.getElementById('q-pts-live').textContent = pts;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // KÉRDÉSTÉRKÉP
 // ════════════════════════════════════════════════════════════════════════════
 function buildQmap() {
@@ -646,14 +1508,14 @@ function buildQmap() {
 }
 
 function updateQmap() {
-  const answered = answers.filter(a => a !== null).length;
+  const answered = answers.filter((_, i) => isAnswered(i)).length;
   document.getElementById('qmap-stats').textContent = `${answered}/${shuffledQuestions.length} megválaszolva`;
   shuffledQuestions.forEach((q, i) => {
     const btn = document.getElementById(`qmap-${i}`);
     if (!btn) return;
     btn.className = 'qmap-btn' + (q.calc ? ' calc-q' : '');
-    if (i === current)          btn.classList.add('current');
-    else if (answers[i] !== null) btn.classList.add('answered');
+    if (i === current)      btn.classList.add('current');
+    else if (isAnswered(i)) btn.classList.add('answered');
   });
 }
 
@@ -661,7 +1523,7 @@ function updateQmap() {
 // BEFEJEZÉS
 // ════════════════════════════════════════════════════════════════════════════
 function confirmSubmit() {
-  const empty = answers.filter(a => a === null).length;
+  const empty = answers.filter((_, i) => !isAnswered(i)).length;
   const msg = empty > 0
     ? `Még <strong>${empty} kérdés</strong> megválaszolatlan. Ha most befejezed, ezek nem kapnak pontot.`
     : 'Minden kérdésre válaszoltál. Biztosan befejezed?';
@@ -683,15 +1545,18 @@ function finishQuiz() {
 
 async function submitToBackend() {
   try {
-    const valaszok = shuffledQuestions.map((q, i) => ({
-      id: q.id, tema: q.topic, kerdes: q.q,
-      valasz: answers[i] ?? null,
-      helyes_valasz: q.ans,
-      eredmeny: answers[i] === null ? 'üres' : answers[i] === q.ans ? 'helyes' : 'helytelen'
-    }));
-    let correct = valaszok.filter(v => v.eredmeny === 'helyes').length;
-    let wrong   = valaszok.filter(v => v.eredmeny === 'helytelen').length;
-    let ures    = valaszok.filter(v => v.eredmeny === 'üres').length;
+    const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
+    const valaszok = shuffledQuestions.map((q, i) => {
+      const answered = isAnswered(i);
+      const pts = answered ? calcPoints(q, answers[i]) : 0;
+      return {
+        id: q.id, tema: q.topic, kerdes: q.q, tipus: q.type,
+        valasz: answers[i] ?? null, helyes_valasz: q.ans,
+        pontszam: pts, max_pont: q.points,
+        eredmeny: !answered ? 'üres' : pts > 0 ? 'helyes' : 'helytelen'
+      };
+    });
+    const earned = valaszok.reduce((s, v) => s + v.pontszam, 0);
     await fetch(`${BACKEND}/api/tavolkozles/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -699,11 +1564,18 @@ async function submitToBackend() {
         nev: studentName,
         datum: new Date().toLocaleString('hu-HU'),
         felhasznaltIdo: `${Math.round(secondsUsed / 60)} perc`,
-        eredmeny: { helyes: correct, helytelen: wrong, ures, osszesen: shuffledQuestions.length, szazalek: Math.round(correct / shuffledQuestions.length * 100) },
+        eredmeny: {
+          szerzettPont: earned, maxPont: totalPts,
+          szazalek: Math.round(earned / totalPts * 100),
+          helyes: valaszok.filter(v => v.eredmeny === 'helyes').length,
+          helytelen: valaszok.filter(v => v.eredmeny === 'helytelen').length,
+          ures: valaszok.filter(v => v.eredmeny === 'üres').length,
+          osszesen: shuffledQuestions.length
+        },
         valaszok
       })
     });
-  } catch { /* silent – standalone oldal, nincs login */ }
+  } catch { /* silent */ }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -715,14 +1587,16 @@ function showResult() {
   sr.style.flexDirection = 'column';
   sr.style.alignItems = 'center';
 
-  let correct = 0, wrong = 0, empty = 0;
+  let correct = 0, wrong = 0, empty = 0, earned = 0;
+  const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
+
   shuffledQuestions.forEach((q, i) => {
-    if (answers[i] === null) empty++;
-    else if (answers[i] === q.ans) correct++;
-    else wrong++;
+    if (!isAnswered(i)) { empty++; return; }
+    const pts = calcPoints(q, answers[i]);
+    if (pts > 0) { correct++; earned += pts; } else wrong++;
   });
 
-  const pct = Math.round(correct / shuffledQuestions.length * 100);
+  const pct = Math.round(earned / totalPts * 100);
   const pass = pct >= 40;
 
   document.getElementById('result-name').textContent = studentName;
@@ -730,29 +1604,42 @@ function showResult() {
   pctEl.textContent = `${pct}%`;
   pctEl.className = 'result-pct ' + (pass ? 'pass' : 'fail');
   document.getElementById('result-label').textContent =
-    `${correct} / ${shuffledQuestions.length} helyes válasz · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
+    `${earned} / ${totalPts} pont · ${pass ? '✓ Megfelelt' : '✗ Nem felelt meg (min. 40%)'}`;
 
   document.getElementById('stat-correct').textContent = correct;
   document.getElementById('stat-wrong').textContent = wrong;
   document.getElementById('stat-empty').textContent = empty;
+  document.getElementById('stat-points').textContent = `${earned}/${totalPts}`;
 
   const list = document.getElementById('review-list');
   list.innerHTML = '';
   shuffledQuestions.forEach((q, i) => {
-    const ok = answers[i] === q.ans;
-    const unanswered = answers[i] === null;
+    const answered = isAnswered(i);
+    const pts = answered ? calcPoints(q, answers[i]) : 0;
+    const ok = pts > 0;
     const div = document.createElement('div');
-    div.className = 'review-item ' + (unanswered ? '' : ok ? 'ok' : 'bad');
-    let answerLine = '';
-    if (unanswered) {
-      answerLine = `<div class="review-a">Nem válaszolt · Helyes: <span class="ok">${q.ans}</span></div>`;
-    } else if (ok) {
-      answerLine = `<div class="review-a"><span class="ok"><i class="fas fa-check"></i> ${q.ans}</span></div>`;
-    } else {
-      answerLine = `<div class="review-a">Válaszod: <span class="bad">${answers[i]}</span> · Helyes: <span class="ok">${q.ans}</span></div>`;
-    }
+    div.className = 'review-item ' + (!answered ? '' : ok ? 'ok' : 'bad');
+
+    const fmtAns = a => {
+      if (q.type === 'multiple') return a && a.length ? a.join(', ') : '(nem válaszolt)';
+      if (q.type === 'ranking')  return (a || []).join(' → ');
+      return a ?? '(nem válaszolt)';
+    };
+    const fmtCorrect = () => {
+      if (q.type === 'multiple') return q.ans.join(', ');
+      if (q.type === 'ranking')  return q.ans.join(' → ');
+      return q.ans;
+    };
+
+    let answerLine = !answered
+      ? `<div class="review-a">Nem válaszolt · Helyes: <span class="ok">${fmtCorrect()}</span></div>`
+      : ok
+        ? `<div class="review-a"><span class="ok"><i class="fas fa-check"></i> ${fmtAns(answers[i])}</span> <span style="color:#fbbf24">+${pts} pont</span></div>`
+        : `<div class="review-a">Válaszod: <span class="bad">${fmtAns(answers[i])}</span> · Helyes: <span class="ok">${fmtCorrect()}</span></div>`;
+
     div.innerHTML = `<div class="question-badge ${q.calc?'calc':''}" style="margin-bottom:6px;font-size:0.7rem">
-      ${q.calc?'<i class="fas fa-calculator"></i> SZÁMOLÁS':'<i class="fas fa-book-open"></i>'} ${q.topic}</div>
+      ${q.calc?'<i class="fas fa-calculator"></i> SZÁMOLÁS':'<i class="fas fa-book-open"></i>'} ${q.topic}
+      <span class="pts-badge"><i class="fas fa-star"></i>${q.points} pont</span></div>
       <div class="review-q">${i+1}. ${q.q}</div>${answerLine}`;
     list.appendChild(div);
   });
@@ -762,31 +1649,30 @@ function showResult() {
 }
 
 function downloadResult() {
+  const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
   let correct = 0, wrong = 0, empty = 0;
   const valaszok = shuffledQuestions.map((q, i) => {
-    const ures = answers[i] === null;
-    const ok = !ures && answers[i] === q.ans;
-    if (ures) empty++; else if (ok) correct++; else wrong++;
+    const answered = isAnswered(i);
+    const pts = answered ? calcPoints(q, answers[i]) : 0;
+    const ok = pts > 0;
+    if (!answered) empty++; else if (ok) correct++; else wrong++;
     return {
-      id: q.id,
-      tema: q.topic,
-      kerdes: q.q,
-      valasz: answers[i] ?? '(nem válaszolt)',
-      helyes_valasz: q.ans,
-      eredmeny: ures ? 'üres' : ok ? 'helyes' : 'helytelen'
+      id: q.id, tema: q.topic, kerdes: q.q, tipus: q.type,
+      valasz: answers[i] ?? '(nem válaszolt)', helyes_valasz: q.ans,
+      pontszam: pts, max_pont: q.points,
+      eredmeny: !answered ? 'üres' : ok ? 'helyes' : 'helytelen'
     };
   });
-  const percUsed = Math.round(secondsUsed / 60);
+  const earned = valaszok.reduce((s, v) => s + v.pontszam, 0);
   const data = {
     nev: studentName,
     datum: new Date().toLocaleString('hu-HU'),
-    felhasznalt_ido: `${percUsed} perc`,
+    felhasznalt_ido: `${Math.round(secondsUsed / 60)} perc`,
     eredmeny: {
-      helyes: correct,
-      helytelen: wrong,
-      ures: empty,
-      osszesen: shuffledQuestions.length,
-      szazalek: Math.round(correct / shuffledQuestions.length * 100)
+      szerzett_pont: earned, max_pont: totalPts,
+      szazalek: Math.round(earned / totalPts * 100),
+      helyes: correct, helytelen: wrong, ures: empty,
+      osszesen: shuffledQuestions.length
     },
     valaszok
   };

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="200" viewBox="0 0 500 200">
+  <rect width="500" height="200" fill="#0d1117" rx="8"/>
+  <!-- Tengelyek -->
+  <line x1="30" y1="100" x2="490" y2="100" stroke="#30363d" stroke-width="1"/>
+  <!-- Moduláló jel (lassú szinusz, vékony, szürke, felső sávban) -->
+  <text x="30" y="25" fill="#8b949e" font-size="10" font-family="sans-serif">Moduláló jel (alacsony frekvencia):</text>
+  <polyline fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4,2"
+    points="30,55 72,35 113,55 155,75 196,55 238,35 279,55 321,75 362,55 404,35 445,55 487,75"/>
+  <!-- FM hullám (a "sűrűség" változik): sima görbe közelítés pontokkal -->
+  <text x="30" y="118" fill="#fbbf24" font-size="10" font-family="sans-serif">FM jel (frekvencia változik):</text>
+  <polyline fill="none" stroke="#fbbf24" stroke-width="2"
+    points="
+      30,100 33,88 36,78 39,72 42,70 45,72 48,78 51,88 54,100 57,112 60,122 63,128 66,130 69,128 72,122 75,112 78,100
+      80,92 82,85 84,80 86,78 88,80 90,85 92,92 94,100 96,108 98,115 100,120 102,122 104,120 106,115 108,108 110,100
+      112,92 114,85 116,80 118,78 120,80 122,85 124,92 126,100 128,108 130,115 132,120 134,122 136,120 138,115 140,108 142,100
+      148,88 152,78 156,72 160,70 164,72 168,78 172,88 176,100 180,112 184,122 188,128 192,130 196,128 200,122 204,112 208,100
+      216,88 224,78 232,72 240,70 248,72 256,78 264,88 272,100 280,112 288,122 296,128 304,130 312,128 320,122 328,112 336,100
+      340,92 344,85 348,80 352,78 356,80 360,85 364,92 368,100 372,108 376,115 380,120 384,122 388,120 392,115 396,108 400,100
+      408,88 416,78 424,72 432,70 440,72 448,78 456,88 464,100 472,112 480,122 488,128"/>
+  <text x="8" y="14" fill="#8b949e" font-size="10" font-family="sans-serif">Frekvenciamoduláció (FM)</text>
+</svg>
