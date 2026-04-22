@@ -1606,12 +1606,13 @@ function finishQuiz() {
 async function submitToBackend() {
   try {
     const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
+    const fmtVal = v => Array.isArray(v) ? JSON.stringify(v) : (v ?? null);
     const valaszok = shuffledQuestions.map((q, i) => {
       const answered = isAnswered(i);
       const pts = answered ? calcPoints(q, answers[i]) : 0;
       return {
         id: q.id, tema: q.topic, kerdes: q.q, tipus: q.type,
-        valasz: answers[i] ?? null, helyes_valasz: q.ans,
+        valasz: fmtVal(answers[i]), helyes_valasz: fmtVal(q.ans),
         pontszam: pts, max_pont: q.points,
         eredmeny: !answered ? 'üres' : pts > 0 ? 'helyes' : 'helytelen'
       };
