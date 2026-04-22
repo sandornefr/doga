@@ -109,6 +109,7 @@
   </div>
 
   <div id="main-ui" style="display:none"></div>
+  <div id="eredmeny-ui" style="display:none;margin-top:32px"></div>
 </div>
 
 <script>
@@ -157,8 +158,7 @@ function authFetch(url, opts = {}) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
   try {
-    // Párhuzamosan töltjük a feladatok.txt-t és az aktív számonkéréseket
-    const [feladatokTxt, aktivData] = await Promise.all([
+    const [feladatokTxt] = await Promise.all([
       fetch('feladatok.txt').then(r => r.text()).catch(() => ''),
       loadAktivSzamonkeresek()
     ]);
@@ -166,19 +166,70 @@ async function init() {
 
     document.getElementById('loading-state').style.display='none';
 
-    if (!szamonkeresek.length) {
+    if (szamonkeresek.length) {
+      await loadOsszesSajatBeadas();
+      renderAll();
+      document.getElementById('main-ui').style.display='block';
+    } else {
       document.getElementById('empty-state').style.display='block';
-      return;
     }
 
-    // Beadások betöltése minden számonkéréshez
-    await loadOsszesSajatBeadas();
-
-    renderAll();
-    document.getElementById('main-ui').style.display='block';
+    // Kiadott eredmények betöltése (aktív számonkérések mellett vagy helyett)
+    await loadEredmenyek();
   } catch(e) {
     document.getElementById('loading-state').innerHTML = `<div class="msg msg-err"><i class="fas fa-triangle-exclamation"></i> Hiba a betöltés során: ${escH(e.message)}</div>`;
   }
+}
+
+async function loadEredmenyek() {
+  try {
+    const res = await authFetch(`${API}/api/szamonkeres/eredmeny`);
+    if (!res.ok) return;
+    const list = await res.json();
+    if (!list.length) return;
+    renderEredmenyek(list);
+  } catch {}
+}
+
+function calcJegy(szaz, ph) {
+  if (szaz >= (ph.ot  || 85)) return 5;
+  if (szaz >= (ph.negy || 70)) return 4;
+  if (szaz >= (ph.harom|| 55)) return 3;
+  if (szaz >= (ph.ket  || 40)) return 2;
+  return 1;
+}
+
+function renderEredmenyek(list) {
+  const el = document.getElementById('eredmeny-ui');
+  const jegyColors = { 1:'#fca5a5', 2:'#fca5a5', 3:'#fcd34d', 4:'#86efac', 5:'#93c5fd' };
+  const jegyBg    = { 1:'#7f1d1d', 2:'#7f1d1d', 3:'#78350f', 4:'#1a3a1a', 5:'#1e3a5f' };
+
+  const rows = list.map(e => {
+    const ph = JSON.parse(e.ponthatarak || '{}');
+    const jegy = calcJegy(e.szazalek, ph);
+    return `
+    <div style="background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;font-size:0.95rem;color:#e0e0e0;margin-bottom:3px">${escH(e.cim)}</div>
+        <div style="font-size:0.78rem;color:#64748b">${e.createdAt?.substring(0,10) || ''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="text-align:right">
+          <div style="font-size:1.4rem;font-weight:900;color:#e0e0e0">${e.osszPont} <span style="font-size:0.9rem;color:#64748b;font-weight:400">/ ${e.maxPont} pont</span></div>
+          <div style="font-size:0.82rem;color:#94a3b8">${e.szazalek}%</div>
+        </div>
+        <div style="font-size:2rem;font-weight:900;padding:8px 20px;border-radius:10px;text-align:center;min-width:56px;background:${jegyBg[jegy]};color:${jegyColors[jegy]}">${jegy}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="height:1px;background:#1f2937;margin-bottom:24px"></div>
+    <div style="font-size:0.8rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">
+      <i class="fas fa-circle-check" style="color:#22c55e"></i> Kiadott eredmények
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">${rows}</div>`;
+  el.style.display = 'block';
 }
 
 async function loadAktivSzamonkeresek() {
