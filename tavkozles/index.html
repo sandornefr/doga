@@ -479,13 +479,13 @@ const QUESTION_BANK = [
     ans:'Előre meghatározott útvonalon, garantált sávszélességgel és QoS-sel szállítja az adatokat'
   },
   {
-    id:'T18', type:'single', topic:'Digitális távközlési rendszerek üzemeltetése', points:2,
+    id:'T18', type:'single', topic:'Digitális rendszerek üzemeltetése', points:2,
     q:'Mit jelent a QoS (Quality of Service) a hálózatokban?',
     opts:['A biztonsági protokollok összessége','A forgalom titkosításának szintje','A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése','Az adatátvitel maximális sebessége'],
     ans:'A különböző forgalmak (hang, videó, adat) prioritásának és minőségi paramétereinek (sebesség, késleltetés) kezelése'
   },
   {
-    id:'T19', type:'single', topic:'Digitális távközlési rendszerek üzemeltetése', points:1,
+    id:'T19', type:'single', topic:'Digitális rendszerek üzemeltetése', points:1,
     q:'Melyik protokoll biztosítja az IP hálózatokon a megbízható, kapcsolatorientált adatátvitelt?',
     opts:['UDP','ICMP','TCP','ARP'],
     ans:'TCP'
@@ -1216,7 +1216,53 @@ const QUESTION_BANK = [
 // ÁLLAPOT
 // ════════════════════════════════════════════════════════════════════════════
 const BACKEND = 'https://agazati.up.railway.app';
-const QUIZ_SIZE = Math.min(30, QUESTION_BANK.length);
+const CALC_COUNT     = 10;
+const NON_CALC_COUNT = 20;
+const QUIZ_SIZE      = CALC_COUNT + NON_CALC_COUNT; // 30
+
+// Témaköri kiosztás a 20 elméleti kérdésre (arányok: 10/15/15/10/15/5/5/10/10/5%)
+const TOPIC_QUOTAS = {
+  'Elektrotechnika':                   2,
+  'Távközlési elektronika':            3,
+  'Távközlési ismeretek':              3,
+  'IP hálózatok':                      2,
+  'Mobil távközlő rendszerek':         3,
+  'Műsorszóró rendszerek':             1,
+  'Vezeték nélküli adatátvitel':       1,
+  'Nagytávolságú IP hálózatok':        2,
+  'Digitális rendszerek üzemeltetése': 2,
+  'Távközlési architektúrák':          1,
+};
+
+function selectQuestions() {
+  const calcPool    = shuffle(QUESTION_BANK.filter(q => q.calc));
+  const nonCalcPool = QUESTION_BANK.filter(q => !q.calc);
+
+  // 10 számolási feladat véletlenszerűen
+  const selected = calcPool.slice(0, CALC_COUNT);
+
+  // 20 elméleti feladat témaköri arányban
+  const byTopic = {};
+  nonCalcPool.forEach(q => {
+    if (!byTopic[q.topic]) byTopic[q.topic] = [];
+    byTopic[q.topic].push(q);
+  });
+  Object.keys(byTopic).forEach(t => { byTopic[t] = shuffle(byTopic[t]); });
+
+  Object.entries(TOPIC_QUOTAS).forEach(([topic, count]) => {
+    (byTopic[topic] || []).slice(0, count).forEach(q => selected.push(q));
+  });
+
+  // Ha valamiből kevesebb van, a maradék poolból pótlás
+  if (selected.length < QUIZ_SIZE) {
+    const usedIds = new Set(selected.map(q => q.id));
+    shuffle(nonCalcPool.filter(q => !usedIds.has(q.id)))
+      .slice(0, QUIZ_SIZE - selected.length)
+      .forEach(q => selected.push(q));
+  }
+
+  return shuffle(selected);
+}
 
 let current = 0;
 let shuffledQuestions = [];
@@ -1263,7 +1309,7 @@ function startQuiz() {
   secondsLeft = 60 * 60;
   secondsUsed = 0;
 
-  const pool = shuffle(QUESTION_BANK).slice(0, QUIZ_SIZE);
+  const pool = selectQuestions();
   shuffledQuestions = pool.map(q => {
     const qq = { ...q };
     if (qq.opts) qq.opts = shuffle(qq.opts);
@@ -1481,7 +1527,9 @@ function calcPoints(q, ans) {
     if (!ans || ans.length === 0) return 0;
     const correctSel = ans.filter(a => q.ans.includes(a)).length;
     const wrongSel   = ans.filter(a => !q.ans.includes(a)).length;
-    const raw = (correctSel - wrongSel) / q.ans.length * q.points;
+    // Minden helyes jelölés 1 "kvótát" ér, minden hibás töröl 1 kvótát
+    const effective = Math.min(correctSel, q.ans.length - wrongSel);
+    const raw = effective / q.ans.length * q.points;
     return Math.max(0, Math.round(raw * 10) / 10);
   }
   if (q.type === 'ranking') {
