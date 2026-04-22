@@ -1548,7 +1548,7 @@ function updateProgress() {
   document.getElementById('progress-fill').style.width = `${answered / shuffledQuestions.length * 100}%`;
   document.getElementById('q-answered-count').textContent = answered;
   let pts = 0;
-  shuffledQuestions.forEach((q, i) => { if (isAnswered(i)) pts += calcPoints(q, answers[i]); });
+  shuffledQuestions.forEach((q, i) => { if (i !== current && isAnswered(i)) pts += calcPoints(q, answers[i]); });
   document.getElementById('q-pts-live').textContent = pts;
 }
 
