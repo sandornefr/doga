@@ -145,6 +145,7 @@ let allResults = [];
 let sortKey = 'szazalek';
 let sortAsc = false;
 let openDetailId = null;
+let currentToken = '';
 
 // Kérdésbank – az opciókat tartalmazó lookup (id → opts)
 const Q_OPTS = {
@@ -191,8 +192,8 @@ const Q_OPTS = {
     document.getElementById('loading').style.display = 'none';
     return;
   }
-  const token = user.token || '';
-  await loadResults(token);
+  currentToken = user.token || '';
+  await loadResults(currentToken);
 })();
 
 async function loadResults(token) {
@@ -383,43 +384,48 @@ function toggleDetail(id) {
   panel.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-let importedCounter = 0;
-
 function handleJSONFile(e) {
   const file = e.target.files[0];
   if (!file) return;
   e.target.value = '';
   const reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = async function(ev) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.nev || !data.eredmeny || !Array.isArray(data.valaszok)) {
         showImportToast('Érvénytelen JSON fájl – nem megfelelő formátum.', 'err');
         return;
       }
-      data.valaszok.forEach(v => {
-        if (Array.isArray(v.valasz)) v.valasz = v.valasz.join(', ');
-        if (Array.isArray(v.helyes_valasz)) v.helyes_valasz = v.helyes_valasz.join(', ');
+      const valaszok = data.valaszok.map(v => ({
+        id:            v.id            ?? v.Id            ?? '',
+        tema:          v.tema          ?? v.Tema          ?? '',
+        kerdes:        v.kerdes        ?? v.Kerdes        ?? '',
+        valasz:        Array.isArray(v.valasz)         ? v.valasz.join(', ')         : (v.valasz         ?? v.Valasz         ?? null),
+        helyes_valasz: Array.isArray(v.helyes_valasz)  ? v.helyes_valasz.join(', ')  : (v.helyes_valasz  ?? v.Helyes_valasz  ?? ''),
+        eredmeny:      v.eredmeny      ?? v.Eredmeny      ?? 'helytelen'
+      }));
+      const res = await fetch(`${API}/api/tavolkozles/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nev: data.nev,
+          datum: data.datum || new Date().toLocaleString('hu-HU'),
+          felhasznaltIdo: data.felhasznalt_ido || data.felhasznaltIdo || null,
+          eredmeny: {
+            helyes:   data.eredmeny.helyes   ?? 0,
+            helytelen:data.eredmeny.helytelen?? 0,
+            ures:     data.eredmeny.ures     ?? 0,
+            osszesen: data.eredmeny.osszesen ?? data.valaszok.length,
+            szazalek: data.eredmeny.szazalek ?? 0
+          },
+          valaszok
+        })
       });
-      importedCounter--;
-      allResults.unshift({
-        id: importedCounter,
-        nev: data.nev,
-        submittedAt: data.datum || '—',
-        felhasznaltIdo: data.felhasznalt_ido || data.felhasznaltIdo || '—',
-        helyes: data.eredmeny.helyes ?? 0,
-        helytelen: data.eredmeny.helytelen ?? 0,
-        ures: data.eredmeny.ures ?? 0,
-        osszesen: data.eredmeny.osszesen ?? data.valaszok.length,
-        szazalek: data.eredmeny.szazalek ?? 0,
-        valaszokJson: JSON.stringify(data.valaszok),
-        imported: true
-      });
-      renderSummary();
-      renderTable();
-      showImportToast('„' + esc(data.nev) + '” eredménye sikeresen betöltve.', 'ok');
+      if (!res.ok) throw new Error('server');
+      await loadResults(currentToken);
+      showImportToast('„' + esc(data.nev) + '” eredménye sikeresen mentve az adatbázisba.', 'ok');
     } catch {
-      showImportToast('Nem sikerült beolvasni a fájlt. Ellenőrizd, hogy érvényes JSON.', 'err');
+      showImportToast('Nem sikerült menteni a szerverre. Ellenőrizd az internetkapcsolatot.', 'err');
     }
   };
   reader.readAsText(file);
