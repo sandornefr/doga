@@ -11,7 +11,7 @@
   </head>
   <body>
     <!-- Teszt mód banner -->
-    <div id="teszt-mod-banner" style="display:none;">
+    <div id="teszt-mod-banner" style="display:none;align-items:center;gap:10px;padding:5px 14px;background:#16213e;border-bottom:1px solid #374151;font-size:0.82rem;color:#94a3b8;">
         <i class="fas fa-user-graduate"></i>
         <span>Diák teszt mód – <strong>Teszt Elek</strong> nézetében vagy</span>
         <a href="../portal.html" style="padding:3px 12px;background:transparent;border:1px solid #4a5568;border-radius:6px;color:#94a3b8;font-size:0.76rem;font-weight:600;text-decoration:none;">&#8592; Vissza a portálra</a>
@@ -23,7 +23,16 @@
                 if (u.szerep === 'vendeg') { location.replace('../portal.html'); return; }
                 if (u._tesztMod) {
                     const b = document.getElementById('teszt-mod-banner');
-                    if (b) { b.style.display = 'flex'; const _bh = b.offsetHeight || 28; document.querySelector('header.topbar') && (document.querySelector('header.topbar').style.top = _bh + 'px'); document.body.style.paddingTop = (56 + _bh) + 'px'; }
+                    if (b) {
+                        b.style.display = 'flex';
+                        // A topbar position:sticky, így body.paddingTop nem kell.
+                        // A layout magasságát csökkentjük a banner magasságával.
+                        requestAnimationFrame(function() {
+                            const bh = b.offsetHeight || 30;
+                            const layout = document.querySelector('.layout');
+                            if (layout) layout.style.height = 'calc(100vh - 55px - 22px - ' + bh + 'px)';
+                        });
+                    }
                 }
             } catch {}
         })();
