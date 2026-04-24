@@ -1714,7 +1714,7 @@
             document.getElementById('changelog-interaktiv').style.display = 'block';
             document.getElementById('portal-title').textContent = 'Üdvözöllek!';
             document.getElementById('portal-sub').textContent = 'Nézz körül – a teljes hozzáféréshez regisztrálj!';
-            document.querySelector('.delete-btn').style.display = 'none';
+            const delBtn = document.querySelector('.delete-btn'); if (delBtn) delBtn.style.display = 'none';
             // Vendég: kártyák normálisan navigálnak (gyakorló szintek elérhetők)
             const cardPython = document.getElementById('card-python');
             if (cardPython) cardPython.onclick = function(e) { e.preventDefault(); document.getElementById('vendeg-python-modal').style.display = 'flex'; };
