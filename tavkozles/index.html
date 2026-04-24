@@ -205,7 +205,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#e0e0e
     <div class="question-counter">
       <span id="q-num">1</span>/<span id="q-total">30</span>. kérdés
       &nbsp;·&nbsp; <span id="q-answered-count">0</span> megválaszolva
-      &nbsp;·&nbsp; <span id="q-pts-live" style="color:#fbbf24;font-weight:700">0</span>/<span id="q-pts-total" style="color:#fbbf24">0</span> pont
     </div>
 
     <div class="question-card" id="question-card">
@@ -1351,6 +1350,391 @@ const QUESTION_BANK = [
     opts:['Egyetlen széles sávú vivőn soros adatátvitel; csak optikai szálban alkalmazható','Sok ortogonális (egymást nem zavaró) vivőfrekvencián párhuzamos adatátvitel – 4G LTE, Wi-Fi (802.11a/g/n/ac) és DVB-T szabványokban alkalmazzák','Frekvenciaváltásos moduláció analóg hangjeleknél; FM rádióban és GSM-ben alkalmazzák','Időosztásos multiplexelés digitális rendszerekben; kizárólag műholdas kommunikációban használatos'],
     ans:'Sok ortogonális (egymást nem zavaró) vivőfrekvencián párhuzamos adatátvitel – 4G LTE, Wi-Fi (802.11a/g/n/ac) és DVB-T szabványokban alkalmazzák'
   },
+
+  // ── OSZTV 2025 – Távközlési technikus (Területi előválogató) ─────────────
+  // I. Elektrotechnika
+  {
+    id:'O25_I1', type:'single', topic:'Elektrotechnika', points:4, calc:true, source:'OSZTV-2025-TT',
+    formula:'Feszültségosztó / négypólus hálózat analízis (R₁=150 Ω, R₂=100 Ω, R₃=R₄=200 Ω)',
+    q:'Mekkora feszültség esik terheletlen esetben a négypólus kimenetén (u₂), ha a bemenetre u₁=27 V feszültséget adunk? R₁=150 Ω, R₂=100 Ω, R₃=R₄=200 Ω',
+    opts:['3,86 V','5,4 V','3 V','9 V'],
+    ans:'3 V'
+  },
+  {
+    id:'O25_I2', type:'single', topic:'Elektrotechnika', points:4, calc:true, source:'OSZTV-2025-TT',
+    formula:'6 dB csillapítás → U₂/U₁ = 10^(−6/20) ≈ 0,5; terhelő R_L = R₂ · U₂/(U₁−U₂)',
+    q:'Mekkora terhelőellenállást kell a kimenetre kapcsolni, hogy a feszültség (U_ki) 6 dB-lel csökkenjen az üresjáráshoz képest? R₁=R₂=200 Ω',
+    opts:['100 Ω','200 Ω','50 Ω','33 Ω'],
+    ans:'100 Ω'
+  },
+  {
+    id:'O25_I3', type:'single', topic:'Elektrotechnika', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'Q = C · ΔU = 100 nF · (5 V − 2 V)',
+    q:'Egy 100 nF-os kondenzátor feszültségét egyenletesen növeljük 2 V-ról 5 V-ra 10 μs idő alatt. Mekkora töltést mozgattunk ez idő alatt?',
+    opts:['30 μAs','3 μAs','30 nAs','300 nAs'],
+    ans:'300 nAs'
+  },
+  {
+    id:'O25_I5', type:'single', topic:'Elektrotechnika', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'τ = R·C; t = τ → U_C ≈ 0,632 · U_végső',
+    q:'Adott egy soros RC kapcsolás. A hálózatra 100 V feszültséget kapcsolunk. Mennyi idő alatt éri el a kapacitás feszültsége a 63 V-ot? R=100 Ω, C=1 μF',
+    opts:['100 μs','63 μs','10 ns','6,3 ns'],
+    ans:'100 μs'
+  },
+  {
+    id:'O25_I6', type:'single', topic:'Elektrotechnika', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'R = R₀·(1 + α·T)  →  T = ΔR / (R₀·α) = 20 / (100 · 0,00385)',
+    q:'Egy Pt100-as platina hőmérséklet szenzor 0 °C-on 100 Ω ellenállású. Mekkora hőmérsékletet mér a szenzor, ha 120 Ω ellenállást mérünk? (α = 0,00385 °C⁻¹)',
+    opts:['52 °C','20 °C','26 °C','104 °C'],
+    ans:'52 °C'
+  },
+  {
+    id:'O25_I7', type:'multiple', topic:'Elektrotechnika', points:2, source:'OSZTV-2025-TT',
+    q:'Jelölje meg az igaz állításokat a koercitív erővel kapcsolatban! (2 helyes)',
+    opts:[
+      'A koercitív erő az anyag belső mágnesességét mutatja, a remanens indukció fennmaradásáért felelős.',
+      'A koercitív erő mértéke megmutatja, hogy mekkora térerősség szükséges a remanens indukció megszüntetéséhez.',
+      'A koercitív erő mellett az anyagban elérhető a maximális indukció.',
+      'A koercitív erő mértékű térerősség nem azonos irányban alkalmazandó, mint az aktuális mágnesezettség.'
+    ],
+    ans:['A koercitív erő mértéke megmutatja, hogy mekkora térerősség szükséges a remanens indukció megszüntetéséhez.','A koercitív erő mértékű térerősség nem azonos irányban alkalmazandó, mint az aktuális mágnesezettség.']
+  },
+  {
+    id:'O25_I8', type:'single', topic:'Elektrotechnika', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'Q = S · sin(φ);  cos φ = 0,8 → sin φ = 0,6;  kapacitív → negatív Q',
+    q:'Egy kapacitív jellegű fogyasztó látszólagos teljesítménye 120 VA, teljesítménytényezője 0,8. Mekkora meddő teljesítmény mérhető a fogyasztón?',
+    opts:['96 VAr','−96 VAr','72 VAr','−72 VAr'],
+    ans:'−72 VAr'
+  },
+
+  // II. Távközlési elektronika
+  {
+    id:'O25_II1', type:'multiple', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    q:'Mire használják a Zener-diódákat? (2 helyes)',
+    opts:['A jel felerősítésére','Feszültségstabilizálásra','Referenciafeszültség előállítására','Szűrők kialakítására'],
+    ans:['Feszültségstabilizálásra','Referenciafeszültség előállítására']
+  },
+  {
+    id:'O25_II7', type:'single', topic:'Távközlési elektronika', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'R = (U_táp − U_f) / I_m = (5,4 V − 0,6 V) / 2 mA',
+    q:'Egy diódát 5,4 V-os tápról üzemeltetve 2 mA-es munkaponti áramot szeretnénk beállítani. Mekkora munkapont-beállító ellenállásra van szükségünk, ha a dióda nyitófeszültsége 0,6 V?',
+    opts:['2,4 kΩ','0,3 kΩ','2,7 kΩ','10,8 kΩ'],
+    ans:'2,4 kΩ'
+  },
+  {
+    id:'O25_II9', type:'truefalse', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    q:'Egy műveleti erősítő negatív visszacsatolásával invertáló komparátor kapcsolás állítható elő.',
+    ans:'Hamis'
+  },
+  {
+    id:'O25_II10', type:'truefalse', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    q:'A közös emitteres áramerősítési tényező független a frekvenciától.',
+    ans:'Hamis'
+  },
+
+  // III. Távközlési ismeretek
+  {
+    id:'O25_III1', type:'single', topic:'Távközlési ismeretek', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'U_eff = A · √(τ/T) = 5 V · √(10 μs / 1 ms)',
+    q:'Egy jelsorozat paraméterei: periódusidő T=1 ms, impulzusszélesség τ=10 μs, amplitúdó 5 V. Mekkora a jel effektív értéke?',
+    opts:['5 V','0,5 V','25 mV','250 mV'],
+    ans:'0,5 V'
+  },
+  {
+    id:'O25_III3', type:'single', topic:'Távközlési ismeretek', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'Nyquist-tétel: f_s ≥ 2 · f_max;  telefonos sávszélesség: 300–3400 Hz',
+    q:'Legalább mekkora frekvenciával kell mintavételezni az alapsávjelet, ha telefonos átvitelre szeretnénk felhasználni?',
+    opts:['300 Hz','600 Hz','3400 Hz','6800 Hz'],
+    ans:'6800 Hz'
+  },
+  {
+    id:'O25_III5', type:'single', topic:'Távközlési ismeretek', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'P = D · P_max  →  D = P / P_max = 4,5 W / 9 W',
+    q:'Egy LED fénycső fényerejét impulzusszélesség-modulációval (PWM) szabályozzuk. A maximális teljesítmény 9 W. Mekkora kitöltési tényezőt kell választani, ha fele ekkora teljesítménnyel szeretnénk hajtani?',
+    opts:['0,5','0,25','2,5','0,71'],
+    ans:'0,5'
+  },
+  {
+    id:'O25_III6', type:'multiple', topic:'Távközlési ismeretek', points:4, source:'OSZTV-2025-TT',
+    q:'Az alábbiak közül mely zajok keletkeznek félvezetőkben? (2 helyes)',
+    opts:['Termikus zaj','Fehér zaj','Rózsaszín zaj','Thomson zaj'],
+    ans:['Termikus zaj','Rózsaszín zaj']
+  },
+  {
+    id:'O25_III7', type:'truefalse', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2025-TT',
+    q:'A BPSK jel előállítható két ASK jel összegéből.',
+    ans:'Igaz'
+  },
+  {
+    id:'O25_III8', type:'truefalse', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2025-TT',
+    q:'Ideális vezeték esetén a hullámimpedancia csak az ohmos paraméterektől függ.',
+    ans:'Hamis'
+  },
+
+  // IV. IP-hálózatok
+  {
+    id:'O25_IV1', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Mit tesz egy kapcsoló (switch), ha a MAC/CAM táblában nem találja a célcímhez tartozó portot?',
+    opts:['Eldobja a keretet.','Visszaküldi a forrásporthoz.','Elküldi az összes portjára (flooding).','A cél MAC-ot lekéri az OUI adatbázisból.'],
+    ans:'Elküldi az összes portjára (flooding).'
+  },
+  {
+    id:'O25_IV8', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Milyen sorrendben zajlik le a DHCPv4 üzenetcsere?',
+    opts:[
+      'DHCPDISCOVER, DHCPOFFER, DHCPREQUEST, DHCPACK',
+      'DHCPREQUEST, DHCPOFFER, DHCPACK, DHCPDISCOVER',
+      'DHCPOFFER, DHCPDISCOVER, DHCPACK, DHCPREQUEST',
+      'DHCPACK, DHCPDISCOVER, DHCPREQUEST, DHCPOFFER'
+    ],
+    ans:'DHCPDISCOVER, DHCPOFFER, DHCPREQUEST, DHCPACK'
+  },
+  {
+    id:'O25_IV9', type:'truefalse', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'SSH kapcsolat létesítéséhez minden esetben szükséges felhasználót létrehozni.',
+    ans:'Igaz'
+  },
+  {
+    id:'O25_IV10', type:'truefalse', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'A VLAN azonosító kötelezően megegyezik az alhálózat címével.',
+    ans:'Hamis'
+  },
+  {
+    id:'O25_IV11', type:'truefalse', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Két kapcsolót (switch-et) két kábellel is összekötöttek. Biztosak lehetünk benne, hogy az egyiket lekapcsolta az STP protokoll.',
+    ans:'Hamis'
+  },
+  {
+    id:'O25_IV12', type:'truefalse', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'A DHCP protokoll segítségével IP-cimet kapnak a hálózati eszközök, ezért csak szórási tartományon belül használható.',
+    ans:'Hamis'
+  },
+
+  // V. Mobil távközlő rendszerek
+  {
+    id:'O25_V1', type:'single', topic:'Mobil távközlő rendszerek', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'Szabadtéri csillapítás (Friis): A_v = (4πR/λ)²',
+    q:'Válassza ki a szabadtéri csillapítást helyesen megadó formulát!',
+    opts:['Av = 4πR / λ','Av = 4πλ / R','Av = (4πR / λ)²','Av = (4πλ / R)²'],
+    ans:'Av = (4πR / λ)²'
+  },
+  {
+    id:'O25_V6', type:'truefalse', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'A DOT antennarendszer beltérben használható hatékonyan.',
+    ans:'Igaz'
+  },
+  {
+    id:'O25_V7', type:'truefalse', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'Az időosztásos multiplexálás (TDD) és a frekvencia-osztásos multiplexálás (FDD) együtt nem használható.',
+    ans:'Hamis'
+  },
+  {
+    id:'O25_V8', type:'single', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'Egy Walkie-Talkie antennája esetén milyen feladatot lát el az antenna feeder?',
+    opts:['Fázisfordítás','Impedancia illesztés','Moduláció','Demoduláció'],
+    ans:'Impedancia illesztés'
+  },
+
+  // VI. Műsorszóró rendszerek
+  {
+    id:'O25_VI3', type:'single', topic:'Műsorszóró rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'Melyik műhold frekvenciasávban helyezkedik el a 12 GHz és 18 GHz közötti tartomány?',
+    opts:['Ku','K','Ka','VHF'],
+    ans:'Ku'
+  },
+
+  // VII. Vezeték nélküli adatátviteli rendszerek
+  {
+    id:'O25_VII2', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Melyik antenna sugároz tökéletes gömbfelületen?',
+    opts:['Logper','Yagi','Parabola','Izotróp'],
+    ans:'Izotróp'
+  },
+  {
+    id:'O25_VII3', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Minek a rövidítése az SNR?',
+    opts:['Simple Network Radio','Signal-to-noise ratio','Signaling Network Redundancy','Sorted Neural Radiation'],
+    ans:'Signal-to-noise ratio'
+  },
+  {
+    id:'O25_VII4', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, calc:true, source:'OSZTV-2025-TT',
+    formula:'BER = hibás bitek száma / összes bit száma',
+    q:'Egy forrásból az 1011001100 sorozatot küldték át egy csatornán. A vevő az 1000001110 sorozatot vette. Mekkora a BER értéke?',
+    opts:['60%','30%','33,3%','10%'],
+    ans:'30%'
+  },
+  {
+    id:'O25_VII6', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Melyik antennához viszonyítva számítjuk az antennanyereséget?',
+    opts:['Logper','Yagi','Parabola','Izotróp'],
+    ans:'Izotróp'
+  },
+  {
+    id:'O25_VII7', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Mit értünk geostacionárius műhold pálya alatt?',
+    opts:[
+      'Amelyen a műhold a Föld forgásirányával ellentétes irányban haladva állónak tekinthető.',
+      'Amelynek a keringési ideje megegyezik a Föld keringési idejével.',
+      'Amelynek a keringési ideje megegyezik a Föld forgási periódusával.',
+      'Amelyen a műhold a Föld forgásirányával megegyező irányban haladva állónak tekinthető.'
+    ],
+    ans:'Amelynek a keringési ideje megegyezik a Föld forgási periódusával.'
+  },
+  {
+    id:'O25_VII8', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Melyik szervezet felügyelete alatt áll a Galileo GNSS rendszer?',
+    opts:['NASA (Egyesült Államok)','ESA (Európa)','CNSA (Kína)','RKA (Oroszország)'],
+    ans:'ESA (Európa)'
+  },
+  {
+    id:'O25_VII9', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Minek a rövidítése az OFDM?',
+    opts:['Orbital frequency-division multiplexing','Orbital field-division modulation','Orthogonal frequency-division multiplexing','Oriented Force Deterministic Modulation'],
+    ans:'Orthogonal frequency-division multiplexing'
+  },
+  {
+    id:'O25_VII10', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'A lakossági műholdas műsorszórás során használt parabola antennához milyen típusú kábellel csatlakoztatjuk a set-top-box-ot?',
+    opts:['Strip','Optikai','Koaxiális','HDMI'],
+    ans:'Koaxiális'
+  },
+  {
+    id:'O25_VII11', type:'truefalse', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Az antennák távolterében az elektromágneses hullám már gömbhullámnak tekinthető.',
+    ans:'Hamis'
+  },
+  {
+    id:'O25_VII12', type:'truefalse', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    q:'Ha tápvonal ohmos veszteségeit elhanyagoljuk, akkor a hullámimpedanciája tisztán ohmosnak tekinthető.',
+    ans:'Igaz'
+  },
+
+  // VIII. Nagytávolságú IP-hálózatok
+  {
+    id:'O25_VIII1', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az alábbiak közül a távolságvektor-alapú (distance vector) útválasztó protokollokat! (2 helyes)',
+    opts:['RIP','OSPF','IS-IS','IGRP'],
+    ans:['RIP','IGRP']
+  },
+  {
+    id:'O25_VIII2', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az OSPFv2 és OSPFv3 közötti különbségeket tartalmazó igaz állításokat! (2 helyes)',
+    opts:[
+      'Az OSPFv3 az OSPFv2-vel ellentétben már IPv6 cimet is alapvetően támogatja.',
+      'Az OSPFv3 nagyobb területekben (area) képes dolgozni, mint az OSPFv2.',
+      'Az OSPFv3 területek 64 bites router ID-t használnak, míg az OSPFv2-ben 32 bites.',
+      'Az OSPFv3 az OSPFv2-vel ellentétben nem csak 32 bites hanem 64 bites útválasztó azonosítót is támogat.'
+    ],
+    ans:['Az OSPFv3 az OSPFv2-vel ellentétben már IPv6 cimet is alapvetően támogatja.','Az OSPFv3 az OSPFv2-vel ellentétben nem csak 32 bites hanem 64 bites útválasztó azonosítót is támogat.']
+  },
+  {
+    id:'O25_VIII3', type:'single', topic:'Nagytávolságú IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Végrehajtja egy teszter egy tesztet, majd az eredménye sikeres, akkor a felettes rétegeken keres tovább. Mely hibakeresési módszert alkalmazza ez?',
+    opts:['Lineáris hibakeresés','Osztd fel és urald technika','Rétegenkénti technika','Szaktársi technika'],
+    ans:'Osztd fel és urald technika'
+  },
+  {
+    id:'O25_VIII4', type:'single', topic:'Nagytávolságú IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Melyik eljárásnak a rövidítése a NAT?',
+    opts:['Not Acceptable Transmission','Network Address Translation','Network Aggregation Transition','Nullable Agile Transistor'],
+    ans:'Network Address Translation'
+  },
+  {
+    id:'O25_VIII5', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az alábbiak közül a szimmetrikus kulcsú algoritmusokat! (2 helyes)',
+    opts:['AES','RSA','SHA','DES'],
+    ans:['AES','DES']
+  },
+  {
+    id:'O25_VIII6', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az IPSec alprotokollait! (2 helyes)',
+    opts:['Authentication Header','Generic Encapsulation Protocol','Encapsulating Security Payloads','Advanced Symmetric Security Protocol'],
+    ans:['Authentication Header','Encapsulating Security Payloads']
+  },
+  {
+    id:'O25_VIII7', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a QoS CoS jellemzőit! (2 helyes)',
+    opts:['Harmadik rétegbeli paraméter.','Második rétegbeli paraméter.','3 biten ábrázolt érték.','6 biten ábrázolt érték.'],
+    ans:['Második rétegbeli paraméter.','3 biten ábrázolt érték.']
+  },
+  {
+    id:'O25_VIII8', type:'multiple', topic:'Nagytávolságú IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a szomszédos eszközök felderítésére használt protokollokat! (2 helyes)',
+    opts:['SNMP','CDP','LLDP','NTP'],
+    ans:['CDP','LLDP']
+  },
+
+  // IX. Digitális távközlési rendszerek elemzése
+  {
+    id:'O25_IX1', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a távolfelügyelet során használt protokollokat! (2 helyes)',
+    opts:['CCST','SSH','SNMP','DEFLATE'],
+    ans:['SSH','SNMP']
+  },
+  {
+    id:'O25_IX2', type:'single', topic:'Digitális rendszerek üzemeltetése', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a rendelkezésre állás helyes definícióját!',
+    opts:[
+      'Azt jelzi, hogy milyen időrészben érhető el az ütközési határ.',
+      'Annak a valószínűsége, hogy a rendszer működőképes állapotban van.',
+      'A működéssel töltött idők és a javítással töltött idők összege.',
+      'A meghibásodások közötti átlagos idő és a javítási idő szorzata.'
+    ],
+    ans:'Annak a valószínűsége, hogy a rendszer működőképes állapotban van.'
+  },
+  {
+    id:'O25_IX3', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a hálózati menedzsment funkcióit! (2 helyes)',
+    opts:[
+      'Riasztás menedzsment (Alarm management)',
+      'Sávszélesség menedzsment (Bandwidth management)',
+      'Teljesítmény menedzsment (Performance management)',
+      'Erőforrás-menedzsment (Resource management)'
+    ],
+    ans:['Riasztás menedzsment (Alarm management)','Teljesítmény menedzsment (Performance management)']
+  },
+  {
+    id:'O25_IX4', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:4, source:'OSZTV-2025-TT',
+    q:'Hogyan növelhető a rendelkezésre állás (hozzáférési tényező)? (2 helyes)',
+    opts:[
+      'A meghibásodások közötti átlagos idő (MTBF) növelésével.',
+      'A meghibásodások közötti átlagos idő (MTBF) csökkentésével.',
+      'Az átlagos javítási idő (MTTR) növelésével.',
+      'Az átlagos javítási idő (MTTR) csökkentésével.'
+    ],
+    ans:['A meghibásodások közötti átlagos idő (MTBF) növelésével.','Az átlagos javítási idő (MTTR) csökkentésével.']
+  },
+
+  // X. Távközlési architektúrák
+  {
+    id:'O25_X1', type:'multiple', topic:'Távközlési architektúrák', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a csomagkapcsolt hálózatokat! (2 helyes)',
+    opts:['PSTN','ISDN B-csatorna','Ethernet','ATM'],
+    ans:['Ethernet','ATM']
+  },
+  {
+    id:'O25_X2', type:'single', topic:'Távközlési architektúrák', points:2, source:'OSZTV-2025-TT',
+    q:'Az alábbiak közül melyik fizikai jelenség teszi lehetővé, hogy a fény az optikai szálban haladjon?',
+    opts:['Fresnel reflexió','Totális reflexió','Descartes reflexió','Bragg reflexió'],
+    ans:'Totális reflexió'
+  },
+  {
+    id:'O25_X3', type:'single', topic:'Távközlési architektúrák', points:2, source:'OSZTV-2025-TT',
+    q:'Minek a rövidítése a PON?',
+    opts:['Power Over Network','Phone Over Network','Passive Optical Network','Powered Optical Node'],
+    ans:'Passive Optical Network'
+  },
+  {
+    id:'O25_X4', type:'multiple', topic:'Távközlési architektúrák', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a PDH rendszerek jellemzőit! (2 helyes)',
+    opts:[
+      'A maximum kapacitása 566 Mbit/s.',
+      'A referencia órajelet az eszközök nem szinkronizálják.',
+      'Szinkron rendszer – minden csomópont azonos órajelet használ.',
+      'Maximális kapacitása 10 Gbit/s felett van.'
+    ],
+    ans:['A maximum kapacitása 566 Mbit/s.','A referencia órajelet az eszközök nem szinkronizálják.']
+  },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1457,14 +1841,13 @@ function startQuiz() {
     return qq;
   });
 
+  shuffledQuestions.forEach(q => {
+    if (q.type === 'ranking') q._display = shuffle([...q.ans]);
+  });
   answers = shuffledQuestions.map(q => {
     if (q.type === 'multiple') return [];
-    if (q.type === 'ranking') return shuffle([...q.ans]);
     return null;
   });
-
-  const totalPts = shuffledQuestions.reduce((s, q) => s + q.points, 0);
-  document.getElementById('q-pts-total').textContent = totalPts;
 
   buildQmap();
   renderQuestion();
@@ -1609,7 +1992,7 @@ function renderMultiOpts(q, letters, container) {
 }
 
 function renderRankingOpts(container) {
-  const order = answers[current] || [];
+  const order = answers[current] || shuffledQuestions[current]._display || [];
   order.forEach((item, i) => {
     const row = document.createElement('div');
     row.className = 'ranking-item';
@@ -1625,7 +2008,7 @@ function renderRankingOpts(container) {
 }
 
 function moveRank(idx, dir) {
-  const arr = [...(answers[current] || [])];
+  const arr = [...(answers[current] || shuffledQuestions[current]._display || [])];
   const ni = idx + dir;
   if (ni < 0 || ni >= arr.length) return;
   [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
@@ -1656,7 +2039,6 @@ function isAnswered(i) {
   const a = answers[i];
   const q = shuffledQuestions[i];
   if (q.type === 'multiple') return a && a.length > 0;
-  if (q.type === 'ranking') return true;
   return a !== null;
 }
 
@@ -1686,9 +2068,6 @@ function updateProgress() {
   const answered = answers.filter((_, i) => isAnswered(i)).length;
   document.getElementById('progress-fill').style.width = `${answered / shuffledQuestions.length * 100}%`;
   document.getElementById('q-answered-count').textContent = answered;
-  let pts = 0;
-  shuffledQuestions.forEach((q, i) => { if (i !== current && isAnswered(i)) pts += calcPoints(q, answers[i]); });
-  document.getElementById('q-pts-live').textContent = pts;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
