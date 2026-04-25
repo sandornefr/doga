@@ -1741,6 +1741,26 @@ const QUESTION_BANK = [
   // Szakma: 5 0714 12 04 Távközlési technikus | 100 pont | 120 perc
   // ══════════════════════════════════════════════════════════════════════════
 
+  // ── I. Elektrotechnika ───────────────────────────────────────────────────
+  {
+    id:'O26_I2', type:'multiple', topic:'Elektrotechnika', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás jellemzi helyesen a soros RLC áramkörben fellépő rezonancia állapotát? (2 helyes)',
+    opts:[
+      'Az induktív reaktancia (XL) kétszerese a kapacitív reaktanciának (XC).',
+      'Az áramkör impedanciája minimális és tisztán ohmos jellegű.',
+      'Az áramkör által a terhelésen felvett áram maximális értéket ér el.',
+      'Az áramkör teljesítményfaktora nulla.'
+    ],
+    ans:['Az áramkör impedanciája minimális és tisztán ohmos jellegű.','Az áramkör által a terhelésen felvett áram maximális értéket ér el.']
+  },
+  {
+    id:'O26_I5', type:'single', topic:'Elektrotechnika', points:2, calc:true, source:'OSZTV-2026-TT',
+    formula:'Q = f₀ / Δf  (rezonanciafrekvencia / sávszélesség)',
+    q:'Hogyan függ össze a jóság faktor (Q) a soros rezonáns kör rezonanciafrekvenciája (f₀) és sávszélessége (Δf) között?',
+    opts:['Q = Δf / f₀','Q = f₀ · Δf','Q = f₀ / Δf','Q = (f₀ + Δf) / 2'],
+    ans:'Q = f₀ / Δf'
+  },
+
   // ── II. Távközlési elektronika ────────────────────────────────────────────
   {
     id:'O26_II1', type:'multiple', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
@@ -1801,7 +1821,37 @@ const QUESTION_BANK = [
     ans:'Bemeneti impedanciája végtelen nagy – így nem terheli meg a forrást.'
   },
 
+  {
+    id:'O26_II2', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Mi történik a p-n átmenet tiltott (depletion) rétegével nyitó irányú előfeszítés hatására?',
+    opts:[
+      'A tiltott réteg kiszélesedik, az áram nem tud átjutni.',
+      'A tiltott réteg szűkül, a diffúziós potenciál csökken és áram tud folyni.',
+      'A tiltott réteg vastagsága nem változik, csak a feszültség nő.',
+      'A tiltott réteg eltűnik és a dióda ellenállása nulla lesz.'
+    ],
+    ans:'A tiltott réteg szűkül, a diffúziós potenciál csökken és áram tud folyni.'
+  },
+  {
+    id:'O26_II3', type:'single', topic:'Távközlési elektronika', points:1, calc:true, source:'OSZTV-2026-TT',
+    formula:'Av = −Rf / Rin  (inverting erősítő)',
+    q:'Mekkora egy inverting erősítő kapcsolás feszültségerősítése (Av), ha a visszacsatoló ellenállás (Rf) egyenlő a bemeneti ellenállással (Rin)?',
+    opts:['3','-3','-1','0,5'],
+    ans:'-1'
+  },
+
   // ── III. Távközlési ismeretek ─────────────────────────────────────────────
+  {
+    id:'O26_III1', type:'multiple', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz az időtartomány és a frekvenciatartomány összefüggéséről? (2 helyes)',
+    opts:[
+      'Egy jel időtartomány- és frekvenciatartomány-leírása egymástól teljesen független.',
+      'Egy periódikus jel frekvenciakomponensei a Fourier-transzformáció segítségével meghatározhatók.',
+      'Az egyenáramú (DC) jelnek nincs frekvenciaspektruma.',
+      'A frekvenciakomponensek amplitúdói és fázisai teljes mértékben meghatározzák a jel időbeli alakját.'
+    ],
+    ans:['Egy periódikus jel frekvenciakomponensei a Fourier-transzformáció segítségével meghatározhatók.','A frekvenciakomponensek amplitúdói és fázisai teljes mértékben meghatározzák a jel időbeli alakját.']
+  },
   {
     id:'O26_III3', type:'single', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
     q:'Egy 75 Ω-os hullámimpedanciájú koaxiális kábelt rövidzárral zárunk le. Mekkora a reflexiós tényező (Γ) értéke a lezárásnál?',
@@ -1885,6 +1935,18 @@ const QUESTION_BANK = [
     ans:'Csak akkor kerül be a routing táblába, ha az elsőbbségi (alacsonyabb adminisztratív távolságú) útvonal elérhetetlenné válik.'
   },
 
+  {
+    id:'O26_IV9', type:'multiple', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a WLC (Wireless LAN Controller) két legfontosabb feladata egy nagyvállalati WLAN-hálózatban? (2 helyes)',
+    opts:[
+      'Az összes hozzáférési pont (AP) központi konfigurálása és menedzselése.',
+      'A kliensek zökkenőmentes roamingja (átadás) a hozzáférési pontok között.',
+      'Kizárólag az internet-kapcsolat titkosítása.',
+      'A hálózati switching Layer 2-n történő ellátása.'
+    ],
+    ans:['Az összes hozzáférési pont (AP) központi konfigurálása és menedzselése.','A kliensek zökkenőmentes roamingja (átadás) a hozzáférési pontok között.']
+  },
+
   // ── V. Mobil távközlési rendszerek ───────────────────────────────────────
   {
     id:'O26_V1', type:'multiple', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2026-TT',
@@ -1907,6 +1969,46 @@ const QUESTION_BANK = [
       'Az FDD mindig nagyobb spektrumhatékonyságot biztosít, mint a TDD.'
     ],
     ans:['A TDD azonos frekvencián, időréseket felváltva alkalmaz az adás és a vétel számára.','Az FDD két különböző frekvenciasávban egyidejűleg folytatja az adást és a vételt.']
+  },
+
+  {
+    id:'O26_V3', type:'single', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'Milyen hatása van az antenna elektromos dőlésszögének (e-tilt) beállításának a mobilhálózati cella lefedettségére és a szomszédos cellákba jutó interferenciára?',
+    opts:[
+      'Kizárólag az antenna nyereségét befolyásolja.',
+      'Csökkenti a cella sugarát és a szomszédos cellákba jutó interferenciát, javítja a frekvenciahatékonyságot.',
+      'Növeli a cella sugarát és a lefedettséget, de az interferenciát is.',
+      'Nincs hatással a cella lefedettségére, csak a jelminőségre.'
+    ],
+    ans:'Csökkenti a cella sugarát és a szomszédos cellákba jutó interferenciát, javítja a frekvenciahatékonyságot.'
+  },
+  {
+    id:'O26_V4', type:'single', topic:'Mobil távközlő rendszerek', points:1, source:'OSZTV-2026-TT',
+    q:'Mit jelent a gyakorlatban, ha egy antenna nyeresége 3 dBi?',
+    opts:[
+      'Az antenna háromszoros erősítési képességgel rendelkezik az izotróp antennához képest.',
+      'Az antenna közel kétszeres teljesítménysűrűséget sugároz a főirányban az izotróp antennához képest.',
+      'Az antenna teljesítményének 30%-a hőként disszipál.',
+      'Az antenna minimális jelszintet ér el 3 dB csillapítású kábelen keresztül.'
+    ],
+    ans:'Az antenna közel kétszeres teljesítménysűrűséget sugároz a főirányban az izotróp antennához képest.'
+  },
+  {
+    id:'O26_V5', type:'single', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'A mobilhálózatok architektúrájában melyik alrendszer felel a rádióhozzáférésért, és áll legközelebb a végfelhasználói eszközökhöz?',
+    opts:['Core Network (CN)','Radio Access Network (RAN)','Transport Network','Public Switched Telephone Network (PSTN)'],
+    ans:'Radio Access Network (RAN)'
+  },
+  {
+    id:'O26_V6', type:'single', topic:'Mobil távközlő rendszerek', points:1, source:'OSZTV-2026-TT',
+    q:'Mi az LTE (4G) hálózat legfontosabb architektúrális újítása a korábbi 2G/3G rendszerekhez képest?',
+    opts:[
+      'Kizárólag SMS-alapú kommunikációt alkalmaz.',
+      'Teljesen IP-alapú, csomagkapcsolt architektúrát vezet be – nincs külön áramkapcsolt domén a hanghoz.',
+      'A frekvenciahasználat hatékonysága csökkent a korábbi generációkhoz képest.',
+      'Kizárólag TDD duplex módot alkalmaz.'
+    ],
+    ans:'Teljesen IP-alapú, csomagkapcsolt architektúrát vezet be – nincs külön áramkapcsolt domén a hanghoz.'
   },
 
   // ── VI. Műsorszóró rendszerek ─────────────────────────────────────────────
@@ -1933,6 +2035,18 @@ const QUESTION_BANK = [
     ans:['A hatékony tömörítésnek (MPEG-4/H.264) köszönhetően egyetlen frekvenciacsatornán több műsor is sugározható.','Interaktív (pl. HbbTV) és kiegészítő (pl. EPG) szolgáltatások is közvetíthetők.']
   },
 
+  {
+    id:'O26_VI3', type:'single', topic:'Műsorszóró rendszerek', points:1, source:'OSZTV-2026-TT',
+    q:'Mi a vevőantenna magas irányítottságának (directivity) legfőbb előnye a műsorszóró rendszerekben?',
+    opts:[
+      'Növeli a vevőkészülék fogyasztását.',
+      'Csökkenti a hasznos jel szintjét.',
+      'Csökkenti a szomszédos adóktól és visszavert utakon érkező (multipath) interferenciát.',
+      'Minden irányból egyformán veszi a jeleket.'
+    ],
+    ans:'Csökkenti a szomszédos adóktól és visszavert utakon érkező (multipath) interferenciát.'
+  },
+
   // ── VII. Antennák / Vezeték nélküli adatátvitel ───────────────────────────
   {
     id:'O26_VII1', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2026-TT',
@@ -1944,6 +2058,23 @@ const QUESTION_BANK = [
       'Reflektor és direktorelemek segítségével növeli az irányítottságot és a nyereséget.'
     ],
     ans:['Erősen irányított antenna – jellemzően egy meghatározott irányban sugároz és vesz.','Reflektor és direktorelemek segítségével növeli az irányítottságot és a nyereséget.']
+  },
+  {
+    id:'O26_VII2b', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két terjedési jelenség okozza leginkább a rádióhullámok épületek körüli és épületeken belüli terjedési veszteségét? (2 helyes)',
+    opts:['Reflexió (visszaverődés)','Törés (refrakció)','Diffrakció (elhajlás)','Abszorpció (elnyelés)'],
+    ans:['Diffrakció (elhajlás)','Abszorpció (elnyelés)']
+  },
+  {
+    id:'O26_VII3', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Milyen problémát jelez a magas SWR (állóhullám-arány / VSWR) érték egy antennás rendszerben?',
+    opts:[
+      'Az antenna nem a megfelelő frekvencián sugároz.',
+      'Az antenna és a csatlakozó kábel/adó között impedancia-illesztési probléma áll fenn – a visszavert teljesítmény magas.',
+      'Az antenna fizikailag meghibásodott.',
+      'A kábel csillapítása meghaladja az elfogadható határt.'
+    ],
+    ans:'Az antenna és a csatlakozó kábel/adó között impedancia-illesztési probléma áll fenn – a visszavert teljesítmény magas.'
   },
   {
     id:'O26_VII2', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
@@ -1975,6 +2106,18 @@ const QUESTION_BANK = [
     ans:['A fading (jelgyengülés) hatásainak csökkentése.','A rendszer rendelkezésre állásának növelése.']
   },
 
+  {
+    id:'O26_VII8', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik két jellemző teszi a LoRaWAN technológiát alkalmassá IoT-eszközök számára? (2 helyes)',
+    opts:[
+      'Nagy adatátviteli sebesség (>1 Gbit/s).',
+      'Nagyon kis energiafogyasztás – az eszköz elemről évekig üzemelhet.',
+      'Nagy hatósugár (akár több km) kis adóteljesítménnyel.',
+      'Kizárólag beltéri használatra alkalmas.'
+    ],
+    ans:['Nagyon kis energiafogyasztás – az eszköz elemről évekig üzemelhet.','Nagy hatósugár (akár több km) kis adóteljesítménnyel.']
+  },
+
   // ── VIII. Nagytávolságú IP-hálózatok / OSPF ───────────────────────────────
   {
     id:'O26_VIII1', type:'single', topic:'Nagytávolságú IP hálózatok', points:2, source:'OSZTV-2026-TT',
@@ -2004,6 +2147,19 @@ const QUESTION_BANK = [
       'Polárisan hajló alacsony pálya (~1 500 km)'
     ],
     ans:'Közepes Föld körüli pálya (MEO, ~20 200 km)'
+  },
+
+  // ── X. Távközlési architektúrák ──────────────────────────────────────────
+  {
+    id:'O26_X1', type:'multiple', topic:'Távközlési architektúrák', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás jellemzi a geostacionárius (GEO) műholdas pályát? (2 helyes)',
+    opts:[
+      'Nagyon kis késleltetéssel (~5 ms) alkalmas valós idejű kommunikációra.',
+      'Nagy egyirányú terjedési késleltetést okoz (~270 ms), ami befolyásolja a valós idejű alkalmazásokat.',
+      'A műhold állandóan azonos szögpozícióban látható a Föld felszínéről.',
+      'Alacsony (~1 000 km) magasságon kering.'
+    ],
+    ans:['Nagy egyirányú terjedési késleltetést okoz (~270 ms), ami befolyásolja a valós idejű alkalmazásokat.','A műhold állandóan azonos szögpozícióban látható a Föld felszínéről.']
   },
 
   // ── IX. Digitális rendszerek üzemeltetése ─────────────────────────────────
