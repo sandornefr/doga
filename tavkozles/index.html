@@ -1735,6 +1735,312 @@ const QUESTION_BANK = [
     ],
     ans:['A maximum kapacitása 566 Mbit/s.','A referencia órajelet az eszközök nem szinkronizálják.']
   },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // OSZTV 2026 – Területi előválogató  (source:'OSZTV-2026-TT')
+  // Szakma: 5 0714 12 04 Távközlési technikus | 100 pont | 120 perc
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // ── II. Távközlési elektronika ────────────────────────────────────────────
+  {
+    id:'O26_II1', type:'multiple', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két alapvető logikai kapu szükséges egy XOR (kizáró VAGY) művelet megvalósításához? (2 helyes)',
+    opts:['NAND','AND','NOR','OR'],
+    ans:['AND','OR']
+  },
+  {
+    id:'O26_II4', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a legfontosabb különbség a kombinációs és a szekvenciális logikai hálózatok között?',
+    opts:[
+      'A kombinációs hálózatok kimenetét kizárólag a bemenetek pillanatnyi értéke határozza meg.',
+      'A szekvenciális hálózatok kimenetét csak az aktuális állapot (memória) határozza meg.',
+      'A kombinációs hálózatok mindig gyorsabbak a szekvenciálisnál.',
+      'A szekvenciális hálózatok nem tartalmazhatnak AND és OR kapukat.'
+    ],
+    ans:'A kombinációs hálózatok kimenetét kizárólag a bemenetek pillanatnyi értéke határozza meg.'
+  },
+  {
+    id:'O26_II5', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik multivibrátor típus vált instabil állapotba egyetlen bemeneti impulzus hatására, majd meghatározott idő elteltével önállóan visszatér stabil állapotába?',
+    opts:['Astabil multivibrátor','Bisztabil multivibrátor','Monostabil multivibrátor','Schmitt-trigger'],
+    ans:'Monostabil multivibrátor'
+  },
+  {
+    id:'O26_II6', type:'single', topic:'Távközlési elektronika', points:1, calc:true, source:'OSZTV-2026-TT',
+    formula:'150 = 128 + 16 + 4 + 2  →  1·2⁷ + 0·2⁶ + 0·2⁵ + 1·2⁴ + 0·2³ + 1·2² + 1·2¹ + 0·2⁰',
+    q:'Mennyi a 150-es decimális szám bináris megfelelője?',
+    opts:['10010110','10110100','10011010','10001110'],
+    ans:'10010110'
+  },
+  {
+    id:'O26_II7', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a Graetz-híd (négydióda-egyenirányító) elsődleges feladata az egyenirányítási áramkörökben?',
+    opts:[
+      'Egyenáramú feszültségosztás megvalósítása.',
+      'Teljes hullámú egyenirányítás – az AC mindkét félperiódusát hasznosítja.',
+      'Áramerősítés biztosítása a terhelő számára.',
+      'Frekvencia megduplázása.'
+    ],
+    ans:'Teljes hullámú egyenirányítás – az AC mindkét félperiódusát hasznosítja.'
+  },
+  {
+    id:'O26_II8', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik optoelektronikai eszköz alakítja a fény energiáját elektromos árammá (fotodetektor)?',
+    opts:['LED','Fotodioda','Zener-dióda','NTC termisztor'],
+    ans:'Fotodioda'
+  },
+  {
+    id:'O26_II9', type:'single', topic:'Távközlési elektronika', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik állítás igaz az ideális műveleti erősítő (op-amp) bemeneti impedanciájára?',
+    opts:[
+      'Bemeneti impedanciája nulla.',
+      'Bemeneti impedanciája végtelen nagy – így nem terheli meg a forrást.',
+      'Bemeneti impedanciája egyenlő a kimeneti impedanciával.',
+      'Bemeneti impedanciája frekvenciától függ.'
+    ],
+    ans:'Bemeneti impedanciája végtelen nagy – így nem terheli meg a forrást.'
+  },
+
+  // ── III. Távközlési ismeretek ─────────────────────────────────────────────
+  {
+    id:'O26_III3', type:'single', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
+    q:'Egy 75 Ω-os hullámimpedanciájú koaxiális kábelt rövidzárral zárunk le. Mekkora a reflexiós tényező (Γ) értéke a lezárásnál?',
+    opts:['+1','0','-1','0,5'],
+    ans:'-1'
+  },
+  {
+    id:'O26_III4', type:'single', topic:'Távközlési ismeretek', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik impulzusmodulációs eljárásnál változtatjuk az impulzusok pozícióját (időbeli helyzetét) a mintavételezett analóg jel amplitúdójának arányában?',
+    opts:['PAM','PWM','PPM','PCM'],
+    ans:'PPM'
+  },
+  {
+    id:'O26_III5', type:'multiple', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás jellemzi helyesen a fehér zajt egy kommunikációs csatornában? (2 helyes)',
+    opts:[
+      'Teljesítménysűrűség-spektruma a teljes frekvenciatartományban (elvileg) konstans.',
+      'A jelben minden frekvenciakomponens azonos energiával van jelen.',
+      'Csak a magas frekvenciákon jelentkezik.',
+      'Hatása megfelelő szűréssel teljesen megszüntethető.'
+    ],
+    ans:['Teljesítménysűrűség-spektruma a teljes frekvenciatartományban (elvileg) konstans.','A jelben minden frekvenciakomponens azonos energiával van jelen.']
+  },
+  {
+    id:'O26_III6', type:'single', topic:'Távközlési ismeretek', points:1, calc:true, source:'OSZTV-2026-TT',
+    formula:'BER = hibás bitek / összes bit = 10 / 10⁸ = 10⁻⁷',
+    q:'Egy adatátviteli vonalon 100 millió (10⁸) bit átvitele során 10 hibás bitet detektáltunk. Mekkora a mért bithiba-arány (BER)?',
+    opts:['10⁻⁶','10⁻⁷','10⁻⁸','10⁻⁹'],
+    ans:'10⁻⁷'
+  },
+
+  // ── IV. IP-hálózatok ──────────────────────────────────────────────────────
+  {
+    id:'O26_IV1', type:'multiple', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz a 802.1q törzs (trunk) protokoll működéséről egy hálózati switch-en? (2 helyes)',
+    opts:[
+      'Az 802.1q egy Cisco-specifikus szabvány, nem IEEE-szabvány.',
+      'Az úgynevezett natív VLAN-hoz tartozó keretek alapértelmezés szerint cimkézetlenül (untagged) haladnak át a trunkon.',
+      'Egy törzs porton kizárólag egy VLAN forgalma vihető át.',
+      'Egy törzs porton egyszerre több VLAN forgalma is átvihető.'
+    ],
+    ans:['Az úgynevezett natív VLAN-hoz tartozó keretek alapértelmezés szerint cimkézetlenül (untagged) haladnak át a trunkon.','Egy törzs porton egyszerre több VLAN forgalma is átvihető.']
+  },
+  {
+    id:'O26_IV2', type:'multiple', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás jellemzi leginkább a Rapid Spanning Tree Protocol (RSTP, 802.1w) előnyeit a hagyományos STP-vel (802.1d) szemben? (2 helyes)',
+    opts:[
+      'Lassabb konvergencia, de stabilabb topológia.',
+      'Lényegesen gyorsabb konvergenciát biztosít redundáns összeköttetések esetén.',
+      'Új porttípusokat vezet be (edge, point-to-point) a gyorsabb konvergencia érdekében.',
+      'Kizárólag Cisco eszközökön működik.'
+    ],
+    ans:['Lényegesen gyorsabb konvergenciát biztosít redundáns összeköttetések esetén.','Új porttípusokat vezet be (edge, point-to-point) a gyorsabb konvergencia érdekében.']
+  },
+  {
+    id:'O26_IV4', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a Link-Local IPv6 cím (fe80::/10) elsődleges szerepe a hálózatban?',
+    opts:[
+      'Nyilvánosan routolható kommunikációra szolgál az interneten.',
+      'Közvetlen, útválasztó nélküli kommunikációra szolgál ugyanazon a hálózati szegmensen belül.',
+      'Kizárólag a loopback interfész azonosítására használják.',
+      'VPN-alagutak titkosítási kulcsaként alkalmazzák.'
+    ],
+    ans:'Közvetlen, útválasztó nélküli kommunikációra szolgál ugyanazon a hálózati szegmensen belül.'
+  },
+  {
+    id:'O26_IV5', type:'multiple', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két biztonsági funkció segít megelőzni a MAC-cím elárasztásos (MAC flooding) és a hamisított ARP-válaszokra alapuló (ARP spoofing) támadásokat? (2 helyes)',
+    opts:['Port Security','Dynamic ARP Inspection (DAI)','Spanning Tree Protocol (STP)','Access Control List (ACL)'],
+    ans:['Port Security','Dynamic ARP Inspection (DAI)']
+  },
+  {
+    id:'O26_IV6', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a lebegő statikus útvonal (floating static route) jellemzője?',
+    opts:[
+      'Automatikusan változtatja a célhálózatot terhelés alapján.',
+      'Csak akkor kerül be a routing táblába, ha az elsőbbségi (alacsonyabb adminisztratív távolságú) útvonal elérhetetlenné válik.',
+      'Az összes rendelkezésre álló útvonalat egyszerre használja terheléselosztáshoz.',
+      'Kizárólag BGP protokollal alkalmazható.'
+    ],
+    ans:'Csak akkor kerül be a routing táblába, ha az elsőbbségi (alacsonyabb adminisztratív távolságú) útvonal elérhetetlenné válik.'
+  },
+
+  // ── V. Mobil távközlési rendszerek ───────────────────────────────────────
+  {
+    id:'O26_V1', type:'multiple', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két célt szolgálják jellemzően a piko- és femtocellek egy modern mobilhálózatban? (2 helyes)',
+    opts:[
+      'Nagytávolságú, makrocellás lefedettség biztosítása.',
+      'Beltéri lefedettség javítása célzott, kis területen.',
+      'Hálózati kapacitás növelése sűrűn lakott vagy forgalmas területeken.',
+      'Kizárólag műholdas kommunikáció kiegészítésére szolgálnak.'
+    ],
+    ans:['Beltéri lefedettség javítása célzott, kis területen.','Hálózati kapacitás növelése sűrűn lakott vagy forgalmas területeken.']
+  },
+  {
+    id:'O26_V2', type:'multiple', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz a TDD (Time Division Duplex) és az FDD (Frequency Division Duplex) módszerek összehasonlításában? (2 helyes)',
+    opts:[
+      'A TDD azonos frekvencián, időréseket felváltva alkalmaz az adás és a vétel számára.',
+      'Az FDD két különböző frekvenciasávban egyidejűleg folytatja az adást és a vételt.',
+      'A TDD kizárólag uplink adatátvitelre alkalmas.',
+      'Az FDD mindig nagyobb spektrumhatékonyságot biztosít, mint a TDD.'
+    ],
+    ans:['A TDD azonos frekvencián, időréseket felváltva alkalmaz az adás és a vétel számára.','Az FDD két különböző frekvenciasávban egyidejűleg folytatja az adást és a vételt.']
+  },
+
+  // ── VI. Műsorszóró rendszerek ─────────────────────────────────────────────
+  {
+    id:'O26_VI1', type:'single', topic:'Műsorszóró rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'Mi jellemzi a hibrid rost-koaxiális (HFC – Hybrid Fibre-Coaxial) kábelhálózat felépítését?',
+    opts:[
+      'A teljes hálózatot koaxiális kábel alkotja.',
+      'A teljes hálózatot optikai szál alkotja.',
+      'Az optikai szál a fejállomástól (headend) a csomópontig (node) terjed, onnan koaxiális kábel vezet a felhasználóhoz.',
+      'Az optikai szálat kizárólag visszirányú (upstream) adatátvitelre alkalmazzák.'
+    ],
+    ans:'Az optikai szál a fejállomástól (headend) a csomópontig (node) terjed, onnan koaxiális kábel vezet a felhasználóhoz.'
+  },
+  {
+    id:'O26_VI2', type:'multiple', topic:'Műsorszóró rendszerek', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz a modern digitális televíziós sugárzásra (pl. DVB-T2 / MPEG-4)? (2 helyes)',
+    opts:[
+      'A hatékony tömörítésnek (MPEG-4/H.264) köszönhetően egyetlen frekvenciacsatornán több műsor is sugározható.',
+      'A DVB-T2 szabvány szerint minden csatornán garantáltan maximum 3 műsor fér el.',
+      'Interaktív (pl. HbbTV) és kiegészítő (pl. EPG) szolgáltatások is közvetíthetők.',
+      'Kizárólag analóg hangátvitelt tesz lehetővé.'
+    ],
+    ans:['A hatékony tömörítésnek (MPEG-4/H.264) köszönhetően egyetlen frekvenciacsatornán több műsor is sugározható.','Interaktív (pl. HbbTV) és kiegészítő (pl. EPG) szolgáltatások is közvetíthetők.']
+  },
+
+  // ── VII. Antennák / Vezeték nélküli adatátvitel ───────────────────────────
+  {
+    id:'O26_VII1', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz a Yagi-Uda antennáról? (2 helyes)',
+    opts:[
+      'Omnidirektionális, minden irányban egyenletes sugárzással rendelkezik.',
+      'Erősen irányított antenna – jellemzően egy meghatározott irányban sugároz és vesz.',
+      'Kizárólag mikrohullámú (GHz-es) frekvenciákon alkalmazható.',
+      'Reflektor és direktorelemek segítségével növeli az irányítottságot és a nyereséget.'
+    ],
+    ans:['Erősen irányított antenna – jellemzően egy meghatározott irányban sugároz és vesz.','Reflektor és direktorelemek segítségével növeli az irányítottságot és a nyereséget.']
+  },
+  {
+    id:'O26_VII2', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Mi jellemzi az elektromágneses hullámok polarizációját?',
+    opts:[
+      'A hullám terjedési sebességét jelöli.',
+      'A mágneses tér vektorának rezgési irányát jelöli a terjedési irányban.',
+      'Az elektromos tér vektorának rezgési irányát jelöli a terjedési irányra merőleges síkban.',
+      'A polarizáció csak optikai (látható fényű) hullámoknál értelmezhető.'
+    ],
+    ans:'Az elektromos tér vektorának rezgési irányát jelöli a terjedési irányra merőleges síkban.'
+  },
+  {
+    id:'O26_VII3', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, calc:true, source:'OSZTV-2026-TT',
+    formula:'dBm = 10 · log₁₀(P [mW] / 1 mW) → 10 · log₁₀(100) = 20 dBm',
+    q:'Egy Wi-Fi hozzáférési pont 100 mW teljesítménnyel sugároz. Hány dBm a teljesítménye?',
+    opts:['10 dBm','20 dBm','30 dBm','100 dBm'],
+    ans:'20 dBm'
+  },
+  {
+    id:'O26_VII4', type:'multiple', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két célt szolgál a diverzitás alkalmazása a mikrohullámú pont-pont (PtP) összeköttetéseknél? (2 helyes)',
+    opts:[
+      'A fading (jelgyengülés) hatásainak csökkentése.',
+      'A rendszer rendelkezésre állásának növelése.',
+      'Az antennák fizikai méretének csökkentése.',
+      'Az adatátviteli sebesség megduplázása.'
+    ],
+    ans:['A fading (jelgyengülés) hatásainak csökkentése.','A rendszer rendelkezésre állásának növelése.']
+  },
+
+  // ── VIII. Nagytávolságú IP-hálózatok / OSPF ───────────────────────────────
+  {
+    id:'O26_VIII1', type:'single', topic:'Nagytávolságú IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a Kijelölt Router (DR) és a Tartalék Kijelölt Router (BDR) elsődleges szerepe az OSPF protokollban?',
+    opts:[
+      'Kizárólag az OSPF területek (area-k) közötti forgalomirányítást végzik.',
+      'A DR koordinálja az LSA-k terjesztését a szegmensen belül, ezzel csökkenti az OSPF-szomszédi kapcsolatok és a protokollforgalom mennyiségét.',
+      'A BDR mindig átveszi a DR szerepét, ha a DR bármilyen forgalmat fogad.',
+      'Kizárólag a hálózat titkosítását végzik.'
+    ],
+    ans:'A DR koordinálja az LSA-k terjesztését a szegmensen belül, ezzel csökkenti az OSPF-szomszédi kapcsolatok és a protokollforgalom mennyiségét.'
+  },
+  {
+    id:'O26_VIII2', type:'single', topic:'Nagytávolságú IP hálózatok', points:1, calc:true, source:'OSZTV-2026-TT',
+    formula:'192.168.0.0–192.168.31.255: a 3. oktet 5 bitje változhat (0–31) → wildcard: 0.0.31.255',
+    q:'Melyik wildcard maszk adja meg OSPF konfigurációban a 192.168.0.0 – 192.168.31.255 tartományt?',
+    opts:['0.0.0.255','0.0.255.255','0.0.31.255','0.0.15.255'],
+    ans:'0.0.31.255'
+  },
+  {
+    id:'O26_VIII3', type:'single', topic:'Nagytávolságú IP hálózatok', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik pályán keringenek a GPS navigációs műholdak?',
+    opts:[
+      'Alacsony Föld körüli pálya (LEO, ~200–2 000 km)',
+      'Közepes Föld körüli pálya (MEO, ~20 200 km)',
+      'Geostacionárius pálya (GEO, ~35 786 km)',
+      'Polárisan hajló alacsony pálya (~1 500 km)'
+    ],
+    ans:'Közepes Föld körüli pálya (MEO, ~20 200 km)'
+  },
+
+  // ── IX. Digitális rendszerek üzemeltetése ─────────────────────────────────
+  {
+    id:'O26_IX1', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz a szimmetrikus és aszimmetrikus titkosításra? (2 helyes)',
+    opts:[
+      'A szimmetrikus titkosítás nyilvános és privát kulcspárt alkalmaz.',
+      'Az aszimmetrikus titkosítás nyilvános (public) és privát (private) kulcspárt alkalmaz.',
+      'A szimmetrikus titkosítás mindkét irányban egyazon közös titkos kulcsot alkalmaz.',
+      'Az aszimmetrikus titkosítás általában gyorsabb, mint a szimmetrikus.'
+    ],
+    ans:['Az aszimmetrikus titkosítás nyilvános (public) és privát (private) kulcspárt alkalmaz.','A szimmetrikus titkosítás mindkét irányban egyazon közös titkos kulcsot alkalmaz.']
+  },
+  {
+    id:'O26_IX2', type:'single', topic:'Digitális rendszerek üzemeltetése', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik NAT típus teszi lehetővé, hogy egyetlen nyilvános IP-cím mögé sok belső hoszt legyen elhelyezhető (portszám-alapú megkülönböztetéssel)?',
+    opts:['Statikus NAT','Dinamikus NAT','Forrásalapú NAT (SNAT)','Túlterheléses NAT (PAT – Port Address Translation)'],
+    ans:'Túlterheléses NAT (PAT – Port Address Translation)'
+  },
+  {
+    id:'O26_IX3', type:'multiple', topic:'Digitális rendszerek üzemeltetése', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két alapvető biztonsági szolgáltatást nyújtja az IPSec protokollcsomag VPN kapcsolathoz? (2 helyes)',
+    opts:['Adattitkosítás (bizalmasság)','Adatintegritás és forrás-hitelesítés','IP-cím fordítás (NAT)','Tartalomalapú tűzfal-szűrés'],
+    ans:['Adattitkosítás (bizalmasság)','Adatintegritás és forrás-hitelesítés']
+  },
+  {
+    id:'O26_IX4', type:'single', topic:'Digitális rendszerek üzemeltetése', points:1, source:'OSZTV-2026-TT',
+    q:'Mi az NTP (Network Time Protocol) elsődleges feladata a hálózatban?',
+    opts:[
+      'Hálózati eszközök konfigurációinak automatikus biztonsági mentése.',
+      'A hálózati forgalom monitorozása és hibadetektálás.',
+      'Hálózati eszközök pontos órajel-szinkronizálása egységes időforráshoz.',
+      'A szomszédos hálózati eszközök automatikus felderítése.'
+    ],
+    ans:'Hálózati eszközök pontos órajel-szinkronizálása egységes időforráshoz.'
+  },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
