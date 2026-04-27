@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" width="300" height="260" font-family="Arial" font-size="12">
+  <!-- Axes -->
+  <line x1="60" y1="220" x2="280" y2="220" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="60" y1="220" x2="60" y2="20" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- Axis labels -->
+  <text x="285" y="224" font-size="12">U</text>
+  <text x="42" y="16" font-size="12">I</text>
+
+  <!-- Origin -->
+  <text x="48" y="232" font-size="11">0</text>
+
+  <!-- U_f marker (forward voltage ~0.6V) -->
+  <line x1="160" y1="218" x2="160" y2="224" stroke="#333" stroke-width="1.5"/>
+  <text x="152" y="234" font-size="11">U_f</text>
+
+  <!-- Forward bias curve (exponential rise after U_f) -->
+  <path d="M60,220 L155,219 Q160,217 163,210 Q168,190 175,155 Q185,110 200,60"
+        fill="none" stroke="#1d6feb" stroke-width="2.5"/>
+
+  <!-- Reverse bias (small leakage current, then breakdown) -->
+  <path d="M60,220 L30,221" fill="none" stroke="#1d6feb" stroke-width="2.5"/>
+
+  <!-- Working point dot -->
+  <circle cx="170" cy="163" r="4" fill="#ef4444"/>
+  <line x1="170" y1="163" x2="170" y2="220" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="60" y1="163" x2="170" y2="163" stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="172" y="175" font-size="11" fill="#ef4444">M.P.</text>
+
+  <!-- I_m label -->
+  <text x="30" y="167" font-size="11" fill="#ef4444">I_m</text>
+
+  <text x="110" y="252" text-anchor="middle" font-size="11" fill="#555">Dióda I-U karakterisztika</text>
+</svg>

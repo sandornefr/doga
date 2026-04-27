@@ -1736,12 +1736,252 @@ const QUESTION_BANK = [
     ans:['A maximum kapacitása 566 Mbit/s.','A referencia órajelet az eszközök nem szinkronizálják.']
   },
 
+  // ── Korábban hiányzó szöveges kérdések – 2025 ────────────────────────────
+
+  // I. Elektrotechnika
+  {
+    id:'O25_I4', type:'single', topic:'Elektrotechnika', points:2, source:'OSZTV-2025-TT',
+    q:'Egy RLC elemeket tartalmazó négypólusra f₁ és f₂ frekvenciájú szinuszos jelek összegét kapcsoljuk. A kimenetén megjelenő feszültségben milyen frekvenciájú spektrumkomponensek jelennek meg?',
+    opts:['f₁','f₂','f₁+f₂','f₁−f₂'],
+    ans:'f₂'
+  },
+
+  // II. Távközlési elektronika
+  {
+    id:'O25_II2', type:'single', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    q:'Mit nevezünk ideális műveleti erősítőnek?',
+    opts:[
+      'Erősítési tényezője nulla, bemeneti ellenállása végtelen nagy, kimeneti ellenállása végtelen nagy, frekvenciatartomány 0-tól ∞-ig tart.',
+      'Erősítési tényezője végtelen nagy, bemeneti ellenállása végtelen nagy, kimeneti ellenállása nulla, frekvenciatartomány 100 Hz-től ∞-ig tart.',
+      'Erősítési tényezője végtelen nagy, bemeneti ellenállása nulla, kimeneti ellenállása nulla, frekvenciatartomány 0-tól ∞-ig tart.',
+      'Erősítési tényezője végtelen nagy, bemeneti ellenállása végtelen nagy, kimeneti ellenállása nulla, frekvenciatartomány 0-tól ∞-ig tart.'
+    ],
+    ans:'Erősítési tényezője végtelen nagy, bemeneti ellenállása végtelen nagy, kimeneti ellenállása nulla, frekvenciatartomány 0-tól ∞-ig tart.'
+  },
+  {
+    id:'O25_II5', type:'multiple', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    q:'Válassza ki, hogy mely állítások nem igazak a DC (egyenáramú) erősítőre! (2 helyes)',
+    opts:[
+      'Változó frekvenciájú erősítőre nem alkalmas.',
+      'Alacsony határfrekvenciájú erősítőre alkalmas.',
+      'Az erősítő frekvenciasávja 0 Hz-től terjed.',
+      'Felső határfrekvenciájú erősítőre érdemes alkalmazni.'
+    ],
+    ans:['Alacsony határfrekvenciájú erősítőre alkalmas.','Felső határfrekvenciájú erősítőre érdemes alkalmazni.']
+  },
+
+  // III. Távközlési ismeretek
+  {
+    id:'O25_III2', type:'multiple', topic:'Távközlési ismeretek', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az igaz állításokat a jelek spektrumával kapcsolatban! (2 helyes)',
+    opts:[
+      'Fázisszinkron, periodikus jelek spektruma folytonos és széles.',
+      'Fázisszinkron, periodikus jelek spektruma diszkrét, fázisszinkron komponensekből áll.',
+      'Csak a magas frekvenciákon jelennek meg spektrumkomponensek.',
+      'Aperiodikus jelek folytonos, széles frekvenciaspektrumot adnak.'
+    ],
+    ans:['Fázisszinkron, periodikus jelek spektruma diszkrét, fázisszinkron komponensekből áll.','Aperiodikus jelek folytonos, széles frekvenciaspektrumot adnak.']
+  },
+  {
+    id:'O25_III4', type:'multiple', topic:'Távközlési ismeretek', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki, hogy mi igaz a HDB3 kódnak az NRZ kódhoz képest! (2 helyes)',
+    opts:[
+      'Az egyenáramú komponens nulla.',
+      'Hosszú nulla sorozatoknál szinkronizáció veszhet el.',
+      'A hosszú nulla sorozatokat speciális kóddal helyettesíti.',
+      'Az átviteli közegben egyenáramú összetevője van.'
+    ],
+    ans:['Az egyenáramú komponens nulla.','A hosszú nulla sorozatokat speciális kóddal helyettesíti.']
+  },
+
+  // IV. IP-hálózatok
+  {
+    id:'O25_IV2', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'A számítógéphez csatlakozó hálózati kártya az alábbi IPv6-cimet kapta: fe80::b74c:31bf:feb5:3d1e. Mekkora a link-local prefix hossza?',
+    opts:['/18','/32','/128','/64'],
+    ans:'/64'
+  },
+  {
+    id:'O25_IV3', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Mely paramétereket állítja be a SLAAC (Stateless Address Autoconfiguration) a gazdagépen?',
+    opts:[
+      'IPv6-cím és alapértelmezett átjáró',
+      'Prefix és prefix hossza',
+      'Legközelebbi DNS szerver neve',
+      'Legközelebbi DHCPv6 szerver neve'
+    ],
+    ans:'IPv6-cím és alapértelmezett átjáró'
+  },
+  {
+    id:'O25_IV4', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Miről szól az ARP (Address Resolution Protocol) tábla?',
+    opts:[
+      'IP-cím → több MAC-cím leképezés',
+      'MAC-cím → IP-cím leképezés',
+      'IP-cím → MAC-cím leképezés',
+      'Több IP-cím → egy MAC-cím leképezés'
+    ],
+    ans:'IP-cím → MAC-cím leképezés'
+  },
+  {
+    id:'O25_IV5', type:'multiple', topic:'IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az igaz állításokat a kapcsolókkal (switch-ek) kapcsolatban! (2 helyes)',
+    opts:[
+      'A kapcsoló minden portján elárasztja az összes bejövő keretet, a célcímtől függetlenül.',
+      'A kapcsoló az egyes kereteket MAC-cím alapján a megfelelő porthoz irányítja.',
+      'A kapcsoló VLAN-ok nélkül nem képes szegmentálni a hálózatot.',
+      'A kapcsolók VTP protokoll segítségével szinkronizálhatják egymás között a VLAN konfigurációt.'
+    ],
+    ans:['A kapcsoló az egyes kereteket MAC-cím alapján a megfelelő porthoz irányítja.','A kapcsolók VTP protokoll segítségével szinkronizálhatják egymás között a VLAN konfigurációt.']
+  },
+  {
+    id:'O25_IV6', type:'multiple', topic:'IP hálózatok', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki az igaz állításokat a VTP (VLAN Trunking Protocol) protokollról! (2 helyes)',
+    opts:[
+      'A VTP lehetővé teszi, hogy a VLAN konfiguráció automatikusan terjedjen a trunk kapcsolatokon.',
+      'A VTP kliens módban lévő kapcsolón is lehet VLAN-t hozzáadni és törölni.',
+      'A VTP szerver módban lévő kapcsolón lehet módosítani a VLAN adatbázist.',
+      'A VTP minden forgalmat titkosít a kapcsolók között.'
+    ],
+    ans:['A VTP lehetővé teszi, hogy a VLAN konfiguráció automatikusan terjedjen a trunk kapcsolatokon.','A VTP szerver módban lévő kapcsolón lehet módosítani a VLAN adatbázist.']
+  },
+  {
+    id:'O25_IV7', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2025-TT',
+    q:'Mi a különbség az OSPFv2 és az OSPFv3 között?',
+    opts:[
+      'Az OSPFv2 nagyobb hálózatokban alkalmazható, mint az OSPFv3.',
+      'Az OSPFv3-at IPv4-hez fejlesztették, az OSPFv2-t IPv6-hoz.',
+      'Mindkettő egyforma, csak a verziószámban különböznek.',
+      'Az OSPFv3-at IPv6-hoz fejlesztették, az OSPFv2-t IPv4-hez.'
+    ],
+    ans:'Az OSPFv3-at IPv6-hoz fejlesztették, az OSPFv2-t IPv4-hez.'
+  },
+
+  // V. Mobil távközlő rendszerek
+  {
+    id:'O25_V2', type:'single', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'Mi az előnye az elosztott antenna rendszereknek (DAS) az egy antennás rendszerekkel szemben?',
+    opts:['Alacsonyabb kiépítési költség','Könnyebb menedzselhetőség','Kisebb összfogyasztás','Egyik sem'],
+    ans:'Kisebb összfogyasztás'
+  },
+
+  // VI. Műsorszóró rendszerek
+  {
+    id:'O25_VI1', type:'multiple', topic:'Műsorszóró rendszerek', points:4, source:'OSZTV-2025-TT',
+    q:'Válassza ki a legmagasabb szintű analóg-digitális átalakítási módszereket! (2 helyes)',
+    opts:[
+      'Számlálós (counter-ramp) módszer',
+      'Szukcesszív approximáció (SAR)',
+      'Lépcsőzetes approximáció',
+      'Párhuzamos összehasonlítás (flash ADC)'
+    ],
+    ans:['Szukcesszív approximáció (SAR)','Párhuzamos összehasonlítás (flash ADC)']
+  },
+  {
+    id:'O25_VI2', type:'single', topic:'Műsorszóró rendszerek', points:2, source:'OSZTV-2025-TT',
+    q:'Az alábbiak közül melyik protokollt alkalmazzák a rádiós műsorszórásban az adatszolgáltatások továbbítására?',
+    opts:['RDS','DRS','DAB','EPG'],
+    ans:'RDS'
+  },
+
+  // ── Korábban hiányzó képes kérdések – 2025 ───────────────────────────────
+
+  // II. Távközlési elektronika – képes
+  {
+    id:'O25_II3', type:'image-q', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    img:'img/tavkozles_cmos_nand.png',
+    q:'Milyen logikai kapu és milyen technológiával készült logikai kapcsolat látható az ábrán?',
+    opts:['CMOS NAND','TTL NAND','CMOS NOR','TTL NOR'],
+    ans:'CMOS NAND'
+  },
+  {
+    id:'O25_II4', type:'image-q', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    img:'img/mosfet_p_ench.svg',
+    q:'Melyik tranzisztor elvi kapcsolási rajza látható az ábrán?',
+    opts:['N-csatornás kizárási MOSFET','N-csatornás növekményes MOSFET','P-csatornás kizárási MOSFET','P-csatornás növekményes MOSFET'],
+    ans:'P-csatornás növekményes MOSFET'
+  },
+  {
+    id:'O25_II6', type:'image-q', topic:'Távközlési elektronika', points:2, calc:true, source:'OSZTV-2025-TT',
+    img:'img/dioda_char.svg',
+    formula:'r_d = ΔU / ΔI  (differenciális ellenállás a munkapontban)',
+    q:'Egy dióda mérése során az ábrán látható karakterisztikát kaptuk. Olvassa le a diagramból: mekkora a dióda differenciális ellenállása a munkapontban (U₀ = 0,9 V, I_b = 17,5 mA)?',
+    opts:['13 mΩ','52 Ω','13 Ω','52 mΩ'],
+    ans:'13 Ω'
+  },
+  {
+    id:'O25_II8', type:'image-q', topic:'Távközlési elektronika', points:2, source:'OSZTV-2025-TT',
+    img:'img/karnaugh_3var.svg',
+    q:'Adott egy három változós logikai függvény Veitch–Karnaugh táblája. Válassza ki a függvény legegyszerűbb diszjunktív alakját!',
+    opts:['C̄·Ā + A·B + C','C̄·Ā + A·B + B','C·B̄ + C̄·Ā + A·B','C + Ā·B̄ + A·B'],
+    ans:'C + Ā·B̄ + A·B'
+  },
+
+  // V. Mobil távközlő rendszerek – képes
+  {
+    id:'O25_V3', type:'image-q', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    img:'img/tavkozles_f_csatlakozo.png',
+    q:'Milyen csatlakozó látható a képen?',
+    opts:['BNC csatlakozó','Koax csatlakozó','F csatlakozó','SCART csatlakozó'],
+    ans:'F csatlakozó'
+  },
+  {
+    id:'O25_V4', type:'image-q', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    img:'img/tavkozles_single_lnb.png',
+    q:'Milyen eszköz látható a képen?',
+    opts:['Single LNB','BNC csatlakozó','Mikrofon','Twin LNB'],
+    ans:'Single LNB'
+  },
+  {
+    id:'O25_V5', type:'image-q', topic:'Mobil távközlő rendszerek', points:2, source:'OSZTV-2025-TT',
+    img:'img/tavkozles_mimo_router.png',
+    q:'Milyen antenna technológia látható a képen?',
+    opts:['MISO','SISO','SIMO','Egyik sem'],
+    ans:'Egyik sem'
+  },
+
+  // VI. Műsorszóró rendszerek – képes
+  {
+    id:'O25_VI4', type:'image-q', topic:'Műsorszóró rendszerek', points:4, source:'OSZTV-2025-TT',
+    img:'img/jpeg_zigzag.svg',
+    q:'Miért alkalmazzák a Zig-Zag bejárási mintát a JPEG tömörítés DCT blokkjában?',
+    opts:[
+      'Mert a legtöbb processzor cache-mérete pontosan 64 bájtot tud tárolni.',
+      'Mert a Zig-Zag bejárás az alacsony frekvenciájú (nagy energiájú) komponensektől halad a magas frekvenciájúak felé, így a sok egymást követő nullán a futamhosszú kódolás hatékonyabb.',
+      'Nincs különösebb oka, csupán hagyomány.',
+      'A Huffman-kódolás csak Zig-Zag sorrendű adatokkal működik.'
+    ],
+    ans:'Mert a Zig-Zag bejárás az alacsony frekvenciájú (nagy energiájú) komponensektől halad a magas frekvenciájúak felé, így a sok egymást követő nullán a futamhosszú kódolás hatékonyabb.'
+  },
+
+  // VII. Vezeték nélküli adatátvitel – képes
+  {
+    id:'O25_VII1', type:'image-q', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    img:'img/tavkozles_logper_antenna.png',
+    q:'Melyik antenna látható a képen?',
+    opts:['Logper','Yagi','Parabola','Izotróp'],
+    ans:'Logper'
+  },
+  {
+    id:'O25_VII5', type:'image-q', topic:'Vezeték nélküli adatátvitel', points:2, source:'OSZTV-2025-TT',
+    img:'img/qam16_const.svg',
+    q:'Melyik modulációs eljárás konstellációs ábrája látható az ábrán?',
+    opts:['BPSK','16 QAM','ASK','FM'],
+    ans:'16 QAM'
+  },
+
   // ══════════════════════════════════════════════════════════════════════════
   // OSZTV 2026 – Területi előválogató  (source:'OSZTV-2026-TT')
   // Szakma: 5 0714 12 04 Távközlési technikus | 100 pont | 120 perc
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── I. Elektrotechnika ───────────────────────────────────────────────────
+  {
+    id:'O26_I1', type:'single', topic:'Elektrotechnika', points:2, source:'OSZTV-2026-TT',
+    q:'Milyen ekvivalens hálózattal helyettesíthető bármely lineáris egyenáramú kétpólus a Thévenin-tétel alapján?',
+    opts:['Áramforrás párhuzamos ellenállással (Norton-ekvivalens)','Feszültségforrás soros ellenállással','Párhuzamos LC-rezgőkör','Soros RC kapcsolás'],
+    ans:'Feszültségforrás soros ellenállással'
+  },
   {
     id:'O26_I2', type:'multiple', topic:'Elektrotechnika', points:2, source:'OSZTV-2026-TT',
     q:'Melyik két állítás jellemzi helyesen a soros RLC áramkörben fellépő rezonancia állapotát? (2 helyes)',
@@ -1759,6 +1999,20 @@ const QUESTION_BANK = [
     q:'Hogyan függ össze a jóság faktor (Q) a soros rezonáns kör rezonanciafrekvenciája (f₀) és sávszélessége (Δf) között?',
     opts:['Q = Δf / f₀','Q = f₀ · Δf','Q = f₀ / Δf','Q = (f₀ + Δf) / 2'],
     ans:'Q = f₀ / Δf'
+  },
+  {
+    id:'O26_I3', type:'single', topic:'Elektrotechnika', points:2, source:'OSZTV-2026-TT',
+    formula:'Xc = 1 / (2π · f · C)',
+    q:'Mi a kapacitív reaktancia (Xc) és a frekvencia (f) közötti összefüggés?',
+    opts:['Xc arányos f-fel: magasabb frekvencián nagyobb a reaktancia','Xc fordítottan arányos f-fel: magasabb frekvencián kisebb a reaktancia','Xc független a frekvenciától','Xc csak egyenáramra értelmezett'],
+    ans:'Xc fordítottan arányos f-fel: magasabb frekvencián kisebb a reaktancia'
+  },
+  {
+    id:'O26_I4', type:'single', topic:'Elektrotechnika', points:2, source:'OSZTV-2026-TT',
+    formula:'XL = 2π · f · L',
+    q:'Mi az induktív reaktancia (XL) és a frekvencia (f) közötti összefüggés?',
+    opts:['XL csökken a frekvencia növekedtével','XL független a frekvenciától','XL arányos a frekvenciával: XL = 2πfL','XL a frekvencia négyzetével arányos'],
+    ans:'XL arányos a frekvenciával: XL = 2πfL'
   },
 
   // ── II. Távközlési elektronika ────────────────────────────────────────────
@@ -1853,6 +2107,17 @@ const QUESTION_BANK = [
     ans:['Egy periódikus jel frekvenciakomponensei a Fourier-transzformáció segítségével meghatározhatók.','A frekvenciakomponensek amplitúdói és fázisai teljes mértékben meghatározzák a jel időbeli alakját.']
   },
   {
+    id:'O26_III2', type:'single', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a Nyquist-féle mintavételezési tétel alapvető feltétele a torzításmentes jel-visszaállításhoz?',
+    opts:[
+      'A mintavételezési frekvencia legalább a jel sávszélességének tízszerese.',
+      'A mintavételezési frekvencia legalább a legmagasabb jelfrekvencia kétszerese (fs ≥ 2·fmax).',
+      'A mintavételezési frekvencia egyenlő a jelfrekvenciával.',
+      'A mintavételezési frekvenciát a jel amplitúdója határozza meg.'
+    ],
+    ans:'A mintavételezési frekvencia legalább a legmagasabb jelfrekvencia kétszerese (fs ≥ 2·fmax).'
+  },
+  {
     id:'O26_III3', type:'single', topic:'Távközlési ismeretek', points:2, source:'OSZTV-2026-TT',
     q:'Egy 75 Ω-os hullámimpedanciájú koaxiális kábelt rövidzárral zárunk le. Mekkora a reflexiós tényező (Γ) értéke a lezárásnál?',
     opts:['+1','0','-1','0,5'],
@@ -1907,6 +2172,12 @@ const QUESTION_BANK = [
     ans:['Lényegesen gyorsabb konvergenciát biztosít redundáns összeköttetések esetén.','Új porttípusokat vezet be (edge, point-to-point) a gyorsabb konvergencia érdekében.']
   },
   {
+    id:'O26_IV3', type:'single', topic:'IP hálózatok', points:1, source:'OSZTV-2026-TT',
+    q:'Mi az OSPF routing protokoll alapértelmezett elsőbbségi távolsága (administrative distance)?',
+    opts:['90','110','120','170'],
+    ans:'110'
+  },
+  {
     id:'O26_IV4', type:'single', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
     q:'Mi a Link-Local IPv6 cím (fe80::/10) elsődleges szerepe a hálózatban?',
     opts:[
@@ -1933,6 +2204,28 @@ const QUESTION_BANK = [
       'Kizárólag BGP protokollal alkalmazható.'
     ],
     ans:'Csak akkor kerül be a routing táblába, ha az elsőbbségi (alacsonyabb adminisztratív távolságú) útvonal elérhetetlenné válik.'
+  },
+  {
+    id:'O26_IV7', type:'multiple', topic:'IP hálózatok', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik két állítás igaz az OSPF routing protokollra? (2 helyes)',
+    opts:[
+      'Távolságvektor alapú protokoll, a Bellman–Ford algoritmust használja.',
+      'Linkállapot alapú protokoll – minden router a teljes hálózati topológiáról tart fenn adatbázist.',
+      'Az OSPF-szomszédok Hello-csomagokkal fedezik fel egymást és tartják fenn a szomszédi kapcsolatot.',
+      'Az OSPF kizárólag kis (<50 router) hálózatokban alkalmazható.'
+    ],
+    ans:['Linkállapot alapú protokoll – minden router a teljes hálózati topológiáról tart fenn adatbázist.','Az OSPF-szomszédok Hello-csomagokkal fedezik fel egymást és tartják fenn a szomszédi kapcsolatot.']
+  },
+  {
+    id:'O26_IV8', type:'single', topic:'IP hálózatok', points:1, source:'OSZTV-2026-TT',
+    q:'Mi a DHCP relay agent feladata?',
+    opts:[
+      'IP-cím kiosztása broadcast alapján a helyi alhálózaton.',
+      'A DNS névfeloldás gyorsítása helyi gyorsítótárral.',
+      'A DHCP kérések továbbítása különböző alhálózatokon keresztül a DHCP szerver felé.',
+      'A hálózati eszközök MAC-cím alapján történő azonosítása.'
+    ],
+    ans:'A DHCP kérések továbbítása különböző alhálózatokon keresztül a DHCP szerver felé.'
   },
 
   {
@@ -2117,6 +2410,41 @@ const QUESTION_BANK = [
     ],
     ans:['Nagyon kis energiafogyasztás – az eszköz elemről évekig üzemelhet.','Nagy hatósugár (akár több km) kis adóteljesítménnyel.']
   },
+  {
+    id:'O26_VII9', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Egy antenna nyeresége 3 dBi. Mit jelent ez a gyakorlatban?',
+    opts:[
+      'Az antenna háromszoros teljesítményt sugároz minden irányban.',
+      'Az antenna körülbelül kétszeres teljesítményt koncentrál a maximális irányban az izotróp antennához képest.',
+      'Az antenna 3 dB-lel csillapítja a bemenő jelet.',
+      'Az antenna kizárólag 3 GHz-es frekvencián működik hatékonyan.'
+    ],
+    ans:'Az antenna körülbelül kétszeres teljesítményt koncentrál a maximális irányban az izotróp antennához képest.'
+  },
+  {
+    id:'O26_VII5', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Melyik műholdpálya típus esetén szükséges a legkevesebb műhold a globális lefedettség eléréséhez?',
+    opts:['Alacsony Föld körüli pálya (LEO)','Közép Föld körüli pálya (MEO)','Geostacionárius pálya (GEO)','Polaris pálya'],
+    ans:'Geostacionárius pálya (GEO)'
+  },
+  {
+    id:'O26_VII6', type:'single', topic:'Vezeték nélküli adatátvitel', points:2, calc:true, source:'OSZTV-2026-TT',
+    formula:'P(dBm) = 10 · log₁₀(P_mW / 1 mW)',
+    q:'Egy Wi-Fi hozzáférési pont 100 mW teljesítménnyel sugároz. Hány dBm ez?',
+    opts:['10 dBm','20 dBm','30 dBm','100 dBm'],
+    ans:'20 dBm'
+  },
+  {
+    id:'O26_VII7', type:'single', topic:'Vezeték nélküli adatátvitel', points:1, source:'OSZTV-2026-TT',
+    q:'Mi az elektromágneses hullámok polarizációja?',
+    opts:[
+      'A hullám terjedési sebessége.',
+      'A hullám mágneses összetevőjének iránya.',
+      'Az elektromos tér-vektor irányítottsága a terjedési iránnyal merőlegesen.',
+      'A hullám frekvenciájának és amplitúdójának aránya.'
+    ],
+    ans:'Az elektromos tér-vektor irányítottsága a terjedési iránnyal merőlegesen.'
+  },
 
   // ── VIII. Nagytávolságú IP-hálózatok / OSPF ───────────────────────────────
   {
@@ -2160,6 +2488,28 @@ const QUESTION_BANK = [
       'Alacsony (~1 000 km) magasságon kering.'
     ],
     ans:['Nagy egyirányú terjedési késleltetést okoz (~270 ms), ami befolyásolja a valós idejű alkalmazásokat.','A műhold állandóan azonos szögpozícióban látható a Föld felszínéről.']
+  },
+  {
+    id:'O26_X2', type:'single', topic:'Távközlési architektúrák', points:2, source:'OSZTV-2026-TT',
+    q:'Melyik volt a technológiai motiváció a SDH (Szinkron Digitális Hierarchia) rendszerek megjelenéséhez?',
+    opts:[
+      'A PDH rendszerek szinkron jellegéből adódó többletkapacitás kihasználása.',
+      'A PDH rendszerek aszinkron jellege megnehezítette a multiplexálást és a hibafelügyeletet; a SDH szinkron átvitellel ezeket a problémákat oldotta meg.',
+      'A SDH rendszerek olcsóbbak és egyszerűbbek a PDH rendszereknél.',
+      'A PDH szabvány globálisan egységes volt, de a SDH regionálisan különböző változatokat biztosít.'
+    ],
+    ans:'A PDH rendszerek aszinkron jellege megnehezítette a multiplexálást és a hibafelügyeletet; a SDH szinkron átvitellel ezeket a problémákat oldotta meg.'
+  },
+  {
+    id:'O26_X3', type:'single', topic:'Távközlési architektúrák', points:2, source:'OSZTV-2026-TT',
+    q:'Mi a különbség az AON (Active Optical Network) és a PON (Passive Optical Network) típusú optikai hozzáférési hálózatok között?',
+    opts:[
+      'Mindkettő kizárólag passzív optikai elosztókat alkalmaz.',
+      'Az AON aktív elektronikus elemeket (pl. kapcsolókat, erősítőket) tartalmaz; a PON kizárólag passzív optikai osztókat (splittereket) alkalmaz.',
+      'A PON aktív elektronikus elemeket tartalmaz; az AON passzív optikai elemekre épül.',
+      'Nincs köztük érdemi különbség, csak a névhasználat tér el.'
+    ],
+    ans:'Az AON aktív elektronikus elemeket (pl. kapcsolókat, erősítőket) tartalmaz; a PON kizárólag passzív optikai osztókat (splittereket) alkalmaz.'
   },
 
   // ── IX. Digitális rendszerek üzemeltetése ─────────────────────────────────
