@@ -1204,11 +1204,14 @@ app.MapGet("/api/my-quiz-results", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetStudentQuizResults(email));
 });
 
-// Per-student progress detail items (oktató)
+// Per-student progress detail items (saját tanuló + oktató)
 app.MapGet("/api/progress/{email}/items", (string email, HttpContext ctx, Database db) =>
 {
-    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
     var decoded = Uri.UnescapeDataString(email);
+    if (!IsSelfOrPrivileged(identity, role, NormalizeSchoolEmail(decoded)))
+        return Results.Forbid();
     return Results.Ok(db.GetStudentProgressItems(decoded));
 });
 

@@ -467,18 +467,22 @@ async function loadTanuloProfile(u, page) {
         quizItems.forEach(q => { if(q.submittedAt) { const d=utcDate(q.submittedAt); if(d>=ACTIVITY_START) activeDates.push(d); } });
 
         const maxConsec = calcMaxConsecutive(activeDates);
+        // Ha az items API nem adott vissza adatot (pl. hálózati hiba), a streak-et (összesített
+        // aktív napok száma a backendből) akkor sem vesszük consecutivenak – de ha az items
+        // korrekt, a maxConsec is korrekt lesz.  A streak külön, saját ellenőrzésből jön.
+        const effectiveConsec = maxConsec;
 
         // Kitűzők (u = user adatok a tananyag check-ekhez)
-        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak, maxConsec, u));
-        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak, maxConsec, u));
+        const unlocked = ACHIEVEMENTS.filter(a => a.check(progress, items, streak, effectiveConsec, u));
+        const locked   = ACHIEVEMENTS.filter(a => !a.check(progress, items, streak, effectiveConsec, u));
 
         // "Hamarosan" jelző: mennyire közel van egy locked achievement-hez?
         function achProgress(a) {
-            if (a.id === 'consec_3')  return { cur: maxConsec, max: 3 };
-            if (a.id === 'consec_5')  return { cur: maxConsec, max: 5 };
-            if (a.id === 'consec_7')  return { cur: maxConsec, max: 7 };
-            if (a.id === 'consec_10') return { cur: maxConsec, max: 10 };
-            if (a.id === 'consec_14') return { cur: maxConsec, max: 14 };
+            if (a.id === 'consec_3')  return { cur: effectiveConsec, max: 3 };
+            if (a.id === 'consec_5')  return { cur: effectiveConsec, max: 5 };
+            if (a.id === 'consec_7')  return { cur: effectiveConsec, max: 7 };
+            if (a.id === 'consec_10') return { cur: effectiveConsec, max: 10 };
+            if (a.id === 'consec_14') return { cur: effectiveConsec, max: 14 };
             if (a.id === 'tiz_aktiv_nap')  return { cur: streak, max: 10 };
             if (a.id === 'huszon_aktiv')   return { cur: streak, max: 20 };
             if (a.id === 'persist_web')    return { cur: progress.web.sessions,    max: 5 };
