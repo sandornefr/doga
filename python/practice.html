@@ -773,23 +773,26 @@ print("Összesen", db, "kérdés van a kvízben.")`,
     { label: 'Kimenet: "Összesen" megjelenik', fn: (c, o) => /[Öö]sszesen/.test(o) },
   ],
   tutorial: {
-    intro: `<h3>Hasznos dict műveletek</h3>
-<p><code>len(d)</code> – elemek száma<br>
-<code>"kulcs" in d</code> – kulcs létezik-e?<br>
-<code>d.get("kulcs", alapértelmezett)</code> – biztonságos elérés</p>`,
+    intro: `<h3>Dict + random + len() – összerakni egy programot</h3>
+<p>A <code>len(d)</code> a szótár elemeinek számát adja vissza – ugyanúgy, ahogy listánál is használtuk.</p>
+<p>Egy kvíz program logikája: <strong>1.</strong> szótár létrehozása · <strong>2.</strong> véletlenszerű kulcs kiválasztása · <strong>3.</strong> kérdés és válasz kiírása · <strong>4.</strong> elemek megszámlálása és kiírása.</p>`,
     examples: [
-      { title: 'Kvíz program', code: `import random
+      { title: 'Dict + random + len() – általános minta', code: `import random
 
-kviz = {
-    "Mi az f-string?": "Formázott szöveg",
-    "Mi a while?": "Ciklus",
-    "Mi a def?": "Függvény"
+# Bármilyen kulcs–érték szótárra működik
+adatok = {
+    "Eger":     "Heves megye",
+    "Pécs":     "Baranya megye",
+    "Miskolc":  "Borsod megye"
 }
 
-k = random.choice(list(kviz.keys()))
-print("Kérdés:", k)
-print("Válasz:", kviz[k])
-print(f"Összes kérdés: {len(kviz)} db")` },
+# Véletlenszerű kulcs
+valasztott = random.choice(list(adatok.keys()))
+print("Választott:", valasztott)
+print("Értéke:", adatok[valasztott])
+
+# Összes elem
+print(f"Összesen {len(adatok)} bejegyzés van.")` },
     ]
   }
 },
