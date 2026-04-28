@@ -2950,6 +2950,8 @@ async function submitToBackend() {
       };
     });
     const earned = valaszok.reduce((s, v) => s + v.pontszam, 0);
+    const szazalek = Math.round(earned / totalPts * 100);
+
     await fetch(`${BACKEND}/api/tavolkozles/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2959,7 +2961,7 @@ async function submitToBackend() {
         felhasznaltIdo: `${Math.round(secondsUsed / 60)} perc`,
         eredmeny: {
           szerzettPont: earned, maxPont: totalPts,
-          szazalek: Math.round(earned / totalPts * 100),
+          szazalek,
           helyes: valaszok.filter(v => v.eredmeny === 'helyes').length,
           helytelen: valaszok.filter(v => v.eredmeny === 'helytelen').length,
           ures: valaszok.filter(v => v.eredmeny === 'üres').length,
@@ -2968,6 +2970,26 @@ async function submitToBackend() {
         valaszok
       })
     });
+
+    // Ha a tanuló be van jelentkezve (portálról jött), menti az aktivitást a
+    // profil streak/heatmap számára is
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (u.token && u.email) {
+      fetch(`${BACKEND}/api/quiz-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+        body: JSON.stringify({
+          email: u.email,
+          nev: u.nev || studentName,
+          osztaly: u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '',
+          tipus: 'tavkozles',
+          pont: earned,
+          maxPont: totalPts,
+          szazalek,
+          idoMp: secondsUsed
+        })
+      }).catch(() => {});
+    }
   } catch { /* silent */ }
 }
 
