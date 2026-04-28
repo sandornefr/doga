@@ -507,7 +507,7 @@ print("Súlyod:", suly, "kg")`},
   id:5, emoji:'🔄', topicGroup:'alap', title:'Típuskonverzió: int(), float(), str()',
   description:`<p>Az <code>input()</code> <strong>mindig string</strong>-et ad vissza.<br>
 Ha számolni akarsz, át kell alakítani: <code>int()</code> vagy <code>float()</code></p>
-<p>A program bekér egy számot, majd kiírja a duplájátés négyzetét:</p>
+<p>A program bekér egy számot, majd kiírja a dupláját és négyzetét:</p>
 <div class="mock-hint" style="margin-top:4px;"><strong>Teszt bemenet:</strong> <code>7</code></div>`,
   starterCode:`# 5. feladat: Típuskonverzió
 `,
@@ -856,8 +856,8 @@ koszon("___")`,
   mockInputs:[],
   checks:[
     {label:'def koszon(nev):', fn:(c,o)=>/def\s+koszon\s*\(\s*nev\s*\)/.test(c)},
-    {label:'print() a függvényen belül', fn:(c,o)=>/def[\s\S]*?print/.test(c)},
-    {label:'Legalább 3 hívás: koszon(...)', fn:(c,o)=>(c.match(/koszon\s*\(/g)||[]).length>=3},
+    {label:'print() a függvényen belül', fn:(c,o)=>/def\s+koszon[\s\S]*?print/.test(c)},
+    {label:'Legalább 3 hívás: koszon(...)', fn:(c,o)=>(c.match(/koszon\s*\(/g)||[]).length>=4},
     {label:'Kimenet: "Anna"', fn:(c,o)=>/Anna/.test(o)},
     {label:'Kimenet: "Béla"', fn:(c,o)=>/B[eé]la/i.test(o)},
   ],
@@ -866,17 +866,19 @@ koszon("___")`,
 <p>A függvény olyan, mint egy recept: egyszer leírod a lépéseket, majd akárhányszor „elkészítheted" – anélkül, hogy mindent újra kellene írni. A névvel meghívod, és lefut. Ha változtatni kell, csak egy helyen kell módosítani.</p>
 <p>Szintaxis: <code>def névé(paraméter):</code> – a kód alatta 4 szóközzel behúzva következik. Meghívás: <code>névé(érték)</code>. Paraméterből lehet több is, vesszővel elválasztva.</p>`,
     examples:[
-      {title:'Függvény paraméterekkel', code:`def koszon(nev, varos):
+      {title:'Függvény paraméterekkel', code:`# Egy paraméteres függvény:
+def koszon(nev):
+    print(f"Szia, {nev}! Üdv a Python világában!")
+
+koszon("Anna")
+koszon("Béla")
+koszon("Csaba")
+
+# Több paraméterrel (más feladatban):
+def koszonVarossal(nev, varos):
     print(f"Szia {nev}! Te {varos}-ból jössz?")
 
-koszon("Anna", "Miskolc")
-koszon("Béla", "Budapest")
-
-# Több paraméter:
-def osszead(a, b):
-    print(a + b)
-
-osszead(3, 5)   # 8`},
+koszonVarossal("Dóra", "Miskolc")`},
     ]
   }
 },
@@ -906,7 +908,7 @@ print(f"4 × 6 téglalap területe: {___}")   # ← t2 ide`,
   checks:[
     {label:'def terulet(a, b):', fn:(c,o)=>/def\s+terulet\s*\(\s*a\s*,\s*b\s*\)/.test(c)},
     {label:'return megtalálható', fn:(c,o)=>/\breturn\b/.test(c)},
-    {label:'Függvény legalább 2x meghívva', fn:(c,o)=>(c.match(/terulet\s*\(/g)||[]).length>=2},
+    {label:'Függvény legalább 2x meghívva', fn:(c,o)=>(c.match(/terulet\s*\(/g)||[]).length>=3},
     {label:'Kimenet: 15 (5×3)', fn:(c,o)=>/15/.test(o)},
     {label:'Kimenet: 24 (4×6)', fn:(c,o)=>/24/.test(o)},
   ],
