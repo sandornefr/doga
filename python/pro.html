@@ -836,7 +836,7 @@ else:
     print("Nincs elégtelen.")
 
 # Van-e jeles?
-van_jeles = any(___)
+van_jeles = False  # ← cseréld le any()-ra!
 
 
 `,
@@ -1227,7 +1227,7 @@ parosak = [x for x in szamok if x % 2 == 0]
 print("Párosak:", parosak)
 
 # Csak a 10-nél nagyobb számok:
-nagyok = [___ for ___ in szamok if ___]
+nagyok = []  # ← írd át lista-lerövidítésre (if feltétellel)!
 
 print("Nagyok:", nagyok)
 `,
