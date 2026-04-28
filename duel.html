@@ -65,6 +65,12 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .result-score-val{font-size:1.4rem;font-weight:800;color:#e0e0e0;}
 .result-btn{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:700;}
 .result-btn:hover{filter:brightness(1.1);}
+.result-sol-btn{background:transparent;border:1px solid #30363d;color:#8b949e;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;margin-top:10px;display:flex;align-items:center;gap:6px;margin:10px auto 0;}
+.result-sol-btn:hover{border-color:#58a6ff;color:#58a6ff;}
+.result-sol-panel{display:none;margin-top:16px;text-align:left;background:#0d1117;border:1px solid #21262d;border-radius:10px;overflow:hidden;}
+.result-sol-panel.open{display:block;}
+.result-sol-label{font-size:0.7rem;font-weight:700;color:#8b949e;letter-spacing:.07em;text-transform:uppercase;padding:8px 14px 4px;}
+.result-sol-code{padding:10px 14px 14px;font-family:'Cascadia Code','Fira Mono',monospace;font-size:0.82rem;color:#c9d1d9;white-space:pre;overflow-x:auto;line-height:1.55;}
 
 /* Loading */
 .loading-screen{position:fixed;inset:0;background:#0d1117;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
@@ -174,7 +180,14 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
     <div class="result-title" id="result-title">Eredmény</div>
     <div class="result-sub" id="result-sub"></div>
     <div class="result-scores" id="result-scores"></div>
-    <button class="result-btn" onclick="location.href='portal.html'"><i class="fas fa-home" style="margin-right:6px;"></i>Vissza a portálra</button>
+    <button class="result-sol-btn" id="result-sol-btn" onclick="toggleSolution()" style="display:none;">
+      <i class="fas fa-eye"></i> Megoldás megtekintése
+    </button>
+    <div class="result-sol-panel" id="result-sol-panel">
+      <div class="result-sol-label" id="result-sol-feladat"></div>
+      <div class="result-sol-code" id="result-sol-code"></div>
+    </div>
+    <button class="result-btn" onclick="location.href='portal.html'" style="margin-top:18px;"><i class="fas fa-home" style="margin-right:6px;"></i>Vissza a portálra</button>
   </div>
 </div>
 
@@ -730,7 +743,27 @@ function showResult(d) {
             <div class="result-score-name">${oppLabel}</div>
             <div class="result-score-val">${oppScore ?? 0}/${oppMax ?? 8}p</div>
         </div>`;
+    // Megoldás gomb – csak ha van megoldás a feladathoz
+    const solBtn = document.getElementById('result-sol-btn');
+    if (task && task.solution) {
+        document.getElementById('result-sol-feladat').textContent =
+            `${task.number}. feladat – ${task.cim}`;
+        document.getElementById('result-sol-code').textContent = task.solution;
+        solBtn.style.display = 'flex';
+    } else {
+        solBtn.style.display = 'none';
+    }
+
     document.getElementById('result-overlay').classList.add('show');
+}
+
+function toggleSolution() {
+    const panel = document.getElementById('result-sol-panel');
+    const btn   = document.getElementById('result-sol-btn');
+    const open  = panel.classList.toggle('open');
+    btn.innerHTML = open
+        ? '<i class="fas fa-eye-slash"></i> Megoldás elrejtése'
+        : '<i class="fas fa-eye"></i> Megoldás megtekintése';
 }
 
 function showError(msg) {
