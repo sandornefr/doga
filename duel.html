@@ -894,13 +894,17 @@ async function fetchChat(duelId) {
         const box  = document.getElementById('chat-msgs');
         const wasBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 20;
         msgs.forEach(m => {
-            const mine = m.senderEmail?.toLowerCase() === myEmail?.toLowerCase();
+            const mine = (m.SenderEmail || m.senderEmail || '').toLowerCase() === myEmail?.toLowerCase();
+            const nev  = m.SenderNev   || m.senderNev   || '';
+            const mail = m.SenderEmail || m.senderEmail || '';
+            const text = m.Message     || m.message     || '';
+            const id   = m.Id          ?? m.id          ?? 0;
             const div  = document.createElement('div');
             div.className = `chat-msg ${mine ? 'mine' : 'theirs'}`;
-            const sender = mine ? 'Te' : (m.senderNev || m.senderEmail || 'Ellenfél');
-            div.innerHTML = `<span class="chat-sender">${sender}:</span><span class="chat-text">${escHtml(m.message)}</span>`;
+            const sender = mine ? 'Te' : (nev || mail || 'Ellenfél');
+            div.innerHTML = `<span class="chat-sender">${sender}:</span><span class="chat-text">${escHtml(text)}</span>`;
             box.appendChild(div);
-            if (m.id > chatLastId) chatLastId = m.id;
+            if (id > chatLastId) chatLastId = id;
         });
         if (wasBottom) box.scrollTop = box.scrollHeight;
     } catch {}
