@@ -1503,6 +1503,39 @@ app.MapPost("/api/duel/{id}/submit", (int id, HttpContext ctx, DuelSubmitRequest
     return ok ? Results.Ok(new { ok = true, winner }) : Results.BadRequest(new { error = "Nem sikerült" });
 });
 
+// ── Duel chat ────────────────────────────────────────────────────────────────
+app.MapGet("/api/duel/{id}/chat", (int id, HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var d = db.GetDuel(id);
+    if (d == null) return Results.NotFound();
+    var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                     || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
+    if (!isParticipant) return Results.Forbid();
+    var sinceId = int.TryParse(ctx.Request.Query["since_id"], out var s) ? s : 0;
+    return Results.Ok(db.GetChatMessages(sinceId, $"duel_{id}"));
+});
+
+app.MapPost("/api/duel/{id}/chat", (int id, HttpContext ctx, ChatSendRequest req, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    var d = db.GetDuel(id);
+    if (d == null) return Results.NotFound();
+    var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
+                     || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
+    if (!isParticipant) return Results.Forbid();
+    if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Length > 500)
+        return Results.BadRequest(new { error = "Érvénytelen üzenet" });
+    var u = db.GetUserByEmail(email);
+    var nev = u != null ? $"{u.Vezeteknev} {u.Keresztnev}".Trim() : email;
+    var msgId = db.SendChatMessage(email, nev, "tanuló", req.Message, $"duel_{id}");
+    return Results.Ok(new { id = msgId });
+});
+
 app.MapGet("/api/duel/stats/{email}", (string email, HttpContext ctx, Database db) =>
 {
     var (valid, _, _) = InspectAuthContext(ctx);

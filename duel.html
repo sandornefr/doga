@@ -95,6 +95,25 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 .duel-modal-btn-cancel{flex:1;background:none;border:1px solid #374151;color:#6b7280;padding:9px;border-radius:8px;cursor:pointer;font-size:0.85rem;}
 .duel-modal-btn-cancel:hover{border-color:#6b7280;color:#9ca3af;}
 
+/* Duel chat */
+#duel-chat{position:fixed;bottom:16px;right:16px;width:280px;z-index:150;display:none;flex-direction:column;background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);}
+#duel-chat.show{display:flex;}
+.chat-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1c2128;border-bottom:1px solid #21262d;font-size:0.78rem;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none;}
+.chat-header .chat-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:6px;flex-shrink:0;}
+.chat-toggle{font-size:0.7rem;color:#4f46e5;background:none;border:none;cursor:pointer;padding:0;}
+.chat-msgs{height:180px;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:#21262d transparent;}
+.chat-msg{font-size:0.8rem;line-height:1.4;word-break:break-word;}
+.chat-msg .chat-sender{font-weight:700;margin-right:4px;}
+.chat-msg.mine .chat-sender{color:#818cf8;}
+.chat-msg.theirs .chat-sender{color:#f59e0b;}
+.chat-msg .chat-text{color:#c9d1d9;}
+.chat-input-row{display:flex;gap:6px;padding:8px 8px;border-top:1px solid #21262d;background:#0d1117;}
+.chat-input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:7px;color:#e0e0e0;font-size:0.82rem;padding:6px 9px;outline:none;font-family:inherit;}
+.chat-input:focus{border-color:#4f46e5;}
+.chat-send{background:#4f46e5;border:none;border-radius:7px;color:#fff;padding:6px 10px;cursor:pointer;font-size:0.82rem;}
+.chat-send:hover{background:#6366f1;}
+.chat-collapsed .chat-msgs,.chat-collapsed .chat-input-row{display:none;}
+
 /* Editor-lock overlay (Rajt! előtt) */
 #editor-lock-overlay{position:absolute;inset:0;z-index:10;background:rgba(13,17,23,.72);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;backdrop-filter:blur(1px);}
 #editor-lock-overlay.show{display:flex;}
@@ -188,6 +207,22 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
       <div class="result-sol-code" id="result-sol-code"></div>
     </div>
     <button class="result-btn" onclick="location.href='portal.html'" style="margin-top:18px;"><i class="fas fa-home" style="margin-right:6px;"></i>Vissza a portálra</button>
+  </div>
+</div>
+
+<!-- Duel chat (csak 1v1-nél) -->
+<div id="duel-chat">
+  <div class="chat-header" onclick="toggleChat()">
+    <span><span class="chat-dot"></span>Chat</span>
+    <button class="chat-toggle" id="chat-toggle-btn"><i class="fas fa-chevron-down"></i></button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div style="color:#4b5563;font-size:0.78rem;text-align:center;margin-top:40px;">Üzenj az ellenfélnek! 💬</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Írj valamit..." maxlength="200"
+           onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
   </div>
 </div>
 
@@ -409,6 +444,7 @@ async function initDuel() {
             startTimer();
         }
         startPoll();
+        initChat(duelData.id, isBot);
     } catch (e) {
         showError(e.message);
     }
@@ -754,6 +790,8 @@ function showResult(d) {
         solBtn.style.display = 'none';
     }
 
+    stopChatPoll();
+    document.getElementById('duel-chat').classList.remove('show');
     document.getElementById('result-overlay').classList.add('show');
 }
 
@@ -820,6 +858,80 @@ function renderTaskBody(t) {
     return t.description
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
         .replace(/\n/g,'<br>');
+}
+
+// ── Duel chat ──────────────────────────────────────────────────────────────
+let chatLastId   = 0;
+let chatInterval = null;
+let chatOpen     = true;
+
+function initChat(duelId, isBot) {
+    if (isBot) return;  // bot ellen nincs chat
+    document.getElementById('duel-chat').classList.add('show');
+    startChatPoll(duelId);
+}
+
+function startChatPoll(duelId) {
+    fetchChat(duelId);
+    chatInterval = setInterval(() => fetchChat(duelId), 3000);
+}
+
+function stopChatPoll() {
+    clearInterval(chatInterval);
+    chatInterval = null;
+}
+
+async function fetchChat(duelId) {
+    try {
+        const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const res = await fetch(
+            `${BACKEND}/api/duel/${duelId}/chat?since_id=${chatLastId}`,
+            { headers: { Authorization: 'Bearer ' + u.token } }
+        );
+        if (!res.ok) return;
+        const msgs = await res.json();
+        if (!msgs.length) return;
+        const box  = document.getElementById('chat-msgs');
+        const wasBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 20;
+        msgs.forEach(m => {
+            const mine = m.senderEmail?.toLowerCase() === myEmail?.toLowerCase();
+            const div  = document.createElement('div');
+            div.className = `chat-msg ${mine ? 'mine' : 'theirs'}`;
+            const sender = mine ? 'Te' : (m.senderNev || m.senderEmail || 'Ellenfél');
+            div.innerHTML = `<span class="chat-sender">${sender}:</span><span class="chat-text">${escHtml(m.message)}</span>`;
+            box.appendChild(div);
+            if (m.id > chatLastId) chatLastId = m.id;
+        });
+        if (wasBottom) box.scrollTop = box.scrollHeight;
+    } catch {}
+}
+
+async function sendChat() {
+    const inp = document.getElementById('chat-input');
+    const msg = inp.value.trim();
+    if (!msg || !duelData) return;
+    inp.value = '';
+    try {
+        const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        await fetch(`${BACKEND}/api/duel/${duelData.id}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + u.token },
+            body: JSON.stringify({ message: msg })
+        });
+        fetchChat(duelData.id);
+    } catch {}
+}
+
+function toggleChat() {
+    chatOpen = !chatOpen;
+    const panel = document.getElementById('duel-chat');
+    const btn   = document.getElementById('chat-toggle-btn');
+    panel.classList.toggle('chat-collapsed', !chatOpen);
+    btn.innerHTML = chatOpen ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-chevron-up"></i>';
+}
+
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
 </body>
