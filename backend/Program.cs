@@ -619,6 +619,41 @@ app.MapGet("/api/completion-stats", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetCompletionStats());
 });
 
+// ── Ágazati feladat rangsor (tanuló saját + szűrt) ─────────────────────────
+// Visszaadja: feladatonként hány fő oldotta meg max ponttal + a kérelmező rangja
+app.MapGet("/api/leaderboard/agazati", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email    = NormalizeSchoolEmail(identity);
+    var osztaly  = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport  = ctx.Request.Query["csoport"].FirstOrDefault();
+    var evfolyam = ctx.Request.Query["evfolyam"].FirstOrDefault();
+    return Results.Ok(db.GetAgazatiLeaderboard(email, osztaly, csoport, evfolyam));
+});
+
+// Streak / összesített rangsor (bejelentkezett tanuló is láthatja)
+app.MapGet("/api/leaderboard/streak", (HttpContext ctx, Database db) =>
+{
+    var (valid, _, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var osztaly  = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport  = ctx.Request.Query["csoport"].FirstOrDefault();
+    var evfolyam = ctx.Request.Query["evfolyam"].FirstOrDefault();
+    return Results.Ok(db.GetStreakLeaderboard(osztaly, csoport, evfolyam));
+});
+
+// Kódpárbaj rangsor
+app.MapGet("/api/leaderboard/duel", (HttpContext ctx, Database db) =>
+{
+    var (valid, _, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var osztaly  = ctx.Request.Query["osztaly"].FirstOrDefault();
+    var csoport  = ctx.Request.Query["csoport"].FirstOrDefault();
+    var evfolyam = ctx.Request.Query["evfolyam"].FirstOrDefault();
+    return Results.Ok(db.GetDuelLeaderboard(osztaly, csoport, evfolyam));
+});
+
 // Saját rang lekérése (tanuló, nyilvános)
 app.MapGet("/api/leaderboard/rank/{email}", (string email, Database db) =>
 {

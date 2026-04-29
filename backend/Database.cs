@@ -2721,6 +2721,119 @@ public class Database
             });
         return list;
     }
+    // ── Ágazati leaderboard ─────────────────────────────────────────────────
+    public List<AgazatiTaskRank> GetAgazatiLeaderboard(string myEmail, string? osztaly, string? csoport, string? evfolyam)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+
+        // Szűrő felépítése users join alapján
+        var where = new List<string> { "p.targy = 'agazati' AND p.pont >= p.max_pont" };
+        if (!string.IsNullOrEmpty(osztaly))  where.Add($"(u.osztaly = '{osztaly.Replace("'","")}' OR p.osztaly LIKE '%.{osztaly.Replace("'","")}')");
+        if (!string.IsNullOrEmpty(csoport))  where.Add($"u.csoport = '{csoport.Replace("'","")}'");
+        if (!string.IsNullOrEmpty(evfolyam)) where.Add($"u.evfolyam = '{evfolyam.Replace("'","")}'");
+
+        cmd.CommandText = $@"
+            SELECT p.feladat,
+                   COUNT(DISTINCT LOWER(p.email)) AS megoldok,
+                   MIN(CASE WHEN LOWER(p.email)=LOWER($me) THEN p.datum END) AS sajat_datum,
+                   (SELECT COUNT(*)+1 FROM progress p2
+                    LEFT JOIN users u2 ON LOWER(u2.email)=LOWER(p2.email)
+                    WHERE p2.targy='agazati' AND p2.pont>=p2.max_pont AND p2.feladat=p.feladat
+                      AND p2.datum < MIN(CASE WHEN LOWER(p.email)=LOWER($me) THEN p.datum END)
+                   ) AS sajat_rang
+            FROM progress p
+            LEFT JOIN users u ON LOWER(u.email)=LOWER(p.email)
+            WHERE {string.Join(" AND ", where)}
+            GROUP BY p.feladat
+            ORDER BY megoldok DESC, p.feladat ASC";
+        cmd.Parameters.AddWithValue("$me", myEmail.Trim().ToLower());
+
+        var list = new List<AgazatiTaskRank>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new AgazatiTaskRank {
+                Feladat    = r.GetString(0),
+                Megoldok   = r.GetInt32(1),
+                SajatDatum = r.IsDBNull(2) ? null : r.GetString(2),
+                SajatRang  = r.IsDBNull(3) ? (int?)null : r.GetInt32(3)
+            });
+        return list;
+    }
+
+    public List<StreakRankItem> GetStreakLeaderboard(string? osztaly, string? csoport, string? evfolyam)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        var where = new List<string>();
+        if (!string.IsNullOrEmpty(osztaly))  where.Add($"u.osztaly = '{osztaly.Replace("'","")}'");
+        if (!string.IsNullOrEmpty(csoport))  where.Add($"u.csoport = '{csoport.Replace("'","")}'");
+        if (!string.IsNullOrEmpty(evfolyam)) where.Add($"u.evfolyam = '{evfolyam.Replace("'","")}'");
+        var whereStr = where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "";
+
+        cmd.CommandText = $@"
+            SELECT u.vezeteknev || ' ' || u.keresztnev AS nev,
+                   u.email, u.osztaly, u.csoport, u.evfolyam,
+                   COUNT(DISTINCT DATE(p.datum)) AS aktiv_napok
+            FROM users u
+            LEFT JOIN progress p ON LOWER(p.email)=LOWER(u.email)
+            {whereStr}
+            GROUP BY u.email
+            ORDER BY aktiv_napok DESC
+            LIMIT 100";
+        var list = new List<StreakRankItem>();
+        using var r = cmd.ExecuteReader();
+        int rank = 1;
+        while (r.Read())
+            list.Add(new StreakRankItem {
+                Rang      = rank++,
+                Nev       = r.GetString(0),
+                Email     = r.GetString(1),
+                Osztaly   = r.IsDBNull(2) ? null : r.GetString(2),
+                Csoport   = r.IsDBNull(3) ? null : r.GetString(3),
+                Evfolyam  = r.IsDBNull(4) ? null : r.GetString(4),
+                AktivNap  = r.GetInt32(5)
+            });
+        return list;
+    }
+
+    public List<DuelRankItem> GetDuelLeaderboard(string? osztaly, string? csoport, string? evfolyam)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        var where = new List<string> { "d.status='finished' AND d.opponent_email != 'bot@kkszki.hu'" };
+        if (!string.IsNullOrEmpty(osztaly))  where.Add($"(u.osztaly='{osztaly.Replace("'","")}')" );
+        if (!string.IsNullOrEmpty(csoport))  where.Add($"(u.csoport='{csoport.Replace("'","")}')" );
+        if (!string.IsNullOrEmpty(evfolyam)) where.Add($"(u.evfolyam='{evfolyam.Replace("'","")}')" );
+
+        cmd.CommandText = $@"
+            SELECT u.vezeteknev||' '||u.keresztnev AS nev, u.email, u.osztaly, u.csoport, u.evfolyam,
+                   COUNT(CASE WHEN LOWER(d.winner_email)=LOWER(u.email) THEN 1 END) AS gyozelem,
+                   COUNT(CASE WHEN d.winner_email IS NOT NULL AND LOWER(d.winner_email)!=LOWER(u.email) THEN 1 END) AS vereseg,
+                   COUNT(CASE WHEN d.winner_email IS NULL THEN 1 END) AS dontetlon
+            FROM users u
+            JOIN duels d ON LOWER(d.challenger_email)=LOWER(u.email) OR LOWER(d.opponent_email)=LOWER(u.email)
+            WHERE {string.Join(" AND ", where)}
+            GROUP BY u.email
+            ORDER BY gyozelem DESC, vereseg ASC
+            LIMIT 100";
+        var list = new List<DuelRankItem>();
+        using var r = cmd.ExecuteReader();
+        int rank = 1;
+        while (r.Read())
+            list.Add(new DuelRankItem {
+                Rang      = rank++,
+                Nev       = r.GetString(0),
+                Email     = r.GetString(1),
+                Osztaly   = r.IsDBNull(2) ? null : r.GetString(2),
+                Csoport   = r.IsDBNull(3) ? null : r.GetString(3),
+                Evfolyam  = r.IsDBNull(4) ? null : r.GetString(4),
+                Gyozelem  = r.GetInt32(5),
+                Vereseg   = r.GetInt32(6),
+                Dontetlon = r.GetInt32(7)
+            });
+        return list;
+    }
 }
 
 public record PasswordResetRequestRow(int Id, string Email, string Nev, string? Osztaly, string? Csoport, string CreatedAt);

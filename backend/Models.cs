@@ -572,3 +572,35 @@ public class ChatMessage
     public string Channel     { get; set; } = "tesztelok";
     public string CreatedAt   { get; set; } = "";
 }
+
+public class AgazatiTaskRank
+{
+    public string  Feladat    { get; set; } = "";
+    public int     Megoldok   { get; set; }
+    public string? SajatDatum { get; set; }
+    public int?    SajatRang  { get; set; }
+}
+
+public class StreakRankItem
+{
+    public int     Rang      { get; set; }
+    public string  Nev       { get; set; } = "";
+    public string  Email     { get; set; } = "";
+    public string? Osztaly   { get; set; }
+    public string? Csoport   { get; set; }
+    public string? Evfolyam  { get; set; }
+    public int     AktivNap  { get; set; }
+}
+
+public class DuelRankItem
+{
+    public int     Rang      { get; set; }
+    public string  Nev       { get; set; } = "";
+    public string  Email     { get; set; } = "";
+    public string? Osztaly   { get; set; }
+    public string? Csoport   { get; set; }
+    public string? Evfolyam  { get; set; }
+    public int     Gyozelem  { get; set; }
+    public int     Vereseg   { get; set; }
+    public int     Dontetlon { get; set; }
+}

@@ -128,8 +128,28 @@
       background:transparent; border:1.5px solid rgba(239,68,68,.4); color:#f87171;
       font-size:0.84rem; cursor:pointer; transition:all .2s; font-family:var(--font); }
     .btn-bug:hover { background:rgba(239,68,68,.1); border-color:#ef4444; color:#fca5a5; }
+    .btn-check { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px;
+      background:#1e3a5f; border:1.5px solid #3b82f6; color:#93c5fd;
+      font-size:0.88rem; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-check:hover:not(:disabled) { background:#1d4ed8; color:#fff; border-color:#60a5fa; }
+    .btn-check:disabled { opacity:.4; cursor:not-allowed; }
     .bottom-spacer { flex:1; }
     #run-spinner { display:none; }
+
+    /* Check panel (a desc-panel alján) */
+    #check-panel { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; display:none; }
+    .check-row { display:flex; align-items:flex-start; gap:8px; padding:5px 8px; border-radius:6px;
+      margin-bottom:4px; font-size:0.82rem; background:#111827; border:1px solid var(--border); }
+    .check-row.pass { border-color:rgba(34,197,94,.35); }
+    .check-row.fail { border-color:rgba(239,68,68,.3); }
+    .check-row .ci { font-size:0.8rem; flex-shrink:0; margin-top:1px; }
+    .check-row.pass .ci { color:#22c55e; }
+    .check-row.fail .ci { color:#ef4444; }
+    .check-row .cl { color:var(--text); line-height:1.4; }
+    .check-score { font-size:0.78rem; color:var(--muted); margin-top:8px; text-align:right; }
+    #check-banner { display:none; margin-top:10px; background:rgba(34,197,94,.12);
+      border:1.5px solid rgba(34,197,94,.4); border-radius:10px; padding:10px 14px;
+      text-align:center; font-size:0.9rem; color:#22c55e; font-weight:700; }
 
     /* INPUT AREA */
     .input-wrap { display:flex; flex-direction:column; gap:2px; position:relative; }
@@ -240,6 +260,8 @@
     </div>
     <div class="desc-scroll" id="desc-content">
       <div id="empty-state"><i class="fas fa-mouse-pointer"></i><span>Válassz feladatot a listából</span></div>
+      <div id="check-panel"></div>
+      <div id="check-banner"></div>
     </div>
   </div>
 
@@ -263,6 +285,9 @@
   <button class="btn-run" id="btn-run" onclick="runCode()">
     <i class="fas fa-play"></i> Futtatás
     <span id="run-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+  </button>
+  <button class="btn-check" id="btn-check" onclick="checkCode()" disabled>
+    <i class="fas fa-check-circle"></i> Ellenőrzés
   </button>
   <button class="btn-sol" onclick="showSolution()">
     <i class="fas fa-lightbulb"></i> Megoldás
@@ -435,6 +460,12 @@ function selectTask(task) {
   if (!task) return;
   currentTask = task;
   lastOutput = '';
+
+  // Check panel reset
+  document.getElementById('check-panel').style.display = 'none';
+  document.getElementById('check-panel').innerHTML = '';
+  document.getElementById('check-banner').style.display = 'none';
+  document.getElementById('btn-check').disabled = false;
 
   // Update task list highlight
   renderTaskList();
@@ -622,6 +653,110 @@ function reportTaskBug() {
   } else if (typeof window._srHibaOpen === 'function') {
     window._srHibaOpen();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ELLENŐRZÉS + PROGRESS MENTÉS
+// ═══════════════════════════════════════════════════════════════════
+async function checkCode() {
+  if (!currentTask || !currentTask.criteria || !currentTask.criteria.length) return;
+  const btn = document.getElementById('btn-check');
+  btn.disabled = true;
+
+  await runCode(); // kód futtatása kimenet megszerzéséhez
+  const code = editor.getValue();
+
+  const results = [];
+  for (const crit of currentTask.criteria) {
+    const parts = crit.split('|');
+    const spec  = parts[0].trim();
+    const label = (parts[1] || spec).trim();
+    let pass = false;
+
+    if (spec.startsWith('bekeres:'))    { pass = code.includes(spec.slice(8)); }
+    else if (spec.startsWith('int_float:')) {
+      const n = parseInt(spec.slice(10)) || 1;
+      pass = (code.match(/\bint\s*\(|\bfloat\s*\(/g) || []).length >= n;
+    }
+    else if (spec.startsWith('import:')) {
+      const mod = spec.slice(7);
+      pass = new RegExp(`\\bimport\\s+${mod}\\b|\\bfrom\\s+${mod}\\b`).test(code);
+    }
+    else if (spec === 'if')             { pass = /\bif\b/.test(code); }
+    else if (spec === 'elif')           { pass = /\belif\b/.test(code); }
+    else if (spec.startsWith('tartalmaz:')) { pass = code.includes(spec.slice(10)); }
+    else if (spec === 'def')            { pass = /\bdef\b/.test(code); }
+    else if (spec === 'return')         { pass = /\breturn\b/.test(code); }
+    else if (spec === 'while')          { pass = /\bwhile\b/.test(code); }
+    else if (spec === 'for')            { pass = /\bfor\b/.test(code); }
+    else if (spec.startsWith('teszt:')) {
+      const rest = spec.slice(6);
+      const sep  = rest.lastIndexOf(':');
+      if (sep > 0) {
+        const inputs   = rest.slice(0, sep) ? rest.slice(0, sep).split(',') : [];
+        const expected = rest.slice(sep + 1).trim();
+        pass = await runWithMockInputs(code, inputs, expected);
+      }
+    }
+
+    results.push({ label, pass });
+  }
+
+  btn.disabled = false;
+  const passed = results.filter(r => r.pass).length;
+  renderCheckResults(results, passed === results.length);
+  if (passed === results.length) saveAgazatiProgress(currentTask);
+}
+
+async function runWithMockInputs(code, inputs, expected) {
+  if (!pyodide) return false;
+  try {
+    let out = '';
+    pyodide.setStdout({ batched: t => { out += t + '\n'; } });
+    pyodide.setStderr({ batched: () => {} });
+    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+    await pyodide.runPythonAsync(setup + '\n' + code);
+    return out.includes(expected);
+  } catch { return false; }
+}
+
+function renderCheckResults(results, allPass) {
+  const panel  = document.getElementById('check-panel');
+  const banner = document.getElementById('check-banner');
+  panel.style.display = 'block';
+  panel.innerHTML = results.map(r => `
+    <div class="check-row ${r.pass ? 'pass' : 'fail'}">
+      <i class="fas fa-${r.pass ? 'check' : 'times'} ci"></i>
+      <span class="cl">${esc(r.label)}</span>
+    </div>`).join('')
+    + `<div class="check-score">${results.filter(r=>r.pass).length} / ${results.length} teljesítve</div>`;
+
+  if (allPass) {
+    banner.style.display = 'block';
+    banner.innerHTML = `<i class="fas fa-trophy" style="margin-right:6px;"></i>Tökéletes! ${currentTask.pont}/${currentTask.pont} pont – megoldottad!`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function saveAgazatiProgress(task) {
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (!u.token || !u.email) return; // vendég nem ment
+
+  const lsKey = `agazati_done_${task.id}_${u.email}`;
+  if (localStorage.getItem(lsKey)) return; // már mentve
+  localStorage.setItem(lsKey, '1');
+
+  const osztaly = u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '';
+  fetch('https://agazati.up.railway.app/api/progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + u.token },
+    body: JSON.stringify({
+      email: u.email, nev: u.nev || '', osztaly,
+      targy: 'agazati', feladat: task.cim,
+      pont: task.pont, maxPont: task.pont, mode: 'practice'
+    })
+  }).catch(() => {});
 }
 
 // ═══════════════════════════════════════════════════════════════════
