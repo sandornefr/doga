@@ -444,7 +444,7 @@ async function initDuel() {
             startTimer();
         }
         startPoll();
-        initChat(duelData.id, isBot);
+        initChat(duelId, isBot);
     } catch (e) {
         showError(e.message);
     }
@@ -885,7 +885,7 @@ async function fetchChat(duelId) {
     try {
         const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
         const res = await fetch(
-            `${BACKEND}/api/duel/${duelId}/chat?since_id=${chatLastId}`,
+            `${API}/api/duel/${duelId}/chat?since_id=${chatLastId}`,
             { headers: { Authorization: 'Bearer ' + u.token } }
         );
         if (!res.ok) return;
@@ -917,7 +917,7 @@ async function sendChat() {
     inp.value = '';
     try {
         const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
-        await fetch(`${BACKEND}/api/duel/${duelData.id}/chat`, {
+        await fetch(`${API}/api/duel/${duelId}/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + u.token },
             body: JSON.stringify({ message: msg })
