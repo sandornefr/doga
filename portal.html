@@ -200,6 +200,37 @@
             transition: all 0.2s;
         }
         .eredmenyek-btn:hover { background: #f5a623; color: #1a1a2e; }
+        /* Rangsor panel */
+        #rangsor-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:#0d1117;border-left:1px solid #21262d;z-index:500;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.6);}
+        #rangsor-panel.open{right:0;}
+        .rp-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#161b22;border-bottom:1px solid #21262d;flex-shrink:0;}
+        .rp-title{font-size:1rem;font-weight:800;color:#e0e0e0;display:flex;align-items:center;gap:8px;}
+        .rp-close{background:none;border:none;color:#8b949e;font-size:1.1rem;cursor:pointer;padding:4px;}
+        .rp-close:hover{color:#e0e0e0;}
+        .rp-filter{display:flex;gap:6px;padding:10px 14px;background:#0d1117;border-bottom:1px solid #21262d;flex-shrink:0;flex-wrap:wrap;}
+        .rp-select{background:#161b22;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;font-size:0.78rem;cursor:pointer;outline:none;}
+        .rp-select:focus{border-color:#4f46e5;}
+        .rp-tabs{display:flex;gap:0;padding:0 14px;background:#0d1117;border-bottom:1px solid #21262d;flex-shrink:0;}
+        .rp-tab{padding:8px 14px;font-size:0.78rem;font-weight:700;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+        .rp-tab.active{color:#58a6ff;border-bottom-color:#58a6ff;}
+        .rp-body{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:#21262d transparent;}
+        .rp-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid #21262d;margin-bottom:6px;background:#161b22;font-size:0.83rem;}
+        .rp-row.me{border-color:rgba(88,166,255,.4);background:rgba(88,166,255,.06);}
+        .rp-rank{font-size:0.75rem;font-weight:800;color:#8b949e;min-width:22px;text-align:center;}
+        .rp-row.me .rp-rank{color:#58a6ff;}
+        .rp-name{flex:1;color:#c9d1d9;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .rp-val{font-size:0.8rem;font-weight:700;color:#e0e0e0;white-space:nowrap;}
+        .rp-task-block{margin-bottom:12px;background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden;}
+        .rp-task-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1c2128;font-size:0.82rem;}
+        .rp-task-name{font-weight:700;color:#e0e0e0;}
+        .rp-task-cnt{font-size:0.75rem;color:#8b949e;}
+        .rp-task-me{padding:6px 12px;font-size:0.78rem;color:#8b949e;border-top:1px solid #21262d;}
+        .rp-task-me.solved{color:#22c55e;}
+        .rp-empty{color:#4b5563;font-size:0.85rem;text-align:center;margin-top:40px;}
+        .rp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:499;display:none;}
+        .rp-overlay.show{display:block;}
+        .btn-rangsor{padding:6px 14px;background:transparent;border:1px solid #58a6ff;border-radius:8px;color:#58a6ff;font-size:0.85rem;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px;}
+        .btn-rangsor:hover{background:#58a6ff;color:#0d1117;}
         .topbar-avatar{width:36px;height:36px;border-radius:50%;border:2px solid #30363d;background:#161b22 center/cover no-repeat;flex-shrink:0;display:none;}
         .topbar-icon-btn {
             background: none; border: 1px solid #30363d; color: #8b949e;
@@ -986,6 +1017,7 @@
         <div id="vizsga-badge"><i class="fas fa-circle" style="font-size:0.55rem;vertical-align:middle;margin-bottom:1px;color:#ef4444;"></i> VIZSGA MÓD</div>
         <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
         <a class="eredmenyek-btn" id="btn-profil-topbar" href="profil.html" style="display:none;text-decoration:none;" title="Profilom"><i class="fas fa-user-circle"></i> Profilom</a>
+        <button class="btn-rangsor" id="btn-rangsor" onclick="openRangsor()" title="Rangsor"><i class="fas fa-trophy"></i> Rangsor</button>
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
         <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
@@ -1011,6 +1043,9 @@
                     <span class="label">PYTHON</span>
                     <span class="desc">Python programozási feladatok</span>
                     <span class="vizsga-status" id="status-python"></span>
+                </a>
+                <a href="python/erettsegi.html" style="display:block;margin-top:6px;padding:8px 14px;background:rgba(233,69,96,.08);border:1.5px solid rgba(233,69,96,.35);border-radius:10px;color:#fca5a5;font-size:0.82rem;font-weight:700;text-decoration:none;text-align:center;transition:all .2s;" onmouseover="this.style.background='rgba(233,69,96,.18)'" onmouseout="this.style.background='rgba(233,69,96,.08)'">
+                    <i class="fas fa-scroll" style="margin-right:6px;"></i>Középszintű érettségi feladatok
                 </a>
                 <div id="changelog-python" class="changelog-box python-col" style="display:none">
                     <div class="changelog-title"><i class="fab fa-python" style="color:#3776ab"></i> Python újdonságok</div>
@@ -1459,7 +1494,7 @@
             <button onclick="location.replace('python/practice.html')" style="padding:13px 20px;background:#0a1f2a;border:2px solid #3b82f6;border-radius:10px;color:#93c5fd;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#0a1f2a'">Haladó szint</button>
             <button onclick="location.replace('python/pro.html')" style="padding:13px 20px;background:#2a0a2a;border:2px solid #f472b6;border-radius:10px;color:#f9a8d4;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a2a'">Profi szint</button>
         </div>
-        <button onclick="location.replace('python/forgalomszamlalas.html')" style="padding:13px 20px;background:#0d1a2e;border:2px solid #38bdf8;border-radius:10px;color:#7dd3fc;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0d1a2e'"><i class="fas fa-graduation-cap"></i> Digitális kultúra – középszintű érettségi</button>
+        <button onclick="location.replace('python/erettsegi.html')" style="padding:13px 20px;background:#1a0a0e;border:2px solid #e94560;border-radius:10px;color:#fca5a5;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-top:4px;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#1a0a0e'"><i class="fas fa-scroll" style="margin-right:6px;"></i>Középszintű érettségi feladatok</button>
         <button onclick="location.replace('python/agazati-gyakorlo.html')" style="padding:13px 20px;background:#1a1a2e;border:2px solid #6366f1;border-radius:10px;color:#a5b4fc;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;" onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='#1a1a2e'">Gyakorló feladatok</button>
         <button onclick="document.getElementById('vendeg-python-modal').style.display='none'" style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
     </div>
@@ -1729,6 +1764,8 @@
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-profil-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
+            const rangsorBtn = document.getElementById('btn-rangsor');
+            if (rangsorBtn) rangsorBtn.style.display = 'flex';
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
@@ -3247,6 +3284,142 @@ if (location.hash === '#web-tanulas') {
     function escJs(t)   { return String(t).replace(/'/g,"\\'"); }
 
     initDuel();
+})();
+</script>
+
+<!-- ══════════ RANGSOR PANEL ══════════ -->
+<div class="rp-overlay" id="rp-overlay" onclick="closeRangsor()"></div>
+<div id="rangsor-panel">
+  <div class="rp-header">
+    <div class="rp-title"><i class="fas fa-trophy" style="color:#f59e0b;"></i> Rangsor</div>
+    <button class="rp-close" onclick="closeRangsor()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="rp-filter">
+    <select class="rp-select" id="rp-evfolyam" onchange="loadRangsor()">
+      <option value="">Összes évfolyam</option>
+      <option value="9">9. évfolyam</option>
+      <option value="10">10. évfolyam</option>
+      <option value="11">11. évfolyam</option>
+      <option value="12">12. évfolyam</option>
+    </select>
+    <select class="rp-select" id="rp-osztaly" onchange="loadRangsor()">
+      <option value="">Összes osztály</option>
+    </select>
+    <select class="rp-select" id="rp-csoport" onchange="loadRangsor()">
+      <option value="">Összes csoport</option>
+    </select>
+  </div>
+  <div class="rp-tabs">
+    <div class="rp-tab active" id="rptab-streak" onclick="switchRpTab('streak')">Aktív napok</div>
+    <div class="rp-tab" id="rptab-agazati" onclick="switchRpTab('agazati')">Ágazati</div>
+    <div class="rp-tab" id="rptab-duel" onclick="switchRpTab('duel')">Kódpárbaj</div>
+  </div>
+  <div class="rp-body" id="rp-body"><div class="rp-empty">Betöltés...</div></div>
+</div>
+
+<script>
+(function() {
+  const API = 'https://agazati.up.railway.app';
+  let rpTab = 'streak';
+  let rpMyEmail = '';
+
+  function getU() { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); }
+  function qp()   {
+    const ev = document.getElementById('rp-evfolyam')?.value || '';
+    const os = document.getElementById('rp-osztaly')?.value  || '';
+    const cs = document.getElementById('rp-csoport')?.value  || '';
+    const p = new URLSearchParams();
+    if (ev) p.set('evfolyam', ev);
+    if (os) p.set('osztaly', os);
+    if (cs) p.set('csoport', cs);
+    return p.toString() ? '?' + p : '';
+  }
+
+  window.openRangsor = function() {
+    const u = getU();
+    rpMyEmail = (u.email || '').toLowerCase();
+    document.getElementById('rangsor-panel').classList.add('open');
+    document.getElementById('rp-overlay').classList.add('show');
+    loadRangsor();
+  };
+  window.closeRangsor = function() {
+    document.getElementById('rangsor-panel').classList.remove('open');
+    document.getElementById('rp-overlay').classList.remove('show');
+  };
+  window.switchRpTab = function(tab) {
+    rpTab = tab;
+    ['streak','agazati','duel'].forEach(t => {
+      document.getElementById('rptab-'+t)?.classList.toggle('active', t === tab);
+    });
+    loadRangsor();
+  };
+  window.loadRangsor = async function() {
+    const body = document.getElementById('rp-body');
+    body.innerHTML = '<div class="rp-empty"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>';
+    const u = getU();
+    if (!u.token) { body.innerHTML = '<div class="rp-empty">Bejelentkezés szükséges.</div>'; return; }
+    const headers = { Authorization: 'Bearer ' + u.token };
+    try {
+      if (rpTab === 'streak') {
+        const r = await fetch(API + '/api/leaderboard/streak' + qp(), { headers });
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        body.innerHTML = data.length ? data.map(d => {
+          const me = (d.email||'').toLowerCase() === rpMyEmail;
+          return `<div class="rp-row${me?' me':''}">
+            <div class="rp-rank">${d.rang ?? ''}</div>
+            <div class="rp-name">${esc(d.nev||d.email)}</div>
+            <div class="rp-val">${d.aktivNap ?? 0} nap</div>
+          </div>`;
+        }).join('') : '<div class="rp-empty">Nincs adat.</div>';
+
+      } else if (rpTab === 'agazati') {
+        const r = await fetch(API + '/api/leaderboard/agazati' + qp(), { headers });
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        body.innerHTML = data.length ? data.map(d => {
+          const solved = d.sajatDatum != null;
+          return `<div class="rp-task-block">
+            <div class="rp-task-head">
+              <div class="rp-task-name">${esc(d.feladat)}</div>
+              <div class="rp-task-cnt">${d.megoldok} fő oldotta meg</div>
+            </div>
+            <div class="rp-task-me${solved?' solved':''}">
+              ${solved
+                ? `<i class="fas fa-check" style="margin-right:4px;"></i>Te: ${d.sajatRang}. hely`
+                : '<i class="fas fa-minus" style="margin-right:4px;"></i>Még nem oldottad meg'}
+            </div>
+          </div>`;
+        }).join('') : '<div class="rp-empty">Még nincs ágazati adat.</div>';
+
+      } else if (rpTab === 'duel') {
+        const r = await fetch(API + '/api/leaderboard/duel' + qp(), { headers });
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        body.innerHTML = data.length ? data.map(d => {
+          const me = (d.email||'').toLowerCase() === rpMyEmail;
+          const total = d.gyozelem + d.vereseg + d.dontetlon;
+          const pct = total ? Math.round(d.gyozelem / total * 100) : 0;
+          return `<div class="rp-row${me?' me':''}">
+            <div class="rp-rank">${d.rang ?? ''}</div>
+            <div class="rp-name">${esc(d.nev||d.email)}</div>
+            <div class="rp-val" title="${d.gyozelem}G ${d.vereseg}V ${d.dontetlon}D">${d.gyozelem}G / ${pct}%</div>
+          </div>`;
+        }).join('') : '<div class="rp-empty">Még nincs párbaj adat.</div>';
+      }
+    } catch {
+      body.innerHTML = '<div class="rp-empty">Nem sikerült betölteni.</div>';
+    }
+  };
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Rangsor gomb megjelenítése bejelentkezés után
+  const orig = window.showProfilBtn;
+  window.showRangsorBtn = function() {
+    const btn = document.getElementById('btn-rangsor');
+    if (btn) btn.style.display = 'flex';
+  };
 })();
 </script>
 </body>
