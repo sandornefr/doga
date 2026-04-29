@@ -1724,6 +1724,8 @@
                 document.getElementById('teacher-portal').style.display = 'block';
                 document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
                 document.getElementById('toggle-view-btn').style.display = 'block';
+                const rangsorBtnT = document.getElementById('btn-rangsor');
+                if (rangsorBtnT) rangsorBtnT.style.display = 'flex';
             } else {
                 // Többi oktató: ha nem ?mode=student paraméterrel jöttek, irányítsd az oktatói portálra
                 const urlMode = new URLSearchParams(location.search).get('mode');
@@ -3324,6 +3326,15 @@ if (location.hash === '#web-tanulas') {
   let rpMyEmail = '';
 
   function getU() { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); }
+  function authToken() {
+    const u = getU();
+    // Teszt Elek módban a tanár backup sessionjéből vesszük a tokent
+    if (u._tesztMod) {
+      const backup = localStorage.getItem('kandoTeacherBackup');
+      if (backup) { try { return JSON.parse(backup).token || ''; } catch {} }
+    }
+    return u.token || localStorage.getItem('admin_token') || '';
+  }
   function qp()   {
     const ev = document.getElementById('rp-evfolyam')?.value || '';
     const os = document.getElementById('rp-osztaly')?.value  || '';
@@ -3356,9 +3367,9 @@ if (location.hash === '#web-tanulas') {
   window.loadRangsor = async function() {
     const body = document.getElementById('rp-body');
     body.innerHTML = '<div class="rp-empty"><i class="fas fa-spinner fa-spin"></i> Betöltés...</div>';
-    const u = getU();
-    if (!u.token) { body.innerHTML = '<div class="rp-empty">Bejelentkezés szükséges.</div>'; return; }
-    const headers = { Authorization: 'Bearer ' + u.token };
+    const tok = authToken();
+    if (!tok) { body.innerHTML = '<div class="rp-empty">Bejelentkezés szükséges.</div>'; return; }
+    const headers = { Authorization: 'Bearer ' + tok };
     try {
       if (rpTab === 'streak') {
         const r = await fetch(API + '/api/leaderboard/streak' + qp(), { headers });
