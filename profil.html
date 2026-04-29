@@ -269,6 +269,7 @@ const ACHIEVEMENTS = [
     { id:'pymaster',       icon:'🏆', name:'Python Mester',              check:(p)=> p.python.avgPercent >= 85 },
     { id:'both_ready',     icon:'🎓', name:'Teljes felkészültség',       check:(p)=> p.web.avgPercent >= 75 && p.python.avgPercent >= 75 },
     { id:'ejszakai_bagoly',icon:'🦉', name:'Éjszakai Bagoly',            check:(p,items)=> items.some(i=>{ if(!i.datum) return false; const d=new Date(i.datum.replace(' ','T')+'Z'); const h=parseInt(d.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'Europe/Budapest'})); return h>=20||h<5; }) },
+    { id:'early_bird',     icon:'🌅', name:'Early Bird',                  check:(p,items)=> items.some(i=>{ if(!i.datum) return false; const d=new Date(i.datum.replace(' ','T')+'Z'); const h=parseInt(d.toLocaleString('en-US',{hour:'numeric',hour12:false,timeZone:'Europe/Budapest'})); return h>=6&&h<8; }) },
     { id:'hevege_hos',     icon:'🏖️', name:'Hétvégi Hős',               check:(p,items)=> items.some(i=>{ if(!i.datum||i.datum.length<10) return false; const dn=new Date(i.datum.replace(' ','T')+'Z').toLocaleDateString('en-US',{weekday:'long',timeZone:'Europe/Budapest'}); return dn==='Saturday'||dn==='Sunday'; }) },
     { id:'tiz_aktiv_nap',  icon:'📅', name:'10 aktív nap',               check:(p,_,streak)=> streak >= 10 },
     { id:'huszon_aktiv',   icon:'🗓️', name:'20 aktív nap',               check:(p,_,streak)=> streak >= 20 },
