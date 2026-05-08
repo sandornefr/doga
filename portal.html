@@ -1788,7 +1788,7 @@
             loadFeladatkeszitoInfo(user);
             // Aktív számonkérés ellenőrzése + automatikus polling
             checkAktivSzamonkeres(user);
-            setInterval(() => checkAktivSzamonkeres(user), 90000);
+            setInterval(() => checkAktivSzamonkeres(user), 30000);
             // Session tracking csak valódi tanulónál
             if (!user._tesztMod) startSessionTracking(user.email, 'portal');
         }
