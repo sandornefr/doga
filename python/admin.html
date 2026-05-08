@@ -1165,8 +1165,10 @@
                 localStorage.removeItem('admin_token');
                 localStorage.removeItem('admin_authenticated');
                 authToken = '';
-                showError('A munkamenet lejárt – kérlek jelentkezz be újra.');
-                setTimeout(() => location.reload(), 2000);
+                document.getElementById('admin-content').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('login-error').textContent = 'A munkamenet lejárt – kérlek jelentkezz be újra.';
+                document.getElementById('login-error').style.display = 'block';
                 throw new Error('Munkamenet lejárt');
             }
             return res;
@@ -1266,6 +1268,7 @@
                         loadSubmissions();
                         loadUsers();
                         loadTaskSets();
+                        return;
                     }
                 }
             } catch (e) { /* nincs portál session */ }
