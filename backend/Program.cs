@@ -55,6 +55,8 @@ db.MigrateChatChannel();
 db.MigrateDuelTime();
 // Kandó Bot – gép elleni meccshez (mindig létezik)
 db.UpsertUser("Piton", "Professzor", "bot@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("KandoBotNemBelephet!2024"), "tanulo");
+// Teszt tanulói fiók (tanári teszteléshez – diák nézet, számonkérés, stb.)
+db.UpsertUser("Teszt", "Elek", "tesztelek@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("Teszt2026!"), "tanulo");
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
