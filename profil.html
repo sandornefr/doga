@@ -460,13 +460,28 @@ async function loadTanuloProfile(u, page) {
         const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
         const szamEredmenyek  = szamEredRes?.ok ? await szamEredRes.json() : [];
         const szamAktivak     = szamAktivRes?.ok ? await szamAktivRes.json() : [];
-        // Aktív számonkéréseknél saját beadások lekérése
-        const szamAktivBeadasok = {};
-        await Promise.all(szamAktivak.map(async sz => {
+
+        // feladatok.txt → névfeloldás (r_5 → "Napszak köszöntő")
+        const feladatNevek = {};
+        try {
+            const ftxt = await fetch('python/feladatok.txt').then(r=>r.ok?r.text():'').catch(()=>'');
+            ftxt.replace(/\r\n/g,'\n').split(/(?=^\d+\. feladat$)/m).forEach(block => {
+                const lines = block.split('\n');
+                const m = lines[0].trim().match(/^(\d+)\. feladat$/);
+                if (!m) return;
+                const id = parseInt(m[1]);
+                for (const l of lines) { if (l.startsWith('Cim: ')) { feladatNevek[id] = l.slice(5).trim(); break; } }
+            });
+        } catch {}
+
+        // Saját beadások lekérése: aktív + kiadott számonkérésekhez
+        const szamBeadasok = {};
+        await Promise.all([...szamAktivak, ...szamEredmenyek.map(e=>({id:e.szamonkeresId}))].map(async sz => {
+            if (szamBeadasok[sz.id] !== undefined) return;
             try {
                 const r = await apiFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(u.email)}`);
-                szamAktivBeadasok[sz.id] = r.ok ? await r.json() : [];
-            } catch { szamAktivBeadasok[sz.id] = []; }
+                szamBeadasok[sz.id] = r.ok ? await r.json() : [];
+            } catch { szamBeadasok[sz.id] = []; }
         }));
 
         const progress = {
@@ -725,39 +740,76 @@ async function loadTanuloProfile(u, page) {
             const jegyColor = { 5:'#93c5fd', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'#fca5a5' };
             const jegyBg    = { 5:'#1e3a5f', 4:'#1a3a1a', 3:'#78350f', 2:'#7f1d1d', 1:'#7f1d1d' };
             function calcJegy(szaz, ph) {
-                try { const p = typeof ph === 'string' ? JSON.parse(ph) : (ph||{});
-                    if (szaz >= (p.ot||85)) return 5; if (szaz >= (p.negy||70)) return 4;
-                    if (szaz >= (p.harom||55)) return 3; if (szaz >= (p.ket||40)) return 2; return 1;
+                try { const p = typeof ph==='string'?JSON.parse(ph):(ph||{});
+                    if(szaz>=(p.ot||85))return 5; if(szaz>=(p.negy||70))return 4;
+                    if(szaz>=(p.harom||55))return 3; if(szaz>=(p.ket||40))return 2; return 1;
                 } catch { return null; }
             }
-            const folyamatban = szamAktivak.filter(sz => (szamAktivBeadasok[sz.id]||[]).length > 0);
+            function feladatNev(feladatId, feladatok, idx) {
+                const rm = feladatId?.match(/^r_(\d+)$/);
+                if (rm) return feladatNevek[parseInt(rm[1])] || `${rm[1]}. feladat`;
+                const f = feladatok?.[idx];
+                return f?.cim || 'Egyéni feladat';
+            }
+
+            const folyamatban = szamAktivak.filter(sz => (szamBeadasok[sz.id]||[]).length > 0);
             if (!szamEredmenyek.length && !folyamatban.length) return '';
-            let rows = '';
+
+            let blocks = '';
+
+            // ── Kiadott eredmények ─────────────────────────────────
             for (const e of szamEredmenyek) {
                 const jegy = calcJegy(e.szazalek, e.ponthatarak);
-                rows += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
-                    <div style="flex:1;min-width:0">
-                        <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.cim||''}</div>
-                        <div style="font-size:0.75rem;color:#8b949e;margin-top:3px">${(e.createdAt||'').substring(0,10)} &nbsp;·&nbsp; ${e.osszPont} / ${e.maxPont} pont &nbsp;·&nbsp; ${e.szazalek}%</div>
+                const beadasok = szamBeadasok[e.szamonkeresId] || [];
+                const taskRows = beadasok.map((b, i) => {
+                    const pont = b.manualisPont != null ? b.manualisPont : b.autoPont;
+                    const nev = feladatNev(b.feladatId, null, i);
+                    const pct = b.maxPont > 0 ? Math.round(pont/b.maxPont*100) : 0;
+                    const color = pct>=85?'#4ade80':pct>=55?'#fcd34d':'#f87171';
+                    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #21262d">
+                        <i class="fas fa-code" style="color:#64748b;width:14px;font-size:0.75rem;flex-shrink:0"></i>
+                        <span style="flex:1;font-size:0.85rem;color:#c9d1d9">${nev}</span>
+                        <span style="font-size:0.82rem;font-weight:700;color:${color}">${pont} / ${b.maxPont} pont</span>
+                    </div>`;
+                }).join('');
+                blocks += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;margin-bottom:8px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:${taskRows?'2px':'0'}">
+                        <span style="font-size:0.72rem;color:#8b949e;flex:1">${e.cim||''} &nbsp;·&nbsp; ${(e.createdAt||'').substring(0,10)} &nbsp;·&nbsp; ${e.osszPont}/${e.maxPont} pont</span>
+                        ${jegy ? `<div style="font-size:1.3rem;font-weight:900;padding:2px 12px;border-radius:8px;background:${jegyBg[jegy]};color:${jegyColor[jegy]};flex-shrink:0">${jegy}</div>` : ''}
                     </div>
-                    ${jegy ? `<div style="font-size:1.5rem;font-weight:900;padding:4px 14px;border-radius:8px;background:${jegyBg[jegy]};color:${jegyColor[jegy]};flex-shrink:0">${jegy}</div>` : ''}
+                    ${taskRows}
                 </div>`;
             }
+
+            // ── Folyamatban lévők ──────────────────────────────────
             for (const sz of folyamatban) {
-                const beadasok = szamAktivBeadasok[sz.id]||[];
-                const feladatokDb = JSON.parse(sz.feladatok||'[]').length;
-                const beadottDb = new Set(beadasok.map(b=>b.feladatId)).size;
-                rows += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
-                    <div style="flex:1;min-width:0">
-                        <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sz.cim||''}</div>
-                        <div style="font-size:0.75rem;color:#8b949e;margin-top:3px">${(sz.createdAt||'').substring(0,10)} &nbsp;·&nbsp; ${beadottDb} / ${feladatokDb} feladat beadva</div>
+                const feladatok = JSON.parse(sz.feladatok||'[]');
+                const beadasok = szamBeadasok[sz.id]||[];
+                const beadottMap = Object.fromEntries(beadasok.map(b=>[b.feladatId, b]));
+                const taskRows = feladatok.map((f, i) => {
+                    const fid = f.tipus==='rendszer' ? `r_${f.feladat_szam}` : `s_${i}`;
+                    const nev = f.tipus==='rendszer' ? (feladatNevek[f.feladat_szam]||`${f.feladat_szam}. feladat`) : (f.cim||'Egyéni feladat');
+                    const beadva = beadottMap[fid];
+                    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #21262d">
+                        <i class="fas fa-code" style="color:#64748b;width:14px;font-size:0.75rem;flex-shrink:0"></i>
+                        <span style="flex:1;font-size:0.85rem;color:#c9d1d9">${nev}</span>
+                        ${beadva
+                            ? `<span style="font-size:0.75rem;color:#4ade80;font-weight:600"><i class="fas fa-check"></i> beadva</span>`
+                            : `<span style="font-size:0.75rem;color:#64748b">nem beadva</span>`}
+                    </div>`;
+                }).join('');
+                blocks += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;margin-bottom:8px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px">
+                        <span style="font-size:0.72rem;color:#8b949e;flex:1">${sz.cim||''} &nbsp;·&nbsp; ${(sz.createdAt||'').substring(0,10)}</span>
+                        <span style="font-size:0.7rem;padding:2px 8px;border-radius:6px;background:#0e3a1a;color:#4ade80;font-weight:700">folyamatban</span>
                     </div>
-                    <div style="font-size:0.72rem;padding:3px 10px;border-radius:8px;background:#0e3a1a;color:#4ade80;font-weight:700;white-space:nowrap;flex-shrink:0">folyamatban</div>
+                    ${taskRows}
                 </div>`;
             }
+
             return `<div class="section">
                 <div class="section-title"><i class="fas fa-file-pen"></i> Számonkérések</div>
-                ${rows}
+                ${blocks}
             </div>`;
         })()}
 
