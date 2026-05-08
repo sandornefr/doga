@@ -616,7 +616,7 @@
 
             if (res.ok) {
                 const data = await res.json();
-                sessionStorage.setItem('kandoUser', JSON.stringify({
+                const kandoUserData = JSON.stringify({
                     token:              data.token,
                     szerep:             data.szerep,
                     nev:                data.nev,
@@ -625,7 +625,10 @@
                     osztaly:            data.osztaly,
                     csoport:            data.csoport,
                     mustChangePassword: data.mustChangePassword ?? false
-                }));
+                });
+                sessionStorage.setItem('kandoUser', kandoUserData);
+                // Oktatónál localStorage-ba is mentjük, hogy böngésző újranyitás után is bent maradjon
+                if (data.szerep === 'oktato') localStorage.setItem('kandoUser', kandoUserData);
                 showSuccess('login-success', `Üdv, ${data.nev}! Átirányítás...`);
                 setTimeout(() => {
                     const isOktato = data.szerep === 'oktato' && data.email !== 'sandornef@kkszki.hu';

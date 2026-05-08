@@ -1701,7 +1701,20 @@
     });
     // ──────────────────────────────────────────────────────────────────────────
 
-    const stored = sessionStorage.getItem('kandoUser');
+    // sessionStorage-ból tölt be, hiányában (böngésző újranyitás) localStorage-ból állítja vissza (csak oktatónál)
+    let stored = sessionStorage.getItem('kandoUser');
+    if (!stored) {
+        const lsStored = localStorage.getItem('kandoUser');
+        if (lsStored) {
+            try {
+                const lsUser = JSON.parse(lsStored);
+                if (lsUser.szerep === 'oktato') {
+                    sessionStorage.setItem('kandoUser', lsStored);
+                    stored = lsStored;
+                }
+            } catch (e) { localStorage.removeItem('kandoUser'); }
+        }
+    }
     if (!stored) {
         window.location.replace('login.html');
     } else {
@@ -2234,6 +2247,7 @@
 
     function handleSessionExpired() {
         sessionStorage.removeItem('kandoUser');
+        localStorage.removeItem('kandoUser');
         alert('A munkamenet lejárt, kérlek jelentkezz be újra!');
         window.location.replace('login.html');
     }
@@ -2321,6 +2335,7 @@
 
     function logout() {
         sessionStorage.removeItem('kandoUser');
+        localStorage.removeItem('kandoUser');
         window.location.replace('login.html');
     }
 

@@ -1244,7 +1244,7 @@
 
             // Auto-login: ha van oktató session a portálról
             try {
-                const portalUser = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+                const portalUser = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
                 if (portalUser.token && portalUser.szerep === 'oktato' && portalUser.email === 'sandornef@kkszki.hu') {
                     const res = await fetch(`${RAILWAY_URL}/api/teachers/token-login`, {
                         method: 'POST',
