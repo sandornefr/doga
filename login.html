@@ -369,6 +369,7 @@
                         <option value="A">A</option>
                         <option value="B">B</option>
                         <option value="C">C</option>
+                        <option value="T">T</option>
                         <option value="F">F</option>
                         <option value="K">K</option>
                     </select>
@@ -380,6 +381,7 @@
                     <option value="">– válassz –</option>
                     <option value="1">1. csoport</option>
                     <option value="2">2. csoport</option>
+                    <option value="teszt">teszt</option>
                     <option value="nincs">nincs csoport</option>
                 </select>
             </div>
@@ -541,6 +543,9 @@
         } else if (osztaly === 'F' || evfolyam === '1/13.') {
             csoportGroup.style.display = 'none';
             csoportSel.innerHTML = `<option value="nincs" selected>nincs csoport</option>`;
+        } else if (osztaly === 'T') {
+            csoportGroup.style.display = 'block';
+            csoportSel.innerHTML = `<option value="teszt" selected>teszt</option>`;
         } else if (['A', 'B', 'C'].includes(osztaly)) {
             csoportGroup.style.display = 'block';
             csoportSel.innerHTML = `
