@@ -444,7 +444,7 @@ function diakGoTo(idx) {
   document.getElementById('diak-task-num').textContent = `${idx + 1}. feladat`;
   document.getElementById('diak-task-cim').textContent = t.cim;
   document.getElementById('diak-task-pont').textContent = `${t.pont} pont`;
-  document.getElementById('diak-task-leiras').textContent = t.leiras || '(nincs leírás)';
+  document.getElementById('diak-task-leiras').innerHTML = formatLeiras(t.leiras);
 
   // Beadott állapot sáv
   const sav = document.getElementById('diak-beadott-sav');
@@ -695,6 +695,7 @@ function initDiakMonaco() {
     return;
   }
   if (typeof require === 'undefined') return;
+  require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
   require(['vs/editor/editor.main'], () => {
     const container = document.getElementById('diak-monaco-editor');
     if (!container || !diakState.feladatok.length) return;
@@ -746,6 +747,19 @@ async function loadDiakPyodide() {
 function escH(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatLeiras(text) {
+  if (!text) return '<em style="color:#64748b">(nincs leírás)</em>';
+  // ``` blokkok → stílusos kóddoboz
+  const parts = text.split(/(```[^\n]*\n[\s\S]*?```)/g);
+  return parts.map(part => {
+    const m = part.match(/^```[^\n]*\n([\s\S]*?)```$/);
+    if (m) {
+      return `<pre style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:10px 14px;font-family:monospace;font-size:0.82rem;color:#94a3b8;margin:8px 0;white-space:pre;overflow-x:auto">${escH(m[1])}</pre>`;
+    }
+    return `<span style="white-space:pre-wrap">${escH(part)}</span>`;
+  }).join('');
 }
 </script>
 </body>
