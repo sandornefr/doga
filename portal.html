@@ -1786,8 +1786,9 @@
             loadMegvalasultOtletek();
             loadTeszteloInfo(user);
             loadFeladatkeszitoInfo(user);
-            // Aktív számonkérés ellenőrzése
+            // Aktív számonkérés ellenőrzése + automatikus polling
             checkAktivSzamonkeres(user);
+            setInterval(() => checkAktivSzamonkeres(user), 90000);
             // Session tracking csak valódi tanulónál
             if (!user._tesztMod) startSessionTracking(user.email, 'portal');
         }
@@ -2903,30 +2904,43 @@
             } catch {}
         }
 
-        if (!aktivak.length && !eredmenyek.length) return;
+        const topbarBtn = document.getElementById('topbar-szamonkeres-btn');
+        const badge = document.getElementById('topbar-szamonkeres-badge');
+
+        // Ha nincs semmi aktív/eredmény: gomb és badge elrejtése
+        if (!aktivak.length && !eredmenyek.length) {
+            if (topbarBtn) topbarBtn.style.display = 'none';
+            if (badge) badge.style.display = 'none';
+            _szamModalData = null;
+            return;
+        }
 
         const vanAktiv = aktivak.length > 0;
         _szamModalData = { aktivak, eredmenyek, vanAktiv };
 
-        // Topbar gomb bekapcsolása
-        const topbarBtn = document.getElementById('topbar-szamonkeres-btn');
+        // Topbar gomb
         if (topbarBtn) {
             topbarBtn.style.display = 'inline-flex';
-            if (!vanAktiv) topbarBtn.classList.add('eredmeny');
-            const badge = document.getElementById('topbar-szamonkeres-badge');
-            // Badge: csak az aktuálisan megjelenített kategória száma
-            const badgeCount = vanAktiv ? aktivak.length : eredmenyek.length;
-            if (badge && badgeCount > 0) { badge.style.display = 'flex'; badge.textContent = badgeCount; }
+            topbarBtn.classList.toggle('eredmeny', !vanAktiv);
         }
 
-        // Modal csak akkor ugrik fel automatikusan, ha még nem látta ebben a munkamenetben
-        const seenKey = 'szamModalSeen';
-        const seenIds = new Set((sessionStorage.getItem(seenKey) || '').split(',').filter(Boolean));
+        // Látott ID-k: localStorage-ban tároljuk (munkamenet újraindítás után is megmarad)
+        const seenKey = 'szamModalSeen_' + (user.email || 'guest');
+        const seenIds = new Set((localStorage.getItem(seenKey) || '').split(',').filter(Boolean));
         const currentIds = [...aktivak, ...eredmenyek].map(sz => String(sz.id));
+
+        // Badge: csak a valóban még nem látott elemek számát mutatja
+        const unseenCount = currentIds.filter(id => !seenIds.has(id)).length;
+        if (badge) {
+            if (unseenCount > 0) { badge.style.display = 'flex'; badge.textContent = unseenCount; }
+            else badge.style.display = 'none';
+        }
+
+        // Modal auto-nyitás: csak ha van ténylegesen új (eddig nem látott) elem
         const hasNew = currentIds.some(id => !seenIds.has(id));
         if (hasNew) {
             currentIds.forEach(id => seenIds.add(id));
-            sessionStorage.setItem(seenKey, [...seenIds].join(','));
+            localStorage.setItem(seenKey, [...seenIds].join(','));
             openSzamonkeresModal();
         }
     }
@@ -2934,9 +2948,17 @@
     function openSzamonkeresModal() {
         if (!_szamModalData) return;
         const { aktivak, eredmenyek, vanAktiv } = _szamModalData;
-        // Badge eltüntetése: a felhasználó megnyitotta, látta a tartalmat
+        // Badge eltüntetése + ID-k megjelölése látottként (localStorage)
         const badge = document.getElementById('topbar-szamonkeres-badge');
         if (badge) badge.style.display = 'none';
+        try {
+            const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+            const seenKey = 'szamModalSeen_' + (u.email || 'guest');
+            const seenIds = new Set((localStorage.getItem(seenKey) || '').split(',').filter(Boolean));
+            [...aktivak, ...eredmenyek].forEach(sz => seenIds.add(String(sz.id)));
+            localStorage.setItem(seenKey, [...seenIds].join(','));
+        } catch {}
+
 
         const box = document.getElementById('szamonkeres-modal-box');
         const titleEl = document.getElementById('szam-modal-title');
