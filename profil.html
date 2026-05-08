@@ -421,7 +421,11 @@ async function loadTanuloProfile(u, page) {
         if (u.osztaly)  statsParams.set('osztaly',  u.osztaly);
         if (u.csoport)  statsParams.set('csoport',  u.csoport);
 
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes] = await Promise.all([
+        const szamParams2 = new URLSearchParams({ email: u.email || '' });
+        if (u.osztaly) szamParams2.append('osztaly', u.osztaly);
+        if (u.csoport) szamParams2.append('csoport', u.csoport);
+
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, szamEredRes, szamAktivRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -431,6 +435,8 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
             apiFetch(`${API}/api/duel/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
+            apiFetch(`${API}/api/szamonkeres/eredmeny`).catch(()=>null),
+            apiFetch(`${API}/api/szamonkeres/aktiv?${szamParams2}`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -452,6 +458,16 @@ async function loadTanuloProfile(u, page) {
         const isFeladatkeszito= feladatKeszRes?.ok? (await feladatKeszRes.json()).isFeladatkeszito : false;
         const kotelezoStats   = statsRes?.ok  ? (await statsRes.json()) : null;
         const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
+        const szamEredmenyek  = szamEredRes?.ok ? await szamEredRes.json() : [];
+        const szamAktivak     = szamAktivRes?.ok ? await szamAktivRes.json() : [];
+        // Aktív számonkéréseknél saját beadások lekérése
+        const szamAktivBeadasok = {};
+        await Promise.all(szamAktivak.map(async sz => {
+            try {
+                const r = await apiFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(u.email)}`);
+                szamAktivBeadasok[sz.id] = r.ok ? await r.json() : [];
+            } catch { szamAktivBeadasok[sz.id] = []; }
+        }));
 
         const progress = {
             web:    { sessions:p.web?.sessions??0,    avgPercent:p.web?.avgPercent??0,    bestPercent:p.web?.bestPercent??0,    lastSession:p.web?.lastSession??null },
@@ -703,6 +719,47 @@ async function loadTanuloProfile(u, page) {
                 · ${duelStats.total - duelStats.wins - duelStats.losses} döntetlen
             </div>
         </div>` : ''}
+
+        <!-- Számonkérések -->
+        ${(()=>{
+            const jegyColor = { 5:'#93c5fd', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'#fca5a5' };
+            const jegyBg    = { 5:'#1e3a5f', 4:'#1a3a1a', 3:'#78350f', 2:'#7f1d1d', 1:'#7f1d1d' };
+            function calcJegy(szaz, ph) {
+                try { const p = typeof ph === 'string' ? JSON.parse(ph) : (ph||{});
+                    if (szaz >= (p.ot||85)) return 5; if (szaz >= (p.negy||70)) return 4;
+                    if (szaz >= (p.harom||55)) return 3; if (szaz >= (p.ket||40)) return 2; return 1;
+                } catch { return null; }
+            }
+            const folyamatban = szamAktivak.filter(sz => (szamAktivBeadasok[sz.id]||[]).length > 0);
+            if (!szamEredmenyek.length && !folyamatban.length) return '';
+            let rows = '';
+            for (const e of szamEredmenyek) {
+                const jegy = calcJegy(e.szazalek, e.ponthatarak);
+                rows += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                    <div style="flex:1;min-width:0">
+                        <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.cim||''}</div>
+                        <div style="font-size:0.75rem;color:#8b949e;margin-top:3px">${(e.createdAt||'').substring(0,10)} &nbsp;·&nbsp; ${e.osszPont} / ${e.maxPont} pont &nbsp;·&nbsp; ${e.szazalek}%</div>
+                    </div>
+                    ${jegy ? `<div style="font-size:1.5rem;font-weight:900;padding:4px 14px;border-radius:8px;background:${jegyBg[jegy]};color:${jegyColor[jegy]};flex-shrink:0">${jegy}</div>` : ''}
+                </div>`;
+            }
+            for (const sz of folyamatban) {
+                const beadasok = szamAktivBeadasok[sz.id]||[];
+                const feladatokDb = JSON.parse(sz.feladatok||'[]').length;
+                const beadottDb = new Set(beadasok.map(b=>b.feladatId)).size;
+                rows += `<div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                    <div style="flex:1;min-width:0">
+                        <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sz.cim||''}</div>
+                        <div style="font-size:0.75rem;color:#8b949e;margin-top:3px">${(sz.createdAt||'').substring(0,10)} &nbsp;·&nbsp; ${beadottDb} / ${feladatokDb} feladat beadva</div>
+                    </div>
+                    <div style="font-size:0.72rem;padding:3px 10px;border-radius:8px;background:#0e3a1a;color:#4ade80;font-weight:700;white-space:nowrap;flex-shrink:0">folyamatban</div>
+                </div>`;
+            }
+            return `<div class="section">
+                <div class="section-title"><i class="fas fa-file-pen"></i> Számonkérések</div>
+                ${rows}
+            </div>`;
+        })()}
 
         <!-- Legjobb eredmények -->
         <div class="section">
