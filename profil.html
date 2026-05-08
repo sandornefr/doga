@@ -435,7 +435,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/feladatkeszito/check?email=${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/stats/kotelezo?${statsParams}`).catch(()=>null),
             apiFetch(`${API}/api/duel/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
-            apiFetch(`${API}/api/szamonkeres/eredmeny`).catch(()=>null),
+            apiFetch(`${API}/api/szamonkeres/eredmeny${u._oktatoNez ? '?email='+encodeURIComponent(u.email) : ''}`).catch(()=>null),
             apiFetch(`${API}/api/szamonkeres/aktiv?${szamParams2}`).catch(()=>null),
         ]);
 
@@ -479,7 +479,8 @@ async function loadTanuloProfile(u, page) {
         await Promise.all([...szamAktivak, ...szamEredmenyek.map(e=>({id:e.szamonkeresId}))].map(async sz => {
             if (szamBeadasok[sz.id] !== undefined) return;
             try {
-                const r = await apiFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(u.email)}`);
+                const emailParam = encodeURIComponent(u.email);
+                const r = await apiFetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${emailParam}`);
                 szamBeadasok[sz.id] = r.ok ? await r.json() : [];
             } catch { szamBeadasok[sz.id] = []; }
         }));

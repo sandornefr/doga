@@ -1364,11 +1364,21 @@ app.MapPost("/api/szamonkeres/{id:int}/beadas", (int id, HttpContext ctx, Beadas
 });
 
 // Tanuló saját beadásai egy számonkérésen
+// Tanuló saját beadásai (oktató ?email= query paraméterrel más tanulóét is lekérheti)
 app.MapGet("/api/szamonkeres/{id:int}/sajat", (int id, HttpContext ctx, Database db) =>
 {
-    var (valid, tokenIdentity, _) = InspectAuthContext(ctx);
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
-    var email = NormalizeSchoolEmail(tokenIdentity);
+    string email;
+    if (IsPrivilegedRole(tokenRole))
+    {
+        var q = ctx.Request.Query["email"].FirstOrDefault();
+        email = NormalizeSchoolEmail(!string.IsNullOrEmpty(q) ? q : tokenIdentity);
+    }
+    else
+    {
+        email = NormalizeSchoolEmail(tokenIdentity);
+    }
     if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
     var sz = db.GetSzamonkeres(id);
     if (sz == null) return Results.NotFound();
@@ -1401,14 +1411,22 @@ app.MapPatch("/api/szamonkeres/{id:int}/kuldj", (int id, HttpContext ctx, Databa
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
-// Tanuló lekéri a kiadott eredményeit
+// Tanuló lekéri a kiadott eredményeit (oktató ?email= query paraméterrel más tanulóét is lekérheti)
 app.MapGet("/api/szamonkeres/eredmeny", (HttpContext ctx, Database db) =>
 {
-    var (valid, tokenIdentity, _) = InspectAuthContext(ctx);
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
-    var email = NormalizeSchoolEmail(tokenIdentity);
+    string email;
+    if (IsPrivilegedRole(tokenRole))
+    {
+        var q = ctx.Request.Query["email"].FirstOrDefault();
+        email = NormalizeSchoolEmail(!string.IsNullOrEmpty(q) ? q : tokenIdentity);
+    }
+    else
+    {
+        email = NormalizeSchoolEmail(tokenIdentity);
+    }
     if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
-    // Kiadott számonkérések ahol van beadása
     var kiadottak = db.GetKiadottEredmenyek(email);
     return Results.Ok(kiadottak);
 });
