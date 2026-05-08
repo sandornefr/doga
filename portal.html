@@ -2142,6 +2142,54 @@
         </div>`;
     }
 
+    function renderSzamonkeresEredmenyek(kiadottak, aktivak, aktivBeadasok) {
+        // Aktív számonkérések ahol van legalább 1 beadás
+        const folyamatban = aktivak.filter(sz => (aktivBeadasok[sz.id] || []).length > 0);
+        if (!kiadottak.length && !folyamatban.length) return '';
+
+        const jegyColor = { 5:'#93c5fd', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'#fca5a5' };
+        const jegyBg    = { 5:'#1e3a5f', 4:'#1a3a1a', 3:'#78350f', 2:'#7f1d1d', 1:'#7f1d1d' };
+        function calcJegy(szaz, ph) {
+            try { const p = typeof ph === 'string' ? JSON.parse(ph) : ph;
+                if (szaz >= (p.ot||85)) return 5; if (szaz >= (p.negy||70)) return 4;
+                if (szaz >= (p.harom||55)) return 3; if (szaz >= (p.ket||40)) return 2; return 1;
+            } catch { return null; }
+        }
+
+        let html = `<div style="margin:18px 0 8px;padding-top:14px;border-top:1px solid #1f2937">
+            <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">
+                <i class="fas fa-file-pen" style="color:#f97316"></i> Számonkérések
+            </div>`;
+
+        // Kiadott eredmények
+        for (const e of kiadottak) {
+            const jegy = calcJegy(e.szazalek, e.ponthatarak);
+            html += `<div style="background:#0f1e35;border:1px solid #1f2937;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(e.cim)}</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:2px">${e.createdAt?.substring(0,10)||''} &nbsp;·&nbsp; ${e.osszPont} / ${e.maxPont} pont &nbsp;·&nbsp; ${e.szazalek}%</div>
+                </div>
+                ${jegy ? `<div style="font-size:1.5rem;font-weight:900;padding:4px 14px;border-radius:8px;background:${jegyBg[jegy]};color:${jegyColor[jegy]}">${jegy}</div>` : ''}
+            </div>`;
+        }
+
+        // Folyamatban lévő (aktív, van beadás, de még nem kiadva)
+        for (const sz of folyamatban) {
+            const beadasok = aktivBeadasok[sz.id] || [];
+            const feladatokDb = JSON.parse(sz.feladatok || '[]').length;
+            const beadottDb = new Set(beadasok.map(b => b.feladatId)).size;
+            html += `<div style="background:#0f1e35;border:1px solid #1f2937;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(sz.cim)}</div>
+                    <div style="font-size:0.75rem;color:#64748b;margin-top:2px">${sz.createdAt?.substring(0,10)||''} &nbsp;·&nbsp; ${beadottDb} / ${feladatokDb} feladat beadva</div>
+                </div>
+                <div style="font-size:0.72rem;padding:3px 10px;border-radius:8px;background:#1e3a1e;color:#4ade80;font-weight:700;white-space:nowrap">folyamatban</div>
+            </div>`;
+        }
+
+        return html + '</div>';
+    }
+
     function renderAchievements(progress) {
         const unlocked = ACHIEVEMENTS.filter(a => a.check(progress));
         const locked   = ACHIEVEMENTS.filter(a => !a.check(progress));
@@ -2206,10 +2254,15 @@
             }
             const authHeader = effectiveToken ? { 'Authorization': 'Bearer ' + effectiveToken } : {};
             const TO = 30000;
-            const [res, rankRes, sessRes] = await Promise.all([
+            const szamParams = new URLSearchParams({ email: u.email || '' });
+            if (u.osztaly) szamParams.append('osztaly', u.osztaly);
+            if (u.csoport) szamParams.append('csoport', u.csoport);
+            const [res, rankRes, sessRes, szamEredRes, szamAktivRes] = await Promise.all([
                 fetch(`${API}/api/progress/${encodeURIComponent(email)}`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null),
                 fetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null),
-                fetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null)
+                fetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null),
+                fetch(`${API}/api/szamonkeres/eredmeny`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null),
+                fetch(`${API}/api/szamonkeres/aktiv?${szamParams}`, { headers: authHeader, signal: AbortSignal.timeout(TO) }).catch(()=>null),
             ]);
             if (!res || res.status === 503 || res.status === 502) {
                 document.getElementById('ered-content').innerHTML =
@@ -2228,6 +2281,18 @@
             const p = await res.json();
             const rankData = rankRes?.ok ? await rankRes.json() : null;
             const sessData = sessRes?.ok ? await sessRes.json() : [];
+            const szamEredmenyek = szamEredRes?.ok ? await szamEredRes.json() : [];
+            const szamAktivak   = szamAktivRes?.ok ? await szamAktivRes.json() : [];
+
+            // Aktív számonkéréseknél lekérjük a diák saját beadásait
+            const szamAktivBeadasok = {};
+            await Promise.all(szamAktivak.map(async sz => {
+                try {
+                    const r = await fetch(`${API}/api/szamonkeres/${sz.id}/sajat?email=${encodeURIComponent(u.email)}`, { headers: authHeader, signal: AbortSignal.timeout(TO) });
+                    szamAktivBeadasok[sz.id] = r.ok ? await r.json() : [];
+                } catch { szamAktivBeadasok[sz.id] = []; }
+            }));
+
             // A JSON kulcsai camelCase (C# record)
             const progress = {
                 web:    { sessions: p.web?.sessions ?? 0, avgPercent: p.web?.avgPercent ?? 0, bestPercent: p.web?.bestPercent ?? 0, lastSession: p.web?.lastSession ?? null },
@@ -2239,6 +2304,7 @@
                 streakHtml(rankData?.streak ?? 0) +
                 renderSubject(progress.web,    '🌐 WEB feladat',    'ered-bar-web',    'web',    rankData?.web) +
                 renderSubject(progress.python, '🐍 Python feladat', 'ered-bar-python', 'python', rankData?.python) +
+                renderSzamonkeresEredmenyek(szamEredmenyek, szamAktivak, szamAktivBeadasok) +
                 renderAchievements(progress);
         } catch(err) {
             console.error('Eredmények betöltési hiba:', err);
