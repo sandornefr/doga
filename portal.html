@@ -2246,8 +2246,9 @@
     }
 
     function handleSessionExpired() {
+        const current = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
         sessionStorage.removeItem('kandoUser');
-        localStorage.removeItem('kandoUser');
+        if (current.szerep === 'oktato') localStorage.removeItem('kandoUser');
         alert('A munkamenet lejárt, kérlek jelentkezz be újra!');
         window.location.replace('login.html');
     }
@@ -2334,8 +2335,9 @@
     }
 
     function logout() {
+        const current = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
         sessionStorage.removeItem('kandoUser');
-        localStorage.removeItem('kandoUser');
+        if (current.szerep === 'oktato') localStorage.removeItem('kandoUser');
         window.location.replace('login.html');
     }
 
