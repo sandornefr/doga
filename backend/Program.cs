@@ -57,7 +57,7 @@ db.MigrateDuelTime();
 db.UpsertUser("Piton", "Professzor", "bot@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("KandoBotNemBelephet!2024"), "tanulo");
 // Teszt tanulói fiók (tanári teszteléshez – diák nézet, számonkérés, stb.)
 db.UpsertUser("Teszt", "Elek", "tesztelek@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("Teszt2026!"), "tanulo");
-db.UpdateUserBasic("tesztelek@kkszki.hu", "Teszt", "Elek", "teszt", "13", "T");
+db.UpdateUserBasic("tesztelek@kkszki.hu", "Teszt", "Elek", "teszt", "10", "T");
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
