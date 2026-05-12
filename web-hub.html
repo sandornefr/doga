@@ -26,12 +26,12 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 .btn-back:hover{border-color:#58a6ff;color:#58a6ff}
 
 /* ── MAIN ── */
-.portal{margin-top:76px;width:100%;max-width:1100px;padding:0 24px 60px}
+.portal{margin-top:76px;width:100%;max-width:1320px;padding:0 24px 60px}
 .portal-title{color:#e0e0e0;font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center}
 .portal-sub{color:#666;font-size:0.9rem;margin-bottom:32px;text-align:center}
 
 /* ── GRID ── */
-.card-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:24px}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:24px}
 .card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:12px}
 
 /* ── CARDS ── */
@@ -41,14 +41,17 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 .option-card .label{color:#e0e0e0;font-size:1.05rem;font-weight:700;display:block;margin-bottom:5px}
 .option-card .desc{color:#666;font-size:0.8rem}
 
-.option-card.tananyag{border-color:#0ea5e9}
-.option-card.tananyag:hover{border-color:#38bdf8;box-shadow:0 8px 24px rgba(14,165,233,.25)}
-.option-card.tananyag .icon{color:#0ea5e9}
+.option-card.elmelet{border-color:#0ea5e9}
+.option-card.elmelet:hover{border-color:#38bdf8;box-shadow:0 8px 24px rgba(14,165,233,.25)}
+.option-card.elmelet .icon{color:#0ea5e9}
 
-.option-card.gyakorlo{border-color:#22c55e}
-.option-card.gyakorlo:hover{border-color:#4ade80;box-shadow:0 8px 24px rgba(34,197,94,.25)}
-.option-card.gyakorlo .icon{color:#22c55e}
-.option-card.gyakorlo .label{color:#86efac}
+.option-card.web-alapok{border-color:#e44d26}
+.option-card.web-alapok:hover{border-color:#f06529;box-shadow:0 8px 24px rgba(228,77,38,.25)}
+.option-card.web-alapok .icon{color:#e44d26}
+
+.option-card.agazati{border-color:#6366f1}
+.option-card.agazati:hover{border-color:#818cf8;box-shadow:0 8px 24px rgba(99,102,241,.25)}
+.option-card.agazati .icon{color:#6366f1}
 
 .option-card.tudasproba{border-color:#b45309;background:linear-gradient(160deg,#1a1200 0%,#16213e 60%)}
 .option-card.tudasproba:hover{border-color:#f59e0b;background:linear-gradient(160deg,#231700 0%,#16213e 60%);box-shadow:0 8px 28px rgba(245,158,11,.25);transform:translateY(-3px)}
@@ -58,8 +61,9 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 
 /* ── CHANGELOG BOXES ── */
 .changelog-box{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:14px 16px}
-.changelog-box.tananyag-col{border-color:rgba(14,165,233,.4)}
-.changelog-box.gyakorlo-col{border-color:rgba(34,197,94,.35)}
+.changelog-box.elmelet-col{border-color:rgba(14,165,233,.4)}
+.changelog-box.web-alapok-col{border-color:rgba(228,77,38,.4)}
+.changelog-box.agazati-col{border-color:rgba(99,102,241,.4)}
 .changelog-box.tudasproba-col{border-color:rgba(180,83,9,.5);background:linear-gradient(160deg,#1a1000,#16213e)}
 
 .changelog-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:#536dfe;text-transform:uppercase;margin-bottom:10px}
@@ -80,8 +84,8 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 .modal-btn-count{font-size:.7rem;color:#94a3b8;margin-top:5px}
 .modal-cancel{width:100%;padding:.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:.9rem;cursor:pointer;font-family:inherit;margin-top:.5rem}
 
-@media(max-width:800px){.card-grid{grid-template-columns:1fr;grid-template-rows:none}.card-col{grid-row:span 1}}
-@media(max-width:520px){.portal{padding:0 16px 40px}.modal-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:1000px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.card-grid{grid-template-columns:1fr;grid-template-rows:none}.card-col{grid-row:span 1}.portal{padding:0 16px 40px}.modal-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -110,14 +114,14 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 
   <div class="card-grid">
 
-    <!-- TANANYAG -->
+    <!-- ELMÉLET -->
     <div class="card-col">
-      <a class="option-card tananyag" href="#" onclick="event.preventDefault(); openTananyag()">
+      <a class="option-card elmelet" href="#" onclick="event.preventDefault(); openElmelet()">
         <span class="icon"><i class="fas fa-book-open"></i></span>
-        <span class="label">TANANYAG</span>
+        <span class="label">ELMÉLET</span>
         <span class="desc">HTML · CSS · JS · Bootstrap · Emmet</span>
       </a>
-      <div class="changelog-box tananyag-col">
+      <div class="changelog-box elmelet-col">
         <div class="changelog-title"><i class="fas fa-book-open" style="color:#0ea5e9"></i> Szintekről</div>
         <div class="changelog-item"><strong style="color:#7dd3fc">HTML</strong> – Tagek, struktúra, képek, táblázat <span style="color:#64748b">(28 feladat)</span></div>
         <div class="changelog-item"><strong style="color:#d8b4fe">CSS</strong> – Stílusok, elrendezés, animáció, reszponzív <span style="color:#64748b">(32 feladat)</span></div>
@@ -128,19 +132,35 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
       </div>
     </div>
 
-    <!-- GYAKORLÓ FELADATOK -->
+    <!-- WEB ALAPOK -->
     <div class="card-col">
-      <a class="option-card gyakorlo" href="web/practice.html">
-        <span class="icon"><i class="fas fa-laptop-code"></i></span>
-        <span class="label">GYAKORLÓ FELADATOK</span>
-        <span class="desc">Weboldal lépésről lépésre · Ágazati</span>
+      <a class="option-card web-alapok" href="web/practice.html">
+        <span class="icon"><i class="fas fa-coffee"></i></span>
+        <span class="label">WEB ALAPOK</span>
+        <span class="desc">Weboldal lépésről lépésre</span>
       </a>
-      <div class="changelog-box gyakorlo-col">
-        <div class="changelog-title"><i class="fas fa-laptop-code" style="color:#22c55e"></i> Feladatokról</div>
-        <div class="changelog-item">Valódi weboldal-kódolási feladatok Monaco szerkesztőben</div>
-        <div class="changelog-item">Élő előnézet és automatikus pontozás</div>
-        <div class="changelog-item">Megoldásmegtekintő, ha elakadnál</div>
-        <div class="changelog-item">Elérhető <strong>vizsga módban</strong> is</div>
+      <div class="changelog-box web-alapok-col">
+        <div class="changelog-title"><i class="fas fa-coffee" style="color:#e44d26"></i> Feladatról</div>
+        <div class="changelog-item">Espresso Sarok Kávézó weboldal felépítése lépésről lépésre</div>
+        <div class="changelog-item">25 feladat: HTML váz, tartalom, Bootstrap, CSS stílusok</div>
+        <div class="changelog-item">Pontosan olyan típusú, mint az ágazati alapvizsga</div>
+        <div class="changelog-item">Segédlet és megoldásmegtekintő minden feladatnál</div>
+      </div>
+    </div>
+
+    <!-- ÁGAZATI FELADATOK -->
+    <div class="card-col">
+      <a class="option-card agazati" href="web/index.html">
+        <span class="icon"><i class="fas fa-code"></i></span>
+        <span class="label">ÁGAZATI FELADATOK</span>
+        <span class="desc">9 weboldal-kódolási feladat</span>
+      </a>
+      <div class="changelog-box agazati-col">
+        <div class="changelog-title"><i class="fas fa-code" style="color:#6366f1"></i> Feladatokról</div>
+        <div class="changelog-item">9 különböző weboldal-kódolási ágazati alapvizsga feladat</div>
+        <div class="changelog-item">Monaco szerkesztő, élő előnézet, automatikus pontozás</div>
+        <div class="changelog-item">40 ellenőrzési pont feladatonként</div>
+        <div class="changelog-item">Elérhető <strong>gyakorló</strong> és <strong>vizsga módban</strong> is</div>
       </div>
     </div>
 
@@ -163,11 +183,11 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
   </div>
 </div>
 
-<!-- TANANYAG szintválasztó modal -->
-<div id="tananyag-modal" class="modal-overlay">
+<!-- ELMÉLET szintválasztó modal -->
+<div id="elmelet-modal" class="modal-overlay">
   <div class="modal-box">
     <div class="modal-icon"><i class="fas fa-book-open" style="color:#0ea5e9;"></i></div>
-    <div class="modal-title">TANANYAG – Válassz szintet</div>
+    <div class="modal-title">ELMÉLET – Válassz szintet</div>
     <div class="modal-sub">Melyik témakörrel szeretnél foglalkozni?</div>
     <div class="modal-grid">
       <a href="web/learn-html.html" class="modal-btn" style="background:#0a1a2e;border:2px solid #0ea5e9;color:#7dd3fc;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
@@ -207,12 +227,12 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
         <div class="modal-btn-count">support</div>
       </a>
     </div>
-    <button class="modal-cancel" onclick="document.getElementById('tananyag-modal').style.display='none'">Mégse</button>
+    <button class="modal-cancel" onclick="document.getElementById('elmelet-modal').style.display='none'">Mégse</button>
   </div>
 </div>
 
 <!-- TUDÁSPRÓBA kvízválasztó modal -->
-<div id="tudasproba-modal" class="modal-overlay" style="border-color:#f59e0b">
+<div id="tudasproba-modal" class="modal-overlay">
   <div class="modal-box" style="border-color:#f59e0b;max-width:420px;">
     <div class="modal-icon"><i class="fas fa-graduation-cap" style="color:#f59e0b;"></i></div>
     <div class="modal-title">TUDÁSPRÓBA – Válassz kvízt</div>
@@ -239,16 +259,15 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 </div>
 
 <script>
-function openTananyag() {
-    document.getElementById('tananyag-modal').style.display = 'flex';
+function openElmelet() {
+    document.getElementById('elmelet-modal').style.display = 'flex';
 }
 function openTudasproba() {
     document.getElementById('tudasproba-modal').style.display = 'flex';
 }
-// Modalt ESC-re bezárja
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-        document.getElementById('tananyag-modal').style.display = 'none';
+        document.getElementById('elmelet-modal').style.display = 'none';
         document.getElementById('tudasproba-modal').style.display = 'none';
     }
 });
