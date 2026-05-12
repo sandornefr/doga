@@ -237,7 +237,7 @@
                 localStorage.removeItem('kandoTeacherBackup');
             }
             const path = window.location.pathname;
-            const portalPath = (path.includes('/python/') || path.includes('/web/')) ? '../portal.html' : 'portal.html';
+            const portalPath = (path.includes('/python/') || path.includes('/web/') || path.includes('/halozat/')) ? '../portal.html' : 'portal.html';
             location.replace(portalPath);
         });
     }

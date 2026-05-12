@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hálózat Szimulátor – Kandó</title>
-<link rel="icon" href="../kando_favion_dark.png" type="image/png">
+<link rel="icon" href="../kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#30363d transparent}
@@ -14,15 +15,20 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 
 /* ── TOPBAR ── */
 .topbar{height:52px;background:#161b22;border-bottom:1px solid #21262d;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.topbar-brand{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.topbar-brand-school{font-size:0.65rem;color:#6e7681;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-brand-sub{font-size:0.88rem;font-weight:700;color:#e0e0e0;white-space:nowrap}
 .topbar-back{padding:5px 12px;background:transparent;border:1px solid #30363d;border-radius:7px;color:#8b949e;font-size:0.82rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .topbar-back:hover{border-color:#58a6ff;color:#58a6ff}
-.topbar-title{color:#e0e0e0;font-size:1rem;font-weight:700;flex:1}
+#sim-title{color:#c9d1d9;font-size:0.88rem;font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .topbar-badge{padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:700}
 .badge-tanulo{background:rgba(59,130,246,.18);color:#60a5fa;border:1px solid rgba(59,130,246,.35)}
 .badge-gyakorlo{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.35)}
 
 /* ── TASK SELECTOR ── */
-#view-selector{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:24px}
+#view-selector{flex:1;display:flex;flex-direction:column;overflow-y:auto}
 .sel-hero{text-align:center;margin-bottom:28px}
 .sel-hero h1{font-size:1.6rem;font-weight:800;color:#e0e0e0;margin-bottom:6px}
 .sel-hero p{color:#8b949e;font-size:0.9rem}
@@ -213,13 +219,31 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 <body>
 
 <!-- ══════════════════════════════════════════════════ -->
+<!-- SHARED TOPBAR                                      -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="kando-logo-wrap" style="position:relative;display:inline-block;flex-shrink:0;">
+      <a href="../portal.html" title="Főmenü"><img src="../kandologo2.png" alt="Kandó" style="height:32px;display:block;"></a>
+      <span id="kando-bug-badge" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);border-radius:4px;font-size:1.2rem;align-items:center;justify-content:center;pointer-events:none;">🐛</span>
+    </span>
+    <div class="topbar-brand">
+      <span class="topbar-brand-school">Miskolci SZC Kandó Kálmán Informatikai Technikum</span>
+      <span class="topbar-brand-sub"><i class="fas fa-network-wired" style="color:#3b82f6;margin-right:5px;"></i>Hálózat Szimulátor</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="sim-title" style="display:none;"></span>
+    <span class="topbar-badge" id="sim-badge"></span>
+    <a id="btn-vissza" class="topbar-back" href="../portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+    <button id="btn-feladatok" class="topbar-back" onclick="backToSelector()" style="display:none;border:1px solid #30363d;background:transparent;"><i class="fas fa-arrow-left"></i> Feladatok</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
 <!-- VIEW 1: TASK SELECTOR                             -->
 <!-- ══════════════════════════════════════════════════ -->
 <div id="view-selector">
-  <div class="topbar">
-    <a class="topbar-back" href="../portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
-    <span class="topbar-title"><i class="fas fa-network-wired" style="color:#3b82f6;margin-right:8px"></i>Hálózat Szimulátor</span>
-  </div>
   <div style="padding:24px">
     <div class="sel-hero">
       <h1>Hálózat feladatok</h1>
@@ -233,11 +257,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 <!-- VIEW 2: SIMULATOR                                 -->
 <!-- ══════════════════════════════════════════════════ -->
 <div id="view-sim" style="display:none;flex-direction:column;flex:1;overflow:hidden">
-  <div class="topbar">
-    <button class="topbar-back" onclick="backToSelector()"><i class="fas fa-arrow-left"></i> Feladatok</button>
-    <span class="topbar-title" id="sim-title"></span>
-    <span class="topbar-badge" id="sim-badge"></span>
-  </div>
   <div class="sim-body">
 
     <!-- Topology panel -->
@@ -1152,10 +1171,14 @@ function startTask(id) {
   document.getElementById('view-selector').style.display = 'none';
   const vs = document.getElementById('view-sim');
   vs.style.display = 'flex';
-  document.getElementById('sim-title').textContent = task.cim;
+  const simTitle = document.getElementById('sim-title');
+  simTitle.textContent = task.cim;
+  simTitle.style.display = 'inline';
   const badge = document.getElementById('sim-badge');
   badge.textContent = task.mod === 'tanulo' ? 'Tanulós' : 'Gyakorló';
   badge.className = 'topbar-badge ' + (task.mod === 'tanulo' ? 'badge-tanulo' : 'badge-gyakorlo');
+  document.getElementById('btn-vissza').style.display = 'none';
+  document.getElementById('btn-feladatok').style.display = 'inline-flex';
 
   renderTopology(task);
   renderInfoPanel(task);
@@ -2068,6 +2091,14 @@ function showToast(msg) {
 function backToSelector() {
   document.getElementById('view-sim').style.display = 'none';
   document.getElementById('view-selector').style.display = 'flex';
+  const simTitle = document.getElementById('sim-title');
+  simTitle.style.display = 'none';
+  simTitle.textContent = '';
+  const badge = document.getElementById('sim-badge');
+  badge.textContent = '';
+  badge.className = 'topbar-badge';
+  document.getElementById('btn-feladatok').style.display = 'none';
+  document.getElementById('btn-vissza').style.display = 'inline-flex';
   appState.currentTask = null;
 }
 
@@ -2079,5 +2110,6 @@ window.addEventListener('resize', () => {
 // Init
 document.addEventListener('DOMContentLoaded', initSelector);
 </script>
+<script src="../special-roles.js"></script>
 </body>
 </html>
