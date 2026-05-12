@@ -44,18 +44,36 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 
 /* ── SIMULATOR ── */
 #view-sim{flex:1;display:none;flex-direction:column;overflow:hidden}
-.sim-body{flex:1;display:flex;overflow:hidden;gap:0}
+.sim-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
-/* Left: topology */
-#topo-panel{flex:1;min-width:0;position:relative;background:#0d1117;border-right:1px solid #21262d}
+/* Top: topology */
+#topo-panel{height:46%;flex-shrink:0;position:relative;background:#0d1117;border-bottom:1px solid #21262d;min-height:155px}
 #topo-svg{width:100%;height:100%;cursor:default}
 
-/* Center: info panel */
-#info-panel{width:280px;flex-shrink:0;background:#161b22;border-right:1px solid #21262d;display:flex;flex-direction:column;overflow:hidden}
-.info-tabs{display:flex;border-bottom:1px solid #21262d}
-.info-tab{flex:1;padding:8px;text-align:center;font-size:0.75rem;font-weight:700;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
-.info-tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
-.info-content{flex:1;overflow-y:auto;padding:12px}
+/* Bottom row */
+.sim-bottom{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* Task card panel (left) */
+#task-panel{width:360px;flex-shrink:0;background:#161b22;border-right:1px solid #21262d;display:flex;flex-direction:column;overflow:hidden}
+.tc-header{padding:7px 10px;background:#0d1117;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tc-counter{flex:1;font-size:0.72rem;font-weight:700;color:#8b949e;text-align:center;white-space:nowrap}
+.tc-nav-btn{background:transparent;border:1px solid #30363d;border-radius:6px;color:#8b949e;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;transition:all .2s;flex-shrink:0}
+.tc-nav-btn:hover{border-color:#58a6ff;color:#58a6ff}
+.tc-nav-btn:disabled{opacity:.3;cursor:default;pointer-events:none}
+.tc-iptable-btn{padding:3px 9px;background:transparent;border:1px solid #30363d;border-radius:6px;color:#8b949e;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.tc-iptable-btn:hover,.tc-iptable-btn.active{border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.07)}
+.tc-body{flex:1;overflow-y:auto;padding:14px 14px 8px}
+
+/* Feladat card content */
+.tc-card-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:0.72rem;font-weight:800;flex-shrink:0;margin-right:6px}
+.tc-card-label{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#484f58;margin-bottom:6px}
+.tc-card-text{font-size:0.85rem;color:#c9d1d9;line-height:1.65}
+.tc-step-magyarazat{font-size:0.8rem;color:#8b949e;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid #21262d}
+.tc-step-tipp{margin-top:8px;background:#0d1117;border:1px solid #30363d;border-radius:7px;padding:9px 12px;font-size:0.76rem;font-family:'Consolas','Courier New',monospace;color:#79c0ff;line-height:1.7;white-space:pre-wrap}
+.tc-done-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:2px 8px;font-size:0.68rem;color:#22c55e;margin-top:8px;font-weight:700}
+.tc-konzol-btn{width:100%;padding:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:7px;color:#f59e0b;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px}
+.tc-konzol-btn:hover{background:rgba(245,158,11,.15)}
+.tc-konzol-btn.done{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3);color:#22c55e;cursor:default}
 
 /* IP table */
 .ip-table{width:100%;border-collapse:collapse;font-size:0.72rem}
@@ -64,35 +82,16 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .ip-table tr:hover td{background:#1c2128}
 .ip-note{color:#6e7681;font-size:0.65rem}
 
-/* Task steps */
-.step-item{padding:10px;border-radius:8px;border:1px solid #21262d;margin-bottom:8px;cursor:pointer;transition:all .2s}
-.step-item.pending{border-color:#21262d;background:#161b22}
-.step-item.active{border-color:#3b82f6;background:rgba(59,130,246,.08)}
-.step-item.done{border-color:#22c55e;background:rgba(34,197,94,.06)}
-.step-item.done .step-icon{color:#22c55e}
-.step-item.active .step-icon{color:#3b82f6}
-.step-item.pending .step-icon{color:#484f58}
-.step-head{display:flex;align-items:center;gap:8px}
-.step-icon{font-size:0.85rem;flex-shrink:0}
-.step-title{font-size:0.75rem;font-weight:700;color:#c9d1d9;flex:1}
-.step-hint{font-size:0.7rem;color:#8b949e;margin-top:5px;padding-top:5px;border-top:1px solid #21262d;display:none}
-.step-item.active .step-hint{display:block}
-
-/* Practice task text */
-.feladat-item{display:flex;gap:8px;margin-bottom:8px;font-size:0.78rem;line-height:1.5}
-.feladat-num{color:#8b949e;flex-shrink:0;font-weight:700;min-width:18px}
-.feladat-szov{color:#c9d1d9}
-
 /* Score bar */
-.score-bar{padding:10px 12px;background:#0d1117;border-top:1px solid #21262d;display:flex;align-items:center;gap:10px;font-size:0.78rem}
-.score-val{font-weight:800;font-size:1.1rem;color:#22c55e}
-.score-progress{flex:1;height:6px;background:#21262d;border-radius:3px;overflow:hidden}
+.score-bar{padding:8px 12px;background:#0d1117;border-top:1px solid #21262d;display:flex;align-items:center;gap:8px;font-size:0.75rem;flex-shrink:0}
+.score-val{font-weight:800;font-size:.88rem;color:#22c55e;white-space:nowrap}
+.score-progress{flex:1;height:5px;background:#21262d;border-radius:3px;overflow:hidden}
 .score-fill{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px;transition:width .4s}
-.check-btn{padding:6px 14px;background:#22c55e;border:none;border-radius:7px;color:#0d1117;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s}
+.check-btn{padding:5px 12px;background:#22c55e;border:none;border-radius:6px;color:#0d1117;font-size:0.75rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
 .check-btn:hover{background:#16a34a}
 
-/* Right: terminal */
-#term-panel{width:420px;flex-shrink:0;display:flex;flex-direction:column;background:#0d1117;font-family:'Consolas','Courier New',monospace}
+/* Right: terminal (flex:1) */
+#term-panel{flex:1;min-width:0;display:flex;flex-direction:column;background:#0d1117;font-family:'Consolas','Courier New',monospace}
 .term-header{padding:8px 12px;background:#161b22;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:8px;font-size:0.75rem;color:#8b949e}
 .term-dev-name{color:#e0e0e0;font-weight:700;flex:1}
 .term-close{background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:4px}
@@ -206,13 +205,13 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .results-close-btn:hover{background:#2563eb}
 
 @media(max-width:900px){
-  #info-panel{width:220px}
-  #term-panel{width:340px}
+  #topo-panel{height:42%}
+  #task-panel{width:300px}
 }
 @media(max-width:700px){
-  .sim-body{flex-direction:column}
-  #info-panel{width:100%;height:160px;border-right:none;border-bottom:1px solid #21262d}
-  #term-panel{width:100%;height:240px}
+  #topo-panel{height:36%;min-height:130px}
+  .sim-bottom{flex-direction:column}
+  #task-panel{width:100%;height:180px;border-right:none;border-bottom:1px solid #21262d}
 }
 </style>
 </head>
@@ -259,51 +258,53 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 <div id="view-sim" style="display:none;flex-direction:column;flex:1;overflow:hidden">
   <div class="sim-body">
 
-    <!-- Topology panel -->
+    <!-- Topology (top) -->
     <div id="topo-panel">
       <svg id="topo-svg" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
-    <!-- Info panel -->
-    <div id="info-panel">
-      <div class="info-tabs">
-        <div class="info-tab active" id="tab-steps" onclick="switchTab('steps')">
-          <i class="fas fa-list-check"></i> Feladat
-        </div>
-        <div class="info-tab" id="tab-iptable" onclick="switchTab('iptable')">
-          <i class="fas fa-table"></i> IP tábla
-        </div>
-      </div>
-      <div class="info-content" id="info-steps"></div>
-      <div class="info-content" id="info-iptable" style="display:none"></div>
-      <div class="score-bar" id="score-bar">
-        <span class="score-val" id="score-val">0%</span>
-        <div class="score-progress"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
-        <button class="check-btn" onclick="checkAll()">Ellenőrzés</button>
-      </div>
-    </div>
+    <!-- Bottom: task card + terminal -->
+    <div class="sim-bottom">
 
-    <!-- Terminal panel -->
-    <div id="term-panel">
-      <div class="term-header">
-        <i class="fas fa-terminal" style="color:#56d364"></i>
-        <span class="term-dev-name" id="term-dev-name">– nincs megnyitva –</span>
-        <button class="term-close" onclick="closeTerminal()"><i class="fas fa-times"></i></button>
-      </div>
-      <div id="term-output" onclick="if(appState.activeCisco) document.getElementById('term-input').focus()">
-        <div class="term-placeholder">
-          <i class="fas fa-mouse-pointer"></i>
-          Kattints egy eszközre a topológiában a konfiguráláshoz!
+      <!-- Task card panel (left) -->
+      <div id="task-panel">
+        <div class="tc-header">
+          <button class="tc-nav-btn" id="tc-prev" onclick="prevFeladat()"><i class="fas fa-chevron-left"></i></button>
+          <span class="tc-counter" id="tc-counter">1 / 8</span>
+          <button class="tc-nav-btn" id="tc-next" onclick="nextFeladat()"><i class="fas fa-chevron-right"></i></button>
+          <button class="tc-iptable-btn" id="tc-iptable-btn" onclick="toggleIpTable()"><i class="fas fa-table"></i> IP tábla</button>
+        </div>
+        <div class="tc-body" id="tc-body"></div>
+        <div class="score-bar">
+          <span class="score-val" id="score-val">0 / 40</span>
+          <div class="score-progress"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+          <button class="check-btn" onclick="checkAll()">Ellenőrzés</button>
         </div>
       </div>
-      <div class="term-input-row" id="term-input-row" style="display:none"
-           onclick="document.getElementById('term-input').focus()">
-        <span id="term-prompt"></span>
-        <input id="term-input" type="text" autocomplete="off" spellcheck="false"
-          placeholder="írd be a parancsot, Tab = kiegészítés, ↑↓ = előzmény">
+
+      <!-- Terminal panel (right) -->
+      <div id="term-panel">
+        <div class="term-header">
+          <i class="fas fa-terminal" style="color:#56d364"></i>
+          <span class="term-dev-name" id="term-dev-name">– nincs megnyitva –</span>
+          <button class="term-close" onclick="closeTerminal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="term-output" onclick="if(appState.activeCisco) document.getElementById('term-input').focus()">
+          <div class="term-placeholder">
+            <i class="fas fa-mouse-pointer"></i>
+            Kattints egy eszközre a topológiában a konfiguráláshoz!
+          </div>
+        </div>
+        <div class="term-input-row" id="term-input-row" style="display:none"
+             onclick="document.getElementById('term-input').focus()">
+          <span id="term-prompt"></span>
+          <input id="term-input" type="text" autocomplete="off" spellcheck="false"
+            placeholder="írd be a parancsot, Tab = kiegészítés, ↑↓ = előzmény">
+        </div>
       </div>
-    </div>
-  </div>
+
+    </div><!-- /sim-bottom -->
+  </div><!-- /sim-body -->
 </div>
 
 <!-- ══════════════════════════════════════════════════ -->
@@ -1073,6 +1074,9 @@ const appState = {
   tutorialPendingOpen: null,
   currentInfoTab: 'steps',
   placedDevices: new Set(),
+  konzolKapcsolt: false,
+  currentFeladatIdx: 0,
+  showIpTable: false,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -1143,6 +1147,9 @@ function startTask(id) {
   appState.devices = {};
   appState.activeDeviceId = null;
   appState.tutorialStepIdx = 0;
+  appState.currentFeladatIdx = 0;
+  appState.showIpTable = false;
+  appState.konzolKapcsolt = false;
   appState.placedDevices = new Set();
 
   // Create device instances (ghost devices skip — created when placed)
@@ -1410,46 +1417,99 @@ function isLinkActive(task, link) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INFO PANEL
+// TASK CARD PANEL
 // ═══════════════════════════════════════════════════════════════
 function renderInfoPanel(task) {
-  renderIpTable(task);
-  renderStepsPanel(task);
+  renderTaskCard(task);
 }
 
-function renderIpTable(task) {
-  let html = `<table class="ip-table"><thead><tr><th>Eszköz</th><th>Int.</th><th>IP / maszk</th></tr></thead><tbody>`;
-  task.ipTabla.forEach(row => {
-    html += `<tr><td>${row.eszkoz}</td><td>${row.int}</td><td>${row.ip}${row.maszk?`<br><span class="ip-note">${row.maszk} ${row.megjegyzes||''}</span>`:''}</td></tr>`;
-  });
-  html += `</tbody></table>`;
-  document.getElementById('info-iptable').innerHTML = html;
-}
+function renderTaskCard(task) {
+  if (!task) return;
+  const body = document.getElementById('tc-body');
+  if (!body) return;
 
-function renderStepsPanel(task) {
-  let html = '';
-  if (task.mod === 'tanulo' && task.lepesek) {
-    task.lepesek.forEach((step, i) => {
-      const isDone = isStepDone(task, step);
-      const isActive = i === appState.tutorialStepIdx && !isDone;
-      const cls = isDone ? 'done' : (isActive ? 'active' : 'pending');
-      const icon = isDone ? 'fa-check-circle' : (isActive ? 'fa-circle-dot' : 'fa-circle');
-      html += `<div class="step-item ${cls}" id="step-${i}" onclick="onStepClick(${i})">
-        <div class="step-head">
-          <i class="fas ${icon} step-icon"></i>
-          <span class="step-title">${step.cim}</span>
-        </div>
-        ${isActive && step.tipp ? `<div class="step-hint"><i class="fas fa-lightbulb" style="color:#e3b341;margin-right:4px"></i>${step.tipp}</div>` : ''}
-      </div>`;
+  // IP tábla toggle
+  if (appState.showIpTable) {
+    let html = `<div class="tc-card-label"><i class="fas fa-table" style="margin-right:4px"></i>IP-cím táblázat</div>`;
+    html += `<table class="ip-table"><thead><tr><th>Eszköz</th><th>Int.</th><th>IP / maszk</th></tr></thead><tbody>`;
+    (task.ipTabla || []).forEach(row => {
+      html += `<tr><td>${row.eszkoz}</td><td>${row.int}</td><td>${row.ip}${row.maszk?`<br><span class="ip-note">${row.maszk} ${row.megjegyzes||''}</span>`:''}</td></tr>`;
     });
-  } else {
-    const feladatok = task.feladatSzoveg || [];
-    feladatok.forEach((f, i) => {
-      html += `<div class="feladat-item"><span class="feladat-num">${i+1}.</span><span class="feladat-szov">${f}</span></div>`;
-    });
+    html += `</tbody></table>`;
+    body.innerHTML = html;
+    updateScore(task);
+    return;
   }
-  document.getElementById('info-steps').innerHTML = html;
+
+  if (task.mod === 'tanulo' && task.lepesek) {
+    // Tanulós mód: lépésenként
+    const items = task.lepesek;
+    const idx = Math.min(appState.currentFeladatIdx, items.length - 1);
+    const step = items[idx];
+    const isDone = isStepDone(task, step);
+
+    document.getElementById('tc-counter').textContent = `${idx + 1} / ${items.length}`;
+    document.getElementById('tc-prev').disabled = idx === 0;
+    document.getElementById('tc-next').disabled = idx >= items.length - 1;
+
+    const color = isDone ? '#22c55e' : '#3b82f6';
+    let html = `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px">
+      <span class="tc-card-num" style="background:${color}22;color:${color}">${idx + 1}</span>
+      <div style="flex:1">
+        <div class="tc-card-text" style="font-weight:700;font-size:0.9rem;color:#e0e0e0;margin-bottom:4px">${step.cim}</div>
+        ${isDone ? `<span class="tc-done-badge"><i class="fas fa-check"></i> Kész</span>` : ''}
+      </div>
+    </div>`;
+    if (step.magyarazat) {
+      html += `<div class="tc-step-magyarazat">${step.magyarazat}</div>`;
+    }
+    if (step.tipp) {
+      html += `<div class="tc-card-label" style="margin-top:10px"><i class="fas fa-terminal" style="margin-right:4px;color:#56d364"></i>Parancsok</div>
+               <div class="tc-step-tipp">${step.tipp.replace(/→/g,'<br>→ ')}</div>`;
+    }
+    body.innerHTML = html;
+
+  } else {
+    // Gyakorló mód: feladat szöveg
+    const items = task.feladatSzoveg || [];
+    if (!items.length) { body.innerHTML = ''; updateScore(task); return; }
+    const idx = Math.min(appState.currentFeladatIdx, items.length - 1);
+
+    document.getElementById('tc-counter').textContent = `${idx + 1} / ${items.length}`;
+    document.getElementById('tc-prev').disabled = idx === 0;
+    document.getElementById('tc-next').disabled = idx >= items.length - 1;
+
+    body.innerHTML = `<div style="display:flex;align-items:flex-start;gap:8px">
+      <span class="tc-card-num" style="background:#3b82f622;color:#3b82f6">${idx + 1}</span>
+      <div class="tc-card-text">${items[idx]}</div>
+    </div>`;
+  }
+
   updateScore(task);
+}
+
+function prevFeladat() {
+  if (appState.currentFeladatIdx > 0) {
+    appState.currentFeladatIdx--;
+    renderTaskCard(appState.currentTask);
+  }
+}
+
+function nextFeladat() {
+  const task = appState.currentTask;
+  if (!task) return;
+  const items = (task.mod === 'tanulo' && task.lepesek) ? task.lepesek : (task.feladatSzoveg || []);
+  if (appState.currentFeladatIdx < items.length - 1) {
+    appState.currentFeladatIdx++;
+    renderTaskCard(task);
+  }
+}
+
+function toggleIpTable() {
+  appState.showIpTable = !appState.showIpTable;
+  const btn = document.getElementById('tc-iptable-btn');
+  if (btn) btn.classList.toggle('active', appState.showIpTable);
+  renderTaskCard(appState.currentTask);
 }
 
 function isStepDone(task, step) {
@@ -1462,19 +1522,8 @@ function isStepDone(task, step) {
 }
 
 function onStepClick(idx) {
-  const task = appState.currentTask;
-  if (!task || !task.lepesek) return;
-  const step = task.lepesek[idx];
-  if (!step) return;
-  showTutorialStep(idx);
-}
-
-function switchTab(tab) {
-  appState.currentInfoTab = tab;
-  document.getElementById('info-steps').style.display = tab === 'steps' ? 'block' : 'none';
-  document.getElementById('info-iptable').style.display = tab === 'iptable' ? 'block' : 'none';
-  document.getElementById('tab-steps').classList.toggle('active', tab === 'steps');
-  document.getElementById('tab-iptable').classList.toggle('active', tab === 'iptable');
+  appState.currentFeladatIdx = idx;
+  renderTaskCard(appState.currentTask);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1549,28 +1598,28 @@ function updateScore(task) {
   if (!task) return;
   const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
   const done = allIds.filter(id => validateDevice(task, id)).length;
-  const pct = allIds.length ? Math.round(done / allIds.length * 100) : 0;
-  document.getElementById('score-val').textContent = pct + '%';
-  document.getElementById('score-fill').style.width = pct + '%';
-  document.getElementById('score-val').style.color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#e3b341' : '#f85149';
+  const pts = allIds.length ? Math.round(done / allIds.length * 40) : 0;
+  document.getElementById('score-val').textContent = pts + ' / 40';
+  document.getElementById('score-fill').style.width = (pts / 40 * 100) + '%';
+  document.getElementById('score-val').style.color = pts >= 28 ? '#22c55e' : pts >= 16 ? '#e3b341' : '#f85149';
 }
 
 function updateProgress() {
   const task = appState.currentTask;
   if (!task) return;
   renderTopology(task);
-  renderStepsPanel(task);
   if (task.mod === 'tanulo') advanceTutorial(task);
+  else renderTaskCard(task);
 }
 
 function advanceTutorial(task) {
   if (!task.lepesek) return;
-  // Find first undone step
   const idx = task.lepesek.findIndex(s => !isStepDone(task, s));
-  if (idx !== appState.tutorialStepIdx) {
-    appState.tutorialStepIdx = idx < 0 ? task.lepesek.length : idx;
-    renderStepsPanel(task);
+  const newIdx = idx < 0 ? task.lepesek.length - 1 : idx;
+  if (newIdx !== appState.currentFeladatIdx) {
+    appState.currentFeladatIdx = newIdx;
   }
+  renderTaskCard(task);
 }
 
 function checkAll() {
@@ -1594,13 +1643,13 @@ function checkAll() {
     }),
   ];
   const total = allIds.length + ghostIds.length;
-  const pct = total ? Math.round(done / total * 100) : 0;
+  const pts = total ? Math.round(done / total * 40) : 0;
   const scEl = document.getElementById('res-score');
-  scEl.textContent = pct + '%';
-  scEl.className = 'results-score ' + (pct >= 60 ? 'pass' : 'fail');
-  document.getElementById('res-subtitle').textContent = pct >= 60
-    ? `Sikeresen elvégezted ${done}/${total} feladatot!`
-    : `${done}/${total} feladat van helyesen elvégezve.`;
+  scEl.textContent = pts + ' / 40';
+  scEl.className = 'results-score ' + (pts >= 24 ? 'pass' : 'fail');
+  document.getElementById('res-subtitle').textContent = pts >= 24
+    ? `Sikeresen elvégezted a feladatot! (${done}/${total} eszköz helyes)`
+    : `${done}/${total} eszköz helyes konfigurációval.`;
   let itemsHtml = '';
   items.forEach(it => {
     itemsHtml += `<div class="result-item">
@@ -1997,6 +2046,7 @@ function showTutorialStep(idx) {
   const step = task.lepesek[idx];
   if (!step) return;
   appState.tutorialStepIdx = idx;
+  appState.currentFeladatIdx = idx;
   appState.tutorialPendingOpen = step.eszkozId;
   document.getElementById('tut-stepnum').textContent = `${idx+1}. lépés / ${task.lepesek.length}`;
   document.getElementById('tut-title').textContent = step.cim;
