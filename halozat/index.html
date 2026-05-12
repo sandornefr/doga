@@ -458,11 +458,11 @@ class CiscoDevice {
   _normIface(s) {
     const v = s.replace(/\s+/g, '').trim();
     let m;
-    if (m = v.match(/^g(?:i(?:g(?:a(?:b(?:i(?:t(?:e(?:t(?:h(?:e(?:r(?:n(?:et?)?)?)?)?)?)?)?)?)?)?)?)?(\d+\/\d+)$/i)) return 'GigabitEthernet' + m[1];
-    if (m = v.match(/^f(?:a(?:s(?:t(?:e(?:t(?:h(?:e(?:r(?:n(?:et?)?)?)?)?)?)?)?)?)?)?(\d+\/\d+)$/i)) return 'FastEthernet' + m[1];
-    if (m = v.match(/^s(?:e(?:r(?:i(?:a(?:l)?)?)?)?)?(\d+\/\d+)$/i)) return 'Serial' + m[1];
-    if (m = v.match(/^v(?:l(?:a(?:n)?)?)?(\d+)$/i)) return 'Vlan' + m[1];
-    if (m = v.match(/^lo(?:o(?:p(?:b(?:a(?:c(?:k)?)?)?)?)?)?(\d+)$/i)) return 'Loopback' + m[1];
+    if (m = v.match(/^gi?g?a?b?i?t?e?t?h?e?r?n?e?t?(\d+\/\d+)$/i)) return 'GigabitEthernet' + m[1];
+    if (m = v.match(/^fa?s?t?e?t?h?e?r?n?e?t?(\d+\/\d+)$/i))        return 'FastEthernet' + m[1];
+    if (m = v.match(/^se?r?i?a?l?(\d+\/\d+)$/i))                     return 'Serial' + m[1];
+    if (m = v.match(/^vl?a?n?(\d+)$/i))                               return 'Vlan' + m[1];
+    if (m = v.match(/^lo?o?p?b?a?c?k?(\d+)$/i))                      return 'Loopback' + m[1];
     return v;
   }
 
