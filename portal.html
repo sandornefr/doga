@@ -758,6 +758,15 @@
         .option-card.python  { border-color: #3776ab; }
         .option-card.python:hover  { border-color: #4a94d4; box-shadow: 0 8px 24px rgba(55,118,171,0.25); }
         .option-card.python .icon  { color: #3776ab; }
+        .option-card.elmelet { border-color: #3776ab; }
+        .option-card.elmelet:hover { border-color: #4a94d4; box-shadow: 0 8px 24px rgba(55,118,171,0.25); }
+        .option-card.elmelet .icon { color: #3776ab; }
+        .option-card.digkult { border-color: #38bdf8; }
+        .option-card.digkult:hover { border-color: #7dd3fc; box-shadow: 0 8px 24px rgba(56,189,248,0.25); }
+        .option-card.digkult .icon { color: #38bdf8; }
+        .option-card.agazati-py { border-color: #6366f1; }
+        .option-card.agazati-py:hover { border-color: #818cf8; box-shadow: 0 8px 24px rgba(99,102,241,0.25); }
+        .option-card.agazati-py .icon { color: #6366f1; }
         .option-card.web     { border-color: #e44d26; }
         .option-card.web:hover     { border-color: #f06529; box-shadow: 0 8px 24px rgba(228,77,38,0.25); }
         .option-card.web .icon     { color: #e44d26; }
@@ -1051,12 +1060,28 @@
 
         <!-- Sor 1+2: kártyák és changelog kétoszloposan -->
         <div class="student-two-col">
-            <!-- Python oszlop -->
+            <!-- ELMÉLET oszlop -->
             <div class="student-col">
-                <a class="option-card python" id="card-python" href="python/index.html" onclick="event.preventDefault(); openPythonModal()">
+                <a class="option-card elmelet" id="card-elmelet" href="#" onclick="event.preventDefault(); openElmeletModal()">
                     <span class="icon"><i class="fab fa-python"></i></span>
-                    <span class="label">PYTHON</span>
-                    <span class="desc">Dolgozat · Kódpárbaj · Gyakorló</span>
+                    <span class="label">ELMÉLET</span>
+                    <span class="desc">Kezdő · Haladó · Profi szintek</span>
+                </a>
+            </div>
+            <!-- DIGITÁLIS KULTÚRA oszlop -->
+            <div class="student-col">
+                <a class="option-card digkult" href="python/forgalomszamlalas.html">
+                    <span class="icon"><i class="fas fa-laptop-code"></i></span>
+                    <span class="label">DIGITÁLIS KULTÚRA</span>
+                    <span class="desc">Forgalomszámlálás – kidolgozott érettségi feladat</span>
+                </a>
+            </div>
+            <!-- ÁGAZATI FELADATOK oszlop -->
+            <div class="student-col">
+                <a class="option-card agazati-py" id="card-agazati-py" href="python/agazati-gyakorlo.html">
+                    <span class="icon"><i class="fas fa-code"></i></span>
+                    <span class="label">ÁGAZATI FELADATOK</span>
+                    <span class="desc">Ágazati alapvizsga · Python kódolás</span>
                     <span class="vizsga-status" id="status-python"></span>
                 </a>
                 <div id="changelog-python" class="changelog-box python-col" style="display:none">
@@ -1065,6 +1090,18 @@
                     <div class="changelog-item">A <strong>Kezdő</strong> és <strong>Haladó</strong> szint lefedi az <strong>Ágazati alapvizsga</strong> anyagát</div>
                     <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek a gyakorló feladatok közé</div>
                 </div>
+            </div>
+            <!-- KÓDPÁRBAJ oszlop -->
+            <div class="student-col" id="kodparbaj-col">
+                <a class="option-card duel" id="card-duel-main" href="#" onclick="event.preventDefault(); openKodparbaj()">
+                    <span class="icon"><i class="fas fa-code-compare"></i></span>
+                    <span class="label">KÓDPÁRBAJ</span>
+                    <span class="desc">1v1 – tanuló vagy Piton Professzor ellen</span>
+                    <span style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#94a3b8;margin-top:5px;">
+                        <i class="fas fa-circle" style="font-size:.35rem;color:#22c55e;"></i>
+                        <span id="duel-online-count">0 fő online</span>
+                    </span>
+                </a>
                 <div id="changelog-duel" class="changelog-box duel-col" style="display:none;">
                     <div class="changelog-title"><i class="fas fa-code-compare" style="color:#f59e0b;"></i> Kódpárbaj – hogyan működik?</div>
                     <div class="changelog-item"><i class="fas fa-hand-pointer" style="color:#f59e0b;margin-right:4px;"></i>Válassz ellenfelet (tanuló vagy <strong>Piton Professzor</strong>) és indulhat az <strong>1v1!</strong></div>
@@ -1103,9 +1140,7 @@
                     <div class="changelog-item">Modern tech (MI, felhő), Git, projektmenedzsment</div>
                 </div>
             </div>
-            <!-- duel-section eltávolítva – Kódpárbaj a Python modalba került -->
-            <div id="duel-section" style="display:none;"></div>
-            <!-- Hálózat oszlop (5. kártya) -->
+            <!-- Hálózat oszlop -->
             <div class="student-col" id="halozat-section">
                 <a class="option-card halozat" href="halozat/index.html">
                     <span class="icon"><i class="fas fa-network-wired"></i></span>
@@ -1501,62 +1536,18 @@
     </div>
 </div>
 
-<!-- Vendég – Python szintválasztó modal -->
-<div id="vendeg-python-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+<!-- ELMÉLET szintválasztó modal -->
+<div id="elmelet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#16213e;border:2px solid #3776ab;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:420px;width:100%;">
         <div style="font-size:2rem;text-align:center;margin-bottom:0.5rem;"><i class="fab fa-python" style="color:#3776ab;"></i></div>
-        <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:0.5rem;">Python gyakorló szint</h3>
-        <p style="color:#888;font-size:0.84rem;text-align:center;margin-bottom:1.4rem;">Válaszd ki, melyik szintről szeretnél indulni:</p>
+        <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:0.5rem;">ELMÉLET – Python szintek</h3>
+        <p style="color:#888;font-size:0.84rem;text-align:center;margin-bottom:1.4rem;">Válaszd ki a szintedet:</p>
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
-            <button onclick="location.replace('python/basics.html')" style="padding:13px 20px;background:#1c1200;border:2px solid #f59e0b;border-radius:10px;color:#fcd34d;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#451a00'" onmouseout="this.style.background='#1c1200'">Kezdő szint</button>
-            <button onclick="location.replace('python/practice.html')" style="padding:13px 20px;background:#0a1f2a;border:2px solid #3b82f6;border-radius:10px;color:#93c5fd;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#0a1f2a'">Haladó szint</button>
-            <button onclick="location.replace('python/pro.html')" style="padding:13px 20px;background:#2a0a2a;border:2px solid #f472b6;border-radius:10px;color:#f9a8d4;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a2a'">Profi szint</button>
+            <button onclick="location.replace('python/basics.html')" style="padding:13px 20px;background:#1c1200;border:2px solid #f59e0b;border-radius:10px;color:#fcd34d;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#451a00'" onmouseout="this.style.background='#1c1200'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint</button>
+            <button onclick="location.replace('python/practice.html')" style="padding:13px 20px;background:#0a1f2a;border:2px solid #3b82f6;border-radius:10px;color:#93c5fd;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#0a1f2a'"><i class="fas fa-bolt" style="margin-right:6px;"></i>Haladó szint</button>
+            <button onclick="location.replace('python/pro.html')" style="padding:13px 20px;background:#2a0a2a;border:2px solid #f472b6;border-radius:10px;color:#f9a8d4;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a2a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint</button>
         </div>
-        <button onclick="location.replace('python/erettsegi.html')" style="padding:13px 20px;background:#1a0a0e;border:2px solid #e94560;border-radius:10px;color:#fca5a5;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-top:4px;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#1a0a0e'"><i class="fas fa-scroll" style="margin-right:6px;"></i>Középszintű érettségi feladatok</button>
-        <button onclick="location.replace('python/agazati-gyakorlo.html')" style="padding:13px 20px;background:#1a1a2e;border:2px solid #6366f1;border-radius:10px;color:#a5b4fc;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;" onmouseover="this.style.background='#312e81'" onmouseout="this.style.background='#1a1a2e'">Gyakorló feladatok</button>
-        <button onclick="document.getElementById('vendeg-python-modal').style.display='none'" style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
-    </div>
-</div>
-
-<!-- Python választó modal (tanulóknak) -->
-<div id="python-valaszto-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#16213e;border:2px solid #3776ab;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:600px;width:100%;">
-        <div style="font-size:2rem;text-align:center;margin-bottom:0.5rem;"><i class="fab fa-python" style="color:#3776ab;"></i></div>
-        <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:0.4rem;">PYTHON FELADATOK</h3>
-        <p style="color:#888;font-size:0.84rem;text-align:center;margin-bottom:1.4rem;">Mit szeretnél csinálni?</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem;">
-            <!-- Dolgozat -->
-            <button onclick="document.getElementById('python-valaszto-modal').style.display='none'; location.replace('python/index.html')"
-                style="padding:20px 12px;background:#1a0a0e;border:2px solid #e94560;border-radius:12px;color:#fca5a5;cursor:pointer;text-align:center;line-height:1.4;transition:background .2s;"
-                onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#1a0a0e'">
-                <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-file-pen"></i></div>
-                <div style="font-size:0.95rem;font-weight:800;">Dolgozat</div>
-                <div style="font-size:0.72rem;color:#fca5a5;font-weight:400;margin-top:4px;">Éles / Ágazati<br>alapvizsga feladat</div>
-                <div style="font-size:0.7rem;color:#94a3b8;margin-top:5px;">45 perc</div>
-            </button>
-            <!-- Kódpárbaj -->
-            <button onclick="document.getElementById('python-valaszto-modal').style.display='none'; document.getElementById('duel-online-modal').classList.add('open')"
-                style="padding:20px 12px;background:#1c1200;border:2px solid #f59e0b;border-radius:12px;color:#fcd34d;cursor:pointer;text-align:center;line-height:1.4;transition:background .2s;"
-                onmouseover="this.style.background='#451a00'" onmouseout="this.style.background='#1c1200'">
-                <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-code-compare"></i></div>
-                <div style="font-size:0.95rem;font-weight:800;">Kódpárbaj</div>
-                <div style="font-size:0.72rem;color:#fde68a;font-weight:400;margin-top:4px;">1v1 – tanuló vagy<br>Piton Professzor ellen</div>
-                <div style="font-size:0.7rem;align-items:center;display:flex;justify-content:center;gap:4px;margin-top:5px;">
-                    <i class="fas fa-circle" style="font-size:.4rem;color:#22c55e;"></i>
-                    <span id="duel-online-count" style="color:#94a3b8;">0 fő online</span>
-                </div>
-            </button>
-            <!-- Gyakorló -->
-            <button onclick="document.getElementById('python-valaszto-modal').style.display='none'; document.getElementById('vendeg-python-modal').style.display='flex'"
-                style="padding:20px 12px;background:#0a1f14;border:2px solid #22c55e;border-radius:12px;color:#86efac;cursor:pointer;text-align:center;line-height:1.4;transition:background .2s;"
-                onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
-                <div style="font-size:1.5rem;margin-bottom:6px;"><i class="fas fa-dumbbell"></i></div>
-                <div style="font-size:0.95rem;font-weight:800;">Gyakorló szintek</div>
-                <div style="font-size:0.72rem;color:#bbf7d0;font-weight:400;margin-top:4px;">Kezdő · Haladó · Profi<br>Ágazati · Érettségi</div>
-                <div style="font-size:0.7rem;color:#94a3b8;margin-top:5px;">5 szint</div>
-            </button>
-        </div>
-        <button onclick="document.getElementById('python-valaszto-modal').style.display='none'" style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
+        <button onclick="document.getElementById('elmelet-modal').style.display='none'" style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Mégse</button>
     </div>
 </div>
 
@@ -1828,8 +1819,9 @@
             document.getElementById('portal-sub').textContent = 'Nézz körül – a teljes hozzáféréshez regisztrálj!';
             const delBtn = document.querySelector('.delete-btn'); if (delBtn) delBtn.style.display = 'none';
             // Vendég: kártyák normálisan navigálnak (gyakorló szintek elérhetők)
-            const cardPython = document.getElementById('card-python');
-            if (cardPython) cardPython.onclick = function(e) { e.preventDefault(); document.getElementById('vendeg-python-modal').style.display = 'flex'; };
+            // Vendégnek KÓDPÁRBAJ kártya → belépési figyelmeztetés
+            const cardDuelV = document.getElementById('card-duel-main');
+            if (cardDuelV) cardDuelV.onclick = function(e) { e.preventDefault(); alert('A Kódpárbajhoz bejelentkezés szükséges!'); };
             const cardWeb = document.getElementById('card-web');
             if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
         } else {
@@ -1949,9 +1941,7 @@
             // Oktató tanulói előnézetben látja a Csatlakozás gombot is
             const csBtn = document.getElementById('topbar-csatl-btn');
             if (csBtn) csBtn.style.display = 'inline-flex';
-            // Python kártya → Python módválasztó modal
-            const cardPy = document.getElementById('card-python');
-            if (cardPy) cardPy.onclick = function(e) { e.preventDefault(); openPythonModal(); };
+            // Teszt Elek módban a KÓDPÁRBAJ és ÁGAZATI kártyák ugyanúgy viselkednek mint tanulóknál
             // WEB kártya → vizsgamódban web-exam-modal (mint Teszt Elek módban)
             if (portalExamMode) {
                 const cardWebEl = document.getElementById('card-web');
@@ -1960,9 +1950,17 @@
         }
     }
 
-    // ── Python modal megnyitása ───────────────────────────────────────────────
-    function openPythonModal() {
-        document.getElementById('python-valaszto-modal').style.display = 'flex';
+    // ── ELMÉLET modal és Kódpárbaj megnyitása ───────────────────────────────
+    function openElmeletModal() {
+        document.getElementById('elmelet-modal').style.display = 'flex';
+    }
+    function openKodparbaj() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        if (!user.email || user.szerep === 'vendeg') {
+            alert('A Kódpárbajhoz bejelentkezés szükséges!');
+            return;
+        }
+        document.getElementById('duel-online-modal').classList.add('open');
     }
 
     // ── Vizsga mód ellenőrzés ─────────────────────────────────────────────────
