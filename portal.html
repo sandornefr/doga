@@ -1076,7 +1076,7 @@
             </div>
             <!-- WEB oszlop -->
             <div class="student-col">
-                <a class="option-card web" id="card-web" href="web/index.html" onclick="event.preventDefault(); document.getElementById('web-modal-dolgozat-btn').style.display='block'; document.getElementById('web-valaszto-modal').style.display='flex'">
+                <a class="option-card web" id="card-web" href="web-hub.html">
                     <span class="icon"><i class="fas fa-globe"></i></span>
                     <span class="label">WEB</span>
                     <span class="desc">HTML, CSS, Bootstrap feladatok</span>
@@ -1770,8 +1770,6 @@
                     document.getElementById('changelog-halozat').style.display = 'block';
                     document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
                     document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
-                    const cardWeb = document.getElementById('card-web');
-                    if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
                 }
             }
         } else if (user.szerep === 'vendeg') {
@@ -1787,8 +1785,6 @@
             // Vendégnek KÓDPÁRBAJ kártya → belépési figyelmeztetés
             const cardDuelV = document.getElementById('card-duel-main');
             if (cardDuelV) cardDuelV.onclick = function(e) { e.preventDefault(); alert('A Kódpárbajhoz bejelentkezés szükséges!'); };
-            const cardWeb = document.getElementById('card-web');
-            if (cardWeb) cardWeb.onclick = function(e) { e.preventDefault(); document.getElementById('web-valaszto-modal').style.display = 'flex'; };
         } else {
             document.getElementById('student-layout-wrap').style.display = 'flex';
             document.getElementById('changelog-python').style.display = 'block';

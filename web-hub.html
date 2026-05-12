@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weboldal Kódolás – Kandó</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+*::-webkit-scrollbar{width:5px}
+*::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+
+body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#16213e;border-bottom:2px solid #0f3460;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar img{height:36px}
+.topbar-title{display:flex;flex-direction:column}
+.topbar-title span{color:#e0e0e0;font-size:1.05rem;font-weight:600;line-height:1.2}
+.topbar-title small{color:#888;font-size:0.75rem}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.btn-back{padding:6px 14px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:0.85rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-back:hover{border-color:#58a6ff;color:#58a6ff}
+
+/* ── MAIN ── */
+.portal{margin-top:76px;width:100%;max-width:1100px;padding:0 24px 60px}
+.portal-title{color:#e0e0e0;font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center}
+.portal-sub{color:#666;font-size:0.9rem;margin-bottom:32px;text-align:center}
+
+/* ── GRID ── */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:24px}
+.card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:12px}
+
+/* ── CARDS ── */
+.option-card{background:#16213e;border:2px solid #0f3460;border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:168px;transition:all .2s}
+.option-card:hover{transform:translateY(-3px)}
+.option-card .icon{font-size:2.5rem;margin-bottom:12px;display:block}
+.option-card .label{color:#e0e0e0;font-size:1.05rem;font-weight:700;display:block;margin-bottom:5px}
+.option-card .desc{color:#666;font-size:0.8rem}
+
+.option-card.tananyag{border-color:#0ea5e9}
+.option-card.tananyag:hover{border-color:#38bdf8;box-shadow:0 8px 24px rgba(14,165,233,.25)}
+.option-card.tananyag .icon{color:#0ea5e9}
+
+.option-card.gyakorlo{border-color:#22c55e}
+.option-card.gyakorlo:hover{border-color:#4ade80;box-shadow:0 8px 24px rgba(34,197,94,.25)}
+.option-card.gyakorlo .icon{color:#22c55e}
+.option-card.gyakorlo .label{color:#86efac}
+
+.option-card.tudasproba{border-color:#b45309;background:linear-gradient(160deg,#1a1200 0%,#16213e 60%)}
+.option-card.tudasproba:hover{border-color:#f59e0b;background:linear-gradient(160deg,#231700 0%,#16213e 60%);box-shadow:0 8px 28px rgba(245,158,11,.25);transform:translateY(-3px)}
+.option-card.tudasproba .icon{color:#f59e0b}
+.option-card.tudasproba .label{color:#fcd34d}
+.option-card.tudasproba .desc{color:#666}
+
+/* ── CHANGELOG BOXES ── */
+.changelog-box{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:14px 16px}
+.changelog-box.tananyag-col{border-color:rgba(14,165,233,.4)}
+.changelog-box.gyakorlo-col{border-color:rgba(34,197,94,.35)}
+.changelog-box.tudasproba-col{border-color:rgba(180,83,9,.5);background:linear-gradient(160deg,#1a1000,#16213e)}
+
+.changelog-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:#536dfe;text-transform:uppercase;margin-bottom:10px}
+.changelog-item{font-size:.82rem;color:#b0b8c8;line-height:1.55;padding:3px 0 3px 14px;position:relative}
+.changelog-item::before{content:'–';color:#536dfe;position:absolute;left:2px}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal-box{background:#16213e;border:2px solid #0ea5e9;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:520px;width:100%}
+.modal-icon{font-size:2rem;text-align:center;margin-bottom:.5rem}
+.modal-title{color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:.4rem}
+.modal-sub{color:#888;font-size:.84rem;text-align:center;margin-bottom:1.4rem}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+.modal-btn{padding:16px 10px;border-radius:12px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;font-family:inherit;line-height:1.4}
+.modal-btn-icon{font-size:1.5rem;margin-bottom:5px}
+.modal-btn-name{font-size:.95rem;font-weight:800}
+.modal-btn-desc{font-size:.72rem;font-weight:400;margin-top:4px}
+.modal-btn-count{font-size:.7rem;color:#94a3b8;margin-top:5px}
+.modal-cancel{width:100%;padding:.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:.9rem;cursor:pointer;font-family:inherit;margin-top:.5rem}
+
+@media(max-width:800px){.card-grid{grid-template-columns:1fr;grid-template-rows:none}.card-col{grid-row:span 1}}
+@media(max-width:520px){.portal{padding:0 16px 40px}.modal-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="kando-logo-wrap" style="position:relative;display:inline-block;">
+      <a href="portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó KSZKI"></a>
+      <span id="kando-bug-badge" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:4px;font-size:1.2rem;align-items:center;justify-content:center;pointer-events:none;">🐛</span>
+    </span>
+    <div class="topbar-title">
+      <span>Miskolci SZC Kandó Kálmán Informatikai Technikum</span>
+      <small>Digitális Tanulási és Számonkérési Rendszer</small>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="portal">
+  <div class="portal-title"><i class="fas fa-globe" style="color:#0ea5e9;margin-right:8px;"></i>Weboldal Kódolás</div>
+  <div class="portal-sub">Válassz kategóriát a tanuláshoz</div>
+
+  <div class="card-grid">
+
+    <!-- TANANYAG -->
+    <div class="card-col">
+      <a class="option-card tananyag" href="#" onclick="event.preventDefault(); openTananyag()">
+        <span class="icon"><i class="fas fa-book-open"></i></span>
+        <span class="label">TANANYAG</span>
+        <span class="desc">HTML · CSS · JS · Bootstrap · Emmet</span>
+      </a>
+      <div class="changelog-box tananyag-col">
+        <div class="changelog-title"><i class="fas fa-book-open" style="color:#0ea5e9"></i> Szintekről</div>
+        <div class="changelog-item"><strong style="color:#7dd3fc">HTML</strong> – Tagek, struktúra, képek, táblázat <span style="color:#64748b">(28 feladat)</span></div>
+        <div class="changelog-item"><strong style="color:#d8b4fe">CSS</strong> – Stílusok, elrendezés, animáció, reszponzív <span style="color:#64748b">(32 feladat)</span></div>
+        <div class="changelog-item"><strong style="color:#86efac">Bootstrap</strong> – Rácsrendszer, gombok, kártyák <span style="color:#64748b">(18 feladat)</span></div>
+        <div class="changelog-item"><strong style="color:#bae6fd">Emmet</strong> – Gyorsírás, rövidítések, hatékony kódolás <span style="color:#64748b">(18 feladat)</span></div>
+        <div class="changelog-item"><strong style="color:#fde68a">JavaScript</strong> – Alert, függvények, DOM, események <span style="color:#64748b">(17 feladat)</span></div>
+        <div class="changelog-item"><strong style="color:#94a3b8">Webfejlesztő eszközök</strong> – VS Code, MDN, DevTools</div>
+      </div>
+    </div>
+
+    <!-- GYAKORLÓ FELADATOK -->
+    <div class="card-col">
+      <a class="option-card gyakorlo" href="web/practice.html">
+        <span class="icon"><i class="fas fa-laptop-code"></i></span>
+        <span class="label">GYAKORLÓ FELADATOK</span>
+        <span class="desc">Weboldal lépésről lépésre · Ágazati</span>
+      </a>
+      <div class="changelog-box gyakorlo-col">
+        <div class="changelog-title"><i class="fas fa-laptop-code" style="color:#22c55e"></i> Feladatokról</div>
+        <div class="changelog-item">Valódi weboldal-kódolási feladatok Monaco szerkesztőben</div>
+        <div class="changelog-item">Élő előnézet és automatikus pontozás</div>
+        <div class="changelog-item">Megoldásmegtekintő, ha elakadnál</div>
+        <div class="changelog-item">Elérhető <strong>vizsga módban</strong> is</div>
+      </div>
+    </div>
+
+    <!-- TUDÁSPRÓBA -->
+    <div class="card-col">
+      <a class="option-card tudasproba" href="#" onclick="event.preventDefault(); openTudasproba()">
+        <span class="icon"><i class="fas fa-graduation-cap"></i></span>
+        <span class="label">TUDÁSPRÓBA</span>
+        <span class="desc">Teszteld a tudásod! Elmélet + gyakorlat</span>
+      </a>
+      <div class="changelog-box tudasproba-col">
+        <div class="changelog-title"><i class="fas fa-graduation-cap" style="color:#f59e0b"></i> Kvízekről</div>
+        <div class="changelog-item">Feleletválasztós kérdések elméletből és kódból</div>
+        <div class="changelog-item"><strong style="color:#7dd3fc">HTML kvíz</strong> – tagek, struktúra, szemantika</div>
+        <div class="changelog-item"><strong style="color:#d8b4fe">CSS kvíz</strong> – szelektorok, tulajdonságok, elrendezés</div>
+        <div class="changelog-item"><strong style="color:#86efac">Bootstrap kvíz</strong> – komponensek, rácsrendszer</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TANANYAG szintválasztó modal -->
+<div id="tananyag-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fas fa-book-open" style="color:#0ea5e9;"></i></div>
+    <div class="modal-title">TANANYAG – Válassz szintet</div>
+    <div class="modal-sub">Melyik témakörrel szeretnél foglalkozni?</div>
+    <div class="modal-grid">
+      <a href="web/learn-html.html" class="modal-btn" style="background:#0a1a2e;border:2px solid #0ea5e9;color:#7dd3fc;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
+        <div class="modal-btn-icon"><i class="fab fa-html5"></i></div>
+        <div class="modal-btn-name">HTML</div>
+        <div class="modal-btn-desc" style="color:#93c5fd;">Tagek, struktúra,<br>képek, táblázat</div>
+        <div class="modal-btn-count">28 feladat</div>
+      </a>
+      <a href="web/learn-css.html" class="modal-btn" style="background:#1a0a2e;border:2px solid #a855f7;color:#d8b4fe;" onmouseover="this.style.background='#4c1d95'" onmouseout="this.style.background='#1a0a2e'">
+        <div class="modal-btn-icon"><i class="fab fa-css3-alt"></i></div>
+        <div class="modal-btn-name">CSS</div>
+        <div class="modal-btn-desc" style="color:#c4b5fd;">Stílusok, elrendezés,<br>animáció, reszponzív</div>
+        <div class="modal-btn-count">32 feladat</div>
+      </a>
+      <a href="web/learn-bootstrap.html" class="modal-btn" style="background:#0a1f14;border:2px solid #22c55e;color:#86efac;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
+        <div class="modal-btn-icon"><i class="fab fa-bootstrap"></i></div>
+        <div class="modal-btn-name">Bootstrap</div>
+        <div class="modal-btn-desc" style="color:#bbf7d0;">Rácsrendszer,<br>gombok, kártyák</div>
+        <div class="modal-btn-count">18 feladat</div>
+      </a>
+      <a href="web/learn-emmet.html" class="modal-btn" style="background:#0f1a1f;border:2px solid #38bdf8;color:#7dd3fc;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0f1a1f'">
+        <div class="modal-btn-icon"><i class="fas fa-bolt"></i></div>
+        <div class="modal-btn-name">Emmet</div>
+        <div class="modal-btn-desc" style="color:#bae6fd;">Gyorsírás, rövidítések,<br>hatékony kódolás</div>
+        <div class="modal-btn-count">18 feladat</div>
+      </a>
+      <a href="web/learn-js.html" class="modal-btn" style="background:#1a1400;border:2px solid #f59e0b;color:#fcd34d;" onmouseover="this.style.background='#78350f'" onmouseout="this.style.background='#1a1400'">
+        <div class="modal-btn-icon"><i class="fab fa-js"></i></div>
+        <div class="modal-btn-name">JavaScript</div>
+        <div class="modal-btn-desc" style="color:#fde68a;">Alert, függvények,<br>DOM, események</div>
+        <div class="modal-btn-count">17 feladat</div>
+      </a>
+      <a href="web/learn-devtools.html" class="modal-btn" style="background:#0f1520;border:2px solid #64748b;color:#94a3b8;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f1520'">
+        <div class="modal-btn-icon"><i class="fas fa-screwdriver-wrench"></i></div>
+        <div class="modal-btn-name" style="font-size:.8rem;">Webfejlesztő eszközök</div>
+        <div class="modal-btn-desc" style="color:#94a3b8;">VS Code, W3Schools,<br>MDN, DevTools</div>
+        <div class="modal-btn-count">support</div>
+      </a>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('tananyag-modal').style.display='none'">Mégse</button>
+  </div>
+</div>
+
+<!-- TUDÁSPRÓBA kvízválasztó modal -->
+<div id="tudasproba-modal" class="modal-overlay" style="border-color:#f59e0b">
+  <div class="modal-box" style="border-color:#f59e0b;max-width:420px;">
+    <div class="modal-icon"><i class="fas fa-graduation-cap" style="color:#f59e0b;"></i></div>
+    <div class="modal-title">TUDÁSPRÓBA – Válassz kvízt</div>
+    <div class="modal-sub">Melyik témakörből szeretnéd tesztelni a tudásod?</div>
+    <div class="modal-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <a href="web/quiz-html.html" class="modal-btn" style="background:#0a1a2e;border:2px solid #0ea5e9;color:#7dd3fc;" onmouseover="this.style.background='#0c4a6e'" onmouseout="this.style.background='#0a1a2e'">
+        <div class="modal-btn-icon"><i class="fab fa-html5"></i></div>
+        <div class="modal-btn-name">HTML kvíz</div>
+        <div class="modal-btn-desc" style="color:#93c5fd;">Tagek, struktúra,<br>szemantika</div>
+      </a>
+      <a href="web/quiz-css.html" class="modal-btn" style="background:#1a0a2e;border:2px solid #a855f7;color:#d8b4fe;" onmouseover="this.style.background='#4c1d95'" onmouseout="this.style.background='#1a0a2e'">
+        <div class="modal-btn-icon"><i class="fab fa-css3-alt"></i></div>
+        <div class="modal-btn-name">CSS kvíz</div>
+        <div class="modal-btn-desc" style="color:#c4b5fd;">Szelektorok,<br>tulajdonságok</div>
+      </a>
+      <a href="web/quiz-bootstrap.html" class="modal-btn" style="background:#0a1f14;border:2px solid #22c55e;color:#86efac;" onmouseover="this.style.background='#14532d'" onmouseout="this.style.background='#0a1f14'">
+        <div class="modal-btn-icon"><i class="fab fa-bootstrap"></i></div>
+        <div class="modal-btn-name">Bootstrap kvíz</div>
+        <div class="modal-btn-desc" style="color:#bbf7d0;">Komponensek,<br>rácsrendszer</div>
+      </a>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('tudasproba-modal').style.display='none'">Mégse</button>
+  </div>
+</div>
+
+<script>
+function openTananyag() {
+    document.getElementById('tananyag-modal').style.display = 'flex';
+}
+function openTudasproba() {
+    document.getElementById('tudasproba-modal').style.display = 'flex';
+}
+// Modalt ESC-re bezárja
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.getElementById('tananyag-modal').style.display = 'none';
+        document.getElementById('tudasproba-modal').style.display = 'none';
+    }
+});
+</script>
+<script src="special-roles.js"></script>
+</body>
+</html>
