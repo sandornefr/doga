@@ -123,6 +123,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .tutorial-btn-ok:hover{background:#2563eb}
 .tutorial-btn-skip{padding:7px 14px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:0.82rem;cursor:pointer}
 .tutorial-btn-skip:hover{border-color:#8b949e;color:#e0e0e0}
+.tutorial-btn-place{padding:7px 18px;background:#22c55e;border:none;border-radius:8px;color:#0d1117;font-size:0.85rem;font-weight:700;cursor:pointer}
+.tutorial-btn-place:hover{background:#16a34a}
+@keyframes ghost-pulse{0%,100%{opacity:.3}50%{opacity:.55}}
+.ghost-dev{animation:ghost-pulse 2s ease-in-out infinite;cursor:pointer}
 
 /* GUI dialogs */
 .gui-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
@@ -283,7 +287,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
     <div class="tutorial-hint-box" id="tut-hint"></div>
     <div class="tutorial-btns">
       <button class="tutorial-btn-skip" onclick="closeTutorial()">Kész, rátérek</button>
-      <button class="tutorial-btn-ok" onclick="closeTutorialAndOpen()">
+      <button id="tut-btn-open" class="tutorial-btn-ok" onclick="closeTutorialAndOpen()">
         <i class="fas fa-terminal"></i> Megnyitom az eszközt
       </button>
     </div>
@@ -1038,6 +1042,7 @@ const appState = {
   tutorialStepIdx: 0,
   tutorialPendingOpen: null,
   currentInfoTab: 'steps',
+  placedDevices: new Set(),
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -1075,9 +1080,11 @@ function startTask(id) {
   appState.devices = {};
   appState.activeDeviceId = null;
   appState.tutorialStepIdx = 0;
+  appState.placedDevices = new Set();
 
-  // Create device instances
+  // Create device instances (ghost devices skip — created when placed)
   task.topologia.eszkozok.forEach(dev => {
+    if (dev.ghost) return;
     switch(dev.tipus) {
       case 'router':
         appState.devices[dev.id] = new CiscoDevice(dev.id, dev.nev, 'router');
@@ -1193,25 +1200,36 @@ function renderTopology(task) {
     devPos[dev.id] = { x: dev.x * scaleX, y: dev.y * scaleY };
   });
 
+  // Helper: is this device still a ghost (not yet placed)?
+  const isGhostDev = d => d.ghost && !appState.placedDevices.has(d.id);
+  const ghostIds = new Set(task.topologia.eszkozok.filter(isGhostDev).map(d => d.id));
+
   // Draw connections first (below devices)
   task.topologia.kapcsolatok.forEach(link => {
     const from = devPos[link.tol];
     const to = devPos[link.ig];
     if (!from || !to) return;
-    const isDone = isLinkActive(task, link);
+    const isGhostLink = ghostIds.has(link.tol) || ghostIds.has(link.ig);
+    const isDone = !isGhostLink && isLinkActive(task, link);
     const isWifi = link.wifi;
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
     line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
-    line.setAttribute('stroke', isDone ? '#22c55e' : (isWifi ? '#374151' : '#374151'));
-    line.setAttribute('stroke-width', isDone ? 2 : 1.5);
-    line.setAttribute('stroke-dasharray', isWifi ? '6,4' : 'none');
-    if (isDone) line.setAttribute('filter', 'url(#glow-green)');
+    if (isGhostLink) {
+      line.setAttribute('stroke', '#30363d');
+      line.setAttribute('stroke-width', '1');
+      line.setAttribute('stroke-dasharray', '4,4');
+      line.setAttribute('opacity', '0.4');
+    } else {
+      line.setAttribute('stroke', isDone ? '#22c55e' : '#374151');
+      line.setAttribute('stroke-width', isDone ? 2 : 1.5);
+      line.setAttribute('stroke-dasharray', isWifi ? '6,4' : 'none');
+      if (isDone) line.setAttribute('filter', 'url(#glow-green)');
+    }
     svg.appendChild(line);
 
-    // Port labels
-    if (link.port1 && !isWifi) {
-      const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+    // Port labels (skip for ghost links)
+    if (link.port1 && !isWifi && !isGhostLink) {
       const angle = Math.atan2(to.y - from.y, to.x - from.x);
       const px = from.x + 28 * Math.cos(angle);
       const py = from.y + 28 * Math.sin(angle);
@@ -1227,13 +1245,18 @@ function renderTopology(task) {
     const pos = devPos[dev.id];
     if (!pos) return;
     const info = DEV_ICONS[dev.tipus] || DEV_ICONS.laptop;
-    const isDone = isDeviceDone(task, dev.id);
+    const ghost = isGhostDev(dev);
+    const isDone = !ghost && isDeviceDone(task, dev.id);
     const isActive = appState.activeDeviceId === dev.id;
-    const isConfigurable = !['server'].includes(dev.tipus) || !dev.elokonfig;
+    const isConfigurable = !ghost && (!['server'].includes(dev.tipus) || !dev.elokonfig);
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('transform', `translate(${pos.x},${pos.y})`);
-    if (isConfigurable) {
+    if (ghost) {
+      g.setAttribute('class', 'ghost-dev');
+      g.onclick = () => placeDevice(dev.id);
+      g.setAttribute('title', `Kattints a ${dev.nev} elhelyezéséhez`);
+    } else if (isConfigurable) {
       g.style.cursor = 'pointer';
       g.onclick = () => openDevice(dev.id);
     }
@@ -1241,25 +1264,44 @@ function renderTopology(task) {
     // Background circle
     const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
     circle.setAttribute('r', 22);
-    circle.setAttribute('fill', isDone ? 'rgba(34,197,94,0.15)' : 'rgba(22,27,34,0.95)');
-    circle.setAttribute('stroke', isDone ? '#22c55e' : (isActive ? '#3b82f6' : info.color));
-    circle.setAttribute('stroke-width', isActive ? 2.5 : 1.5);
-    if (isDone) circle.setAttribute('filter', 'url(#glow)');
+    if (ghost) {
+      circle.setAttribute('fill', 'rgba(22,27,34,0.5)');
+      circle.setAttribute('stroke', '#484f58');
+      circle.setAttribute('stroke-width', '1.5');
+      circle.setAttribute('stroke-dasharray', '5,3');
+    } else {
+      circle.setAttribute('fill', isDone ? 'rgba(34,197,94,0.15)' : 'rgba(22,27,34,0.95)');
+      circle.setAttribute('stroke', isDone ? '#22c55e' : (isActive ? '#3b82f6' : info.color));
+      circle.setAttribute('stroke-width', isActive ? 2.5 : 1.5);
+      if (isDone) circle.setAttribute('filter', 'url(#glow)');
+    }
     g.appendChild(circle);
 
-    // Icon (unicode from FontAwesome mapped to text)
+    // Icon
     const iconText = document.createElementNS('http://www.w3.org/2000/svg','text');
     iconText.setAttribute('y', 1);
     iconText.setAttribute('class', 'dev-icon-text');
-    iconText.setAttribute('fill', isDone ? '#22c55e' : info.color);
+    iconText.setAttribute('fill', ghost ? '#484f58' : (isDone ? '#22c55e' : info.color));
     iconText.setAttribute('font-family', 'Font Awesome 6 Free,FontAwesome');
     iconText.setAttribute('font-weight', '900');
     iconText.setAttribute('font-size', '16');
     iconText.textContent = info.icon;
     g.appendChild(iconText);
 
-    // Status dot
-    if (isDone) {
+    // Ghost overlay: green "+" badge
+    if (ghost) {
+      const badge = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      badge.setAttribute('cx', 16); badge.setAttribute('cy', -16);
+      badge.setAttribute('r', 8); badge.setAttribute('fill', '#22c55e');
+      g.appendChild(badge);
+      const plus = document.createElementNS('http://www.w3.org/2000/svg','text');
+      plus.setAttribute('x', 16); plus.setAttribute('y', -12);
+      plus.setAttribute('text-anchor', 'middle');
+      plus.setAttribute('font-size', '12'); plus.setAttribute('font-weight', '900');
+      plus.setAttribute('fill', '#0d1117');
+      plus.textContent = '+';
+      g.appendChild(plus);
+    } else if (isDone) {
       const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
       dot.setAttribute('cx', 16); dot.setAttribute('cy', -16);
       dot.setAttribute('r', 5); dot.setAttribute('fill', '#22c55e');
@@ -1274,6 +1316,7 @@ function renderTopology(task) {
     // Label
     const label = document.createElementNS('http://www.w3.org/2000/svg','text');
     label.setAttribute('y', 36); label.setAttribute('class', 'dev-label');
+    label.setAttribute('fill', ghost ? '#484f58' : '');
     label.textContent = dev.nev; g.appendChild(label);
 
     svg.appendChild(g);
@@ -1336,6 +1379,9 @@ function renderStepsPanel(task) {
 }
 
 function isStepDone(task, step) {
+  if (step.type === 'place') {
+    return (step.eszkozok || []).every(id => appState.placedDevices.has(id));
+  }
   const dev = appState.devices[step.eszkozId];
   if (!dev) return false;
   try { return step.ellenorzes(dev.state); } catch(e) { return false; }
@@ -1457,20 +1503,30 @@ function checkAll() {
   const task = appState.currentTask;
   if (!task) return;
   const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
+  const ghostIds = task.topologia.eszkozok.filter(d => d.ghost && !task.elvart[d.id]).map(d => d.id);
   let done = 0;
-  const items = allIds.map(id => {
-    const dev = task.topologia.eszkozok.find(d => d.id === id);
-    const ok = validateDevice(task, id);
-    if (ok) done++;
-    return { label: dev ? dev.nev : id, ok };
-  });
-  const pct = allIds.length ? Math.round(done / allIds.length * 100) : 0;
+  const items = [
+    ...allIds.map(id => {
+      const dev = task.topologia.eszkozok.find(d => d.id === id);
+      const ok = validateDevice(task, id);
+      if (ok) done++;
+      return { label: dev ? dev.nev : id, ok };
+    }),
+    ...ghostIds.map(id => {
+      const dev = task.topologia.eszkozok.find(d => d.id === id);
+      const ok = appState.placedDevices.has(id);
+      if (ok) done++;
+      return { label: (dev ? dev.nev : id) + ' – elhelyezés', ok };
+    }),
+  ];
+  const total = allIds.length + ghostIds.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
   const scEl = document.getElementById('res-score');
   scEl.textContent = pct + '%';
   scEl.className = 'results-score ' + (pct >= 60 ? 'pass' : 'fail');
   document.getElementById('res-subtitle').textContent = pct >= 60
-    ? `Sikeresen konfiguráltál ${done}/${allIds.length} eszközt!`
-    : `${done}/${allIds.length} eszköz van helyesen konfigurálva.`;
+    ? `Sikeresen elvégezted ${done}/${total} feladatot!`
+    : `${done}/${total} feladat van helyesen elvégezve.`;
   let itemsHtml = '';
   items.forEach(it => {
     itemsHtml += `<div class="result-item">
@@ -1804,8 +1860,23 @@ function showTutorialStep(idx) {
   document.getElementById('tut-title').textContent = step.cim;
   document.getElementById('tut-text').innerHTML = step.magyarazat || '';
   document.getElementById('tut-hint').textContent = step.tipp || '';
+
+  // Gomb szöveg és akció a lépés típusa alapján
+  const btn = document.getElementById('tut-btn-open');
+  if (step.type === 'place') {
+    btn.className = 'tutorial-btn-place';
+    btn.innerHTML = '<i class="fas fa-plus-circle"></i> Helyezd el';
+    btn.onclick = () => { closeTutorial(); (step.eszkozok || []).forEach(placeDevice); };
+  } else if (step.eszkozId) {
+    btn.className = 'tutorial-btn-ok';
+    btn.innerHTML = '<i class="fas fa-terminal"></i> Megnyitom az eszközt';
+    btn.onclick = closeTutorialAndOpen;
+    btn.style.display = '';
+  } else {
+    btn.style.display = 'none';
+  }
+
   document.getElementById('tutorial-overlay').style.display = 'flex';
-  // Highlight target device
   renderTopology(task);
 }
 
@@ -1819,6 +1890,48 @@ function closeTutorialAndOpen() {
     openDevice(appState.tutorialPendingOpen);
     appState.tutorialPendingOpen = null;
   }
+}
+
+function placeDevice(devId) {
+  const task = appState.currentTask;
+  if (!task || appState.placedDevices.has(devId)) return;
+  appState.placedDevices.add(devId);
+  const devDef = task.topologia.eszkozok.find(d => d.id === devId);
+  if (devDef) {
+    // Create device instance (same as startTask)
+    switch(devDef.tipus) {
+      case 'router':
+        appState.devices[devId] = new CiscoDevice(devId, devDef.nev, 'router');
+        break;
+      case 'switch':
+        appState.devices[devId] = new SwitchDevice(devId, devDef.nev);
+        break;
+      case 'laptop': case 'pc': {
+        const exp = task.elvart[devId];
+        const pc = new PCDevice(devId);
+        if (devDef.hibas && exp) {
+          pc.state.ip = getWrongIp(task, devId);
+          pc.state.mask = getExpectedMask(task, devId);
+          pc.state.gateway = exp.gateway || '';
+        }
+        appState.devices[devId] = pc;
+        break;
+      }
+      case 'homerouter': {
+        const exp = task.elvart[devId];
+        const hr = new HomeRouterDevice(devId, exp ? exp.dhcpStart?.replace(/\.\d+$/, '.1') : '');
+        const ipRow = task.ipTabla.find(r => r.eszkoz.toLowerCase().includes(devDef.nev.toLowerCase()) && r.int === 'LAN');
+        if (ipRow) hr.state.lanIp = ipRow.ip;
+        appState.devices[devId] = hr;
+        break;
+      }
+      case 'phone': case 'tablet':
+        appState.devices[devId] = new WifiClient(devId);
+        break;
+    }
+  }
+  showToast(`${devDef?.nev || devId} elhelyezve!`);
+  updateProgress();
 }
 
 // ═══════════════════════════════════════════════════════════════
