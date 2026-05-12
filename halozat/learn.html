@@ -371,7 +371,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <div class="recipe-body">
         <div style="margin-top:10px;">
           <div class="subnet-chips">
-            <div class="subnet-chip"><div class="s-cidr">/24</div><div class="s-mask">255.255.255.0</div><div class="s-hosts">254 eszköz fér el</div></div>
+            <div class="subnet-chip"><div class="s-cidr">/24</div><div class="s-mask">255.255.255.0</div><div class="s-hosts">254 eszköz</div></div>
             <div class="subnet-chip"><div class="s-cidr">/26</div><div class="s-mask">255.255.255.192</div><div class="s-hosts">62 eszköz</div></div>
             <div class="subnet-chip"><div class="s-cidr">/27</div><div class="s-mask">255.255.255.224</div><div class="s-hosts">30 eszköz</div></div>
             <div class="subnet-chip"><div class="s-cidr">/28</div><div class="s-mask">255.255.255.240</div><div class="s-hosts">14 eszköz</div></div>
@@ -388,10 +388,121 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
   </div><!-- /recipe-list -->
 
   <!-- ═══════════════════════════════════════
-       5. HOGYAN KÉL ÉLETRE EGY HÁLÓZAT?
+       5. KIOSZTHATÓ IP-CÍM KISZÁMÍTÁSA
   ═══════════════════════════════════════ -->
   <div class="sec-title" style="margin-top:36px">
-    <div class="num" style="background:rgba(52,211,153,.12);color:#34d399;">5</div>
+    <div class="num" style="background:rgba(255,166,87,.12);color:#ffa657;">5</div>
+    <h2 style="color:#ffa657;">Kiosztható IP-cím kiszámítása</h2>
+  </div>
+
+  <!-- Miért? -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:.82rem;line-height:1.75;color:var(--dim)">
+    <div style="font-weight:700;color:var(--text);margin-bottom:8px;font-size:.88rem"><i class="fas fa-lightbulb" style="color:#ffa657;margin-right:7px"></i>Miért nem mindegy, melyik IP-t írom be?</div>
+    Egy alhálózatnak (<em>subnet</em>) van egy <strong style="color:#f85149">hálózati címe</strong> (az első – ez nem adható ki eszköznek) és egy <strong style="color:#f85149">broadcast-cím</strong> (az utolsó – szintén nem adható ki). Csak a kettő <em>közötti</em> címek oszthatók ki. Ha véletlenül a hálózati vagy broadcast-cím kerül be, az eszköz nem fog kommunikálni.
+  </div>
+
+  <!-- A blokk-módszer magyarázata -->
+  <div style="background:var(--surface);border:1px solid rgba(255,166,87,.25);border-radius:12px;padding:16px 20px;margin-bottom:16px">
+    <div style="font-weight:800;color:#ffa657;font-size:.88rem;margin-bottom:12px"><i class="fas fa-cube" style="margin-right:7px"></i>A blokk-módszer – így számolj fejben</div>
+
+    <div style="font-size:.8rem;color:var(--dim);line-height:1.8;margin-bottom:14px">
+      Minden maszknak van egy <strong style="color:var(--text)">blokk-mérete</strong> – ennyi IP-cím kerül egymás mellé.<br>
+      A blokkok mindig <strong style="color:var(--text)">a blokk-méret többszöröseinél</strong> kezdődnek (0, 16, 32, 48, 64, 80…).
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px;margin-bottom:16px">
+      <div style="background:#05090f;border:1px solid rgba(255,166,87,.2);border-radius:8px;padding:10px 12px;font-size:.78rem">
+        <div style="color:#ffa657;font-weight:800;font-family:monospace;font-size:.9rem">/26</div>
+        <div style="color:var(--dim);margin:2px 0">Blokk-méret: <strong style="color:var(--text)">64</strong></div>
+        <div style="color:var(--dim)">Blokkok: .0, .64, .128, .192</div>
+        <div style="color:#22c55e;margin-top:4px">62 kiosztható / blokk</div>
+      </div>
+      <div style="background:#05090f;border:1px solid rgba(255,166,87,.2);border-radius:8px;padding:10px 12px;font-size:.78rem">
+        <div style="color:#ffa657;font-weight:800;font-family:monospace;font-size:.9rem">/27</div>
+        <div style="color:var(--dim);margin:2px 0">Blokk-méret: <strong style="color:var(--text)">32</strong></div>
+        <div style="color:var(--dim)">Blokkok: .0, .32, .64, .96…</div>
+        <div style="color:#22c55e;margin-top:4px">30 kiosztható / blokk</div>
+      </div>
+      <div style="background:#05090f;border:1px solid rgba(255,166,87,.2);border-radius:8px;padding:10px 12px;font-size:.78rem">
+        <div style="color:#ffa657;font-weight:800;font-family:monospace;font-size:.9rem">/28</div>
+        <div style="color:var(--dim);margin:2px 0">Blokk-méret: <strong style="color:var(--text)">16</strong></div>
+        <div style="color:var(--dim)">Blokkok: .0, .16, .32, .48, .64…</div>
+        <div style="color:#22c55e;margin-top:4px">14 kiosztható / blokk</div>
+      </div>
+      <div style="background:#05090f;border:1px solid rgba(255,166,87,.2);border-radius:8px;padding:10px 12px;font-size:.78rem">
+        <div style="color:#ffa657;font-weight:800;font-family:monospace;font-size:.9rem">/29</div>
+        <div style="color:var(--dim);margin:2px 0">Blokk-méret: <strong style="color:var(--text)">8</strong></div>
+        <div style="color:var(--dim)">Blokkok: .0, .8, .16, .24, .32…</div>
+        <div style="color:#22c55e;margin-top:4px">6 kiosztható / blokk</div>
+      </div>
+    </div>
+
+    <!-- Konkrét példa /28-ra -->
+    <div style="background:#05090f;border:1px solid rgba(255,166,87,.3);border-radius:8px;padding:12px 16px;font-size:.8rem">
+      <div style="color:#ffa657;font-weight:700;margin-bottom:8px"><i class="fas fa-magnifying-glass" style="margin-right:6px"></i>Példa: 192.168.30.65/28</div>
+      <div style="display:flex;flex-direction:column;gap:5px;color:var(--dim);line-height:1.7">
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#79c0ff;font-weight:700">1.</span> Blokk-méret = <strong style="color:var(--text)">16</strong> → blokkok: …48, <strong style="color:#ffa657">.64</strong>, .80…</div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#79c0ff;font-weight:700">2.</span> A .65 a <strong style="color:#ffa657">.64–.79</strong> blokkba esik</div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Hálózati cím (nem adható ki): <code style="font-family:monospace;color:#f85149">192.168.30.64</code></div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Broadcast-cím (nem adható ki): <code style="font-family:monospace;color:#f85149">192.168.30.79</code></div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#22c55e;font-weight:700">✓</span> Kiosztható tartomány: <code style="font-family:monospace;color:#22c55e">192.168.30.65 – 192.168.30.78</code> (14 db)</div>
+      </div>
+    </div>
+
+    <!-- Vizuális csík -->
+    <div style="margin-top:12px">
+      <div style="font-size:.72rem;color:var(--dim);margin-bottom:5px;text-align:center">A /28-as blokk vizuálisan (.64–.79):</div>
+      <div style="display:flex;border-radius:6px;overflow:hidden;font-size:.65rem;font-family:monospace;font-weight:700;height:28px">
+        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 6px;display:flex;align-items:center;white-space:nowrap">.64 hálózat</div>
+        <div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.65 – .78 &nbsp;✓ kiosztható (14 db)</div>
+        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 6px;display:flex;align-items:center;white-space:nowrap">.79 broadcast</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interaktív kalkulátor -->
+  <div style="background:var(--surface);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:16px 20px;margin-bottom:16px">
+    <div style="font-weight:800;color:var(--neon);font-size:.88rem;margin-bottom:12px"><i class="fas fa-calculator" style="margin-right:7px"></i>Kiosztható IP-cím kalkulátor</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">IP-cím (az IP-táblából)</div>
+        <input id="calc-ip" type="text" placeholder="192.168.30.65" value="192.168.30.65"
+          style="width:100%;background:#05090f;border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none"
+          oninput="calcSubnet()" onfocus="this.style.borderColor='var(--neon)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div style="flex:0 0 auto">
+        <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">Prefix (pl. 28)</div>
+        <select id="calc-prefix" onchange="calcSubnet()"
+          style="background:#05090f;border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:.82rem;outline:none">
+          <option value="24">/24</option>
+          <option value="26">/26</option>
+          <option value="27">/27</option>
+          <option value="28" selected>/28</option>
+          <option value="29">/29</option>
+        </select>
+      </div>
+      <button onclick="calcSubnet()" style="padding:7px 16px;background:var(--neon);border:none;border-radius:6px;color:#030608;font-size:.8rem;font-weight:800;cursor:pointer">Számít</button>
+    </div>
+    <div id="calc-result" style="font-size:.8rem;line-height:2;display:none">
+      <div style="background:#05090f;border-radius:8px;padding:10px 14px">
+        <div style="display:grid;grid-template-columns:max-content 1fr;gap:2px 12px">
+          <span style="color:var(--dim)">Hálózati cím (nem adható ki):</span>    <span id="cr-net"  style="font-family:monospace;color:#f85149"></span>
+          <span style="color:var(--dim)">Broadcast-cím (nem adható ki):</span>   <span id="cr-bcast" style="font-family:monospace;color:#f85149"></span>
+          <span style="color:var(--dim)">Első kiosztható:</span>                  <span id="cr-first" style="font-family:monospace;color:#22c55e;font-weight:700"></span>
+          <span style="color:var(--dim)">Utolsó kiosztható:</span>               <span id="cr-last"  style="font-family:monospace;color:#22c55e;font-weight:700"></span>
+          <span style="color:var(--dim)">Kiosztható összesen:</span>              <span id="cr-cnt"   style="font-family:monospace;color:#ffa657;font-weight:700"></span>
+          <span style="color:var(--dim)">Alhálózati maszk:</span>                <span id="cr-mask"  style="font-family:monospace;color:var(--neon)"></span>
+        </div>
+        <div id="cr-strip" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       6. HOGYAN KÉL ÉLETRE EGY HÁLÓZAT?
+  ═══════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:36px">
+    <div class="num" style="background:rgba(52,211,153,.12);color:#34d399;">6</div>
     <h2 style="color:#34d399;">Hogyan kel életre egy hálózat?</h2>
   </div>
 
@@ -585,6 +696,50 @@ function toggleRecipe(id) {
   const el = document.getElementById(id);
   el.classList.toggle('open');
 }
+
+// ── ALHÁLÓZAT KALKULÁTOR ──
+function calcSubnet() {
+  const ipStr = document.getElementById('calc-ip').value.trim();
+  const prefix = parseInt(document.getElementById('calc-prefix').value);
+  const parts = ipStr.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) return;
+
+  const ipNum = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+  const maskNum = prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
+  const netNum  = (ipNum & maskNum) >>> 0;
+  const bcastNum = (netNum | (~maskNum >>> 0)) >>> 0;
+  const firstNum = netNum + 1;
+  const lastNum  = bcastNum - 1;
+  const hosts    = Math.max(0, bcastNum - netNum - 1);
+
+  function n2ip(n) {
+    return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+  }
+  function n2mask(m) {
+    return [(m>>>24)&255,(m>>>16)&255,(m>>>8)&255,m&255].join('.');
+  }
+
+  document.getElementById('cr-net').textContent   = n2ip(netNum);
+  document.getElementById('cr-bcast').textContent = n2ip(bcastNum);
+  document.getElementById('cr-first').textContent = hosts > 0 ? n2ip(firstNum) : '—';
+  document.getElementById('cr-last').textContent  = hosts > 0 ? n2ip(lastNum)  : '—';
+  document.getElementById('cr-cnt').textContent   = hosts + ' db';
+  document.getElementById('cr-mask').textContent  = n2mask(maskNum);
+
+  // Vizuális sáv – utolsó oktett alapján
+  const nLast = netNum & 0xFF;
+  const bLast = bcastNum & 0xFF;
+  const strip = document.getElementById('cr-strip');
+  strip.innerHTML = `<div style="font-size:.7rem;color:var(--dim);margin-bottom:4px;text-align:center">Tartomány vizuálisan (utolsó oktett: .${nLast}–.${bLast})</div>
+    <div style="display:flex;border-radius:5px;overflow:hidden;font-size:.65rem;font-family:monospace;font-weight:700;height:26px">
+      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center;white-space:nowrap">.${nLast} hálózat</div>
+      ${hosts > 0 ? `<div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.${nLast+1}–.${bLast-1} kiosztható (${hosts} db)</div>` : ''}
+      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center;white-space:nowrap">.${bLast} broadcast</div>
+    </div>`;
+
+  document.getElementById('calc-result').style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', calcSubnet);
 
 // ── MINI TERMINAL ──
 const miniModes = {
