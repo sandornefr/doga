@@ -1822,6 +1822,7 @@
         document.getElementById('web-modal-gyakorlo').style.display = 'block';
     }
     if (urlParams.get('duel') === '1') {
+        window._duelFromHub = true;
         setTimeout(() => openKodparbaj(), 400);
     }
 
@@ -1928,6 +1929,10 @@
             return;
         }
         document.getElementById('duel-online-modal').classList.add('open');
+    }
+    function closeDuelModal() {
+        document.getElementById('duel-online-modal').classList.remove('open');
+        if (window._duelFromHub) location.href = 'python-hub.html';
     }
 
     // ── Vizsga mód ellenőrzés ─────────────────────────────────────────────────
@@ -3150,7 +3155,7 @@ if (location.hash === '#web-tanulas') {
         <div class="duel-modal-list" id="duel-online-list">
             <div class="duel-no-members"><i class="fas fa-moon" style="margin-right:6px;opacity:.5;"></i>Jelenleg nincs online csoporttárs.</div>
         </div>
-        <button class="duel-modal-close" onclick="document.getElementById('duel-online-modal').classList.remove('open')">
+        <button class="duel-modal-close" onclick="closeDuelModal()">
             <i class="fas fa-times" style="margin-right:6px;"></i>Bezárás
         </button>
     </div>
