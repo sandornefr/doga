@@ -28,8 +28,34 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .topbar-right a{padding:5px 13px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
 .topbar-right a:hover{border-color:var(--neon);color:var(--neon)}
 
-/* LAYOUT */
-.page{width:100%;max-width:780px;padding:28px 20px 80px;position:relative;z-index:1}
+/* ── CHAPTER NAV ── */
+.chap-nav{position:sticky;top:52px;z-index:90;width:100%;background:rgba(3,6,8,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;justify-content:center}
+.chap-steps{display:flex;max-width:780px;width:100%}
+.chap-step{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 4px;font-size:.7rem;font-weight:700;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.chap-step:hover{color:var(--text)}
+.chap-step.active{color:var(--neon);border-bottom-color:var(--neon)}
+.chap-step.done{color:#22c55e}
+.chap-step.done .sn{background:#22c55e;color:#030608}
+.sn{width:19px;height:19px;border-radius:50%;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;flex-shrink:0;transition:all .2s}
+.chap-step.active .sn{background:var(--neon);color:#030608}
+.chap-lbl{display:none}
+@media(min-width:460px){.chap-lbl{display:inline}}
+
+/* ── PAGE ── */
+.page{width:100%;max-width:780px;padding:28px 20px 60px;position:relative;z-index:1}
+
+/* ── CHAPTER PANELS ── */
+.chapter{display:none}
+.chapter.active{display:block}
+
+/* ── CHAPTER FOOTER ── */
+.chap-footer{display:flex;align-items:center;justify-content:space-between;padding:24px 0 0;margin-top:32px;border-top:1px solid var(--border)}
+.chap-btn{padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--dim);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s}
+.chap-btn:hover:not(:disabled){border-color:var(--neon);color:var(--neon)}
+.chap-btn.primary{background:var(--neon);border-color:var(--neon);color:#030608}
+.chap-btn.primary:hover{background:#7dd3fc}
+.chap-btn:disabled{opacity:.3;cursor:default;pointer-events:none}
+.chap-pos{font-size:.75rem;color:var(--dim)}
 
 /* HERO */
 .hero{text-align:center;margin-bottom:36px;padding:0 10px}
@@ -43,9 +69,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .sec-title .num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:900;flex-shrink:0;font-family:monospace}
 .sec-title h2{font-size:.95rem;font-weight:800;letter-spacing:.04em}
 
-/* ═══════════════════════════
-   ANALÓGIA KÁRTYA
-═══════════════════════════ */
+/* ANALOGY */
 .analogy-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:20px}
 .analogy-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .analogy-head .icon{font-size:1.5rem;color:var(--neon)}
@@ -58,24 +82,17 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .analogy-step .a-prompt{font-family:'Consolas','Courier New',monospace;font-size:.75rem;font-weight:700;margin-top:4px;text-align:center}
 .analogy-arrow{font-size:1.1rem;color:var(--muted);flex-shrink:0;padding:0 4px;padding-bottom:20px}
 
-/* ═══════════════════════════
-   3 ALAPPARANCS
-═══════════════════════════ */
+/* BIG 3 */
 .big3-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
 .big3-card{background:var(--surface);border:1px solid;border-radius:10px;padding:16px;text-align:center;cursor:default}
 .big3-card .b3-num{font-size:.65rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;opacity:.7}
 .big3-card .b3-cmd{font-family:'Consolas','Courier New',monospace;font-size:.95rem;font-weight:800;margin-bottom:6px;display:block}
 .big3-card .b3-desc{font-size:.75rem;color:var(--dim);line-height:1.4}
-.big3-card.c1{border-color:rgba(227,179,65,.35)}
-.big3-card.c1 .b3-num,.big3-card.c1 .b3-cmd{color:#e3b341}
-.big3-card.c2{border-color:rgba(121,192,255,.3)}
-.big3-card.c2 .b3-num,.big3-card.c2 .b3-cmd{color:#79c0ff}
-.big3-card.c3{border-color:rgba(86,211,100,.3)}
-.big3-card.c3 .b3-num,.big3-card.c3 .b3-cmd{color:#56d364}
+.big3-card.c1{border-color:rgba(227,179,65,.35)}.big3-card.c1 .b3-num,.big3-card.c1 .b3-cmd{color:#e3b341}
+.big3-card.c2{border-color:rgba(121,192,255,.3)}.big3-card.c2 .b3-num,.big3-card.c2 .b3-cmd{color:#79c0ff}
+.big3-card.c3{border-color:rgba(86,211,100,.3)}.big3-card.c3 .b3-num,.big3-card.c3 .b3-cmd{color:#56d364}
 
-/* ═══════════════════════════
-   ACCORDION RECEPTEK
-═══════════════════════════ */
+/* RECIPES */
 .recipe-list{display:flex;flex-direction:column;gap:8px}
 .recipe{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface)}
 .recipe-head{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;user-select:none;transition:background .2s}
@@ -95,9 +112,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .p-user{color:var(--c-user)}.p-enable{color:var(--c-enable)}.p-config{color:var(--c-config)}.p-if{color:var(--c-if)}.p-line{color:var(--c-line)}
 .cmd{color:#e0e0e0}.val{color:#ffa657}.comment{color:#484f58;font-style:italic}
 
-/* ═══════════════════════════
-   MINI TERMINÁL
-═══════════════════════════ */
+/* MINI TERMINAL */
 .mini-term-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:8px}
 .mini-term-bar{background:#161b22;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--dim);border-bottom:1px solid var(--border)}
 .mini-term-bar .dot{width:10px;height:10px;border-radius:50%}
@@ -106,29 +121,71 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .mini-input-row{display:flex;align-items:center;padding:8px 12px;background:#0d1117;border-top:1px solid var(--border);gap:8px}
 #mini-prompt{font-family:monospace;font-size:.82rem;font-weight:700;color:var(--c-user);white-space:nowrap;flex-shrink:0}
 #mini-input{flex:1;background:transparent;border:none;outline:none;color:#e0e0e0;font-family:'Consolas','Courier New',monospace;font-size:.82rem;caret-color:var(--neon)}
-.mini-line-cmd{color:#79c0ff}
-.mini-line-ok{color:#56d364}
-.mini-line-err{color:#f85149}
-.mini-line-info{color:#8b949e}
+.mini-line-cmd{color:#79c0ff}.mini-line-ok{color:#56d364}.mini-line-err{color:#f85149}.mini-line-info{color:#8b949e}
 
-/* ═══════════════════════════
-   ALHÁLÓZAT QUICK REF
-═══════════════════════════ */
+/* SUBNET */
 .subnet-chips{display:flex;flex-wrap:wrap;gap:8px}
 .subnet-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.75rem;display:flex;flex-direction:column;gap:2px;min-width:120px}
 .subnet-chip .s-cidr{font-family:monospace;color:#ffa657;font-weight:700;font-size:.85rem}
 .subnet-chip .s-mask{font-family:monospace;color:var(--neon);font-size:.72rem}
 .subnet-chip .s-hosts{color:var(--dim);font-size:.68rem}
 
-/* BOTTOM NAV */
-.bottom-nav{display:flex;gap:12px;justify-content:center;margin-top:36px;flex-wrap:wrap}
-.btn-nav{padding:10px 22px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
-.btn-blue{background:rgba(56,189,248,.1);border:1px solid #38bdf8;color:#38bdf8}
-.btn-blue:hover{background:rgba(56,189,248,.2)}
-.btn-green{background:rgba(52,211,153,.1);border:1px solid #34d399;color:#34d399}
-.btn-green:hover{background:rgba(52,211,153,.2)}
-.btn-purple{background:rgba(129,140,248,.1);border:1px solid #818cf8;color:#818cf8}
-.btn-purple:hover{background:rgba(129,140,248,.2)}
+/* ── LIVE NETWORK (ch5) ── */
+.live-wrap{display:flex;flex-direction:column;gap:16px}
+.live-topo-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;overflow:hidden}
+.live-topo-box svg{width:100%;height:auto;display:block}
+
+/* SVG topology device states */
+.nd-off circle{fill:#0d1117;stroke:#1e4060;stroke-width:2}
+.nd-off image{opacity:.25;filter:grayscale(1)}
+.nd-off .nd-lbl{fill:#1e4060}
+.nd-off .nd-ip{display:none}
+
+.nd-sel circle{fill:#0d1117;stroke:#38bdf8;stroke-width:2.5;filter:drop-shadow(0 0 6px #38bdf888)}
+.nd-sel image{opacity:.7}
+.nd-sel .nd-lbl{fill:#38bdf8}
+
+.nd-on circle{fill:#061018;stroke:#56d364;stroke-width:2}
+.nd-on image{opacity:1}
+.nd-on .nd-lbl{fill:#56d364}
+.nd-on .nd-ip{display:block;fill:#ffa657;font-size:9px;font-family:monospace;font-weight:700}
+
+.nd-saved circle{fill:#061a0c;stroke:#22c55e;stroke-width:2.5;filter:drop-shadow(0 0 8px #22c55e88)}
+.nd-saved image{opacity:1}
+.nd-saved .nd-lbl{fill:#22c55e}
+.nd-saved .nd-ip{display:block;fill:#ffa657;font-size:9px;font-family:monospace;font-weight:700}
+
+/* SVG link states */
+.nl-off{stroke:#1e4060;stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+.nl-sel{stroke:#38bdf8;stroke-width:2.5;fill:none;filter:drop-shadow(0 0 4px #38bdf888)}
+.nl-on{stroke:#56d364;stroke-width:2;fill:none}
+
+/* Step card */
+.live-step-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.ls-progress{font-size:.7rem;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ls-prog-bar{flex:1;height:4px;background:var(--muted);border-radius:2px;overflow:hidden}
+.ls-prog-fill{height:100%;background:var(--neon);border-radius:2px;transition:width .4s}
+.ls-miert{font-size:.82rem;color:var(--dim);line-height:1.7;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.ls-miert strong{color:var(--text)}
+.ls-parancs-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px}
+.ls-parancs-cmd{font-family:'Consolas','Courier New',monospace;font-size:.92rem;font-weight:700;color:#e3b341;background:#05090f;border:1px solid rgba(227,179,65,.25);border-radius:7px;padding:8px 14px;cursor:pointer;user-select:all;transition:background .2s}
+.ls-parancs-cmd:hover{background:rgba(227,179,65,.08)}
+.ls-copy-hint{font-size:.66rem;color:var(--dim);margin-top:4px}<br>
+.ls-result{margin-top:10px;padding:8px 12px;border-radius:7px;font-size:.8rem;line-height:1.6;display:none}
+.ls-result.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;display:block}
+.ls-result.err{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#f85149;display:block}
+
+/* Live CLI */
+.live-cli-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.live-cli-bar{background:#161b22;padding:7px 14px;display:flex;align-items:center;gap:8px;font-size:.73rem;color:var(--dim);border-bottom:1px solid var(--border)}
+.live-cli-bar .dot{width:9px;height:9px;border-radius:50%}
+#live-output{padding:8px 14px;font-family:'Consolas','Courier New',monospace;font-size:.78rem;line-height:1.8;min-height:80px;max-height:160px;overflow-y:auto;white-space:pre-wrap}
+.live-input-row{display:flex;align-items:center;padding:8px 12px;background:#0d1117;border-top:2px solid var(--neon);gap:8px}
+#live-prompt{font-family:monospace;font-size:.85rem;font-weight:700;color:var(--c-user);white-space:nowrap;flex-shrink:0}
+#live-input{flex:1;background:transparent;border:none;outline:none;color:#e0e0e0;font-family:'Consolas','Courier New',monospace;font-size:.85rem;caret-color:var(--neon)}
+
+.live-done-banner{text-align:center;padding:20px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:12px;display:none}
+.live-done-banner.show{display:block}
 
 @media(max-width:580px){.big3-grid{grid-template-columns:1fr}.analogy-step{min-width:70px}.analogy-step .a-label{font-size:.6rem}}
 </style>
@@ -145,18 +202,30 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
   </div>
 </div>
 
+<!-- CHAPTER NAV -->
+<nav class="chap-nav">
+  <div class="chap-steps">
+    <div class="chap-step active" id="cn1" onclick="goChapter(1)"><span class="sn">1</span><span class="chap-lbl">&nbsp;Alapok</span></div>
+    <div class="chap-step" id="cn2" onclick="goChapter(2)"><span class="sn">2</span><span class="chap-lbl">&nbsp;CLI módok</span></div>
+    <div class="chap-step" id="cn3" onclick="goChapter(3)"><span class="sn">3</span><span class="chap-lbl">&nbsp;IP-számítás</span></div>
+    <div class="chap-step" id="cn4" onclick="goChapter(4)"><span class="sn">4</span><span class="chap-lbl">&nbsp;Receptek</span></div>
+    <div class="chap-step" id="cn5" onclick="goChapter(5)"><span class="sn">5</span><span class="chap-lbl">&nbsp;Élő hálózat</span></div>
+  </div>
+</nav>
+
 <div class="page">
 
-  <!-- HERO -->
+<!-- ══════════════════════════════════════════
+     FEJEZET 1 – ALAPOK
+══════════════════════════════════════════ -->
+<div class="chapter active" id="ch1">
+
   <div class="hero">
     <div class="hero-badge"><i class="fas fa-graduation-cap"></i> Elmélet</div>
     <h1><span>Mit kell tudnod</span> a feladatokhoz?</h1>
     <p>Nincs hosszú szöveg. Csak 3 parancs, egy séma, és másolható receptek. Elég 10 perc, utána már érteni fogod, mi történik a terminálban.</p>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       1. ANALÓGIA
-  ═══════════════════════════════════════ -->
   <div class="sec-title">
     <div class="num" style="background:rgba(56,189,248,.15);color:#38bdf8;">1</div>
     <h2 style="color:#38bdf8;">Gondolj rá úgy, mint egy telefonra</h2>
@@ -201,9 +270,6 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       2. 3 ALAPPARANCS
-  ═══════════════════════════════════════ -->
   <div class="sec-title">
     <div class="num" style="background:rgba(227,179,65,.15);color:#e3b341;">2</div>
     <h2 style="color:#e3b341;">3 parancs, amit MINDENKÉPPEN tudnod kell</h2>
@@ -227,21 +293,31 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     </div>
   </div>
 
-  <div style="background:var(--surface2);border:1px solid rgba(56,189,248,.15);border-radius:8px;padding:12px 16px;font-size:.8rem;color:var(--dim);line-height:1.6;margin-bottom:8px">
+  <div style="background:var(--surface2);border:1px solid rgba(56,189,248,.15);border-radius:8px;padding:12px 16px;font-size:.8rem;color:var(--dim);line-height:1.6;">
     <i class="fas fa-keyboard" style="color:var(--neon);margin-right:7px;"></i>
-    <strong style="color:var(--text)">Tipp:</strong> A <kbd style="background:#161b22;border:1px solid #30363d;border-radius:4px;padding:1px 6px;font-size:.75rem;color:#e0e0e0;">Tab</kbd> kiegészíti a parancsot. Nem kell mindent begépelni: <code style="font-family:monospace;color:var(--neon)">conf t</code> = <code style="font-family:monospace;color:var(--neon)">configure terminal</code>, <code style="font-family:monospace;color:var(--neon)">int g0/0</code> = <code style="font-family:monospace;color:var(--neon)">interface GigabitEthernet0/0</code>
+    <strong style="color:var(--text)">Tipp:</strong> A <kbd style="background:#161b22;border:1px solid #30363d;border-radius:4px;padding:1px 6px;font-size:.75rem;color:#e0e0e0;">Tab</kbd> kiegészíti a parancsot. <code style="font-family:monospace;color:var(--neon)">conf t</code> = <code style="font-family:monospace;color:var(--neon)">configure terminal</code>, <code style="font-family:monospace;color:var(--neon)">int g0/0</code> = <code style="font-family:monospace;color:var(--neon)">interface GigabitEthernet0/0</code>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       3. MINI TERMINAL
-  ═══════════════════════════════════════ -->
-  <div class="sec-title">
-    <div class="num" style="background:rgba(86,211,100,.12);color:#56d364;">3</div>
+  <div class="chap-footer">
+    <button class="chap-btn" disabled><i class="fas fa-chevron-left"></i> Vissza</button>
+    <span class="chap-pos">1 / 5</span>
+    <button class="chap-btn primary" onclick="goChapter(2)">Tovább <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FEJEZET 2 – CLI MÓDOK
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch2">
+
+  <div class="sec-title" style="margin-top:0">
+    <div class="num" style="background:rgba(86,211,100,.12);color:#56d364;">1</div>
     <h2 style="color:#56d364;">Próbáld ki! – Mini terminál</h2>
   </div>
 
-  <div style="font-size:.8rem;color:var(--dim);margin-bottom:10px;line-height:1.6;">
-    Írd be: <code style="font-family:monospace;color:var(--neon)">enable</code>, majd <code style="font-family:monospace;color:var(--neon)">configure terminal</code>, majd <code style="font-family:monospace;color:var(--neon)">interface GigabitEthernet0/0</code>, végül <code style="font-family:monospace;color:var(--neon)">exit</code>. Figyeld, hogyan változik a prompt!
+  <div style="font-size:.82rem;color:var(--dim);margin-bottom:14px;line-height:1.75;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+    Írd be sorban: <code style="font-family:monospace;color:var(--neon)">enable</code> → <code style="font-family:monospace;color:var(--neon)">configure terminal</code> → <code style="font-family:monospace;color:var(--neon)">interface GigabitEthernet0/0</code> → <code style="font-family:monospace;color:var(--neon)">ip address 192.168.1.1 255.255.255.0</code> → <code style="font-family:monospace;color:var(--neon)">no shutdown</code> → <code style="font-family:monospace;color:var(--neon)">exit</code> → <code style="font-family:monospace;color:var(--neon)">end</code> → <code style="font-family:monospace;color:var(--neon)">write memory</code>.
+    <br><br>Figyeld, hogyan változik a prompt minden lépésnél!
   </div>
 
   <div class="mini-term-wrap">
@@ -249,7 +325,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <div class="dot" style="background:#f85149;"></div>
       <div class="dot" style="background:#e3b341;"></div>
       <div class="dot" style="background:#56d364;"></div>
-      <span style="margin-left:6px;"><i class="fas fa-terminal" style="color:#56d364;margin-right:5px;"></i>Gyakorló terminál</span>
+      <span style="margin-left:6px;"><i class="fas fa-terminal" style="color:#56d364;margin-right:5px;"></i>Szabad gyakorló terminál</span>
       <span class="hint">Tab = kiegészítés &nbsp;·&nbsp; ↑ = előzmény</span>
     </div>
     <div id="mini-output"></div>
@@ -259,158 +335,61 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       4. RECEPTEK
-  ═══════════════════════════════════════ -->
   <div class="sec-title">
-    <div class="num" style="background:rgba(247,129,102,.12);color:#f78166;">4</div>
-    <h2 style="color:#f78166;">Parancsok – kattints a feladatra</h2>
+    <div class="num" style="background:rgba(121,192,255,.12);color:#79c0ff;">2</div>
+    <h2 style="color:#79c0ff;">Melyik mód mire jó?</h2>
   </div>
 
-  <div class="recipe-list">
-
-    <!-- IP-cím beállítás -->
-    <div class="recipe" id="r1">
-      <div class="recipe-head" onclick="toggleRecipe('r1')">
-        <span class="r-icon" style="color:#f78166;"><i class="fas fa-ethernet"></i></span>
-        <span class="r-title">IP-cím beállítása egy interfészen</span>
-        <span class="r-sub">Router G0/0, G0/1</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Belépés enable módba, majd konfigurációs módba</div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text">Megadjuk, melyik interfészt akarjuk beállítani</div></div>
-        <div class="step-row"><div class="step-num">3</div><div class="step-text">IP-cím + alhálózati maszk megadása</div></div>
-        <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>no shutdown</strong> – bekapcsoljuk az interfészt (kötelező!)</div></div>
-        <div class="code-mini">
-<div><span class="p-user">Router&gt;</span><span class="cmd"> enable</span></div>
-<div><span class="p-enable">Router#</span><span class="cmd"> configure terminal</span></div>
-<div><span class="p-config">Router(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span></div>
-<div><span class="p-if">Router(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.65</span> <span class="val">255.255.255.240</span></span></div>
-<div><span class="p-if">Router(config-if)#</span><span class="cmd"> no shutdown</span></div>
-<div><span class="p-if">Router(config-if)#</span><span class="cmd"> exit</span></div>
-<div><span class="comment">-- Ugyanígy a másik interfészre is (G0/0)</span></div>
-</div>
-      </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="background:var(--surface);border:1px solid rgba(86,211,100,.2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-family:monospace;font-size:.95rem;color:#56d364;font-weight:700;white-space:nowrap;width:140px;flex-shrink:0">Router&gt;</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.65"><strong style="color:var(--text)">User mód</strong> — Csak olvasás. Nem tudsz semmit beállítani. Innen lépj tovább az <code style="font-family:monospace;color:#56d364">enable</code> paranccsal.</div>
     </div>
-
-    <!-- Switch IP -->
-    <div class="recipe" id="r2">
-      <div class="recipe-head" onclick="toggleRecipe('r2')">
-        <span class="r-icon" style="color:#79c0ff;"><i class="fas fa-network-wired"></i></span>
-        <span class="r-title">Switch menedzsment IP + átjáró</span>
-        <span class="r-sub">Vlan1 + default-gateway</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">A switchnek nem G0/0-ra, hanem <strong>Vlan1</strong>-re kell az IP-t beállítani</div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text">Az <strong>ip default-gateway</strong> megmondja a switchnek, hova küldje a forgalmat (ez a router IP-je)</div></div>
-        <div class="code-mini">
-<div><span class="p-config">SW1(config)#</span><span class="cmd"> interface Vlan1</span></div>
-<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.66</span> <span class="val">255.255.255.240</span></span></div>
-<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> no shutdown</span></div>
-<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> exit</span></div>
-<div><span class="p-config">SW1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.30.65</span></span></div>
-</div>
-      </div>
+    <div style="background:var(--surface);border:1px solid rgba(227,179,65,.2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-family:monospace;font-size:.95rem;color:#e3b341;font-weight:700;white-space:nowrap;width:140px;flex-shrink:0">Router#</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.65"><strong style="color:var(--text)">Enable mód</strong> — Privilegizált szint. Innen tudsz menteni (<code style="font-family:monospace;color:#e3b341">write memory</code>), show parancsokat futtatni, és belépni a konfigba.</div>
     </div>
-
-    <!-- Alapkonfig + SSH -->
-    <div class="recipe" id="r3">
-      <div class="recipe-head" onclick="toggleRecipe('r3')">
-        <span class="r-icon" style="color:#d2a8ff;"><i class="fas fa-shield-halved"></i></span>
-        <span class="r-title">Biztonság + SSH beállítás</span>
-        <span class="r-sub">hostname, jelszó, SSH kulcs, VTY</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Névadás (<strong>hostname</strong>), jelszó titkosítva (<strong>enable secret</strong>), összes jelszó titkosítása (<strong>service password-encryption</strong>)</div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text">Domain név kell az SSH kulcshoz, majd <strong>crypto key generate rsa</strong> – a bitszámnál írj <strong>2048</strong>-at</div></div>
-        <div class="step-row"><div class="step-num">3</div><div class="step-text">Helyi felhasználó létrehozása, VTY vonalak beállítása SSH-ra</div></div>
-        <div class="code-mini">
-<div><span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">Torony</span></span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> enable secret <span class="val">Torony</span></span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> service password-encryption</span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> ip domain-name <span class="val">alapvizsga2023.hu</span></span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> crypto key generate rsa</span></div>
-<div><span class="comment">-- Kérdezi a bitméretet → írj: 2048</span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> username <span class="val">tanuló</span> secret <span class="val">Torony</span></span></div>
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> line vty 0 15</span></div>
-<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> transport input ssh</span></div>
-<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> login local</span></div>
-<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> exit</span></div>
-</div>
-      </div>
+    <div style="background:var(--surface);border:1px solid rgba(121,192,255,.2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-family:monospace;font-size:.85rem;color:#79c0ff;font-weight:700;white-space:nowrap;width:140px;flex-shrink:0">Router(config)#</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.65"><strong style="color:var(--text)">Config mód</strong> — Globális beállítások: hostname, jelszó, interfész kiválasztás, SSH. Parancs: <code style="font-family:monospace;color:#79c0ff">configure terminal</code></div>
     </div>
-
-    <!-- Mentés -->
-    <div class="recipe" id="r4">
-      <div class="recipe-head" onclick="toggleRecipe('r4')">
-        <span class="r-icon" style="color:#56d364;"><i class="fas fa-floppy-disk"></i></span>
-        <span class="r-title">Konfiguráció mentése</span>
-        <span class="r-sub">write memory – mindig a végén!</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Ha nem mentesz, újraindítás után <strong>elvész</strong> minden beállítás!</div></div>
-        <div class="code-mini">
-<div><span class="p-config">Torony(config)#</span><span class="cmd"> end</span></div>
-<div><span class="p-enable">Torony#</span><span class="cmd"> write memory</span></div>
-</div>
-      </div>
+    <div style="background:var(--surface);border:1px solid rgba(247,129,102,.2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-family:monospace;font-size:.78rem;color:#f78166;font-weight:700;white-space:nowrap;width:140px;flex-shrink:0">Router(config-if)#</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.65"><strong style="color:var(--text)">Interface mód</strong> — Egy adott port beállítása: IP-cím, no shutdown. Belépés: <code style="font-family:monospace;color:#f78166">interface GigabitEthernet0/0</code></div>
     </div>
-
-    <!-- Alhálózati maszkok -->
-    <div class="recipe" id="r5">
-      <div class="recipe-head" onclick="toggleRecipe('r5')">
-        <span class="r-icon" style="color:#ffa657;"><i class="fas fa-table-cells"></i></span>
-        <span class="r-title">Alhálózati maszkok gyorslista</span>
-        <span class="r-sub">/24, /26, /27, /28, /29 – az IP-táblából olvasod</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div style="margin-top:10px;">
-          <div class="subnet-chips">
-            <div class="subnet-chip"><div class="s-cidr">/24</div><div class="s-mask">255.255.255.0</div><div class="s-hosts">254 eszköz</div></div>
-            <div class="subnet-chip"><div class="s-cidr">/26</div><div class="s-mask">255.255.255.192</div><div class="s-hosts">62 eszköz</div></div>
-            <div class="subnet-chip"><div class="s-cidr">/27</div><div class="s-mask">255.255.255.224</div><div class="s-hosts">30 eszköz</div></div>
-            <div class="subnet-chip"><div class="s-cidr">/28</div><div class="s-mask">255.255.255.240</div><div class="s-hosts">14 eszköz</div></div>
-            <div class="subnet-chip"><div class="s-cidr">/29</div><div class="s-mask">255.255.255.248</div><div class="s-hosts">6 eszköz</div></div>
-          </div>
-          <div style="margin-top:10px;font-size:.77rem;color:var(--dim);line-height:1.6;padding:8px 10px;background:#05090f;border-radius:6px;">
-            <i class="fas fa-info-circle" style="color:var(--neon);margin-right:5px;"></i>
-            A maszkot az IP-táblából olvasod ki (pl. megjegyzés: <code style="font-family:monospace;color:var(--neon)">/28</code>). Csak a számot kell beírni: <code style="font-family:monospace;color:var(--neon)">255.255.255.240</code>
-          </div>
-        </div>
-      </div>
+    <div style="background:var(--surface);border:1px solid rgba(210,168,255,.2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-family:monospace;font-size:.78rem;color:#d2a8ff;font-weight:700;white-space:nowrap;width:140px;flex-shrink:0">Router(config-line)#</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.65"><strong style="color:var(--text)">Line mód</strong> — VTY (SSH) vonalak beállítása. Belépés: <code style="font-family:monospace;color:#d2a8ff">line vty 0 15</code></div>
     </div>
-
-  </div><!-- /recipe-list -->
-
-  <!-- ═══════════════════════════════════════
-       5. KIOSZTHATÓ IP-CÍM KISZÁMÍTÁSA
-  ═══════════════════════════════════════ -->
-  <div class="sec-title" style="margin-top:36px">
-    <div class="num" style="background:rgba(255,166,87,.12);color:#ffa657;">5</div>
-    <h2 style="color:#ffa657;">Kiosztható IP-cím kiszámítása</h2>
   </div>
 
-  <!-- Miért? -->
+  <div class="chap-footer">
+    <button class="chap-btn" onclick="goChapter(1)"><i class="fas fa-chevron-left"></i> Vissza</button>
+    <span class="chap-pos">2 / 5</span>
+    <button class="chap-btn primary" onclick="goChapter(3)">Tovább <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FEJEZET 3 – IP-SZÁMÍTÁS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch3">
+
+  <div class="sec-title" style="margin-top:0">
+    <div class="num" style="background:rgba(255,166,87,.12);color:#ffa657;">1</div>
+    <h2 style="color:#ffa657;">Miért nem mindegy melyik IP-t írom be?</h2>
+  </div>
+
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:.82rem;line-height:1.75;color:var(--dim)">
-    <div style="font-weight:700;color:var(--text);margin-bottom:8px;font-size:.88rem"><i class="fas fa-lightbulb" style="color:#ffa657;margin-right:7px"></i>Miért nem mindegy, melyik IP-t írom be?</div>
-    Egy alhálózatnak (<em>subnet</em>) van egy <strong style="color:#f85149">hálózati címe</strong> (az első – ez nem adható ki eszköznek) és egy <strong style="color:#f85149">broadcast-cím</strong> (az utolsó – szintén nem adható ki). Csak a kettő <em>közötti</em> címek oszthatók ki. Ha véletlenül a hálózati vagy broadcast-cím kerül be, az eszköz nem fog kommunikálni.
+    Egy alhálózatnak van egy <strong style="color:#f85149">hálózati címe</strong> (az első — ezt nem adhatod ki eszköznek) és egy <strong style="color:#f85149">broadcast-cím</strong> (az utolsó — szintén nem adható ki). Csak a kettő <em>közötti</em> címek oszthatók ki. Ha véletlenül a hálózati vagy broadcast-cím kerül be, az eszköz nem fog kommunikálni.
   </div>
 
-  <!-- A blokk-módszer magyarázata -->
   <div style="background:var(--surface);border:1px solid rgba(255,166,87,.25);border-radius:12px;padding:16px 20px;margin-bottom:16px">
     <div style="font-weight:800;color:#ffa657;font-size:.88rem;margin-bottom:12px"><i class="fas fa-cube" style="margin-right:7px"></i>A blokk-módszer – így számolj fejben</div>
-
     <div style="font-size:.8rem;color:var(--dim);line-height:1.8;margin-bottom:14px">
-      Minden maszknak van egy <strong style="color:var(--text)">blokk-mérete</strong> – ennyi IP-cím kerül egymás mellé.<br>
-      A blokkok mindig <strong style="color:var(--text)">a blokk-méret többszöröseinél</strong> kezdődnek (0, 16, 32, 48, 64, 80…).
+      Minden maszknak van egy <strong style="color:var(--text)">blokk-mérete</strong>. A blokkok mindig <strong style="color:var(--text)">a blokk-méret többszöröseinél</strong> kezdődnek.
     </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:16px">
       <div style="background:#05090f;border:1px solid rgba(255,166,87,.2);border-radius:8px;padding:10px 12px;font-size:.78rem">
         <div style="color:#ffa657;font-weight:800;font-family:monospace;font-size:.9rem">/26</div>
         <div style="color:var(--dim);margin:2px 0">Blokk-méret: <strong style="color:var(--text)">64</strong></div>
@@ -436,49 +415,38 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
         <div style="color:#22c55e;margin-top:4px">6 kiosztható / blokk</div>
       </div>
     </div>
-
-    <!-- Konkrét példa /28-ra -->
     <div style="background:#05090f;border:1px solid rgba(255,166,87,.3);border-radius:8px;padding:12px 16px;font-size:.8rem">
       <div style="color:#ffa657;font-weight:700;margin-bottom:8px"><i class="fas fa-magnifying-glass" style="margin-right:6px"></i>Példa: 192.168.30.65/28</div>
       <div style="display:flex;flex-direction:column;gap:5px;color:var(--dim);line-height:1.7">
         <div><span style="display:inline-block;width:14px;text-align:center;color:#79c0ff;font-weight:700">1.</span> Blokk-méret = <strong style="color:var(--text)">16</strong> → blokkok: …48, <strong style="color:#ffa657">.64</strong>, .80…</div>
         <div><span style="display:inline-block;width:14px;text-align:center;color:#79c0ff;font-weight:700">2.</span> A .65 a <strong style="color:#ffa657">.64–.79</strong> blokkba esik</div>
-        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Hálózati cím (nem adható ki): <code style="font-family:monospace;color:#f85149">192.168.30.64</code></div>
-        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Broadcast-cím (nem adható ki): <code style="font-family:monospace;color:#f85149">192.168.30.79</code></div>
-        <div><span style="display:inline-block;width:14px;text-align:center;color:#22c55e;font-weight:700">✓</span> Kiosztható tartomány: <code style="font-family:monospace;color:#22c55e">192.168.30.65 – 192.168.30.78</code> (14 db)</div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Hálózati cím: <code style="font-family:monospace;color:#f85149">192.168.30.64</code></div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#f85149;font-weight:700">✗</span> Broadcast: <code style="font-family:monospace;color:#f85149">192.168.30.79</code></div>
+        <div><span style="display:inline-block;width:14px;text-align:center;color:#22c55e;font-weight:700">✓</span> Kiosztható: <code style="font-family:monospace;color:#22c55e">192.168.30.65 – .78</code> (14 db)</div>
       </div>
-    </div>
-
-    <!-- Vizuális csík -->
-    <div style="margin-top:12px">
-      <div style="font-size:.72rem;color:var(--dim);margin-bottom:5px;text-align:center">A /28-as blokk vizuálisan (.64–.79):</div>
-      <div style="display:flex;border-radius:6px;overflow:hidden;font-size:.65rem;font-family:monospace;font-weight:700;height:28px">
-        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 6px;display:flex;align-items:center;white-space:nowrap">.64 hálózat</div>
-        <div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.65 – .78 &nbsp;✓ kiosztható (14 db)</div>
-        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 6px;display:flex;align-items:center;white-space:nowrap">.79 broadcast</div>
+      <div style="margin-top:10px;display:flex;border-radius:5px;overflow:hidden;font-size:.65rem;font-family:monospace;font-weight:700;height:26px">
+        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center">.64 hálózat</div>
+        <div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.65–.78 kiosztható (14 db)</div>
+        <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center">.79 broadcast</div>
       </div>
     </div>
   </div>
 
-  <!-- Interaktív kalkulátor -->
   <div style="background:var(--surface);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:16px 20px;margin-bottom:16px">
     <div style="font-weight:800;color:var(--neon);font-size:.88rem;margin-bottom:12px"><i class="fas fa-calculator" style="margin-right:7px"></i>Kiosztható IP-cím kalkulátor</div>
     <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
-      <div style="flex:1;min-width:160px">
+      <div style="flex:1;min-width:155px">
         <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">IP-cím (az IP-táblából)</div>
         <input id="calc-ip" type="text" placeholder="192.168.30.65" value="192.168.30.65"
           style="width:100%;background:#05090f;border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:monospace;font-size:.82rem;outline:none"
           oninput="calcSubnet()" onfocus="this.style.borderColor='var(--neon)'" onblur="this.style.borderColor='var(--border)'">
       </div>
       <div style="flex:0 0 auto">
-        <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">Prefix (pl. 28)</div>
+        <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">Prefix</div>
         <select id="calc-prefix" onchange="calcSubnet()"
           style="background:#05090f;border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:.82rem;outline:none">
-          <option value="24">/24</option>
-          <option value="26">/26</option>
-          <option value="27">/27</option>
-          <option value="28" selected>/28</option>
-          <option value="29">/29</option>
+          <option value="24">/24</option><option value="26">/26</option>
+          <option value="27">/27</option><option value="28" selected>/28</option><option value="29">/29</option>
         </select>
       </div>
       <button onclick="calcSubnet()" style="padding:7px 16px;background:var(--neon);border:none;border-radius:6px;color:#030608;font-size:.8rem;font-weight:800;cursor:pointer">Számít</button>
@@ -486,262 +454,323 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     <div id="calc-result" style="font-size:.8rem;line-height:2;display:none">
       <div style="background:#05090f;border-radius:8px;padding:10px 14px">
         <div style="display:grid;grid-template-columns:max-content 1fr;gap:2px 12px">
-          <span style="color:var(--dim)">Hálózati cím (nem adható ki):</span>    <span id="cr-net"  style="font-family:monospace;color:#f85149"></span>
-          <span style="color:var(--dim)">Broadcast-cím (nem adható ki):</span>   <span id="cr-bcast" style="font-family:monospace;color:#f85149"></span>
-          <span style="color:var(--dim)">Első kiosztható:</span>                  <span id="cr-first" style="font-family:monospace;color:#22c55e;font-weight:700"></span>
-          <span style="color:var(--dim)">Utolsó kiosztható:</span>               <span id="cr-last"  style="font-family:monospace;color:#22c55e;font-weight:700"></span>
-          <span style="color:var(--dim)">Kiosztható összesen:</span>              <span id="cr-cnt"   style="font-family:monospace;color:#ffa657;font-weight:700"></span>
-          <span style="color:var(--dim)">Alhálózati maszk:</span>                <span id="cr-mask"  style="font-family:monospace;color:var(--neon)"></span>
+          <span style="color:var(--dim)">Hálózati cím (nem adható ki):</span><span id="cr-net"  style="font-family:monospace;color:#f85149"></span>
+          <span style="color:var(--dim)">Broadcast-cím (nem adható ki):</span><span id="cr-bcast" style="font-family:monospace;color:#f85149"></span>
+          <span style="color:var(--dim)">Első kiosztható:</span><span id="cr-first" style="font-family:monospace;color:#22c55e;font-weight:700"></span>
+          <span style="color:var(--dim)">Utolsó kiosztható:</span><span id="cr-last"  style="font-family:monospace;color:#22c55e;font-weight:700"></span>
+          <span style="color:var(--dim)">Kiosztható összesen:</span><span id="cr-cnt"   style="font-family:monospace;color:#ffa657;font-weight:700"></span>
+          <span style="color:var(--dim)">Alhálózati maszk:</span><span id="cr-mask"  style="font-family:monospace;color:var(--neon)"></span>
         </div>
         <div id="cr-strip" style="margin-top:10px"></div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       6. HOGYAN KÉL ÉLETRE EGY HÁLÓZAT?
-  ═══════════════════════════════════════ -->
-  <div class="sec-title" style="margin-top:36px">
-    <div class="num" style="background:rgba(52,211,153,.12);color:#34d399;">6</div>
-    <h2 style="color:#34d399;">Hogyan kel életre egy hálózat?</h2>
+  <div class="chap-footer">
+    <button class="chap-btn" onclick="goChapter(2)"><i class="fas fa-chevron-left"></i> Vissza</button>
+    <span class="chap-pos">3 / 5</span>
+    <button class="chap-btn primary" onclick="goChapter(4)">Tovább <i class="fas fa-chevron-right"></i></button>
   </div>
+</div>
 
-  <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6;padding:10px 14px;background:var(--surface2);border:1px solid rgba(52,211,153,.15);border-radius:8px">
-    <i class="fas fa-route" style="color:#34d399;margin-right:6px;"></i>
-    <strong style="color:var(--text)">Egy teljes folyamat</strong> – lépésről lépésre, ahogy a Packet Tracerben is csinálod. CLI parancsok és grafikus beállítások egymás után, az ellenőrzéssel együtt.
+<!-- ══════════════════════════════════════════
+     FEJEZET 4 – PARANCS RECEPTEK
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch4">
+
+  <div class="sec-title" style="margin-top:0">
+    <div class="num" style="background:rgba(247,129,102,.12);color:#f78166;">1</div>
+    <h2 style="color:#f78166;">Parancsok – kattints a feladatra</h2>
   </div>
 
   <div class="recipe-list">
-
-    <!-- W1: Router CLI -->
-    <div class="recipe" id="w1">
-      <div class="recipe-head" onclick="toggleRecipe('w1')">
-        <span class="r-icon" style="color:#38bdf8;"><i class="fas fa-terminal"></i></span>
-        <span class="r-title">1. lépés – Router: IP-cím + biztonság (CLI)</span>
-        <span class="r-sub">Packet Tracer – terminál ablak</span>
+    <div class="recipe" id="r1">
+      <div class="recipe-head" onclick="toggleRecipe('r1')">
+        <span class="r-icon" style="color:#f78166;"><i class="fas fa-ethernet"></i></span>
+        <span class="r-title">IP-cím beállítása egy interfészen</span>
+        <span class="r-sub">Router G0/0, G0/1</span>
         <i class="fas fa-chevron-down r-arrow"></i>
       </div>
       <div class="recipe-body">
-        <div class="step-row"><div class="step-num">!</div><div class="step-text">A router <strong>GigabitEthernet</strong> interfészeire állítod be az IP-t. Minden interfész alapból ki van kapcsolva – ne felejtsd el a <strong>no shutdown</strong>-t!</div></div>
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Interfész kiválasztása: <strong>interface GigabitEthernet0/0</strong> (vagy G0/1, stb.)</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>ip address</strong> [IP-cím] [maszk] — az IP-táblából olvasod ki mindkettőt</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>no shutdown</strong> — minden port alapból ki van kapcsolva, ez kapcsolja be</div></div>
         <div class="code-mini">
-<div><span class="p-user">Router&gt;</span><span class="cmd"> enable</span></div>
 <div><span class="p-enable">Router#</span><span class="cmd"> configure terminal</span></div>
-<div><span class="comment">-- Hostname és jelszó</span></div>
-<div><span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">KR</span></span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> enable secret <span class="val">kando2022</span></span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> service password-encryption</span></div>
-<div><span class="comment">-- Első interfész (iroda felőli oldal)</span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> interface GigabitEthernet0/0</span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.1</span> <span class="val">255.255.255.224</span></span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> no shutdown</span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> exit</span></div>
-<div><span class="comment">-- Második interfész (szerver hálózat)</span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.33</span> <span class="val">255.255.255.248</span></span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> no shutdown</span></div>
-<div><span class="p-if">KR(config-if)#</span><span class="cmd"> exit</span></div>
-<div><span class="comment">-- SSH beállítás</span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> ip domain-name <span class="val">SSH1223.local</span></span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> crypto key generate rsa</span></div>
-<div><span class="comment">-- (kérdezi a bitméretet → írj: 2048)</span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> username <span class="val">SSHladmin</span> secret <span class="val">SSHladmin</span></span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> line vty 0 15</span></div>
-<div><span class="p-line">KR(config-line)#</span><span class="cmd"> transport input ssh</span></div>
-<div><span class="p-line">KR(config-line)#</span><span class="cmd"> login local</span></div>
-<div><span class="p-line">KR(config-line)#</span><span class="cmd"> exit</span></div>
-<div><span class="comment">-- Mentés</span></div>
-<div><span class="p-config">KR(config)#</span><span class="cmd"> end</span></div>
-<div><span class="p-enable">KR#</span><span class="cmd"> write memory</span></div>
+<div><span class="p-config">Router(config)#</span><span class="cmd"> interface <span class="val">GigabitEthernet0/0</span></span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.1</span> <span class="val">255.255.255.224</span></span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> exit</span></div>
         </div>
       </div>
     </div>
 
-    <!-- W2: Switch CLI -->
-    <div class="recipe" id="w2">
-      <div class="recipe-head" onclick="toggleRecipe('w2')">
+    <div class="recipe" id="r2">
+      <div class="recipe-head" onclick="toggleRecipe('r2')">
         <span class="r-icon" style="color:#79c0ff;"><i class="fas fa-network-wired"></i></span>
-        <span class="r-title">2. lépés – Switch: menedzsment IP (CLI)</span>
-        <span class="r-sub">Packet Tracer – terminál ablak</span>
+        <span class="r-title">Switch menedzsment IP + átjáró</span>
+        <span class="r-sub">Vlan1 + default-gateway</span>
         <i class="fas fa-chevron-down r-arrow"></i>
       </div>
       <div class="recipe-body">
-        <div class="step-row"><div class="step-num">!</div><div class="step-text">A switchnek nem G0/0-ra, hanem <strong>Vlan1</strong>-re kell az IP-t beállítani. Az <strong>ip default-gateway</strong> mondja meg a switchnek, hogy a routeren keresztül érje el a többi hálózatot.</div></div>
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">A switchnek nem G0/0-ra, hanem <strong>Vlan1</strong>-re kell az IP-t beállítani</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Az <strong>ip default-gateway</strong> megmondja a switchnek, hova küldje a forgalmat (ez a router IP-je)</div></div>
         <div class="code-mini">
-<div><span class="p-user">Switch&gt;</span><span class="cmd"> enable</span></div>
-<div><span class="p-enable">Switch#</span><span class="cmd"> configure terminal</span></div>
-<div><span class="p-config">Switch(config)#</span><span class="cmd"> hostname <span class="val">k1-sw1</span></span></div>
-<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> interface Vlan1</span></div>
-<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.34</span> <span class="val">255.255.255.248</span></span></div>
-<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> no shutdown</span></div>
-<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> exit</span></div>
-<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.40.33</span></span></div>
-<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> end</span></div>
-<div><span class="p-enable">k1-sw1#</span><span class="cmd"> write memory</span></div>
+<div><span class="p-config">SW1(config)#</span><span class="cmd"> interface Vlan1</span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.66</span> <span class="val">255.255.255.240</span></span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="p-config">SW1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.30.65</span></span></div>
         </div>
       </div>
     </div>
 
-    <!-- W3: PC GUI -->
-    <div class="recipe" id="w3">
-      <div class="recipe-head" onclick="toggleRecipe('w3')">
-        <span class="r-icon" style="color:#56d364;"><i class="fas fa-desktop"></i></span>
-        <span class="r-title">3. lépés – PC: IP-cím beállítása (grafikus)</span>
-        <span class="r-sub">Packet Tracer – Desktop › IP Configuration</span>
+    <div class="recipe" id="r3">
+      <div class="recipe-head" onclick="toggleRecipe('r3')">
+        <span class="r-icon" style="color:#d2a8ff;"><i class="fas fa-shield-halved"></i></span>
+        <span class="r-title">Biztonság + SSH beállítás</span>
+        <span class="r-sub">hostname, jelszó, SSH kulcs, VTY</span>
         <i class="fas fa-chevron-down r-arrow"></i>
       </div>
       <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a PC-re → <strong>Desktop</strong> fül → <strong>IP Configuration</strong> ikon</div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text">Válaszd a <strong>Static</strong> rádiógombot (ne DHCP!)</div></div>
-        <div class="step-row"><div class="step-num">3</div><div class="step-text">Töltsd ki a mezőket az IP-tábla alapján:</div></div>
-        <div style="margin:10px 0;background:#05090f;border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-size:.8rem;line-height:2.1">
-          <div><span style="color:var(--dim);display:inline-block;width:150px">IPv4 Address:</span><span style="color:#ffa657;font-family:monospace">192.168.40.36</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:150px">Subnet Mask:</span><span style="color:#ffa657;font-family:monospace">255.255.255.248</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:150px">Default Gateway:</span><span style="color:#ffa657;font-family:monospace">192.168.40.33</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:150px">DNS Server:</span><span style="color:#484f58;font-style:italic">üresen hagyható</span></div>
-        </div>
-        <div class="step-row"><div class="step-num">!</div><div class="step-text"><strong style="color:#e3b341">Fontos:</strong> A Default Gateway a router interfészének IP-je (ahol a PC csatlakozik) – nem a switch IP-je!</div></div>
-      </div>
-    </div>
-
-    <!-- W4: WiFi Router GUI -->
-    <div class="recipe" id="w4">
-      <div class="recipe-head" onclick="toggleRecipe('w4')">
-        <span class="r-icon" style="color:#d2a8ff;"><i class="fas fa-wifi"></i></span>
-        <span class="r-title">4. lépés – WiFi router beállítása (grafikus)</span>
-        <span class="r-sub">Packet Tracer – Config fül</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a WiFi routerre → <strong>Config</strong> fül</div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>GLOBAL → Settings:</strong> Admin jelszó megadása</div></div>
-        <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>LAN → DHCP:</strong> Start IP és End IP megadása (pl. .100–.130)</div></div>
-        <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>Wireless → Basic Wireless Settings:</strong> SSID neve, broadcast bekapcsolása</div></div>
-        <div class="step-row"><div class="step-num">5</div><div class="step-text"><strong>Wireless → Wireless Security:</strong> Security Mode = WPA2-PSK, Passphrase = WiFi jelszó</div></div>
-        <div style="margin:10px 0;background:#05090f;border:1px solid rgba(210,168,255,.15);border-radius:7px;padding:10px 14px;font-size:.8rem;line-height:2.1">
-          <div><span style="color:var(--dim);display:inline-block;width:165px">SSID neve:</span><span style="color:#d2a8ff;font-family:monospace">ISKOLA</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:165px">SSID broadcast:</span><span style="color:#d2a8ff;font-family:monospace">Enabled</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:165px">Security Mode:</span><span style="color:#d2a8ff;font-family:monospace">WPA2-PSK</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:165px">Passphrase:</span><span style="color:#ffa657;font-family:monospace">ISKOLA123</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:165px">DHCP Start IP:</span><span style="color:#ffa657;font-family:monospace">192.168.100.100</span></div>
-          <div><span style="color:var(--dim);display:inline-block;width:165px">DHCP End IP:</span><span style="color:#ffa657;font-family:monospace">192.168.100.130</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W5: WiFi kliens -->
-    <div class="recipe" id="w5">
-      <div class="recipe-head" onclick="toggleRecipe('w5')">
-        <span class="r-icon" style="color:#ffa657;"><i class="fas fa-laptop"></i></span>
-        <span class="r-title">5. lépés – Laptop / tablet WiFi-hoz csatlakoztatása</span>
-        <span class="r-sub">Packet Tracer – PC Wireless</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a laptopra → <strong>Desktop</strong> fül → <strong>PC Wireless</strong></div></div>
-        <div class="step-row"><div class="step-num">2</div><div class="step-text">Megjelennek az elérhető hálózatok. Keresd az <strong>ISKOLA</strong> nevű hálózatot.</div></div>
-        <div class="step-row"><div class="step-num">3</div><div class="step-text">Kattints rá → <strong>Connect</strong> gomb → add meg a jelszót: <code style="font-family:monospace;color:#ffa657">ISKOLA123</code></div></div>
-        <div class="step-row"><div class="step-num">!</div><div class="step-text">Ha a DHCP jól van beállítva, a laptop automatikusan kap IP-t a <code style="font-family:monospace;color:#ffa657">192.168.100.100–.130</code> tartományból.</div></div>
-      </div>
-    </div>
-
-    <!-- W6: Ellenőrzés -->
-    <div class="recipe" id="w6">
-      <div class="recipe-head" onclick="toggleRecipe('w6')">
-        <span class="r-icon" style="color:#34d399;"><i class="fas fa-circle-check"></i></span>
-        <span class="r-title">6. lépés – Ellenőrzés: működik a hálózat?</span>
-        <span class="r-sub">ping + show parancsok + SSH teszt</span>
-        <i class="fas fa-chevron-down r-arrow"></i>
-      </div>
-      <div class="recipe-body">
-        <div class="step-row"><div class="step-num">1</div><div class="step-text"><strong>Ping teszt</strong> a PC-ről: Desktop → <strong>Command Prompt</strong></div></div>
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Névadás (<strong>hostname</strong>), jelszó titkosítva (<strong>enable secret</strong>), összes jelszó titkosítása (<strong>service password-encryption</strong>)</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Domain név kell az SSH kulcshoz, majd <strong>crypto key generate rsa</strong> – a bitszámnál írj <strong>2048</strong>-at</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">Helyi felhasználó létrehozása, VTY vonalak beállítása SSH-ra</div></div>
         <div class="code-mini">
-<div><span style="color:#56d364">C:\&gt;</span><span class="cmd"> ping <span class="val">192.168.40.33</span></span></div>
-<div><span class="comment">-- Ha "Reply from..." jelenik meg → kapcsolat OK!</span></div>
-<div><span class="comment">-- Ha "Request timeout" → ellenőrizd az IP-ket és no shutdown</span></div>
-        </div>
-        <div class="step-row" style="margin-top:12px"><div class="step-num">2</div><div class="step-text"><strong>SSH teszt</strong> – belépés a routerre ssh-val</div></div>
-        <div class="code-mini">
-<div><span style="color:#56d364">C:\&gt;</span><span class="cmd"> ssh -l <span class="val">SSHladmin</span> <span class="val">192.168.40.1</span></span></div>
-<div><span class="comment">-- Jelszó bekéréskor: SSHladmin</span></div>
-<div><span class="comment">-- Ha "Password:" jelenik meg → SSH működik!</span></div>
-        </div>
-        <div class="step-row" style="margin-top:12px"><div class="step-num">3</div><div class="step-text"><strong>Show parancsok</strong> a routeren – a teljes állapot megnézéséhez</div></div>
-        <div class="code-mini">
-<div><span class="p-enable">KR#</span><span class="cmd"> show ip interface brief</span></div>
-<div><span class="comment">-- Megmutatja az összes interfészt, IP-t és állapotot</span></div>
-<div><span class="p-enable">KR#</span><span class="cmd"> show running-config</span></div>
-<div><span class="comment">-- Az egész futó konfiguráció</span></div>
-        </div>
-        <div style="margin-top:10px;padding:10px 12px;background:#05090f;border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.6;">
-          <i class="fas fa-lightbulb" style="color:#e3b341;margin-right:6px;"></i>
-          <strong style="color:var(--text)">Tipp:</strong> Az interfész állapota <code style="font-family:monospace;color:#56d364">up/up</code> legyen. Ha <code style="font-family:monospace;color:#f85149">down/down</code> van, elfelejtetted a <code style="font-family:monospace;color:var(--neon)">no shutdown</code> parancsot, vagy nincs kábel csatlakoztatva.
+<div><span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> enable secret <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> service password-encryption</span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> ip domain-name <span class="val">alapvizsga2023.hu</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> crypto key generate rsa</span></div>
+<div><span class="comment">-- Kérdezi a bitméretet → írj: 2048</span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> username <span class="val">tanuló</span> secret <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> line vty 0 15</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> transport input ssh</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> login local</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> exit</span></div>
         </div>
       </div>
     </div>
 
-  </div><!-- /recipe-list walkthrough -->
+    <div class="recipe" id="r4">
+      <div class="recipe-head" onclick="toggleRecipe('r4')">
+        <span class="r-icon" style="color:#56d364;"><i class="fas fa-floppy-disk"></i></span>
+        <span class="r-title">Konfiguráció mentése</span>
+        <span class="r-sub">write memory – mindig a végén!</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Ha nem mentesz, újraindítás után <strong>elvész</strong> minden beállítás! A <strong>write memory</strong> a tartós memóriába (NVRAM) ment.</div></div>
+        <div class="code-mini">
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> end</span></div>
+<div><span class="p-enable">Torony#</span><span class="cmd"> write memory</span></div>
+        </div>
+      </div>
+    </div>
 
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <a href="../halozat-hub.html" class="btn-nav btn-blue"><i class="fas fa-arrow-left"></i> Vissza</a>
-    <a href="index.html?mod=tanulo" class="btn-nav btn-green"><i class="fas fa-list-check"></i> Lépésről lépésre</a>
-    <a href="index.html?mod=gyakorlo" class="btn-nav btn-purple"><i class="fas fa-network-wired"></i> Ágazati feladatok</a>
+    <div class="recipe" id="r5">
+      <div class="recipe-head" onclick="toggleRecipe('r5')">
+        <span class="r-icon" style="color:#ffa657;"><i class="fas fa-table-cells"></i></span>
+        <span class="r-title">Alhálózati maszkok gyorslista</span>
+        <span class="r-sub">/24, /26, /27, /28, /29</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div style="margin-top:10px;">
+          <div class="subnet-chips">
+            <div class="subnet-chip"><div class="s-cidr">/24</div><div class="s-mask">255.255.255.0</div><div class="s-hosts">254 eszköz</div></div>
+            <div class="subnet-chip"><div class="s-cidr">/26</div><div class="s-mask">255.255.255.192</div><div class="s-hosts">62 eszköz</div></div>
+            <div class="subnet-chip"><div class="s-cidr">/27</div><div class="s-mask">255.255.255.224</div><div class="s-hosts">30 eszköz</div></div>
+            <div class="subnet-chip"><div class="s-cidr">/28</div><div class="s-mask">255.255.255.240</div><div class="s-hosts">14 eszköz</div></div>
+            <div class="subnet-chip"><div class="s-cidr">/29</div><div class="s-mask">255.255.255.248</div><div class="s-hosts">6 eszköz</div></div>
+          </div>
+          <div style="margin-top:10px;font-size:.77rem;color:var(--dim);line-height:1.6;padding:8px 10px;background:#05090f;border-radius:6px;">
+            <i class="fas fa-info-circle" style="color:var(--neon);margin-right:5px;"></i>
+            A maszkot az IP-táblából olvasod ki. Pl. megjegyzés: <code style="font-family:monospace;color:var(--neon)">/28</code> → beírod: <code style="font-family:monospace;color:var(--neon)">255.255.255.240</code>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div class="chap-footer">
+    <button class="chap-btn" onclick="goChapter(3)"><i class="fas fa-chevron-left"></i> Vissza</button>
+    <span class="chap-pos">4 / 5</span>
+    <button class="chap-btn primary" onclick="goChapter(5)">Tovább <i class="fas fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FEJEZET 5 – ÉLŐ HÁLÓZAT
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch5">
+
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;color:#34d399;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-bolt"></i> Interaktív bemutató</div>
+    <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:6px">Hogyan kel életre egy hálózat?</h2>
+    <p style="font-size:.8rem;color:var(--dim);line-height:1.6">Kövesd a lépéseket — írd be a parancsot a terminálba, és nézd ahogy a hálózat megváltozik!</p>
+  </div>
+
+  <div class="live-wrap">
+
+    <!-- Topology SVG -->
+    <div class="live-topo-box">
+      <svg id="demo-svg" viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Link: WiFi - KR -->
+        <line id="lnk-wifi" class="nl-off" x1="140" y1="100" x2="240" y2="100"/>
+        <!-- Link: KR - SW1 -->
+        <line id="lnk-sw1" class="nl-off" x1="320" y1="100" x2="420" y2="100"/>
+        <!-- Link: SW1 - PC -->
+        <line id="lnk-pc" class="nl-off" x1="500" y1="100" x2="590" y2="100"/>
+
+        <!-- Port labels -->
+        <text x="170" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle">G0/0</text>
+        <text x="270" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle">WAN</text>
+        <text x="355" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle" id="pl-g01l">G0/1</text>
+        <text x="450" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle">Fa0/1</text>
+        <text x="520" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle">Fa0/2</text>
+        <text x="600" y="91" font-size="8" font-family="monospace" fill="#1e4060" text-anchor="middle">NIC</text>
+
+        <!-- WiFi Router -->
+        <g id="nd-wifi" class="nd-off" transform="translate(90,100)">
+          <circle cx="0" cy="0" r="36"/>
+          <image href="cisco/wireless_router.png" x="-22" y="-22" width="44" height="44"/>
+          <text class="nd-lbl" x="0" y="50" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">GUEST-WiFi</text>
+          <text class="nd-ip" id="ip-wifi" x="0" y="64" text-anchor="middle">192.168.40.1</text>
+        </g>
+
+        <!-- Router KR -->
+        <g id="nd-kr" class="nd-off" transform="translate(280,100)">
+          <circle cx="0" cy="0" r="36"/>
+          <image href="cisco/router.png" x="-22" y="-22" width="44" height="44"/>
+          <text class="nd-lbl" x="0" y="50" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">KR</text>
+          <text class="nd-ip" id="ip-kr-g00" x="-20" y="64" text-anchor="middle" font-size="8"></text>
+          <text class="nd-ip" id="ip-kr-g01" x="20" y="72" text-anchor="middle" font-size="8"></text>
+        </g>
+
+        <!-- Switch SW1 -->
+        <g id="nd-sw1" class="nd-off" transform="translate(460,100)">
+          <circle cx="0" cy="0" r="36"/>
+          <image href="cisco/switch.png" x="-22" y="-22" width="44" height="44"/>
+          <text class="nd-lbl" x="0" y="50" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">SW1</text>
+        </g>
+
+        <!-- PC -->
+        <g id="nd-pc" class="nd-off" transform="translate(630,100)">
+          <circle cx="0" cy="0" r="36"/>
+          <image href="cisco/laptop.png" x="-22" y="-22" width="44" height="44"/>
+          <text class="nd-lbl" x="0" y="50" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">PC</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Step card -->
+    <div class="live-step-card">
+      <div class="ls-progress">
+        <span id="ls-stepnum" style="white-space:nowrap;color:var(--neon);font-weight:700">1 / 9</span>
+        <div class="ls-prog-bar"><div class="ls-prog-fill" id="ls-prog-fill" style="width:0%"></div></div>
+      </div>
+      <div class="ls-miert" id="ls-miert"></div>
+      <div class="ls-parancs-label"><i class="fas fa-terminal" style="color:#56d364;margin-right:5px"></i>Írd be ezt a parancsot</div>
+      <div class="ls-parancs-cmd" id="ls-cmd" title="Kattints a másoláshoz" onclick="copyCmd()"></div>
+      <div class="ls-copy-hint">Kattints a parancsra a másoláshoz, majd illeszd be a terminálba</div>
+      <div class="ls-result" id="ls-result"></div>
+    </div>
+
+    <!-- Live CLI -->
+    <div class="live-cli-wrap">
+      <div class="live-cli-bar">
+        <div class="dot" style="background:#f85149;"></div>
+        <div class="dot" style="background:#e3b341;"></div>
+        <div class="dot" style="background:#56d364;"></div>
+        <span style="margin-left:4px"><i class="fas fa-terminal" style="color:#56d364;margin-right:5px"></i>KR – Cisco IOS</span>
+        <span style="flex:1;text-align:right;font-size:.67rem">Tab = kiegészítés</span>
+      </div>
+      <div id="live-output"></div>
+      <div class="live-input-row">
+        <span id="live-prompt" style="color:#56d364">KR&gt;</span>
+        <input id="live-input" type="text" autocomplete="off" spellcheck="false" placeholder="írd be a parancsot...">
+      </div>
+    </div>
+
+    <div class="live-done-banner" id="live-done-banner">
+      <div style="font-size:2rem;margin-bottom:8px">🎉</div>
+      <div style="font-size:1rem;font-weight:800;color:#22c55e;margin-bottom:6px">Kész! A hálózat él.</div>
+      <div style="font-size:.82rem;color:var(--dim);line-height:1.7;max-width:420px;margin:0 auto">A router konfigurálva, a kapcsolatok aktívak, a konfig mentve. Ez az, amit a feladatban is el kell végezni!</div>
+      <button onclick="resetDemo()" style="margin-top:14px;padding:8px 20px;background:rgba(34,197,94,.15);border:1px solid #22c55e;border-radius:8px;color:#22c55e;font-size:.82rem;font-weight:700;cursor:pointer">Újra</button>
+    </div>
+
+  </div><!-- /live-wrap -->
+
+  <div class="chap-footer">
+    <button class="chap-btn" onclick="goChapter(4)"><i class="fas fa-chevron-left"></i> Vissza</button>
+    <span class="chap-pos">5 / 5</span>
+    <a href="index.html" class="chap-btn primary" style="text-decoration:none"><i class="fas fa-network-wired"></i> Szimulátor</a>
+  </div>
+</div>
 
 </div><!-- /page -->
 
 <script>
-// ── ACCORDION ──
-function toggleRecipe(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('open');
+// ═══════════════════════════════════════════════
+// CHAPTER NAVIGATION
+// ═══════════════════════════════════════════════
+let currentChapter = 1;
+const TOTAL_CH = 5;
+
+function goChapter(n) {
+  document.getElementById('ch' + currentChapter).classList.remove('active');
+  document.getElementById('cn' + currentChapter).classList.remove('active');
+  if (currentChapter < n) document.getElementById('cn' + currentChapter).classList.add('done');
+  currentChapter = n;
+  document.getElementById('ch' + n).classList.add('active');
+  document.getElementById('cn' + n).classList.add('active');
+  window.scrollTo({ top: 52, behavior: 'smooth' });
+  if (n === 5 && liveStep === 0) initDemo();
 }
 
-// ── ALHÁLÓZAT KALKULÁTOR ──
+// ═══════════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════════
+function toggleRecipe(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════
+// IP KALKULÁTOR
+// ═══════════════════════════════════════════════
 function calcSubnet() {
   const ipStr = document.getElementById('calc-ip').value.trim();
   const prefix = parseInt(document.getElementById('calc-prefix').value);
   const parts = ipStr.split('.').map(Number);
   if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) return;
-
   const ipNum = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
   const maskNum = prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
   const netNum  = (ipNum & maskNum) >>> 0;
   const bcastNum = (netNum | (~maskNum >>> 0)) >>> 0;
-  const firstNum = netNum + 1;
-  const lastNum  = bcastNum - 1;
-  const hosts    = Math.max(0, bcastNum - netNum - 1);
-
-  function n2ip(n) {
-    return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
-  }
-  function n2mask(m) {
-    return [(m>>>24)&255,(m>>>16)&255,(m>>>8)&255,m&255].join('.');
-  }
-
+  const hosts = Math.max(0, bcastNum - netNum - 1);
+  function n2ip(n) { return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.'); }
+  function n2mask(m) { return [(m>>>24)&255,(m>>>16)&255,(m>>>8)&255,m&255].join('.'); }
   document.getElementById('cr-net').textContent   = n2ip(netNum);
   document.getElementById('cr-bcast').textContent = n2ip(bcastNum);
-  document.getElementById('cr-first').textContent = hosts > 0 ? n2ip(firstNum) : '—';
-  document.getElementById('cr-last').textContent  = hosts > 0 ? n2ip(lastNum)  : '—';
+  document.getElementById('cr-first').textContent = hosts > 0 ? n2ip(netNum + 1) : '—';
+  document.getElementById('cr-last').textContent  = hosts > 0 ? n2ip(bcastNum - 1) : '—';
   document.getElementById('cr-cnt').textContent   = hosts + ' db';
   document.getElementById('cr-mask').textContent  = n2mask(maskNum);
-
-  // Vizuális sáv – utolsó oktett alapján
-  const nLast = netNum & 0xFF;
-  const bLast = bcastNum & 0xFF;
-  const strip = document.getElementById('cr-strip');
-  strip.innerHTML = `<div style="font-size:.7rem;color:var(--dim);margin-bottom:4px;text-align:center">Tartomány vizuálisan (utolsó oktett: .${nLast}–.${bLast})</div>
+  const nL = netNum & 0xFF, bL = bcastNum & 0xFF;
+  document.getElementById('cr-strip').innerHTML = `<div style="font-size:.7rem;color:var(--dim);margin-bottom:4px;text-align:center">Tartomány (.${nL}–.${bL})</div>
     <div style="display:flex;border-radius:5px;overflow:hidden;font-size:.65rem;font-family:monospace;font-weight:700;height:26px">
-      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center;white-space:nowrap">.${nLast} hálózat</div>
-      ${hosts > 0 ? `<div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.${nLast+1}–.${bLast-1} kiosztható (${hosts} db)</div>` : ''}
-      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center;white-space:nowrap">.${bLast} broadcast</div>
+      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center">.${nL} hálózat</div>
+      ${hosts>0?`<div style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;flex:1;display:flex;align-items:center;justify-content:center">.${nL+1}–.${bL-1} kiosztható (${hosts} db)</div>`:''}
+      <div style="background:#f8514922;border:1px solid #f85149;color:#f85149;flex:0 0 auto;padding:0 7px;display:flex;align-items:center">.${bL} broadcast</div>
     </div>`;
-
   document.getElementById('calc-result').style.display = 'block';
 }
 document.addEventListener('DOMContentLoaded', calcSubnet);
 
-// ── MINI TERMINAL ──
+// ═══════════════════════════════════════════════
+// MINI TERMINAL (ch2)
+// ═══════════════════════════════════════════════
 const miniModes = {
   user:   { prompt: 'Router>', color: '#56d364' },
   enable: { prompt: 'Router#', color: '#e3b341' },
@@ -749,10 +778,7 @@ const miniModes = {
   if:     { prompt: 'Router(config-if)#', color: '#f78166' },
   line:   { prompt: 'Router(config-line)#', color: '#d2a8ff' },
 };
-let miniMode = 'user';
-let miniCurrentIface = '';
-let miniHistory = [];
-let miniHistIdx = -1;
+let miniMode = 'user', miniHistory = [], miniHistIdx = -1;
 const miniOutput = document.getElementById('mini-output');
 const miniInput  = document.getElementById('mini-input');
 const miniPrompt = document.getElementById('mini-prompt');
@@ -764,116 +790,254 @@ function miniPrint(text, cls) {
   miniOutput.appendChild(d);
   miniOutput.scrollTop = miniOutput.scrollHeight;
 }
-
-function miniSetMode(m, iface) {
+function miniSetMode(m) {
   miniMode = m;
-  miniCurrentIface = iface || '';
-  const info = miniModes[m];
-  let p = info.prompt;
-  if (m === 'if' && iface) p = `Router(config-if)# ${iface}`.replace('# '+iface,'#');
-  miniPrompt.textContent = p;
-  miniPrompt.style.color = info.color;
+  miniPrompt.textContent = miniModes[m].prompt;
+  miniPrompt.style.color = miniModes[m].color;
 }
-
 function miniRun(raw) {
   const s = raw.trim().toLowerCase();
   if (!s) return;
   miniPrint(miniPrompt.textContent + ' ' + raw, 'mini-line-cmd');
-
   if (miniMode === 'user') {
-    if (s === 'enable' || s === 'en') { miniSetMode('enable'); miniPrint('', ''); return; }
-    miniPrint('% Ismeretlen parancs, vagy nincs jogosultságod. Próbáld: enable', 'mini-line-err'); return;
+    if (s==='enable'||s==='en') { miniSetMode('enable'); return; }
+    miniPrint('% Ismeretlen parancs. Próbáld: enable', 'mini-line-err'); return;
   }
   if (miniMode === 'enable') {
     const t = s.split(/\s+/);
-    if (t[0]==='configure'||t[0]==='conf') { miniSetMode('config'); miniPrint('Enter configuration commands, one per line.  End with CNTL/Z.', 'mini-line-info'); return; }
-    if (s==='disable') { miniSetMode('user'); return; }
-    if (s==='exit') { miniSetMode('user'); return; }
+    if (t[0]==='configure'||t[0]==='conf') { miniSetMode('config'); miniPrint('Enter configuration commands, one per line.', 'mini-line-info'); return; }
+    if (s==='disable'||s==='exit') { miniSetMode('user'); return; }
     if (s.startsWith('write')||s==='wr') { miniPrint('Building configuration...','mini-line-info'); miniPrint('[OK]','mini-line-ok'); return; }
-    miniPrint('% Ismeretlen parancs enable módban. Próbáld: configure terminal', 'mini-line-err'); return;
+    if (s.startsWith('show')) { miniPrint('(show parancsok eredménye itt jelenne meg)','mini-line-info'); return; }
+    miniPrint('% Ismeretlen parancs enable módban.', 'mini-line-err'); return;
   }
   if (miniMode === 'config') {
     const t = s.split(/\s+/);
-    if (t[0]==='interface'||t[0]==='int') {
-      const iface = raw.trim().split(/\s+/).slice(1).join(' ') || '?';
-      miniCurrentIface = iface;
-      // Update prompt to show interface
-      miniMode = 'if';
-      miniPrompt.textContent = 'Router(config-if)#';
-      miniPrompt.style.color = '#f78166';
-      miniPrint('', ''); return;
-    }
-    if (t[0]==='line') { miniSetMode('line'); miniPrint('',''); return; }
-    if (t[0]==='hostname' && t[1]) {
+    if (t[0]==='interface'||t[0]==='int') { miniMode='if'; miniPrompt.textContent='Router(config-if)#'; miniPrompt.style.color='#f78166'; miniPrint('',''); return; }
+    if (t[0]==='line') { miniSetMode('line'); return; }
+    if (t[0]==='hostname'&&t[1]) {
       const name = raw.trim().split(/\s+/)[1];
-      miniModes.user.prompt=name+'>'; miniModes.enable.prompt=name+'#';
-      miniModes.config.prompt=name+'(config)#'; miniModes.if.prompt=name+'(config-if)#';
-      miniModes.line.prompt=name+'(config-line)#';
-      miniPrompt.textContent = name+'(config)#';
-      miniPrint('Hostname beállítva: ' + name, 'mini-line-ok'); return;
+      Object.values(miniModes).forEach((v,i) => { const suffixes=['>','#','(config)#','(config-if)#','(config-line)#']; v.prompt=name+suffixes[i]; });
+      miniPrompt.textContent=name+'(config)#'; miniPrint('Hostname: '+name,'mini-line-ok'); return;
     }
-    if (s==='end'||s==='\x1a') { miniSetMode('enable'); return; }
-    if (s==='exit') { miniSetMode('enable'); return; }
-    miniPrint('-- '+raw + ' -- (elfogadva)', 'mini-line-info'); return;
+    if (s==='end'||s==='exit') { miniSetMode(s==='end'?'enable':'enable'); return; }
+    miniPrint('-- '+raw+' -- (elfogadva)','mini-line-info'); return;
   }
   if (miniMode === 'if') {
-    if (s.startsWith('ip address')||s.startsWith('ip add')) { miniPrint('IP-cím beállítva.', 'mini-line-ok'); return; }
-    if (s==='no shutdown'||s==='no shut') { miniPrint('%LINK-5-CHANGED: Interface changed state to up', 'mini-line-ok'); return; }
+    if (s.startsWith('ip address')) { miniPrint('IP-cím beállítva.','mini-line-ok'); return; }
+    if (s==='no shutdown'||s==='no shut') { miniPrint('%LINK-5-CHANGED: Interface changed state to up','mini-line-ok'); return; }
     if (s==='exit') { miniSetMode('config'); return; }
     if (s==='end') { miniSetMode('enable'); return; }
-    miniPrint('-- '+raw+' -- (elfogadva)', 'mini-line-info'); return;
+    miniPrint('-- '+raw+' -- (elfogadva)','mini-line-info'); return;
   }
   if (miniMode === 'line') {
     if (s==='exit') { miniSetMode('config'); return; }
     if (s==='end') { miniSetMode('enable'); return; }
-    miniPrint('-- '+raw+' -- (elfogadva)', 'mini-line-info'); return;
+    miniPrint('-- '+raw+' -- (elfogadva)','mini-line-info'); return;
+  }
+}
+miniPrint('Kandó Kálmán Informatikai Technikum','mini-line-info');
+miniPrint('Cisco IOS Practice Terminal','mini-line-info');
+miniPrint('','');
+miniPrint('Próbáld: enable  →  configure terminal  →  interface G0/0','mini-line-info');
+miniPrint('','');
+
+const MINI_COMPLETIONS = {
+  user:['enable'],enable:['configure terminal','disable','exit','write memory','show ip interface brief'],
+  config:['hostname','enable secret','service password-encryption','ip domain-name','crypto key generate rsa','username','interface GigabitEthernet0/0','interface GigabitEthernet0/1','interface Vlan1','line vty 0 15','ip default-gateway','end','exit'],
+  if:['ip address','no shutdown','exit','end'],line:['transport input ssh','login local','exit','end'],
+};
+miniInput.addEventListener('keydown', e => {
+  if (e.key==='Enter') { const v=miniInput.value; if(v.trim()){miniHistory.unshift(v);miniHistIdx=-1;} miniRun(v); miniInput.value=''; }
+  if (e.key==='ArrowUp') { e.preventDefault(); if(miniHistIdx<miniHistory.length-1){miniHistIdx++;miniInput.value=miniHistory[miniHistIdx];} }
+  if (e.key==='ArrowDown') { e.preventDefault(); if(miniHistIdx>0){miniHistIdx--;miniInput.value=miniHistory[miniHistIdx];}else{miniHistIdx=-1;miniInput.value='';} }
+  if (e.key==='Tab') { e.preventDefault(); const v=miniInput.value.toLowerCase().trim(); const opts=(MINI_COMPLETIONS[miniMode]||[]).filter(c=>c.startsWith(v)); if(opts.length===1)miniInput.value=opts[0]; else if(opts.length>1)miniPrint(opts.join('   '),'mini-line-info'); }
+});
+document.querySelector('.mini-term-wrap').addEventListener('click',()=>miniInput.focus());
+
+// ═══════════════════════════════════════════════
+// LIVE NETWORK DEMO (ch5)
+// ═══════════════════════════════════════════════
+const DEMO_STEPS = [
+  { parancs: 'enable', elfogadott: ['enable','en'],
+    miert: '<strong>Miért:</strong> User módban vagy — csak olvasni tudsz, konfigurálni nem. Az <strong>enable</strong> parancs emeli a jogosultságot. Figyeld: a prompt <span style="color:#56d364">KR&gt;</span>-ből <span style="color:#e3b341">KR#</span>-ra változik.',
+    log: 'KR#', hatas: 'enable' },
+  { parancs: 'configure terminal', elfogadott: ['configure terminal','conf t','conf terminal'],
+    miert: '<strong>Miért:</strong> Enable módból még nem tudsz IP-t beállítani. A <strong>configure terminal</strong> nyitja meg a konfigurációs módot — csak innen lehet a routert módosítani.',
+    log: 'Enter configuration commands, one per line.  End with CNTL/Z.\nKR(config)#', hatas: 'config' },
+  { parancs: 'interface GigabitEthernet0/1', elfogadott: ['interface gigabitethernet0/1','int g0/1','int gigabitethernet0/1','interface g0/1'],
+    miert: '<strong>Miért:</strong> A G0/1 port a switch felé néz (oda megy a belső LAN forgalma). Ki kell választani, hogy erre állítsuk be az IP-t. A topológiában látod, hogy ez a jobb oldali kapcsolat.',
+    log: 'KR(config-if)# [G0/1 kiválasztva]', hatas: 'sel-g01' },
+  { parancs: 'ip address 192.168.40.33 255.255.255.248', elfogadott: ['ip address 192.168.40.33 255.255.255.248','ip addr 192.168.40.33 255.255.255.248'],
+    miert: '<strong>Miért:</strong> Meg kell mondani a routernek, milyen IP-n érhető el ezen a porton. A <strong>255.255.255.248</strong> = /29-es maszk, ami 6 kiosztható IP-t jelent (8−2). Az IP a táblázatból jön.',
+    log: 'IP cím beállítva: 192.168.40.33/29', hatas: 'ip-g01' },
+  { parancs: 'no shutdown', elfogadott: ['no shutdown','no shut'],
+    miert: '<strong>Miért:</strong> Minden Cisco interfész alapból <em>shutdown</em> állapotban van — le van tiltva. A <strong>no shutdown</strong> kapcsolja be. Nélküle az IP megvan ugyan, de a port nem kommunikál.',
+    log: '%LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to up', hatas: 'on-g01' },
+  { parancs: 'exit', elfogadott: ['exit'],
+    miert: '<strong>Miért:</strong> Az <strong>exit</strong> visszalép az előző módba (interface → config). Onnan választhatjuk ki a következő interfészt (G0/0), ami a WiFi router felé néz.',
+    log: 'KR(config)#', hatas: 'exit-if' },
+  { parancs: 'interface GigabitEthernet0/0', elfogadott: ['interface gigabitethernet0/0','int g0/0','int gigabitethernet0/0','interface g0/0'],
+    miert: '<strong>Miért:</strong> A G0/0 a másik irány — a vendég WiFi router (GUEST) felé. Ezt is be kell állítani, különben az a hálózati oldal elérhetetlen marad.',
+    log: 'KR(config-if)# [G0/0 kiválasztva]', hatas: 'sel-g00' },
+  { parancs: 'ip address 192.168.40.1 255.255.255.224', elfogadott: ['ip address 192.168.40.1 255.255.255.224','ip addr 192.168.40.1 255.255.255.224'],
+    miert: '<strong>Miért:</strong> Ez a másik alhálózat — más IP-tartomány, /27-es maszk (30 kiosztható cím). A két interfész sosem lehet ugyanazon az alhálózaton, különben a router nem tudja, merre küldje a forgalmat.',
+    log: 'IP cím beállítva: 192.168.40.1/27', hatas: 'ip-g00' },
+  { parancs: 'no shutdown', elfogadott: ['no shutdown','no shut'],
+    miert: '<strong>Miért:</strong> Ezt a portot is be kell kapcsolni. Mindkét interfészt külön kell aktiválni — a no shutdown nem vonatkozik egyszerre az összesre.',
+    log: '%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up', hatas: 'on-g00' },
+  { parancs: 'end', elfogadott: ['end'],
+    miert: '<strong>Miért:</strong> Az <strong>end</strong> egyből visszaugrik Enable módba (config-if → enable, két szinten át). Innen már tudunk menteni.',
+    log: 'KR#', hatas: 'end' },
+  { parancs: 'write memory', elfogadott: ['write memory','wr','wr mem','copy running-config startup-config'],
+    miert: '<strong>Miért:</strong> A beállítások csak a RAM-ban vannak (running-config). Újraindításkor törli a router! A <strong>write memory</strong> elmenti a tartós NVRAM-ba (startup-config). Ezt MINDIG meg kell csinálni a végén.',
+    log: 'Building configuration...\n[OK]\nKR#', hatas: 'saved' },
+];
+
+let liveStep = 0;
+let liveMode = 'user'; // user | enable | config | if-g01 | if-g00
+
+function initDemo() {
+  liveStep = 0; liveMode = 'user';
+  document.getElementById('live-output').innerHTML = '';
+  document.getElementById('live-input').value = '';
+  document.getElementById('live-done-banner').classList.remove('show');
+  document.getElementById('ls-result').className = 'ls-result';
+  document.getElementById('live-prompt').textContent = 'KR>';
+  document.getElementById('live-prompt').style.color = '#56d364';
+  // Reset topology
+  ['nd-wifi','nd-kr','nd-sw1','nd-pc'].forEach(id => setDevState(id, 'off'));
+  ['lnk-wifi','lnk-sw1','lnk-pc'].forEach(id => setLinkState(id, 'off'));
+  document.getElementById('ip-kr-g00').textContent = '';
+  document.getElementById('ip-kr-g01').textContent = '';
+  livePrint('KR Cisco IOS Software', 'mini-line-info');
+  livePrint('', '');
+  livePrint('Router>', 'mini-line-info');
+  showStep(0);
+}
+
+function showStep(idx) {
+  if (idx >= DEMO_STEPS.length) { finishDemo(); return; }
+  const s = DEMO_STEPS[idx];
+  document.getElementById('ls-stepnum').textContent = `${idx+1} / ${DEMO_STEPS.length}`;
+  document.getElementById('ls-prog-fill').style.width = (idx / DEMO_STEPS.length * 100) + '%';
+  document.getElementById('ls-miert').innerHTML = s.miert;
+  document.getElementById('ls-cmd').textContent = s.parancs;
+  document.getElementById('ls-result').className = 'ls-result';
+}
+
+function finishDemo() {
+  document.getElementById('ls-prog-fill').style.width = '100%';
+  document.getElementById('live-done-banner').classList.add('show');
+  document.getElementById('live-input').disabled = true;
+  setDevState('nd-kr', 'saved');
+}
+
+function resetDemo() {
+  document.getElementById('live-input').disabled = false;
+  initDemo();
+}
+
+function livePrint(text, cls) {
+  const out = document.getElementById('live-output');
+  text.split('\n').forEach(line => {
+    const d = document.createElement('div');
+    d.textContent = line;
+    if (cls) d.className = cls;
+    out.appendChild(d);
+  });
+  out.scrollTop = out.scrollHeight;
+}
+
+function setDevState(id, state) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className.baseVal = 'nd-' + state;
+}
+function setLinkState(id, state) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className.baseVal = 'nl-' + state;
+}
+
+function applyHatas(hatas) {
+  if (hatas === 'enable') { setDevState('nd-kr','sel'); }
+  else if (hatas === 'config') { /* no visual change */ }
+  else if (hatas === 'sel-g01') { setLinkState('lnk-sw1','sel'); }
+  else if (hatas === 'ip-g01')  { document.getElementById('ip-kr-g01').textContent = '192.168.40.33/29'; }
+  else if (hatas === 'on-g01')  { setLinkState('lnk-sw1','on'); setDevState('nd-sw1','on'); setDevState('nd-pc','on'); setLinkState('lnk-pc','on'); }
+  else if (hatas === 'exit-if') { setLinkState('lnk-sw1','on'); }
+  else if (hatas === 'sel-g00') { setLinkState('lnk-wifi','sel'); }
+  else if (hatas === 'ip-g00')  { document.getElementById('ip-kr-g00').textContent = '192.168.40.1/27'; }
+  else if (hatas === 'on-g00')  { setLinkState('lnk-wifi','on'); setDevState('nd-wifi','on'); }
+  else if (hatas === 'end')     { setDevState('nd-kr','on'); }
+  else if (hatas === 'saved')   { setDevState('nd-kr','saved'); }
+}
+
+function liveRun(raw) {
+  const s = raw.trim().toLowerCase().replace(/\s+/g,' ');
+  if (!s) return;
+  const prompt = document.getElementById('live-prompt').textContent;
+  livePrint(prompt + ' ' + raw, 'mini-line-cmd');
+
+  if (liveStep >= DEMO_STEPS.length) return;
+  const step = DEMO_STEPS[liveStep];
+  const accepted = step.elfogadott.some(a => s === a.toLowerCase());
+
+  if (accepted) {
+    livePrint(step.log, 'mini-line-ok');
+    applyHatas(step.hatas);
+
+    // Update prompt
+    const nextPrompts = {
+      enable: ['KR#','#e3b341'],
+      config: ['KR(config)#','#79c0ff'],
+      'sel-g01': ['KR(config-if)#','#f78166'],
+      'ip-g01':  ['KR(config-if)#','#f78166'],
+      'on-g01':  ['KR(config-if)#','#f78166'],
+      'exit-if': ['KR(config)#','#79c0ff'],
+      'sel-g00': ['KR(config-if)#','#f78166'],
+      'ip-g00':  ['KR(config-if)#','#f78166'],
+      'on-g00':  ['KR(config-if)#','#f78166'],
+      end: ['KR#','#e3b341'],
+      saved: ['KR#','#e3b341'],
+    };
+    if (nextPrompts[step.hatas]) {
+      document.getElementById('live-prompt').textContent = nextPrompts[step.hatas][0];
+      document.getElementById('live-prompt').style.color = nextPrompts[step.hatas][1];
+    }
+
+    const res = document.getElementById('ls-result');
+    res.innerHTML = '<i class="fas fa-check-circle" style="margin-right:6px"></i>' + (step.log.split('\n')[0] || 'Helyes!');
+    res.className = 'ls-result ok';
+
+    liveStep++;
+    setTimeout(() => showStep(liveStep), 600);
+  } else {
+    livePrint('% Helytelen parancs. Nézd a "Írd be ezt" mezőt!', 'mini-line-err');
+    const res = document.getElementById('ls-result');
+    res.innerHTML = '<i class="fas fa-times-circle" style="margin-right:6px"></i>Nem ez a helyes parancs. Ellenőrizd a helyesírást!';
+    res.className = 'ls-result err';
   }
 }
 
-// Üdvözlő szöveg
-miniPrint('Kandó Kálmán Informatikai Technikum', 'mini-line-info');
-miniPrint('Cisco IOS Practice Terminal', 'mini-line-info');
-miniPrint('', '');
-miniPrint('Próbáld ki: enable  →  configure terminal  →  interface G0/0  →  exit', 'mini-line-info');
-miniPrint('', '');
+function copyCmd() {
+  if (liveStep < DEMO_STEPS.length) {
+    navigator.clipboard.writeText(DEMO_STEPS[liveStep].parancs).catch(() => {});
+    const el = document.getElementById('ls-cmd');
+    el.style.background = 'rgba(227,179,65,.15)';
+    setTimeout(() => el.style.background = '', 500);
+  }
+}
 
-// Tab completion (basic)
-const COMPLETIONS = {
-  user:   ['enable'],
-  enable: ['configure terminal','disable','exit','write memory'],
-  config: ['hostname','enable secret','service password-encryption','ip domain-name','crypto key generate rsa','username','interface GigabitEthernet0/0','interface GigabitEthernet0/1','interface Vlan1','line vty 0 15','ip default-gateway','end','exit'],
-  if:     ['ip address','no shutdown','exit','end'],
-  line:   ['transport input ssh','login local','exit','end'],
-};
-
-miniInput.addEventListener('keydown', e => {
+document.getElementById('live-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    const v = miniInput.value;
-    if (v.trim()) { miniHistory.unshift(v); miniHistIdx = -1; }
-    miniRun(v);
-    miniInput.value = '';
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (miniHistIdx < miniHistory.length - 1) { miniHistIdx++; miniInput.value = miniHistory[miniHistIdx]; }
-  }
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (miniHistIdx > 0) { miniHistIdx--; miniInput.value = miniHistory[miniHistIdx]; }
-    else { miniHistIdx = -1; miniInput.value = ''; }
-  }
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    const v = miniInput.value.toLowerCase().trim();
-    const opts = (COMPLETIONS[miniMode] || []).filter(c => c.startsWith(v));
-    if (opts.length === 1) miniInput.value = opts[0];
-    else if (opts.length > 1) { miniPrint(opts.join('   '), 'mini-line-info'); }
+    const v = document.getElementById('live-input').value;
+    liveRun(v);
+    document.getElementById('live-input').value = '';
   }
 });
-
-// Kattintásra fókusz
-document.querySelector('.mini-term-wrap').addEventListener('click', () => miniInput.focus());
-miniInput.focus();
+document.querySelector('.live-cli-wrap').addEventListener('click', () => document.getElementById('live-input').focus());
 </script>
 <script src="../special-roles.js"></script>
 </body>
