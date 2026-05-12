@@ -264,7 +264,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
   ═══════════════════════════════════════ -->
   <div class="sec-title">
     <div class="num" style="background:rgba(247,129,102,.12);color:#f78166;">4</div>
-    <h2 style="color:#f78166;">Receptek – kattints a feladatra</h2>
+    <h2 style="color:#f78166;">Parancsok – kattints a feladatra</h2>
   </div>
 
   <div class="recipe-list">
@@ -283,13 +283,14 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
         <div class="step-row"><div class="step-num">3</div><div class="step-text">IP-cím + alhálózati maszk megadása</div></div>
         <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>no shutdown</strong> – bekapcsoljuk az interfészt (kötelező!)</div></div>
         <div class="code-mini">
-<span class="p-user">Router&gt;</span><span class="cmd"> enable</span>
-<span class="p-enable">Router#</span><span class="cmd"> configure terminal</span>
-<span class="p-config">Router(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span>
-<span class="p-if">Router(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.65</span> <span class="val">255.255.255.240</span></span>
-<span class="p-if">Router(config-if)#</span><span class="cmd"> no shutdown</span>
-<span class="p-if">Router(config-if)#</span><span class="cmd"> exit</span>
-<span class="comment">-- Ugyanígy a másik interfészre is (G0/0)</span></div>
+<div><span class="p-user">Router&gt;</span><span class="cmd"> enable</span></div>
+<div><span class="p-enable">Router#</span><span class="cmd"> configure terminal</span></div>
+<div><span class="p-config">Router(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.65</span> <span class="val">255.255.255.240</span></span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">Router(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="comment">-- Ugyanígy a másik interfészre is (G0/0)</span></div>
+</div>
       </div>
     </div>
 
@@ -305,11 +306,12 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
         <div class="step-row"><div class="step-num">1</div><div class="step-text">A switchnek nem G0/0-ra, hanem <strong>Vlan1</strong>-re kell az IP-t beállítani</div></div>
         <div class="step-row"><div class="step-num">2</div><div class="step-text">Az <strong>ip default-gateway</strong> megmondja a switchnek, hova küldje a forgalmat (ez a router IP-je)</div></div>
         <div class="code-mini">
-<span class="p-config">SW1(config)#</span><span class="cmd"> interface Vlan1</span>
-<span class="p-if">SW1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.66</span> <span class="val">255.255.255.240</span></span>
-<span class="p-if">SW1(config-if)#</span><span class="cmd"> no shutdown</span>
-<span class="p-if">SW1(config-if)#</span><span class="cmd"> exit</span>
-<span class="p-config">SW1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.30.65</span></span></div>
+<div><span class="p-config">SW1(config)#</span><span class="cmd"> interface Vlan1</span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.66</span> <span class="val">255.255.255.240</span></span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">SW1(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="p-config">SW1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.30.65</span></span></div>
+</div>
       </div>
     </div>
 
@@ -326,17 +328,18 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
         <div class="step-row"><div class="step-num">2</div><div class="step-text">Domain név kell az SSH kulcshoz, majd <strong>crypto key generate rsa</strong> – a bitszámnál írj <strong>2048</strong>-at</div></div>
         <div class="step-row"><div class="step-num">3</div><div class="step-text">Helyi felhasználó létrehozása, VTY vonalak beállítása SSH-ra</div></div>
         <div class="code-mini">
-<span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">Torony</span></span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> enable secret <span class="val">Torony</span></span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> service password-encryption</span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> ip domain-name <span class="val">alapvizsga2023.hu</span></span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> crypto key generate rsa</span>
-<span class="comment">-- Kérdezi a bitméretet → írj: 2048</span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> username <span class="val">tanuló</span> secret <span class="val">Torony</span></span>
-<span class="p-config">Torony(config)#</span><span class="cmd"> line vty 0 15</span>
-<span class="p-line">Torony(config-line)#</span><span class="cmd"> transport input ssh</span>
-<span class="p-line">Torony(config-line)#</span><span class="cmd"> login local</span>
-<span class="p-line">Torony(config-line)#</span><span class="cmd"> exit</span></div>
+<div><span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> enable secret <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> service password-encryption</span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> ip domain-name <span class="val">alapvizsga2023.hu</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> crypto key generate rsa</span></div>
+<div><span class="comment">-- Kérdezi a bitméretet → írj: 2048</span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> username <span class="val">tanuló</span> secret <span class="val">Torony</span></span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> line vty 0 15</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> transport input ssh</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> login local</span></div>
+<div><span class="p-line">Torony(config-line)#</span><span class="cmd"> exit</span></div>
+</div>
       </div>
     </div>
 
@@ -351,8 +354,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <div class="recipe-body">
         <div class="step-row"><div class="step-num">1</div><div class="step-text">Ha nem mentesz, újraindítás után <strong>elvész</strong> minden beállítás!</div></div>
         <div class="code-mini">
-<span class="p-config">Torony(config)#</span><span class="cmd"> end</span>
-<span class="p-enable">Torony#</span><span class="cmd"> write memory</span></div>
+<div><span class="p-config">Torony(config)#</span><span class="cmd"> end</span></div>
+<div><span class="p-enable">Torony#</span><span class="cmd"> write memory</span></div>
+</div>
       </div>
     </div>
 
@@ -382,6 +386,189 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     </div>
 
   </div><!-- /recipe-list -->
+
+  <!-- ═══════════════════════════════════════
+       5. HOGYAN KÉL ÉLETRE EGY HÁLÓZAT?
+  ═══════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:36px">
+    <div class="num" style="background:rgba(52,211,153,.12);color:#34d399;">5</div>
+    <h2 style="color:#34d399;">Hogyan kel életre egy hálózat?</h2>
+  </div>
+
+  <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6;padding:10px 14px;background:var(--surface2);border:1px solid rgba(52,211,153,.15);border-radius:8px">
+    <i class="fas fa-route" style="color:#34d399;margin-right:6px;"></i>
+    <strong style="color:var(--text)">Egy teljes folyamat</strong> – lépésről lépésre, ahogy a Packet Tracerben is csinálod. CLI parancsok és grafikus beállítások egymás után, az ellenőrzéssel együtt.
+  </div>
+
+  <div class="recipe-list">
+
+    <!-- W1: Router CLI -->
+    <div class="recipe" id="w1">
+      <div class="recipe-head" onclick="toggleRecipe('w1')">
+        <span class="r-icon" style="color:#38bdf8;"><i class="fas fa-terminal"></i></span>
+        <span class="r-title">1. lépés – Router: IP-cím + biztonság (CLI)</span>
+        <span class="r-sub">Packet Tracer – terminál ablak</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">!</div><div class="step-text">A router <strong>GigabitEthernet</strong> interfészeire állítod be az IP-t. Minden interfész alapból ki van kapcsolva – ne felejtsd el a <strong>no shutdown</strong>-t!</div></div>
+        <div class="code-mini">
+<div><span class="p-user">Router&gt;</span><span class="cmd"> enable</span></div>
+<div><span class="p-enable">Router#</span><span class="cmd"> configure terminal</span></div>
+<div><span class="comment">-- Hostname és jelszó</span></div>
+<div><span class="p-config">Router(config)#</span><span class="cmd"> hostname <span class="val">KR</span></span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> enable secret <span class="val">kando2022</span></span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> service password-encryption</span></div>
+<div><span class="comment">-- Első interfész (iroda felőli oldal)</span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> interface GigabitEthernet0/0</span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.1</span> <span class="val">255.255.255.224</span></span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="comment">-- Második interfész (szerver hálózat)</span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.33</span> <span class="val">255.255.255.248</span></span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">KR(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="comment">-- SSH beállítás</span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> ip domain-name <span class="val">SSH1223.local</span></span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> crypto key generate rsa</span></div>
+<div><span class="comment">-- (kérdezi a bitméretet → írj: 2048)</span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> username <span class="val">SSHladmin</span> secret <span class="val">SSHladmin</span></span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> line vty 0 15</span></div>
+<div><span class="p-line">KR(config-line)#</span><span class="cmd"> transport input ssh</span></div>
+<div><span class="p-line">KR(config-line)#</span><span class="cmd"> login local</span></div>
+<div><span class="p-line">KR(config-line)#</span><span class="cmd"> exit</span></div>
+<div><span class="comment">-- Mentés</span></div>
+<div><span class="p-config">KR(config)#</span><span class="cmd"> end</span></div>
+<div><span class="p-enable">KR#</span><span class="cmd"> write memory</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W2: Switch CLI -->
+    <div class="recipe" id="w2">
+      <div class="recipe-head" onclick="toggleRecipe('w2')">
+        <span class="r-icon" style="color:#79c0ff;"><i class="fas fa-network-wired"></i></span>
+        <span class="r-title">2. lépés – Switch: menedzsment IP (CLI)</span>
+        <span class="r-sub">Packet Tracer – terminál ablak</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">!</div><div class="step-text">A switchnek nem G0/0-ra, hanem <strong>Vlan1</strong>-re kell az IP-t beállítani. Az <strong>ip default-gateway</strong> mondja meg a switchnek, hogy a routeren keresztül érje el a többi hálózatot.</div></div>
+        <div class="code-mini">
+<div><span class="p-user">Switch&gt;</span><span class="cmd"> enable</span></div>
+<div><span class="p-enable">Switch#</span><span class="cmd"> configure terminal</span></div>
+<div><span class="p-config">Switch(config)#</span><span class="cmd"> hostname <span class="val">k1-sw1</span></span></div>
+<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> interface Vlan1</span></div>
+<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.40.34</span> <span class="val">255.255.255.248</span></span></div>
+<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> no shutdown</span></div>
+<div><span class="p-if">k1-sw1(config-if)#</span><span class="cmd"> exit</span></div>
+<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.40.33</span></span></div>
+<div><span class="p-config">k1-sw1(config)#</span><span class="cmd"> end</span></div>
+<div><span class="p-enable">k1-sw1#</span><span class="cmd"> write memory</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W3: PC GUI -->
+    <div class="recipe" id="w3">
+      <div class="recipe-head" onclick="toggleRecipe('w3')">
+        <span class="r-icon" style="color:#56d364;"><i class="fas fa-desktop"></i></span>
+        <span class="r-title">3. lépés – PC: IP-cím beállítása (grafikus)</span>
+        <span class="r-sub">Packet Tracer – Desktop › IP Configuration</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a PC-re → <strong>Desktop</strong> fül → <strong>IP Configuration</strong> ikon</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Válaszd a <strong>Static</strong> rádiógombot (ne DHCP!)</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">Töltsd ki a mezőket az IP-tábla alapján:</div></div>
+        <div style="margin:10px 0;background:#05090f;border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-size:.8rem;line-height:2.1">
+          <div><span style="color:var(--dim);display:inline-block;width:150px">IPv4 Address:</span><span style="color:#ffa657;font-family:monospace">192.168.40.36</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:150px">Subnet Mask:</span><span style="color:#ffa657;font-family:monospace">255.255.255.248</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:150px">Default Gateway:</span><span style="color:#ffa657;font-family:monospace">192.168.40.33</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:150px">DNS Server:</span><span style="color:#484f58;font-style:italic">üresen hagyható</span></div>
+        </div>
+        <div class="step-row"><div class="step-num">!</div><div class="step-text"><strong style="color:#e3b341">Fontos:</strong> A Default Gateway a router interfészének IP-je (ahol a PC csatlakozik) – nem a switch IP-je!</div></div>
+      </div>
+    </div>
+
+    <!-- W4: WiFi Router GUI -->
+    <div class="recipe" id="w4">
+      <div class="recipe-head" onclick="toggleRecipe('w4')">
+        <span class="r-icon" style="color:#d2a8ff;"><i class="fas fa-wifi"></i></span>
+        <span class="r-title">4. lépés – WiFi router beállítása (grafikus)</span>
+        <span class="r-sub">Packet Tracer – Config fül</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a WiFi routerre → <strong>Config</strong> fül</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>GLOBAL → Settings:</strong> Admin jelszó megadása</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>LAN → DHCP:</strong> Start IP és End IP megadása (pl. .100–.130)</div></div>
+        <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>Wireless → Basic Wireless Settings:</strong> SSID neve, broadcast bekapcsolása</div></div>
+        <div class="step-row"><div class="step-num">5</div><div class="step-text"><strong>Wireless → Wireless Security:</strong> Security Mode = WPA2-PSK, Passphrase = WiFi jelszó</div></div>
+        <div style="margin:10px 0;background:#05090f;border:1px solid rgba(210,168,255,.15);border-radius:7px;padding:10px 14px;font-size:.8rem;line-height:2.1">
+          <div><span style="color:var(--dim);display:inline-block;width:165px">SSID neve:</span><span style="color:#d2a8ff;font-family:monospace">ISKOLA</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:165px">SSID broadcast:</span><span style="color:#d2a8ff;font-family:monospace">Enabled</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:165px">Security Mode:</span><span style="color:#d2a8ff;font-family:monospace">WPA2-PSK</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:165px">Passphrase:</span><span style="color:#ffa657;font-family:monospace">ISKOLA123</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:165px">DHCP Start IP:</span><span style="color:#ffa657;font-family:monospace">192.168.100.100</span></div>
+          <div><span style="color:var(--dim);display:inline-block;width:165px">DHCP End IP:</span><span style="color:#ffa657;font-family:monospace">192.168.100.130</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W5: WiFi kliens -->
+    <div class="recipe" id="w5">
+      <div class="recipe-head" onclick="toggleRecipe('w5')">
+        <span class="r-icon" style="color:#ffa657;"><i class="fas fa-laptop"></i></span>
+        <span class="r-title">5. lépés – Laptop / tablet WiFi-hoz csatlakoztatása</span>
+        <span class="r-sub">Packet Tracer – PC Wireless</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Kattints a laptopra → <strong>Desktop</strong> fül → <strong>PC Wireless</strong></div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Megjelennek az elérhető hálózatok. Keresd az <strong>ISKOLA</strong> nevű hálózatot.</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">Kattints rá → <strong>Connect</strong> gomb → add meg a jelszót: <code style="font-family:monospace;color:#ffa657">ISKOLA123</code></div></div>
+        <div class="step-row"><div class="step-num">!</div><div class="step-text">Ha a DHCP jól van beállítva, a laptop automatikusan kap IP-t a <code style="font-family:monospace;color:#ffa657">192.168.100.100–.130</code> tartományból.</div></div>
+      </div>
+    </div>
+
+    <!-- W6: Ellenőrzés -->
+    <div class="recipe" id="w6">
+      <div class="recipe-head" onclick="toggleRecipe('w6')">
+        <span class="r-icon" style="color:#34d399;"><i class="fas fa-circle-check"></i></span>
+        <span class="r-title">6. lépés – Ellenőrzés: működik a hálózat?</span>
+        <span class="r-sub">ping + show parancsok + SSH teszt</span>
+        <i class="fas fa-chevron-down r-arrow"></i>
+      </div>
+      <div class="recipe-body">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text"><strong>Ping teszt</strong> a PC-ről: Desktop → <strong>Command Prompt</strong></div></div>
+        <div class="code-mini">
+<div><span style="color:#56d364">C:\&gt;</span><span class="cmd"> ping <span class="val">192.168.40.33</span></span></div>
+<div><span class="comment">-- Ha "Reply from..." jelenik meg → kapcsolat OK!</span></div>
+<div><span class="comment">-- Ha "Request timeout" → ellenőrizd az IP-ket és no shutdown</span></div>
+        </div>
+        <div class="step-row" style="margin-top:12px"><div class="step-num">2</div><div class="step-text"><strong>SSH teszt</strong> – belépés a routerre ssh-val</div></div>
+        <div class="code-mini">
+<div><span style="color:#56d364">C:\&gt;</span><span class="cmd"> ssh -l <span class="val">SSHladmin</span> <span class="val">192.168.40.1</span></span></div>
+<div><span class="comment">-- Jelszó bekéréskor: SSHladmin</span></div>
+<div><span class="comment">-- Ha "Password:" jelenik meg → SSH működik!</span></div>
+        </div>
+        <div class="step-row" style="margin-top:12px"><div class="step-num">3</div><div class="step-text"><strong>Show parancsok</strong> a routeren – a teljes állapot megnézéséhez</div></div>
+        <div class="code-mini">
+<div><span class="p-enable">KR#</span><span class="cmd"> show ip interface brief</span></div>
+<div><span class="comment">-- Megmutatja az összes interfészt, IP-t és állapotot</span></div>
+<div><span class="p-enable">KR#</span><span class="cmd"> show running-config</span></div>
+<div><span class="comment">-- Az egész futó konfiguráció</span></div>
+        </div>
+        <div style="margin-top:10px;padding:10px 12px;background:#05090f;border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.6;">
+          <i class="fas fa-lightbulb" style="color:#e3b341;margin-right:6px;"></i>
+          <strong style="color:var(--text)">Tipp:</strong> Az interfész állapota <code style="font-family:monospace;color:#56d364">up/up</code> legyen. Ha <code style="font-family:monospace;color:#f85149">down/down</code> van, elfelejtetted a <code style="font-family:monospace;color:var(--neon)">no shutdown</code> parancsot, vagy nincs kábel csatlakoztatva.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /recipe-list walkthrough -->
 
   <!-- BOTTOM NAV -->
   <div class="bottom-nav">
