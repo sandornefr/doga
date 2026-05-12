@@ -619,6 +619,35 @@ const HALOZAT_FELADATOK = [
         ellenorzes: s => s.sshTested || s.webTested,
       },
     ],
+
+    elvart: {
+      kr: {
+        hostname: 'KR',
+        enableSecret: 'kando2022',
+        servicePasswordEncryption: true,
+        domainName: 'SSH1223.local',
+        rsaKeyBits: 2048,
+        users: { 'SSHladmin': 'SSHladmin' },
+        interfaces: {
+          'GigabitEthernet0/0': { ip: '192.168.40.1',  mask: '255.255.255.224', active: true },
+          'GigabitEthernet0/1': { ip: '192.168.40.33', mask: '255.255.255.248', active: true },
+        },
+        vtyTransport: 'ssh',
+        vtyLogin: 'local',
+        saved: true,
+      },
+      'k1-sw1': {
+        vlan1Ip: '192.168.40.34', vlan1Mask: '255.255.255.248', defaultGateway: '192.168.40.33', vlan1Active: true,
+      },
+      'k1-pc':  { ip: '192.168.40.36', mask: '255.255.255.248', gateway: '192.168.40.33' },
+      'k2-pc':  { ip: '192.168.40.38', mask: '255.255.255.248', gateway: '192.168.40.33' },
+      'suli-wifi': {
+        password: 'ISKOLA', dhcpStart: '192.168.100.100', dhcpEnd: '192.168.100.130',
+        ssid: 'ISKOLA', ssidBroadcast: true, security: 'wpa2-psk', wifiKey: 'ISKOLA123',
+      },
+      'suli-tablet': { wifiJoined: 'ISKOLA' },
+      'suli-laptop': { wifiJoined: 'ISKOLA' },
+    },
   },
 
   // ═══════════════════════════════════════════════════════

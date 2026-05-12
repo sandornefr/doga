@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisco IOS Elmélet – Kandó</title>
+<link rel="icon" href="../kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#1a2535 transparent}
+*::-webkit-scrollbar{width:6px}
+*::-webkit-scrollbar-thumb{background:#1e3048;border-radius:3px}
+
+:root{
+  --bg:#030608;
+  --surface:#06101a;
+  --surface2:#091520;
+  --neon:#38bdf8;
+  --border:rgba(56,189,248,.15);
+  --text:#e0f2fe;
+  --dim:#5a8aaa;
+  --muted:#1e4060;
+  /* mode colors */
+  --user:#56d364;
+  --enable:#e3b341;
+  --config:#79c0ff;
+  --iface:#f78166;
+  --line:#d2a8ff;
+}
+
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;left:0;right:0;height:52px;background:rgba(3,6,8,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;width:100%}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar img{height:32px;opacity:.88}
+.topbar-right a{padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.topbar-right a:hover{border-color:var(--neon);color:var(--neon)}
+
+/* ── LAYOUT ── */
+.page{width:100%;max-width:860px;padding:32px 24px 80px}
+
+/* ── HERO ── */
+.hero{text-align:center;margin-bottom:40px}
+.hero h1{font-size:1.7rem;font-weight:900;margin-bottom:6px}
+.hero h1 .accent{background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--dim);font-size:.9rem}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:40px}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.section-head h2{font-size:1.05rem;font-weight:800;letter-spacing:.04em}
+.section-head .sec-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;flex-shrink:0}
+
+/* ── MODE CARDS ── */
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.mode-card{background:var(--surface);border:1px solid;border-radius:8px;padding:12px 14px}
+.mode-card .mode-name{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.mode-card .mode-prompt{font-family:'Cascadia Code','Consolas',monospace;font-size:.88rem;font-weight:700;margin-bottom:4px}
+.mode-card .mode-how{font-size:.72rem;color:var(--dim);line-height:1.5}
+
+.mode-user{border-color:rgba(86,211,100,.3)}
+.mode-user .mode-name,.mode-user .mode-prompt{color:var(--user)}
+.mode-enable{border-color:rgba(227,179,65,.3)}
+.mode-enable .mode-name,.mode-enable .mode-prompt{color:var(--enable)}
+.mode-config{border-color:rgba(121,192,255,.3)}
+.mode-config .mode-name,.mode-config .mode-prompt{color:var(--config)}
+.mode-iface{border-color:rgba(247,129,102,.3)}
+.mode-iface .mode-name,.mode-iface .mode-prompt{color:var(--iface)}
+.mode-line{border-color:rgba(210,168,255,.3)}
+.mode-line .mode-name,.mode-line .mode-prompt{color:var(--line)}
+
+/* ── NAV FLOW ── */
+.nav-flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:'Cascadia Code','Consolas',monospace;font-size:.82rem}
+.nav-flow .arrow{color:var(--dim);margin:0 2px}
+.nav-flow .cmd{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:4px;padding:2px 8px;color:var(--neon);font-weight:700}
+.nav-flow .prompt{color:var(--dim)}
+.nav-flow .lbl{font-family:'Segoe UI',sans-serif;font-size:.68rem;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-left:4px}
+
+/* ── CODE BLOCKS ── */
+.code-block{background:#05090f;border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-family:'Cascadia Code','Consolas',monospace;font-size:.82rem;line-height:1.75;overflow-x:auto;margin-bottom:10px}
+.code-block .prompt-user{color:var(--user)}
+.code-block .prompt-enable{color:var(--enable)}
+.code-block .prompt-config{color:var(--config)}
+.code-block .prompt-iface{color:var(--iface)}
+.code-block .prompt-line{color:var(--line)}
+.code-block .cmd{color:#e0e0e0}
+.code-block .comment{color:#484f58;font-style:italic}
+.code-block .val{color:#ffa657}
+.code-block .out{color:#56d364}
+
+/* ── EXPLAIN BOXES ── */
+.explain{background:var(--surface);border-left:3px solid var(--neon);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;font-size:.82rem;color:var(--dim);line-height:1.6}
+.explain strong{color:var(--text)}
+.explain code{background:rgba(56,189,248,.1);color:var(--neon);padding:1px 5px;border-radius:3px;font-family:'Cascadia Code',monospace;font-size:.8rem}
+
+.warn-box{background:rgba(227,179,65,.07);border:1px solid rgba(227,179,65,.3);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:.82rem;color:#e3b341;line-height:1.6}
+.warn-box i{margin-right:6px}
+
+/* ── TABLE ── */
+.cmd-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:12px}
+.cmd-table th{background:var(--surface2);color:var(--dim);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:700;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase}
+.cmd-table td{padding:7px 10px;border-bottom:1px solid rgba(56,189,248,.08);vertical-align:top}
+.cmd-table tr:last-child td{border-bottom:none}
+.cmd-table td:first-child{font-family:'Cascadia Code',monospace;color:var(--neon);white-space:nowrap}
+.cmd-table td:last-child{color:var(--dim);line-height:1.5}
+
+/* ── SUBNET REFERENCE ── */
+.subnet-table{width:100%;border-collapse:collapse;font-size:.78rem;font-family:'Cascadia Code',monospace}
+.subnet-table th{background:var(--surface2);color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;font-family:'Segoe UI',sans-serif}
+.subnet-table td{padding:6px 10px;border-bottom:1px solid rgba(56,189,248,.07);color:#e0e0e0}
+.subnet-table tr:last-child td{border-bottom:none}
+.subnet-table td:first-child{color:#ffa657}
+.subnet-table td:nth-child(2){color:var(--neon)}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+.btn-nav{padding:10px 22px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+.btn-primary{background:rgba(56,189,248,.12);border:1px solid #38bdf8;color:#38bdf8}
+.btn-primary:hover{background:rgba(56,189,248,.22);box-shadow:0 0 16px rgba(56,189,248,.2)}
+.btn-green{background:rgba(52,211,153,.12);border:1px solid #34d399;color:#34d399}
+.btn-green:hover{background:rgba(52,211,153,.22);box-shadow:0 0 16px rgba(52,211,153,.2)}
+.btn-purple{background:rgba(129,140,248,.12);border:1px solid #818cf8;color:#818cf8}
+.btn-purple:hover{background:rgba(129,140,248,.22);box-shadow:0 0 16px rgba(129,140,248,.2)}
+
+@media(max-width:600px){.page{padding:20px 16px 60px}.mode-grid{grid-template-columns:1fr 1fr}.nav-flow{font-size:.75rem}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="../portal.html"><img src="../kandologo2.png" alt="Kandó"></a>
+    <span style="color:var(--dim);font-size:.82rem;"><i class="fas fa-network-wired" style="color:#38bdf8;margin-right:6px;"></i>Cisco IOS Elmélet</span>
+  </div>
+  <div class="topbar-right">
+    <a href="../halozat-hub.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <h1><i class="fas fa-network-wired" style="color:#38bdf8;margin-right:10px;"></i><span class="accent">Cisco IOS Elmélet</span></h1>
+    <p>Parancsok, módok, konfigurációs lépések – amit a feladatok megoldásához tudnod kell</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 1. IOS MÓDOK -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(56,189,248,.15);color:#38bdf8;">1</div>
+      <h2 style="color:#38bdf8;">Cisco IOS módok</h2>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--dim);margin-bottom:14px;line-height:1.6;">A Cisco router és switch konfigurálása <strong style="color:var(--text)">módokban</strong> (privilege levels) történik. Minden módban más parancsok érhetők el. A <strong style="color:var(--text)">promptból</strong> (a <code style="font-family:monospace;color:#e0e0e0">&gt;</code> vagy <code style="font-family:monospace;color:#e0e0e0">#</code> karakter) tudod, hol vagy.</p>
+
+    <div class="mode-grid">
+      <div class="mode-card mode-user">
+        <div class="mode-name">User EXEC</div>
+        <div class="mode-prompt">Router&gt;</div>
+        <div class="mode-how">Belépéskor ide kerülsz. Csak korlátolt <code style="font-family:monospace">show</code> parancsok. Innen <strong>nem lehet konfigurálni</strong>.</div>
+      </div>
+      <div class="mode-card mode-enable">
+        <div class="mode-name">Privileged EXEC</div>
+        <div class="mode-prompt">Router#</div>
+        <div class="mode-how">Teljes hozzáférés <code style="font-family:monospace">show</code> parancsokhoz, elmentés, reload. Belépés: <strong>enable</strong></div>
+      </div>
+      <div class="mode-card mode-config">
+        <div class="mode-name">Global Config</div>
+        <div class="mode-prompt">Router(config)#</div>
+        <div class="mode-how">Itt állítod be: hostname, jelszó, SSH, user. Belépés: <strong>configure terminal</strong></div>
+      </div>
+      <div class="mode-card mode-iface">
+        <div class="mode-name">Interface Config</div>
+        <div class="mode-prompt">Router(config-if)#</div>
+        <div class="mode-how">IP-cím, aktiválás. Belépés: <strong>interface GigabitEthernet0/0</strong></div>
+      </div>
+      <div class="mode-card mode-line">
+        <div class="mode-name">Line Config</div>
+        <div class="mode-prompt">Router(config-line)#</div>
+        <div class="mode-how">SSH/Telnet vonalak beállítása. Belépés: <strong>line vty 0 15</strong></div>
+      </div>
+    </div>
+
+    <div class="warn-box"><i class="fas fa-triangle-exclamation"></i><strong>Kulcspont:</strong> Amíg a promptban <code style="font-family:monospace;color:#e3b341">&gt;</code> van (user mód), a <code style="font-family:monospace;color:#e3b341">configure terminal</code> nem működik. Előbb be kell írni az <strong>enable</strong> parancsot!</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 2. NAVIGÁCIÓ -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(86,211,100,.12);color:#56d364;">2</div>
+      <h2 style="color:#56d364;">Navigáció a módok között</h2>
+    </div>
+
+    <div class="nav-flow">
+      <span class="prompt" style="color:var(--user)">Router&gt;</span>
+      <span class="arrow">→</span>
+      <span class="cmd">enable</span>
+      <span class="arrow">→</span>
+      <span class="prompt" style="color:var(--enable)">Router#</span>
+      <span class="arrow">→</span>
+      <span class="cmd">configure terminal</span>
+      <span class="arrow">→</span>
+      <span class="prompt" style="color:var(--config)">Router(config)#</span>
+      <span class="arrow">→</span>
+      <span class="cmd">interface G0/0</span>
+      <span class="arrow">→</span>
+      <span class="prompt" style="color:var(--iface)">Router(config-if)#</span>
+    </div>
+
+    <div style="height:10px"></div>
+    <table class="cmd-table">
+      <thead><tr><th>Parancs</th><th>Mit csinál</th></tr></thead>
+      <tbody>
+        <tr><td>enable</td><td>User módból Privileged (enable) módba lép. Ha van enable password/secret, bekéri.</td></tr>
+        <tr><td>configure terminal</td><td>Enable módból Global Config módba lép. Rövidíthető: <code style="font-family:monospace;color:var(--neon)">conf t</code></td></tr>
+        <tr><td>interface &lt;név&gt;</td><td>Config módból Interface Config módba lép a megadott interfészre.</td></tr>
+        <tr><td>line vty 0 15</td><td>Config módból Line Config módba lép (VTY = virtuális terminál vonalak, 0–15).</td></tr>
+        <tr><td>exit</td><td>Egy szinttel visszalép (pl. config-if → config, config → enable).</td></tr>
+        <tr><td>end</td><td>Azonnal visszaugrik Privileged módba, bármilyen mélységből. Rövidíthető: <kbd style="font-family:monospace;color:#e3b341">Ctrl+Z</kbd></td></tr>
+      </tbody>
+    </table>
+
+    <div class="code-block">
+<span class="comment">-- Teljes belépési folyamat elölről:</span>
+<span class="prompt-user">Router&gt;</span><span class="cmd"> enable</span>
+<span class="prompt-enable">Router#</span><span class="cmd"> configure terminal</span>
+<span class="out">Enter configuration commands, one per line.  End with CNTL/Z.</span>
+<span class="prompt-config">Router(config)#</span><span class="cmd"> hostname Torony</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> ip address 192.168.30.65 255.255.255.240</span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> no shutdown</span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> exit</span>
+<span class="prompt-config">Torony(config)#</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 3. ALAPKONFIGURÁCIÓ -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(227,179,65,.12);color:#e3b341;">3</div>
+      <h2 style="color:#e3b341;">Alapkonfiguráció – biztonság</h2>
+    </div>
+
+    <div class="code-block">
+<span class="prompt-config">Router(config)#</span><span class="cmd"> hostname <span class="val">Torony</span></span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> enable secret <span class="val">Torony</span></span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> service password-encryption</span>
+    </div>
+
+    <table class="cmd-table">
+      <thead><tr><th>Parancs</th><th>Magyarázat</th></tr></thead>
+      <tbody>
+        <tr><td>hostname &lt;név&gt;</td><td>Az eszköz neve – megjelenik a promptban és az SSH kapcsolatnál. Pl. <code style="font-family:monospace;color:var(--neon)">hostname Torony</code></td></tr>
+        <tr><td>enable secret &lt;jelszó&gt;</td><td>Jelszó az enable módhoz – <strong style="color:var(--text)">titkosítva</strong> tárolódik (MD5). Biztonságosabb, mint az <code style="font-family:monospace;color:var(--dim)">enable password</code>.</td></tr>
+        <tr><td>service password-encryption</td><td>Az összes többi jelszót is titkosítja a konfigurációban (pl. VTY jelszók, user jelszók).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn-box"><i class="fas fa-triangle-exclamation"></i><strong>enable secret vs enable password:</strong> Mindig az <code style="font-family:monospace;color:#e3b341">enable secret</code>-et használd! Az <code style="font-family:monospace;color:#e3b341">enable password</code> gyengébb titkosítással tárol.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 4. IP-CÍM BEÁLLÍTÁS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(247,129,102,.12);color:#f78166;">4</div>
+      <h2 style="color:#f78166;">IP-cím beállítás – router interfész</h2>
+    </div>
+
+    <div class="code-block">
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> interface GigabitEthernet0/1</span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.65</span> <span class="val">255.255.255.240</span></span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> no shutdown</span>
+<span class="out">%LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to up</span>
+<span class="prompt-iface">Torony(config-if)#</span><span class="cmd"> exit</span>
+    </div>
+
+    <table class="cmd-table">
+      <thead><tr><th>Parancs</th><th>Magyarázat</th></tr></thead>
+      <tbody>
+        <tr><td>interface G0/1</td><td>Belép a GigabitEthernet0/1 interfész konfigurációjába. Sima switch esetén: <code style="font-family:monospace;color:var(--neon)">interface Vlan1</code></td></tr>
+        <tr><td>ip address &lt;ip&gt; &lt;maszk&gt;</td><td>Beállítja az IP-t és az alhálózati maszkot. A maszk decimális formátumban kell (pl. <code style="font-family:monospace;color:var(--neon)">255.255.255.240</code> = /28)</td></tr>
+        <tr><td>no shutdown</td><td><strong style="color:var(--text)">Aktiválja az interfészt</strong> – alapból ki van kapcsolva! Ez kötelező lépés, különben az interfész nem fog működni.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain">
+      <strong>Switch esetén (VLAN IP):</strong> A switchnek is beállíthatunk IP-t menedzsmenthez, de azt a <code>Vlan1</code> interfészre kell tenni. Ezen felül szükséges az <code>ip default-gateway</code> parancs is, hogy a switch tudja, merre küldje a saját alhálózatán kívüli forgalmat.
+    </div>
+
+    <div class="code-block">
+<span class="comment">-- Switch VLAN1 IP + default gateway:</span>
+<span class="prompt-config">SW1(config)#</span><span class="cmd"> interface Vlan1</span>
+<span class="prompt-iface">SW1(config-if)#</span><span class="cmd"> ip address <span class="val">192.168.30.66</span> <span class="val">255.255.255.240</span></span>
+<span class="prompt-iface">SW1(config-if)#</span><span class="cmd"> no shutdown</span>
+<span class="prompt-iface">SW1(config-if)#</span><span class="cmd"> exit</span>
+<span class="prompt-config">SW1(config)#</span><span class="cmd"> ip default-gateway <span class="val">192.168.30.65</span></span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 5. SSH BEÁLLÍTÁS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(210,168,255,.12);color:#d2a8ff;">5</div>
+      <h2 style="color:#d2a8ff;">SSH konfiguráció</h2>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--dim);margin-bottom:14px;line-height:1.6;">Az SSH (Secure Shell) titkosított, biztonságos távoli bejelentkezést biztosít. A Telnet-tel ellentétben az SSH titkosítja a kommunikációt. Az SSH beállításhoz 4 lépés kell:</p>
+
+    <div class="code-block">
+<span class="comment">-- 1. Domain név (az RSA kulcs neve ebből áll össze)</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> ip domain-name <span class="val">alapvizsga2023.hu</span></span>
+
+<span class="comment">-- 2. RSA kulcspár generálása (titkosításhoz kell)</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> crypto key generate rsa</span>
+<span class="out">How many bits in the modulus [512]: </span><span class="val">2048</span>
+
+<span class="comment">-- 3. Helyi felhasználó létrehozása</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> username <span class="val">tanuló</span> secret <span class="val">Torony</span></span>
+
+<span class="comment">-- 4. VTY vonalak konfigurálása (0-15 = 16 párhuzamos bejelentkezési lehetőség)</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> line vty 0 15</span>
+<span class="prompt-line">Torony(config-line)#</span><span class="cmd"> transport input ssh</span>
+<span class="prompt-line">Torony(config-line)#</span><span class="cmd"> login local</span>
+<span class="prompt-line">Torony(config-line)#</span><span class="cmd"> exit</span>
+    </div>
+
+    <table class="cmd-table">
+      <thead><tr><th>Parancs</th><th>Magyarázat</th></tr></thead>
+      <tbody>
+        <tr><td>ip domain-name &lt;név&gt;</td><td>Domain név – kötelező az RSA kulcs generáláshoz. A kulcs neve: <em>hostname.domain</em></td></tr>
+        <tr><td>crypto key generate rsa</td><td>RSA kulcspárt generál. A bit-méretnél <strong style="color:var(--text)">2048</strong>-at adj meg (erősebb = biztonságosabb).</td></tr>
+        <tr><td>username &lt;felh&gt; secret &lt;jelszó&gt;</td><td>Helyi felhasználó létrehozása SSH bejelentkezéshez.</td></tr>
+        <tr><td>line vty 0 15</td><td>A VTY vonalak konfigurációs módja. 0–15 = max 16 párhuzamos kapcsolat.</td></tr>
+        <tr><td>transport input ssh</td><td>Csak SSH kapcsolatot enged be (Telnetet nem, az titkosítatlan!)</td></tr>
+        <tr><td>login local</td><td>A helyi felhasználói adatbázist használja azonosításhoz (a fent létrehozott username/secret).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 6. MENTÉS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(86,211,100,.12);color:#56d364;">6</div>
+      <h2 style="color:#56d364;">Konfiguráció mentése</h2>
+    </div>
+
+    <div class="code-block">
+<span class="comment">-- Visszatérés enable módba:</span>
+<span class="prompt-config">Torony(config)#</span><span class="cmd"> end</span>
+
+<span class="comment">-- Mentés (két egyenértékű lehetőség):</span>
+<span class="prompt-enable">Torony#</span><span class="cmd"> write memory</span>
+<span class="comment">-- VAGY</span>
+<span class="prompt-enable">Torony#</span><span class="cmd"> copy running-config startup-config</span>
+<span class="out">Destination filename [startup-config]? </span><span class="val">Enter</span>
+    </div>
+
+    <div class="explain">
+      <strong>Miért kell menteni?</strong> A Cisco router a konfigurációt alapból csak a <code>running-config</code>-ban (RAM) tárolja. Ha az eszközt újraindítják, a RAM törlődik, és a <code>startup-config</code> (NVRAM) töltődik be. A <code>write memory</code> átmásolja a running-config-ot a startup-config-ba, így újraindítás után is megmarad.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 7. OTTHONI ROUTER -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(255,171,64,.12);color:#ffab40;">7</div>
+      <h2 style="color:#ffab40;">Otthoni router (Home Router / GUEST)</h2>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--dim);margin-bottom:14px;line-height:1.6;">Az otthoni router (pl. GUEST, SULI-WIFI) nem Cisco IOS-sal, hanem <strong style="color:var(--text)">grafikus felülettel (GUI)</strong> konfigurálható – rá kell kattintani a topológiában.</p>
+
+    <table class="cmd-table">
+      <thead><tr><th>Beállítás</th><th>Mit jelent</th></tr></thead>
+      <tbody>
+        <tr><td>Router jelszó</td><td>A router felügyeleti jelszava (admin login).</td></tr>
+        <tr><td>DHCP kezdő/záró IP</td><td>A kiosztható IP-tartomány. Pl. 192.168.100.10 – 192.168.100.20 közötti 11 cím kiosztható automatikusan.</td></tr>
+        <tr><td>SSID</td><td>A WiFi hálózat neve (amit a telefonon/laptopon látunk). Pl. <code style="font-family:monospace;color:var(--neon)">GUEST-WIFI</code></td></tr>
+        <tr><td>SSID Broadcast</td><td>Ha ki van kapcsolva, a hálózat neve nem látszik – rejtett WiFi. A szimulátorban explicit csatlakoztatni kell.</td></tr>
+        <tr><td>Security: WPA2-PSK</td><td>Jelszóval védett WiFi. A PSK = PreShared Key = a WiFi jelszó.</td></tr>
+        <tr><td>WiFi kulcs (Passphrase)</td><td>A WiFi jelszó, amellyel a kliensek csatlakoznak.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 8. ALHÁLÓZATI MASZKOK -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="sec-num" style="background:rgba(56,189,248,.12);color:#38bdf8;">8</div>
+      <h2 style="color:#38bdf8;">Alhálózati maszkok gyorsreferencia</h2>
+    </div>
+
+    <table class="subnet-table">
+      <thead><tr><th>CIDR</th><th>Decimális maszk</th><th>Hoszt szám</th><th>Példa hálózat</th></tr></thead>
+      <tbody>
+        <tr><td>/24</td><td>255.255.255.0</td><td>254 hoszt</td><td>192.168.100.0 – nagy hálózat</td></tr>
+        <tr><td>/26</td><td>255.255.255.192</td><td>62 hoszt</td><td>192.168.30.0/26 → .1–.62</td></tr>
+        <tr><td>/27</td><td>255.255.255.224</td><td>30 hoszt</td><td>192.168.30.0/27 → .1–.30</td></tr>
+        <tr><td>/28</td><td>255.255.255.240</td><td>14 hoszt</td><td>192.168.30.64/28 → .65–.78</td></tr>
+        <tr><td>/29</td><td>255.255.255.248</td><td>6 hoszt</td><td>192.168.30.32/29 → .33–.38</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain" style="margin-top:10px;">
+      <strong>Hogyan olvasd az IP-táblát?</strong> Az <code>utolsó kiosztható</code> megjegyzés azt jelenti, hogy az alhálózat legnagyobb host-címét kapja az eszköz. A <code>2. kiosztható</code> megjegyzés a hálózati cím utáni második értéket jelenti (pl. /28: hálózat = .64, 1. kiosztható = .65, 2. kiosztható = .66...).
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- BOTTOM NAV -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="bottom-nav">
+    <a href="../halozat-hub.html" class="btn-nav btn-primary"><i class="fas fa-arrow-left"></i> Vissza a hubra</a>
+    <a href="index.html?mod=tanulo" class="btn-nav btn-green"><i class="fas fa-list-check"></i> Gyakorlás lépésről lépésre</a>
+    <a href="index.html?mod=gyakorlo" class="btn-nav btn-purple"><i class="fas fa-network-wired"></i> Ágazati feladatok</a>
+  </div>
+
+</div>
+
+<script src="../special-roles.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hálózat – Kandó</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#1a2535 transparent}
+*::-webkit-scrollbar{width:5px}
+*::-webkit-scrollbar-thumb{background:#1a2535;border-radius:3px}
+
+:root{
+  --bg:#030608;
+  --surface:#060c12;
+  --surface2:#08101a;
+  --neon:#38bdf8;
+  --neon-glow:rgba(56,189,248,.18);
+  --neon-glow2:rgba(56,189,248,.07);
+  --border:rgba(56,189,248,.15);
+  --text:#e0f2fe;
+  --muted:#1e4060;
+  --dim:#5a8aaa;
+}
+
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(56,189,248,.05) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;z-index:0}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;height:54px;background:rgba(3,6,8,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar img{height:34px;opacity:.88}
+.topbar-title{display:flex;flex-direction:column}
+.topbar-title span{color:var(--text);font-size:1rem;font-weight:600;line-height:1.2}
+.topbar-title small{color:var(--muted);font-size:.72rem}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn-back{padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:.83rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-back:hover{border-color:var(--neon);color:var(--neon);box-shadow:0 0 10px var(--neon-glow)}
+
+/* ── MAIN ── */
+.portal{margin-top:74px;width:100%;max-width:1100px;padding:0 24px 60px;position:relative;z-index:1}
+.portal-title{font-size:1.55rem;font-weight:900;margin-bottom:5px;text-align:center;letter-spacing:.03em;color:var(--text)}
+.portal-title .net-accent{background:linear-gradient(90deg,#38bdf8 0%,#818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.portal-sub{color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px;text-align:center}
+
+/* ── GRID – 3 kártya ── */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:auto auto;gap:18px}
+.card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:10px}
+
+/* ── CARDS ── */
+.option-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:158px;transition:all .25s;position:relative;overflow:hidden}
+.option-card::after{content:'';position:absolute;inset:0;background:linear-gradient(140deg,var(--neon-glow2) 0%,transparent 55%);pointer-events:none;opacity:0;transition:opacity .25s}
+.option-card:hover::after{opacity:1}
+.option-card:hover{transform:translateY(-4px)}
+.option-card .icon{font-size:2.1rem;margin-bottom:11px;display:block;transition:transform .25s}
+.option-card:hover .icon{transform:scale(1.1)}
+.option-card .label{color:var(--text);font-size:.88rem;font-weight:700;display:block;margin-bottom:4px;letter-spacing:.07em;text-transform:uppercase}
+.option-card .desc{color:var(--dim);font-size:.77rem}
+
+.option-card.elmelet{border-color:rgba(56,189,248,.22)}
+.option-card.elmelet:hover{border-color:#38bdf8;box-shadow:0 0 28px rgba(56,189,248,.18),0 10px 30px rgba(0,0,0,.5)}
+.option-card.elmelet .icon{color:#38bdf8}
+
+.option-card.lepesrol{border-color:rgba(52,211,153,.2)}
+.option-card.lepesrol:hover{border-color:#34d399;box-shadow:0 0 28px rgba(52,211,153,.18),0 10px 30px rgba(0,0,0,.5)}
+.option-card.lepesrol .icon{color:#34d399}
+
+.option-card.agazati{border-color:rgba(129,140,248,.18);background:linear-gradient(155deg,rgba(10,8,20,.9) 0%,var(--surface) 65%)}
+.option-card.agazati:hover{border-color:#818cf8;box-shadow:0 0 28px rgba(129,140,248,.2),0 10px 30px rgba(0,0,0,.5)}
+.option-card.agazati .icon{color:#818cf8}
+.option-card.agazati .label{color:#c4b5fd}
+
+/* ── CHANGELOG BOXES ── */
+.changelog-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 15px}
+.changelog-box.elmelet-col{border-color:rgba(56,189,248,.13)}
+.changelog-box.lepesrol-col{border-color:rgba(52,211,153,.12)}
+.changelog-box.agazati-col{border-color:rgba(129,140,248,.14);background:linear-gradient(155deg,rgba(8,6,18,.95),var(--surface2))}
+
+.changelog-title{font-size:.65rem;font-weight:700;letter-spacing:.12em;color:var(--neon);text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.changelog-item{font-size:.79rem;color:var(--dim);line-height:1.55;padding:3px 0 3px 13px;position:relative}
+.changelog-item::before{content:'›';color:var(--neon);position:absolute;left:1px;font-size:.95rem;line-height:1.35}
+
+@media(max-width:800px){.card-grid{grid-template-columns:1fr;grid-template-rows:none}.card-col{grid-row:span 1}.portal{padding:0 16px 40px}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="kando-logo-wrap" style="position:relative;display:inline-block;">
+      <a href="portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó KSZKI"></a>
+      <span id="kando-bug-badge" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:4px;font-size:1.2rem;align-items:center;justify-content:center;pointer-events:none;">🐛</span>
+    </span>
+    <div class="topbar-title">
+      <span>Miskolci SZC Kandó Kálmán Informatikai Technikum</span>
+      <small>Digitális Tanulási és Számonkérési Rendszer</small>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="portal">
+  <div class="portal-title"><i class="fas fa-network-wired" style="color:#38bdf8;margin-right:8px;"></i><span class="net-accent">Hálózat</span></div>
+  <div class="portal-sub">Cisco IOS – ágazati alapvizsga felkészülés</div>
+
+  <div class="card-grid">
+
+    <!-- ELMÉLET -->
+    <div class="card-col">
+      <a class="option-card elmelet" href="halozat/learn.html">
+        <span class="icon"><i class="fas fa-book-open"></i></span>
+        <span class="label">ELMÉLET</span>
+        <span class="desc">Cisco IOS módok, parancsok, fogalmak</span>
+      </a>
+      <div class="changelog-box elmelet-col">
+        <div class="changelog-title"><i class="fas fa-book-open"></i> Mit tanulsz meg?</div>
+        <div class="changelog-item">Cisco IOS <strong style="color:#7dd3fc">módok</strong>: user, enable, config, interface, line</div>
+        <div class="changelog-item">Navigáció: <strong style="color:#7dd3fc">enable</strong> → <strong style="color:#7dd3fc">configure terminal</strong> → <strong style="color:#7dd3fc">interface</strong></div>
+        <div class="changelog-item">IP-cím beállítás, alhálózati maszk, <strong style="color:#7dd3fc">no shutdown</strong></div>
+        <div class="changelog-item">Jelszavak, SSH konfiguráció, konfiguráció mentése</div>
+        <div class="changelog-item">Otthoni router: DHCP, WiFi, WPA2-PSK beállítás</div>
+      </div>
+    </div>
+
+    <!-- GYAKORLÁS LÉPÉSRŐL LÉPÉSRE -->
+    <div class="card-col">
+      <a class="option-card lepesrol" href="halozat/index.html?mod=tanulo">
+        <span class="icon"><i class="fas fa-list-check"></i></span>
+        <span class="label">GYAKORLÁS LÉPÉSRŐL LÉPÉSRE</span>
+        <span class="desc">Irányított feladatok magyarázattal</span>
+      </a>
+      <div class="changelog-box lepesrol-col">
+        <div class="changelog-title"><i class="fas fa-list-check" style="color:#34d399"></i> Hogyan működik?</div>
+        <div class="changelog-item">Minden lépésnél <strong style="color:#6ee7b7">magyarázat</strong>: miért így, mit csinál a parancs</div>
+        <div class="changelog-item">Tipp gombra kattintva megjelenik a pontos parancs</div>
+        <div class="changelog-item">Nem kell vakon próbálgatni – a rendszer jelzi, ha jó</div>
+        <div class="changelog-item">2 irányított feladat: Torony és KR hálózat</div>
+      </div>
+    </div>
+
+    <!-- ÁGAZATI FELADATOK -->
+    <div class="card-col">
+      <a class="option-card agazati" href="halozat/index.html?mod=gyakorlo">
+        <span class="icon"><i class="fas fa-network-wired"></i></span>
+        <span class="label">ÁGAZATI FELADATOK</span>
+        <span class="desc">Önálló konfiguráció, vizsgaszerű</span>
+      </a>
+      <div class="changelog-box agazati-col">
+        <div class="changelog-title"><i class="fas fa-network-wired" style="color:#818cf8"></i> Feladatokról</div>
+        <div class="changelog-item">6 különböző hálózati topológia, vizsgaszintű nehézség</div>
+        <div class="changelog-item">Nincs lépésenkénti útmutató – önállóan kell megoldani</div>
+        <div class="changelog-item">IP-tábla elérhető, de a parancsokat magadnak kell tudni</div>
+        <div class="changelog-item">Automatikus ellenőrzés: zöld pipa ha helyes a konfig</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="special-roles.js"></script>
+</body>
+</html>

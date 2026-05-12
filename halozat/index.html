@@ -235,7 +235,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
   <div class="topbar-right">
     <span id="sim-title" style="display:none;"></span>
     <span class="topbar-badge" id="sim-badge"></span>
-    <a id="btn-vissza" class="topbar-back" href="../portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+    <a id="btn-vissza" class="topbar-back" href="../halozat-hub.html"><i class="fas fa-arrow-left"></i> Vissza</a>
     <button id="btn-feladatok" class="topbar-back" onclick="backToSelector()" style="display:none;border:1px solid #30363d;background:transparent;"><i class="fas fa-arrow-left"></i> Feladatok</button>
   </div>
 </div>
@@ -1079,10 +1079,24 @@ const appState = {
 // INIT – build task selector
 // ═══════════════════════════════════════════════════════════════
 function initSelector() {
+  const params = new URLSearchParams(location.search);
+  const modFilter = params.get('mod'); // 'tanulo' | 'gyakorlo' | null
+
   const grid = document.getElementById('task-grid');
   grid.innerHTML = '';
+
   const tanulos  = HALOZAT_FELADATOK.filter(t => t.mod === 'tanulo');
   const gyakorlo = HALOZAT_FELADATOK.filter(t => t.mod === 'gyakorlo');
+
+  // Update hero text based on filter
+  const hero = document.querySelector('.sel-hero');
+  if (modFilter === 'tanulo') {
+    hero.querySelector('h1').textContent = 'Gyakorlás lépésről lépésre';
+    hero.querySelector('p').textContent = 'Irányított feladatok magyarázattal – minden lépésnél tipp és leírás';
+  } else if (modFilter === 'gyakorlo') {
+    hero.querySelector('h1').textContent = 'Ágazati feladatok';
+    hero.querySelector('p').textContent = 'Önálló konfiguráció, vizsgaszerű – az IP-táblázat elérhető';
+  }
 
   function addHeader(label, color) {
     const h = document.createElement('div');
@@ -1098,8 +1112,8 @@ function initSelector() {
     card.onmouseenter = () => card.style.borderColor = t.szin;
     card.onmouseleave = () => card.style.borderColor = t.szin+'33';
     const badge = t.mod === 'tanulo'
-      ? `<span class="badge badge-tanulo"><i class="fas fa-graduation-cap"></i> Tanulós</span>`
-      : `<span class="badge badge-gyakorlo"><i class="fas fa-dumbbell"></i> Gyakorló</span>`;
+      ? `<span class="badge badge-tanulo"><i class="fas fa-graduation-cap"></i> Lépésről lépésre</span>`
+      : `<span class="badge badge-gyakorlo"><i class="fas fa-dumbbell"></i> Ágazati</span>`;
     card.innerHTML = `
       <div class="task-card-icon"><i class="fas ${t.ikon}" style="color:${t.szin}"></i></div>
       <h3>${t.cim}</h3>
@@ -1109,10 +1123,14 @@ function initSelector() {
     grid.appendChild(card);
   }
 
-  addHeader('<i class="fas fa-graduation-cap" style="margin-right:6px"></i>Tanulós feladatok', '#60a5fa');
-  tanulos.forEach(addCard);
-  addHeader('<i class="fas fa-dumbbell" style="margin-right:6px"></i>Gyakorló feladatok', '#f59e0b');
-  gyakorlo.forEach(addCard);
+  if (!modFilter || modFilter === 'tanulo') {
+    if (!modFilter) addHeader('<i class="fas fa-graduation-cap" style="margin-right:6px"></i>Lépésről lépésre', '#60a5fa');
+    tanulos.forEach(addCard);
+  }
+  if (!modFilter || modFilter === 'gyakorlo') {
+    if (!modFilter) addHeader('<i class="fas fa-dumbbell" style="margin-right:6px"></i>Ágazati feladatok', '#f59e0b');
+    gyakorlo.forEach(addCard);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
