@@ -98,9 +98,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .term-line.err{color:#f85149}
 .term-line.info{color:#8b949e}
 .term-line.warn{color:#e3b341}
-.term-input-row{display:flex;align-items:center;padding:6px 12px;border-top:1px solid #21262d;gap:6px}
-#term-prompt{color:#56d364;font-size:0.78rem;white-space:nowrap;font-family:inherit}
-#term-input{flex:1;background:transparent;border:none;outline:none;color:#e0e0e0;font-family:inherit;font-size:0.78rem;caret-color:#56d364}
+.term-input-row{display:flex;align-items:center;padding:10px 14px;background:#1c2128;border-top:2px solid #56d364;gap:8px;cursor:text}
+#term-prompt{color:#56d364;font-size:0.85rem;white-space:nowrap;font-family:inherit;font-weight:700;flex-shrink:0}
+#term-input{flex:1;background:transparent;border:none;outline:none;color:#e0e0e0;font-family:inherit;font-size:0.85rem;caret-color:#56d364;min-width:0}
+#term-input::placeholder{color:#484f58;font-style:italic}
 .term-placeholder{flex:1;padding:20px;text-align:center;color:#484f58;font-size:0.82rem;font-family:'Segoe UI',sans-serif}
 .term-placeholder i{font-size:2rem;margin-bottom:8px;display:block}
 
@@ -255,16 +256,17 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
         <span class="term-dev-name" id="term-dev-name">– nincs megnyitva –</span>
         <button class="term-close" onclick="closeTerminal()"><i class="fas fa-times"></i></button>
       </div>
-      <div id="term-output">
+      <div id="term-output" onclick="if(appState.activeCisco) document.getElementById('term-input').focus()">
         <div class="term-placeholder">
           <i class="fas fa-mouse-pointer"></i>
           Kattints egy eszközre a topológiában a konfiguráláshoz!
         </div>
       </div>
-      <div class="term-input-row" id="term-input-row" style="display:none">
+      <div class="term-input-row" id="term-input-row" style="display:none"
+           onclick="document.getElementById('term-input').focus()">
         <span id="term-prompt"></span>
         <input id="term-input" type="text" autocomplete="off" spellcheck="false"
-          placeholder="parancs...">
+          placeholder="írd be a parancsot, Tab = kiegészítés, ↑↓ = előzmény">
       </div>
     </div>
   </div>
@@ -1325,8 +1327,9 @@ function openCLI(devId, devDef) {
   appendTerm('info', `\nMiskolc SZC Kandó Kálmán Informatikai Technikum\nCisco IOS Szimulátor – ${devDef.nev}\nType ? for help. Use Tab for completion.\n`);
   updatePrompt(cisco);
   document.getElementById('term-input-row').style.display = 'flex';
-  document.getElementById('term-input').focus();
   appState.activeCisco = cisco;
+  // Kis timeout: ha tutorial overlay épp záródik, a fókusz biztosan az inputra kerül
+  setTimeout(() => document.getElementById('term-input').focus(), 80);
 }
 
 function resetTerminal() {
@@ -1359,58 +1362,88 @@ function updatePrompt(cisco) {
   document.getElementById('term-prompt').textContent = pr;
 }
 
-// Terminal input handler
-document.getElementById('term-input').addEventListener('keydown', function(e) {
+// Terminal input handler – minden billentyű az inputon
+document.getElementById('term-input').addEventListener('keydown', handleTermKey);
+
+// Globális Tab kezelő: ha van aktív CLI és Tab-ot nyomnak, az input kap fókuszt
+document.addEventListener('keydown', function(e) {
+  if (!appState.activeCisco) return;
+  const inp = document.getElementById('term-input');
+  if (document.activeElement !== inp) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      inp.focus();
+      // Tab completion azonnal
+      const partial = inp.value;
+      if (partial.trim()) {
+        const res = appState.activeCisco.tabComplete(partial);
+        if (typeof res === 'string') inp.value = res;
+        else if (res?.ambiguous) appendTerm('info', res.ambiguous.join('  '));
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      inp.focus();
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      // Normál karakter: fókusz + az input kap vele
+      inp.focus();
+    }
+  }
+});
+
+function handleTermKey(e) {
   const cisco = appState.activeCisco;
   if (!cisco) return;
+  const inp = this;
 
   if (e.key === 'Enter') {
     e.preventDefault();
-    const val = this.value;
-    this.value = '';
-    // Echo command
+    const val = inp.value;
+    inp.value = '';
     if (!cisco.pending) appendTerm('cmd', cisco.prompt() + ' ' + val);
     else appendTerm('cmd', val);
-    // Process
     const result = cisco.process(val);
     if (result.out) {
       const type = result.ok ? 'ok' : result.err ? 'err' : result.warn ? 'warn' : 'info';
       appendTerm(type, result.out);
     }
-    // Update prompt (might have changed)
     if (result.prompt) document.getElementById('term-prompt').textContent = result.prompt;
     else updatePrompt(cisco);
     updateProgress();
 
   } else if (e.key === 'Tab') {
     e.preventDefault();
-    const partial = this.value;
-    if (!partial.trim()) return;
+    const partial = inp.value;
+    if (!partial.trim()) {
+      // Tab üres inputon: kilistázza a parancsokat
+      appendTerm('info', cisco._getCmdsForMode().join('  '));
+      return;
+    }
     const result = cisco.tabComplete(partial);
     if (typeof result === 'string') {
-      this.value = result;
-    } else if (result && result.ambiguous) {
+      inp.value = result;
+    } else if (result?.ambiguous) {
       appendTerm('info', result.ambiguous.join('  '));
+    } else {
+      appendTerm('info', '% No match');
     }
 
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
     if (cisco.historyBuf.length) {
       cisco.historyIdx = Math.min(cisco.historyIdx + 1, cisco.historyBuf.length - 1);
-      this.value = cisco.historyBuf[cisco.historyIdx] || '';
+      inp.value = cisco.historyBuf[cisco.historyIdx] || '';
     }
 
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
     cisco.historyIdx = Math.max(cisco.historyIdx - 1, -1);
-    this.value = cisco.historyIdx >= 0 ? cisco.historyBuf[cisco.historyIdx] : '';
+    inp.value = cisco.historyIdx >= 0 ? cisco.historyBuf[cisco.historyIdx] : '';
 
-  } else if (e.key === '?' && !e.shiftKey) {
-    // Help
+  } else if (e.key === '?' && !e.shiftKey && inp.value === '') {
     e.preventDefault();
-    appendTerm('info', 'Available commands: ' + cisco._getCmdsForMode().join(', '));
+    appendTerm('info', cisco._getCmdsForMode().join('  '));
   }
-});
+}
 
 // ═══════════════════════════════════════════════════════════════
 // PC GUI
