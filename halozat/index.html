@@ -1582,9 +1582,9 @@ function openDevice(devId) {
   const devDef = task.topologia.eszkozok.find(d => d.id === devId);
   if (!devDef) return;
 
-  // Server pre-configured — no interaction
-  if (devDef.elokonfig && devDef.tipus === 'server') {
-    showToast(`${devDef.nev} – előre konfigurálva`);
+  // Pre-configured devices (server, laptop, pc) — no student interaction needed
+  if (devDef.elokonfig) {
+    showToast(`${devDef.nev} – előre konfigurálva, nem kell módosítani`);
     return;
   }
 
