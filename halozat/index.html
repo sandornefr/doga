@@ -127,6 +127,17 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .tutorial-btn-place:hover{background:#16a34a}
 @keyframes ghost-pulse{0%,100%{opacity:.3}50%{opacity:.55}}
 .ghost-dev{animation:ghost-pulse 2s ease-in-out infinite;cursor:pointer}
+/* Task section headers */
+.task-section-header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:6px 0 2px}
+.task-section-header span{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.task-section-header .sec-line{flex:1;height:1px;background:#21262d}
+/* Tutorial hint CLI prompt lines */
+.tipp-line{display:flex;align-items:baseline;gap:0;line-height:1.7}
+.tipp-prompt{color:#f0883e;flex-shrink:0;margin-right:5px}
+.tipp-cmd{color:#79c0ff}
+.tipp-input{color:#a5d6ff;font-style:italic}
+.tipp-gui-row{padding:2px 0;color:#8b949e}
+.tipp-gui-row strong{color:#79c0ff}
 
 /* GUI dialogs */
 .gui-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
@@ -1051,7 +1062,17 @@ const appState = {
 function initSelector() {
   const grid = document.getElementById('task-grid');
   grid.innerHTML = '';
-  HALOZAT_FELADATOK.forEach(t => {
+  const tanulos  = HALOZAT_FELADATOK.filter(t => t.mod === 'tanulo');
+  const gyakorlo = HALOZAT_FELADATOK.filter(t => t.mod === 'gyakorlo');
+
+  function addHeader(label, color) {
+    const h = document.createElement('div');
+    h.className = 'task-section-header';
+    h.innerHTML = `<span style="color:${color}">${label}</span><div class="sec-line"></div>`;
+    grid.appendChild(h);
+  }
+
+  function addCard(t) {
     const card = document.createElement('div');
     card.className = 'task-card';
     card.style.cssText = `border-color:${t.szin}33;`;
@@ -1067,7 +1088,12 @@ function initSelector() {
       <div class="task-card-footer">${badge}<span class="task-card-num">${t.pontok} pont</span></div>`;
     card.onclick = () => startTask(t.id);
     grid.appendChild(card);
-  });
+  }
+
+  addHeader('<i class="fas fa-graduation-cap" style="margin-right:6px"></i>Tanulós feladatok', '#60a5fa');
+  tanulos.forEach(addCard);
+  addHeader('<i class="fas fa-dumbbell" style="margin-right:6px"></i>Gyakorló feladatok', '#f59e0b');
+  gyakorlo.forEach(addCard);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1856,6 +1882,74 @@ function closeWifi() { document.getElementById('wifi-overlay').style.display = '
 // ═══════════════════════════════════════════════════════════════
 // TUTORIAL STEPS
 // ═══════════════════════════════════════════════════════════════
+function _renderTipp(step, task) {
+  const tipp = (step.tipp || '').trim();
+  if (!tipp) return '';
+  const devDef  = task.topologia.eszkozok.find(d => d.id === step.eszkozId);
+  const hostname = task.elvart?.[step.eszkozId]?.hostname || devDef?.nev || step.eszkozId || 'Router';
+  const devTipus = devDef?.tipus || 'router';
+
+  // GUI config lépések: "Jelszó: X | DHCP: Y" stílusban (első elem tartalmaz kettőspontot)
+  const isPipeList = tipp.includes('|') && !tipp.includes('→');
+  const firstItem = tipp.split('|')[0].trim();
+  const isGuiConfig = isPipeList && firstItem.includes(':');
+
+  if (isGuiConfig) {
+    return tipp.split('|').map(item => {
+      const s = item.trim();
+      const colonIdx = s.indexOf(':');
+      if (colonIdx > 0) {
+        const key = s.slice(0, colonIdx).trim();
+        const val = s.slice(colonIdx+1).trim();
+        return `<div class="tipp-gui-row"><strong>${key}:</strong> ${val}</div>`;
+      }
+      return `<div class="tipp-gui-row">${s}</div>`;
+    }).join('');
+  }
+
+  // PC/laptop terminál parancsok (ping, ssh stb.): | elválasztóval
+  if (isPipeList) {
+    const lines = [];
+    const prompt = `${hostname}>`;
+    tipp.split('|').map(s => s.trim()).filter(Boolean).forEach(cmd => {
+      lines.push(`<div class="tipp-line"><span class="tipp-prompt">${prompt}</span><span class="tipp-cmd"> ${cmd}</span></div>`);
+    });
+    return lines.join('');
+  }
+
+  // IOS CLI lépések: → elválasztóval, mód-követéssel
+  const cmds = tipp.split('→').map(s => s.trim()).filter(Boolean);
+  // Switcheknél nincs módkövetés – egyszerűbb
+  let mode = (devTipus === 'switch') ? 'config' : 'config';
+  const lines = [];
+  for (const cmd of cmds) {
+    const low = cmd.toLowerCase().replace(/\s+/g,' ');
+    let prompt;
+    if      (mode === 'user')   prompt = `${hostname}>`;
+    else if (mode === 'priv')   prompt = `${hostname}#`;
+    else if (mode === 'config') prompt = `${hostname}(config)#`;
+    else if (mode === 'if')     prompt = `${hostname}(config-if)#`;
+    else if (mode === 'line')   prompt = `${hostname}(config-line)#`;
+    else                        prompt = `${hostname}(config)#`;
+    if (cmd.startsWith('[')) {
+      lines.push(`<div class="tipp-line"><span class="tipp-input">${cmd} &nbsp;← gépelje be a számot</span></div>`);
+    } else {
+      lines.push(`<div class="tipp-line"><span class="tipp-prompt">${prompt}</span><span class="tipp-cmd"> ${cmd}</span></div>`);
+    }
+    if      (low==='enable'||low==='en')      mode = 'priv';
+    else if (low.startsWith('conf'))          mode = 'config';
+    else if (/^int(erface)? /i.test(low))     mode = 'if';
+    else if (/^line /i.test(low))             mode = 'line';
+    else if (low==='exit') {
+      if      (mode==='if'||mode==='line') mode='config';
+      else if (mode==='config')            mode='priv';
+      else if (mode==='priv')              mode='user';
+    }
+    else if (low==='end') mode = 'priv';
+  }
+  return lines.join('');
+}
+
 function showTutorialStep(idx) {
   const task = appState.currentTask;
   if (!task || !task.lepesek) return;
@@ -1866,7 +1960,7 @@ function showTutorialStep(idx) {
   document.getElementById('tut-stepnum').textContent = `${idx+1}. lépés / ${task.lepesek.length}`;
   document.getElementById('tut-title').textContent = step.cim;
   document.getElementById('tut-text').innerHTML = step.magyarazat || '';
-  document.getElementById('tut-hint').textContent = step.tipp || '';
+  document.getElementById('tut-hint').innerHTML = _renderTipp(step, task);
 
   // Gomb szöveg és akció a lépés típusa alapján
   const btn = document.getElementById('tut-btn-open');
