@@ -8,79 +8,97 @@
 <link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#1a2e20 transparent}
 *::-webkit-scrollbar{width:5px}
-*::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+*::-webkit-scrollbar-thumb{background:#1a2e20;border-radius:3px}
 
-body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+:root{
+  --bg:#030805;
+  --surface:#06100a;
+  --surface2:#091410;
+  --neon:#00e676;
+  --neon-glow:rgba(0,230,118,.18);
+  --neon-glow2:rgba(0,230,118,.08);
+  --border:rgba(0,230,118,.15);
+  --text:#d8f0d8;
+  --muted:#3d5c45;
+  --dim:#7a9c7a;
+}
+
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(0,230,118,.055) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;z-index:0}
 
 /* ── TOPBAR ── */
-.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#0f2018;border-bottom:2px solid #163d26;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.topbar{position:fixed;top:0;left:0;right:0;height:54px;background:rgba(3,8,5,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
 .topbar-left{display:flex;align-items:center;gap:14px}
-.topbar img{height:36px}
+.topbar img{height:34px;opacity:.88}
 .topbar-title{display:flex;flex-direction:column}
-.topbar-title span{color:#e0e0e0;font-size:1.05rem;font-weight:600;line-height:1.2}
-.topbar-title small{color:#888;font-size:0.75rem}
-.topbar-right{display:flex;align-items:center;gap:14px}
-.btn-back{padding:6px 14px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:0.85rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.btn-back:hover{border-color:#58a6ff;color:#58a6ff}
+.topbar-title span{color:var(--text);font-size:1rem;font-weight:600;line-height:1.2}
+.topbar-title small{color:var(--muted);font-size:.72rem}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn-back{padding:5px 14px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:.83rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-back:hover{border-color:var(--neon);color:var(--neon);box-shadow:0 0 10px var(--neon-glow)}
 
 /* ── MAIN ── */
-.portal{margin-top:76px;width:100%;max-width:1320px;padding:0 24px 60px}
-.portal-title{color:#e0e0e0;font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center}
-.portal-sub{color:#666;font-size:0.9rem;margin-bottom:32px;text-align:center}
+.portal{margin-top:74px;width:100%;max-width:1320px;padding:0 24px 60px;position:relative;z-index:1}
+.portal-title{font-size:1.55rem;font-weight:900;margin-bottom:5px;text-align:center;letter-spacing:.03em;color:var(--text)}
+.portal-title .py-accent{background:linear-gradient(90deg,#00e676 0%,#69ff47 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.portal-sub{color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px;text-align:center}
 
 /* ── GRID ── */
-.card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:24px}
-.card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:12px}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:18px}
+.card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:10px}
 
 /* ── CARDS ── */
-.option-card{background:#0f2018;border:2px solid #163d26;border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:168px;transition:all .2s}
-.option-card:hover{transform:translateY(-3px)}
-.option-card .icon{font-size:2.5rem;margin-bottom:12px;display:block}
-.option-card .label{color:#e0e0e0;font-size:1.05rem;font-weight:700;display:block;margin-bottom:5px}
-.option-card .desc{color:#666;font-size:0.8rem}
+.option-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:158px;transition:all .25s;position:relative;overflow:hidden}
+.option-card::after{content:'';position:absolute;inset:0;background:linear-gradient(140deg,var(--neon-glow2) 0%,transparent 55%);pointer-events:none;opacity:0;transition:opacity .25s}
+.option-card:hover::after{opacity:1}
+.option-card:hover{transform:translateY(-4px)}
+.option-card .icon{font-size:2.1rem;margin-bottom:11px;display:block;transition:transform .25s}
+.option-card:hover .icon{transform:scale(1.1)}
+.option-card .label{color:var(--text);font-size:.88rem;font-weight:700;display:block;margin-bottom:4px;letter-spacing:.07em;text-transform:uppercase}
+.option-card .desc{color:var(--dim);font-size:.77rem}
 
-.option-card.elmelet{border-color:#3776ab}
-.option-card.elmelet:hover{border-color:#4a94d4;box-shadow:0 8px 24px rgba(55,118,171,.25)}
-.option-card.elmelet .icon{color:#3776ab}
+.option-card.elmelet{border-color:rgba(0,230,118,.22)}
+.option-card.elmelet:hover{border-color:#00e676;box-shadow:0 0 28px rgba(0,230,118,.18),0 10px 30px rgba(0,0,0,.5)}
+.option-card.elmelet .icon{color:#00e676}
 
-.option-card.digkult{border-color:#38bdf8}
-.option-card.digkult:hover{border-color:#7dd3fc;box-shadow:0 8px 24px rgba(56,189,248,.25)}
-.option-card.digkult .icon{color:#38bdf8}
+.option-card.digkult{border-color:rgba(0,188,212,.18)}
+.option-card.digkult:hover{border-color:#00bcd4;box-shadow:0 0 28px rgba(0,188,212,.18),0 10px 30px rgba(0,0,0,.5)}
+.option-card.digkult .icon{color:#00bcd4}
 
-.option-card.agazati-py{border-color:#6366f1}
-.option-card.agazati-py:hover{border-color:#818cf8;box-shadow:0 8px 24px rgba(99,102,241,.25)}
-.option-card.agazati-py .icon{color:#6366f1}
+.option-card.agazati-py{border-color:rgba(105,255,71,.18)}
+.option-card.agazati-py:hover{border-color:#69ff47;box-shadow:0 0 28px rgba(105,255,71,.16),0 10px 30px rgba(0,0,0,.5)}
+.option-card.agazati-py .icon{color:#69ff47}
 
-.option-card.duel{border-color:#b45309;background:linear-gradient(160deg,#1c1200 0%,#0f2018 60%)}
-.option-card.duel:hover{border-color:#fbbf24;background:linear-gradient(160deg,#291a00 0%,#0f2018 60%);box-shadow:0 8px 28px rgba(251,191,36,.25);transform:translateY(-3px)}
+.option-card.duel{border-color:rgba(251,191,36,.2);background:linear-gradient(155deg,rgba(20,13,0,.9) 0%,var(--surface) 65%)}
+.option-card.duel:hover{border-color:#fbbf24;box-shadow:0 0 28px rgba(251,191,36,.2),0 10px 30px rgba(0,0,0,.5)}
 .option-card.duel .icon{color:#fbbf24}
 .option-card.duel .label{color:#fcd34d}
-.option-card.duel .desc{color:#666}
 
 /* ── CHANGELOG BOXES ── */
-.changelog-box{background:#0f2018;border:1px solid #163d26;border-radius:12px;padding:14px 16px}
-.changelog-box.elmelet-col{border-color:rgba(55,118,171,.4)}
-.changelog-box.digkult-col{border-color:rgba(56,189,248,.35)}
-.changelog-box.agazati-col{border-color:rgba(99,102,241,.4)}
-.changelog-box.duel-col{border-color:rgba(180,83,9,.5);background:linear-gradient(160deg,#1a1000,#0f2018)}
+.changelog-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 15px}
+.changelog-box.elmelet-col{border-color:rgba(0,230,118,.13)}
+.changelog-box.digkult-col{border-color:rgba(0,188,212,.11)}
+.changelog-box.agazati-col{border-color:rgba(105,255,71,.11)}
+.changelog-box.duel-col{border-color:rgba(251,191,36,.16);background:linear-gradient(155deg,rgba(15,9,0,.95),var(--surface2))}
 
-.changelog-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:#536dfe;text-transform:uppercase;margin-bottom:10px}
-.changelog-item{font-size:.82rem;color:#b0b8c8;line-height:1.55;padding:3px 0 3px 14px;position:relative}
-.changelog-item::before{content:'–';color:#536dfe;position:absolute;left:2px}
+.changelog-title{font-size:.65rem;font-weight:700;letter-spacing:.12em;color:var(--neon);text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.changelog-item{font-size:.79rem;color:var(--dim);line-height:1.55;padding:3px 0 3px 13px;position:relative}
+.changelog-item::before{content:'›';color:var(--neon);position:absolute;left:1px;font-size:.95rem;line-height:1.35}
 
-.badge-hot{display:inline-block;background:#ef4444;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:4px;vertical-align:middle;margin-left:4px;text-transform:uppercase}
+.badge-hot{display:inline-block;background:#ef4444;color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:4px;text-transform:uppercase}
 
 /* ── MODAL ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:#0f2018;border:2px solid #3776ab;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:420px;width:100%}
-.modal-icon{font-size:2rem;text-align:center;margin-bottom:.5rem}
-.modal-title{color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:.4rem}
-.modal-sub{color:#888;font-size:.84rem;text-align:center;margin-bottom:1.4rem}
-.modal-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem}
-.modal-btn{padding:13px 20px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;font-family:inherit}
-.modal-cancel{width:100%;padding:.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:.9rem;cursor:pointer;font-family:inherit}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--surface);border:1px solid rgba(0,230,118,.28);border-radius:12px;padding:2rem 2rem 1.5rem;max-width:400px;width:100%}
+.modal-icon{font-size:2rem;text-align:center;margin-bottom:.5rem;color:var(--neon)}
+.modal-title{color:var(--text);font-size:1rem;font-weight:700;text-align:center;margin-bottom:.4rem;letter-spacing:.06em;text-transform:uppercase}
+.modal-sub{color:var(--dim);font-size:.82rem;text-align:center;margin-bottom:1.4rem}
+.modal-btns{display:flex;flex-direction:column;gap:9px;margin-bottom:1rem}
+.modal-btn{padding:12px 20px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;font-family:inherit}
+.modal-cancel{width:100%;padding:.6rem;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:.88rem;cursor:pointer;font-family:inherit;transition:all .2s}
+.modal-cancel:hover{border-color:var(--neon);color:var(--neon)}
 
 @media(max-width:1000px){.card-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.card-grid{grid-template-columns:1fr}.portal{padding:0 16px 40px}}
@@ -107,7 +125,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;displ
 
 <!-- MAIN -->
 <div class="portal">
-  <div class="portal-title"><i class="fab fa-python" style="color:#3776ab;margin-right:8px;"></i>Python</div>
+  <div class="portal-title"><i class="fab fa-python" style="color:#00e676;margin-right:8px;"></i><span class="py-accent">Python</span></div>
   <div class="portal-sub">Válassz kategóriát a tanuláshoz</div>
 
   <div class="card-grid">
@@ -120,7 +138,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;displ
         <span class="desc">Kezdő · Haladó · Profi szintek</span>
       </a>
       <div class="changelog-box elmelet-col">
-        <div class="changelog-title"><i class="fab fa-python" style="color:#3776ab"></i> Szintekről</div>
+        <div class="changelog-title"><i class="fab fa-python"></i> Szintekről</div>
         <div class="changelog-item"><strong style="color:#e0e0e0">Kezdő szint</strong> – Python alapok, változók, feltételek, ciklusok</div>
         <div class="changelog-item"><strong style="color:#e0e0e0">Haladó szint</strong> – Függvények, listák, szótárak, fájlkezelés</div>
         <div class="changelog-item"><strong style="color:#e0e0e0">Profi szint</strong> – Összetett algoritmusok, OOP alapok</div>
@@ -136,7 +154,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;displ
         <span class="desc">Érettségi feladatok Pythonban</span>
       </a>
       <div class="changelog-box digkult-col">
-        <div class="changelog-title"><i class="fas fa-laptop-code" style="color:#38bdf8"></i> Tartalom</div>
+        <div class="changelog-title"><i class="fas fa-laptop-code" style="color:#00bcd4"></i> Tartalom</div>
         <div class="changelog-item">Forgalomszámlálás – teljes kidolgozott <strong>középszintű érettségi</strong> feladat</div>
         <div class="changelog-item">Lépésről lépésre magyarázott megoldás, kész kóddal</div>
         <div class="changelog-item">Ugyanolyan típusú feladat, mint a tényleges érettségin</div>
@@ -151,7 +169,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;displ
         <span class="desc">Ágazati alapvizsga · Python kódolás</span>
       </a>
       <div class="changelog-box agazati-col">
-        <div class="changelog-title"><i class="fas fa-code" style="color:#6366f1"></i> Feladatokról</div>
+        <div class="changelog-title"><i class="fas fa-code" style="color:#69ff47"></i> Feladatokról</div>
         <div class="changelog-item">Python ágazati alapvizsga feladatok gyűjteménye</div>
         <div class="changelog-item">3 nehézségi szint: könnyű (8 pontos), közepesen nehéz (14 pontos) és nehéz (18 pontos)</div>
         <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek a <strong>választható feladatok</strong> közé</div>
@@ -183,13 +201,13 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1f18;min-height:100vh;displ
 <!-- ELMÉLET szintválasztó modal -->
 <div id="elmelet-modal" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-icon"><i class="fab fa-python" style="color:#3776ab;"></i></div>
+    <div class="modal-icon"><i class="fab fa-python"></i></div>
     <div class="modal-title">ELMÉLET – Python szintek</div>
     <div class="modal-sub">Válaszd ki a szintedet:</div>
     <div class="modal-btns">
-      <a href="python/basics.html" class="modal-btn" style="background:#0a1628;border:2px solid #60a5fa;color:#93c5fd;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#0a1628'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint</a>
-      <a href="python/practice.html" class="modal-btn" style="background:#0a2218;border:2px solid #34d399;color:#6ee7b7;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#0a2218'"><i class="fas fa-dumbbell" style="margin-right:6px;"></i>Haladó szint</a>
-      <a href="python/pro.html" class="modal-btn" style="background:#2a0a2a;border:2px solid #f472b6;color:#f9a8d4;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a2a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint</a>
+      <a href="python/basics.html" class="modal-btn" style="background:#041a0c;border:1px solid #00e676;color:#00e676;" onmouseover="this.style.background='#073d1a'" onmouseout="this.style.background='#041a0c'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint</a>
+      <a href="python/practice.html" class="modal-btn" style="background:#071a04;border:1px solid #69ff47;color:#69ff47;" onmouseover="this.style.background='#113d06'" onmouseout="this.style.background='#071a04'"><i class="fas fa-dumbbell" style="margin-right:6px;"></i>Haladó szint</a>
+      <a href="python/pro.html" class="modal-btn" style="background:#04141a;border:1px solid #00bcd4;color:#00bcd4;" onmouseover="this.style.background='#063040'" onmouseout="this.style.background='#04141a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint</a>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('elmelet-modal').style.display='none'">Mégse</button>
   </div>
