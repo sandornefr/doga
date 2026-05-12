@@ -307,7 +307,7 @@
         /* Kártyák + changelog: négyoszlopos rács */
         .student-two-col {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 16px;
             align-items: start;
         }
@@ -334,6 +334,20 @@
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
+        .option-card.halozat {
+            border-color: #1d4ed8;
+            background: linear-gradient(160deg, #0a1628 0%, #16213e 60%);
+            cursor: pointer;
+        }
+        .option-card.halozat:hover {
+            border-color: #3b82f6;
+            background: linear-gradient(160deg, #0f2444 0%, #16213e 60%);
+            box-shadow: 0 8px 28px rgba(59,130,246,0.25);
+            transform: translateY(-3px);
+        }
+        .option-card.halozat .icon { color: #3b82f6; }
+        .option-card.halozat .label { color: #93c5fd; }
+        .option-card.halozat .desc  { color: #666; }
         .option-card.duel {
             border-color: #b45309;
             background: linear-gradient(160deg, #1c1200 0%, #16213e 60%);
@@ -1102,6 +1116,21 @@
                     <div class="changelog-item"><i class="fas fa-trophy" style="color:#f59e0b;margin-right:4px;"></i>Az győz, aki nagyobb <strong>%-ot teljesít</strong>, a legrövidebb idő alatt!</div>
                 </div>
             </div>
+            <!-- Hálózat oszlop (5. kártya) -->
+            <div class="student-col" id="halozat-section">
+                <a class="option-card halozat" href="halozat/index.html">
+                    <span class="icon"><i class="fas fa-network-wired"></i></span>
+                    <span class="label">HÁLÓZAT</span>
+                    <span class="desc">Cisco IOS szimulátor – ágazati alapvizsga</span>
+                </a>
+                <div id="changelog-halozat" class="changelog-box" style="display:none; border-color:rgba(59,130,246,0.4)">
+                    <div class="changelog-title"><i class="fas fa-network-wired" style="color:#3b82f6"></i> Mit tartalmaz?</div>
+                    <div class="changelog-item">8 ágazati alapvizsga feladat Cisco IOS CLI szimulációval</div>
+                    <div class="changelog-item">Tab-kiegészítés, rövidítések (ena, conf t, int g0/0...)</div>
+                    <div class="changelog-item">WiFi router GUI és PC IP-konfiguráció szimuláció</div>
+                    <div class="changelog-item">1-2 tanulós feladat magyarázattal, a többi vizsga módban</div>
+                </div>
+            </div>
         </div>
 
         <!-- Sor 3: Megvalósult ötletek – teljes szélesség -->
@@ -1751,6 +1780,7 @@
                     document.getElementById('changelog-web').style.display = 'block';
                     document.getElementById('changelog-interaktiv').style.display = 'block';
                     document.getElementById('changelog-duel').style.display = 'block';
+                    document.getElementById('changelog-halozat').style.display = 'block';
                     document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
                     document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
                     const cardWeb = document.getElementById('card-web');
@@ -1762,6 +1792,7 @@
             document.getElementById('changelog-python').style.display = 'block';
             document.getElementById('changelog-web').style.display = 'block';
             document.getElementById('changelog-interaktiv').style.display = 'block';
+            document.getElementById('changelog-halozat').style.display = 'block';
             document.getElementById('portal-title').textContent = 'Üdvözöllek!';
             document.getElementById('portal-sub').textContent = 'Nézz körül – a teljes hozzáféréshez regisztrálj!';
             const delBtn = document.querySelector('.delete-btn'); if (delBtn) delBtn.style.display = 'none';
@@ -1776,6 +1807,7 @@
             document.getElementById('changelog-web').style.display = 'block';
             document.getElementById('changelog-interaktiv').style.display = 'block';
             document.getElementById('changelog-duel').style.display = 'block';
+            document.getElementById('changelog-halozat').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-profil-topbar');
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
@@ -1854,6 +1886,7 @@
         const clWeb        = document.getElementById('changelog-web');
         const clInteraktiv = document.getElementById('changelog-interaktiv');
         const clDuel       = document.getElementById('changelog-duel');
+        const clHalozat    = document.getElementById('changelog-halozat');
         const otletBtn = document.getElementById('otlet-btn');
         const megvBox  = document.getElementById('megvalasult-box');
         if (isTeacherView) {
@@ -1863,6 +1896,7 @@
             if (clWeb)        clWeb.style.display        = 'none';
             if (clInteraktiv) clInteraktiv.style.display = 'none';
             if (clDuel)       clDuel.style.display       = 'none';
+            if (clHalozat)    clHalozat.style.display    = 'none';
             if (otletBtn) otletBtn.style.display = 'none';
             if (megvBox)  megvBox.style.display  = 'none';
             sub.textContent = 'Mit szeretnél csinálni?';
@@ -1875,6 +1909,7 @@
             if (clWeb)        clWeb.style.display        = 'block';
             if (clInteraktiv) clInteraktiv.style.display = 'block';
             if (clDuel)       clDuel.style.display       = 'block';
+            if (clHalozat)    clHalozat.style.display    = 'block';
             if (otletBtn) otletBtn.style.display = 'flex';
             loadMegvalasultOtletek();
             sub.textContent = 'Válassz ágazati alapvizsga feladatot!';

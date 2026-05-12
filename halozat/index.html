@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hálózat Szimulátor – Kandó</title>
+<link rel="icon" href="../kando_favion_dark.png" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+*::-webkit-scrollbar{width:5px;height:5px}
+*::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{height:52px;background:#161b22;border-bottom:1px solid #21262d;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.topbar-back{padding:5px 12px;background:transparent;border:1px solid #30363d;border-radius:7px;color:#8b949e;font-size:0.82rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.topbar-back:hover{border-color:#58a6ff;color:#58a6ff}
+.topbar-title{color:#e0e0e0;font-size:1rem;font-weight:700;flex:1}
+.topbar-badge{padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:700}
+.badge-tanulo{background:rgba(59,130,246,.18);color:#60a5fa;border:1px solid rgba(59,130,246,.35)}
+.badge-gyakorlo{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.35)}
+
+/* ── TASK SELECTOR ── */
+#view-selector{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:24px}
+.sel-hero{text-align:center;margin-bottom:28px}
+.sel-hero h1{font-size:1.6rem;font-weight:800;color:#e0e0e0;margin-bottom:6px}
+.sel-hero p{color:#8b949e;font-size:0.9rem}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:1100px;margin:0 auto;width:100%}
+.task-card{background:#161b22;border:2px solid #21262d;border-radius:14px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.task-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.task-card-icon{font-size:2rem;margin-bottom:10px}
+.task-card h3{font-size:1rem;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+.task-card p{font-size:0.78rem;color:#8b949e;margin-bottom:10px}
+.task-card-footer{display:flex;align-items:center;justify-content:space-between}
+.task-card .badge{padding:3px 9px;border-radius:10px;font-size:0.7rem;font-weight:700}
+.task-card-num{font-size:0.72rem;color:#484f58}
+
+/* ── SIMULATOR ── */
+#view-sim{flex:1;display:none;flex-direction:column;overflow:hidden}
+.sim-body{flex:1;display:flex;overflow:hidden;gap:0}
+
+/* Left: topology */
+#topo-panel{flex:1;min-width:0;position:relative;background:#0d1117;border-right:1px solid #21262d}
+#topo-svg{width:100%;height:100%;cursor:default}
+
+/* Center: info panel */
+#info-panel{width:280px;flex-shrink:0;background:#161b22;border-right:1px solid #21262d;display:flex;flex-direction:column;overflow:hidden}
+.info-tabs{display:flex;border-bottom:1px solid #21262d}
+.info-tab{flex:1;padding:8px;text-align:center;font-size:0.75rem;font-weight:700;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.info-tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.info-content{flex:1;overflow-y:auto;padding:12px}
+
+/* IP table */
+.ip-table{width:100%;border-collapse:collapse;font-size:0.72rem}
+.ip-table th{background:#0d1117;color:#8b949e;padding:5px 6px;text-align:left;border-bottom:1px solid #21262d}
+.ip-table td{padding:5px 6px;border-bottom:1px solid #1c2128;color:#e0e0e0}
+.ip-table tr:hover td{background:#1c2128}
+.ip-note{color:#6e7681;font-size:0.65rem}
+
+/* Task steps */
+.step-item{padding:10px;border-radius:8px;border:1px solid #21262d;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.step-item.pending{border-color:#21262d;background:#161b22}
+.step-item.active{border-color:#3b82f6;background:rgba(59,130,246,.08)}
+.step-item.done{border-color:#22c55e;background:rgba(34,197,94,.06)}
+.step-item.done .step-icon{color:#22c55e}
+.step-item.active .step-icon{color:#3b82f6}
+.step-item.pending .step-icon{color:#484f58}
+.step-head{display:flex;align-items:center;gap:8px}
+.step-icon{font-size:0.85rem;flex-shrink:0}
+.step-title{font-size:0.75rem;font-weight:700;color:#c9d1d9;flex:1}
+.step-hint{font-size:0.7rem;color:#8b949e;margin-top:5px;padding-top:5px;border-top:1px solid #21262d;display:none}
+.step-item.active .step-hint{display:block}
+
+/* Practice task text */
+.feladat-item{display:flex;gap:8px;margin-bottom:8px;font-size:0.78rem;line-height:1.5}
+.feladat-num{color:#8b949e;flex-shrink:0;font-weight:700;min-width:18px}
+.feladat-szov{color:#c9d1d9}
+
+/* Score bar */
+.score-bar{padding:10px 12px;background:#0d1117;border-top:1px solid #21262d;display:flex;align-items:center;gap:10px;font-size:0.78rem}
+.score-val{font-weight:800;font-size:1.1rem;color:#22c55e}
+.score-progress{flex:1;height:6px;background:#21262d;border-radius:3px;overflow:hidden}
+.score-fill{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px;transition:width .4s}
+.check-btn{padding:6px 14px;background:#22c55e;border:none;border-radius:7px;color:#0d1117;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all .2s}
+.check-btn:hover{background:#16a34a}
+
+/* Right: terminal */
+#term-panel{width:420px;flex-shrink:0;display:flex;flex-direction:column;background:#0d1117;font-family:'Cascadia Code','Consolas','Courier New',monospace}
+.term-header{padding:8px 12px;background:#161b22;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:8px;font-size:0.75rem;color:#8b949e}
+.term-dev-name{color:#e0e0e0;font-weight:700;flex:1}
+.term-close{background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:4px}
+.term-close:hover{background:#21262d;color:#e0e0e0}
+#term-output{flex:1;overflow-y:auto;padding:8px 12px;font-size:0.78rem;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+.term-line{margin:0}
+.term-line.cmd{color:#79c0ff}
+.term-line.ok{color:#56d364}
+.term-line.err{color:#f85149}
+.term-line.info{color:#8b949e}
+.term-line.warn{color:#e3b341}
+.term-input-row{display:flex;align-items:center;padding:6px 12px;border-top:1px solid #21262d;gap:6px}
+#term-prompt{color:#56d364;font-size:0.78rem;white-space:nowrap;font-family:inherit}
+#term-input{flex:1;background:transparent;border:none;outline:none;color:#e0e0e0;font-family:inherit;font-size:0.78rem;caret-color:#56d364}
+.term-placeholder{flex:1;padding:20px;text-align:center;color:#484f58;font-size:0.82rem;font-family:'Segoe UI',sans-serif}
+.term-placeholder i{font-size:2rem;margin-bottom:8px;display:block}
+
+/* Device type labels on topology */
+.dev-label{font-size:11px;fill:#8b949e;text-anchor:middle;pointer-events:none;font-family:'Segoe UI',sans-serif}
+.dev-icon-text{font-size:18px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.dev-circle{cursor:pointer;transition:all .2s}
+.dev-circle:hover .dev-ring{stroke-width:3;filter:brightness(1.3)}
+
+/* Tutorial explanation overlay */
+#tutorial-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:20px}
+.tutorial-box{background:#161b22;border:2px solid #3b82f6;border-radius:14px;padding:20px;max-width:600px;width:100%;margin-bottom:0}
+.tutorial-step-num{font-size:0.72rem;color:#60a5fa;font-weight:700;margin-bottom:4px}
+.tutorial-title{font-size:1.05rem;font-weight:800;color:#e0e0e0;margin-bottom:10px}
+.tutorial-text{font-size:0.85rem;color:#c9d1d9;line-height:1.6;margin-bottom:14px}
+.tutorial-hint-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#79c0ff;font-family:'Cascadia Code','Consolas',monospace;margin-bottom:14px}
+.tutorial-btns{display:flex;gap:10px;justify-content:flex-end}
+.tutorial-btn-ok{padding:7px 18px;background:#3b82f6;border:none;border-radius:8px;color:white;font-size:0.85rem;font-weight:700;cursor:pointer}
+.tutorial-btn-ok:hover{background:#2563eb}
+.tutorial-btn-skip{padding:7px 14px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:0.82rem;cursor:pointer}
+.tutorial-btn-skip:hover{border-color:#8b949e;color:#e0e0e0}
+
+/* GUI dialogs */
+.gui-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+.gui-box{background:#1c2128;border:2px solid #30363d;border-radius:14px;padding:0;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.gui-header{padding:14px 18px;background:#161b22;border-bottom:1px solid #30363d;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between}
+.gui-header h3{font-size:0.95rem;font-weight:700;color:#e0e0e0}
+.gui-close{background:transparent;border:none;color:#8b949e;cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px}
+.gui-close:hover{background:#21262d;color:#e0e0e0}
+.gui-tabs{display:flex;border-bottom:1px solid #30363d}
+.gui-tab{flex:1;padding:8px;text-align:center;font-size:0.75rem;font-weight:700;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none}
+.gui-tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.gui-body{padding:16px}
+.gui-tabpane{display:none}
+.gui-tabpane.active{display:block}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:0.75rem;font-weight:700;color:#8b949e;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:7px 10px;background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#e0e0e0;font-size:0.85rem;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{border-color:#58a6ff}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gui-save-btn{width:100%;padding:9px;background:#22c55e;border:none;border-radius:8px;color:#0d1117;font-size:0.88rem;font-weight:700;cursor:pointer;margin-top:8px;transition:background .2s}
+.gui-save-btn:hover{background:#16a34a}
+.form-check{display:flex;align-items:center;gap:8px}
+.form-check input[type=checkbox]{width:16px;height:16px;accent-color:#3b82f6}
+.form-check label{font-size:0.8rem;color:#c9d1d9}
+.msg-ok{display:none;color:#22c55e;font-size:0.8rem;text-align:center;margin-top:6px}
+.msg-err{display:none;color:#f85149;font-size:0.8rem;text-align:center;margin-top:6px}
+
+/* WiFi connect dialog */
+#wifi-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+.wifi-box{background:#1c2128;border:2px solid #30363d;border-radius:14px;padding:20px;max-width:360px;width:100%}
+.wifi-box h3{font-size:0.95rem;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+.wifi-box p{font-size:0.78rem;color:#8b949e;margin-bottom:14px}
+.wifi-net{padding:10px 12px;background:#0d1117;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .2s}
+.wifi-net:hover{border-color:#58a6ff}
+.wifi-net.selected{border-color:#22c55e;background:rgba(34,197,94,.05)}
+.wifi-net-name{font-weight:700;font-size:0.85rem;color:#e0e0e0;flex:1}
+.wifi-net-sec{font-size:0.7rem;color:#8b949e}
+.wifi-pw-row{display:flex;gap:8px;margin-top:10px}
+.wifi-pw-row input{flex:1;padding:7px 10px;background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#e0e0e0;font-size:0.85rem;outline:none}
+.wifi-pw-row input:focus{border-color:#58a6ff}
+.wifi-connect-btn{padding:7px 14px;background:#3b82f6;border:none;border-radius:7px;color:white;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.wifi-connect-btn:hover{background:#2563eb}
+.wifi-cancel-btn{width:100%;margin-top:8px;padding:7px;background:transparent;border:1px solid #30363d;border-radius:7px;color:#8b949e;font-size:0.82rem;cursor:pointer}
+.wifi-cancel-btn:hover{border-color:#8b949e;color:#e0e0e0}
+
+/* Results modal */
+#results-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;display:none;align-items:center;justify-content:center;padding:16px}
+.results-box{background:#161b22;border:2px solid #30363d;border-radius:16px;padding:24px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto}
+.results-score{text-align:center;font-size:3rem;font-weight:900;margin-bottom:4px}
+.results-score.pass{color:#22c55e}
+.results-score.fail{color:#f85149}
+.results-subtitle{text-align:center;color:#8b949e;font-size:0.85rem;margin-bottom:18px}
+.result-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #21262d;font-size:0.82rem}
+.result-item:last-child{border-bottom:none}
+.result-icon{font-size:0.85rem;flex-shrink:0}
+.result-icon.ok{color:#22c55e}
+.result-icon.fail{color:#f85149}
+.result-label{flex:1;color:#c9d1d9}
+.results-close-btn{width:100%;margin-top:16px;padding:10px;background:#3b82f6;border:none;border-radius:9px;color:white;font-size:0.9rem;font-weight:700;cursor:pointer}
+.results-close-btn:hover{background:#2563eb}
+
+@media(max-width:900px){
+  #info-panel{width:220px}
+  #term-panel{width:340px}
+}
+@media(max-width:700px){
+  .sim-body{flex-direction:column}
+  #info-panel{width:100%;height:160px;border-right:none;border-bottom:1px solid #21262d}
+  #term-panel{width:100%;height:240px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- VIEW 1: TASK SELECTOR                             -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="view-selector">
+  <div class="topbar">
+    <a class="topbar-back" href="../portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+    <span class="topbar-title"><i class="fas fa-network-wired" style="color:#3b82f6;margin-right:8px"></i>Hálózat Szimulátor</span>
+  </div>
+  <div style="padding:24px">
+    <div class="sel-hero">
+      <h1>Hálózat feladatok</h1>
+      <p>Cisco IOS CLI szimuláció – ágazati alapvizsga feladatok gyakorlásához</p>
+    </div>
+    <div class="task-grid" id="task-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- VIEW 2: SIMULATOR                                 -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="view-sim" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+  <div class="topbar">
+    <button class="topbar-back" onclick="backToSelector()"><i class="fas fa-arrow-left"></i> Feladatok</button>
+    <span class="topbar-title" id="sim-title"></span>
+    <span class="topbar-badge" id="sim-badge"></span>
+  </div>
+  <div class="sim-body">
+
+    <!-- Topology panel -->
+    <div id="topo-panel">
+      <svg id="topo-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- Info panel -->
+    <div id="info-panel">
+      <div class="info-tabs">
+        <div class="info-tab active" id="tab-steps" onclick="switchTab('steps')">
+          <i class="fas fa-list-check"></i> Feladat
+        </div>
+        <div class="info-tab" id="tab-iptable" onclick="switchTab('iptable')">
+          <i class="fas fa-table"></i> IP tábla
+        </div>
+      </div>
+      <div class="info-content" id="info-steps"></div>
+      <div class="info-content" id="info-iptable" style="display:none"></div>
+      <div class="score-bar" id="score-bar">
+        <span class="score-val" id="score-val">0%</span>
+        <div class="score-progress"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+        <button class="check-btn" onclick="checkAll()">Ellenőrzés</button>
+      </div>
+    </div>
+
+    <!-- Terminal panel -->
+    <div id="term-panel">
+      <div class="term-header">
+        <i class="fas fa-terminal" style="color:#56d364"></i>
+        <span class="term-dev-name" id="term-dev-name">– nincs megnyitva –</span>
+        <button class="term-close" onclick="closeTerminal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="term-output">
+        <div class="term-placeholder">
+          <i class="fas fa-mouse-pointer"></i>
+          Kattints egy eszközre a topológiában a konfiguráláshoz!
+        </div>
+      </div>
+      <div class="term-input-row" id="term-input-row" style="display:none">
+        <span id="term-prompt"></span>
+        <input id="term-input" type="text" autocomplete="off" spellcheck="false"
+          placeholder="parancs...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- TUTORIAL OVERLAY                                  -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="tutorial-overlay" onclick="if(event.target===this){}">
+  <div class="tutorial-box" id="tutorial-box">
+    <div class="tutorial-step-num" id="tut-stepnum"></div>
+    <div class="tutorial-title" id="tut-title"></div>
+    <div class="tutorial-text" id="tut-text"></div>
+    <div class="tutorial-hint-box" id="tut-hint"></div>
+    <div class="tutorial-btns">
+      <button class="tutorial-btn-skip" onclick="closeTutorial()">Kész, rátérek</button>
+      <button class="tutorial-btn-ok" onclick="closeTutorialAndOpen()">
+        <i class="fas fa-terminal"></i> Megnyitom az eszközt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- PC GUI DIALOG                                     -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="gui-overlay" id="pc-overlay">
+  <div class="gui-box">
+    <div class="gui-header">
+      <h3><i class="fas fa-laptop" style="margin-right:6px;color:#8b949e"></i><span id="pc-gui-title">PC IP-beállítás</span></h3>
+      <button class="gui-close" onclick="closePcGui()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="gui-body">
+      <p style="font-size:0.78rem;color:#8b949e;margin-bottom:14px">Desktop &gt; IP Configuration</p>
+      <div class="form-group"><label>IP-cím</label><input id="pc-ip" type="text" placeholder="pl. 192.168.30.78"></div>
+      <div class="form-group"><label>Alhálózati maszk</label><input id="pc-mask" type="text" placeholder="pl. 255.255.255.240"></div>
+      <div class="form-group"><label>Alapértelmezett átjáró (Gateway)</label><input id="pc-gw" type="text" placeholder="pl. 192.168.30.65"></div>
+      <div class="form-group"><label>DNS szerver (opcionális)</label><input id="pc-dns" type="text" placeholder="pl. 192.168.30.67"></div>
+      <button class="gui-save-btn" onclick="savePcConfig()"><i class="fas fa-save"></i> Beállítások mentése</button>
+      <div class="msg-ok" id="pc-msg-ok"><i class="fas fa-check-circle"></i> Beállítva!</div>
+      <div class="msg-err" id="pc-msg-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- HOME ROUTER GUI                                   -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="gui-overlay" id="router-overlay">
+  <div class="gui-box">
+    <div class="gui-header">
+      <h3><i class="fas fa-wifi" style="margin-right:6px;color:#8b949e"></i><span id="router-gui-title">Otthoni router</span></h3>
+      <button class="gui-close" onclick="closeRouterGui()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="gui-tabs">
+      <button class="gui-tab active" onclick="switchRouterTab('basic')">Alap</button>
+      <button class="gui-tab" onclick="switchRouterTab('wireless')">WiFi</button>
+    </div>
+    <div class="gui-body">
+      <div class="gui-tabpane active" id="router-tab-basic">
+        <div class="form-group"><label>Router belépési jelszó</label><input id="r-password" type="text" placeholder=""></div>
+        <div class="form-group"><label>LAN IP-cím</label><input id="r-lanip" type="text" disabled style="opacity:.5"></div>
+        <div class="form-group"><label>DHCP – kezdő IP</label><input id="r-dhcp-start" type="text" placeholder="pl. 192.168.100.10"></div>
+        <div class="form-group"><label>DHCP – záró IP</label><input id="r-dhcp-end" type="text" placeholder="pl. 192.168.100.20"></div>
+        <div class="form-group"><label>DNS szerver</label><input id="r-dns" type="text" placeholder="pl. 192.168.30.67"></div>
+      </div>
+      <div class="gui-tabpane" id="router-tab-wireless">
+        <div class="form-group"><label>SSID (hálózat neve)</label><input id="r-ssid" type="text" placeholder="pl. GUEST-WIFI"></div>
+        <div class="form-group"><label>SSID szórás (Broadcast)</label>
+          <select id="r-broadcast"><option value="1">Engedélyezett</option><option value="0">Tiltott</option></select>
+        </div>
+        <div class="form-group"><label>Biztonsági mód</label>
+          <select id="r-security" onchange="onSecurityChange()">
+            <option value="disabled">Nincs</option>
+            <option value="wpa-psk">WPA Personal (WPA-PSK)</option>
+            <option value="wpa2-psk">WPA2 Personal (WPA2-PSK)</option>
+          </select>
+        </div>
+        <div id="r-tkip-row" class="form-group" style="display:none">
+          <label>Titkosítás típusa</label>
+          <select id="r-wpa-enc">
+            <option value="aes">AES</option>
+            <option value="tkip">TKIP</option>
+          </select>
+        </div>
+        <div class="form-group" id="r-key-group"><label>WiFi kulcs (jelszó)</label><input id="r-key" type="text" placeholder="pl. 12345678"></div>
+      </div>
+      <button class="gui-save-btn" onclick="saveRouterConfig()"><i class="fas fa-save"></i> Beállítások mentése</button>
+      <div class="msg-ok" id="router-msg-ok"><i class="fas fa-check-circle"></i> Beállítva!</div>
+      <div class="msg-err" id="router-msg-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- WIFI CONNECT DIALOG                               -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="wifi-overlay" class="">
+  <div class="wifi-box">
+    <h3><i class="fas fa-wifi" style="color:#8b949e;margin-right:6px"></i><span id="wifi-dev-name">Eszköz</span></h3>
+    <p>Válassz WiFi hálózatot és add meg a jelszót!</p>
+    <div id="wifi-networks"></div>
+    <div class="wifi-pw-row">
+      <input id="wifi-pw-input" type="text" placeholder="WiFi jelszó">
+      <button class="wifi-connect-btn" onclick="connectWifi()"><i class="fas fa-plug"></i> Csatlakozás</button>
+    </div>
+    <div style="font-size:0.75rem;color:#22c55e;margin-top:6px;display:none" id="wifi-ok-msg"><i class="fas fa-check-circle"></i> Csatlakozva!</div>
+    <div style="font-size:0.75rem;color:#f85149;margin-top:6px;display:none" id="wifi-err-msg">Hibás jelszó!</div>
+    <button class="wifi-cancel-btn" onclick="closeWifi()">Mégsem</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- RESULTS MODAL                                     -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="results-overlay">
+  <div class="results-box">
+    <div class="results-score" id="res-score"></div>
+    <div class="results-subtitle" id="res-subtitle"></div>
+    <div id="res-items"></div>
+    <button class="results-close-btn" onclick="closeResults()">Bezárás</button>
+  </div>
+</div>
+
+<script src="tasks.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CISCO IOS ENGINE
+// ═══════════════════════════════════════════════════════════════
+class CiscoDevice {
+  constructor(id, hostname, type) {
+    this.id = id;
+    this.type = type; // 'router' | 'switch'
+    this.mode = 'user';
+    this.ctx = null; // current interface or line context
+    this.pending = null; // pending interactive input (e.g. RSA bits)
+    this.state = {
+      hostname,
+      enableSecret: null,
+      enablePassword: null,
+      servicePasswordEncryption: false,
+      domainName: null,
+      rsaKeyBits: null,
+      users: {},
+      interfaces: {},
+      vtyTransport: null,
+      vtyLogin: null,
+      nameServer: null,
+      defaultGateway: null,
+      ntpServer: null,
+      saved: false,
+    };
+    this.historyBuf = [];
+    this.historyIdx = -1;
+  }
+
+  prompt() {
+    const h = this.state.hostname;
+    switch(this.mode) {
+      case 'user':   return `${h}>`;
+      case 'enable': return `${h}#`;
+      case 'config': return `${h}(config)#`;
+      case 'if':     return `${h}(config-if)#`;
+      case 'line':   return `${h}(config-line)#`;
+      case 'vlan':   return `${h}(config-vlan)#`;
+      default:       return `${h}#`;
+    }
+  }
+
+  // Expand abbreviations and normalize interface names
+  expand(raw) {
+    let s = raw.trim();
+    if (!s) return '';
+
+    // Interface name normalization (before other processing)
+    s = s.replace(/^(int(?:erface)?\s+)(gi(?:g(?:abit(?:ethernet)?)?)?)(\d+\/\d+)/i,
+      (_, _p, _i, port) => `interface GigabitEthernet${port}`);
+    s = s.replace(/^(int(?:erface)?\s+)(fa(?:st(?:ethernet)?)?)(\d+\/\d+)/i,
+      (_, _p, _i, port) => `interface FastEthernet${port}`);
+    s = s.replace(/^(int(?:erface)?\s+)(se(?:rial)?)(\d+\/\d+)/i,
+      (_, _p, _i, port) => `interface Serial${port}`);
+    s = s.replace(/^(int(?:erface)?\s+)(lo(?:opback)?)(\d+)/i,
+      (_, _p, _i, n) => `interface Loopback${n}`);
+    s = s.replace(/^(int(?:erface)?\s+)(vlan\s*)(\d+)/i,
+      (_, _p, _i, id) => `interface Vlan${id}`);
+
+    // Multi-word abbreviations
+    if (/^conf(?:ig(?:ure?)?)?\s+t(?:erm(?:inal?)?)?$/i.test(s)) return 'configure terminal';
+    if (/^no\s+sh(?:ut(?:down?)?)?$/i.test(s)) return 'no shutdown';
+    if (/^sh(?:ut(?:down?)?)?$/i.test(s) && this.mode === 'if') return 'shutdown';
+    if (/^serv(?:ice?)?\s+pass(?:word?(?:-enc(?:ryption?)?)?)?$/i.test(s)) return 'service password-encryption';
+    if (/^cry(?:pto?)?\s+key\s+gen(?:erat?e?)?\s+rsa$/i.test(s)) return 'crypto key generate rsa';
+    if (/^trans(?:port?)?\s+in(?:put?)?\s+ssh$/i.test(s)) return 'transport input ssh';
+    if (/^trans(?:port?)?\s+in(?:put?)?\s+(?:all|tel(?:net?)?)$/i.test(s))
+      return s.replace(/^trans(?:port?)?\s+in(?:put?)?\s+/i, 'transport input ');
+    if (/^log(?:in?)?\s+loc(?:al?)?$/i.test(s)) return 'login local';
+    if (/^wr(?:ite?)?\s*(mem(?:ory?)?)?$/i.test(s)) return 'write memory';
+    if (/^cop(?:y?)?\s+run(?:ning-config?)?\s+start(?:up-config?)?$/i.test(s)) return 'copy running-config startup-config';
+    if (/^ip\s+addr(?:ess?)?\s+/i.test(s)) return s.replace(/^ip\s+addr(?:ess?)?\s+/i, 'ip address ');
+    if (/^ip\s+name(?:-server?)?\s+/i.test(s)) return s.replace(/^ip\s+name(?:-server?)?\s+/i, 'ip name-server ');
+    if (/^ip\s+def(?:ault(?:-gateway?)?)?\s+/i.test(s)) return s.replace(/^ip\s+def(?:ault(?:-gateway?)?)?\s+/i, 'ip default-gateway ');
+    if (/^ip\s+dom(?:ain?(?:-name?)?)?\s+/i.test(s)) return s.replace(/^ip\s+dom(?:ain?(?:-name?)?)?\s+/i, 'ip domain-name ');
+    if (/^ntp\s+serv(?:er?)?\s+/i.test(s)) return s.replace(/^ntp\s+serv(?:er?)?\s+/i, 'ntp server ');
+
+    // Single-word abbreviations
+    if (/^en(?:able?)?$/i.test(s)) return 'enable';
+    if (/^dis(?:able?)?$/i.test(s)) return 'disable';
+    if (/^ex(?:it?)?$/i.test(s)) return 'exit';
+    if (/^end$/i.test(s)) return 'end';
+
+    return s;
+  }
+
+  // Tab completion
+  tabComplete(partial) {
+    const cmds = this._getCmdsForMode();
+    const matches = cmds.filter(c => c.toLowerCase().startsWith(partial.toLowerCase()));
+    if (matches.length === 1) return matches[0];
+    if (matches.length > 1) return { ambiguous: matches };
+    return null;
+  }
+
+  _getCmdsForMode() {
+    const base = ['exit', 'end'];
+    switch(this.mode) {
+      case 'user': return ['enable', 'exit'];
+      case 'enable': return ['configure terminal', 'write memory', 'copy running-config startup-config',
+        'show running-config', 'show ip interface brief', 'exit', 'disable'];
+      case 'config': return [...base,
+        'hostname', 'enable secret', 'enable password', 'service password-encryption',
+        'ip domain-name', 'ip name-server', 'ip default-gateway', 'ntp server',
+        'username', 'crypto key generate rsa', 'interface GigabitEthernet0/0',
+        'interface GigabitEthernet0/1', 'interface Vlan1', 'line vty 0 15', 'line con 0'];
+      case 'if': return [...base,
+        'ip address', 'no shutdown', 'shutdown', 'ip address dhcp'];
+      case 'line': return [...base,
+        'transport input ssh', 'transport input all', 'login local', 'password'];
+      default: return base;
+    }
+  }
+
+  process(raw) {
+    const trimmed = raw.trim();
+
+    // Handle pending interactive input
+    if (this.pending) {
+      return this._handlePending(trimmed);
+    }
+
+    if (!trimmed) return { out: '', prompt: this.prompt() };
+
+    // History
+    this.historyBuf.unshift(trimmed);
+    if (this.historyBuf.length > 50) this.historyBuf.pop();
+    this.historyIdx = -1;
+
+    const cmd = this.expand(trimmed);
+    return this._exec(cmd, trimmed);
+  }
+
+  _handlePending(input) {
+    if (this.pending === 'rsa-bits') {
+      const bits = parseInt(input);
+      if (![512, 768, 1024, 2048, 4096].includes(bits)) {
+        return { out: '% Invalid key size. Choose from: 512 768 1024 2048 4096', err: true, prompt: 'How many bits in the modulus [512]: ' };
+      }
+      this.state.rsaKeyBits = bits;
+      this.pending = null;
+      this.state.saved = false;
+      return { out: `% Generating ${bits} bit RSA keys, keys will be non-exportable...\n[OK]`, ok: true, prompt: this.prompt() };
+    }
+    this.pending = null;
+    return { out: '', prompt: this.prompt() };
+  }
+
+  _exec(cmd, raw) {
+    const p = (out, opts = {}) => ({ out, prompt: this.prompt(), ...opts });
+
+    // Universal
+    if (cmd === 'end') { this.mode = 'enable'; this.ctx = null; return p(''); }
+    if (cmd === 'exit') {
+      if (this.mode === 'config' || this.mode === 'enable') { this.mode = this.mode === 'config' ? 'enable' : 'user'; this.ctx = null; }
+      else if (['if','line','vlan'].includes(this.mode)) { this.mode = 'config'; this.ctx = null; }
+      return p('');
+    }
+
+    switch(this.mode) {
+      case 'user': return this._execUser(cmd, p);
+      case 'enable': return this._execEnable(cmd, p);
+      case 'config': return this._execConfig(cmd, raw, p);
+      case 'if': return this._execIf(cmd, p);
+      case 'line': return this._execLine(cmd, p);
+      default: return p(`% Unknown mode: ${this.mode}`, {err:true});
+    }
+  }
+
+  _execUser(cmd, p) {
+    if (cmd === 'enable') {
+      if (this.state.enableSecret || this.state.enablePassword) {
+        this.mode = 'enable';
+        return p('');
+      }
+      this.mode = 'enable';
+      return p('');
+    }
+    return p(`% Unknown command: ${cmd}`, {err:true});
+  }
+
+  _execEnable(cmd, p) {
+    if (cmd === 'disable') { this.mode = 'user'; return p(''); }
+    if (cmd === 'configure terminal') { this.mode = 'config'; return p('Enter configuration commands, one per line. End with CNTL/Z.'); }
+    if (cmd === 'write memory' || cmd === 'copy running-config startup-config') {
+      this.state.saved = true;
+      return p('Building configuration...\n[OK]', {ok:true});
+    }
+    if (cmd.startsWith('show ')) return this._showCmd(cmd, p);
+    if (cmd.startsWith('ssh -l ')) return this._sshCmd(cmd, p);
+    if (cmd.startsWith('ping ')) return this._pingCmd(cmd, p);
+    return p(`% Unknown command: ${cmd}`, {err:true});
+  }
+
+  _execConfig(cmd, raw, p) {
+    // hostname
+    if (/^hostname\s+(.+)/i.test(cmd)) {
+      this.state.hostname = cmd.replace(/^hostname\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // enable secret
+    if (/^enable\s+secret\s+(.+)/i.test(cmd)) {
+      this.state.enableSecret = cmd.replace(/^enable\s+secret\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // enable password
+    if (/^enable\s+password\s+(.+)/i.test(cmd)) {
+      this.state.enablePassword = cmd.replace(/^enable\s+password\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // service password-encryption
+    if (/^service\s+password-encryption$/i.test(cmd)) {
+      this.state.servicePasswordEncryption = true;
+      this.state.saved = false;
+      return p('');
+    }
+    // ip domain-name
+    if (/^ip\s+domain-name\s+(.+)/i.test(cmd)) {
+      this.state.domainName = cmd.replace(/^ip\s+domain-name\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // ip name-server
+    if (/^ip\s+name-server\s+(.+)/i.test(cmd)) {
+      this.state.nameServer = cmd.replace(/^ip\s+name-server\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // ip default-gateway
+    if (/^ip\s+default-gateway\s+(.+)/i.test(cmd)) {
+      this.state.defaultGateway = cmd.replace(/^ip\s+default-gateway\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // ntp server
+    if (/^ntp\s+server\s+(.+)/i.test(cmd)) {
+      this.state.ntpServer = cmd.replace(/^ntp\s+server\s+/i,'').trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // username
+    if (/^username\s+(\S+)\s+(secret|password)\s+(.+)/i.test(cmd)) {
+      const m = cmd.match(/^username\s+(\S+)\s+(?:secret|password)\s+(.+)/i);
+      this.state.users[m[1]] = m[2].trim();
+      this.state.saved = false;
+      return p('');
+    }
+    // crypto key generate rsa
+    if (/^crypto\s+key\s+generate\s+rsa$/i.test(cmd)) {
+      if (!this.state.domainName) return p('% Please define a domain-name first.', {err:true});
+      this.pending = 'rsa-bits';
+      return p('The name for the keys will be: ' + this.state.hostname + '.' + this.state.domainName + '\nChoose the size of the key modulus in the range of 360 to 4096 for your\n  General Purpose Keys.', {prompt:'How many bits in the modulus [512]: '});
+    }
+    // interface
+    if (/^interface\s+(.+)/i.test(cmd)) {
+      const ifName = cmd.replace(/^interface\s+/i,'').trim();
+      this.ctx = ifName;
+      this.mode = 'if';
+      if (!this.state.interfaces[ifName]) this.state.interfaces[ifName] = { ip: null, mask: null, active: false };
+      return p('');
+    }
+    // line vty
+    if (/^line\s+vty\s+\d+\s+\d+/i.test(cmd)) {
+      this.ctx = 'vty';
+      this.mode = 'line';
+      return p('');
+    }
+    // line con
+    if (/^line\s+con\s+0/i.test(cmd)) {
+      this.ctx = 'con';
+      this.mode = 'line';
+      return p('');
+    }
+    return p(`% Invalid input detected at '^' marker.\n${raw}\n          ^`, {err:true});
+  }
+
+  _execIf(cmd, p) {
+    if (!this.ctx) return p('% No interface context', {err:true});
+    if (/^ip\s+address\s+(\S+)\s+(\S+)$/i.test(cmd)) {
+      const m = cmd.match(/^ip\s+address\s+(\S+)\s+(\S+)$/i);
+      const iface = this.state.interfaces[this.ctx];
+      iface.ip = m[1]; iface.mask = m[2];
+      this.state.saved = false;
+      // Also set VLAN1 shortcuts for switch
+      if (this.ctx.toLowerCase().startsWith('vlan')) {
+        this.state.vlan1Ip = m[1];
+        this.state.vlan1Mask = m[2];
+      }
+      return p('');
+    }
+    if (cmd === 'no shutdown') {
+      const iface = this.state.interfaces[this.ctx];
+      iface.active = true;
+      if (this.ctx.toLowerCase().startsWith('vlan')) this.state.vlan1Active = true;
+      this.state.saved = false;
+      return p(`%LINK-5-CHANGED: Interface ${this.ctx}, changed state to up`, {ok:true});
+    }
+    if (cmd === 'shutdown') {
+      const iface = this.state.interfaces[this.ctx];
+      iface.active = false;
+      if (this.ctx.toLowerCase().startsWith('vlan')) this.state.vlan1Active = false;
+      this.state.saved = false;
+      return p(`%LINK-5-CHANGED: Interface ${this.ctx}, changed state to administratively down`, {warn:true});
+    }
+    return p(`% Invalid input: ${cmd}`, {err:true});
+  }
+
+  _execLine(cmd, p) {
+    if (/^transport\s+input\s+(.+)/i.test(cmd)) {
+      const val = cmd.replace(/^transport\s+input\s+/i,'').trim().toLowerCase();
+      if (this.ctx === 'vty') this.state.vtyTransport = val;
+      this.state.saved = false;
+      return p('');
+    }
+    if (/^login\s+local$/i.test(cmd)) {
+      if (this.ctx === 'vty') this.state.vtyLogin = 'local';
+      this.state.saved = false;
+      return p('');
+    }
+    if (/^password\s+(.+)/i.test(cmd)) {
+      const pw = cmd.replace(/^password\s+/i,'').trim();
+      if (this.ctx === 'con') this.state.consolePassword = pw;
+      this.state.saved = false;
+      return p('');
+    }
+    if (/^login$/i.test(cmd)) {
+      this.state.saved = false;
+      return p('');
+    }
+    return p(`% Invalid input: ${cmd}`, {err:true});
+  }
+
+  _showCmd(cmd, p) {
+    if (/show\s+run/i.test(cmd)) {
+      const s = this.state;
+      let out = `\nBuilding configuration...\n\nCurrent configuration:\n!\nhostname ${s.hostname}\n`;
+      if (s.enableSecret) out += `enable secret ${s.servicePasswordEncryption?'5 $encrypted$':s.enableSecret}\n`;
+      if (s.servicePasswordEncryption) out += 'service password-encryption\n';
+      if (s.domainName) out += `ip domain-name ${s.domainName}\n`;
+      if (s.rsaKeyBits) out += `! RSA key (${s.rsaKeyBits} bits) generated\n`;
+      Object.entries(s.users||{}).forEach(([u,pw]) => out += `username ${u} secret ${s.servicePasswordEncryption?'5 $enc$':pw}\n`);
+      Object.entries(s.interfaces||{}).forEach(([name,iface]) => {
+        out += `!\ninterface ${name}\n`;
+        if (iface.ip) out += ` ip address ${iface.ip} ${iface.mask}\n`;
+        out += ` ${iface.active?'no ':''  }shutdown\n`;
+      });
+      out += '!\nline vty 0 15\n';
+      if (s.vtyTransport) out += ` transport input ${s.vtyTransport}\n`;
+      if (s.vtyLogin) out += ` login ${s.vtyLogin}\n`;
+      if (s.nameServer) out += `ip name-server ${s.nameServer}\n`;
+      if (s.defaultGateway) out += `ip default-gateway ${s.defaultGateway}\n`;
+      if (s.ntpServer) out += `ntp server ${s.ntpServer}\n`;
+      out += '!\nend\n';
+      return p(out);
+    }
+    if (/show\s+ip\s+int/i.test(cmd)) {
+      let out = '\nInterface              IP-Address      OK? Method Status                Protocol\n';
+      Object.entries(this.state.interfaces||{}).forEach(([name,iface]) => {
+        const ip = iface.ip || 'unassigned';
+        const status = iface.active ? 'up                    up' : 'administratively down down';
+        out += `${name.padEnd(23)}${ip.padEnd(16)}YES manual ${status}\n`;
+      });
+      return p(out);
+    }
+    return p(`% Unrecognized command: ${cmd}`, {err:true});
+  }
+
+  _sshCmd(cmd, p) {
+    // ssh -l user ip
+    const m = cmd.match(/^ssh\s+-l\s+(\S+)\s+(\S+)/i);
+    if (!m) return p('% Usage: ssh -l username ip-address', {err:true});
+    const user = m[1], ip = m[2];
+    // Check if any router device has SSH configured to this IP
+    const target = appState.currentTask && findDeviceByIp(ip, appState.currentTask);
+    if (!target) return p(`% ssh: connect to host ${ip} port 22: No route to host`, {err:true});
+    const td = appState.devices[target.id];
+    if (!td || !(td instanceof CiscoDevice)) return p(`% ssh: ${ip}: not a CLI device`, {err:true});
+    if (td.state.vtyTransport !== 'ssh') return p(`% ssh: ${ip}: Connection refused`, {err:true});
+    if (td.state.vtyLogin !== 'local') return p(`% ssh: ${ip}: Connection refused`, {err:true});
+    if (!td.state.users[user]) return p(`% Permission denied (publickey,keyboard-interactive).`, {err:true});
+    // Mark test as done on target device
+    if (!td.state.sshTested) { td.state.sshTested = true; updateProgress(); }
+    return p(`\nConnecting to ${ip}...\nPassword: \n\n${td.state.hostname}>`, {ok:true});
+  }
+
+  _pingCmd(cmd, p) {
+    const ip = cmd.replace(/^ping\s+/i,'').trim();
+    const target = appState.currentTask && findDeviceByIp(ip, appState.currentTask);
+    if (!target) return p(`Sending 5, 100-byte ICMP Echos to ${ip}, timeout is 2 seconds:\n.....\nSuccess rate is 0 percent (0/5)`, {warn:true});
+    // Check if target has correct IP
+    const td = appState.devices[target.id];
+    let reachable = false;
+    if (td instanceof CiscoDevice) reachable = td.state.interfaces && Object.values(td.state.interfaces).some(i => i.ip === ip && i.active);
+    else if (td) reachable = td.state && td.state.ip === ip;
+    if (reachable) {
+      if (!this.state.webTested) { this.state.webTested = true; updateProgress(); }
+      return p(`Sending 5, 100-byte ICMP Echos to ${ip}, timeout is 2 seconds:\n!!!!!\nSuccess rate is 100 percent (5/5), round-trip min/avg/max = 1/1/4 ms`, {ok:true});
+    }
+    return p(`Sending 5, 100-byte ICMP Echos to ${ip}, timeout is 2 seconds:\n.....\nSuccess rate is 0 percent (0/5)`, {warn:true});
+  }
+}
+
+// Switch device (same as router but type='switch')
+class SwitchDevice extends CiscoDevice {
+  constructor(id, hostname) {
+    super(id, hostname, 'switch');
+  }
+}
+
+// PC/Laptop device
+class PCDevice {
+  constructor(id, initialIp) {
+    this.id = id;
+    this.state = { ip: initialIp || '', mask: '', gateway: '', dns: '', sshTested: false, webTested: false };
+  }
+}
+
+// Home router device
+class HomeRouterDevice {
+  constructor(id, lanIp) {
+    this.id = id;
+    this.state = { lanIp: lanIp || '', password: '', dhcpStart: '', dhcpEnd: '', dhcpDns: '', ssid: '', ssidBroadcast: true, security: 'disabled', wpaEncryption: 'aes', wifiKey: '' };
+  }
+}
+
+// WiFi client device (phone, tablet)
+class WifiClient {
+  constructor(id) {
+    this.id = id;
+    this.state = { wifiJoined: null };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════════
+const appState = {
+  currentTask: null,
+  devices: {},
+  activeDeviceId: null,
+  tutorialStepIdx: 0,
+  tutorialPendingOpen: null,
+  currentInfoTab: 'steps',
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INIT – build task selector
+// ═══════════════════════════════════════════════════════════════
+function initSelector() {
+  const grid = document.getElementById('task-grid');
+  grid.innerHTML = '';
+  HALOZAT_FELADATOK.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.style.cssText = `border-color:${t.szin}33;`;
+    card.onmouseenter = () => card.style.borderColor = t.szin;
+    card.onmouseleave = () => card.style.borderColor = t.szin+'33';
+    const badge = t.mod === 'tanulo'
+      ? `<span class="badge badge-tanulo"><i class="fas fa-graduation-cap"></i> Tanulós</span>`
+      : `<span class="badge badge-gyakorlo"><i class="fas fa-dumbbell"></i> Gyakorló</span>`;
+    card.innerHTML = `
+      <div class="task-card-icon"><i class="fas ${t.ikon}" style="color:${t.szin}"></i></div>
+      <h3>${t.cim}</h3>
+      <p>${t.mod==='tanulo'?'Lépéses magyarázattal, útmutatóval':'Önálló konfiguráció, vizsgaszerű'}</p>
+      <div class="task-card-footer">${badge}<span class="task-card-num">${t.pontok} pont</span></div>`;
+    card.onclick = () => startTask(t.id);
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// START TASK
+// ═══════════════════════════════════════════════════════════════
+function startTask(id) {
+  const task = HALOZAT_FELADATOK.find(t => t.id === id);
+  if (!task) return;
+  appState.currentTask = task;
+  appState.devices = {};
+  appState.activeDeviceId = null;
+  appState.tutorialStepIdx = 0;
+
+  // Create device instances
+  task.topologia.eszkozok.forEach(dev => {
+    switch(dev.tipus) {
+      case 'router':
+        appState.devices[dev.id] = new CiscoDevice(dev.id, dev.nev, 'router');
+        break;
+      case 'switch':
+        appState.devices[dev.id] = new SwitchDevice(dev.id, dev.nev);
+        break;
+      case 'server':
+        appState.devices[dev.id] = new PCDevice(dev.id, getExpectedIp(task, dev.id));
+        if (dev.elokonfig) {
+          appState.devices[dev.id].state.ip = getExpectedIp(task, dev.id);
+          appState.devices[dev.id].state.mask = getExpectedMask(task, dev.id);
+        }
+        break;
+      case 'laptop': case 'pc': {
+        const exp = task.elvart[dev.id];
+        const initIp = dev.hibas ? getWrongIp(task, dev.id) : (dev.elokonfig && exp ? exp.ip : '');
+        const pc = new PCDevice(dev.id, initIp);
+        if (dev.elokonfig && exp) { pc.state.ip = exp.ip; pc.state.mask = exp.mask; pc.state.gateway = exp.gateway||''; }
+        appState.devices[dev.id] = pc;
+        break;
+      }
+      case 'homerouter': {
+        const exp = task.elvart[dev.id];
+        const hr = new HomeRouterDevice(dev.id, exp ? exp.dhcpStart?.replace(/\.\d+$/, '.1') : '');
+        // Pre-fill LAN ip from ip table
+        const ipRow = task.ipTabla.find(r => r.eszkoz.toLowerCase().includes(dev.nev.toLowerCase()) && r.int === 'LAN');
+        if (ipRow) hr.state.lanIp = ipRow.ip;
+        appState.devices[dev.id] = hr;
+        break;
+      }
+      case 'phone': case 'tablet':
+        appState.devices[dev.id] = new WifiClient(dev.id);
+        break;
+    }
+  });
+
+  // Render UI
+  document.getElementById('view-selector').style.display = 'none';
+  const vs = document.getElementById('view-sim');
+  vs.style.display = 'flex';
+  document.getElementById('sim-title').textContent = task.cim;
+  const badge = document.getElementById('sim-badge');
+  badge.textContent = task.mod === 'tanulo' ? 'Tanulós' : 'Gyakorló';
+  badge.className = 'topbar-badge ' + (task.mod === 'tanulo' ? 'badge-tanulo' : 'badge-gyakorlo');
+
+  renderTopology(task);
+  renderInfoPanel(task);
+  resetTerminal();
+
+  if (task.mod === 'tanulo') {
+    setTimeout(() => showTutorialStep(0), 500);
+  }
+}
+
+function getExpectedIp(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp) return '';
+  if (exp.ip) return exp.ip;
+  if (exp.interfaces) return Object.values(exp.interfaces)[0]?.ip || '';
+  return '';
+}
+function getExpectedMask(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp) return '';
+  if (exp.mask) return exp.mask;
+  if (exp.interfaces) return Object.values(exp.interfaces)[0]?.mask || '';
+  return '';
+}
+function getWrongIp(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp || !exp.ip) return '10.0.0.99';
+  const parts = exp.ip.split('.');
+  parts[3] = String((parseInt(parts[3]) + 50) % 254 || 99);
+  return parts.join('.');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOPOLOGY RENDERER
+// ═══════════════════════════════════════════════════════════════
+const DEV_ICONS = {
+  router:     { icon: '', color: '#3b82f6', label: 'Router' },
+  switch:     { icon: '', color: '#8b5cf6', label: 'Switch' },
+  server:     { icon: '', color: '#10b981', label: 'Server' },
+  laptop:     { icon: '', color: '#8b949e', label: 'Laptop' },
+  pc:         { icon: '', color: '#8b949e', label: 'PC' },
+  homerouter: { icon: '', color: '#f59e0b', label: 'WiFi Router' },
+  phone:      { icon: '', color: '#ec4899', label: 'Phone' },
+  tablet:     { icon: '', color: '#ec4899', label: 'Tablet' },
+};
+
+function renderTopology(task) {
+  const svg = document.getElementById('topo-svg');
+  const panel = document.getElementById('topo-panel');
+  const W = panel.clientWidth || 600;
+  const H = panel.clientHeight || 400;
+
+  // Scale coordinates from design (800x500) to actual size
+  const scaleX = W / 820;
+  const scaleY = H / 490;
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  // Defs for glow filter
+  svg.innerHTML = `<defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow-green"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+
+  const devPos = {};
+  task.topologia.eszkozok.forEach(dev => {
+    devPos[dev.id] = { x: dev.x * scaleX, y: dev.y * scaleY };
+  });
+
+  // Draw connections first (below devices)
+  task.topologia.kapcsolatok.forEach(link => {
+    const from = devPos[link.tol];
+    const to = devPos[link.ig];
+    if (!from || !to) return;
+    const isDone = isLinkActive(task, link);
+    const isWifi = link.wifi;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+    line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+    line.setAttribute('stroke', isDone ? '#22c55e' : (isWifi ? '#374151' : '#374151'));
+    line.setAttribute('stroke-width', isDone ? 2 : 1.5);
+    line.setAttribute('stroke-dasharray', isWifi ? '6,4' : 'none');
+    if (isDone) line.setAttribute('filter', 'url(#glow-green)');
+    svg.appendChild(line);
+
+    // Port labels
+    if (link.port1 && !isWifi) {
+      const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+      const angle = Math.atan2(to.y - from.y, to.x - from.x);
+      const px = from.x + 28 * Math.cos(angle);
+      const py = from.y + 28 * Math.sin(angle);
+      const pt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      pt.setAttribute('x', px); pt.setAttribute('y', py - 4);
+      pt.setAttribute('class', 'dev-label'); pt.setAttribute('font-size', '9');
+      pt.textContent = link.port1; svg.appendChild(pt);
+    }
+  });
+
+  // Draw devices
+  task.topologia.eszkozok.forEach(dev => {
+    const pos = devPos[dev.id];
+    if (!pos) return;
+    const info = DEV_ICONS[dev.tipus] || DEV_ICONS.laptop;
+    const isDone = isDeviceDone(task, dev.id);
+    const isActive = appState.activeDeviceId === dev.id;
+    const isConfigurable = !['server'].includes(dev.tipus) || !dev.elokonfig;
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform', `translate(${pos.x},${pos.y})`);
+    if (isConfigurable) {
+      g.style.cursor = 'pointer';
+      g.onclick = () => openDevice(dev.id);
+    }
+
+    // Background circle
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r', 22);
+    circle.setAttribute('fill', isDone ? 'rgba(34,197,94,0.15)' : 'rgba(22,27,34,0.95)');
+    circle.setAttribute('stroke', isDone ? '#22c55e' : (isActive ? '#3b82f6' : info.color));
+    circle.setAttribute('stroke-width', isActive ? 2.5 : 1.5);
+    if (isDone) circle.setAttribute('filter', 'url(#glow)');
+    g.appendChild(circle);
+
+    // Icon (unicode from FontAwesome mapped to text)
+    const iconText = document.createElementNS('http://www.w3.org/2000/svg','text');
+    iconText.setAttribute('y', 1);
+    iconText.setAttribute('class', 'dev-icon-text');
+    iconText.setAttribute('fill', isDone ? '#22c55e' : info.color);
+    iconText.setAttribute('font-family', 'Font Awesome 6 Free,FontAwesome');
+    iconText.setAttribute('font-weight', '900');
+    iconText.setAttribute('font-size', '16');
+    iconText.textContent = info.icon;
+    g.appendChild(iconText);
+
+    // Status dot
+    if (isDone) {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx', 16); dot.setAttribute('cy', -16);
+      dot.setAttribute('r', 5); dot.setAttribute('fill', '#22c55e');
+      g.appendChild(dot);
+    } else if (dev.hibas) {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx', 16); dot.setAttribute('cy', -16);
+      dot.setAttribute('r', 5); dot.setAttribute('fill', '#f85149');
+      g.appendChild(dot);
+    }
+
+    // Label
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('y', 36); label.setAttribute('class', 'dev-label');
+    label.textContent = dev.nev; g.appendChild(label);
+
+    svg.appendChild(g);
+  });
+}
+
+function isDeviceDone(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp) return false;
+  const dev = appState.devices[devId];
+  if (!dev) return false;
+  return validateDevice(task, devId);
+}
+
+function isLinkActive(task, link) {
+  return isDeviceDone(task, link.tol) && isDeviceDone(task, link.ig);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INFO PANEL
+// ═══════════════════════════════════════════════════════════════
+function renderInfoPanel(task) {
+  renderIpTable(task);
+  renderStepsPanel(task);
+}
+
+function renderIpTable(task) {
+  let html = `<table class="ip-table"><thead><tr><th>Eszköz</th><th>Int.</th><th>IP / maszk</th></tr></thead><tbody>`;
+  task.ipTabla.forEach(row => {
+    html += `<tr><td>${row.eszkoz}</td><td>${row.int}</td><td>${row.ip}${row.maszk?`<br><span class="ip-note">${row.maszk} ${row.megjegyzes||''}</span>`:''}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('info-iptable').innerHTML = html;
+}
+
+function renderStepsPanel(task) {
+  let html = '';
+  if (task.mod === 'tanulo' && task.lepesek) {
+    task.lepesek.forEach((step, i) => {
+      const isDone = isStepDone(task, step);
+      const isActive = i === appState.tutorialStepIdx && !isDone;
+      const cls = isDone ? 'done' : (isActive ? 'active' : 'pending');
+      const icon = isDone ? 'fa-check-circle' : (isActive ? 'fa-circle-dot' : 'fa-circle');
+      html += `<div class="step-item ${cls}" id="step-${i}" onclick="onStepClick(${i})">
+        <div class="step-head">
+          <i class="fas ${icon} step-icon"></i>
+          <span class="step-title">${step.cim}</span>
+        </div>
+        ${isActive && step.tipp ? `<div class="step-hint"><i class="fas fa-lightbulb" style="color:#e3b341;margin-right:4px"></i>${step.tipp}</div>` : ''}
+      </div>`;
+    });
+  } else {
+    const feladatok = task.feladatSzoveg || [];
+    feladatok.forEach((f, i) => {
+      html += `<div class="feladat-item"><span class="feladat-num">${i+1}.</span><span class="feladat-szov">${f}</span></div>`;
+    });
+  }
+  document.getElementById('info-steps').innerHTML = html;
+  updateScore(task);
+}
+
+function isStepDone(task, step) {
+  const dev = appState.devices[step.eszkozId];
+  if (!dev) return false;
+  try { return step.ellenorzes(dev.state); } catch(e) { return false; }
+}
+
+function onStepClick(idx) {
+  const task = appState.currentTask;
+  if (!task || !task.lepesek) return;
+  const step = task.lepesek[idx];
+  if (!step) return;
+  showTutorialStep(idx);
+}
+
+function switchTab(tab) {
+  appState.currentInfoTab = tab;
+  document.getElementById('info-steps').style.display = tab === 'steps' ? 'block' : 'none';
+  document.getElementById('info-iptable').style.display = tab === 'iptable' ? 'block' : 'none';
+  document.getElementById('tab-steps').classList.toggle('active', tab === 'steps');
+  document.getElementById('tab-iptable').classList.toggle('active', tab === 'iptable');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCORE / VALIDATION
+// ═══════════════════════════════════════════════════════════════
+function validateDevice(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp) return false;
+  const dev = appState.devices[devId];
+  if (!dev) return false;
+  const s = dev.state;
+
+  try {
+    if (dev instanceof CiscoDevice || dev instanceof SwitchDevice) {
+      if (exp.hostname !== undefined && s.hostname !== exp.hostname) return false;
+      if (exp.enableSecret !== undefined && s.enableSecret !== exp.enableSecret) return false;
+      if (exp.servicePasswordEncryption && !s.servicePasswordEncryption) return false;
+      if (exp.domainName !== undefined && s.domainName !== exp.domainName) return false;
+      if (exp.rsaKeyBits !== undefined && s.rsaKeyBits !== exp.rsaKeyBits) return false;
+      if (exp.users) {
+        for (const [u, pw] of Object.entries(exp.users)) {
+          if (s.users[u] !== pw) return false;
+        }
+      }
+      if (exp.interfaces) {
+        for (const [name, cfg] of Object.entries(exp.interfaces)) {
+          const iface = s.interfaces[name];
+          if (!iface) return false;
+          if (cfg.ip && iface.ip !== cfg.ip) return false;
+          if (cfg.mask && iface.mask !== cfg.mask) return false;
+          if (cfg.active && !iface.active) return false;
+        }
+      }
+      if (exp.vtyTransport !== undefined && s.vtyTransport !== exp.vtyTransport) return false;
+      if (exp.vtyLogin !== undefined && s.vtyLogin !== exp.vtyLogin) return false;
+      if (exp.nameServer !== undefined && s.nameServer !== exp.nameServer) return false;
+      if (exp.defaultGateway !== undefined && s.defaultGateway !== exp.defaultGateway) return false;
+      if (exp.ntpServer !== undefined && s.ntpServer !== exp.ntpServer) return false;
+      if (exp.vlan1Ip !== undefined && s.vlan1Ip !== exp.vlan1Ip) return false;
+      if (exp.vlan1Mask !== undefined && s.vlan1Mask !== exp.vlan1Mask) return false;
+      if (exp.defaultGateway !== undefined && s.defaultGateway !== exp.defaultGateway) return false;
+      if (exp.vlan1Active && !s.vlan1Active) return false;
+      if (exp.saved && !s.saved) return false;
+      return true;
+    }
+    if (dev instanceof PCDevice) {
+      if (exp.ip && s.ip !== exp.ip) return false;
+      if (exp.mask && s.mask !== exp.mask) return false;
+      if (exp.gateway && s.gateway !== exp.gateway) return false;
+      return true;
+    }
+    if (dev instanceof HomeRouterDevice) {
+      if (exp.password && s.password !== exp.password) return false;
+      if (exp.dhcpStart && s.dhcpStart !== exp.dhcpStart) return false;
+      if (exp.dhcpEnd && s.dhcpEnd !== exp.dhcpEnd) return false;
+      if (exp.ssid && s.ssid !== exp.ssid) return false;
+      if (exp.security && s.security !== exp.security) return false;
+      if (exp.wifiKey && s.wifiKey !== exp.wifiKey) return false;
+      if (exp.wpaEncryption && s.wpaEncryption !== exp.wpaEncryption) return false;
+      if (exp.ssidBroadcast === false && s.ssidBroadcast !== false) return false;
+      return true;
+    }
+    if (dev instanceof WifiClient) {
+      if (exp.wifiJoined && s.wifiJoined !== exp.wifiJoined) return false;
+      return true;
+    }
+  } catch(e) { return false; }
+  return false;
+}
+
+function updateScore(task) {
+  if (!task) return;
+  const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
+  const done = allIds.filter(id => validateDevice(task, id)).length;
+  const pct = allIds.length ? Math.round(done / allIds.length * 100) : 0;
+  document.getElementById('score-val').textContent = pct + '%';
+  document.getElementById('score-fill').style.width = pct + '%';
+  document.getElementById('score-val').style.color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#e3b341' : '#f85149';
+}
+
+function updateProgress() {
+  const task = appState.currentTask;
+  if (!task) return;
+  renderTopology(task);
+  renderStepsPanel(task);
+  if (task.mod === 'tanulo') advanceTutorial(task);
+}
+
+function advanceTutorial(task) {
+  if (!task.lepesek) return;
+  // Find first undone step
+  const idx = task.lepesek.findIndex(s => !isStepDone(task, s));
+  if (idx !== appState.tutorialStepIdx) {
+    appState.tutorialStepIdx = idx < 0 ? task.lepesek.length : idx;
+    renderStepsPanel(task);
+  }
+}
+
+function checkAll() {
+  const task = appState.currentTask;
+  if (!task) return;
+  const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
+  let done = 0;
+  const items = allIds.map(id => {
+    const dev = task.topologia.eszkozok.find(d => d.id === id);
+    const ok = validateDevice(task, id);
+    if (ok) done++;
+    return { label: dev ? dev.nev : id, ok };
+  });
+  const pct = allIds.length ? Math.round(done / allIds.length * 100) : 0;
+  const scEl = document.getElementById('res-score');
+  scEl.textContent = pct + '%';
+  scEl.className = 'results-score ' + (pct >= 60 ? 'pass' : 'fail');
+  document.getElementById('res-subtitle').textContent = pct >= 60
+    ? `Sikeresen konfiguráltál ${done}/${allIds.length} eszközt!`
+    : `${done}/${allIds.length} eszköz van helyesen konfigurálva.`;
+  let itemsHtml = '';
+  items.forEach(it => {
+    itemsHtml += `<div class="result-item">
+      <i class="fas ${it.ok?'fa-check-circle':'fa-times-circle'} result-icon ${it.ok?'ok':'fail'}"></i>
+      <span class="result-label">${it.label}</span>
+      <span style="font-size:0.78rem;color:${it.ok?'#22c55e':'#f85149'}">${it.ok?'Helyes':'Hiányos'}</span>
+    </div>`;
+  });
+  document.getElementById('res-items').innerHTML = itemsHtml;
+  document.getElementById('results-overlay').style.display = 'flex';
+}
+
+function closeResults() { document.getElementById('results-overlay').style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════════════════
+// OPEN DEVICE
+// ═══════════════════════════════════════════════════════════════
+function openDevice(devId) {
+  const task = appState.currentTask;
+  const devDef = task.topologia.eszkozok.find(d => d.id === devId);
+  if (!devDef) return;
+
+  // Server pre-configured — no interaction
+  if (devDef.elokonfig && devDef.tipus === 'server') {
+    showToast(`${devDef.nev} – előre konfigurálva`);
+    return;
+  }
+
+  appState.activeDeviceId = devId;
+  renderTopology(task);
+
+  if (devDef.tipus === 'router' || devDef.tipus === 'switch') {
+    openCLI(devId, devDef);
+  } else if (devDef.tipus === 'homerouter') {
+    openRouterGui(devId, devDef);
+  } else if (devDef.tipus === 'laptop' || devDef.tipus === 'server' || devDef.tipus === 'pc') {
+    openPcGui(devId, devDef);
+  } else if (devDef.tipus === 'phone' || devDef.tipus === 'tablet') {
+    openWifiConnect(devId, devDef);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLI TERMINAL
+// ═══════════════════════════════════════════════════════════════
+function openCLI(devId, devDef) {
+  const cisco = appState.devices[devId];
+  if (!cisco) return;
+  document.getElementById('term-dev-name').textContent = devDef.nev + ' [' + (cisco.type || cisco.constructor.name) + ']';
+  const output = document.getElementById('term-output');
+  output.innerHTML = '';
+  appendTerm('info', `\nMiskolc SZC Kandó Kálmán Informatikai Technikum\nCisco IOS Szimulátor – ${devDef.nev}\nType ? for help. Use Tab for completion.\n`);
+  updatePrompt(cisco);
+  document.getElementById('term-input-row').style.display = 'flex';
+  document.getElementById('term-input').focus();
+  appState.activeCisco = cisco;
+}
+
+function resetTerminal() {
+  document.getElementById('term-dev-name').textContent = '– nincs megnyitva –';
+  document.getElementById('term-output').innerHTML = `<div class="term-placeholder"><i class="fas fa-mouse-pointer"></i>Kattints egy eszközre a topológiában a konfiguráláshoz!</div>`;
+  document.getElementById('term-input-row').style.display = 'none';
+  appState.activeCisco = null;
+}
+
+function closeTerminal() {
+  appState.activeDeviceId = null;
+  appState.activeCisco = null;
+  renderTopology(appState.currentTask);
+  resetTerminal();
+}
+
+function appendTerm(type, text) {
+  const output = document.getElementById('term-output');
+  const div = document.createElement('div');
+  div.className = 'term-line ' + type;
+  div.textContent = text;
+  output.appendChild(div);
+  output.scrollTop = output.scrollHeight;
+}
+
+function updatePrompt(cisco) {
+  const pr = cisco.pending
+    ? (cisco.pending === 'rsa-bits' ? 'How many bits in the modulus [512]: ' : '')
+    : cisco.prompt();
+  document.getElementById('term-prompt').textContent = pr;
+}
+
+// Terminal input handler
+document.getElementById('term-input').addEventListener('keydown', function(e) {
+  const cisco = appState.activeCisco;
+  if (!cisco) return;
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = this.value;
+    this.value = '';
+    // Echo command
+    if (!cisco.pending) appendTerm('cmd', cisco.prompt() + ' ' + val);
+    else appendTerm('cmd', val);
+    // Process
+    const result = cisco.process(val);
+    if (result.out) {
+      const type = result.ok ? 'ok' : result.err ? 'err' : result.warn ? 'warn' : 'info';
+      appendTerm(type, result.out);
+    }
+    // Update prompt (might have changed)
+    if (result.prompt) document.getElementById('term-prompt').textContent = result.prompt;
+    else updatePrompt(cisco);
+    updateProgress();
+
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    const partial = this.value;
+    if (!partial.trim()) return;
+    const result = cisco.tabComplete(partial);
+    if (typeof result === 'string') {
+      this.value = result;
+    } else if (result && result.ambiguous) {
+      appendTerm('info', result.ambiguous.join('  '));
+    }
+
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (cisco.historyBuf.length) {
+      cisco.historyIdx = Math.min(cisco.historyIdx + 1, cisco.historyBuf.length - 1);
+      this.value = cisco.historyBuf[cisco.historyIdx] || '';
+    }
+
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    cisco.historyIdx = Math.max(cisco.historyIdx - 1, -1);
+    this.value = cisco.historyIdx >= 0 ? cisco.historyBuf[cisco.historyIdx] : '';
+
+  } else if (e.key === '?' && !e.shiftKey) {
+    // Help
+    e.preventDefault();
+    appendTerm('info', 'Available commands: ' + cisco._getCmdsForMode().join(', '));
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PC GUI
+// ═══════════════════════════════════════════════════════════════
+let _pcGuiDevId = null;
+function openPcGui(devId, devDef) {
+  _pcGuiDevId = devId;
+  const pc = appState.devices[devId];
+  document.getElementById('pc-gui-title').textContent = devDef.nev + ' – IP beállítás';
+  document.getElementById('pc-ip').value = pc.state.ip || '';
+  document.getElementById('pc-mask').value = pc.state.mask || '';
+  document.getElementById('pc-gw').value = pc.state.gateway || '';
+  document.getElementById('pc-dns').value = pc.state.dns || '';
+  document.getElementById('pc-msg-ok').style.display = 'none';
+  document.getElementById('pc-msg-err').style.display = 'none';
+  document.getElementById('pc-overlay').style.display = 'flex';
+}
+
+function savePcConfig() {
+  const ip = document.getElementById('pc-ip').value.trim();
+  const mask = document.getElementById('pc-mask').value.trim();
+  const gw = document.getElementById('pc-gw').value.trim();
+  const dns = document.getElementById('pc-dns').value.trim();
+  if (!isValidIp(ip) || !isValidIp(mask)) {
+    showGuiErr('pc', 'Érvénytelen IP-cím vagy maszk!'); return;
+  }
+  const pc = appState.devices[_pcGuiDevId];
+  pc.state.ip = ip; pc.state.mask = mask; pc.state.gateway = gw; pc.state.dns = dns;
+  document.getElementById('pc-msg-ok').style.display = 'block';
+  setTimeout(() => { closePcGui(); updateProgress(); }, 800);
+}
+function closePcGui() { document.getElementById('pc-overlay').style.display = 'none'; _pcGuiDevId = null; }
+
+// ═══════════════════════════════════════════════════════════════
+// HOME ROUTER GUI
+// ═══════════════════════════════════════════════════════════════
+let _routerGuiDevId = null;
+function openRouterGui(devId, devDef) {
+  _routerGuiDevId = devId;
+  const hr = appState.devices[devId];
+  const s = hr.state;
+  document.getElementById('router-gui-title').textContent = devDef.nev + ' – Beállítások';
+  document.getElementById('r-password').value = s.password || '';
+  document.getElementById('r-lanip').value = s.lanIp || '';
+  document.getElementById('r-dhcp-start').value = s.dhcpStart || '';
+  document.getElementById('r-dhcp-end').value = s.dhcpEnd || '';
+  document.getElementById('r-dns').value = s.dhcpDns || '';
+  document.getElementById('r-ssid').value = s.ssid || '';
+  document.getElementById('r-broadcast').value = s.ssidBroadcast ? '1' : '0';
+  document.getElementById('r-security').value = s.security || 'disabled';
+  document.getElementById('r-wpa-enc').value = s.wpaEncryption || 'aes';
+  document.getElementById('r-key').value = s.wifiKey || '';
+  onSecurityChange();
+  // Activate first tab
+  switchRouterTab('basic');
+  document.getElementById('router-msg-ok').style.display = 'none';
+  document.getElementById('router-msg-err').style.display = 'none';
+  document.getElementById('router-overlay').style.display = 'flex';
+}
+
+function onSecurityChange() {
+  const sec = document.getElementById('r-security').value;
+  document.getElementById('r-key-group').style.display = sec === 'disabled' ? 'none' : 'block';
+  document.getElementById('r-tkip-row').style.display = sec === 'wpa-psk' ? 'block' : 'none';
+}
+
+function switchRouterTab(tab) {
+  ['basic','wireless'].forEach(t => {
+    document.getElementById('router-tab-'+t).classList.toggle('active', t === tab);
+    document.querySelectorAll('.gui-tab').forEach((el, i) => {
+      if (i === (tab === 'basic' ? 0 : 1)) el.classList.add('active');
+      else el.classList.remove('active');
+    });
+  });
+}
+
+function saveRouterConfig() {
+  const hr = appState.devices[_routerGuiDevId];
+  const s = hr.state;
+  s.password = document.getElementById('r-password').value.trim();
+  s.dhcpStart = document.getElementById('r-dhcp-start').value.trim();
+  s.dhcpEnd = document.getElementById('r-dhcp-end').value.trim();
+  s.dhcpDns = document.getElementById('r-dns').value.trim();
+  s.ssid = document.getElementById('r-ssid').value.trim();
+  s.ssidBroadcast = document.getElementById('r-broadcast').value === '1';
+  s.security = document.getElementById('r-security').value;
+  s.wpaEncryption = document.getElementById('r-wpa-enc').value;
+  s.wifiKey = document.getElementById('r-key').value.trim();
+  document.getElementById('router-msg-ok').style.display = 'block';
+  setTimeout(() => { closeRouterGui(); updateProgress(); }, 800);
+}
+function closeRouterGui() { document.getElementById('router-overlay').style.display = 'none'; _routerGuiDevId = null; }
+
+// ═══════════════════════════════════════════════════════════════
+// WIFI CONNECT
+// ═══════════════════════════════════════════════════════════════
+let _wifiDevId = null;
+function openWifiConnect(devId, devDef) {
+  _wifiDevId = devId;
+  document.getElementById('wifi-dev-name').textContent = devDef.nev;
+  document.getElementById('wifi-pw-input').value = '';
+  document.getElementById('wifi-ok-msg').style.display = 'none';
+  document.getElementById('wifi-err-msg').style.display = 'none';
+  // Build available networks from home routers
+  const task = appState.currentTask;
+  let netsHtml = '';
+  task.topologia.eszkozok.filter(d => d.tipus === 'homerouter').forEach(hr => {
+    const hrDev = appState.devices[hr.id];
+    const ssid = hrDev?.state?.ssid || hr.nev;
+    const sec = hrDev?.state?.security || 'disabled';
+    const secLabel = sec === 'disabled' ? 'Nyitott' : sec.toUpperCase();
+    netsHtml += `<div class="wifi-net" id="wifi-net-${hr.id}" onclick="selectWifiNet('${hr.id}','${ssid}')">
+      <i class="fas fa-wifi" style="color:#3b82f6"></i>
+      <span class="wifi-net-name">${ssid || '(SSID nincs beállítva)'}</span>
+      <span class="wifi-net-sec">${secLabel}</span>
+    </div>`;
+  });
+  if (!netsHtml) netsHtml = '<div style="color:#8b949e;font-size:0.8rem;text-align:center;padding:10px">Nincs elérhető hálózat.<br>Előbb konfiguráld a WiFi routert!</div>';
+  document.getElementById('wifi-networks').innerHTML = netsHtml;
+  _selectedWifiNet = null;
+  document.getElementById('wifi-overlay').style.display = 'flex';
+}
+
+let _selectedWifiNet = null;
+function selectWifiNet(hrId, ssid) {
+  _selectedWifiNet = { hrId, ssid };
+  document.querySelectorAll('.wifi-net').forEach(el => el.classList.remove('selected'));
+  document.getElementById('wifi-net-' + hrId)?.classList.add('selected');
+}
+
+function connectWifi() {
+  if (!_selectedWifiNet) { document.getElementById('wifi-err-msg').textContent = 'Válassz hálózatot!'; document.getElementById('wifi-err-msg').style.display = 'block'; return; }
+  const pw = document.getElementById('wifi-pw-input').value.trim();
+  const hr = appState.devices[_selectedWifiNet.hrId];
+  const sec = hr?.state?.security || 'disabled';
+  if (sec !== 'disabled' && hr.state.wifiKey !== pw) {
+    document.getElementById('wifi-err-msg').textContent = 'Hibás jelszó!';
+    document.getElementById('wifi-err-msg').style.display = 'block';
+    document.getElementById('wifi-ok-msg').style.display = 'none';
+    return;
+  }
+  appState.devices[_wifiDevId].state.wifiJoined = _selectedWifiNet.ssid;
+  document.getElementById('wifi-ok-msg').style.display = 'block';
+  document.getElementById('wifi-err-msg').style.display = 'none';
+  setTimeout(() => { closeWifi(); updateProgress(); }, 800);
+}
+function closeWifi() { document.getElementById('wifi-overlay').style.display = 'none'; _wifiDevId = null; }
+
+// ═══════════════════════════════════════════════════════════════
+// TUTORIAL STEPS
+// ═══════════════════════════════════════════════════════════════
+function showTutorialStep(idx) {
+  const task = appState.currentTask;
+  if (!task || !task.lepesek) return;
+  const step = task.lepesek[idx];
+  if (!step) return;
+  appState.tutorialStepIdx = idx;
+  appState.tutorialPendingOpen = step.eszkozId;
+  document.getElementById('tut-stepnum').textContent = `${idx+1}. lépés / ${task.lepesek.length}`;
+  document.getElementById('tut-title').textContent = step.cim;
+  document.getElementById('tut-text').innerHTML = step.magyarazat || '';
+  document.getElementById('tut-hint').textContent = step.tipp || '';
+  document.getElementById('tutorial-overlay').style.display = 'flex';
+  // Highlight target device
+  renderTopology(task);
+}
+
+function closeTutorial() {
+  document.getElementById('tutorial-overlay').style.display = 'none';
+}
+
+function closeTutorialAndOpen() {
+  document.getElementById('tutorial-overlay').style.display = 'none';
+  if (appState.tutorialPendingOpen) {
+    openDevice(appState.tutorialPendingOpen);
+    appState.tutorialPendingOpen = null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function isValidIp(ip) {
+  return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip) && ip.split('.').every(n => parseInt(n) <= 255);
+}
+
+function showGuiErr(type, msg) {
+  const el = document.getElementById(type + '-msg-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function findDeviceByIp(ip, task) {
+  return task.topologia.eszkozok.find(dev => {
+    const d = appState.devices[dev.id];
+    if (!d) return false;
+    if (d instanceof CiscoDevice) return Object.values(d.state.interfaces||{}).some(i => i.ip === ip);
+    if (d instanceof PCDevice) return d.state.ip === ip;
+    return false;
+  });
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1c2128;border:1px solid #30363d;color:#e0e0e0;padding:8px 18px;border-radius:20px;font-size:0.82rem;z-index:9999;pointer-events:none';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+function backToSelector() {
+  document.getElementById('view-sim').style.display = 'none';
+  document.getElementById('view-selector').style.display = 'flex';
+  appState.currentTask = null;
+}
+
+// Responsive: re-render topology on resize
+window.addEventListener('resize', () => {
+  if (appState.currentTask) renderTopology(appState.currentTask);
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', initSelector);
+</script>
+</body>
+</html>
