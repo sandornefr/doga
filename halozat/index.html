@@ -1166,14 +1166,14 @@ function getWrongIp(task, devId) {
 // TOPOLOGY RENDERER
 // ═══════════════════════════════════════════════════════════════
 const DEV_ICONS = {
-  router:     { icon: '', color: '#3b82f6', label: 'Router' },
-  switch:     { icon: '', color: '#8b5cf6', label: 'Switch' },
-  server:     { icon: '', color: '#10b981', label: 'Server' },
-  laptop:     { icon: '', color: '#8b949e', label: 'Laptop' },
-  pc:         { icon: '', color: '#8b949e', label: 'PC' },
-  homerouter: { icon: '', color: '#f59e0b', label: 'WiFi Router' },
-  phone:      { icon: '', color: '#ec4899', label: 'Phone' },
-  tablet:     { icon: '', color: '#ec4899', label: 'Tablet' },
+  router:     { img: 'cisco/router.png',         label: 'Router' },
+  switch:     { img: 'cisco/switch.png',          label: 'Switch' },
+  server:     { img: 'cisco/server.png',          label: 'Server' },
+  laptop:     { img: 'cisco/laptop.png',          label: 'Laptop' },
+  pc:         { img: 'cisco/pc.png',              label: 'PC' },
+  homerouter: { img: 'cisco/wireless_router.png', label: 'WiFi Router' },
+  phone:      { img: 'cisco/ip_phone.png',        label: 'Phone' },
+  tablet:     { img: 'cisco/tablet.png',          label: 'Tablet' },
 };
 
 function renderTopology(task) {
@@ -1261,32 +1261,39 @@ function renderTopology(task) {
       g.onclick = () => openDevice(dev.id);
     }
 
-    // Background circle
-    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circle.setAttribute('r', 22);
-    if (ghost) {
-      circle.setAttribute('fill', 'rgba(22,27,34,0.5)');
-      circle.setAttribute('stroke', '#484f58');
-      circle.setAttribute('stroke-width', '1.5');
-      circle.setAttribute('stroke-dasharray', '5,3');
-    } else {
-      circle.setAttribute('fill', isDone ? 'rgba(34,197,94,0.15)' : 'rgba(22,27,34,0.95)');
-      circle.setAttribute('stroke', isDone ? '#22c55e' : (isActive ? '#3b82f6' : info.color));
-      circle.setAttribute('stroke-width', isActive ? 2.5 : 1.5);
-      if (isDone) circle.setAttribute('filter', 'url(#glow)');
-    }
-    g.appendChild(circle);
+    // Cisco PNG ikon (36x36, középre igazítva)
+    const imgSize = 36;
+    const img = document.createElementNS('http://www.w3.org/2000/svg','image');
+    img.setAttribute('href', info.img);
+    img.setAttribute('x', -imgSize/2); img.setAttribute('y', -imgSize/2);
+    img.setAttribute('width', imgSize); img.setAttribute('height', imgSize);
+    img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    if (ghost) img.setAttribute('opacity', '0.35');
+    else if (isDone) img.setAttribute('filter', 'url(#glow)');
+    g.appendChild(img);
 
-    // Icon
-    const iconText = document.createElementNS('http://www.w3.org/2000/svg','text');
-    iconText.setAttribute('y', 1);
-    iconText.setAttribute('class', 'dev-icon-text');
-    iconText.setAttribute('fill', ghost ? '#484f58' : (isDone ? '#22c55e' : info.color));
-    iconText.setAttribute('font-family', 'Font Awesome 6 Free,FontAwesome');
-    iconText.setAttribute('font-weight', '900');
-    iconText.setAttribute('font-size', '16');
-    iconText.textContent = info.icon;
-    g.appendChild(iconText);
+    // Kész jelölő: zöld kör alap az ikon mögé
+    if (isDone) {
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      bg.setAttribute('r', '20');
+      bg.setAttribute('fill', 'rgba(34,197,94,0.15)');
+      bg.setAttribute('stroke', '#22c55e'); bg.setAttribute('stroke-width', '2');
+      bg.setAttribute('filter', 'url(#glow)');
+      g.insertBefore(bg, img);
+    } else if (ghost) {
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      bg.setAttribute('r', '20');
+      bg.setAttribute('fill', 'rgba(22,27,34,0.4)');
+      bg.setAttribute('stroke', '#484f58'); bg.setAttribute('stroke-width', '1.5');
+      bg.setAttribute('stroke-dasharray', '5,3');
+      g.insertBefore(bg, img);
+    } else if (isActive) {
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      bg.setAttribute('r', '20');
+      bg.setAttribute('fill', 'rgba(59,130,246,0.1)');
+      bg.setAttribute('stroke', '#3b82f6'); bg.setAttribute('stroke-width', '2.5');
+      g.insertBefore(bg, img);
+    }
 
     // Ghost overlay: green "+" badge
     if (ghost) {
