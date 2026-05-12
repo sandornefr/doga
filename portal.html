@@ -3084,12 +3084,12 @@
             else badge.style.display = 'none';
         }
 
-        // Modal auto-nyitás: csak ha van ténylegesen új (eddig nem látott) elem
+        // Modal auto-nyitás: csak aktív számonkérésnél – eredménynél csak a badge jelez
         const hasNew = currentIds.some(id => !seenIds.has(id));
         if (hasNew) {
             currentIds.forEach(id => seenIds.add(id));
             localStorage.setItem(seenKey, [...seenIds].join(','));
-            openSzamonkeresModal();
+            if (vanAktiv) openSzamonkeresModal();
         }
     }
 
