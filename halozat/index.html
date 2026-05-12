@@ -1423,6 +1423,25 @@ function renderInfoPanel(task) {
   renderTaskCard(task);
 }
 
+function _konzolGomb(task) {
+  if (!task.konzolSzukseges) return '';
+  if (appState.konzolKapcsolt) {
+    return `<button class="tc-konzol-btn done" disabled>
+      <i class="fas fa-plug"></i> Konzol kapcsolat kialakítva
+    </button>`;
+  }
+  return `<button class="tc-konzol-btn" onclick="konzolClick()">
+    <i class="fas fa-plug"></i> Konzol kapcsolat kialakítása
+  </button>`;
+}
+
+function konzolClick() {
+  if (appState.konzolKapcsolt) return;
+  appState.konzolKapcsolt = true;
+  showToast('Konzol kapcsolat kialakítva! (+1 pont)');
+  renderTaskCard(appState.currentTask);
+}
+
 function renderTaskCard(task) {
   if (!task) return;
   const body = document.getElementById('tc-body');
@@ -1430,7 +1449,8 @@ function renderTaskCard(task) {
 
   // IP tábla toggle
   if (appState.showIpTable) {
-    let html = `<div class="tc-card-label"><i class="fas fa-table" style="margin-right:4px"></i>IP-cím táblázat</div>`;
+    let html = _konzolGomb(task);
+    html += `<div class="tc-card-label"><i class="fas fa-table" style="margin-right:4px"></i>IP-cím táblázat</div>`;
     html += `<table class="ip-table"><thead><tr><th>Eszköz</th><th>Int.</th><th>IP / maszk</th></tr></thead><tbody>`;
     (task.ipTabla || []).forEach(row => {
       html += `<tr><td>${row.eszkoz}</td><td>${row.int}</td><td>${row.ip}${row.maszk?`<br><span class="ip-note">${row.maszk} ${row.megjegyzes||''}</span>`:''}</td></tr>`;
@@ -1453,7 +1473,8 @@ function renderTaskCard(task) {
     document.getElementById('tc-next').disabled = idx >= items.length - 1;
 
     const color = isDone ? '#22c55e' : '#3b82f6';
-    let html = `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px">
+    let html = _konzolGomb(task);
+    html += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px">
       <span class="tc-card-num" style="background:${color}22;color:${color}">${idx + 1}</span>
       <div style="flex:1">
         <div class="tc-card-text" style="font-weight:700;font-size:0.9rem;color:#e0e0e0;margin-bottom:4px">${step.cim}</div>
@@ -1479,7 +1500,7 @@ function renderTaskCard(task) {
     document.getElementById('tc-prev').disabled = idx === 0;
     document.getElementById('tc-next').disabled = idx >= items.length - 1;
 
-    body.innerHTML = `<div style="display:flex;align-items:flex-start;gap:8px">
+    body.innerHTML = _konzolGomb(task) + `<div style="display:flex;align-items:flex-start;gap:8px">
       <span class="tc-card-num" style="background:#3b82f622;color:#3b82f6">${idx + 1}</span>
       <div class="tc-card-text">${items[idx]}</div>
     </div>`;
@@ -1597,8 +1618,10 @@ function validateDevice(task, devId) {
 function updateScore(task) {
   if (!task) return;
   const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
-  const done = allIds.filter(id => validateDevice(task, id)).length;
-  const pts = allIds.length ? Math.round(done / allIds.length * 40) : 0;
+  let done = allIds.filter(id => validateDevice(task, id)).length;
+  let total = allIds.length;
+  if (task.konzolSzukseges) { total++; if (appState.konzolKapcsolt) done++; }
+  const pts = total ? Math.round(done / total * 40) : 0;
   document.getElementById('score-val').textContent = pts + ' / 40';
   document.getElementById('score-fill').style.width = (pts / 40 * 100) + '%';
   document.getElementById('score-val').style.color = pts >= 28 ? '#22c55e' : pts >= 16 ? '#e3b341' : '#f85149';
@@ -1629,6 +1652,7 @@ function checkAll() {
   const ghostIds = task.topologia.eszkozok.filter(d => d.ghost && !task.elvart[d.id]).map(d => d.id);
   let done = 0;
   const items = [
+    ...(task.konzolSzukseges ? [{ label: 'Konzol kapcsolat', ok: appState.konzolKapcsolt, hint: 'Kattints a Konzol kapcsolat kialakítása gombra' }] : []),
     ...allIds.map(id => {
       const dev = task.topologia.eszkozok.find(d => d.id === id);
       const ok = validateDevice(task, id);
@@ -1642,7 +1666,8 @@ function checkAll() {
       return { label: (dev ? dev.nev : id) + ' – elhelyezés', ok };
     }),
   ];
-  const total = allIds.length + ghostIds.length;
+  if (task.konzolSzukseges && appState.konzolKapcsolt) done++;
+  const total = allIds.length + ghostIds.length + (task.konzolSzukseges ? 1 : 0);
   const pts = total ? Math.round(done / total * 40) : 0;
   const scEl = document.getElementById('res-score');
   scEl.textContent = pts + ' / 40';

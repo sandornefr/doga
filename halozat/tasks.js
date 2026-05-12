@@ -11,6 +11,7 @@ const HALOZAT_FELADATOK = [
     cim: 'Torony – Alapkonfiguráció',
     mod: 'tanulo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#3b82f6',
     ikon: 'fa-network-wired',
 
@@ -183,6 +184,7 @@ const HALOZAT_FELADATOK = [
     cim: 'GONDOR – Hibakeresés + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#8b5cf6',
     ikon: 'fa-network-wired',
 
@@ -268,6 +270,7 @@ const HALOZAT_FELADATOK = [
     cim: 'TOWER – Hibakeresés + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#10b981',
     ikon: 'fa-network-wired',
 
@@ -353,6 +356,7 @@ const HALOZAT_FELADATOK = [
     cim: 'KAER MORHEN – WPA-TKIP + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#f59e0b',
     ikon: 'fa-network-wired',
 
@@ -431,6 +435,7 @@ const HALOZAT_FELADATOK = [
     cim: 'TOWER – NTP + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#06b6d4',
     ikon: 'fa-network-wired',
 
@@ -511,6 +516,7 @@ const HALOZAT_FELADATOK = [
     cim: 'KR – Hibakeresés + SSH (Tanulós)',
     mod: 'tanulo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#ef4444',
     ikon: 'fa-network-wired',
 
@@ -658,6 +664,7 @@ const HALOZAT_FELADATOK = [
     cim: 'KR – Kiegészítés + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#6366f1',
     ikon: 'fa-network-wired',
 
@@ -742,6 +749,7 @@ const HALOZAT_FELADATOK = [
     cim: 'KANDO – Hibakeresés + SSH',
     mod: 'gyakorlo',
     pontok: 40,
+    konzolSzukseges: true,
     szin: '#ec4899',
     ikon: 'fa-network-wired',
 
