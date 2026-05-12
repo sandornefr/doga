@@ -31,8 +31,8 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
 .portal-sub{color:#666;font-size:0.9rem;margin-bottom:32px;text-align:center}
 
 /* ── GRID ── */
-.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;align-items:start}
-.card-col{display:flex;flex-direction:column;gap:12px}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:24px}
+.card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:12px}
 
 /* ── CARDS ── */
 .option-card{background:#16213e;border:2px solid #0f3460;border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:168px;transition:all .2s}
@@ -124,7 +124,7 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
         <div class="changelog-item"><strong style="color:#e0e0e0">Kezdő szint</strong> – Python alapok, változók, feltételek, ciklusok</div>
         <div class="changelog-item"><strong style="color:#e0e0e0">Haladó szint</strong> – Függvények, listák, szótárak, fájlkezelés</div>
         <div class="changelog-item"><strong style="color:#e0e0e0">Profi szint</strong> – Összetett algoritmusok, OOP alapok</div>
-        <div class="changelog-item">A Kezdő és Haladó szint lefedi az <strong>ágazati alapvizsga</strong> anyagát</div>
+        <div class="changelog-item">A Kezdő és Haladó szint lefedi az <strong>ágazati alapvizsga</strong> tananyagát</div>
       </div>
     </div>
 
@@ -152,10 +152,9 @@ body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;displ
       </a>
       <div class="changelog-box agazati-col">
         <div class="changelog-title"><i class="fas fa-code" style="color:#6366f1"></i> Feladatokról</div>
-        <div class="changelog-item">Ágazati alapvizsga típusú Python programozási feladatok</div>
-        <div class="changelog-item">3 nehézségi szint: <strong>Alap · Közepes · Nehéz</strong></div>
-        <div class="changelog-item">Elérhetők <strong>középszintű érettségi</strong> vizsgafeladatok is<span class="badge-hot">ÚJ</span></div>
-        <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek</div>
+        <div class="changelog-item">Python ágazati alapvizsga feladatok gyűjteménye</div>
+        <div class="changelog-item">3 nehézségi szint: könnyű (8 pontos), közepesen nehéz (14 pontos) és nehéz (18 pontos)</div>
+        <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek a <strong>választható feladatok</strong> közé</div>
       </div>
     </div>
 
