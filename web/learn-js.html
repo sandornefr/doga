@@ -138,7 +138,7 @@
 
 <header class="topbar">
   <a href="../portal.html"><img src="kandologo2.png" alt="Kandó" class="topbar-logo"></a>
-  <a href="../portal.html#web-tanulas" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <a href="../web-hub.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
   <div class="topbar-info">
     <div class="topbar-title"><i class="fab fa-js" style="color:#f59e0b"></i> WEB Tananyag</div>
     <div class="topbar-sub">5. szint · JavaScript</div>
@@ -154,8 +154,8 @@
     <h2>JavaScript – kész!</h2>
     <p>Gratulálok! Elvégezted az 5. szintet. Minden WEB tananyagot teljesítettél!</p>
     <div class="modal-btns">
-      <a class="btn-m btn-m-p" href="../python/agazati-gyakorlo.html"><i class="fas fa-laptop-code"></i> Ágazati feladatok</a>
-      <a class="btn-m btn-m-s" href="../portal.html#web-tanulas"><i class="fas fa-book-open"></i> Tananyagválasztó</a>
+      <a class="btn-m btn-m-p" href="index.html"><i class="fas fa-laptop-code"></i> Ágazati feladatok</a>
+      <a class="btn-m btn-m-s" href="../web-hub.html"><i class="fas fa-book-open"></i> Tananyagválasztó</a>
     </div>
     <button onclick="document.getElementById('modal-done').classList.remove('show')" style="margin-top:12px;background:transparent;border:none;color:#475569;font-size:0.82rem;cursor:pointer;text-decoration:underline;">Mégse – maradok itt</button>
   </div>
@@ -1193,7 +1193,7 @@ function saveCompletion(key){
 function goNext(){
   const n=state.cur+1;
   if(n<tasks.length) loadTask(n);
-  else location.href='../portal.html#web-tanulas';
+  else location.href='../web-hub.html';
 }
 
 function triggerConfetti(){
