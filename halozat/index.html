@@ -436,77 +436,275 @@ class CiscoDevice {
     }
   }
 
-  // Expand abbreviations and normalize interface names
+  // Prefix-match: T[i] ellen candidates listából, visszaad egyedi találatot vagy null
+  _pm(word, candidates) {
+    if (!word) return null;
+    const lo = word.toLowerCase();
+    const hits = candidates.filter(c => c.toLowerCase().startsWith(lo));
+    if (hits.length === 1) return hits[0];
+    // Ha pontosan egyezik egy kandidátussal (teljes szó), az egyértelmű
+    if (hits.length > 1) {
+      const exact = hits.find(h => h.toLowerCase() === lo);
+      return exact || null;
+    }
+    return null;
+  }
+
+  // Interface névből normalizált Cisco név
+  _normIface(s) {
+    const v = s.replace(/\s+/g, '').trim();
+    let m;
+    if (m = v.match(/^g(?:i(?:g(?:a(?:b(?:i(?:t(?:e(?:t(?:h(?:e(?:r(?:n(?:et?)?)?)?)?)?)?)?)?)?)?)?)?(\d+\/\d+)$/i)) return 'GigabitEthernet' + m[1];
+    if (m = v.match(/^f(?:a(?:s(?:t(?:e(?:t(?:h(?:e(?:r(?:n(?:et?)?)?)?)?)?)?)?)?)?)?(\d+\/\d+)$/i)) return 'FastEthernet' + m[1];
+    if (m = v.match(/^s(?:e(?:r(?:i(?:a(?:l)?)?)?)?)?(\d+\/\d+)$/i)) return 'Serial' + m[1];
+    if (m = v.match(/^v(?:l(?:a(?:n)?)?)?(\d+)$/i)) return 'Vlan' + m[1];
+    if (m = v.match(/^lo(?:o(?:p(?:b(?:a(?:c(?:k)?)?)?)?)?)?(\d+)$/i)) return 'Loopback' + m[1];
+    return v;
+  }
+
   expand(raw) {
-    let s = raw.trim();
+    const s = raw.trim();
     if (!s) return '';
+    const T = s.split(/\s+/);
+    const pm = (w, c) => this._pm(w, c);
 
-    // Interface name normalization (before other processing)
-    s = s.replace(/^(int(?:erface)?\s+)(gi(?:g(?:abit(?:ethernet)?)?)?)(\d+\/\d+)/i,
-      (_, _p, _i, port) => `interface GigabitEthernet${port}`);
-    s = s.replace(/^(int(?:erface)?\s+)(fa(?:st(?:ethernet)?)?)(\d+\/\d+)/i,
-      (_, _p, _i, port) => `interface FastEthernet${port}`);
-    s = s.replace(/^(int(?:erface)?\s+)(se(?:rial)?)(\d+\/\d+)/i,
-      (_, _p, _i, port) => `interface Serial${port}`);
-    s = s.replace(/^(int(?:erface)?\s+)(lo(?:opback)?)(\d+)/i,
-      (_, _p, _i, n) => `interface Loopback${n}`);
-    s = s.replace(/^(int(?:erface)?\s+)(vlan\s*)(\d+)/i,
-      (_, _p, _i, id) => `interface Vlan${id}`);
+    // ── USER mód ──
+    if (this.mode === 'user') {
+      const c = pm(T[0], ['enable', 'exit', 'disable']);
+      return c || s;
+    }
 
-    // Multi-word abbreviations
-    if (/^conf(?:ig(?:ure?)?)?\s+t(?:erm(?:inal?)?)?$/i.test(s)) return 'configure terminal';
-    if (/^no\s+sh(?:ut(?:down?)?)?$/i.test(s)) return 'no shutdown';
-    if (/^sh(?:ut(?:down?)?)?$/i.test(s) && this.mode === 'if') return 'shutdown';
-    if (/^serv(?:ice?)?\s+pass(?:word?(?:-enc(?:ryption?)?)?)?$/i.test(s)) return 'service password-encryption';
-    if (/^cry(?:pto?)?\s+key\s+gen(?:erat?e?)?\s+rsa$/i.test(s)) return 'crypto key generate rsa';
-    if (/^trans(?:port?)?\s+in(?:put?)?\s+ssh$/i.test(s)) return 'transport input ssh';
-    if (/^trans(?:port?)?\s+in(?:put?)?\s+(?:all|tel(?:net?)?)$/i.test(s))
-      return s.replace(/^trans(?:port?)?\s+in(?:put?)?\s+/i, 'transport input ');
-    if (/^log(?:in?)?\s+loc(?:al?)?$/i.test(s)) return 'login local';
-    if (/^wr(?:ite?)?\s*(mem(?:ory?)?)?$/i.test(s)) return 'write memory';
-    if (/^cop(?:y?)?\s+run(?:ning-config?)?\s+start(?:up-config?)?$/i.test(s)) return 'copy running-config startup-config';
-    if (/^ip\s+addr(?:ess?)?\s+/i.test(s)) return s.replace(/^ip\s+addr(?:ess?)?\s+/i, 'ip address ');
-    if (/^ip\s+name(?:-server?)?\s+/i.test(s)) return s.replace(/^ip\s+name(?:-server?)?\s+/i, 'ip name-server ');
-    if (/^ip\s+def(?:ault(?:-gateway?)?)?\s+/i.test(s)) return s.replace(/^ip\s+def(?:ault(?:-gateway?)?)?\s+/i, 'ip default-gateway ');
-    if (/^ip\s+dom(?:ain?(?:-name?)?)?\s+/i.test(s)) return s.replace(/^ip\s+dom(?:ain?(?:-name?)?)?\s+/i, 'ip domain-name ');
-    if (/^ntp\s+serv(?:er?)?\s+/i.test(s)) return s.replace(/^ntp\s+serv(?:er?)?\s+/i, 'ntp server ');
+    // ── ENABLE mód ──
+    if (this.mode === 'enable') {
+      const c = pm(T[0], ['configure', 'disable', 'exit', 'end', 'write', 'copy', 'show', 'ping', 'ssh']);
+      if (!c) return s;
+      if (c === 'configure') return 'configure terminal';
+      if (c === 'write') return 'write memory';
+      if (c === 'copy') {
+        const a = pm(T[1], ['running-config']) || T[1] || 'running-config';
+        const b = pm(T[2], ['startup-config']) || T[2] || 'startup-config';
+        return `copy ${a} ${b}`;
+      }
+      return T.length > 1 ? c + ' ' + T.slice(1).join(' ') : c;
+    }
 
-    // Single-word abbreviations
-    if (/^en(?:able?)?$/i.test(s)) return 'enable';
-    if (/^dis(?:able?)?$/i.test(s)) return 'disable';
-    if (/^ex(?:it?)?$/i.test(s)) return 'exit';
-    if (/^end$/i.test(s)) return 'end';
+    // ── CONFIG mód ──
+    if (this.mode === 'config') {
+      const firsts = ['hostname','enable','service','ip','username','crypto','interface','line','ntp','end','exit','no'];
+      const c = pm(T[0], firsts);
+      if (!c) return s;
+
+      if (c === 'hostname') return T[1] ? `hostname ${T.slice(1).join(' ')}` : s;
+
+      if (c === 'enable') {
+        const sub = pm(T[1], ['secret', 'password']);
+        return (sub && T[2]) ? `enable ${sub} ${T.slice(2).join(' ')}` : s;
+      }
+
+      if (c === 'service') {
+        const sub = pm(T[1], ['password-encryption']);
+        return sub ? 'service password-encryption' : s;
+      }
+
+      if (c === 'ip') {
+        const sub = pm(T[1], ['address', 'domain-name', 'name-server', 'default-gateway']);
+        if (!sub) return s;
+        if (sub === 'address') return (T[2] && T[3]) ? `ip address ${T[2]} ${T[3]}` : s;
+        if (sub === 'domain-name') return T[2] ? `ip domain-name ${T.slice(2).join(' ')}` : s;
+        if (sub === 'name-server') return T[2] ? `ip name-server ${T[2]}` : s;
+        if (sub === 'default-gateway') return T[2] ? `ip default-gateway ${T[2]}` : s;
+        return s;
+      }
+
+      if (c === 'username') {
+        if (T[1] && T[2] && T[3]) {
+          const auth = pm(T[2], ['secret', 'password']) || T[2];
+          return `username ${T[1]} ${auth} ${T.slice(3).join(' ')}`;
+        }
+        return s;
+      }
+
+      if (c === 'crypto') {
+        const k = pm(T[1], ['key']);
+        const g = k && pm(T[2], ['generate']);
+        const r = g && pm(T[3], ['rsa']);
+        return (k && g && r) ? 'crypto key generate rsa' : s;
+      }
+
+      if (c === 'interface') {
+        return T[1] ? 'interface ' + this._normIface(T.slice(1).join('')) : s;
+      }
+
+      if (c === 'line') {
+        const sub = pm(T[1], ['vty', 'console', 'con']);
+        if (!sub) return s;
+        if (sub === 'vty') return (T[2] !== undefined && T[3] !== undefined) ? `line vty ${T[2]} ${T[3]}` : s;
+        return T[2] !== undefined ? `line con ${T[2]}` : s;
+      }
+
+      if (c === 'ntp') {
+        const sub = pm(T[1], ['server']);
+        return (sub && T[2]) ? `ntp server ${T[2]}` : s;
+      }
+
+      if (c === 'no') {
+        const sub = pm(T[1], ['shutdown']);
+        return sub ? 'no shutdown' : s;
+      }
+
+      return c;
+    }
+
+    // ── INTERFACE mód ──
+    if (this.mode === 'if') {
+      const c = pm(T[0], ['ip', 'no', 'shutdown', 'end', 'exit']);
+      if (!c) return s;
+      if (c === 'ip') {
+        const sub = pm(T[1], ['address']);
+        return (sub && T[2] && T[3]) ? `ip address ${T[2]} ${T[3]}` : s;
+      }
+      if (c === 'no') {
+        const sub = pm(T[1], ['shutdown']);
+        return sub ? 'no shutdown' : s;
+      }
+      return c;
+    }
+
+    // ── LINE mód ──
+    if (this.mode === 'line') {
+      const c = pm(T[0], ['transport', 'login', 'password', 'end', 'exit']);
+      if (!c) return s;
+      if (c === 'transport') {
+        const inp = pm(T[1], ['input']);
+        if (!inp) return s;
+        const type = pm(T[2], ['ssh', 'telnet', 'all', 'none']);
+        return type ? `transport input ${type}` : s;
+      }
+      if (c === 'login') {
+        const sub = pm(T[1], ['local']);
+        return sub ? 'login local' : (T[1] ? s : 'login');
+      }
+      if (c === 'password') return T[1] ? `password ${T.slice(1).join(' ')}` : s;
+      return c;
+    }
 
     return s;
   }
 
-  // Tab completion
+  // Elérhető interface nevek: már konfigurált + típus-alapú alapértelmezés
+  _ifaceList() {
+    const known = Object.keys(this.state.interfaces);
+    const defaults = this.type === 'router'
+      ? ['GigabitEthernet0/0', 'GigabitEthernet0/1', 'GigabitEthernet0/2']
+      : ['FastEthernet0/1', 'Vlan1'];
+    const extra = defaults.filter(d => !known.includes(d));
+    return [...known, ...extra];
+  }
+
+  // Következő szó jelöltek az eddig begépelt tokenek alapján
+  _nextWords(tokens) {
+    const pm = (w, c) => this._pm(w, c);
+    if (!tokens.length) return this._firstWords();
+    const c0 = pm(tokens[0], this._firstWords());
+    if (!c0) return [];
+
+    if (this.mode === 'user') return [];
+
+    if (this.mode === 'enable') {
+      if (tokens.length === 1) {
+        if (c0 === 'configure') return ['terminal'];
+        if (c0 === 'copy')      return ['running-config'];
+        if (c0 === 'show')      return ['running-config', 'ip', 'version', 'interfaces'];
+        if (c0 === 'write')     return ['memory'];
+        return [];
+      }
+      if (tokens.length === 2) {
+        if (c0 === 'copy' && pm(tokens[1], ['running-config'])) return ['startup-config'];
+        if (c0 === 'show' && pm(tokens[1], ['ip']))             return ['interface'];
+        return [];
+      }
+      if (tokens.length === 3 && c0 === 'show' && pm(tokens[2], ['interface'])) return ['brief'];
+      return [];
+    }
+
+    if (this.mode === 'config') {
+      if (tokens.length === 1) {
+        if (c0 === 'enable')    return ['secret', 'password'];
+        if (c0 === 'service')   return ['password-encryption'];
+        if (c0 === 'ip')        return ['address', 'domain-name', 'name-server', 'default-gateway'];
+        if (c0 === 'crypto')    return ['key'];
+        if (c0 === 'interface') return this._ifaceList();
+        if (c0 === 'line')      return ['vty', 'con'];
+        if (c0 === 'ntp')       return ['server'];
+        if (c0 === 'no')        return ['shutdown'];
+        return [];
+      }
+      if (tokens.length === 2) {
+        if (c0 === 'crypto'    && pm(tokens[1], ['key']))     return ['generate'];
+        if (c0 === 'line'      && pm(tokens[1], ['vty']))     return ['0'];
+        if (c0 === 'interface' && tokens[1])                  return [];
+        return [];
+      }
+      if (tokens.length === 3) {
+        if (c0 === 'crypto'  && pm(tokens[2], ['generate'])) return ['rsa'];
+        if (c0 === 'line'    && pm(tokens[1], ['vty']) && tokens[2] === '0') return ['4', '15'];
+        return [];
+      }
+      return [];
+    }
+
+    if (this.mode === 'if') {
+      if (tokens.length === 1) {
+        if (c0 === 'ip') return ['address'];
+        if (c0 === 'no') return ['shutdown'];
+        return [];
+      }
+      return [];
+    }
+
+    if (this.mode === 'line') {
+      if (tokens.length === 1) {
+        if (c0 === 'transport') return ['input'];
+        if (c0 === 'login')     return ['local'];
+        return [];
+      }
+      if (tokens.length === 2 && c0 === 'transport' && pm(tokens[1], ['input']))
+        return ['ssh', 'telnet', 'all', 'none'];
+      return [];
+    }
+
+    return [];
+  }
+
+  // Első szintű kulcsszavak módanként (? segítséghez és üres Tab-hoz)
+  _firstWords() {
+    switch(this.mode) {
+      case 'user':   return ['enable', 'exit'];
+      case 'enable': return ['configure', 'copy', 'disable', 'end', 'exit', 'ping', 'show', 'ssh', 'write'];
+      case 'config': return ['crypto', 'enable', 'end', 'exit', 'hostname', 'interface', 'ip', 'line', 'no', 'ntp', 'service', 'username'];
+      case 'if':     return ['end', 'exit', 'ip', 'no', 'shutdown'];
+      case 'line':   return ['end', 'exit', 'login', 'password', 'transport'];
+      default:       return ['end', 'exit'];
+    }
+  }
+
+  // Kontextus-tudatos Tab kiegészítés
   tabComplete(partial) {
-    const cmds = this._getCmdsForMode();
-    const matches = cmds.filter(c => c.toLowerCase().startsWith(partial.toLowerCase()));
-    if (matches.length === 1) return matches[0];
-    if (matches.length > 1) return { ambiguous: matches };
+    const trimmed = partial.trimStart();
+    if (!trimmed) return null;
+    const T = trimmed.split(/\s+/);
+    const endsSpace = /\s$/.test(partial);
+    const prevTokens = endsSpace ? T : T.slice(0, -1);
+    const typedSoFar = endsSpace ? '' : T[T.length - 1];
+    const candidates = this._nextWords(prevTokens);
+    const lo = typedSoFar.toLowerCase();
+    const matches = candidates.filter(c => c.toLowerCase().startsWith(lo));
+    if (matches.length === 1) return [...prevTokens, matches[0]].join(' ');
+    if (matches.length > 1)   return { ambiguous: matches };
     return null;
   }
 
-  _getCmdsForMode() {
-    const base = ['exit', 'end'];
-    switch(this.mode) {
-      case 'user': return ['enable', 'exit'];
-      case 'enable': return ['configure terminal', 'write memory', 'copy running-config startup-config',
-        'show running-config', 'show ip interface brief', 'exit', 'disable'];
-      case 'config': return [...base,
-        'hostname', 'enable secret', 'enable password', 'service password-encryption',
-        'ip domain-name', 'ip name-server', 'ip default-gateway', 'ntp server',
-        'username', 'crypto key generate rsa', 'interface GigabitEthernet0/0',
-        'interface GigabitEthernet0/1', 'interface Vlan1', 'line vty 0 15', 'line con 0'];
-      case 'if': return [...base,
-        'ip address', 'no shutdown', 'shutdown', 'ip address dhcp'];
-      case 'line': return [...base,
-        'transport input ssh', 'transport input all', 'login local', 'password'];
-      default: return base;
-    }
-  }
+  _getCmdsForMode() { return this._firstWords(); }
 
   process(raw) {
     const trimmed = raw.trim();
