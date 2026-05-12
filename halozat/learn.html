@@ -131,12 +131,13 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .subnet-chip .s-hosts{color:var(--dim);font-size:.68rem}
 
 /* ── LIVE NETWORK (ch5) ── */
-.live-wrap{display:flex;flex-direction:row;gap:14px;align-items:flex-start}
-.live-left{flex:0 0 52%;min-width:0;position:sticky;top:112px}
-.live-right{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0}
-.live-topo-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 10px;overflow:hidden}
+.live-wrap{display:flex;flex-direction:column;gap:12px}
+.live-topo-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;overflow:hidden}
 .live-topo-box svg{width:100%;height:auto;display:block}
-@media(max-width:620px){.live-wrap{flex-direction:column}.live-left{position:static;flex:none;width:100%}.live-right{width:100%}}
+.live-bottom{display:flex;flex-direction:row;gap:12px;align-items:flex-start}
+.live-step-col{flex:1;min-width:0}
+.live-cli-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+@media(max-width:600px){.live-bottom{flex-direction:column}}
 
 /* SVG topology device states */
 .nd-off circle{fill:#0d1117;stroke:#1e4060;stroke-width:2}
@@ -616,58 +617,57 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 
   <div class="live-wrap">
 
-    <!-- LEFT: Topology SVG -->
-    <div class="live-left">
+    <!-- TOP: Topology SVG -->
     <div class="live-topo-box">
-      <svg id="demo-svg" viewBox="0 0 480 210" xmlns="http://www.w3.org/2000/svg">
+      <svg id="demo-svg" viewBox="0 0 660 180" xmlns="http://www.w3.org/2000/svg">
         <!-- Link: WiFi - KR -->
-        <line id="lnk-wifi" class="nl-off" x1="90" y1="100" x2="130" y2="100"/>
+        <line id="lnk-wifi" class="nl-off" x1="118" y1="90" x2="192" y2="90"/>
         <!-- Link: KR - SW1 -->
-        <line id="lnk-sw1" class="nl-off" x1="194" y1="100" x2="262" y2="100"/>
+        <line id="lnk-sw1" class="nl-off" x1="268" y1="90" x2="362" y2="90"/>
         <!-- Link: SW1 - PC -->
-        <line id="lnk-pc" class="nl-off" x1="326" y1="100" x2="388" y2="100"/>
+        <line id="lnk-pc" class="nl-off" x1="438" y1="90" x2="512" y2="90"/>
 
         <!-- Port labels -->
-        <text x="108" y="91" font-size="8" font-family="monospace" fill="#2a4a60" text-anchor="middle">G0/0</text>
-        <text x="215" y="91" font-size="8" font-family="monospace" fill="#2a4a60" text-anchor="middle">G0/1</text>
-        <text x="344" y="91" font-size="8" font-family="monospace" fill="#2a4a60" text-anchor="middle">Fa0/1</text>
+        <text x="152" y="81" font-size="9" font-family="monospace" fill="#2a4a60" text-anchor="middle">G0/0</text>
+        <text x="312" y="81" font-size="9" font-family="monospace" fill="#2a4a60" text-anchor="middle">G0/1</text>
+        <text x="472" y="81" font-size="9" font-family="monospace" fill="#2a4a60" text-anchor="middle">Fa0/1</text>
 
         <!-- WiFi Router -->
-        <g id="nd-wifi" class="nd-off" transform="translate(55,100)">
-          <circle cx="0" cy="0" r="30"/>
-          <image href="cisco/wireless_router.png" x="-19" y="-19" width="38" height="38"/>
-          <text class="nd-lbl" x="0" y="44" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">GUEST-WiFi</text>
-          <text class="nd-ip" id="ip-wifi" x="0" y="56" text-anchor="middle" font-size="8">192.168.40.1/27</text>
+        <g id="nd-wifi" class="nd-off" transform="translate(80,90)">
+          <circle cx="0" cy="0" r="34"/>
+          <image href="cisco/wireless_router.png" x="-21" y="-21" width="42" height="42"/>
+          <text class="nd-lbl" x="0" y="48" text-anchor="middle" font-size="10" font-family="'Segoe UI',sans-serif" font-weight="700">GUEST-WiFi</text>
+          <text class="nd-ip" id="ip-wifi" x="0" y="61" text-anchor="middle" font-size="9">192.168.40.1/27</text>
         </g>
 
         <!-- Router KR -->
-        <g id="nd-kr" class="nd-off" transform="translate(163,100)">
-          <circle cx="0" cy="0" r="30"/>
-          <image href="cisco/router.png" x="-19" y="-19" width="38" height="38"/>
-          <text class="nd-lbl" x="0" y="44" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">KR</text>
-          <text class="nd-ip" id="ip-kr-g00" x="0" y="56" text-anchor="middle" font-size="8"></text>
-          <text class="nd-ip" id="ip-kr-g01" x="0" y="67" text-anchor="middle" font-size="8"></text>
+        <g id="nd-kr" class="nd-off" transform="translate(230,90)">
+          <circle cx="0" cy="0" r="34"/>
+          <image href="cisco/router.png" x="-21" y="-21" width="42" height="42"/>
+          <text class="nd-lbl" x="0" y="48" text-anchor="middle" font-size="10" font-family="'Segoe UI',sans-serif" font-weight="700">KR router</text>
+          <text class="nd-ip" id="ip-kr-g00" x="0" y="61" text-anchor="middle" font-size="9"></text>
+          <text class="nd-ip" id="ip-kr-g01" x="0" y="72" text-anchor="middle" font-size="9"></text>
         </g>
 
         <!-- Switch SW1 -->
-        <g id="nd-sw1" class="nd-off" transform="translate(295,100)">
-          <circle cx="0" cy="0" r="30"/>
-          <image href="cisco/switch.png" x="-19" y="-19" width="38" height="38"/>
-          <text class="nd-lbl" x="0" y="44" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">SW1</text>
+        <g id="nd-sw1" class="nd-off" transform="translate(400,90)">
+          <circle cx="0" cy="0" r="34"/>
+          <image href="cisco/switch.png" x="-21" y="-21" width="42" height="42"/>
+          <text class="nd-lbl" x="0" y="48" text-anchor="middle" font-size="10" font-family="'Segoe UI',sans-serif" font-weight="700">SW1</text>
         </g>
 
         <!-- PC -->
-        <g id="nd-pc" class="nd-off" transform="translate(425,100)">
-          <circle cx="0" cy="0" r="30"/>
-          <image href="cisco/laptop.png" x="-19" y="-19" width="38" height="38"/>
-          <text class="nd-lbl" x="0" y="44" text-anchor="middle" font-size="9" font-family="'Segoe UI',sans-serif" font-weight="700">PC</text>
+        <g id="nd-pc" class="nd-off" transform="translate(548,90)">
+          <circle cx="0" cy="0" r="34"/>
+          <image href="cisco/laptop.png" x="-21" y="-21" width="42" height="42"/>
+          <text class="nd-lbl" x="0" y="48" text-anchor="middle" font-size="10" font-family="'Segoe UI',sans-serif" font-weight="700">PC</text>
         </g>
       </svg>
     </div>
-    </div><!-- /live-left -->
 
-    <!-- RIGHT: Step card + CLI -->
-    <div class="live-right">
+    <!-- BOTTOM: two columns -->
+    <div class="live-bottom">
+    <div class="live-step-col">
 
     <!-- Step card -->
     <div class="live-step-card">
@@ -681,6 +681,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <div class="ls-copy-hint">Kattints a parancsra a másoláshoz, majd illeszd be a terminálba</div>
       <div class="ls-result" id="ls-result"></div>
     </div>
+
+    </div><!-- /live-step-col -->
+    <div class="live-cli-col">
 
     <!-- Live CLI -->
     <div class="live-cli-wrap">
@@ -705,7 +708,8 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <button onclick="resetDemo()" style="margin-top:12px;padding:7px 18px;background:rgba(34,197,94,.15);border:1px solid #22c55e;border-radius:8px;color:#22c55e;font-size:.8rem;font-weight:700;cursor:pointer">Újra</button>
     </div>
 
-    </div><!-- /live-right -->
+    </div><!-- /live-cli-col -->
+    </div><!-- /live-bottom -->
   </div><!-- /live-wrap -->
 
   <div class="chap-footer">
