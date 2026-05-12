@@ -1644,8 +1644,8 @@
                 style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;">Mégse</button>
         </div>
 
-        <button onclick="location.href='portal.html'"
-            style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">← Vissza a főmenübe</button>
+        <button onclick="location.href='web-hub.html'"
+            style="width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">← Vissza a WEB hubra</button>
     </div>
 </div>
 
@@ -1813,9 +1813,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const webParam = urlParams.get('web');
     if (webParam === 'gyakorlo') {
-        document.getElementById('web-valaszto-modal').style.display = 'flex';
-        document.getElementById('web-modal-foMenu').style.display = 'none';
-        document.getElementById('web-modal-gyakorlo').style.display = 'block';
+        location.replace('web-hub.html');
     }
     if (urlParams.get('duel') === '1') {
         window._duelFromHub = true;
@@ -3095,10 +3093,7 @@
 <script src="chat-widget.js"></script>
 <script>
 if (location.hash === '#web-tanulas') {
-  history.replaceState(null, '', location.pathname);
-  document.getElementById('web-valaszto-modal').style.display = 'flex';
-  document.getElementById('web-modal-foMenu').style.display = 'none';
-  document.getElementById('web-modal-tanulas').style.display = 'block';
+  location.replace('web-hub.html');
 }
 
 (async function frissitFeladatSzamok() {
