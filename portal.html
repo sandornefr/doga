@@ -307,8 +307,8 @@
         /* Kártyák + changelog: négyoszlopos rács */
         .student-two-col {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
             align-items: start;
         }
         .student-col {
@@ -427,11 +427,12 @@
         }
         .duel-modal-close:hover { border-color:#6b7280; color:#e0e0e0; }
 
-        @media (max-width: 900px) {
-            .student-two-col { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 1000px) {
+            .student-two-col { grid-template-columns: repeat(2, 1fr); gap: 24px; }
         }
-        @media (max-width: 500px) {
-            .student-two-col { grid-template-columns: 1fr; }
+        @media (max-width: 520px) {
+            .student-two-col { grid-template-columns: 1fr; gap: 16px; }
+            .portal { padding: 16px; }
         }
 
         .portal-title {
