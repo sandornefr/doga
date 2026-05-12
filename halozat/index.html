@@ -131,8 +131,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 .tutorial-btn-skip:hover{border-color:#8b949e;color:#e0e0e0}
 .tutorial-btn-place{padding:7px 18px;background:#22c55e;border:none;border-radius:8px;color:#0d1117;font-size:0.85rem;font-weight:700;cursor:pointer}
 .tutorial-btn-place:hover{background:#16a34a}
-@keyframes ghost-pulse{0%,100%{opacity:.3}50%{opacity:.55}}
-.ghost-dev{animation:ghost-pulse 2s ease-in-out infinite;cursor:pointer}
+@keyframes ghost-pulse{0%,100%{opacity:.65}50%{opacity:1}}
+.ghost-dev{animation:ghost-pulse 1.4s ease-in-out infinite;cursor:pointer;filter:drop-shadow(0 0 6px rgba(245,158,11,.7))}
 /* Task section headers */
 .task-section-header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:6px 0 2px}
 .task-section-header span{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
@@ -1317,7 +1317,7 @@ function renderTopology(task) {
     img.setAttribute('x', -imgSize/2); img.setAttribute('y', -imgSize/2);
     img.setAttribute('width', imgSize); img.setAttribute('height', imgSize);
     img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    if (ghost) img.setAttribute('opacity', '0.35');
+    if (ghost) img.setAttribute('opacity', '0.85');
     else if (isDone) img.setAttribute('filter', 'url(#glow)');
     g.appendChild(img);
 
@@ -1332,8 +1332,8 @@ function renderTopology(task) {
     } else if (ghost) {
       const bg = document.createElementNS('http://www.w3.org/2000/svg','circle');
       bg.setAttribute('r', '20');
-      bg.setAttribute('fill', 'rgba(22,27,34,0.4)');
-      bg.setAttribute('stroke', '#484f58'); bg.setAttribute('stroke-width', '1.5');
+      bg.setAttribute('fill', 'rgba(245,158,11,0.08)');
+      bg.setAttribute('stroke', '#f59e0b'); bg.setAttribute('stroke-width', '2.5');
       bg.setAttribute('stroke-dasharray', '5,3');
       g.insertBefore(bg, img);
     } else if (isActive) {
@@ -1372,7 +1372,7 @@ function renderTopology(task) {
     // Label
     const label = document.createElementNS('http://www.w3.org/2000/svg','text');
     label.setAttribute('y', 36); label.setAttribute('class', 'dev-label');
-    label.setAttribute('fill', ghost ? '#484f58' : '');
+    label.setAttribute('fill', ghost ? '#f59e0b' : '');
     label.textContent = dev.nev; g.appendChild(label);
 
     svg.appendChild(g);
