@@ -1061,7 +1061,7 @@
         <div class="student-two-col">
             <!-- PYTHON oszlop -->
             <div class="student-col">
-                <a class="option-card python" id="card-python" href="#" onclick="event.preventDefault(); openPythonHub()">
+                <a class="option-card python" id="card-python" href="python-hub.html">
                     <span class="icon"><i class="fab fa-python"></i></span>
                     <span class="label">PYTHON</span>
                     <span class="desc">Elmélet · Érettségi · Ágazati · Kódpárbaj</span>
@@ -1501,49 +1501,6 @@
     </div>
 </div>
 
-<!-- PYTHON hub modal -->
-<div id="python-hub-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#16213e;border:2px solid #3776ab;border-radius:18px;padding:2rem;max-width:680px;width:100%;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.4rem;">
-            <i class="fab fa-python" style="color:#3776ab;font-size:1.5rem;"></i>
-            <h3 style="color:#e0e0e0;font-size:1.1rem;font-weight:700;flex:1;">Python – válassz kategóriát</h3>
-            <button onclick="document.getElementById('python-hub-modal').style.display='none'" style="padding:4px 10px;background:transparent;border:1px solid #374151;border-radius:8px;color:#6b7280;font-size:1rem;cursor:pointer;font-family:inherit;line-height:1;">&#10005;</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:1rem;">
-            <a class="option-card elmelet" href="#" onclick="event.preventDefault(); document.getElementById('python-hub-modal').style.display='none'; document.getElementById('elmelet-modal').style.display='flex'">
-                <span class="icon"><i class="fas fa-book-open"></i></span>
-                <span class="label">ELMÉLET</span>
-                <span class="desc">Kezdő · Haladó · Profi szintek</span>
-            </a>
-            <a class="option-card digkult" href="python/forgalomszamlalas.html">
-                <span class="icon"><i class="fas fa-laptop-code"></i></span>
-                <span class="label">DIGITÁLIS KULTÚRA</span>
-                <span class="desc">Forgalomszámlálás – érettségi feladat</span>
-            </a>
-            <a class="option-card agazati-py" id="card-agazati-py" href="python/agazati-gyakorlo.html">
-                <span class="icon"><i class="fas fa-code"></i></span>
-                <span class="label">ÁGAZATI FELADATOK</span>
-                <span class="desc">Ágazati alapvizsga · Python kódolás</span>
-            </a>
-            <a class="option-card duel" id="card-duel-main" href="#" onclick="event.preventDefault(); openKodparbaj()">
-                <span class="icon"><i class="fas fa-code-compare"></i></span>
-                <span class="label">KÓDPÁRBAJ</span>
-                <span class="desc">1v1 – tanuló vagy Piton Professzor ellen</span>
-                <span style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#94a3b8;margin-top:5px;">
-                    <i class="fas fa-circle" style="font-size:.35rem;color:#22c55e;"></i>
-                    <span id="duel-online-count">0 fő online</span>
-                </span>
-            </a>
-        </div>
-        <div id="changelog-duel" class="changelog-box duel-col" style="display:none;">
-            <div class="changelog-title"><i class="fas fa-code-compare" style="color:#f59e0b;"></i> Kódpárbaj – hogyan működik?</div>
-            <div class="changelog-item"><i class="fas fa-hand-pointer" style="color:#f59e0b;margin-right:4px;"></i>Válassz ellenfelet (tanuló vagy <strong>Piton Professzor</strong>) és indulhat az <strong>1v1!</strong></div>
-            <div class="changelog-item"><i class="fas fa-clock" style="color:#f59e0b;margin-right:4px;"></i>Mindketten ugyanazt a <strong>8 pontos</strong> feladatot kapjátok, <strong>10 perc</strong> alatt!</div>
-            <div class="changelog-item"><i class="fas fa-trophy" style="color:#f59e0b;margin-right:4px;"></i>Az győz, aki nagyobb <strong>%-ot teljesít</strong> a legrövidebb idő alatt!</div>
-        </div>
-        <button onclick="document.getElementById('python-hub-modal').style.display='none'" style="margin-top:0.8rem;width:100%;padding:0.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:0.9rem;cursor:pointer;font-family:inherit;">Vissza</button>
-    </div>
-</div>
 
 <!-- ELMÉLET szintválasztó modal -->
 <div id="elmelet-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:16px;">
@@ -1810,7 +1767,6 @@
                     document.getElementById('changelog-python').style.display = 'block';
                     document.getElementById('changelog-web').style.display = 'block';
                     document.getElementById('changelog-interaktiv').style.display = 'block';
-                    document.getElementById('changelog-duel').style.display = 'block';
                     document.getElementById('changelog-halozat').style.display = 'block';
                     document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
                     document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
@@ -1838,7 +1794,6 @@
             document.getElementById('changelog-python').style.display = 'block';
             document.getElementById('changelog-web').style.display = 'block';
             document.getElementById('changelog-interaktiv').style.display = 'block';
-            document.getElementById('changelog-duel').style.display = 'block';
             document.getElementById('changelog-halozat').style.display = 'block';
             document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
             const eredmBtn = document.getElementById('btn-profil-topbar');
@@ -1865,6 +1820,9 @@
         document.getElementById('web-valaszto-modal').style.display = 'flex';
         document.getElementById('web-modal-foMenu').style.display = 'none';
         document.getElementById('web-modal-gyakorlo').style.display = 'block';
+    }
+    if (urlParams.get('duel') === '1') {
+        setTimeout(() => openKodparbaj(), 400);
     }
 
     // ── Oktatói al-nézet ─────────────────────────────────────────────────────
@@ -1959,10 +1917,7 @@
         }
     }
 
-    // ── PYTHON hub, ELMÉLET modal és Kódpárbaj megnyitása ───────────────────
-    function openPythonHub() {
-        document.getElementById('python-hub-modal').style.display = 'flex';
-    }
+    // ── ELMÉLET modal és Kódpárbaj megnyitása ───────────────────────────────
     function openElmeletModal() {
         document.getElementById('elmelet-modal').style.display = 'flex';
     }

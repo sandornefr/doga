@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python – Kandó</title>
+<link rel="icon" href="kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+*::-webkit-scrollbar{width:5px}
+*::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+
+body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#16213e;border-bottom:2px solid #0f3460;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar img{height:36px}
+.topbar-title{display:flex;flex-direction:column}
+.topbar-title span{color:#e0e0e0;font-size:1.05rem;font-weight:600;line-height:1.2}
+.topbar-title small{color:#888;font-size:0.75rem}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.btn-back{padding:6px 14px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:0.85rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn-back:hover{border-color:#58a6ff;color:#58a6ff}
+
+/* ── MAIN ── */
+.portal{margin-top:76px;width:100%;max-width:1320px;padding:0 24px 60px}
+.portal-title{color:#e0e0e0;font-size:1.5rem;font-weight:800;margin-bottom:6px;text-align:center}
+.portal-sub{color:#666;font-size:0.9rem;margin-bottom:32px;text-align:center}
+
+/* ── GRID ── */
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;align-items:start}
+.card-col{display:flex;flex-direction:column;gap:12px}
+
+/* ── CARDS ── */
+.option-card{background:#16213e;border:2px solid #0f3460;border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:168px;transition:all .2s}
+.option-card:hover{transform:translateY(-3px)}
+.option-card .icon{font-size:2.5rem;margin-bottom:12px;display:block}
+.option-card .label{color:#e0e0e0;font-size:1.05rem;font-weight:700;display:block;margin-bottom:5px}
+.option-card .desc{color:#666;font-size:0.8rem}
+
+.option-card.elmelet{border-color:#3776ab}
+.option-card.elmelet:hover{border-color:#4a94d4;box-shadow:0 8px 24px rgba(55,118,171,.25)}
+.option-card.elmelet .icon{color:#3776ab}
+
+.option-card.digkult{border-color:#38bdf8}
+.option-card.digkult:hover{border-color:#7dd3fc;box-shadow:0 8px 24px rgba(56,189,248,.25)}
+.option-card.digkult .icon{color:#38bdf8}
+
+.option-card.agazati-py{border-color:#6366f1}
+.option-card.agazati-py:hover{border-color:#818cf8;box-shadow:0 8px 24px rgba(99,102,241,.25)}
+.option-card.agazati-py .icon{color:#6366f1}
+
+.option-card.duel{border-color:#b45309;background:linear-gradient(160deg,#1c1200 0%,#16213e 60%)}
+.option-card.duel:hover{border-color:#fbbf24;background:linear-gradient(160deg,#291a00 0%,#16213e 60%);box-shadow:0 8px 28px rgba(251,191,36,.25);transform:translateY(-3px)}
+.option-card.duel .icon{color:#fbbf24}
+.option-card.duel .label{color:#fcd34d}
+.option-card.duel .desc{color:#666}
+
+/* ── CHANGELOG BOXES ── */
+.changelog-box{background:#16213e;border:1px solid #0f3460;border-radius:12px;padding:14px 16px}
+.changelog-box.elmelet-col{border-color:rgba(55,118,171,.4)}
+.changelog-box.digkult-col{border-color:rgba(56,189,248,.35)}
+.changelog-box.agazati-col{border-color:rgba(99,102,241,.4)}
+.changelog-box.duel-col{border-color:rgba(180,83,9,.5);background:linear-gradient(160deg,#1a1000,#16213e)}
+
+.changelog-title{font-size:.75rem;font-weight:700;letter-spacing:.08em;color:#536dfe;text-transform:uppercase;margin-bottom:10px}
+.changelog-item{font-size:.82rem;color:#b0b8c8;line-height:1.55;padding:3px 0 3px 14px;position:relative}
+.changelog-item::before{content:'–';color:#536dfe;position:absolute;left:2px}
+
+.badge-hot{display:inline-block;background:#ef4444;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:4px;vertical-align:middle;margin-left:4px;text-transform:uppercase}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#16213e;border:2px solid #3776ab;border-radius:18px;padding:2rem 2rem 1.5rem;max-width:420px;width:100%}
+.modal-icon{font-size:2rem;text-align:center;margin-bottom:.5rem}
+.modal-title{color:#e0e0e0;font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:.4rem}
+.modal-sub{color:#888;font-size:.84rem;text-align:center;margin-bottom:1.4rem}
+.modal-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem}
+.modal-btn{padding:13px 20px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;font-family:inherit}
+.modal-cancel{width:100%;padding:.6rem;background:transparent;border:1px solid #374151;border-radius:10px;color:#6b7280;font-size:.9rem;cursor:pointer;font-family:inherit}
+
+@media(max-width:1000px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.card-grid{grid-template-columns:1fr}.portal{padding:0 16px 40px}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span id="kando-logo-wrap" style="position:relative;display:inline-block;">
+      <a href="portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó KSZKI"></a>
+      <span id="kando-bug-badge" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:4px;font-size:1.2rem;align-items:center;justify-content:center;pointer-events:none;">🐛</span>
+    </span>
+    <div class="topbar-title">
+      <span>Miskolci SZC Kandó Kálmán Informatikai Technikum</span>
+      <small>Digitális Tanulási és Számonkérési Rendszer</small>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="portal.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="portal">
+  <div class="portal-title"><i class="fab fa-python" style="color:#3776ab;margin-right:8px;"></i>Python</div>
+  <div class="portal-sub">Válassz kategóriát a tanuláshoz</div>
+
+  <div class="card-grid">
+
+    <!-- ELMÉLET -->
+    <div class="card-col">
+      <a class="option-card elmelet" href="#" onclick="event.preventDefault(); openElmelet()">
+        <span class="icon"><i class="fas fa-book-open"></i></span>
+        <span class="label">ELMÉLET</span>
+        <span class="desc">Kezdő · Haladó · Profi szintek</span>
+      </a>
+      <div class="changelog-box elmelet-col">
+        <div class="changelog-title"><i class="fab fa-python" style="color:#3776ab"></i> Szintekről</div>
+        <div class="changelog-item"><strong style="color:#e0e0e0">Kezdő szint</strong> – Python alapok, változók, feltételek, ciklusok</div>
+        <div class="changelog-item"><strong style="color:#e0e0e0">Haladó szint</strong> – Függvények, listák, szótárak, fájlkezelés</div>
+        <div class="changelog-item"><strong style="color:#e0e0e0">Profi szint</strong> – Összetett algoritmusok, OOP alapok</div>
+        <div class="changelog-item">A Kezdő és Haladó szint lefedi az <strong>ágazati alapvizsga</strong> anyagát</div>
+      </div>
+    </div>
+
+    <!-- DIGITÁLIS KULTÚRA -->
+    <div class="card-col">
+      <a class="option-card digkult" href="python/forgalomszamlalas.html">
+        <span class="icon"><i class="fas fa-laptop-code"></i></span>
+        <span class="label">DIGITÁLIS KULTÚRA</span>
+        <span class="desc">Érettségi feladatok Pythonban</span>
+      </a>
+      <div class="changelog-box digkult-col">
+        <div class="changelog-title"><i class="fas fa-laptop-code" style="color:#38bdf8"></i> Tartalom</div>
+        <div class="changelog-item">Forgalomszámlálás – teljes kidolgozott <strong>középszintű érettségi</strong> feladat</div>
+        <div class="changelog-item">Lépésről lépésre magyarázott megoldás, kész kóddal</div>
+        <div class="changelog-item">Ugyanolyan típusú feladat, mint a tényleges érettségin</div>
+      </div>
+    </div>
+
+    <!-- ÁGAZATI FELADATOK -->
+    <div class="card-col">
+      <a class="option-card agazati-py" href="python/agazati-gyakorlo.html">
+        <span class="icon"><i class="fas fa-code"></i></span>
+        <span class="label">ÁGAZATI FELADATOK</span>
+        <span class="desc">Ágazati alapvizsga · Python kódolás</span>
+      </a>
+      <div class="changelog-box agazati-col">
+        <div class="changelog-title"><i class="fas fa-code" style="color:#6366f1"></i> Feladatokról</div>
+        <div class="changelog-item">Ágazati alapvizsga típusú Python programozási feladatok</div>
+        <div class="changelog-item">3 nehézségi szint: <strong>Alap · Közepes · Nehéz</strong></div>
+        <div class="changelog-item">Elérhetők <strong>középszintű érettségi</strong> vizsgafeladatok is<span class="badge-hot">ÚJ</span></div>
+        <div class="changelog-item">A Feladatkészítők feladataira <strong>szavazni kell</strong>, hogy bekerüljenek</div>
+      </div>
+    </div>
+
+    <!-- KÓDPÁRBAJ -->
+    <div class="card-col">
+      <a class="option-card duel" href="#" onclick="event.preventDefault(); openDuel()">
+        <span class="icon"><i class="fas fa-code-compare"></i></span>
+        <span class="label">KÓDPÁRBAJ</span>
+        <span class="desc">1v1 – tanuló vagy Piton Professzor ellen</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:#94a3b8;margin-top:8px;">
+          <i class="fas fa-circle" style="font-size:.35rem;color:#22c55e;"></i>
+          <span id="duel-online-count">...</span>
+        </span>
+      </a>
+      <div class="changelog-box duel-col">
+        <div class="changelog-title"><i class="fas fa-code-compare" style="color:#f59e0b"></i> Hogyan működik?</div>
+        <div class="changelog-item"><i class="fas fa-hand-pointer" style="color:#f59e0b;margin-right:4px;"></i>Válassz ellenfelet – tanuló vagy <strong>Piton Professzor</strong> – és indulhat az <strong>1v1!</strong></div>
+        <div class="changelog-item"><i class="fas fa-clock" style="color:#f59e0b;margin-right:4px;"></i>Mindketten ugyanazt a <strong>8 pontos</strong> feladatot kapjátok, <strong>10 perc</strong> alatt!</div>
+        <div class="changelog-item"><i class="fas fa-trophy" style="color:#f59e0b;margin-right:4px;"></i>Az győz, aki nagyobb <strong>%-ot teljesít</strong> a legrövidebb idő alatt!</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ELMÉLET szintválasztó modal -->
+<div id="elmelet-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fab fa-python" style="color:#3776ab;"></i></div>
+    <div class="modal-title">ELMÉLET – Python szintek</div>
+    <div class="modal-sub">Válaszd ki a szintedet:</div>
+    <div class="modal-btns">
+      <a href="python/basics.html" class="modal-btn" style="background:#0a1628;border:2px solid #60a5fa;color:#93c5fd;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#0a1628'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint</a>
+      <a href="python/practice.html" class="modal-btn" style="background:#0a2218;border:2px solid #34d399;color:#6ee7b7;" onmouseover="this.style.background='#065f46'" onmouseout="this.style.background='#0a2218'"><i class="fas fa-dumbbell" style="margin-right:6px;"></i>Haladó szint</a>
+      <a href="python/pro.html" class="modal-btn" style="background:#2a0a2a;border:2px solid #f472b6;color:#f9a8d4;" onmouseover="this.style.background='#9d174d'" onmouseout="this.style.background='#2a0a2a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint</a>
+    </div>
+    <button class="modal-cancel" onclick="document.getElementById('elmelet-modal').style.display='none'">Mégse</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://agazati.up.railway.app';
+
+function openElmelet() {
+    document.getElementById('elmelet-modal').style.display = 'flex';
+}
+
+function openDuel() {
+    const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!user.email || user.szerep === 'vendeg') {
+        alert('A Kódpárbajhoz bejelentkezés szükséges!');
+        return;
+    }
+    location.href = 'portal.html?duel=1';
+}
+
+(async function loadOnlineCount() {
+    try {
+        const res = await fetch(API + '/api/duel/online', { signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('duel-online-count').textContent = (data.count || 0) + ' fő online';
+        } else {
+            document.getElementById('duel-online-count').textContent = '0 fő online';
+        }
+    } catch {
+        document.getElementById('duel-online-count').textContent = '0 fő online';
+    }
+})();
+</script>
+<script src="special-roles.js"></script>
+</body>
+</html>
