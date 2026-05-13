@@ -1605,8 +1605,9 @@
                     if (b) { b.style.display = 'flex'; const _bh = b.offsetHeight || 28; const _tb = document.querySelector('.page-topbar'); if (_tb) _tb.style.top = _bh + 'px'; document.body.style.paddingTop = (56 + _bh) + 'px'; }
                 }
 
-                // Módválasztó modal – mindenkinél, kivéve bemutató mód
-                if (!isBemutato) {
+                // Módválasztó modal – mindenkinél, kivéve bemutató és ?agazati mód
+                const isAgazati = new URLSearchParams(window.location.search).has('agazati');
+                if (!isBemutato && !isAgazati) {
                     document.getElementById('py-mode-selector').style.display = 'flex';
                 }
 
