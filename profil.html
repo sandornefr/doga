@@ -377,6 +377,119 @@ function examCountdownHtml() {
     </div>`;
 }
 
+// ── Havi jegyek render ────────────────────────────────────────────────────
+
+const HONAP_NEV_PROFIL = ['','Január','Február','Március','Április','Május','Június'];
+const POTLASI_HATARIDOK_PROFIL = { 3:'május 20.', 4:'május 25.', 5:'május 31.' };
+const JEGY_NOEL = ['–','Elégtelen','Elégséges','Közepes','Jó','Jeles'];
+const JEGY_BG   = { 1:'#2d0e0e', 2:'#2d1a0e', 3:'#2d2a10', 4:'#1a3a1a', 5:'#0e4429' };
+const JEGY_CL   = { 1:'#f87171', 2:'#fb923c', 3:'#fbbf24', 4:'#86efac', 5:'#39d353' };
+
+function buildHaviJegyekHtml(jegyek, u) {
+    // Banner: hamarosan jegybeírás (mindig látszik ha van nyílt határidő)
+    const HATÁRIDŐK = [
+        { honap:3, label:'március', until:'2026-05-20' },
+        { honap:4, label:'április', until:'2026-05-25' },
+        { honap:5, label:'május',   until:'2026-05-31' },
+    ];
+    const now = new Date();
+    const nyitott = HATÁRIDŐK.filter(h => new Date(h.until+'T23:59:59') >= now);
+
+    const bannerHtml = nyitott.length ? `
+    <div style="background:linear-gradient(135deg,#1e1b4b,#1e3a5f);border:1px solid #4f46e5;border-radius:12px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="font-size:2rem;">🤑</div>
+        <div style="flex:1;min-width:200px;">
+            <div style="font-weight:800;color:#e0e0e0;font-size:1rem;margin-bottom:4px;">Hamarosan jegybeírás!</div>
+            <div style="font-size:.82rem;color:#94a3b8;line-height:1.6;">
+                ${nyitott.map(h=>`<span style="color:#c7d2fe;">2026. ${h.label}</span> → pótlási határidő: <strong style="color:#a5b4fc;">${POTLASI_HATARIDOK_PROFIL[h.honap]}</strong>`).join('&nbsp;&nbsp;|&nbsp;&nbsp;')}
+            </div>
+            <div style="font-size:.78rem;color:#6366f1;margin-top:4px;">Az évvégi bizonyítvány átlagán változtathatsz még — tegyél meg mindent a jobb jegyért!</div>
+        </div>
+        <a href="#havijegyek" style="padding:7px 16px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.82rem;text-decoration:none;white-space:nowrap;">
+            <i class="fas fa-arrow-down" style="margin-right:5px"></i>Mit tehetek még?
+        </a>
+    </div>` : '';
+
+    if (!jegyek.length) return bannerHtml + `
+    <div class="section" id="havijegyek">
+        <div class="section-title"><i class="fas fa-graduation-cap"></i> Havi jegyek</div>
+        <p style="color:#6b7280;font-size:.85rem;">Még nincs véglegesített havi jegyed.</p>
+        ${buildMotivacioHtml(null, nyitott, u)}
+    </div>`;
+
+    const veglesek = jegyek.filter(j => j.veglegesitve);
+    const kartyak  = veglesek.map(j => {
+        const bg  = JEGY_BG[j.jegy] || '#1e293b';
+        const cl  = JEGY_CL[j.jegy] || '#94a3b8';
+        const szorgHtml = j.szorgalmiJegyDb > 0
+            ? `<div style="margin-top:6px;">${'⭐'.repeat(j.szorgalmiJegyDb)} <span style="color:#fbbf24;font-size:.78rem;">${j.szorgalmiJegyDb} szorgalmi (5-ös)</span></div>` : '';
+        const dicsHtml  = j.dicseretJavasolt && j.szorgalmiJegyDb > 0
+            ? `<div style="margin-top:4px;color:#a78bfa;font-size:.78rem;">🏅 Szaktanári dicséret</div>` : '';
+        return `
+        <div style="background:${bg};border:1px solid ${cl}44;border-radius:10px;padding:14px 16px;flex:1;min-width:180px;">
+            <div style="font-size:.78rem;color:#6b7280;margin-bottom:6px;">2026. ${HONAP_NEV_PROFIL[j.honap]}</div>
+            <div style="font-size:2rem;font-weight:900;color:${cl};line-height:1;">${j.jegy}</div>
+            <div style="font-size:.8rem;color:${cl};opacity:.8;">${JEGY_NOEL[j.jegy]||''}</div>
+            ${szorgHtml}${dicsHtml}
+            <div style="margin-top:10px;border-top:1px solid ${cl}22;padding-top:8px;font-size:.75rem;color:#475569;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;">
+                <span>Python</span><span style="color:#94a3b8;">${Math.round(j.pythonSzaz)}%</span>
+                <span>WEB</span><span style="color:#94a3b8;">${Math.round(j.webSzaz)}%</span>
+                <span>Quiz</span><span style="color:#94a3b8;">${Math.round(j.quizSzaz)}%</span>
+                <span>Aktív</span><span style="color:#94a3b8;">${j.aktivNapok} nap</span>
+                <span>Össz.</span><span style="color:${cl};font-weight:700;">${Math.round(j.osszSzaz)}%</span>
+            </div>
+            ${j.tanariMegjegyzes ? `<div style="margin-top:8px;font-size:.75rem;color:#7c8fa6;font-style:italic;">"${j.tanariMegjegyzes}"</div>` : ''}
+        </div>`;
+    }).join('');
+
+    // Túlteljesítő üzenet
+    const tuloHtml = buildMotivacioHtml(veglesek, nyitott, u);
+
+    return bannerHtml + `
+    <div class="section" id="havijegyek">
+        <div class="section-title"><i class="fas fa-graduation-cap"></i> Havi jegyek</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:${tuloHtml ? '16px' : '0'};">${kartyak}</div>
+        ${tuloHtml}
+    </div>`;
+}
+
+function buildMotivacioHtml(veglesek, nyitott, u) {
+    // Túlteljesítő: minden hónap 5-össel zárt + van szorgalmi
+    if (veglesek && veglesek.length >= 1 &&
+        veglesek.every(j => j.jegy === 5) &&
+        veglesek.some(j => j.szorgalmiJegyDb > 0) &&
+        nyitott.length === 0) {
+        return `
+        <div style="background:linear-gradient(135deg,#0e2d1a,#0e1a2d);border:1px solid #39d35388;border-radius:10px;padding:16px 20px;margin-top:8px;">
+            <div style="font-size:1.1rem;font-weight:800;color:#39d353;margin-bottom:6px;">🏆 Gratulálok — minden hónapot túlteljesítettél!</div>
+            <div style="font-size:.85rem;color:#86efac;line-height:1.7;">
+                Szaktanári dicséret vár rád! Ha még több kihívás kell, nézd meg a Hálózat szimulátort.
+            </div>
+        </div>`;
+    }
+
+    // Motiváció: ha van nyílt határidő és nincs minden hónap 5-ös
+    if (!nyitott.length) return '';
+    const legkozelebbi = nyitott[0];
+    const until = new Date(legkozelebbi.until + 'T23:59:59');
+    const napok  = Math.ceil((until - new Date()) / 86400000);
+
+    return `
+    <div style="background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:14px 16px;margin-top:8px;">
+        <div style="font-size:.82rem;font-weight:700;color:#c7d2fe;margin-bottom:8px;">
+            <i class="fas fa-lightbulb" style="color:#fbbf24;margin-right:5px"></i>
+            Mit tehetsz még a jobb jegyért? (${napok} nap maradt a 2026. ${legkozelebbi.label}i határidőig)
+        </div>
+        <div style="font-size:.8rem;color:#6b7280;line-height:1.8;">
+            <span style="color:#94a3b8;">Python feladatok:</span> minden megoldott feladat javíthatja a Python összetevődet<br>
+            <span style="color:#94a3b8;">WEB feladatok:</span> próbálj magasabb pontszámot elérni a legjobb WEB eredményeden<br>
+            <span style="color:#94a3b8;">Tudáspróba:</span> csináld meg a még hiányzó kvízeket (HTML, CSS, Bootstrap)<br>
+            <span style="color:#94a3b8;">Tananyag:</span> fejezd be az összes tananyag szintet — bónusz jár érte<br>
+            <span style="color:#94a3b8;">Hálózat:</span> próbáld ki az új Hálózat szimulátort a május pontjaidhoz
+        </div>
+    </div>`;
+}
+
 // ── Főoldal render ────────────────────────────────────────────────────────
 async function loadProfile() {
     const u = getUser();
@@ -425,7 +538,7 @@ async function loadTanuloProfile(u, page) {
         if (u.osztaly) szamParams2.append('osztaly', u.osztaly);
         if (u.csoport) szamParams2.append('csoport', u.csoport);
 
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, szamEredRes, szamAktivRes] = await Promise.all([
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, szamEredRes, szamAktivRes, jegyRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -437,6 +550,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/duel/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
             apiFetch(`${API}/api/szamonkeres/eredmeny${u._oktatoNez ? '?email='+encodeURIComponent(u.email) : ''}`).catch(()=>null),
             apiFetch(`${API}/api/szamonkeres/aktiv?${szamParams2}`).catch(()=>null),
+            apiFetch(`${API}/api/havijegy/sajat`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -460,6 +574,7 @@ async function loadTanuloProfile(u, page) {
         const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
         const szamEredmenyek  = szamEredRes?.ok ? await szamEredRes.json() : [];
         const szamAktivak     = szamAktivRes?.ok ? await szamAktivRes.json() : [];
+        const haviJegyek      = jegyRes?.ok ? await jegyRes.json() : [];
 
         // feladatok.txt → névfeloldás (r_5 → "Napszak köszöntő")
         const feladatNevek = {};
@@ -590,6 +705,9 @@ async function loadTanuloProfile(u, page) {
 
         <!-- Visszaszámló -->
         ${examCountdownHtml()}
+
+        <!-- Havi jegyek -->
+        ${buildHaviJegyekHtml(haviJegyek, u)}
 
         <!-- Aktív napok -->
         <div class="section">

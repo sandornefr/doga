@@ -1054,6 +1054,19 @@
     <div class="portal-title" id="portal-title" style="text-align:center; margin-bottom:4px;">Üdvözöllek!</div>
     <div class="portal-sub" id="portal-sub" style="text-align:center; margin-bottom:20px;">Válassz az alábbi lehetőségek közül:</div>
 
+    <!-- Jegybeírás banner (tanulóknak) -->
+    <div id="jegybeiras-banner" style="display:none;background:linear-gradient(135deg,#1e1b4b,#1e3a5f);border:1px solid #4f46e5;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:none;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="font-size:1.8rem;line-height:1;">🤑</div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-weight:800;color:#e0e0e0;font-size:.95rem;margin-bottom:3px;">Hamarosan jegybeírás!</div>
+            <div id="jegybeiras-banner-szoveg" style="font-size:.78rem;color:#94a3b8;line-height:1.6;"></div>
+            <div style="font-size:.75rem;color:#6366f1;margin-top:2px;">Az évvégi bizonyítvány átlagán változtathatsz — tegyél meg mindent a jobb jegyért!</div>
+        </div>
+        <a href="profil.html#havijegyek" style="padding:6px 14px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.78rem;text-decoration:none;white-space:nowrap;">
+            <i class="fas fa-graduation-cap" style="margin-right:4px"></i>Mit tehetek még?
+        </a>
+    </div>
+
     <!-- Tanulói elrendezés -->
     <div id="student-layout-wrap" class="student-layout" style="display:none">
 
@@ -1796,6 +1809,8 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
+            // Jegybeírás banner
+            showJegybeirasBanner();
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
@@ -3548,6 +3563,25 @@ if (location.hash === '#web-tanulas') {
     if (btn) btn.style.display = 'flex';
   };
 })();
+
+function showJegybeirasBanner() {
+    const HATÁRIDŐK = [
+        { honap:3, label:'március', until:'2026-05-20' },
+        { honap:4, label:'április', until:'2026-05-25' },
+        { honap:5, label:'május',   until:'2026-05-31' },
+    ];
+    const now = new Date();
+    const nyitott = HATÁRIDŐK.filter(h => new Date(h.until + 'T23:59:59') >= now);
+    if (!nyitott.length) return;
+    const banner = document.getElementById('jegybeiras-banner');
+    if (!banner) return;
+    const szoveg = document.getElementById('jegybeiras-banner-szoveg');
+    const POTL = { 3:'máj. 20.', 4:'máj. 25.', 5:'máj. 31.' };
+    szoveg.innerHTML = nyitott.map(h =>
+        `<span style="color:#c7d2fe;">2026. ${h.label}</span> → pótlási határidő: <strong style="color:#a5b4fc;">${POTL[h.honap]}</strong>`
+    ).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
+    banner.style.display = 'flex';
+}
 </script>
 </body>
 </html>

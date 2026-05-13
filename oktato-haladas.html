@@ -393,6 +393,9 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <button class="fbar-btn" id="btn-compare" onclick="toggleCompareView()">
             <i class="fas fa-chart-bar"></i> Összehasonlítás
         </button>
+        <button class="fbar-btn" id="btn-osztályozas" onclick="openOsztalyozasModal()" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;font-weight:700;">
+            <i class="fas fa-graduation-cap"></i> Osztályozás
+        </button>
         <div class="filter-sep"></div>
         <div class="stat-pill"><i class="fas fa-users"></i> Tanuló: <strong id="cnt-osszes">–</strong></div>
         <div class="stat-pill ok"><i class="fas fa-circle" style="font-size:.55rem;color:#3fb950"></i> Aktív: <strong id="cnt-zold">–</strong></div>
@@ -441,6 +444,35 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
             </button>
         </div>
     </div>
+</div>
+
+<!-- Osztályozás modal -->
+<div class="modal-overlay" id="osztalyozas-modal" style="display:none;z-index:2000;overflow-y:auto;">
+  <div class="modal-box" style="max-width:1100px;width:96vw;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header">
+      <i class="fas fa-graduation-cap" style="color:#818cf8;font-size:1.1rem"></i>
+      <h3>Havi osztályozás</h3>
+      <button class="modal-close" onclick="closeOsztalyozasModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:12px 16px;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+        <label style="color:#94a3b8;font-size:.85rem;">Hónap:</label>
+        <select id="oz-honap" style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:6px;padding:5px 10px;font-size:.85rem;">
+          <option value="3">2026. március</option>
+          <option value="4">2026. április</option>
+          <option value="5" selected>2026. május</option>
+        </select>
+        <button onclick="calcOsztalyozas()" style="padding:6px 16px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;">
+          <i class="fas fa-calculator" style="margin-right:5px"></i>Számítás / Frissítés
+        </button>
+        <span id="oz-info" style="color:#6b7280;font-size:.8rem;font-style:italic;"></span>
+      </div>
+      <div id="oz-loading" style="display:none;color:#94a3b8;font-style:italic;padding:20px 0;">
+        <i class="fas fa-circle-notch fa-spin"></i> Számítás folyamatban...
+      </div>
+      <div id="oz-table-wrap" style="overflow-x:auto;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1497,6 +1529,165 @@ function updatePills(students) {
     document.getElementById('cnt-sarga').textContent  = sarga;
     document.getElementById('cnt-gyenge').textContent = piros;
 }
+
+// ── Osztályozás ───────────────────────────────────────────────────────────────
+
+const HONAP_NEV = ['','Január','Február','Március','Április','Május','Június'];
+const POTLASI_HATARIDOK = { 3:'máj. 20.', 4:'máj. 25.', 5:'máj. 31.' };
+
+function openOsztalyozasModal() {
+    document.getElementById('osztalyozas-modal').style.display = 'flex';
+    loadOsztalyozas();
+}
+function closeOsztalyozasModal() {
+    document.getElementById('osztalyozas-modal').style.display = 'none';
+}
+
+async function loadOsztalyozas() {
+    const honap = document.getElementById('oz-honap').value;
+    const wrap  = document.getElementById('oz-table-wrap');
+    const info  = document.getElementById('oz-info');
+    wrap.innerHTML = '';
+    info.textContent = 'Betöltés...';
+    try {
+        const res = await authFetch(`${API}/api/havijegy?ev=2026&honap=${honap}`);
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        info.textContent = data.length ? `${data.length} tanuló` : 'Még nem számított — nyomj Számítás gombot.';
+        renderOsztalyozasTable(data, parseInt(honap));
+    } catch { info.textContent = 'Betöltési hiba.'; }
+}
+
+async function calcOsztalyozas() {
+    const honap   = document.getElementById('oz-honap').value;
+    const loading = document.getElementById('oz-loading');
+    const info    = document.getElementById('oz-info');
+    loading.style.display = 'block';
+    info.textContent = '';
+    try {
+        const res = await authFetch(`${API}/api/havijegy/calculate?ev=2026&honap=${honap}`, { method:'POST' });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        info.textContent = `${data.length} tanuló kiszámítva`;
+        renderOsztalyozasTable(data, parseInt(honap));
+    } catch (e) { info.textContent = 'Hiba: ' + e.message; }
+    finally { loading.style.display = 'none'; }
+}
+
+function renderOsztalyozasTable(data, honap) {
+    if (!data.length) {
+        document.getElementById('oz-table-wrap').innerHTML =
+            '<p style="color:#6b7280;padding:20px 0;">Nincs adat.</p>';
+        return;
+    }
+    const rows = data.map(d => {
+        const szorgIkonok = d.szorgalmiJelolt
+            ? `<span style="color:#fbbf24;font-size:.8rem;" title="Szorgalmi jelölt">⭐ Jelölt</span>` : '';
+        const dicsIcon = d.dicseretJavasolt
+            ? `<span style="color:#a78bfa;font-size:.8rem;" title="Szaktanári dicséret javasolt">🏅 Dicséret</span>` : '';
+        const vegSt = d.veglegesitve
+            ? 'style="color:#4ade80;font-size:.75rem;"' : 'style="color:#6b7280;font-size:.75rem;"';
+        const vegLabel = d.veglegesitve ? '✓ Végleges' : '○ Piszkozat';
+        return `<tr id="oz-row-${d.id}" style="border-bottom:1px solid #1e293b;">
+          <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev||d.email)}</td>
+          <td style="padding:6px 8px;color:#6b7280;font-size:.8rem;">${d.evfolyam||''}${d.osztaly||''}${d.csoport ? '/'+d.csoport : ''}</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.pythonSzaz)}%</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.webSzaz)}%</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.quizSzaz)}%</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.aktivNapok} nap</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.otletDb} db</td>
+          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.tananyagDb}/5</td>
+          <td style="padding:6px 8px;text-align:right;font-weight:700;">${Math.round(d.osszSzaz)}%</td>
+          <td style="padding:6px 8px;text-align:center;">
+            <select onchange="ozJegyChange(${d.id},this.value)"
+              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
+              ${[1,2,3,4,5].map(j => `<option value="${j}" ${d.jegy===j?'selected':''}>${j}</option>`).join('')}
+            </select>
+          </td>
+          <td style="padding:6px 8px;text-align:center;">
+            <select onchange="ozSzorgChange(${d.id},this.value)"
+              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
+              ${[0,1,2].map(n => `<option value="${n}" ${d.szorgalmiJegyDb===n?'selected':''}>${n===0?'–':n+' × 5-ös'}</option>`).join('')}
+            </select>
+          </td>
+          <td style="padding:6px 8px;">${szorgIkonok} ${dicsIcon}</td>
+          <td style="padding:6px 8px;">
+            <input id="oz-meg-${d.id}" type="text" value="${escHtml(d.tanariMegjegyzes||'')}"
+              placeholder="megjegyzés…"
+              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 6px;font-size:.8rem;width:120px;">
+          </td>
+          <td style="padding:6px 8px;text-align:center;">
+            <button onclick="ozMent(${d.id})"
+              style="padding:3px 10px;background:#4f46e5;border:none;border-radius:4px;color:#fff;font-size:.78rem;cursor:pointer;font-weight:600;">
+              Ment
+            </button>
+            <button onclick="ozVeglegesit(${d.id},${d.veglegesitve?0:1})"
+              style="padding:3px 10px;background:${d.veglegesitve?'#1a3a1a':'#14532d'};border:1px solid ${d.veglegesitve?'#4ade80':'#16a34a'};border-radius:4px;color:${d.veglegesitve?'#4ade80':'#86efac'};font-size:.78rem;cursor:pointer;margin-left:4px;">
+              ${d.veglegesitve?'Visszavon':'Véglegesít'}
+            </button>
+          </td>
+          <td style="padding:6px 8px;" ${vegSt}>${vegLabel}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('oz-table-wrap').innerHTML = `
+      <p style="color:#6b7280;font-size:.8rem;margin-bottom:8px;">
+        Pótlási határidő: <strong style="color:#94a3b8;">${POTLASI_HATARIDOK[honap]||''}</strong>
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+        <thead>
+          <tr style="color:#6b7280;border-bottom:1px solid #1e293b;text-align:left;">
+            <th style="padding:6px 8px;">Név</th>
+            <th style="padding:6px 8px;">Csoport</th>
+            <th style="padding:6px 8px;text-align:right;">Python</th>
+            <th style="padding:6px 8px;text-align:right;">WEB</th>
+            <th style="padding:6px 8px;text-align:right;">Quiz</th>
+            <th style="padding:6px 8px;text-align:right;">Aktív</th>
+            <th style="padding:6px 8px;text-align:right;">Ötlet</th>
+            <th style="padding:6px 8px;text-align:right;">Tananyag</th>
+            <th style="padding:6px 8px;text-align:right;">Össz%</th>
+            <th style="padding:6px 8px;text-align:center;">Jegy</th>
+            <th style="padding:6px 8px;text-align:center;">Szorgalmi</th>
+            <th style="padding:6px 8px;">Jelölések</th>
+            <th style="padding:6px 8px;">Megjegyzés</th>
+            <th style="padding:6px 8px;text-align:center;">Műveletek</th>
+            <th style="padding:6px 8px;">Állapot</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+}
+
+async function ozMent(id) {
+    const jegy     = parseInt(document.querySelector(`#oz-row-${id} select:nth-of-type(1)`).value);
+    const szorgDb  = parseInt(document.querySelector(`#oz-row-${id} select:nth-of-type(2)`).value);
+    const meg      = document.getElementById(`oz-meg-${id}`).value;
+    await authFetch(`${API}/api/havijegy/${id}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ jegy, szorgalmiJegyDb: szorgDb, tanariMegjegyzes: meg })
+    });
+}
+
+async function ozVeglegesit(id, veglegesitve) {
+    const jegy    = parseInt(document.querySelector(`#oz-row-${id} select:nth-of-type(1)`).value);
+    const szorgDb = parseInt(document.querySelector(`#oz-row-${id} select:nth-of-type(2)`).value);
+    const meg     = document.getElementById(`oz-meg-${id}`).value;
+    const res = await authFetch(`${API}/api/havijegy/${id}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ jegy, szorgalmiJegyDb: szorgDb, veglegesitve: !!veglegesitve, tanariMegjegyzes: meg })
+    });
+    if (res.ok) {
+        const honap = parseInt(document.getElementById('oz-honap').value);
+        await loadOsztalyozas();
+    }
+}
+
+function ozJegyChange(id, val) { /* automatikus — mentéskor érvényesül */ }
+function ozSzorgChange(id, val) { /* automatikus — mentéskor érvényesül */ }
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
 <script src="chat-widget.js"></script>
 </body>

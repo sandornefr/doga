@@ -604,3 +604,38 @@ public class DuelRankItem
     public int     Vereseg   { get; set; }
     public int     Dontetlon { get; set; }
 }
+
+// ── Havi jegyek ──────────────────────────────────────────────────────────────
+
+public class HaviJegyRow
+{
+    public int     Id               { get; set; }
+    public string  Email            { get; set; } = "";
+    public int     Ev               { get; set; }
+    public int     Honap            { get; set; }
+    public int?    Jegy             { get; set; }
+    public double  PythonSzaz       { get; set; }
+    public double  WebSzaz          { get; set; }
+    public double  QuizSzaz         { get; set; }
+    public int     AktivNapok       { get; set; }
+    public int     OtletDb          { get; set; }
+    public int     TananyagDb       { get; set; }
+    public double  OsszSzaz         { get; set; }
+    public bool    SzorgalmiJelolt  { get; set; }
+    public int     SzorgalmiJegyDb  { get; set; }
+    public bool    DicseretJavasolt { get; set; }
+    public bool    Veglegesitve     { get; set; }
+    public string? TanariMegjegyzes { get; set; }
+    // Tanári nézethez (JOIN users)
+    public string? Nev      { get; set; }
+    public string? Osztaly  { get; set; }
+    public string? Csoport  { get; set; }
+    public string? Evfolyam { get; set; }
+}
+
+public record HaviJegyPatchRequest(
+    int?    Jegy,
+    int?    SzorgalmiJegyDb,
+    bool?   Veglegesitve,
+    string? TanariMegjegyzes
+);
