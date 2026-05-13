@@ -1642,6 +1642,21 @@ const OZ_FEJLEC = `<thead>
   </tr>
 </thead>`;
 
+let ozAktivCsoport = null;
+
+function ozTabValt(kulcs) {
+    ozAktivCsoport = kulcs;
+    document.querySelectorAll('.oz-tab').forEach(t => {
+        const akt = t.dataset.kulcs === kulcs;
+        t.style.background    = akt ? '#1e3a5f' : 'transparent';
+        t.style.color         = akt ? '#93c5fd' : '#6b7280';
+        t.style.borderBottom  = akt ? '2px solid #3b82f6' : '2px solid transparent';
+    });
+    document.querySelectorAll('.oz-panel').forEach(p => {
+        p.style.display = p.dataset.kulcs === kulcs ? 'block' : 'none';
+    });
+}
+
 function renderOsztalyozasTable(data, honap) {
     if (!data.length) {
         document.getElementById('oz-table-wrap').innerHTML =
@@ -1649,28 +1664,46 @@ function renderOsztalyozasTable(data, honap) {
         return;
     }
 
-    // Csoportosítás: evfolyam + osztaly + csoport szerint
+    // Csoportosítás: osztaly + csoport szerint
     const csoportTerkep = new Map();
     data.forEach(d => {
-        const kulcs = `${d.evfolyam||''}${d.osztaly||''}/${d.csoport||'–'}`;
+        const kulcs = `${d.osztaly||''}/${d.csoport||'–'}`;
         if (!csoportTerkep.has(kulcs)) csoportTerkep.set(kulcs, []);
         csoportTerkep.get(kulcs).push(d);
     });
 
-    const szekciok = [...csoportTerkep.entries()].map(([cimke, tagok]) => {
+    const csoportok = [...csoportTerkep.entries()];
+    const elsoKulcs = ozAktivCsoport && csoportTerkep.has(ozAktivCsoport)
+        ? ozAktivCsoport : csoportok[0][0];
+
+    // Lapfülek
+    const tabsHtml = csoportok.map(([kulcs, tagok]) => {
         const vegles = tagok.filter(t => t.veglegesitve).length;
-        const szorgJelolt = tagok.filter(t => t.szorgalmiJelolt).length;
-        return `
-        <div style="margin-bottom:24px;">
-            <div style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:#0d1629;border:1px solid #1e3a5f;border-radius:8px 8px 0 0;flex-wrap:wrap;">
-                <span style="font-weight:800;color:#93c5fd;font-size:.92rem;">
-                    <i class="fas fa-users" style="margin-right:6px;color:#4f82c4"></i>10.${cimke}. csoport
-                </span>
+        const szorg  = tagok.filter(t => t.szorgalmiJelolt).length;
+        const akt    = kulcs === elsoKulcs;
+        return `<button class="oz-tab" data-kulcs="${escHtml(kulcs)}" onclick="ozTabValt('${escHtml(kulcs)}')"
+          style="padding:7px 14px;border:none;border-bottom:2px solid ${akt?'#3b82f6':'transparent'};
+                 background:${akt?'#1e3a5f':'transparent'};color:${akt?'#93c5fd':'#6b7280'};
+                 cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap;transition:all .15s;">
+          10.${escHtml(kulcs)}. cs.
+          <span style="margin-left:4px;font-size:.72rem;color:${akt?'#60a5fa':'#475569'};">${tagok.length} fő</span>
+          ${vegles===tagok.length ? '<span style="color:#4ade80;margin-left:2px;">✓</span>' : ''}
+          ${szorg ? `<span style="color:#fbbf24;margin-left:2px;">⭐</span>` : ''}
+        </button>`;
+    }).join('');
+
+    // Panelek
+    const panelekHtml = csoportok.map(([kulcs, tagok]) => {
+        const vegles    = tagok.filter(t => t.veglegesitve).length;
+        const szorgDb   = tagok.filter(t => t.szorgalmiJelolt).length;
+        return `<div class="oz-panel" data-kulcs="${escHtml(kulcs)}"
+                  style="display:${kulcs===elsoKulcs?'block':'none'};">
+            <div style="display:flex;gap:14px;align-items:center;padding:6px 2px;margin-bottom:6px;flex-wrap:wrap;">
                 <span style="color:#475569;font-size:.78rem;">${tagok.length} tanuló</span>
                 <span style="color:#4ade80;font-size:.78rem;">✓ ${vegles} véglegesítve</span>
-                ${szorgJelolt ? `<span style="color:#fbbf24;font-size:.78rem;">⭐ ${szorgJelolt} szorgalmi jelölt</span>` : ''}
+                ${szorgDb ? `<span style="color:#fbbf24;font-size:.78rem;">⭐ ${szorgDb} szorgalmi jelölt</span>` : ''}
             </div>
-            <div style="overflow-x:auto;border:1px solid #1e3a5f;border-top:none;border-radius:0 0 8px 8px;">
+            <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
                     ${OZ_FEJLEC}
                     <tbody>${tagok.map(ozSorHtml).join('')}</tbody>
@@ -1680,11 +1713,14 @@ function renderOsztalyozasTable(data, honap) {
     }).join('');
 
     document.getElementById('oz-table-wrap').innerHTML = `
-      <p style="color:#6b7280;font-size:.8rem;margin-bottom:12px;">
+      <p style="color:#6b7280;font-size:.8rem;margin-bottom:10px;">
         Pótlási határidő: <strong style="color:#94a3b8;">${POTLASI_HATARIDOK[honap]||''}</strong>
         &nbsp;·&nbsp; Összesen: <strong style="color:#94a3b8;">${data.length} tanuló</strong>
       </p>
-      ${szekciok}`;
+      <div style="display:flex;gap:0;flex-wrap:wrap;border-bottom:1px solid #1e3a5f;margin-bottom:14px;overflow-x:auto;">
+        ${tabsHtml}
+      </div>
+      ${panelekHtml}`;
 }
 
 async function ozMent(id) {
