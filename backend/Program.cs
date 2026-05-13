@@ -1680,7 +1680,8 @@ app.MapPost("/api/havijegy/calculate", (HttpContext ctx, Database db) =>
     if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
     if (honap < 3 || honap > 5) return Results.BadRequest(new { error = "honap 3-5 között lehet" });
 
-    var diakok = db.GetAllUsers().Where(u => u.Szerep == "tanulo").ToList();
+    var KIZART = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu", "bot@kkszki.hu" };
+    var diakok = db.GetAllUsers().Where(u => u.Szerep == "tanulo" && !KIZART.Contains(u.Email)).ToList();
     var eredmenyek = new List<HaviJegyRow>();
     foreach (var d in diakok)
     {
