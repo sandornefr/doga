@@ -1157,10 +1157,10 @@ function startTask(id) {
     if (dev.ghost) return;
     switch(dev.tipus) {
       case 'router':
-        appState.devices[dev.id] = new CiscoDevice(dev.id, dev.nev, 'router');
+        appState.devices[dev.id] = new CiscoDevice(dev.id, 'Router', 'router');
         break;
       case 'switch':
-        appState.devices[dev.id] = new SwitchDevice(dev.id, dev.nev);
+        appState.devices[dev.id] = new SwitchDevice(dev.id, 'Switch');
         break;
       case 'server':
         appState.devices[dev.id] = new PCDevice(dev.id, getExpectedIp(task, dev.id));
@@ -2157,10 +2157,10 @@ function placeDevice(devId) {
     // Create device instance (same as startTask)
     switch(devDef.tipus) {
       case 'router':
-        appState.devices[devId] = new CiscoDevice(devId, devDef.nev, 'router');
+        appState.devices[devId] = new CiscoDevice(devId, 'Router', 'router');
         break;
       case 'switch':
-        appState.devices[devId] = new SwitchDevice(devId, devDef.nev);
+        appState.devices[devId] = new SwitchDevice(devId, 'Switch');
         break;
       case 'laptop': case 'pc': {
         const exp = task.elvart[devId];
