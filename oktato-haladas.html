@@ -1575,88 +1575,116 @@ async function calcOsztalyozas() {
     finally { loading.style.display = 'none'; }
 }
 
+function ozSorHtml(d) {
+    const szorgIkonok = d.szorgalmiJelolt
+        ? `<span style="color:#fbbf24;font-size:.8rem;" title="Szorgalmi jelölt">⭐ Jelölt</span>` : '';
+    const dicsIcon = d.dicseretJavasolt
+        ? `<span style="color:#a78bfa;font-size:.8rem;" title="Szaktanári dicséret javasolt">🏅 Dicséret</span>` : '';
+    const vegSt   = d.veglegesitve ? 'color:#4ade80' : 'color:#6b7280';
+    const vegLabel = d.veglegesitve ? '✓ Végleges' : '○ Piszkozat';
+    return `<tr id="oz-row-${d.id}" style="border-bottom:1px solid #1e293b;">
+      <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev||d.email)}</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.pythonSzaz)}%</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.webSzaz)}%</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.quizSzaz)}%</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.aktivNapok} nap</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.otletDb} db</td>
+      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.tananyagDb}/5</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;">${Math.round(d.osszSzaz)}%</td>
+      <td style="padding:6px 8px;text-align:center;">
+        <select onchange="ozJegyChange(${d.id},this.value)"
+          style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
+          ${[1,2,3,4,5].map(j=>`<option value="${j}" ${d.jegy===j?'selected':''}>${j}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px;text-align:center;">
+        <select onchange="ozSzorgChange(${d.id},this.value)"
+          style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
+          ${[0,1,2].map(n=>`<option value="${n}" ${d.szorgalmiJegyDb===n?'selected':''}>${n===0?'–':n+' × 5-ös'}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:6px 8px;">${szorgIkonok} ${dicsIcon}</td>
+      <td style="padding:6px 8px;">
+        <input id="oz-meg-${d.id}" type="text" value="${escHtml(d.tanariMegjegyzes||'')}"
+          placeholder="megjegyzés…"
+          style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 6px;font-size:.8rem;width:110px;">
+      </td>
+      <td style="padding:6px 8px;text-align:center;">
+        <button onclick="ozMent(${d.id})"
+          style="padding:3px 10px;background:#4f46e5;border:none;border-radius:4px;color:#fff;font-size:.78rem;cursor:pointer;font-weight:600;">
+          Ment
+        </button>
+        <button onclick="ozVeglegesit(${d.id},${d.veglegesitve?0:1})"
+          style="padding:3px 10px;background:${d.veglegesitve?'#1a3a1a':'#14532d'};border:1px solid ${d.veglegesitve?'#4ade80':'#16a34a'};border-radius:4px;color:${d.veglegesitve?'#4ade80':'#86efac'};font-size:.78rem;cursor:pointer;margin-left:4px;">
+          ${d.veglegesitve?'Visszavon':'Véglegesít'}
+        </button>
+      </td>
+      <td style="padding:6px 8px;font-size:.75rem;${vegSt}">${vegLabel}</td>
+    </tr>`;
+}
+
+const OZ_FEJLEC = `<thead>
+  <tr style="color:#6b7280;border-bottom:1px solid #1e293b;text-align:left;">
+    <th style="padding:6px 8px;">Név</th>
+    <th style="padding:6px 8px;text-align:right;">Python</th>
+    <th style="padding:6px 8px;text-align:right;">WEB</th>
+    <th style="padding:6px 8px;text-align:right;">Quiz</th>
+    <th style="padding:6px 8px;text-align:right;">Aktív</th>
+    <th style="padding:6px 8px;text-align:right;">Ötlet</th>
+    <th style="padding:6px 8px;text-align:right;">Tananyag</th>
+    <th style="padding:6px 8px;text-align:right;">Össz%</th>
+    <th style="padding:6px 8px;text-align:center;">Jegy</th>
+    <th style="padding:6px 8px;text-align:center;">Szorgalmi</th>
+    <th style="padding:6px 8px;">Jelölések</th>
+    <th style="padding:6px 8px;">Megjegyzés</th>
+    <th style="padding:6px 8px;text-align:center;">Műveletek</th>
+    <th style="padding:6px 8px;">Állapot</th>
+  </tr>
+</thead>`;
+
 function renderOsztalyozasTable(data, honap) {
     if (!data.length) {
         document.getElementById('oz-table-wrap').innerHTML =
             '<p style="color:#6b7280;padding:20px 0;">Nincs adat.</p>';
         return;
     }
-    const rows = data.map(d => {
-        const szorgIkonok = d.szorgalmiJelolt
-            ? `<span style="color:#fbbf24;font-size:.8rem;" title="Szorgalmi jelölt">⭐ Jelölt</span>` : '';
-        const dicsIcon = d.dicseretJavasolt
-            ? `<span style="color:#a78bfa;font-size:.8rem;" title="Szaktanári dicséret javasolt">🏅 Dicséret</span>` : '';
-        const vegSt = d.veglegesitve
-            ? 'style="color:#4ade80;font-size:.75rem;"' : 'style="color:#6b7280;font-size:.75rem;"';
-        const vegLabel = d.veglegesitve ? '✓ Végleges' : '○ Piszkozat';
-        return `<tr id="oz-row-${d.id}" style="border-bottom:1px solid #1e293b;">
-          <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev||d.email)}</td>
-          <td style="padding:6px 8px;color:#6b7280;font-size:.8rem;">${d.evfolyam||''}${d.osztaly||''}${d.csoport ? '/'+d.csoport : ''}</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.pythonSzaz)}%</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.webSzaz)}%</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.quizSzaz)}%</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.aktivNapok} nap</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.otletDb} db</td>
-          <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.tananyagDb}/5</td>
-          <td style="padding:6px 8px;text-align:right;font-weight:700;">${Math.round(d.osszSzaz)}%</td>
-          <td style="padding:6px 8px;text-align:center;">
-            <select onchange="ozJegyChange(${d.id},this.value)"
-              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
-              ${[1,2,3,4,5].map(j => `<option value="${j}" ${d.jegy===j?'selected':''}>${j}</option>`).join('')}
-            </select>
-          </td>
-          <td style="padding:6px 8px;text-align:center;">
-            <select onchange="ozSzorgChange(${d.id},this.value)"
-              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 4px;font-size:.85rem;">
-              ${[0,1,2].map(n => `<option value="${n}" ${d.szorgalmiJegyDb===n?'selected':''}>${n===0?'–':n+' × 5-ös'}</option>`).join('')}
-            </select>
-          </td>
-          <td style="padding:6px 8px;">${szorgIkonok} ${dicsIcon}</td>
-          <td style="padding:6px 8px;">
-            <input id="oz-meg-${d.id}" type="text" value="${escHtml(d.tanariMegjegyzes||'')}"
-              placeholder="megjegyzés…"
-              style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 6px;font-size:.8rem;width:120px;">
-          </td>
-          <td style="padding:6px 8px;text-align:center;">
-            <button onclick="ozMent(${d.id})"
-              style="padding:3px 10px;background:#4f46e5;border:none;border-radius:4px;color:#fff;font-size:.78rem;cursor:pointer;font-weight:600;">
-              Ment
-            </button>
-            <button onclick="ozVeglegesit(${d.id},${d.veglegesitve?0:1})"
-              style="padding:3px 10px;background:${d.veglegesitve?'#1a3a1a':'#14532d'};border:1px solid ${d.veglegesitve?'#4ade80':'#16a34a'};border-radius:4px;color:${d.veglegesitve?'#4ade80':'#86efac'};font-size:.78rem;cursor:pointer;margin-left:4px;">
-              ${d.veglegesitve?'Visszavon':'Véglegesít'}
-            </button>
-          </td>
-          <td style="padding:6px 8px;" ${vegSt}>${vegLabel}</td>
-        </tr>`;
+
+    // Csoportosítás: evfolyam + osztaly + csoport szerint
+    const csoportTerkep = new Map();
+    data.forEach(d => {
+        const kulcs = `${d.evfolyam||''}${d.osztaly||''}/${d.csoport||'–'}`;
+        if (!csoportTerkep.has(kulcs)) csoportTerkep.set(kulcs, []);
+        csoportTerkep.get(kulcs).push(d);
+    });
+
+    const szekciok = [...csoportTerkep.entries()].map(([cimke, tagok]) => {
+        const vegles = tagok.filter(t => t.veglegesitve).length;
+        const szorgJelolt = tagok.filter(t => t.szorgalmiJelolt).length;
+        return `
+        <div style="margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:#0d1629;border:1px solid #1e3a5f;border-radius:8px 8px 0 0;flex-wrap:wrap;">
+                <span style="font-weight:800;color:#93c5fd;font-size:.92rem;">
+                    <i class="fas fa-users" style="margin-right:6px;color:#4f82c4"></i>10.${cimke}. csoport
+                </span>
+                <span style="color:#475569;font-size:.78rem;">${tagok.length} tanuló</span>
+                <span style="color:#4ade80;font-size:.78rem;">✓ ${vegles} véglegesítve</span>
+                ${szorgJelolt ? `<span style="color:#fbbf24;font-size:.78rem;">⭐ ${szorgJelolt} szorgalmi jelölt</span>` : ''}
+            </div>
+            <div style="overflow-x:auto;border:1px solid #1e3a5f;border-top:none;border-radius:0 0 8px 8px;">
+                <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+                    ${OZ_FEJLEC}
+                    <tbody>${tagok.map(ozSorHtml).join('')}</tbody>
+                </table>
+            </div>
+        </div>`;
     }).join('');
 
     document.getElementById('oz-table-wrap').innerHTML = `
-      <p style="color:#6b7280;font-size:.8rem;margin-bottom:8px;">
+      <p style="color:#6b7280;font-size:.8rem;margin-bottom:12px;">
         Pótlási határidő: <strong style="color:#94a3b8;">${POTLASI_HATARIDOK[honap]||''}</strong>
+        &nbsp;·&nbsp; Összesen: <strong style="color:#94a3b8;">${data.length} tanuló</strong>
       </p>
-      <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
-        <thead>
-          <tr style="color:#6b7280;border-bottom:1px solid #1e293b;text-align:left;">
-            <th style="padding:6px 8px;">Név</th>
-            <th style="padding:6px 8px;">Csoport</th>
-            <th style="padding:6px 8px;text-align:right;">Python</th>
-            <th style="padding:6px 8px;text-align:right;">WEB</th>
-            <th style="padding:6px 8px;text-align:right;">Quiz</th>
-            <th style="padding:6px 8px;text-align:right;">Aktív</th>
-            <th style="padding:6px 8px;text-align:right;">Ötlet</th>
-            <th style="padding:6px 8px;text-align:right;">Tananyag</th>
-            <th style="padding:6px 8px;text-align:right;">Össz%</th>
-            <th style="padding:6px 8px;text-align:center;">Jegy</th>
-            <th style="padding:6px 8px;text-align:center;">Szorgalmi</th>
-            <th style="padding:6px 8px;">Jelölések</th>
-            <th style="padding:6px 8px;">Megjegyzés</th>
-            <th style="padding:6px 8px;text-align:center;">Műveletek</th>
-            <th style="padding:6px 8px;">Állapot</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>`;
+      ${szekciok}`;
 }
 
 async function ozMent(id) {
