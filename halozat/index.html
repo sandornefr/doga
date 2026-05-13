@@ -190,17 +190,24 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
 
 /* Results modal */
 #results-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;display:none;align-items:center;justify-content:center;padding:16px}
-.results-box{background:#161b22;border:2px solid #30363d;border-radius:16px;padding:24px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto}
+.results-box{background:#161b22;border:2px solid #30363d;border-radius:16px;padding:24px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto}
 .results-score{text-align:center;font-size:3rem;font-weight:900;margin-bottom:4px}
 .results-score.pass{color:#22c55e}
 .results-score.fail{color:#f85149}
 .results-subtitle{text-align:center;color:#8b949e;font-size:0.85rem;margin-bottom:18px}
-.result-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #21262d;font-size:0.82rem}
-.result-item:last-child{border-bottom:none}
+.result-device{padding:8px 0 4px;border-bottom:1px solid #21262d}
+.result-device:last-child{border-bottom:none}
+.result-device-head{display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+.result-detail{display:flex;align-items:baseline;gap:6px;padding:3px 0 3px 22px;font-size:0.76rem;border-top:1px solid #0d1117}
+.result-detail-label{flex:0 0 auto;min-width:150px;color:#8b949e}
+.result-detail-ok{color:#22c55e;flex-shrink:0;font-size:0.7rem}
+.result-detail-fail{color:#f85149;flex-shrink:0;font-size:0.7rem}
+.result-detail-val{font-family:monospace;font-size:0.72rem;color:#8b949e}
+.result-detail-val.ok{color:#22c55e}
+.result-detail-val.fail{color:#f85149}
 .result-icon{font-size:0.85rem;flex-shrink:0}
 .result-icon.ok{color:#22c55e}
 .result-icon.fail{color:#f85149}
-.result-label{flex:1;color:#c9d1d9}
 .results-close-btn{width:100%;margin-top:16px;padding:10px;background:#3b82f6;border:none;border-radius:9px;color:white;font-size:0.9rem;font-weight:700;cursor:pointer}
 .results-close-btn:hover{background:#2563eb}
 
@@ -1684,45 +1691,140 @@ function advanceTutorial(task) {
   renderTaskCard(task);
 }
 
+// Eszközönkénti részletes ellenőrzési lista
+function getDeviceDetails(task, devId) {
+  const exp = task.elvart[devId];
+  if (!exp) return [];
+  const dev = appState.devices[devId];
+  const s = dev?.state;
+  const items = [];
+  const c = (label, ok, expected, actual) => items.push({ label, ok, expected: String(expected ?? ''), actual: String(actual ?? '—') });
+
+  if (!dev || !s) { c('Eszköz nincs megnyitva / konfigurálva', false, '', ''); return items; }
+
+  if (dev instanceof CiscoDevice || dev instanceof SwitchDevice) {
+    if (exp.hostname !== undefined)          c('hostname',                  s.hostname === exp.hostname,           exp.hostname,                  s.hostname || '—');
+    if (exp.enableSecret !== undefined)      c('enable secret (jelszó)',    s.enableSecret === exp.enableSecret,   exp.enableSecret,              s.enableSecret || '—');
+    if (exp.servicePasswordEncryption)       c('service password-encryption', s.servicePasswordEncryption,        'igen',                        s.servicePasswordEncryption ? 'igen' : 'nem');
+    if (exp.domainName !== undefined)        c('ip domain-name',            s.domainName === exp.domainName,       exp.domainName,                s.domainName || '—');
+    if (exp.rsaKeyBits !== undefined)        c('crypto key rsa',            s.rsaKeyBits === exp.rsaKeyBits,       exp.rsaKeyBits + ' bit',       s.rsaKeyBits ? s.rsaKeyBits + ' bit' : '—');
+    if (exp.users) {
+      for (const [u, pw] of Object.entries(exp.users))
+        c(`username ${u}`,                   s.users?.[u] === pw,                                                   pw,                          s.users?.[u] ? '••••' : '—');
+    }
+    if (exp.interfaces) {
+      for (const [name, cfg] of Object.entries(exp.interfaces)) {
+        const sn = name.replace('GigabitEthernet','G').replace('FastEthernet','Fa');
+        const iface = s.interfaces?.[name];
+        if (cfg.ip)     c(`${sn} ip address`,  iface?.ip   === cfg.ip,   cfg.ip,   iface?.ip   || '—');
+        if (cfg.mask)   c(`${sn} maszk`,       iface?.mask === cfg.mask, cfg.mask, iface?.mask || '—');
+        if (cfg.active) c(`${sn} no shutdown`, !!iface?.active,           'be',     iface?.active ? 'be' : 'shutdown');
+      }
+    }
+    if (exp.vtyTransport !== undefined)  c('line vty transport input',  s.vtyTransport === exp.vtyTransport,    exp.vtyTransport,              s.vtyTransport || '—');
+    if (exp.vtyLogin !== undefined)      c('line vty login',            s.vtyLogin === exp.vtyLogin,            exp.vtyLogin,                  s.vtyLogin || '—');
+    if (exp.nameServer !== undefined)    c('ip name-server (DNS)',      s.nameServer === exp.nameServer,        exp.nameServer,                s.nameServer || '—');
+    if (exp.defaultGateway !== undefined)c('ip default-gateway',        s.defaultGateway === exp.defaultGateway, exp.defaultGateway,          s.defaultGateway || '—');
+    if (exp.ntpServer !== undefined)     c('ntp server',                s.ntpServer === exp.ntpServer,          exp.ntpServer,                 s.ntpServer || '—');
+    if (exp.vlan1Ip !== undefined)       c('Vlan1 ip address',          s.vlan1Ip === exp.vlan1Ip,              exp.vlan1Ip,                   s.vlan1Ip || '—');
+    if (exp.vlan1Mask !== undefined)     c('Vlan1 maszk',               s.vlan1Mask === exp.vlan1Mask,          exp.vlan1Mask,                 s.vlan1Mask || '—');
+    if (exp.vlan1Active)                 c('Vlan1 no shutdown',         s.vlan1Active,                          'be',                          s.vlan1Active ? 'be' : 'shutdown');
+    if (exp.saved)                       c('write memory (mentés)',      s.saved,                                'mentve',                      s.saved ? 'mentve' : 'nem mentve');
+  } else if (dev instanceof PCDevice) {
+    if (exp.ip)      c('IP-cím',             s.ip      === exp.ip,      exp.ip,      s.ip      || '—');
+    if (exp.mask)    c('Alhálózati maszk',   s.mask    === exp.mask,    exp.mask,    s.mask    || '—');
+    if (exp.gateway) c('Alapért. átjáró',    s.gateway === exp.gateway, exp.gateway, s.gateway || '—');
+  } else if (dev instanceof HomeRouterDevice) {
+    if (exp.password)    c('Admin jelszó',     s.password   === exp.password,   exp.password,   s.password   ? '••••' : '—');
+    if (exp.dhcpStart)   c('DHCP Start IP',    s.dhcpStart  === exp.dhcpStart,  exp.dhcpStart,  s.dhcpStart  || '—');
+    if (exp.dhcpEnd)     c('DHCP End IP',      s.dhcpEnd    === exp.dhcpEnd,    exp.dhcpEnd,    s.dhcpEnd    || '—');
+    if (exp.dhcpDns)     c('DHCP DNS',         s.dhcpDns    === exp.dhcpDns,    exp.dhcpDns,    s.dhcpDns    || '—');
+    if (exp.ssid)        c('SSID',             s.ssid       === exp.ssid,       exp.ssid,       s.ssid       || '—');
+    if (exp.security)    c('Biztonsági mód',   s.security   === exp.security,   exp.security,   s.security   || '—');
+    if (exp.wifiKey)     c('WiFi kulcs',       s.wifiKey    === exp.wifiKey,    exp.wifiKey,    s.wifiKey    ? '••••' : '—');
+    if (exp.ssidBroadcast === false) c('SSID broadcast off', s.ssidBroadcast === false, 'ki', s.ssidBroadcast === false ? 'ki' : 'be');
+  } else if (dev instanceof WifiClient) {
+    if (exp.wifiJoined)  c('WiFi csatlakozás', s.wifiJoined === exp.wifiJoined, exp.wifiJoined, s.wifiJoined || 'nem csatlakozott');
+  }
+  return items;
+}
+
 function checkAll() {
   const task = appState.currentTask;
   if (!task) return;
-  const allIds = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
+  const allIds  = task.topologia.eszkozok.filter(d => task.elvart[d.id]).map(d => d.id);
   const ghostIds = task.topologia.eszkozok.filter(d => d.ghost && !task.elvart[d.id]).map(d => d.id);
   let done = 0;
-  const items = [
-    ...(task.konzolSzukseges ? [{ label: 'Konzol kapcsolat', ok: appState.konzolKapcsolt, hint: 'Kattints a Konzol kapcsolat kialakítása gombra' }] : []),
-    ...allIds.map(id => {
-      const dev = task.topologia.eszkozok.find(d => d.id === id);
-      const ok = validateDevice(task, id);
-      if (ok) done++;
-      return { label: dev ? dev.nev : id, ok };
-    }),
-    ...ghostIds.map(id => {
-      const dev = task.topologia.eszkozok.find(d => d.id === id);
-      const ok = appState.placedDevices.has(id);
-      if (ok) done++;
-      return { label: (dev ? dev.nev : id) + ' – elhelyezés', ok };
-    }),
-  ];
+
   if (task.konzolSzukseges && appState.konzolKapcsolt) done++;
+  allIds.forEach(id => { if (validateDevice(task, id)) done++; });
+  ghostIds.forEach(id => { if (appState.placedDevices.has(id)) done++; });
+
   const total = allIds.length + ghostIds.length + (task.konzolSzukseges ? 1 : 0);
   const pts = total ? Math.round(done / total * 40) : 0;
+
   const scEl = document.getElementById('res-score');
   scEl.textContent = pts + ' / 40';
   scEl.className = 'results-score ' + (pts >= 24 ? 'pass' : 'fail');
   document.getElementById('res-subtitle').textContent = pts >= 24
-    ? `Sikeresen elvégezted a feladatot! (${done}/${total} eszköz helyes)`
-    : `${done}/${total} eszköz helyes konfigurációval.`;
-  let itemsHtml = '';
-  items.forEach(it => {
-    itemsHtml += `<div class="result-item">
-      <i class="fas ${it.ok?'fa-check-circle':'fa-times-circle'} result-icon ${it.ok?'ok':'fail'}"></i>
-      <span class="result-label">${it.label}</span>
-      <span style="font-size:0.78rem;color:${it.ok?'#22c55e':'#f85149'}">${it.ok?'Helyes':'Hiányos'}</span>
+    ? `Sikeresen elvégezted a feladatot! (${done}/${total} helyes)`
+    : `${done}/${total} elem helyes – részletek alább:`;
+
+  let html = '';
+
+  // Konzol kapcsolat
+  if (task.konzolSzukseges) {
+    const ok = appState.konzolKapcsolt;
+    html += `<div class="result-device">
+      <div class="result-device-head">
+        <i class="fas ${ok?'fa-check-circle':'fa-times-circle'} result-icon ${ok?'ok':'fail'}"></i>
+        Konzol kapcsolat
+        <span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:${ok?'#22c55e':'#f85149'}">${ok?'Kész':'Hiányzik'}</span>
+      </div>
+      ${!ok?`<div class="result-detail"><span class="result-detail-label" style="color:#8b949e">→ Kattints a feladatkártyán a sárga gombra</span></div>`:''}
+    </div>`;
+  }
+
+  // Ghost eszközök (elhelyezés)
+  ghostIds.forEach(id => {
+    const dev = task.topologia.eszkozok.find(d => d.id === id);
+    const ok = appState.placedDevices.has(id);
+    html += `<div class="result-device">
+      <div class="result-device-head">
+        <i class="fas ${ok?'fa-check-circle':'fa-times-circle'} result-icon ${ok?'ok':'fail'}"></i>
+        ${dev ? dev.nev : id} – elhelyezés
+        <span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:${ok?'#22c55e':'#f85149'}">${ok?'Elhelyezve':'Hiányzik'}</span>
+      </div>
+      ${!ok?`<div class="result-detail"><span class="result-detail-label" style="color:#8b949e">→ Kattints a villogó eszközre a topológiában</span></div>`:''}
     </div>`;
   });
-  document.getElementById('res-items').innerHTML = itemsHtml;
+
+  // Konfigurált eszközök részletesen
+  allIds.forEach(id => {
+    const devDef = task.topologia.eszkozok.find(d => d.id === id);
+    const ok = validateDevice(task, id);
+    const details = getDeviceDetails(task, id);
+    const failCount = details.filter(d => !d.ok).length;
+
+    html += `<div class="result-device">
+      <div class="result-device-head">
+        <i class="fas ${ok?'fa-check-circle':'fa-times-circle'} result-icon ${ok?'ok':'fail'}"></i>
+        ${devDef ? devDef.nev : id}
+        <span style="margin-left:auto;font-size:0.75rem;font-weight:400;color:${ok?'#22c55e':'#f85149'}">
+          ${ok ? 'Helyes' : `${failCount} hiba`}
+        </span>
+      </div>`;
+    details.forEach(d => {
+      html += `<div class="result-detail">
+        <i class="fas ${d.ok?'fa-check':'fa-times'} ${d.ok?'result-detail-ok':'result-detail-fail'}"></i>
+        <span class="result-detail-label">${d.label}</span>
+        <span class="result-detail-val ${d.ok?'ok':'fail'}">${d.ok ? d.actual : d.actual}${!d.ok && d.expected ? `<span style="color:#484f58"> (kell: ${d.expected})</span>` : ''}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  document.getElementById('res-items').innerHTML = html;
   document.getElementById('results-overlay').style.display = 'flex';
 }
 
