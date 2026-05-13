@@ -235,6 +235,10 @@
   <button class="diff-tab nehez" id="tab-nehez" onclick="setTab('nehez')">
     <i class="fas fa-fire"></i> Nehéz <span class="badge" id="cnt-nehez">0</span>
   </button>
+  <button class="diff-tab" id="tab-feladatkeszito" onclick="setTab('feladatkeszito')"
+    style="border-color:rgba(168,85,247,.35);color:#c084fc;">
+    <i class="fas fa-pencil"></i> Feladatkészítők <span class="badge" id="cnt-feladatkeszito" style="background:rgba(168,85,247,.2)">0</span>
+  </button>
   <div class="tabbar-spacer"></div>
   <button class="btn-random" onclick="pickRandom()">
     <i class="fas fa-shuffle"></i> Véletlenszerű
@@ -383,16 +387,21 @@ function parseTasks(text) {
 
     const id = parseInt(numMatch[1]);
     let pont = 8, cim = '', tipus = '', nehezseg = 'kozepes';
+    let uj = false, feladatkeszito = false;
     let i = 1;
 
     while (i < lines.length) {
       const l = lines[i].trim();
-      if (l.startsWith('Pont: '))      { pont     = parseInt(l.slice(6));  i++; }
-      else if (l.startsWith('Cim: '))  { cim      = l.slice(5).trim();     i++; }
-      else if (l.startsWith('Tipus: ')){ tipus     = l.slice(7).trim();     i++; }
-      else if (l.startsWith('Nehezseg: ')){ nehezseg = l.slice(10).trim(); i++; }
-      else if (l === '')               { i++; break; }
-      else break;
+      if      (l.startsWith('Pont: '))         { pont          = parseInt(l.slice(6));               i++; }
+      else if (l.startsWith('Cim: '))          { cim           = l.slice(5).trim();                  i++; }
+      else if (l.startsWith('Tipus: '))        { tipus          = l.slice(7).trim();                  i++; }
+      else if (l.startsWith('Nehezseg: '))     { nehezseg      = l.slice(10).trim();                 i++; }
+      else if (l.startsWith('Uj: '))           { uj            = l.slice(4).trim() === 'igen';       i++; }
+      else if (l.startsWith('Feladatkeszito: ')){ feladatkeszito= l.slice(17).trim() === 'igen';     i++; }
+      else if (l.startsWith('ModulNev: '))     { /* skip */                                           i++; }
+      else if (l === 'ModulTartalom:')         { break; } // modul szekció, for loop kezeli
+      else if (l === '')                       { i++; break; }
+      else i++; // ismeretlen mező átugrása
     }
 
     let szovegLines = [], criteriaLines = [], tippekLines = [], megoldasLines = [];
@@ -401,18 +410,21 @@ function parseTasks(text) {
     for (; i < lines.length; i++) {
       const l  = lines[i];
       const lt = l.trim();
-      if (lt === 'Pontozas:') { section = 'pontozas'; continue; }
-      if (lt === 'Tippek:')   { section = 'tippek';   continue; }
-      if (lt === 'Megoldas:') { section = 'megoldas'; continue; }
+      if (lt === 'Pontozas:')     { section = 'pontozas'; continue; }
+      if (lt === 'Tippek:')       { section = 'tippek';   continue; }
+      if (lt === 'Megoldas:')     { section = 'megoldas'; continue; }
+      if (lt === 'ModulTartalom:'){ section = 'modul';    continue; }
+      if (lt === 'ModulVege')     { section = 'szoveg';   continue; }
 
-      if      (section === 'szoveg')   szovegLines.push(l);
-      else if (section === 'pontozas' && lt) criteriaLines.push(lt);
-      else if (section === 'tippek'   && lt) tippekLines.push(lt);
-      else if (section === 'megoldas')       megoldasLines.push(l);
+      if      (section === 'szoveg')            szovegLines.push(l);
+      else if (section === 'pontozas' && lt)    criteriaLines.push(lt);
+      else if (section === 'tippek'   && lt)    tippekLines.push(lt);
+      else if (section === 'megoldas')          megoldasLines.push(l);
+      // 'modul' szekció kihagyva
     }
 
     tasks.push({
-      id, pont, cim, tipus, nehezseg,
+      id, pont, cim, tipus, nehezseg, uj, feladatkeszito,
       szoveg:   szovegLines.join('\n').trim(),
       criteria: criteriaLines,
       tippek:   tippekLines.join('\n').trim(),
@@ -428,16 +440,32 @@ function parseTasks(text) {
 function renderCounts() {
   ['konnyu','kozepes','nehez'].forEach(d => {
     document.getElementById('cnt-' + d).textContent =
-      allTasks.filter(t => t.nehezseg === d).length;
+      allTasks.filter(t => t.nehezseg === d && !t.feladatkeszito).length;
   });
+  document.getElementById('cnt-feladatkeszito').textContent =
+    allTasks.filter(t => t.feladatkeszito).length;
 }
 
 function setTab(tab) {
   currentTab = tab;
-  ['konnyu','kozepes','nehez'].forEach(d => {
-    document.getElementById('tab-' + d).classList.toggle('active', d === tab);
+  ['konnyu','kozepes','nehez','feladatkeszito'].forEach(d => {
+    const el = document.getElementById('tab-' + d);
+    if (el) el.classList.toggle('active', d === tab);
   });
-  filteredTasks = allTasks.filter(t => t.nehezseg === tab);
+  if (tab === 'feladatkeszito') {
+    filteredTasks = allTasks.filter(t => t.feladatkeszito);
+    document.getElementById('tab-feladatkeszito').style.borderColor = 'rgba(168,85,247,.8)';
+    document.getElementById('tab-feladatkeszito').style.color = '#e9d5ff';
+    document.getElementById('tab-feladatkeszito').style.background = 'rgba(168,85,247,.12)';
+  } else {
+    const fkTab = document.getElementById('tab-feladatkeszito');
+    if (fkTab && tab !== 'feladatkeszito') {
+      fkTab.style.borderColor = 'rgba(168,85,247,.35)';
+      fkTab.style.color = '#c084fc';
+      fkTab.style.background = '';
+    }
+    filteredTasks = allTasks.filter(t => t.nehezseg === tab && !t.feladatkeszito);
+  }
   renderTaskList();
   if (filteredTasks.length > 0) selectTask(filteredTasks[0]);
 }
@@ -452,7 +480,7 @@ function renderTaskList() {
     <div class="task-item${currentTask && currentTask.id === t.id ? ' active' : ''}"
          onclick="selectTask(allTasks.find(x=>x.id===${t.id}))">
       <span class="task-num">${t.id}.</span>
-      <span>${esc(t.cim)}</span>
+      <span>${esc(t.cim)}${t.uj ? ' <span style="font-size:.58rem;font-weight:800;color:#22c55e;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:3px;padding:0 4px;vertical-align:middle">ÚJ</span>' : ''}</span>
     </div>`).join('');
 }
 
@@ -477,10 +505,33 @@ function selectTask(task) {
 
   const diffLabels = { konnyu: '🌱 Könnyű', kozepes: '💪 Közepes', nehez: '🔥 Nehéz' };
   const diffEl = document.getElementById('desc-diff');
-  diffEl.textContent = diffLabels[task.nehezseg] || task.nehezseg;
-  diffEl.className = 'desc-badge ' + task.nehezseg;
+  if (task.feladatkeszito) {
+    diffEl.textContent = '✏️ Feladatkészítő';
+    diffEl.className = 'desc-badge';
+    diffEl.style.background = 'rgba(168,85,247,.15)';
+    diffEl.style.color = '#c084fc';
+    diffEl.style.border = '1px solid rgba(168,85,247,.4)';
+  } else {
+    diffEl.textContent = diffLabels[task.nehezseg] || task.nehezseg;
+    diffEl.className = 'desc-badge ' + task.nehezseg;
+    diffEl.style.cssText = '';
+  }
 
-  document.getElementById('desc-content').innerHTML = formatDesc(task.szoveg);
+  // Feladatkészítő szavazógomb
+  const voteKey = '_practiceVotes';
+  const voted = JSON.parse(localStorage.getItem(voteKey) || '{}');
+  const voteHtml = task.feladatkeszito ? `<div id="fk-vote-box" style="margin-bottom:10px;padding:8px 12px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:8px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#c084fc;">
+    <i class="fas fa-pencil" style="color:#a855f7"></i>
+    <span style="flex:1">Ez egy <strong>Feladatkészítő</strong> feladat — szavazd meg, hogy bekerüljön a dolgozati feladatok közé!</span>
+    <button id="fk-vote-btn" onclick="voteFeladatkeszito(${task.id})"
+      style="padding:4px 14px;border-radius:6px;border:1px solid ${voted[task.id] ? '#22c55e' : 'rgba(168,85,247,.6)'};
+      background:${voted[task.id] ? 'rgba(34,197,94,.15)' : 'rgba(168,85,247,.15)'};
+      color:${voted[task.id] ? '#22c55e' : '#c084fc'};font-size:0.8rem;font-weight:700;cursor:${voted[task.id] ? 'default' : 'pointer'};">
+      ${voted[task.id] ? '<i class="fas fa-check"></i> Szavaztam' : '<i class="fas fa-thumbs-up"></i> Szavazok'}
+    </button>
+  </div>` : '';
+
+  document.getElementById('desc-content').innerHTML = voteHtml + formatDesc(task.szoveg);
 
   document.getElementById('terminal').className = 'empty';
   document.getElementById('terminal').textContent = 'A kód futtatásának eredménye itt jelenik meg.';
@@ -493,6 +544,32 @@ function pickRandom() {
   if (filteredTasks.length === 0) return;
   const t = filteredTasks[Math.floor(Math.random() * filteredTasks.length)];
   selectTask(t);
+}
+
+function voteFeladatkeszito(taskId) {
+  const voteKey = '_practiceVotes';
+  const voted = JSON.parse(localStorage.getItem(voteKey) || '{}');
+  if (voted[taskId]) return;
+  voted[taskId] = true;
+  localStorage.setItem(voteKey, JSON.stringify(voted));
+
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  const task = allTasks.find(t => t.id === taskId);
+  fetch('https://agazati.up.railway.app/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(u.token ? { Authorization: 'Bearer ' + u.token } : {}) },
+    body: JSON.stringify({ email: u.email || 'vendeg', task_id: taskId, task_cim: task?.cim || '', tipus: 'practice_vote' })
+  }).catch(() => {});
+
+  // Gomb frissítése
+  const btn = document.getElementById('fk-vote-btn');
+  if (btn) {
+    btn.innerHTML = '<i class="fas fa-check"></i> Szavaztam';
+    btn.style.borderColor = '#22c55e';
+    btn.style.background = 'rgba(34,197,94,.15)';
+    btn.style.color = '#22c55e';
+    btn.style.cursor = 'default';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
