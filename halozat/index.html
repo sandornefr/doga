@@ -833,56 +833,56 @@ class CiscoDevice {
     if (/^hostname\s+(.+)/i.test(cmd)) {
       this.state.hostname = cmd.replace(/^hostname\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p(`Hostname beállítva: ${this.state.hostname}`, {ok:true});
     }
     // enable secret
     if (/^enable\s+secret\s+(.+)/i.test(cmd)) {
       this.state.enableSecret = cmd.replace(/^enable\s+secret\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p('Enable secret (titkosított jelszó) beállítva.', {ok:true});
     }
     // enable password
     if (/^enable\s+password\s+(.+)/i.test(cmd)) {
       this.state.enablePassword = cmd.replace(/^enable\s+password\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p('Enable password beállítva.', {ok:true});
     }
     // service password-encryption
     if (/^service\s+password-encryption$/i.test(cmd)) {
       this.state.servicePasswordEncryption = true;
       this.state.saved = false;
-      return p('');
+      return p('Jelszó titkosítás bekapcsolva – minden jelszó titkosítva tárolódik.', {ok:true});
     }
     // ip domain-name
     if (/^ip\s+domain-name\s+(.+)/i.test(cmd)) {
       this.state.domainName = cmd.replace(/^ip\s+domain-name\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p(`Domain-name beállítva: ${this.state.domainName}`, {ok:true});
     }
     // ip name-server
     if (/^ip\s+name-server\s+(.+)/i.test(cmd)) {
       this.state.nameServer = cmd.replace(/^ip\s+name-server\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p(`DNS szerver beállítva: ${this.state.nameServer}`, {ok:true});
     }
     // ip default-gateway
     if (/^ip\s+default-gateway\s+(.+)/i.test(cmd)) {
       this.state.defaultGateway = cmd.replace(/^ip\s+default-gateway\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p(`Alapértelmezett átjáró: ${this.state.defaultGateway}`, {ok:true});
     }
     // ntp server
     if (/^ntp\s+server\s+(.+)/i.test(cmd)) {
       this.state.ntpServer = cmd.replace(/^ntp\s+server\s+/i,'').trim();
       this.state.saved = false;
-      return p('');
+      return p(`NTP szerver beállítva: ${this.state.ntpServer}`, {ok:true});
     }
     // username
     if (/^username\s+(\S+)\s+(secret|password)\s+(.+)/i.test(cmd)) {
       const m = cmd.match(/^username\s+(\S+)\s+(?:secret|password)\s+(.+)/i);
       this.state.users[m[1]] = m[2].trim();
       this.state.saved = false;
-      return p('');
+      return p(`Helyi felhasználó létrehozva: ${m[1]}`, {ok:true});
     }
     // crypto key generate rsa
     if (/^crypto\s+key\s+generate\s+rsa$/i.test(cmd)) {
@@ -920,12 +920,11 @@ class CiscoDevice {
       const iface = this.state.interfaces[this.ctx];
       iface.ip = m[1]; iface.mask = m[2];
       this.state.saved = false;
-      // Also set VLAN1 shortcuts for switch
       if (this.ctx.toLowerCase().startsWith('vlan')) {
         this.state.vlan1Ip = m[1];
         this.state.vlan1Mask = m[2];
       }
-      return p('');
+      return p(`IP-cím beállítva: ${m[1]}  maszk: ${m[2]}`, {ok:true});
     }
     if (cmd === 'no shutdown') {
       const iface = this.state.interfaces[this.ctx];
@@ -949,22 +948,22 @@ class CiscoDevice {
       const val = cmd.replace(/^transport\s+input\s+/i,'').trim().toLowerCase();
       if (this.ctx === 'vty') this.state.vtyTransport = val;
       this.state.saved = false;
-      return p('');
+      return p(`VTY transport input beállítva: ${val}`, {ok:true});
     }
     if (/^login\s+local$/i.test(cmd)) {
       if (this.ctx === 'vty') this.state.vtyLogin = 'local';
       this.state.saved = false;
-      return p('');
+      return p('VTY bejelentkezés: helyi adatbázis (login local).', {ok:true});
     }
     if (/^password\s+(.+)/i.test(cmd)) {
       const pw = cmd.replace(/^password\s+/i,'').trim();
       if (this.ctx === 'con') this.state.consolePassword = pw;
       this.state.saved = false;
-      return p('');
+      return p('Konzol jelszó beállítva.', {ok:true});
     }
     if (/^login$/i.test(cmd)) {
       this.state.saved = false;
-      return p('');
+      return p('Bejelentkezési kérés engedélyezve.', {ok:true});
     }
     return p(`% Invalid input: ${cmd}`, {err:true});
   }
