@@ -1525,9 +1525,9 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT DISTINCT datum FROM progress
+            SELECT DISTINCT DATE(datum) FROM progress
             WHERE LOWER(email) = $email AND datum IS NOT NULL AND datum != ''
-            ORDER BY datum DESC";
+            ORDER BY 1 DESC";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         var dates = new List<DateTime>();
         using var r = cmd.ExecuteReader();
