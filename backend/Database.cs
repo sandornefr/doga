@@ -3091,6 +3091,7 @@ public class Database
             JOIN users u ON LOWER(u.email)=LOWER(h.email)
             WHERE h.ev=$ev AND h.honap=$h
               AND LOWER(h.email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
+              AND u.evfolyam = '10'
             ORDER BY u.evfolyam, u.osztaly, u.csoport, nev";
         cmd.Parameters.AddWithValue("$ev", ev);
         cmd.Parameters.AddWithValue("$h",  honap);
