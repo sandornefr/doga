@@ -2886,9 +2886,21 @@ public class Database
     private static int CalcJegy(double ossz) =>
         ossz >= 80 ? 5 : ossz >= 60 ? 4 : ossz >= 40 ? 3 : ossz >= 21 ? 2 : 1;
 
+    // WEB-only csoport: Python-t más tanár értékeli (10.B/1, 10.B/2, 10.K/infó)
+    private static bool IsWebOnlyCsoport(string? evfolyam, string? osztaly, string? csoport)
+    {
+        if (evfolyam != "10") return false;
+        var o = osztaly?.Trim().ToUpperInvariant() ?? "";
+        var cs = csoport?.Trim().ToLowerInvariant() ?? "";
+        if (o == "B" && (cs == "1" || cs == "2")) return true;
+        if (o == "K" && cs.Contains("inf")) return true;
+        return false;
+    }
+
     public HaviJegyRow CalcHaviJegy(string email, int ev, int honap)
     {
         using var conn = Open();
+        var user = GetUserByEmail(email);
 
         // Python: legjobb % az adott hónapra szóló progress bejegyzések között
         double pythonSzaz = 0;
@@ -2985,12 +2997,21 @@ public class Database
             if (!string.IsNullOrEmpty(v) && v != "false" && v != "0") tananyagDb++;
         }
 
-        // Súlyozott összpont
-        double aktivSzaz  = Math.Min(aktivNapok / 8.0  * 100, 100);
-        double otletSzaz  = Math.Min(otletDb    / 2.0  * 100, 100);
-        double tananyagBo = Math.Round(tananyagDb / 5.0 * 5,  1);
-        double osszSzaz   = pythonSzaz * 0.30 + webSzaz * 0.30 + quizSzaz * 0.20
-                          + aktivSzaz  * 0.10 + otletSzaz * 0.10 + tananyagBo;
+        // Súlyozott összpont — csoport alapján eltérő súlyok
+        double aktivSzaz  = Math.Min(aktivNapok / 8.0 * 100, 100);
+        double otletSzaz  = Math.Min(otletDb    / 2.0 * 100, 100);
+        double tananyagBo = Math.Round(tananyagDb / 5.0 * 5, 1);
+
+        bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
+        double osszSzaz;
+        if (webOnly)
+            // WEB 45% + Quiz 30% + Aktív 15% + Ötlet 10% (Python nem számít)
+            osszSzaz = webSzaz * 0.45 + quizSzaz * 0.30
+                     + aktivSzaz * 0.15 + otletSzaz * 0.10 + tananyagBo;
+        else
+            // Teljes: Python 30% + WEB 30% + Quiz 20% + Aktív 10% + Ötlet 10%
+            osszSzaz = pythonSzaz * 0.30 + webSzaz * 0.30 + quizSzaz * 0.20
+                     + aktivSzaz  * 0.10 + otletSzaz * 0.10 + tananyagBo;
         osszSzaz = Math.Min(osszSzaz, 105);
 
         int jegy = CalcJegy(osszSzaz);
