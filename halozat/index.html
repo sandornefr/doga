@@ -1423,6 +1423,36 @@ function renderInfoPanel(task) {
   renderTaskCard(task);
 }
 
+// Tipp szövegben az értékeket (jelszó, hostname, IP, domain stb.) sárgával emeli ki
+function _formatTipp(tipp) {
+  const VAL = 'color:#ffa657;font-weight:800';
+  return tipp.split('→').map(seg => {
+    let s = seg.trim();
+    // IP-cím és maszk (pl. 192.168.30.1 255.255.255.240)
+    s = s.replace(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g, `<span style="${VAL}">$1</span>`);
+    // Szögletes zárójelbe írt értékek pl. [2048]
+    s = s.replace(/\[([^\]]+)\]/g, `<span style="${VAL}">$1</span>`);
+    // hostname X
+    s = s.replace(/^(hostname)\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // enable secret X  /  enable password X
+    s = s.replace(/^(enable\s+(?:secret|password))\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // username X secret/password Y
+    s = s.replace(/^(username)\s+(\S+)\s+(secret|password)\s+(\S+)/i,
+      `$1 <span style="${VAL}">$2</span> $3 <span style="${VAL}">$4</span>`);
+    // ip domain-name X
+    s = s.replace(/^(ip\s+domain-name)\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // ip name-server X
+    s = s.replace(/^(ip\s+name-server)\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // ntp server X
+    s = s.replace(/^(ntp\s+server)\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // password X (line módban)
+    s = s.replace(/^(password)\s+(\S+)/i, `$1 <span style="${VAL}">$2</span>`);
+    // SSID: X | Kulcs: X | Jelszó: X formátum
+    s = s.replace(/:\s+(\S+)/g, `: <span style="${VAL}">$1</span>`);
+    return s;
+  }).join('<br><span style="color:#484f58"> → </span>');
+}
+
 function _konzolGomb(task) {
   if (!task.konzolSzukseges) return '';
   if (appState.konzolKapcsolt) {
@@ -1487,7 +1517,7 @@ function renderTaskCard(task) {
     }
     if (step.tipp) {
       html += `<div class="tc-card-label" style="margin-top:10px"><i class="fas fa-terminal" style="margin-right:4px;color:#56d364"></i>Parancsok</div>
-               <div class="tc-step-tipp">${step.tipp.replace(/→/g,'<br>→ ')}</div>`;
+               <div class="tc-step-tipp">${_formatTipp(step.tipp)}</div>`;
     }
     body.innerHTML = html;
 
