@@ -528,8 +528,9 @@ function showMainPage() {
     loadAll();
 }
 
-async function authFetch(url) {
-    return fetch(url, { headers:{ 'Authorization':'Bearer '+authToken } });
+async function authFetch(url, options = {}) {
+    const { headers: extraHeaders, ...rest } = options;
+    return fetch(url, { ...rest, headers: { 'Authorization':'Bearer '+authToken, ...extraHeaders } });
 }
 
 // ── Adatbetöltés ─────────────────────────────────────────────────────────────
