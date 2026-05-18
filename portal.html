@@ -1059,8 +1059,8 @@
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
         <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
-        <button id="topbar-jegy-btn" onclick="openJegyModal()" style="display:none;padding:5px 12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;animation:jegyPulse 2s infinite;" title="Jegybeírás határidők">
-            🎯 Jegybeírás!
+        <button id="topbar-jegy-btn" onclick="openAktualisModal()" style="display:none;padding:5px 12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;animation:jegyPulse 2s infinite;" title="Aktuális jegyállapot">
+            <i class="fas fa-calendar-check"></i> Aktuális
         </button>
         <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
@@ -1084,15 +1084,27 @@
                 A profil oldalon láthatod a várható jegyedet és azt, hogy mit tehetsz még a jobb eredményért.
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <a href="profil.html#havijegyek"
-                   style="flex:1;padding:10px 16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;text-align:center;cursor:pointer;">
-                   <i class="fas fa-graduation-cap" style="margin-right:6px"></i>Mit tehetek még?
-                </a>
+                <button onclick="closeJegyModal();openAktualisModal();"
+                   style="flex:1;padding:10px 16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.88rem;cursor:pointer;">
+                   <i class="fas fa-chart-line" style="margin-right:6px"></i>Részletes állapot
+                </button>
                 <button onclick="closeJegyModal()"
                    style="padding:10px 16px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#6b7280;font-size:.88rem;cursor:pointer;">
                    Bezárom
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Aktuális jegyállapot részletes modal -->
+    <div id="aktualis-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9998;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:#0d1117;border:1px solid #4f46e5;border-radius:16px;max-width:520px;width:95vw;max-height:88vh;overflow-y:auto;position:relative;box-shadow:0 0 40px rgba(99,102,241,.3);">
+            <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#0d1117;z-index:1;border-bottom:1px solid #161b22;padding-bottom:12px;">
+                <div style="font-size:1.05rem;font-weight:800;color:#e0e0e0;"><i class="fas fa-chart-line" style="color:#4f46e5;margin-right:8px;"></i>Aktuális jegyállapot</div>
+                <button onclick="closeAktualisModal()" style="background:transparent;border:none;color:#6b7280;font-size:1.1rem;cursor:pointer;padding:4px 8px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="aktualis-tabs" style="padding:12px 24px 0;display:flex;gap:8px;flex-wrap:wrap;"></div>
+            <div id="aktualis-tartalom" style="padding:16px 24px 24px;"></div>
         </div>
     </div>
 
@@ -3670,6 +3682,168 @@ function closeJegyModal() {
 document.getElementById('jegy-modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeJegyModal();
 });
+document.getElementById('aktualis-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeAktualisModal();
+});
+
+// ── Aktuális jegyállapot panel ───────────────────────────────────────────────
+const RAILWAY_PORTAL = 'https://agazati.up.railway.app';
+const JEGY_POTL_ISO  = { 3:'2026-05-27', 4:'2026-06-03', 5:'2026-06-10' };
+const HONAP_NEV      = { 3:'március', 4:'április', 5:'május' };
+const JEGY_SZIN      = { 5:'#22c55e', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'#f87171' };
+
+let _aktualisAdatok  = null;
+let _aktualisTab     = 0;
+
+async function _betoltAktualisAdatok() {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!u.token) return;
+    try {
+        const r = await fetch(RAILWAY_PORTAL + '/api/havijegy/aktualis', {
+            headers: { Authorization: 'Bearer ' + u.token },
+            signal: AbortSignal.timeout(7000)
+        });
+        if (r.ok) _aktualisAdatok = await r.json();
+    } catch {}
+}
+
+function openAktualisModal() {
+    document.getElementById('aktualis-modal-overlay').style.display = 'flex';
+    _renderAktualisModal();
+    if (!_aktualisAdatok) {
+        _betoltAktualisAdatok().then(() => _renderAktualisModal());
+    }
+}
+
+function closeAktualisModal() {
+    document.getElementById('aktualis-modal-overlay').style.display = 'none';
+}
+
+function _aktualisTabValaszt(i) {
+    _aktualisTab = i;
+    _renderAktualisModal();
+}
+
+function _renderAktualisModal() {
+    const now = new Date();
+    const tabsEl     = document.getElementById('aktualis-tabs');
+    const tartEl     = document.getElementById('aktualis-tartalom');
+
+    if (!_aktualisAdatok) {
+        tabsEl.innerHTML = '';
+        tartEl.innerHTML = '<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><div style="margin-top:10px;font-size:.85rem;">Adatok betöltése...</div></div>';
+        return;
+    }
+
+    const nyitott = _aktualisAdatok.filter(a => new Date(JEGY_POTL_ISO[a.alap.honap] + 'T23:59:59') >= now);
+
+    if (!nyitott.length) {
+        tabsEl.innerHTML = '';
+        tartEl.innerHTML = '<div style="color:#6b7280;text-align:center;padding:30px;font-size:.9rem;">Nincs aktív jegybeírási időszak.</div>';
+        return;
+    }
+
+    if (_aktualisTab >= nyitott.length) _aktualisTab = 0;
+
+    // Tab-ok
+    tabsEl.innerHTML = nyitott.map((a, i) => {
+        const j = a.alap.jegy || 1;
+        const aktiv = i === _aktualisTab;
+        return `<button onclick="_aktualisTabValaszt(${i})"
+            style="padding:6px 14px;border-radius:8px;border:1.5px solid ${aktiv?'#4f46e5':'#21262d'};
+                   background:${aktiv?'rgba(79,70,229,.2)':'transparent'};
+                   color:${aktiv?'#a5b4fc':'#6b7280'};font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;">
+            2026. ${HONAP_NEV[a.alap.honap]}
+            <span style="margin-left:6px;font-weight:800;color:${JEGY_SZIN[j]||'#94a3b8'}">${j}-es</span>
+        </button>`;
+    }).join('');
+
+    tartEl.innerHTML = _renderHonapReszlet(nyitott[_aktualisTab], now);
+}
+
+function _renderHonapReszlet(adat, now) {
+    const a  = adat.alap;
+    const h  = a.honap;
+    const JEGY_HATAROK = { 2:21, 3:40, 4:60, 5:80 };
+    const jegy = a.jegy || 1;
+    const kovJegy   = jegy < 5 ? jegy + 1 : null;
+    const kovHatar  = kovJegy ? JEGY_HATAROK[kovJegy] : null;
+    const hiany     = kovHatar ? Math.max(0, kovHatar - a.osszSzaz).toFixed(1) : null;
+    const napok     = Math.ceil((new Date(JEGY_POTL_ISO[h]+'T23:59:59') - now) / 86400000);
+    const surg      = napok <= 7;
+
+    function progressSor(label, szaz, max100, ikon, szinTeli) {
+        const pct = Math.min(100, szaz);
+        return `<div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span style="font-size:.82rem;color:#94a3b8;"><i class="${ikon}" style="width:14px;margin-right:6px;color:#4f46e5;"></i>${label}</span>
+                <span style="font-size:.82rem;font-weight:700;color:${pct>=80?'#22c55e':pct>=50?'#fcd34d':'#94a3b8'}">${Math.round(szaz)}%</span>
+            </div>
+            <div style="height:6px;background:#21262d;border-radius:3px;overflow:hidden;">
+                <div style="height:100%;width:${pct}%;background:${szinTeli};border-radius:3px;transition:width .4s;"></div>
+            </div>
+        </div>`;
+    }
+
+    function szorgalmiSor(label, szaz, elvegzett, ikon) {
+        const ok = elvegzett || szaz >= 100;
+        const reszben = !ok && szaz > 0;
+        const szin = ok ? '#22c55e' : reszben ? '#fcd34d' : '#4b5563';
+        const ikonFa = ok ? 'fa-check-circle' : reszben ? 'fa-circle-half-stroke' : 'fa-circle';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
+                            background:${ok?'rgba(34,197,94,.06)':reszben?'rgba(252,211,77,.06)':'rgba(255,255,255,.02)'};
+                            border:1px solid ${ok?'rgba(34,197,94,.2)':reszben?'rgba(252,211,77,.2)':'#21262d'};margin-bottom:6px;">
+            <i class="fas ${ikonFa}" style="color:${szin};font-size:.85rem;width:14px;"></i>
+            <span style="font-size:.82rem;color:#c9d1d9;flex:1;">${label}</span>
+            <span style="font-size:.78rem;font-weight:600;color:${szin};">${ok?'Kész':reszben?Math.round(szaz)+'%':'–'}</span>
+        </div>`;
+    }
+
+    // Összesített jegy sor
+    const jegyStr   = `<span style="font-size:2rem;font-weight:900;color:${JEGY_SZIN[jegy]||'#94a3b8'};margin-right:8px;">${jegy}</span>`;
+    const osszStr   = `<span style="font-size:.9rem;color:#6b7280;">(${Math.round(a.osszSzaz)}%)</span>`;
+    const kovetkezo = kovJegy
+        ? `<div style="font-size:.78rem;color:${surg?'#f87171':'#818cf8'};margin-top:4px;">
+              <i class="fas fa-arrow-up" style="margin-right:4px;"></i>A ${kovJegy}-eshez még <strong>${hiany}%</strong> kell
+           </div>`
+        : `<div style="font-size:.78rem;color:#22c55e;margin-top:4px;"><i class="fas fa-trophy" style="margin-right:4px;"></i>Maximális jegy!</div>`;
+
+    const hataridoSor = `<div style="display:flex;align-items:center;justify-content:space-between;
+        background:${surg?'rgba(239,68,68,.08)':'rgba(79,70,229,.06)'};border:1px solid ${surg?'rgba(239,68,68,.3)':'rgba(79,70,229,.2)'};
+        border-radius:8px;padding:8px 12px;margin-bottom:16px;">
+        <span style="font-size:.8rem;color:#94a3b8;"><i class="fas fa-clock" style="margin-right:6px;color:${surg?'#f87171':'#818cf8'};"></i>Határidő: ${JEGY_POTL[h]}</span>
+        <span style="font-size:.8rem;font-weight:700;color:${surg?'#f87171':'#a5b4fc'};">még ${napok} nap</span>
+    </div>`;
+
+    return `
+    ${hataridoSor}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px;background:rgba(79,70,229,.08);border-radius:10px;border:1px solid rgba(79,70,229,.2);">
+        <div>${jegyStr}${osszStr}</div>
+        <div style="flex:1;">${kovetkezo}</div>
+    </div>
+
+    <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4b5563;margin-bottom:10px;">
+        <i class="fas fa-list-check" style="margin-right:6px;"></i>Kötelező elemek
+    </div>
+    ${h >= 3 ? progressSor('Python feladatok', a.pythonSzaz, 100, 'fab fa-python', 'linear-gradient(90deg,#3b82f6,#1d4ed8)') : ''}
+    ${h >= 3 ? progressSor('WEB feladatok', a.webSzaz, 100, 'fas fa-globe', 'linear-gradient(90deg,#10b981,#047857)') : ''}
+    ${h >= 4 ? progressSor('Tudáspróba (HTML+CSS+Bootstrap)', a.quizSzaz, 100, 'fas fa-question-circle', 'linear-gradient(90deg,#8b5cf6,#6d28d9)') : ''}
+    ${progressSor('Aktív napok ('+a.aktivNapok+'/8)', Math.min(100, a.aktivNapok/8*100), 100, 'fas fa-calendar-day', 'linear-gradient(90deg,#f59e0b,#b45309)')}
+    ${progressSor('Ötletek / hibajelentések ('+a.otletDb+'/2)', Math.min(100, a.otletDb/2*100), 100, 'fas fa-lightbulb', 'linear-gradient(90deg,#ec4899,#9d174d)')}
+
+    <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4b5563;margin:16px 0 10px;">
+        <i class="fas fa-star" style="margin-right:6px;"></i>Szorgalmi elemek
+    </div>
+    ${szorgalmiSor('Tananyag elvégzése ('+a.tananyagDb+'/5)', a.tananyagDb/5*100, false, 'fas fa-book')}
+    ${szorgalmiSor('Python Profi szint', adat.pythonProfiSzaz, adat.pythonProfiSzaz >= 100, 'fab fa-python')}
+    ${szorgalmiSor('WEB Kávézó feladat', adat.webKavezos, adat.webKavezos >= 100, 'fas fa-mug-hot')}
+    ${h >= 5 ? szorgalmiSor('Hálózat szimulátor', adat.halozatSzaz, adat.halozatSzaz >= 100, 'fas fa-network-wired') : ''}
+
+    ${a.szorgalmiJelolt ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;font-size:.82rem;color:#86efac;font-weight:700;">
+        <i class="fas fa-award" style="margin-right:6px;"></i>Szorgalmi jegy javasolható!
+        ${a.dicseretJavasolt ? '<span style="margin-left:8px;color:#fcd34d;"><i class="fas fa-medal"></i> Dicséret is javasolt</span>' : ''}
+    </div>` : ''}`;
+}
 </script>
 </body>
 </html>

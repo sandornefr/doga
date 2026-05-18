@@ -1825,9 +1825,27 @@ function checkAll() {
 
   document.getElementById('res-items').innerHTML = html;
   document.getElementById('results-overlay').style.display = 'flex';
+
+  // Progress küldés Railway backendnek
+  sendHalozatProgress(task.id, pts, 40);
 }
 
 function closeResults() { document.getElementById('results-overlay').style.display = 'none'; }
+
+function sendHalozatProgress(taskId, pont, maxPont) {
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+  if (!u.token || !u.email) return;
+  fetch('https://agazati.up.railway.app/api/progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+    body: JSON.stringify({
+      email: u.email, nev: u.nev || '',
+      osztaly: u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '',
+      targy: 'halozat', feladat: 'h' + taskId,
+      pont, maxPont, mode: 'practice'
+    })
+  }).catch(() => {});
+}
 
 // ═══════════════════════════════════════════════════════════════
 // OPEN DEVICE

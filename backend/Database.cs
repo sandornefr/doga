@@ -3057,6 +3057,47 @@ public class Database
         };
     }
 
+    public AktualisReszlet CalcAktualisReszlet(string email, int ev, int honap)
+    {
+        var alap = CalcHaviJegy(email, ev, honap);
+        using var conn = Open();
+        var e = email.ToLower().Trim();
+
+        double profiSzaz = 0, kavezosMaxSzaz = 0, halozatMaxSzaz = 0;
+
+        // Python profi szint
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100)
+                FROM progress WHERE LOWER(email)=$e AND LOWER(targy)='python' AND feladat LIKE 'pro_%'";
+            cmd.Parameters.AddWithValue("$e", e);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) profiSzaz = Convert.ToDouble(v);
+        }
+
+        // Web kávézó
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100)
+                FROM progress WHERE LOWER(email)=$e AND LOWER(targy)='web' AND feladat LIKE 'kavezos_%'";
+            cmd.Parameters.AddWithValue("$e", e);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) kavezosMaxSzaz = Convert.ToDouble(v);
+        }
+
+        // Hálózat szimulátor
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100)
+                FROM progress WHERE LOWER(email)=$e AND LOWER(targy)='halozat'";
+            cmd.Parameters.AddWithValue("$e", e);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) halozatMaxSzaz = Convert.ToDouble(v);
+        }
+
+        return new AktualisReszlet(alap, Math.Round(profiSzaz, 1), Math.Round(kavezosMaxSzaz, 1), Math.Round(halozatMaxSzaz, 1));
+    }
+
     public void UpsertHaviJegy(HaviJegyRow r)
     {
         using var conn = Open();

@@ -1729,6 +1729,17 @@ app.MapGet("/api/havijegy/preview", (HttpContext ctx, Database db) =>
     return Results.Ok(sor);
 });
 
+// Aktuális részletes jegyállapot (diák) — GET /api/havijegy/aktualis
+app.MapGet("/api/havijegy/aktualis", (HttpContext ctx, Database db) =>
+{
+    var (valid, email, _) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    var eredmenyek = new[] { 3, 4, 5 }
+        .Select(h => db.CalcAktualisReszlet(email, 2026, h))
+        .ToList();
+    return Results.Ok(eredmenyek);
+});
+
 // Tanár módosít / véglegesít — PATCH /api/havijegy/{id}
 app.MapPatch("/api/havijegy/{id}", (int id, HaviJegyPatchRequest req, HttpContext ctx, Database db) =>
 {

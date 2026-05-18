@@ -640,3 +640,10 @@ public record HaviJegyPatchRequest(
     bool?   Veglegesitve,
     string? TanariMegjegyzes
 );
+
+public record AktualisReszlet(
+    HaviJegyRow Alap,
+    double PythonProfiSzaz,
+    double WebKavezos,
+    double HalozatSzaz
+);
