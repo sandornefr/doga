@@ -3607,11 +3607,11 @@ if (location.hash === '#web-tanulas') {
 })();
 
 const JEGY_HATÁRIDŐK = [
-    { honap:3, label:'március', until:'2026-05-20' },
-    { honap:4, label:'április', until:'2026-05-25' },
-    { honap:5, label:'május',   until:'2026-05-31' },
+    { honap:3, label:'március', until:'2026-05-27' },
+    { honap:4, label:'április', until:'2026-06-03' },
+    { honap:5, label:'május',   until:'2026-06-10' },
 ];
-const JEGY_POTL = { 3:'máj. 20.', 4:'máj. 25.', 5:'máj. 31.' };
+const JEGY_POTL = { 3:'máj. 27.', 4:'jún. 3.', 5:'jún. 10.' };
 
 function showJegybeirasBanner() {
     const now = new Date();
@@ -3629,9 +3629,9 @@ function showJegybeirasBanner() {
     const btn = document.getElementById('topbar-jegy-btn');
     if (btn) btn.style.display = 'inline-block';
 
-    // Belépéskor egyszer felugró modal (aznap csak egyszer)
-    const maDate = new Date().toISOString().slice(0,10);
-    const lattaMa = sessionStorage.getItem('jegy_figyelmeztetes') === maDate;
+    // Belépéskor egyszer felugró modal (aznap csak egyszer – localStorage, hogy tab bezárás után is megmaradjon)
+    const maDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
+    const lattaMa = localStorage.getItem('jegy_figyelmeztetes') === maDate;
     if (!lattaMa) openJegyModal();
 }
 
@@ -3659,7 +3659,7 @@ function openJegyModal() {
     }
 
     document.getElementById('jegy-modal-overlay').classList.add('open');
-    sessionStorage.setItem('jegy_figyelmeztetes', new Date().toISOString().slice(0,10));
+    localStorage.setItem('jegy_figyelmeztetes', new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' }));
 }
 
 function closeJegyModal() {
