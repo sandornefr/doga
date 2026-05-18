@@ -2321,10 +2321,20 @@ async function submitTest() {
     // ahol van kód de még nem futott le a checkScoring (pl. tanuló nem kattintott "Kód futtatása"-ra)
     await autoScoreUnscoredTasks();
 
-    // Live módban hónap-választó: melyik hónap jegyébe számítson?
+    // Hónap-választó: melyik hónap jegyébe számítson? (minden módban)
     let celHonap = null;
-    if (testMode === 'live' && !cheatDetected) {
+    if (!cheatDetected) {
         celHonap = await showHonapModal();
+        if (celHonap) {
+            const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            if (u.token) {
+                fetch(RAILWAY_URL + '/api/progress/cel-honap-mai', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+                    body: JSON.stringify({ celHonap }),
+                }).catch(() => {});
+            }
+        }
     }
 
     const result = await submitToBackend(celHonap);

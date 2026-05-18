@@ -1737,6 +1737,21 @@ app.MapPatch("/api/havijegy/{id}", (int id, HaviJegyPatchRequest req, HttpContex
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
+// Saját aznapi progress bejegyzések cél-hónapjának tömeges frissítése — PATCH /api/progress/cel-honap-mai
+app.MapPatch("/api/progress/cel-honap-mai", async (HttpContext ctx, Database db) =>
+{
+    var (valid, email, _) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    using var reader = new StreamReader(ctx.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var doc  = JsonDocument.Parse(body).RootElement;
+    if (!doc.TryGetProperty("celHonap", out var chEl)) return Results.BadRequest(new { error = "celHonap szükséges" });
+    var celHonap = chEl.GetInt32();
+    if (celHonap < 3 || celHonap > 5) return Results.BadRequest(new { error = "celHonap 3-5 lehet" });
+    var db_count = db.SetProgressCelHonapMai(email, celHonap);
+    return Results.Ok(new { success = true, updated = db_count });
+});
+
 // Progress bejegyzés cél-hónapjának mentése — PATCH /api/progress/cel-honap
 app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
 {
