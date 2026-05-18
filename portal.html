@@ -1020,8 +1020,8 @@
         .pw-change-btn:hover { background: #c73652; }
         .pw-change-btn:disabled { background: #555; cursor: not-allowed; }
         @keyframes jegyPulse {
-            0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); }
-            50%      { box-shadow: 0 0 0 7px rgba(99,102,241,0); }
+            0%,100% { box-shadow: 0 0 6px 2px rgba(99,102,241,.6), 0 0 0 0 rgba(99,102,241,.5); }
+            50%      { box-shadow: 0 0 14px 4px rgba(139,92,246,.9), 0 0 0 8px rgba(99,102,241,0); }
         }
         #jegy-modal-overlay {
             display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
@@ -3638,7 +3638,7 @@ function showJegybeirasBanner() {
 
     // Topbar badge megjelenítése
     const btn = document.getElementById('topbar-jegy-btn');
-    if (btn) btn.style.display = 'inline-block';
+    if (btn) btn.style.display = 'inline-flex';
 
     // Belépéskor egyszer felugró modal (aznap csak egyszer – localStorage, hogy tab bezárás után is megmaradjon)
     const maDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
