@@ -1326,7 +1326,7 @@ else:
 Cim: Ruhaméret
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 
 Írj programot, amely bekéri a mellbőséget cm-ben, majd kiírja a megfelelő ruháméretet!
 XS: kisebb mint 80 cm
@@ -1379,7 +1379,7 @@ else:
 Cim: Taxi ár kalkulátor
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 
 Írj programot, amely kiszámolja egy taxiút árát!
 Az alap díj: 500 Ft.
@@ -1424,7 +1424,7 @@ print(f"Fizetendő: {ar} Ft")
 Cim: Szállodai szoba
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 
 Írj programot, amely kiszámítja egy szállodai tartózkodás árát!
 Az éjszakák számát és a szoba típusát kérd be a felhasználótól!
@@ -1482,7 +1482,7 @@ else:
 Cim: Kutya életkor kalkulátor
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 
 A kutyák életkora nem egyszerűen 7-tel szorzódik! A tudományos számítás szerint:
 Az 1. év pontosan 15 emberi évnek számít.
@@ -1536,7 +1536,7 @@ print(f"A kutyád emberi években: {emberi_ev} éves.")
 Cim: Traffipax
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 
 Készíts programot egy sebességmérő kamerának! A program kérje be az útszakaszon megengedett sebességet (km/h), majd a radar által mért tényleges sebességet (km/h)!
 A program számolja ki a különbséget, és döntse el a büntetést az alábbiak szerint:
@@ -1588,7 +1588,7 @@ Pont: 14
 Cim: Űrhajó Rakomány
 Tipus: függvény,for
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 
 Egy teherűrhajó felszállás előtt ellenőrzi a berakodott konténerek súlyát, mert a hajó maximum 100 tonna extra súlyt bír el.
 
@@ -1679,7 +1679,7 @@ else:
 Cim: Mobiladat Túllépés
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 
 Egy mobilszolgáltató a havi 5 GB-os adatkeret felett extra díjat számol fel. Készíts programot, ami bekéri az adott hónapban felhasznált adatmennyiséget (egész GB-ban), majd kiszámolja a fizetendő túldíjat az alábbiak szerint:
 
@@ -1729,7 +1729,7 @@ Pont: 14
 Cim: Alkimista Varázsital
 Tipus: függvény,for
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 
 Egy alkimista varázsitalt főz. Minden hozzávalónak van egy toxicitási (mérgezési) szintje. Ha az üstben lévő anyagok össz-toxicitása eléri a 100%-ot, az üst felrobban!
 
@@ -1822,7 +1822,7 @@ Pont: 8
 Cim: Okosotthon fűtés
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 
 Egy okosotthon fűtésvezérlőjét kell beprogramoznod. A program kérje be a szoba jelenlegi hőmérsékletét, majd a beállított célhőmérsékletet (egész számokként)!
 A program döntse el, hogy kell-e fűteni, és ha igen, milyen fokozaton:
@@ -1876,7 +1876,7 @@ Pont: 8
 Cim: Hiányzás kalkulátor
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Írj programot, amely segít nyomon követni, mennyire állsz közel a 250 órás hiányzási határhoz – ami felett osztályozó vizsgát kell tenni!
@@ -1938,7 +1938,7 @@ Pont: 8
 Cim: Töri évszám kvíz
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Írj programot, amely véletlenszerűen feltesz egy történelmi évszám kérdést, majd ellenőrzi a választ!
@@ -1997,7 +1997,7 @@ Pont: 18
 Cim: Forgalomszámlálás
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 ModulNev: forgalom.py
 ModulTartalom:
 class Meresadat:
@@ -2089,7 +2089,7 @@ Pont: 18
 Cim: Állatok
 Tipus: class,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 ModulNev: allat.py
 ModulTartalom:
 class Állatfaj:
@@ -2170,4 +2170,856 @@ for állatfaj in állatfajok:
 célfájl = open('legnehezebb.txt', 'w')
 célfájl.write('A(z) ' + legnehezebb_állat.fajnév + ' a legnehezebb.')
 célfájl.close()
+
+34. feladat
+Pont: 8
+Cim: Jurassic Park – Biztonsági Rendszer
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A kerítés feszültsége dönti el, bent maradnak-e a dinoszauruszok!
+Kérj be egy egész számot (a kerítés feszültségét kV-ban), majd döntsd el:
+Ha a szám negatív: "Hiba: A fizika törvényei szerint ez lehetetlen."
+Ha nulla: "A rendszer leállt! Dennis Nedry lelépett, a T-Rex meg már a konyhában van!"
+Ha 5 kV-nál kisebb vagy egyenlő: "Vigyázz, ez csak csiklandozza a raptorokat. Mindjárt átugranak!"
+Egyébként: "A kerítés tartja magát. Maradj a kocsiban, és ne mozdulj!"
+
+Minta kód:
+```
+Add meg a kerítés feszültségét (kV): -3
+Hiba: A fizika törvényei szerint ez lehetetlen.
+
+Add meg a kerítés feszültségét (kV): 0
+A rendszer leállt! Dennis Nedry lelépett, a T-Rex meg már a konyhában van!
+
+Add meg a kerítés feszültségét (kV): 3
+Vigyázz, ez csak csiklandozza a raptorokat. Mindjárt átugranak!
+
+Add meg a kerítés feszültségét (kV): 10
+A kerítés tartja magát. Maradj a kocsiban, és ne mozdulj!
+
+```
+
+Pontozas:
+bekeres:Add meg a kerítés feszültségét (kV): |Bekérés szövege: "Add meg a kerítés feszültségét (kV): "|Pontosan kell a szöveg, zárójelekkel és kettősponttal! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A feszültséget egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A feszültség készen áll az összehasonlításhoz!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul – a program már dönteni tud!
+elif|elif ágat is tartalmaz|Ha if után még más esetek is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden eset külön ágra kerül!
+teszt:-3:Hiba: A fizika törvényei|Negatív feszültséget hibásnak jelzi|Mi történik, ha negatív számot ad meg valaki? 🚫|✅ A negatív esetet hibásnak jelzi – fizikailag lehetetlen!
+teszt:0:Dennis Nedry|Nulla feszültségnél vészjelzést ad|Ha nincs áram a kerítésen, ki nyitotta ki a kapukat? 🦕|🦖 A rendszer leállt – Dennis Nedry nyomában a T-Rex!
+teszt:3:csiklandozza a raptorokat|Kis feszültségnél figyelmeztet|3 kV elegendő a raptorokat visszatartani? 🤔|⚡ Vigyázz – a raptorokat csak csiklandozza!
+teszt:10:A kerítés tartja magát|Magas feszültségnél biztonságos|10 kV esetén bent maradnak-e az állatok? 🔒|🔒 A kerítés tartja magát – mindenki biztonságban!
+
+Tippek:
+
+Megoldas:
+volt = int(input("Add meg a kerítés feszültségét (kV): "))
+
+if volt < 0:
+    print("Hiba: A fizika törvényei szerint ez lehetetlen.")
+elif volt == 0:
+    print("A rendszer leállt! Dennis Nedry lelépett, a T-Rex meg már a konyhában van!")
+elif volt <= 5:
+    print("Vigyázz, ez csak csiklandozza a raptorokat. Mindjárt átugranak!")
+else:
+    print("A kerítés tartja magát. Maradj a kocsiban, és ne mozdulj!")
+
+35. feladat
+Pont: 8
+Cim: Wall Street farkasa – Bróker-indikátor
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+Jordan Belfort módszerével mérd fel a nap sikerét a jutalék alapján!
+Kérj be egy egész számot (a napi jutalékot dollárban), majd döntsd el:
+Ha negatív: "Hiba: Tartozol a cégnek? Menj vissza telefonálni!"
+Ha legfeljebb 100: "Ez csak aprópénz. Ebből még egy ebédet sem kapsz New Yorkban."
+Ha legfeljebb 10000: "Szép munka! Vedd fel a legjobb öltönyöd, este irány a város!"
+Egyébként: "AZ IGEN! Dobd ki a telefont az ablakon, ma te vagy a Wall Street farkasa!"
+
+Minta kód:
+```
+Mennyi jutalékot kerestél ma? ($): -50
+Hiba: Tartozol a cégnek? Menj vissza telefonálni!
+
+Mennyi jutalékot kerestél ma? ($): 50
+Ez csak aprópénz. Ebből még egy ebédet sem kapsz New Yorkban.
+
+Mennyi jutalékot kerestél ma? ($): 5000
+Szép munka! Vedd fel a legjobb öltönyöd, este irány a város!
+
+Mennyi jutalékot kerestél ma? ($): 50000
+AZ IGEN! Dobd ki a telefont az ablakon, ma te vagy a Wall Street farkasa!
+
+```
+
+Pontozas:
+bekeres:Mennyi jutalékot kerestél ma? ($): |Bekérés szövege: "Mennyi jutalékot kerestél ma? ($): "|Pontosan kell a szöveg a zárójelekkel és $-jellel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A jutalékot egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A jutalék készen áll a kategorizáláshoz!
+if|Elágazást használ|Több szint van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|elif ágat alkalmaz|Ha if után még más sávok is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden sáv el van különítve!
+teszt:-50:Tartozol a cégnek|Negatív jutalékot hibásnak jelzi|Mi történik, ha a bróker veszített? 📉|💸 Tartozik a cégnek – menjen vissza telefonálni!
+teszt:50:aprópénz|Kis összegnél megfelelő üzenetet ír ki|50 dollár elég egy New York-i ebédre? 🍔|💵 Csak aprópénz – ennyi nem elég New Yorkban!
+teszt:5000:Szép munka|Közepes összegnél az öltönyt ajánlja|5000 dollár jó nap a Wall Streeten? 🤵|🎩 Szép munka – irány a város ma este!
+teszt:50000:Wall Street farkasa|Nagy összegnél a farkas-üzenetet írja ki|50000 dollár egy nap – ki a Wall Street farkasa? 🐺|🐺 Wall Street farkasa – ma minden lehetséges!
+
+Tippek:
+
+Megoldas:
+dollar = int(input("Mennyi jutalékot kerestél ma? ($): "))
+
+if dollar < 0:
+    print("Hiba: Tartozol a cégnek? Menj vissza telefonálni!")
+elif dollar <= 100:
+    print("Ez csak aprópénz. Ebből még egy ebédet sem kapsz New Yorkban.")
+elif dollar <= 10000:
+    print("Szép munka! Vedd fel a legjobb öltönyöd, este irány a város!")
+else:
+    print("AZ IGEN! Dobd ki a telefont az ablakon, ma te vagy a Wall Street farkasa!")
+
+36. feladat
+Pont: 8
+Cim: Forrest Gump – Bonbonos doboz kalkulátor
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+"Az élet olyan, mint egy doboz bonbon – sosem tudhatod, mit kapsz!"
+Kérj be egy egész számot (hányadik bonbont veszi ki), majd döntsd el:
+Ha nulla vagy negatív: "Hiba: Üres a doboz, Forrest! Valaki megelőzött."
+Ha pontosan 1: "Ez egy mogyorós! Sosem tudhatod, mit kapsz legközelebb."
+Ha legfeljebb 10: "Ez kókuszos. Közben eszedbe jutott, hogy megint futnod kellene pár évet."
+Egyébként: "Elfogyott az édesség. Ideje leülni a padra és mesélni egy kicsit."
+
+Minta kód:
+```
+Hányadik bonbont veszed ki a dobozból? 0
+Hiba: Üres a doboz, Forrest! Valaki megelőzött.
+
+Hányadik bonbont veszed ki a dobozból? 1
+Ez egy mogyorós! Sosem tudhatod, mit kapsz legközelebb.
+
+Hányadik bonbont veszed ki a dobozból? 5
+Ez kókuszos. Közben eszedbe jutott, hogy megint futnod kellene pár évet.
+
+Hányadik bonbont veszed ki a dobozból? 15
+Elfogyott az édesség. Ideje leülni a padra és mesélni egy kicsit.
+
+```
+
+Pontozas:
+bekeres:Hányadik bonbont veszed ki a dobozból? |Bekérés szövege: "Hányadik bonbont veszed ki a dobozból? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A sorszámot egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A sorszám készen áll!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|elif ágat is tartalmaz|Az első eset után tovább kell menni a következő feltételre! 🔀|🔀 Az elif megvan – minden eset külön ágra kerül!
+teszt:0:Üres a doboz|Nulla esetén hibát jelez|Mi van, ha már nincs bonbon a dobozban? 🍫|✅ Az üres dobozt helyesen jelzi!
+teszt:1:mogyorós|Az első bonbonnál speciális üzenet|Forrest az első bonbonnál mindig mogyorósra számít! 🥜|🥜 Az első bonbon mogyorós – Forrest boldog!
+teszt:5:kókuszos|A 2-10. bonbonnál kókuszos üzenet|A doboz közepéről kókuszos bonbon jön! 🥥|🥥 Kókuszos – és lehet, hogy futni kell utána!
+teszt:15:Elfogyott az édesség|A 11. bonbontól az édesség elfogyott|Mi van, ha túl messzire nyúltál a dobozban? 📦|📦 Elfogyott – leülni és mesélni egy kicsit!
+
+Tippek:
+
+Megoldas:
+suti = int(input("Hányadik bonbont veszed ki a dobozból? "))
+
+if suti <= 0:
+    print("Hiba: Üres a doboz, Forrest! Valaki megelőzött.")
+elif suti == 1:
+    print("Ez egy mogyorós! Sosem tudhatod, mit kapsz legközelebb.")
+elif suti <= 10:
+    print("Ez kókuszos. Közben eszedbe jutott, hogy megint futnod kellene pár évet.")
+else:
+    print("Elfogyott az édesség. Ideje leülni a padra és mesélni egy kicsit.")
+
+37. feladat
+Pont: 8
+Cim: John Wick – Hány ceruzád van?
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+Mindenki tudja, hogy John Wick mire képes egy egyszerű írószerrel. Mérd fel a tűzerőt ceruzában!
+Kérj be egy egész számot (ceruzák száma), majd döntsd el:
+Ha negatív: "Hiba: Még a ceruzát is ellopták? Rossz ötlet volt..."
+Ha nulla: "Baj van! John most kénytelen lesz puszta kézzel megoldani a helyzetet."
+Ha pontosan 1: "Egyetlen ceruza? Ez John Wicknek pont elég egy egész hadsereg ellen."
+Ha legfeljebb 3: "Három ceruza?! Ez már kész mészárlás, jobb, ha mindenki menekül!"
+Egyébként: "Ennyi ceruzával John Wick már egy egész kontinenst elfoglalna. 'Baba Yaga' üzemmód!"
+
+Minta kód:
+```
+Hány ceruza van a zsebedben? -1
+Hiba: Még a ceruzát is ellopták? Rossz ötlet volt...
+
+Hány ceruza van a zsebedben? 0
+Baj van! John most kénytelen lesz puszta kézzel megoldani a helyzetet.
+
+Hány ceruza van a zsebedben? 1
+Egyetlen ceruza? Ez John Wicknek pont elég egy egész hadsereg ellen.
+
+Hány ceruza van a zsebedben? 2
+Három ceruza?! Ez már kész mészárlás, jobb, ha mindenki menekül!
+
+Hány ceruza van a zsebedben? 10
+Ennyi ceruzával John Wick már egy egész kontinenst elfoglalna. 'Baba Yaga' üzemmód!
+
+```
+
+Pontozas:
+bekeres:Hány ceruza van a zsebedben? |Bekérés szövege: "Hány ceruza van a zsebedben? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A ceruzák számát egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A ceruzák száma készen áll!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|Több elif ágat is tartalmaz|Ha if után sok más eset is van, minden egyes esethez kell egy elif! 🔀|🔀 Az elif-ek megvannak – minden eset külön ágra kerül!
+teszt:-1:ellopták|Negatív esetén hibát jelez|Mi van, ha valaki elvette a ceruzáját? 🚫|✅ A negatív esetet hibásnak jelzi!
+teszt:0:puszta kézzel|Nulla ceruzánál a puszta kéz marad|John nulla ceruzával is megoldja – de hogyan? 👊|👊 Puszta kézzel is képes megoldani!
+teszt:1:pont elég egy egész hadsereg|Egy ceruzánál a hadsereg elleni esély|Egy ceruza és John Wick – ki nyeri? ✏️|✏️ Egyetlen ceruza – pont elég a hadseregnek!
+teszt:10:Baba Yaga|Sok ceruzánál a Baba Yaga üzemmód|10 ceruzával mekkora hatalmat nyert John Wick? 🌍|🌍 Baba Yaga üzemmód – a kontinens is veszélyben!
+
+Tippek:
+
+Megoldas:
+ceruza = int(input("Hány ceruza van a zsebedben? "))
+
+if ceruza < 0:
+    print("Hiba: Még a ceruzát is ellopták? Rossz ötlet volt...")
+elif ceruza == 0:
+    print("Baj van! John most kénytelen lesz puszta kézzel megoldani a helyzetet.")
+elif ceruza == 1:
+    print("Egyetlen ceruza? Ez John Wicknek pont elég egy egész hadsereg ellen.")
+elif ceruza <= 3:
+    print("Három ceruza?! Ez már kész mészárlás, jobb, ha mindenki menekül!")
+else:
+    print("Ennyi ceruzával John Wick már egy egész kontinenst elfoglalna. 'Baba Yaga' üzemmód!")
+
+38. feladat
+Pont: 8
+Cim: Pénzfeldobás
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A program szimuláljon egy pénzfeldobást: a gép véletlenszerűen dob fejet (0) vagy írást (1).
+A felhasználó tippelje meg az eredményt, majd a program döntse el, eltalálta-e!
+Ha helyes: "Gratulálok, eltaláltad!"
+Ha nem: "Sajnos nem sikerült."
+
+Minta kód:
+```
+Tippelj (0 - fej, 1 - írás): 0
+Gratulálok, eltaláltad!
+
+Tippelj (0 - fej, 1 - írás): 1
+Sajnos nem sikerült.
+
+```
+
+Pontozas:
+import:random|Importálja a random modult|A véletlenszerű pénzfeldobáshoz egy beépített modult kell behívni. Melyik? 📦|📦 A random modul beérkezett!
+tartalmaz:randint|random.randint()-et használja|A random modulnak van egy függvénye, ami két egész szám között véletlenszerűen választ. Mi a neve? 🎲|🎲 randint() – a program már tud pénzt feldobni!
+bekeres:Tippelj (0 - fej, 1 - írás): |Bekérés szövege: "Tippelj (0 - fej, 1 - írás): "|Pontosan kell a szöveg a kötőjelekkel és szóközökkel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A tippet egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A tipp készen áll az összehasonlításhoz!
+if|Elágazást használ|Két eset van: eltalálta vagy sem. Melyik kulcsszóval döntöd el? 🌿|✅ Az elágazás elindul!
+else|else ágat is tartalmaz|Ha nem talált, mit tegyen a program? Az else kezeli! 🔀|🔀 Az else megvan – a rosszul tippelt eset is kezelve!
+tartalmaz:Gratulálok|Helyes tipp esetén gratulál|Mit ír ki a program, ha a tipp helyes? 🎉|🎉 Gratulálok! Az eltalált tipp megünnepelve!
+tartalmaz:nem sikerült|Helytelen tipp esetén vigasztal|Mit ír ki a program, ha a tipp rossz volt? 😅|😅 Sajnos nem sikerült – legközelebb talán szerencsésebb lesz!
+
+Tippek:
+
+Megoldas:
+import random
+
+gep = random.randint(0, 1)
+tipp = int(input("Tippelj (0 - fej, 1 - írás): "))
+
+if tipp == gep:
+    print("Gratulálok, eltaláltad!")
+else:
+    print("Sajnos nem sikerült.")
+
+39. feladat
+Pont: 8
+Cim: MÁV Utas-tájékoztató
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A MÁV tájékoztatja az utasokat a vonat késéséről. Kérj be egy egész számot (késés percekben), majd döntsd el:
+Ha negatív: "Hiba: A vonat nem érkezhet meg indulás előtt."
+Ha legfeljebb 5: "A vonat menetrend szerint közlekedik."
+Ha legfeljebb 30: "A vonat bizonytalan ideig várakozik, mert lassan tolják."
+Egyébként: "A vonatot töröltük, pótlóbusz bizonytalan ideig nem indul."
+
+Minta kód:
+```
+Adja meg a késés mértékét percekben: -5
+Hiba: A vonat nem érkezhet meg indulás előtt.
+
+Adja meg a késés mértékét percekben: 3
+A vonat menetrend szerint közlekedik.
+
+Adja meg a késés mértékét percekben: 20
+A vonat bizonytalan ideig várakozik, mert lassan tolják.
+
+Adja meg a késés mértékét percekben: 60
+A vonatot töröltük, pótlóbusz bizonytalan ideig nem indul.
+
+```
+
+Pontozas:
+bekeres:Adja meg a késés mértékét percekben: |Bekérés szövege: "Adja meg a késés mértékét percekben: "|Pontosan kell a szöveg, kettősponttal és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A perceket egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A percek készen állnak az összehasonlításhoz!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|elif ágat alkalmaz|Ha if után még más sávok is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden sáv el van különítve!
+teszt:-5:nem érkezhet meg indulás előtt|Negatív értéknél hibát jelez|Hogyan érkezhet meg a vonat azelőtt, hogy elindult? 🤔|✅ A negatív értéket hibásnak jelzi!
+teszt:3:menetrend szerint|5 percen belül menetrend szerinti|3 perc késés elfogadható? 🚆|🚆 3 perc – a vonat menetrend szerint közlekedik!
+teszt:20:bizonytalan ideig várakozik|6-30 perc között várakozás|20 percet kellene várni – ez mit jelent MÁV-nál? 😅|😅 Bizonytalan ideig várakozik – lassan tolják!
+teszt:60:töröltük|30 perc felett a vonat törlése|60 perc késéssel mi a valószínűség? 🚌|🚌 A vonatot töröltük – pótlóbusz indul (valószínűleg)!
+
+Tippek:
+
+Megoldas:
+perc = int(input("Adja meg a késés mértékét percekben: "))
+
+if perc < 0:
+    print("Hiba: A vonat nem érkezhet meg indulás előtt.")
+elif perc <= 5:
+    print("A vonat menetrend szerint közlekedik.")
+elif perc <= 30:
+    print("A vonat bizonytalan ideig várakozik, mert lassan tolják.")
+else:
+    print("A vonatot töröltük, pótlóbusz bizonytalan ideig nem indul.")
+
+40. feladat
+Pont: 8
+Cim: Digitális Margaréta
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+A régi játék: letéped a szirmokat, és az utolsó megmondja – szeret vagy nem szeret?
+Kérj be egy egész számot (a szirmok száma), majd döntsd el:
+Ha nulla vagy negatív: "Hiba: A szirmok száma csak pozitív egész szám lehet."
+Ha a szirmok száma páratlan (osztható 2-vel, de maradék 1): "Az utolsó szirom: Szeret."
+Ha páros: "Az utolsó szirom: Nem szeret."
+A végén mindig írd ki: "A játéknak vége."
+
+Minta kód:
+```
+Add meg a letépett szirmok számát: 0
+Hiba: A szirmok száma csak pozitív egész szám lehet.
+A játéknak vége.
+
+Add meg a letépett szirmok számát: 5
+Az utolsó szirom: Szeret.
+A játéknak vége.
+
+Add meg a letépett szirmok számát: 6
+Az utolsó szirom: Nem szeret.
+A játéknak vége.
+
+```
+
+Pontozas:
+bekeres:Add meg a letépett szirmok számát: |Bekérés szövege: "Add meg a letépett szirmok számát: "|Pontosan kell a szöveg kettősponttal és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A szirmok számát egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A szirmok száma készen áll!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+tartalmaz:% 2|A maradékos osztást alkalmazza|A margaréta játék a páros/páratlan szirmokon alapul. Melyik operátor adja meg a maradékot osztás után? 🌸|🌸 A modulo operátor megvan – a szirom-mágikus felfedte titkát!
+teszt:0:csak pozitív egész szám|Nulla esetén hibát jelez|Mi van, ha a virágnak egyáltalán nincs szirma? 🌸|✅ A hibás értéket jelzi!
+teszt:5:Szeret|Páratlan számnál Szeret üzenet|5 szirom páros vagy páratlan? Mit jelent ez? 💕|💕 5 szirom – az utolsó: Szeret!
+teszt:6:Nem szeret|Páros számnál Nem szeret üzenet|6 szirom páros vagy páratlan? 💔|💔 6 szirom – az utolsó: Nem szeret!
+tartalmaz:A játéknak vége|A zárósor minden esetben megjelenik|A játék végét mindig ki kell írni! Megvan a kódodban? 🎯|🎯 A zárósor megjelenik – a játék véget ért!
+
+Tippek:
+
+Megoldas:
+szirmok = int(input("Add meg a letépett szirmok számát: "))
+
+if szirmok <= 0:
+    print("Hiba: A szirmok száma csak pozitív egész szám lehet.")
+elif szirmok % 2 == 1:
+    print("Az utolsó szirom: Szeret.")
+else:
+    print("Az utolsó szirom: Nem szeret.")
+
+print("A játéknak vége.")
+
+41. feladat
+Pont: 8
+Cim: Pulzus mérő
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A program a szívverés (pulzus) alapján ad egészségügyi visszajelzést.
+Kérj be egy egész számot (szívverés/perc, bpm), majd döntsd el:
+Ha több mint 100: "Figyelem! Magas a pulzusod, ülj le és pihenj egy kicsit!"
+Ha kevesebb mint 60: "A pulzusod alacsonyabb az átlagnál, érdemes lehet konzultálni egy orvossal."
+Egyébként (60-100): "A pulzusod a normális tartományban van, gratulálunk!"
+
+Minta kód:
+```
+Mennyi a jelenlegi szívverésed (bpm)? 120
+Figyelem! Magas a pulzusod, ülj le és pihenj egy kicsit!
+
+Mennyi a jelenlegi szívverésed (bpm)? 50
+A pulzusod alacsonyabb az átlagnál, érdemes lehet konzultálni egy orvossal.
+
+Mennyi a jelenlegi szívverésed (bpm)? 75
+A pulzusod a normális tartományban van, gratulálunk!
+
+```
+
+Pontozas:
+bekeres:Mennyi a jelenlegi szívverésed (bpm)? |Bekérés szövege: "Mennyi a jelenlegi szívverésed (bpm)? "|Pontosan kell a szöveg zárójelekkel és kérdőjellel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A pulzust egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A pulzus készen áll az összehasonlításhoz!
+if|Elágazást használ|Három eset van: magas, alacsony, normális. Melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|elif ágat alkalmaz|Az első eset után jön a második – mi az elif feladata? 🔀|🔀 Az elif megvan – a három tartomány mindegyike kezelve!
+else|else ágat is tartalmaz|Ha egyik feltétel sem teljesül, mit tegyen a program? 💚|💚 Az else megvan – a normális tartomány is kezelve!
+teszt:120:Magas a pulzusod|Magas pulzusnál figyelmeztet|120 bpm magas? Mikor kell pihenni? ❤️|❤️ Magas pulzus – leülni és pihenni!
+teszt:50:alacsonyabb az átlagnál|Alacsony pulzusnál orvoshoz küld|50 bpm egészséges? Mikor érdemes orvoshoz menni? 🏥|🏥 Alacsony pulzus – érdemes konzultálni!
+teszt:75:normális tartományban|Normális pulzusnál megdicsér|75 bpm normális? 😊|😊 75 bpm – tökéletes pulzus, gratulálunk!
+
+Tippek:
+
+Megoldas:
+pulzus = int(input("Mennyi a jelenlegi szívverésed (bpm)? "))
+
+if pulzus > 100:
+    print("Figyelem! Magas a pulzusod, ülj le és pihenj egy kicsit!")
+elif pulzus < 60:
+    print("A pulzusod alacsonyabb az átlagnál, érdemes lehet konzultálni egy orvossal.")
+else:
+    print("A pulzusod a normális tartományban van, gratulálunk!")
+
+42. feladat
+Pont: 8
+Cim: Ösztöndíj kalkulátor
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+Az iskola ösztöndíjrendszere az átlag alapján határozza meg a havi támogatást.
+Kérj be egy tizedestört számot (tanulmányi átlag), majd döntsd el melyik sávba esik:
+2.0 alatt: 8 000 Ft
+2.0 – 2.5 között: 12 000 Ft
+2.5 – 3.5 között: 18 000 Ft
+3.5 – 4.5 között: 32 500 Ft
+4.5 felett: 59 000 Ft
+Írd ki: "Az átlagod alapján a havi ösztöndíjad: X Ft."
+
+Minta kód:
+```
+Add meg a tanulmányi átlagodat: 1.8
+Az átlagod alapján a havi ösztöndíjad: 8000 Ft.
+
+Add meg a tanulmányi átlagodat: 2.2
+Az átlagod alapján a havi ösztöndíjad: 12000 Ft.
+
+Add meg a tanulmányi átlagodat: 4.0
+Az átlagod alapján a havi ösztöndíjad: 32500 Ft.
+
+Add meg a tanulmányi átlagodat: 5.0
+Az átlagod alapján a havi ösztöndíjad: 59000 Ft.
+
+```
+
+Pontozas:
+bekeres:Add meg a tanulmányi átlagodat: |Bekérés szövege: "Add meg a tanulmányi átlagodat: "|Pontosan kell a szöveg kettősponttal és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Az átlagot tizedestörtté alakítja|Az átlag tizedestört is lehet – melyik függvénnyel alakítod számmá? 🔢|🔢 Az átlag készen áll a sávok meghatározásához!
+if|Elágazást használ|Több sáv van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|Több elif ágat alkalmaz|Öt sáv van – minden sávhoz kell egy feltétel! 🔀|🔀 Az elif-ek megvannak – minden ösztöndíjsáv külön ágon!
+tartalmaz:ösztöndíjad|Kiírja az ösztöndíj összegét|A végeredményt ki kell írni! Tartalmazza az "ösztöndíjad" szót? 💰|💰 Az ösztöndíj összege megjelenik!
+teszt:1.8:8000|2.0 alatt a legkisebb ösztöndíj|1.8-as átlag melyik sávba esik? 📚|📚 1.8-as átlag – 8000 Ft ösztöndíj!
+teszt:2.2:12000|2.0-2.5 közötti átlagnál 12000 Ft|2.2-es átlag melyik sávba esik? 📗|📗 2.2-es átlag – 12000 Ft ösztöndíj!
+teszt:5.0:59000|5.0-ás átlagnál a maximális ösztöndíj|5.0-ás átlag – ez a csúcs! Mennyi jár érte? 🏆|🏆 5.0-ás átlag – 59000 Ft ösztöndíj!
+
+Tippek:
+
+Megoldas:
+atlag = float(input("Add meg a tanulmányi átlagodat: "))
+
+if atlag < 2.0:
+    osszeg = 8000
+elif atlag <= 2.5:
+    osszeg = 12000
+elif atlag <= 3.5:
+    osszeg = 18000
+elif atlag <= 4.5:
+    osszeg = 32500
+else:
+    osszeg = 59000
+
+print(f"Az átlagod alapján a havi ösztöndíjad: {osszeg} Ft.")
+
+43. feladat
+Pont: 8
+Cim: Diákmunka fizetés
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+Egy diák nyári munkát vállal. Kérj be két számot (ledolgozott órák és órabér forintban), majd számítsd ki a fizetést!
+Ha legfeljebb 40 órát dolgozott: a fizetés = órák × órabér
+Ha többet dolgozott: az első 40 óra normál béren megy, a többi 1.5-szeres szorzóval (túlóra).
+Normál esetén írd ki: "A heti fizetésed: X Ft."
+Túlóránál írd ki: "Túlórával együtt a fizetésed: X Ft."
+
+Minta kód:
+```
+Hány órát dolgoztál a héten? 30
+Mennyi az órabéred (Ft)? 1500
+A heti fizetésed: 45000 Ft.
+
+Hány órát dolgoztál a héten? 45
+Mennyi az órabéred (Ft)? 1000
+Túlórával együtt a fizetésed: 47500 Ft.
+
+```
+
+Pontozas:
+bekeres:Hány órát dolgoztál a héten? |Bekérés szövege: "Hány órát dolgoztál a héten? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🔍|✅ Az első bekérés szövege tökéletesen egyezik!
+bekeres:Mennyi az órabéred (Ft)? |Bekérés szövege: "Mennyi az órabéred (Ft)? "|Pontosan kell a szöveg zárójelekkel és kérdőjellel! 🔍|✅ A második bekérés szövege tökéletesen egyezik!
+int_float:1|Az órákat számmá alakítja|Az input() szöveget ad vissza – számmá kell alakítani! 🔢|🔢 Az óraszám készen áll!
+int_float:2|Az órabért egész számmá alakítja|Az órabért is számmá kell alakítani! 🔢|🔢 Az órabér is készen áll!
+if|Elágazást használ|Két eset: normál munkahét és túlóra. Melyik kulcsszóval döntöd el? 🌿|✅ Az elágazás elindul!
+tartalmaz:40|A 40 órás határt tartalmazza|A normál munkahét határa 40 óra – benne van a kódban? 🕐|✅ A 40 órás határ megtalálható!
+tartalmaz:1.5|A túlóra 1.5-szeres szorzóját tartalmazza|A túlóra másfélszeres bért ér – megvan a szorzó? 💪|💪 Az 1.5-szörös szorzó megvan – a túlóra megéri!
+teszt:45,1000:47500|Túlóra esetén helyesen számol|45 óra, 1000 Ft/h: normál 40×1000=40000 + túlóra 5×1000×1.5=7500 → 47500 Ft. Helyes? 🧮|🧮 A túlóra kalkuláció tökéletes!
+
+Tippek:
+
+Megoldas:
+ora = float(input("Hány órát dolgoztál a héten? "))
+ber = int(input("Mennyi az órabéred (Ft)? "))
+
+if ora <= 40:
+    fizetes = int(ora * ber)
+    print(f"A heti fizetésed: {fizetes} Ft.")
+else:
+    tulora = ora - 40
+    fizetes = int((40 * ber) + (tulora * ber * 1.5))
+    print(f"Túlórával együtt a fizetésed: {fizetes} Ft.")
+
+44. feladat
+Pont: 8
+Cim: Bevásárlólista végösszeg
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+A program kéri be három termék árát, és számolja ki a végösszeget!
+Ha a végösszeg meghaladja a 10 000 Ft-ot, 5% kedvezmény jár a teljes összegből.
+10 000 Ft felett írd ki: "Gratulálunk! A kedvezményes ár: X Ft."
+Egyébként: "A fizetendő összeg: X Ft."
+
+Minta kód:
+```
+Első termék ára: 1000
+Második termék ára: 2000
+Harmadik termék ára: 3000
+A fizetendő összeg: 6000 Ft.
+
+Első termék ára: 3000
+Második termék ára: 4000
+Harmadik termék ára: 5000
+Gratulálunk! A kedvezményes ár: 11400 Ft.
+
+```
+
+Pontozas:
+bekeres:Első termék ára: |Bekérés szövege: "Első termék ára: "|Pontosan kell a szöveg kettősponttal és szóközzel! 🔍|✅ Az első termék ára bekérve!
+bekeres:Második termék ára: |Bekérés szövege: "Második termék ára: "|Pontosan kell a szöveg kettősponttal és szóközzel! 🔍|✅ A második termék ára bekérve!
+bekeres:Harmadik termék ára: |Bekérés szövege: "Harmadik termék ára: "|Pontosan kell a szöveg kettősponttal és szóközzel! 🔍|✅ A harmadik termék ára bekérve!
+int_float:1|Az árakat egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 Az árak készen állnak az összeadáshoz!
+if|Elágazást használ|Két eset van: kedvezmény vagy sem. Melyik kulcsszóval döntöd el? 🌿|✅ Az elágazás elindul!
+tartalmaz:10000|A 10 000 Ft-os határt tartalmazza|Melyik összeg felett jár a kedvezmény? Legyen benne a kódban! 💳|✅ A 10 000 Ft-os határ megtalálható!
+teszt:1000,2000,3000:A fizetendő összeg: 6000|Kis összegnél nincs kedvezmény|1000+2000+3000=6000, ez kevesebb mint 10000 – nincs kedvezmény? 🛒|🛒 6000 Ft – nincs kedvezmény!
+teszt:3000,4000,5000:11400|Nagy összegnél 5% kedvezmény|3000+4000+5000=12000, ez több mint 10000 – 5% kedvezmény: 11400 Ft? 🎁|🎁 11400 Ft – megkaptad az 5% kedvezményt!
+
+Tippek:
+
+Megoldas:
+t1 = int(input("Első termék ára: "))
+t2 = int(input("Második termék ára: "))
+t3 = int(input("Harmadik termék ára: "))
+
+osszeg = t1 + t2 + t3
+
+if osszeg > 10000:
+    kedvezmeny = int(osszeg * 0.95)
+    print(f"Gratulálunk! A kedvezményes ár: {kedvezmeny} Ft.")
+else:
+    print(f"A fizetendő összeg: {osszeg} Ft.")
+
+45. feladat
+Pont: 8
+Cim: Mozi popcorn menüválasztó
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A mozi különleges ajánlattal várja a vendégeket! Kérj be egy választást (kicsi, közepes vagy nagy), majd írd ki az árat és az ajándékot!
+kicsi: 1450 Ft, ajándék: egy játék
+közepes: 2100 Ft, ajándék: egy kis krumpli
+nagy: 2950 Ft, ajándék: egy hamburger
+Ismeretlen méretnél: "Sajnos nincs ilyen méretű menünk!"
+
+Minta kód:
+```
+Milyen popcornt kérsz? (kicsi / közepes / nagy): kicsi
+A kicsi popcorn ára 1450 Ft. Az ajándékod: egy játék!
+
+Milyen popcornt kérsz? (kicsi / közepes / nagy): közepes
+A közepes popcorn ára 2100 Ft. Az ajándékod: egy kis krumpli!
+
+Milyen popcornt kérsz? (kicsi / közepes / nagy): nagy
+A nagy popcorn ára 2950 Ft. Az ajándékod: egy hamburger!
+
+Milyen popcornt kérsz? (kicsi / közepes / nagy): óriás
+Sajnos nincs ilyen méretű menünk!
+
+```
+
+Pontozas:
+bekeres:Milyen popcornt kérsz? (kicsi / közepes / nagy): |Bekérés szövege: "Milyen popcornt kérsz? (kicsi / közepes / nagy): "|Pontosan kell a szöveg a zárójelekkel és perjelekkel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+if|Elágazást használ|Melyik kulcsszóval kezded az összehasonlítást? 🌿|✅ Az elágazás elindul!
+elif|elif ágat alkalmaz|Ha if után más esetek is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – mindhárom méret külön ágra kerül!
+else|else ágat is tartalmaz|Mi van, ha ismeretlen méretet ír be valaki? Az else kezeli! 🔀|🔀 Az else megvan – az ismeretlen méretet is kezeli!
+teszt:kicsi:1450|Kicsi popcornnál helyes árat ír ki|Kicsi méretnél mi az ár és az ajándék? 🎁|🎁 1450 Ft – és jár egy ajándék játék!
+teszt:közepes:2100|Közepes popcornnál helyes árat ír ki|Közepes méretnél mi az ár? 🍿|🍿 2100 Ft – és jár egy kis krumpli!
+teszt:nagy:2950|Nagy popcornnál helyes árat ír ki|Nagy méretnél mi az ár és az ajándék? 🍔|🍔 2950 Ft – és jár egy hamburger!
+teszt:óriás:nincs ilyen méretű|Ismeretlen méretnél hibaüzenetet ad|Mi van, ha valaki ismeretlen méretet kér? 🤷|🤷 Nincs ilyen méretű menünk!
+
+Tippek:
+
+Megoldas:
+valasztas = input("Milyen popcornt kérsz? (kicsi / közepes / nagy): ")
+
+if valasztas == "kicsi":
+    print("A kicsi popcorn ára 1450 Ft. Az ajándékod: egy játék!")
+elif valasztas == "közepes":
+    print("A közepes popcorn ára 2100 Ft. Az ajándékod: egy kis krumpli!")
+elif valasztas == "nagy":
+    print("A nagy popcorn ára 2950 Ft. Az ajándékod: egy hamburger!")
+else:
+    print("Sajnos nincs ilyen méretű menünk!")
+
+46. feladat
+Pont: 8
+Cim: Sötét mód kapcsoló
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+A program a jelenlegi óra alapján automatikusan dönti el, melyik képernyőmód aktív.
+Kérj be egy egész számot (0-23 óra), majd döntsd el:
+Ha érvénytelen (0-23-on kívül): "Hiba: Érvénytelen időpont!"
+Ha este 20 óra után VAGY reggel 7 előtt: "Sötét mód aktiválva."
+Egyébként: "Világos mód használatban."
+
+Minta kód:
+```
+Hány óra van most (0-23)? 25
+Hiba: Érvénytelen időpont!
+
+Hány óra van most (0-23)? 22
+Sötét mód aktiválva.
+
+Hány óra van most (0-23)? 5
+Sötét mód aktiválva.
+
+Hány óra van most (0-23)? 10
+Világos mód használatban.
+
+```
+
+Pontozas:
+bekeres:Hány óra van most (0-23)? |Bekérés szövege: "Hány óra van most (0-23)? "|Pontosan kell a szöveg zárójelekkel és kérdőjellel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|Az órát egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 Az óra készen áll az összehasonlításhoz!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+tartalmaz:or|Összetett feltételt (or) alkalmaz|Hogyan ellenőrzöd egyszerre, hogy az óra 20 után VAN vagy 7 előtt? 🔗|🔗 Az or operátor megvan – összetett feltétel kezelve!
+elif|elif ágat alkalmaz|A sötét mód feltételét egy elif ágba kell tenni! 🔀|🔀 Az elif megvan!
+teszt:25:Érvénytelen időpont|0-23-on kívüli értéknél hibát jelez|25 óra érvényes? 🕰️|✅ Az érvénytelen időpontot jelzi!
+teszt:22:Sötét mód aktiválva|Este 20 után sötét mód|Este 10-kor melyik mód aktív? 🌙|🌙 22 óra – sötét mód aktiválva!
+teszt:10:Világos mód|Nappal világos mód|Délelőtt 10-kor melyik mód aktív? ☀️|☀️ 10 óra – világos mód!
+
+Tippek:
+
+Megoldas:
+ora = int(input("Hány óra van most (0-23)? "))
+
+if ora < 0 or ora > 23:
+    print("Hiba: Érvénytelen időpont!")
+elif ora >= 20 or ora < 7:
+    print("Sötét mód aktiválva.")
+else:
+    print("Világos mód használatban.")
+
+47. feladat
+Pont: 8
+Cim: Kávé koffein tartalom
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+Egy csésze kávéban 80 mg koffein van. A napi biztonságos limit 400 mg.
+Kérj be egy egész számot (hány kávét ivott), majd döntsd el:
+Ha átlépte a limitet: "Vigyázz! Ez már X mg koffein, túllépted a limitet!"
+Egyébként: "Ez még biztonságos mennyiség (X mg)."
+(ahol X a kiszámolt koffein mennyiség)
+
+Minta kód:
+```
+Hány kávét ittál ma? 6
+Vigyázz! Ez már 480 mg koffein, túllépted a limitet!
+
+Hány kávét ittál ma? 4
+Ez még biztonságos mennyiség (320 mg).
+
+```
+
+Pontozas:
+bekeres:Hány kávét ittál ma? |Bekérés szövege: "Hány kávét ittál ma? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A kávék számát egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A kávék száma készen áll!
+tartalmaz:80|Egy kávé 80 mg koffeint tartalmaz|Egy csésze kávéban mennyi koffein van? A szorzónak benne kell lennie a kódban! ☕|☕ A 80 mg/csésze szorzó megvan!
+tartalmaz:400|A napi 400 mg-os limitet tartalmazza|Mi a napi maximális biztonságos koffein mennyiség? A határnak benne kell lennie a kódban! ⚠️|⚠️ A 400 mg-os limit megtalálható!
+if|Elágazást használ|Két eset van: átlépte a limitet vagy sem. Melyik kulcsszóval döntöd el? 🌿|✅ Az elágazás elindul!
+else|else ágat is tartalmaz|Ha nem lépte át a limitet, mit tegyen a program? 💚|💚 Az else megvan – a biztonságos eset is kezelve!
+teszt:6:túllépted a limitet|6 kávénál átlépi a limitet|6 kávé = 480 mg – átlépi a 400 mg-os határt? ☕|⚠️ 480 mg – túllépted a limitet!
+teszt:4:biztonságos mennyiség|4 kávénál még biztonságos|4 kávé = 320 mg – ez biztonságos? ✅|✅ 320 mg – még biztonságos mennyiség!
+
+Tippek:
+
+Megoldas:
+db = int(input("Hány kávét ittál ma? "))
+koffein = db * 80
+if koffein > 400:
+    print(f"Vigyázz! Ez már {koffein} mg koffein, túllépted a limitet!")
+else:
+    print(f"Ez még biztonságos mennyiség ({koffein} mg).")
+
+48. feladat
+Pont: 8
+Cim: Képernyőidő korlát
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+Feladatkeszito: igen
+
+A program a napi mobilozás percei alapján ad visszajelzést.
+Kérj be egy egész számot (mobilozással töltött percek), majd döntsd el:
+Ha negatív: "Hiba: Negatív mobilozási időt nem lehet megadni!"
+Ha legfeljebb 60: "Szuper! Alig használtad, ez valóban egészséges."
+Ha legfeljebb 120: "Rendben van, de figyelj, hogy ne menj tovább!"
+Egyébként: "Figyelem! Túl sokat voltál képernyő előtt, tarts szünetet!"
+
+Minta kód:
+```
+Hány percet mobiloztál ma? -5
+Hiba: Negatív mobilozási időt nem lehet megadni!
+
+Hány percet mobiloztál ma? 30
+Szuper! Alig használtad, ez valóban egészséges.
+
+Hány percet mobiloztál ma? 90
+Rendben van, de figyelj, hogy ne menj tovább!
+
+Hány percet mobiloztál ma? 200
+Figyelem! Túl sokat voltál képernyő előtt, tarts szünetet!
+
+```
+
+Pontozas:
+bekeres:Hány percet mobiloztál ma? |Bekérés szövege: "Hány percet mobiloztál ma? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A perceket egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A percek készen állnak az összehasonlításhoz!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+elif|elif ágat alkalmaz|Ha if után még más sávok is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden szint külön ágra kerül!
+teszt:-5:Negatív mobilozási|Negatív értéknél hibát jelez|Lehet-e negatív ideig mobilozni? 🤔|✅ A negatív értéket hibásnak jelzi!
+teszt:30:Szuper|60 percen belül a legjobb visszajelzés|30 perc mobilozás egészséges? 📱|📱 30 perc – szuper, egészséges!
+teszt:90:Rendben van|61-120 perc között figyelmeztet|90 perc mobilozás még okés? ⚠️|⚠️ 90 perc – rendben van, de figyelj!
+teszt:200:Figyelem! Túl sokat|120 perc felett figyelmeztetés|200 perc mobilozás – mit mond a program? 📴|📴 200 perc – tarts szünetet!
+
+Tippek:
+
+Megoldas:
+perc = int(input("Hány percet mobiloztál ma? "))
+
+if perc < 0:
+    print("Hiba: Negatív mobilozási időt nem lehet megadni!")
+elif perc <= 60:
+    print("Szuper! Alig használtad, ez valóban egészséges.")
+elif perc <= 120:
+    print("Rendben van, de figyelj, hogy ne menj tovább!")
+else:
+    print("Figyelem! Túl sokat voltál képernyő előtt, tarts szünetet!")
+
+49. feladat
+Pont: 8
+Cim: Rákburger-sütő mérő
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+Spongyabob a Rák úr kisztiknél dolgozik. Kérj be egy egész számot (1-100 között, hány rákburgert sütött), majd döntsd el:
+Ha érvénytelen (1-nél kisebb vagy 100-nál nagyobb): "Hiba: Ennyi hús nincs is a hűtőben, ne szórakozz velem!"
+Ha legfeljebb 30: "Még nyugalom van, Tunyacsáp is csak halkan szuszog."
+Ha legfeljebb 80: "Vigyázz, már kezd odaégni a hús, Rák úr ollója csattog!"
+Egyébként: "Plankton meg elvitte a receptet!"
+
+Minta kód:
+```
+Hány rákburgert sütöttél? (1-100): 0
+Hiba: Ennyi hús nincs is a hűtőben, ne szórakozz velem!
+
+Hány rákburgert sütöttél? (1-100): 20
+Még nyugalom van, Tunyacsáp is csak halkan szuszog.
+
+Hány rákburgert sütöttél? (1-100): 50
+Vigyázz, már kezd odaégni a hús, Rák úr ollója csattog!
+
+Hány rákburgert sütöttél? (1-100): 90
+Plankton meg elvitte a receptet!
+
+```
+
+Pontozas:
+bekeres:Hány rákburgert sütöttél? (1-100): |Bekérés szövege: "Hány rákburgert sütöttél? (1-100): "|Pontosan kell a szöveg zárójelekkel és kettősponttal! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A burgersütések számát egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A szám készen áll!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+tartalmaz:or|Összetett feltételt (or) alkalmaz|Hogyan ellenőrzöd egyszerre, hogy 1-100 között van-e a szám? 🔗|🔗 Az or operátor megvan – összetett feltétel kezelve!
+elif|elif ágat alkalmaz|Ha if után még más szintek is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden szint külön ágra kerül!
+teszt:0:Ennyi hús nincs|0-nál érvénytelen értéknél hibát jelez|0 burger süthető? Mi az érvényes tartomány? 🍔|✅ Az érvénytelen értéket jelzi!
+teszt:20:Tunyacsáp|1-30 között a nyugodt üzenet|20 burger esetén mi a helyzet? 😴|😴 Tunyacsáp halkan szuszog – még minden rendben!
+teszt:90:Plankton|81-100 között Plankton elvitte a receptet|90 burger – mi lett a recepttel? 🦠|🦠 Plankton elvitte a receptet!
+
+Tippek:
+
+Megoldas:
+szint = int(input("Hány rákburgert sütöttél? (1-100): "))
+
+if szint < 1 or szint > 100:
+    print("Hiba: Ennyi hús nincs is a hűtőben, ne szórakozz velem!")
+elif szint <= 30:
+    print("Még nyugalom van, Tunyacsáp is csak halkan szuszog.")
+elif szint <= 80:
+    print("Vigyázz, már kezd odaégni a hús, Rák úr ollója csattog!")
+else:
+    print("Plankton meg elvitte a receptet!")
 
