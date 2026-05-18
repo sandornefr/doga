@@ -190,6 +190,9 @@
         .option-card.diak-mod:hover { border-color: #f59e0b; transform: translateY(-3px); }
 
         .eredmenyek-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             padding: 6px 14px;
             background: transparent;
             border: 1px solid #f5a623;
@@ -1055,13 +1058,13 @@
         <div id="vizsga-badge"><i class="fas fa-circle" style="font-size:0.55rem;vertical-align:middle;margin-bottom:1px;color:#ef4444;"></i> VIZSGA MÓD</div>
         <button class="toggle-view-btn" id="toggle-view-btn" onclick="toggleView()">Tanulói nézet</button>
         <a class="eredmenyek-btn" id="btn-profil-topbar" href="profil.html" style="display:none;text-decoration:none;" title="Profilom"><i class="fas fa-user-circle"></i> Profilom</a>
+        <button id="topbar-jegy-btn" onclick="openAktualisModal()" style="display:none;padding:5px 12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;animation:jegyPulse 2s infinite;align-items:center;gap:5px;" title="Aktuális jegyállapot">
+            <i class="fas fa-calendar-check"></i> Aktuális
+        </button>
         <button class="btn-rangsor" id="btn-rangsor" onclick="openRangsor()" title="Rangsor"><i class="fas fa-trophy"></i> Rangsor</button>
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
         <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
-        <button id="topbar-jegy-btn" onclick="openAktualisModal()" style="display:none;padding:5px 12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;animation:jegyPulse 2s infinite;" title="Aktuális jegyállapot">
-            <i class="fas fa-calendar-check"></i> Aktuális
-        </button>
         <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
@@ -1863,8 +1866,8 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
-            // Jegybeírás banner
-            showJegybeirasBanner();
+            // Jegybeírás banner — load után hívjuk, mert a függvény egy másik script blokkban van
+            window.addEventListener('load', () => typeof showJegybeirasBanner === 'function' && showJegybeirasBanner());
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
