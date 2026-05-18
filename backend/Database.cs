@@ -3215,6 +3215,36 @@ public class Database
         Csoport          = r.IsDBNull(19) ? null : r.GetString(19),
         Evfolyam         = r.IsDBNull(20) ? null : r.GetString(20),
     };
+    public List<VizsgaBecslésRow> GetVizsgaBecslések()
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT u.email,
+                   u.vezeteknev||' '||u.keresztnev AS nev,
+                   u.osztaly, u.csoport, u.evfolyam,
+                   MAX(CASE WHEN us.state_key='vizsga_onbecsles' THEN us.state_value END) AS onbecsles,
+                   MAX(CASE WHEN us.state_key='vizsga_tenyleges' THEN us.state_value END) AS tenyleges
+            FROM users u
+            LEFT JOIN user_state us ON LOWER(us.email)=LOWER(u.email)
+              AND us.state_key IN ('vizsga_onbecsles','vizsga_tenyleges')
+            WHERE u.evfolyam='10'
+              AND LOWER(u.email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
+            GROUP BY u.email
+            ORDER BY u.osztaly, u.csoport, nev";
+        var list = new List<VizsgaBecslésRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new VizsgaBecslésRow(
+                r.GetString(0), r.GetString(1),
+                r.IsDBNull(2) ? null : r.GetString(2),
+                r.IsDBNull(3) ? null : r.GetString(3),
+                r.IsDBNull(4) ? null : r.GetString(4),
+                r.IsDBNull(5) ? null : r.GetString(5),
+                r.IsDBNull(6) ? null : r.GetString(6)
+            ));
+        return list;
+    }
 }
 
 public record PasswordResetRequestRow(int Id, string Email, string Nev, string? Osztaly, string? Csoport, string CreatedAt);

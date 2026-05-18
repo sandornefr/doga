@@ -1748,6 +1748,13 @@ app.MapPatch("/api/havijegy/{id}", (int id, HaviJegyPatchRequest req, HttpContex
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
+// Vizsga becslések összesítő (oktató) — GET /api/vizsga-becslések
+app.MapGet("/api/vizsga-becslések", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetVizsgaBecslések());
+});
+
 // Saját aznapi progress bejegyzések cél-hónapjának tömeges frissítése — PATCH /api/progress/cel-honap-mai
 app.MapPatch("/api/progress/cel-honap-mai", async (HttpContext ctx, Database db) =>
 {

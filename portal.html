@@ -3694,16 +3694,24 @@ const JEGY_SZIN      = { 5:'#22c55e', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'
 
 let _aktualisAdatok  = null;
 let _aktualisTab     = 0;
+let _vizsgaBecslés   = null;  // { onbecsles: {...}, tenyleges: {...} }
+
+// Vizsga határidők osztályonként (önbecslés utolsó módosítható napja)
+const VIZSGA_HATARIDOK = { A:'2026-06-01', B:'2026-06-02', C:'2026-06-03', K:'2026-06-04' };
 
 async function _betoltAktualisAdatok() {
     const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
     if (!u.token) return;
     try {
-        const r = await fetch(RAILWAY_PORTAL + '/api/havijegy/aktualis', {
-            headers: { Authorization: 'Bearer ' + u.token },
-            signal: AbortSignal.timeout(7000)
-        });
-        if (r.ok) _aktualisAdatok = await r.json();
+        const [jegyR, onbR, tenR] = await Promise.all([
+            fetch(RAILWAY_PORTAL + '/api/havijegy/aktualis', { headers: { Authorization: 'Bearer ' + u.token }, signal: AbortSignal.timeout(7000) }),
+            fetch(RAILWAY_PORTAL + '/api/user-state/' + encodeURIComponent(u.email) + '/vizsga_onbecsles', { headers: { Authorization: 'Bearer ' + u.token } }),
+            fetch(RAILWAY_PORTAL + '/api/user-state/' + encodeURIComponent(u.email) + '/vizsga_tenyleges', { headers: { Authorization: 'Bearer ' + u.token } }),
+        ]);
+        if (jegyR.ok) _aktualisAdatok = await jegyR.json();
+        _vizsgaBecslés = { onbecsles: null, tenyleges: null };
+        if (onbR.ok) { try { _vizsgaBecslés.onbecsles = JSON.parse((await onbR.json()).value || 'null'); } catch {} }
+        if (tenR.ok) { try { _vizsgaBecslés.tenyleges = JSON.parse((await tenR.json()).value || 'null'); } catch {} }
     } catch {}
 }
 
@@ -3758,7 +3766,160 @@ function _renderAktualisModal() {
         </button>`;
     }).join('');
 
-    tartEl.innerHTML = _renderHonapReszlet(nyitott[_aktualisTab], now);
+    tartEl.innerHTML = _renderHonapReszlet(nyitott[_aktualisTab], now)
+                     + _renderVizsgaBecslésHtml(now);
+}
+
+function _renderVizsgaBecslésHtml(now) {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    const oz = u.osztaly || '';
+    const deadline = VIZSGA_HATARIDOK[oz];
+    const onbLezarva = deadline && new Date() > new Date(deadline + 'T23:59:59');
+    const ob = _vizsgaBecslés?.onbecsles || {};
+    const te = _vizsgaBecslés?.tenyleges || {};
+
+    function inp(id, max, val, disabled) {
+        return `<input id="vb-${id}" type="number" min="0" max="${max}" value="${val ?? ''}"
+            ${disabled ? 'disabled' : ''}
+            oninput="_vizsgaSzamol()"
+            style="width:52px;padding:5px 6px;background:${disabled?'#0d1117':'#161b22'};border:1px solid #21262d;border-radius:6px;color:#e0e0e0;font-size:.85rem;font-weight:600;text-align:center;">`;
+    }
+
+    function szazStr(pont, max) {
+        if (pont == null || pont === '') return '–';
+        return Math.round(pont / max * 100) + '%';
+    }
+
+    const onbOssz = (ob.web||0) + (ob.python||0) + (ob.halozat||0) + (ob.interaktiv||0);
+    const teOssz  = (te.web||0) + (te.python||0) + (te.halozat||0) + (te.interaktiv||0);
+    const vanTenyleges = Object.keys(te).length > 0;
+
+    let diff = '';
+    if (vanTenyleges && onbOssz > 0) {
+        const d = teOssz - onbOssz;
+        const szin = d > 0 ? '#22c55e' : d < 0 ? '#f87171' : '#94a3b8';
+        const jel  = d > 0 ? '+' : '';
+        diff = `<div style="margin-top:8px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.04);font-size:.82rem;color:${szin};font-weight:700;text-align:center;">
+            <i class="fas fa-${d>0?'arrow-trend-up':d<0?'arrow-trend-down':'equals'}" style="margin-right:6px;"></i>
+            Becslésedhez képest: <strong>${jel}${d} pont</strong> (${jel}${Math.round(d/150*100)}%)
+        </div>`;
+    }
+
+    return `
+    <hr style="border:none;border-top:1px solid #21262d;margin:20px 0 16px;">
+    <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4b5563;margin-bottom:12px;">
+        <i class="fas fa-graduation-cap" style="margin-right:6px;color:#f59e0b;"></i>Ágazati alapvizsga becslés
+        ${deadline ? `<span style="float:right;font-weight:400;color:#6b7280;text-transform:none;">Módosítható: ${deadline}</span>` : ''}
+    </div>
+
+    <div style="font-size:.75rem;color:#6b7280;margin-bottom:10px;">Írj be várható pontszámokat — a rendszer kiszámolja a százalékot.</div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:12px;">
+      <thead>
+        <tr style="color:#6b7280;font-size:.72rem;">
+          <th style="text-align:left;padding:4px 6px;">Tantárgy</th>
+          <th style="text-align:center;padding:4px 6px;">Max</th>
+          <th style="text-align:center;padding:4px 6px;color:#818cf8;">Becslés</th>
+          <th style="text-align:center;padding:4px 6px;color:#818cf8;">%</th>
+          ${vanTenyleges ? '<th style="text-align:center;padding:4px 6px;color:#34d399;">Tényleges</th><th style="text-align:center;padding:4px 6px;color:#34d399;">%</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid #21262d;">
+          <td style="padding:6px 6px;color:#93c5fd;"><i class="fas fa-globe" style="width:14px;margin-right:4px;"></i>WEB</td>
+          <td style="text-align:center;color:#4b5563;">40</td>
+          <td style="text-align:center;">${inp('web-ob', 40, ob.web, onbLezarva)}</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-pct-web-ob">${szazStr(ob.web,40)}</td>
+          ${vanTenyleges ? `<td style="text-align:center;">${inp('web-te', 40, te.web, false)}</td><td style="text-align:center;color:#34d399;" id="vb-pct-web-te">${szazStr(te.web,40)}</td>` : ''}
+        </tr>
+        <tr style="border-top:1px solid #21262d;">
+          <td style="padding:6px 6px;color:#a5b4fc;"><i class="fab fa-python" style="width:14px;margin-right:4px;"></i>Python</td>
+          <td style="text-align:center;color:#4b5563;">40</td>
+          <td style="text-align:center;">${inp('python-ob', 40, ob.python, onbLezarva)}</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-pct-python-ob">${szazStr(ob.python,40)}</td>
+          ${vanTenyleges ? `<td style="text-align:center;">${inp('python-te', 40, te.python, false)}</td><td style="text-align:center;color:#34d399;" id="vb-pct-python-te">${szazStr(te.python,40)}</td>` : ''}
+        </tr>
+        <tr style="border-top:1px solid #21262d;">
+          <td style="padding:6px 6px;color:#60a5fa;"><i class="fas fa-network-wired" style="width:14px;margin-right:4px;"></i>Hálózat</td>
+          <td style="text-align:center;color:#4b5563;">40</td>
+          <td style="text-align:center;">${inp('halozat-ob', 40, ob.halozat, onbLezarva)}</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-pct-halozat-ob">${szazStr(ob.halozat,40)}</td>
+          ${vanTenyleges ? `<td style="text-align:center;">${inp('halozat-te', 40, te.halozat, false)}</td><td style="text-align:center;color:#34d399;" id="vb-pct-halozat-te">${szazStr(te.halozat,40)}</td>` : ''}
+        </tr>
+        <tr style="border-top:1px solid #21262d;border-bottom:2px solid #21262d;">
+          <td colspan="4" style="padding:4px 6px;color:#4b5563;font-size:.72rem;font-style:italic;">Gyakorlati összesen (120 pt)</td>
+          ${vanTenyleges ? '<td colspan="2"></td>' : ''}
+        </tr>
+        <tr style="border-top:1px solid #21262d;">
+          <td style="padding:6px 6px;color:#fcd34d;"><i class="fas fa-laptop" style="width:14px;margin-right:4px;"></i>Interaktív</td>
+          <td style="text-align:center;color:#4b5563;">30</td>
+          <td style="text-align:center;">${inp('interaktiv-ob', 30, ob.interaktiv, onbLezarva)}</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-pct-interaktiv-ob">${szazStr(ob.interaktiv,30)}</td>
+          ${vanTenyleges ? `<td style="text-align:center;">${inp('interaktiv-te', 30, te.interaktiv, false)}</td><td style="text-align:center;color:#34d399;" id="vb-pct-interaktiv-te">${szazStr(te.interaktiv,30)}</td>` : ''}
+        </tr>
+        <tr style="border-top:2px solid #4f46e5;font-weight:700;">
+          <td style="padding:8px 6px;color:#e0e0e0;">Összesen</td>
+          <td style="text-align:center;color:#4b5563;">150</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-ossz-ob">${onbOssz > 0 ? onbOssz : '–'}</td>
+          <td style="text-align:center;color:#818cf8;" id="vb-ossz-ob-pct">${onbOssz > 0 ? Math.round(onbOssz/150*100)+'%' : '–'}</td>
+          ${vanTenyleges ? `<td style="text-align:center;color:#34d399;" id="vb-ossz-te">${teOssz > 0 ? teOssz : '–'}</td><td style="text-align:center;color:#34d399;" id="vb-ossz-te-pct">${teOssz > 0 ? Math.round(teOssz/150*100)+'%' : '–'}</td>` : ''}
+        </tr>
+      </tbody>
+    </table>
+
+    ${diff}
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        ${!onbLezarva ? `<button onclick="_vizsgaMent('onbecsles')"
+            style="padding:7px 16px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;">
+            <i class="fas fa-save" style="margin-right:5px;"></i>Becslés mentése
+        </button>` : `<span style="font-size:.78rem;color:#6b7280;padding:7px 0;"><i class="fas fa-lock" style="margin-right:4px;"></i>Becslés lezárva (${deadline})</span>`}
+        <button onclick="_vizsgaMent('tenyleges')"
+            style="padding:7px 16px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);border-radius:8px;color:#34d399;font-size:.82rem;font-weight:700;cursor:pointer;">
+            <i class="fas fa-check" style="margin-right:5px;"></i>Tényleges mentése
+        </button>
+        <span id="vb-mentes-info" style="font-size:.78rem;color:#6b7280;padding:7px 0;"></span>
+    </div>`;
+}
+
+function _vizsgaSzamol() {
+    const get = id => parseFloat(document.getElementById('vb-'+id)?.value) || 0;
+    const pct = (p, m) => p > 0 ? Math.round(p/m*100)+'%' : '–';
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+    const wob = get('web-ob'), pyob = get('python-ob'), hab = get('halozat-ob'), iob = get('interaktiv-ob');
+    set('vb-pct-web-ob', pct(wob,40)); set('vb-pct-python-ob', pct(pyob,40));
+    set('vb-pct-halozat-ob', pct(hab,40)); set('vb-pct-interaktiv-ob', pct(iob,30));
+    const oOb = wob+pyob+hab+iob;
+    set('vb-ossz-ob', oOb > 0 ? oOb : '–'); set('vb-ossz-ob-pct', oOb > 0 ? Math.round(oOb/150*100)+'%' : '–');
+
+    const wte = get('web-te'), pyte = get('python-te'), hate = get('halozat-te'), ite = get('interaktiv-te');
+    set('vb-pct-web-te', pct(wte,40)); set('vb-pct-python-te', pct(pyte,40));
+    set('vb-pct-halozat-te', pct(hate,40)); set('vb-pct-interaktiv-te', pct(ite,30));
+    const oTe = wte+pyte+hate+ite;
+    set('vb-ossz-te', oTe > 0 ? oTe : '–'); set('vb-ossz-te-pct', oTe > 0 ? Math.round(oTe/150*100)+'%' : '–');
+}
+
+async function _vizsgaMent(tipus) {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!u.token || !u.email) return;
+    const get = id => { const v = document.getElementById('vb-'+id)?.value; return v !== '' && v != null ? parseInt(v) : null; };
+    const prefix = tipus === 'onbecsles' ? 'ob' : 'te';
+    const payload = { web: get('web-'+prefix), python: get('python-'+prefix), halozat: get('halozat-'+prefix), interaktiv: get('interaktiv-'+prefix) };
+    const infoEl = document.getElementById('vb-mentes-info');
+    if (infoEl) infoEl.textContent = 'Mentés...';
+    try {
+        const r = await fetch(RAILWAY_PORTAL + '/api/user-state/' + encodeURIComponent(u.email) + '/vizsga_' + tipus, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+            body: JSON.stringify({ value: JSON.stringify(payload) })
+        });
+        if (r.ok) {
+            if (!_vizsgaBecslés) _vizsgaBecslés = {};
+            _vizsgaBecslés[tipus] = payload;
+            if (infoEl) { infoEl.textContent = 'Mentve!'; setTimeout(() => { if(infoEl) infoEl.textContent=''; }, 2000); }
+        }
+    } catch { if (infoEl) infoEl.textContent = 'Hiba!'; }
 }
 
 function _renderHonapReszlet(adat, now) {

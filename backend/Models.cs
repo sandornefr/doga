@@ -647,3 +647,13 @@ public record AktualisReszlet(
     double WebKavezos,
     double HalozatSzaz
 );
+
+public record VizsgaBecslésRow(
+    string Email,
+    string Nev,
+    string? Osztaly,
+    string? Csoport,
+    string? Evfolyam,
+    string? Onbecsles,
+    string? Tenyleges
+);
