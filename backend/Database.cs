@@ -2871,6 +2871,19 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
+    public int SetProgressCelHonapMai(string email, int celHonap)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE progress SET cel_honap=$ch
+                            WHERE LOWER(email)=$e
+                              AND DATE(datum)=DATE('now')
+                              AND (cel_honap IS NULL OR cel_honap != $ch)";
+        cmd.Parameters.AddWithValue("$ch", celHonap);
+        cmd.Parameters.AddWithValue("$e",  email.ToLower().Trim());
+        return cmd.ExecuteNonQuery();
+    }
+
     // ── Havi jegyek ──────────────────────────────────────────────────────────
 
     // Tartalom megjelenési dátumok: melyik hónaptól számítható be az adott tartalom

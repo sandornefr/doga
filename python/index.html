@@ -1541,6 +1541,16 @@
         </div>
     </div>
 
+    <!-- Hónap-választó modal (beadás előtt) -->
+    <div id="honap-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#0d1117;border:1px solid #4f46e5;border-radius:16px;padding:28px 32px;max-width:420px;width:92vw;">
+            <div style="font-size:1.1rem;font-weight:800;color:#e0e0e0;margin-bottom:6px;"><i class="fas fa-calendar-check" style="color:#4f46e5;margin-right:8px;"></i>Melyik hónap jegyébe számítson?</div>
+            <div style="font-size:.82rem;color:#94a3b8;margin-bottom:18px;">A legkevesebbet teljesített hónap van elöl.</div>
+            <div id="honap-modal-gombok" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+            <button onclick="honapValasztBeadas(null)" style="width:100%;padding:10px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#6b7280;font-size:.85rem;cursor:pointer;">Mégse – vissza a dolgozathoz</button>
+        </div>
+    </div>
+
     <!-- Fullscreen Prompt -->
     <div id="fullscreen-prompt" onclick="reenterFullscreen()" style="cursor:pointer;">
         <div style="text-align:center;" onclick="event.stopPropagation()">
@@ -1688,6 +1698,9 @@
                 if (sid) fetch(`${API_S}/api/session/end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {});
             });
         })();
+
+        // ── Havi jegy cache – hónap-választóhoz ────────────────────────────
+        loadSajatHaviJegyek();
 
         // ── Vizsga határidő – Python teszt auto-submit ──────────────────────
         function schedulePythonDeadline(vizsgaVegeISO) {

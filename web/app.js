@@ -5079,7 +5079,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 })();
 
 // WEB beadás a backendbe (éles módban autosave hívja)
-async function submitWebToBackend() {
+async function submitWebToBackend(celHonap) {
   if (!studentData.name || !studentData.email) return;
   const htmlCode = htmlEditor ? htmlEditor.getValue() : '';
   const cssCode  = cssEditor  ? cssEditor.getValue()  : '';
@@ -5114,7 +5114,8 @@ async function submitWebToBackend() {
     duration:     Math.round((Date.now() - (window._webStartTime || Date.now())) / 1000),
     mode:         'live',
     codeSnapshot: JSON.stringify({ html: htmlCode, css: cssCode, savedAt: new Date().toISOString(), validationImages: { html: validationImages.html, css: validationImages.css }, checkResults }),
-    subject:      'web'
+    subject:      'web',
+    ...(celHonap ? { celHonap } : {})
   };
   try {
     await fetch('https://agazati.up.railway.app/api/submit', {
@@ -5238,11 +5239,12 @@ function getScoreSummaryText() {
 }
 
 async function handleWebSubmit() {
-  if (!confirm('Biztosan be szeretnéd adni a dolgozatot?\n\nBeadás után már nem tudod szerkeszteni!')) return;
+  const celHonap = await window.showWebHonapModal();
+  if (celHonap === false) return; // "Mégse" → vissza
   acLive = false;
   stopTimer();
   sessionStorage.setItem('vizsga_web_beadva', '1');
-  await submitWebToBackend();
+  await submitWebToBackend(celHonap);
   if (htmlEditor) htmlEditor.updateOptions({ readOnly: true });
   if (cssEditor)  cssEditor.updateOptions({ readOnly: true });
   const overlay = document.getElementById('ac-overlay');

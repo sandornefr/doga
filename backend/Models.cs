@@ -17,7 +17,8 @@ public record SubmissionRequest(
     int Duration,
     string Mode,
     string? CodeSnapshot,
-    string? Subject
+    string? Subject,
+    int? CelHonap
 );
 
 public class Submission

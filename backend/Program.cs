@@ -269,15 +269,20 @@ app.MapPost("/api/submit", (HttpContext ctx, SubmissionRequest req, Database db)
     var subject = (req.Subject ?? "").Trim().ToLowerInvariant();
     if (subject is not ("python" or "web")) subject = "";
 
+    var celHonap = req.CelHonap is >= 3 and <= 5 ? req.CelHonap : null;
+
     var normalizedReq = req with
     {
         Email = reqEmail,
         Mode = mode,
         Subject = subject,
-        CodeSnapshot = SanitizeCodeSnapshot(req.CodeSnapshot)
+        CodeSnapshot = SanitizeCodeSnapshot(req.CodeSnapshot),
+        CelHonap = celHonap
     };
 
     var id = db.SaveSubmission(normalizedReq);
+    if (celHonap.HasValue && mode == "live")
+        db.SetProgressCelHonapMai(reqEmail, celHonap.Value);
     return Results.Ok(new { success = true, id });
 });
 

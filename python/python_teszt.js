@@ -55,6 +55,77 @@ let solutionViewedTasks = []; // taskIndex-ek ahol megoldást nézett ebben a k�
 let lastRoundTaskNumbers = new Set(); // előző kör feladatszámai – elkerüljük az ismétlést
 let customTaskHistory = []; // utolsó 5 kör feladatszámai [[n,n,n], ...]
 
+// Hónap-választó – havi jegy adatok cache
+let _sajatHaviJegyek = null;
+
+const JEGY_HATARIDOK_PY = [
+    { honap: 3, label: 'március',  until: '2026-05-27' },
+    { honap: 4, label: 'április',  until: '2026-06-03' },
+    { honap: 5, label: 'május',    until: '2026-06-10' },
+];
+
+async function loadSajatHaviJegyek() {
+    try {
+        const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        if (!u.token) return;
+        const r = await fetch(RAILWAY_URL + '/api/havijegy/sajat', {
+            headers: { Authorization: 'Bearer ' + u.token },
+            signal: AbortSignal.timeout(5000)
+        });
+        if (r.ok) _sajatHaviJegyek = await r.json();
+    } catch {}
+}
+
+function nyitottHonapokRendezve() {
+    const now = new Date();
+    const nyitott = JEGY_HATARIDOK_PY.filter(h => new Date(h.until + 'T23:59:59') >= now);
+    return nyitott.sort((a, b) => {
+        const szazA = _sajatHaviJegyek?.find(j => j.honap === a.honap)?.osszSzaz ?? 0;
+        const szazB = _sajatHaviJegyek?.find(j => j.honap === b.honap)?.osszSzaz ?? 0;
+        return szazA - szazB;
+    });
+}
+
+let _honapModalResolve = null;
+
+function showHonapModal() {
+    return new Promise(resolve => {
+        const honapok = nyitottHonapokRendezve();
+        if (!honapok.length) { resolve(null); return; }
+
+        _honapModalResolve = resolve;
+        const container = document.getElementById('honap-modal-gombok');
+        if (!container) { resolve(null); return; }
+
+        const jegyColor = { 5:'#93c5fd', 4:'#86efac', 3:'#fcd34d', 2:'#fca5a5', 1:'#fca5a5' };
+
+        container.innerHTML = honapok.map((h, i) => {
+            const adat = _sajatHaviJegyek?.find(j => j.honap === h.honap);
+            const szaz = adat?.osszSzaz ?? null;
+            const jegy = adat?.jegy ?? null;
+            const ajanlott = i === 0;
+            const szazStr = szaz !== null ? Math.round(szaz) + '%' : 'még nincs adat';
+            const jegyStr = jegy ? ` · ${jegy}-es` : '';
+            const color   = jegy ? jegyColor[jegy] : '#94a3b8';
+            return `<button onclick="honapValasztBeadas(${h.honap})"
+                style="width:100%;padding:12px 16px;background:${ajanlott ? 'rgba(79,70,229,.15)' : 'rgba(255,255,255,.03)'};
+                       border:1.5px solid ${ajanlott ? '#4f46e5' : '#21262d'};border-radius:10px;
+                       color:#e0e0e0;font-size:.9rem;font-weight:${ajanlott ? '700' : '500'};
+                       cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;">
+                <span><i class="fas fa-calendar-day" style="color:${ajanlott ? '#818cf8' : '#4b5563'};margin-right:8px;"></i>2026. ${h.label}</span>
+                <span style="font-size:.78rem;color:${color};font-weight:600;">${szazStr}${jegyStr}${ajanlott ? ' <span style="color:#818cf8">← ajánlott</span>' : ''}</span>
+            </button>`;
+        }).join('');
+
+        document.getElementById('honap-modal').style.display = 'flex';
+    });
+}
+
+function honapValasztBeadas(honap) {
+    document.getElementById('honap-modal').style.display = 'none';
+    if (_honapModalResolve) { _honapModalResolve(honap); _honapModalResolve = null; }
+}
+
 // Pyodide singleton – csak egyszer töltjük be, utána újrahasználjuk
 let pyodideInstance = null;
 let pyodideLoadingPromise = null;
@@ -255,7 +326,7 @@ async function autoScoreUnscoredTasks() {
     }
 }
 
-async function submitToBackend() {
+async function submitToBackend(celHonap) {
     // Practice módban nincs szükség backend hívásra – lokálisan mentődik
     if (testMode === 'practice') {
         debugLog('🎓 Gyakorló mód – backend hívás kihagyva');
@@ -293,7 +364,8 @@ async function submitToBackend() {
             mode: 'live',
             codeSnapshot: codeSnapshot,
             cheatPenalty: cheatPenalty,
-            cheatWarnings: cheatWarningCount
+            cheatWarnings: cheatWarningCount,
+            ...(celHonap ? { celHonap } : {})
         };
 
         debugLog('📦 Adat előkészítve');
@@ -2249,7 +2321,13 @@ async function submitTest() {
     // ahol van kód de még nem futott le a checkScoring (pl. tanuló nem kattintott "Kód futtatása"-ra)
     await autoScoreUnscoredTasks();
 
-    const result = await submitToBackend();
+    // Live módban hónap-választó: melyik hónap jegyébe számítson?
+    let celHonap = null;
+    if (testMode === 'live' && !cheatDetected) {
+        celHonap = await showHonapModal();
+    }
+
+    const result = await submitToBackend(celHonap);
 
     quizSection.classList.add('hidden');
     endSection.classList.remove('hidden');
