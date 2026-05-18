@@ -1016,6 +1016,20 @@
         }
         .pw-change-btn:hover { background: #c73652; }
         .pw-change-btn:disabled { background: #555; cursor: not-allowed; }
+        @keyframes jegyPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,.7); }
+            50%      { box-shadow: 0 0 0 7px rgba(99,102,241,0); }
+        }
+        #jegy-modal-overlay {
+            display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+            z-index:9999;align-items:center;justify-content:center;
+        }
+        #jegy-modal-overlay.open { display:flex; }
+        #jegy-modal-box {
+            background:#0d1117;border:1px solid #4f46e5;border-radius:16px;
+            padding:28px 32px;max-width:460px;width:92vw;position:relative;
+            box-shadow:0 0 40px rgba(99,102,241,.3);
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
@@ -1045,6 +1059,9 @@
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
         <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
+        <button id="topbar-jegy-btn" onclick="openJegyModal()" style="display:none;padding:5px 12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;animation:jegyPulse 2s infinite;" title="Jegybeírás határidők">
+            🎯 Jegybeírás!
+        </button>
         <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
     </div>
@@ -1053,6 +1070,44 @@
 <div class="portal">
     <div class="portal-title" id="portal-title" style="text-align:center; margin-bottom:4px;">Üdvözöllek!</div>
     <div class="portal-sub" id="portal-sub" style="text-align:center; margin-bottom:20px;">Válassz az alábbi lehetőségek közül:</div>
+
+    <!-- Jegybeírás felugró modal -->
+    <div id="jegy-modal-overlay">
+        <div id="jegy-modal-box">
+            <div style="font-size:2.2rem;margin-bottom:8px;">🎯</div>
+            <div style="font-size:1.2rem;font-weight:900;color:#e0e0e0;margin-bottom:6px;">Hamarosan jegybeírás!</div>
+            <div style="font-size:.85rem;color:#94a3b8;margin-bottom:18px;line-height:1.6;">
+                Az évvégi bizonyítványod átlaga múlhat rajta — még van lehetőséged javítani!
+            </div>
+            <div id="jegy-modal-hataridok" style="margin-bottom:20px;display:flex;flex-direction:column;gap:8px;"></div>
+            <div style="font-size:.78rem;color:#6b7280;margin-bottom:20px;">
+                A profil oldalon láthatod a várható jegyedet és azt, hogy mit tehetsz még a jobb eredményért.
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a href="profil.html#havijegyek"
+                   style="flex:1;padding:10px 16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.88rem;text-decoration:none;text-align:center;cursor:pointer;">
+                   <i class="fas fa-graduation-cap" style="margin-right:6px"></i>Mit tehetek még?
+                </a>
+                <button onclick="closeJegyModal()"
+                   style="padding:10px 16px;background:transparent;border:1px solid #30363d;border-radius:8px;color:#6b7280;font-size:.88rem;cursor:pointer;">
+                   Bezárom
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jegybeírás banner (tanulóknak) -->
+    <div id="jegybeiras-banner" style="display:none;background:linear-gradient(135deg,#1e1b4b,#1e3a5f);border:1px solid #4f46e5;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:none;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="font-size:1.8rem;line-height:1;">🎯</div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-weight:800;color:#e0e0e0;font-size:.95rem;margin-bottom:3px;">Hamarosan jegybeírás!</div>
+            <div id="jegybeiras-banner-szoveg" style="font-size:.78rem;color:#94a3b8;line-height:1.6;"></div>
+            <div style="font-size:.75rem;color:#6366f1;margin-top:2px;">Az évvégi bizonyítvány átlagán változtathatsz — tegyél meg mindent a jobb jegyért!</div>
+        </div>
+        <a href="profil.html#havijegyek" style="padding:6px 14px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.78rem;text-decoration:none;white-space:nowrap;">
+            <i class="fas fa-graduation-cap" style="margin-right:4px"></i>Mit tehetek még?
+        </a>
+    </div>
 
     <!-- Tanulói elrendezés -->
     <div id="student-layout-wrap" class="student-layout" style="display:none">
@@ -1796,6 +1851,8 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
+            // Jegybeírás banner
+            showJegybeirasBanner();
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
@@ -3548,6 +3605,71 @@ if (location.hash === '#web-tanulas') {
     if (btn) btn.style.display = 'flex';
   };
 })();
+
+const JEGY_HATÁRIDŐK = [
+    { honap:3, label:'március', until:'2026-05-20' },
+    { honap:4, label:'április', until:'2026-05-25' },
+    { honap:5, label:'május',   until:'2026-05-31' },
+];
+const JEGY_POTL = { 3:'máj. 20.', 4:'máj. 25.', 5:'máj. 31.' };
+
+function showJegybeirasBanner() {
+    const now = new Date();
+    const nyitott = JEGY_HATÁRIDŐK.filter(h => new Date(h.until + 'T23:59:59') >= now);
+    if (!nyitott.length) return;
+    const banner = document.getElementById('jegybeiras-banner');
+    if (!banner) return;
+    const szoveg = document.getElementById('jegybeiras-banner-szoveg');
+    szoveg.innerHTML = nyitott.map(h =>
+        `<span style="color:#c7d2fe;">2026. ${h.label}</span> → pótlási határidő: <strong style="color:#a5b4fc;">${JEGY_POTL[h.honap]}</strong>`
+    ).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
+    banner.style.display = 'flex';
+
+    // Topbar badge megjelenítése
+    const btn = document.getElementById('topbar-jegy-btn');
+    if (btn) btn.style.display = 'inline-block';
+
+    // Belépéskor egyszer felugró modal (aznap csak egyszer)
+    const maDate = new Date().toISOString().slice(0,10);
+    const lattaMa = sessionStorage.getItem('jegy_figyelmeztetes') === maDate;
+    if (!lattaMa) openJegyModal();
+}
+
+function openJegyModal() {
+    const now = new Date();
+    const nyitott = JEGY_HATÁRIDŐK.filter(h => new Date(h.until + 'T23:59:59') >= now);
+    if (!nyitott.length) return;
+
+    // Határidők feltöltése
+    const container = document.getElementById('jegy-modal-hataridok');
+    if (container) {
+        container.innerHTML = nyitott.map(h => {
+            const napok = Math.ceil((new Date(h.until + 'T23:59:59') - now) / 86400000);
+            const surg  = napok <= 7;
+            return `<div style="display:flex;align-items:center;justify-content:space-between;
+                         background:${surg?'rgba(239,68,68,.08)':'rgba(79,70,229,.08)'};
+                         border:1px solid ${surg?'rgba(239,68,68,.3)':'rgba(79,70,229,.3)'};
+                         border-radius:8px;padding:10px 14px;">
+                <span style="color:#e0e0e0;font-size:.88rem;">2026. ${h.label} jegye</span>
+                <span style="font-size:.82rem;font-weight:700;color:${surg?'#f87171':'#a5b4fc'};">
+                    ${JEGY_POTL[h.honap]} &nbsp;·&nbsp; még ${napok} nap
+                </span>
+            </div>`;
+        }).join('');
+    }
+
+    document.getElementById('jegy-modal-overlay').classList.add('open');
+    sessionStorage.setItem('jegy_figyelmeztetes', new Date().toISOString().slice(0,10));
+}
+
+function closeJegyModal() {
+    document.getElementById('jegy-modal-overlay').classList.remove('open');
+}
+
+// Overlay háttérre kattintva bezár
+document.getElementById('jegy-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeJegyModal();
+});
 </script>
 </body>
 </html>

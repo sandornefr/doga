@@ -1670,6 +1670,85 @@ app.MapGet("/api/tavolkozles/results", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetTavolkozlesResults());
 });
 
+// ── Havi jegyek ──────────────────────────────────────────────────────────────
+
+// Számítás + mentés (csak oktató) — POST /api/havijegy/calculate?ev=2026&honap=3
+app.MapPost("/api/havijegy/calculate", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!int.TryParse(ctx.Request.Query["ev"],    out var ev))    return Results.BadRequest(new { error = "ev hiányzik" });
+    if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
+    if (honap < 3 || honap > 5) return Results.BadRequest(new { error = "honap 3-5 között lehet" });
+
+    var KIZART = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu", "bot@kkszki.hu" };
+    var diakok = db.GetAllUsers().Where(u => u.Szerep == "tanulo" && u.Evfolyam == "10" && !KIZART.Contains(u.Email)).ToList();
+    var eredmenyek = new List<HaviJegyRow>();
+    foreach (var d in diakok)
+    {
+        var sor = db.CalcHaviJegy(d.Email, ev, honap);
+        sor.Nev      = d.Nev;
+        sor.Osztaly  = d.Osztaly;
+        sor.Csoport  = d.Csoport;
+        sor.Evfolyam = d.Evfolyam;
+        db.UpsertHaviJegy(sor);
+        eredmenyek.Add(sor);
+    }
+    return Results.Ok(eredmenyek);
+});
+
+// Tanári lista lekérése — GET /api/havijegy?ev=2026&honap=3
+app.MapGet("/api/havijegy", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!int.TryParse(ctx.Request.Query["ev"],    out var ev))    return Results.BadRequest(new { error = "ev hiányzik" });
+    if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
+    return Results.Ok(db.GetHaviJegyek(ev, honap));
+});
+
+// Saját jegyek (diák) — GET /api/havijegy/sajat
+app.MapGet("/api/havijegy/sajat", (HttpContext ctx, Database db) =>
+{
+    var (valid, email, _) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(db.GetSajatHaviJegyek(email));
+});
+
+// Előnézet (diák) — GET /api/havijegy/preview?ev=2026&honap=3
+app.MapGet("/api/havijegy/preview", (HttpContext ctx, Database db) =>
+{
+    var (valid, email, _) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    if (!int.TryParse(ctx.Request.Query["ev"],    out var ev))    return Results.BadRequest(new { error = "ev hiányzik" });
+    if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
+    var sor = db.CalcHaviJegy(email, ev, honap);
+    return Results.Ok(sor);
+});
+
+// Tanár módosít / véglegesít — PATCH /api/havijegy/{id}
+app.MapPatch("/api/havijegy/{id}", (int id, HaviJegyPatchRequest req, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var ok = db.PatchHaviJegy(id, req.Jegy, req.SzorgalmiJegyDb, req.Veglegesitve, null, req.TanariMegjegyzes);
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Progress bejegyzés cél-hónapjának mentése — PATCH /api/progress/cel-honap
+app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
+{
+    var (valid, email, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    using var reader = new StreamReader(ctx.Request.Body);
+    var body = await reader.ReadToEndAsync();
+    var doc  = JsonDocument.Parse(body).RootElement;
+    if (!doc.TryGetProperty("progressId", out var pidEl) || !doc.TryGetProperty("celHonap", out var chEl))
+        return Results.BadRequest(new { error = "progressId és celHonap szükséges" });
+    var progressId = pidEl.GetInt32();
+    var celHonap   = chEl.GetInt32();
+    if (celHonap < 3 || celHonap > 5) return Results.BadRequest(new { error = "celHonap 3-5 lehet" });
+    var ok = db.SetProgressCelHonap(progressId, email, celHonap);
+    return ok ? Results.Ok(new { success = true }) : Results.Forbid();
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");
 

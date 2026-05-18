@@ -210,6 +210,30 @@ public class Database
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN mode TEXT DEFAULT 'gyakorlo'"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE otlet_lada ADD COLUMN tipus TEXT NOT NULL DEFAULT 'otlet'"); } catch { }
+        try { Exec(conn, "ALTER TABLE progress ADD COLUMN cel_honap INTEGER"); } catch { }
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS havijegyek (
+                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                email               TEXT NOT NULL,
+                ev                  INTEGER NOT NULL,
+                honap               INTEGER NOT NULL,
+                jegy                INTEGER,
+                python_szaz         REAL NOT NULL DEFAULT 0,
+                web_szaz            REAL NOT NULL DEFAULT 0,
+                quiz_szaz           REAL NOT NULL DEFAULT 0,
+                aktiv_napok         INTEGER NOT NULL DEFAULT 0,
+                otlet_db            INTEGER NOT NULL DEFAULT 0,
+                tananyag_db         INTEGER NOT NULL DEFAULT 0,
+                ossz_szaz           REAL NOT NULL DEFAULT 0,
+                szorgalmi_jelolt    INTEGER NOT NULL DEFAULT 0,
+                szorgalmi_jegy_db   INTEGER NOT NULL DEFAULT 0,
+                dicseret_javasolt   INTEGER NOT NULL DEFAULT 0,
+                veglegesitve        INTEGER NOT NULL DEFAULT 0,
+                tanari_megjegyzes   TEXT,
+                updated_at          TEXT DEFAULT (datetime('now')),
+                UNIQUE(email, ev, honap)
+            );
+        ");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS quiz_results (
@@ -1525,9 +1549,9 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT DISTINCT datum FROM progress
+            SELECT DISTINCT DATE(datum) FROM progress
             WHERE LOWER(email) = $email AND datum IS NOT NULL AND datum != ''
-            ORDER BY datum DESC";
+            ORDER BY 1 DESC";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         var dates = new List<DateTime>();
         using var r = cmd.ExecuteReader();
@@ -2834,6 +2858,309 @@ public class Database
             });
         return list;
     }
+
+    public bool SetProgressCelHonap(int progressId, string email, int celHonap)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE progress SET cel_honap=$ch
+                            WHERE id=$id AND LOWER(email)=$e";
+        cmd.Parameters.AddWithValue("$ch", celHonap);
+        cmd.Parameters.AddWithValue("$id", progressId);
+        cmd.Parameters.AddWithValue("$e",  email.ToLower().Trim());
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // ── Havi jegyek ──────────────────────────────────────────────────────────
+
+    // Tartalom megjelenési dátumok: melyik hónaptól számítható be az adott tartalom
+    private static readonly Dictionary<string, int> TartalmakHonapTol = new()
+    {
+        { "python",      3 }, { "web",         3 },
+        { "tananyag_html", 3 }, { "tananyag_css", 3 },
+        { "tananyag_bootstrap", 4 }, { "quiz_html", 4 }, { "quiz_css", 4 },
+        { "quiz_bootstrap", 4 }, { "interaktiv", 4 }, { "kodparbaj", 4 },
+        { "halozat",     5 },
+    };
+
+    private static int CalcJegy(double ossz) =>
+        ossz >= 80 ? 5 : ossz >= 60 ? 4 : ossz >= 40 ? 3 : ossz >= 21 ? 2 : 1;
+
+    // WEB-only csoport: Python-t más tanár értékeli (10.B/1, 10.B/2, 10.K/infó)
+    private static bool IsWebOnlyCsoport(string? evfolyam, string? osztaly, string? csoport)
+    {
+        if (evfolyam != "10") return false;
+        var o = osztaly?.Trim().ToUpperInvariant() ?? "";
+        var cs = csoport?.Trim().ToLowerInvariant() ?? "";
+        if (o == "B" && (cs == "1" || cs == "2")) return true;
+        if (o == "K" && cs.Contains("inf")) return true;
+        return false;
+    }
+
+    public HaviJegyRow CalcHaviJegy(string email, int ev, int honap)
+    {
+        using var conn = Open();
+        var user = GetUserByEmail(email);
+
+        // Python: legjobb % az adott hónapra szóló progress bejegyzések között
+        double pythonSzaz = 0;
+        if (honap >= TartalmakHonapTol["python"])
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
+                FROM progress
+                WHERE LOWER(email)=$e AND LOWER(targy)='python'
+                  AND (cel_honap=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)=$h))";
+            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$h", honap);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) pythonSzaz = Convert.ToDouble(v);
+        }
+
+        // WEB: legjobb %
+        double webSzaz = 0;
+        if (honap >= TartalmakHonapTol["web"])
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
+                FROM progress
+                WHERE LOWER(email)=$e AND LOWER(targy)='web'
+                  AND (cel_honap=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)=$h))";
+            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$h", honap);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) webSzaz = Convert.ToDouble(v);
+        }
+
+        // Quiz: a hónapra beleszámítható típusok legmagasabb %-a
+        double quizSzaz = 0;
+        var quizTipusok = new List<string>();
+        if (honap >= TartalmakHonapTol["quiz_html"])   quizTipusok.Add("html");
+        if (honap >= TartalmakHonapTol["quiz_css"])    quizTipusok.Add("css");
+        if (honap >= TartalmakHonapTol["quiz_bootstrap"]) quizTipusok.Add("bootstrap");
+        if (honap >= TartalmakHonapTol["interaktiv"])  quizTipusok.Add("interaktiv");
+        if (quizTipusok.Count > 0)
+        {
+            var inList = string.Join(",", quizTipusok.Select((_, i) => $"$t{i}"));
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = $@"
+                SELECT MAX(szazalek) FROM quiz_results
+                WHERE LOWER(email)=$e
+                  AND LOWER(tipus) IN ({inList})
+                  AND CAST(strftime('%m', submitted_at) AS INTEGER) <= $honap_max";
+            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$honap_max", honap);
+            for (int i = 0; i < quizTipusok.Count; i++)
+                cmd.Parameters.AddWithValue($"$t{i}", quizTipusok[i]);
+            var v = cmd.ExecuteScalar();
+            if (v != DBNull.Value && v != null) quizSzaz = Convert.ToDouble(v);
+        }
+
+        // Aktív napok az adott hónapban (csak az adott hónap számít, nem pótolható)
+        int aktivNapok = 0;
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT COUNT(DISTINCT DATE(datum)) FROM progress
+                WHERE LOWER(email)=$e
+                  AND CAST(strftime('%m',datum) AS INTEGER)=$h
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$h", honap);
+            cmd.Parameters.AddWithValue("$y", ev);
+            aktivNapok = Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
+        // Ötlet + hibajelentés az adott hónapban
+        int otletDb = 0;
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT COUNT(*) FROM otlet_lada
+                WHERE LOWER(email)=$e
+                  AND CAST(strftime('%m',created_at) AS INTEGER)=$h
+                  AND CAST(strftime('%Y',created_at) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$h", honap);
+            cmd.Parameters.AddWithValue("$y", ev);
+            otletDb = Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
+        // Tananyag: hány van teljesítve összesen (user_state)
+        int tananyagDb = 0;
+        var tananyagKulcsok = new[] { "tananyagHtml","tananyagCss","tananyagBootstrap","pythonKezdo","pythonHalado" };
+        foreach (var k in tananyagKulcsok)
+        {
+            var v = GetUserState(email, k);
+            if (!string.IsNullOrEmpty(v) && v != "false" && v != "0") tananyagDb++;
+        }
+
+        // Súlyozott összpont — csoport alapján eltérő súlyok
+        double aktivSzaz  = Math.Min(aktivNapok / 8.0 * 100, 100);
+        double otletSzaz  = Math.Min(otletDb    / 2.0 * 100, 100);
+        double tananyagBo = Math.Round(tananyagDb / 5.0 * 5, 1);
+
+        bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
+        double osszSzaz;
+        if (webOnly)
+            // WEB 45% + Quiz 30% + Aktív 15% + Ötlet 10% (Python nem számít)
+            osszSzaz = webSzaz * 0.45 + quizSzaz * 0.30
+                     + aktivSzaz * 0.15 + otletSzaz * 0.10 + tananyagBo;
+        else
+            // Teljes: Python 30% + WEB 30% + Quiz 20% + Aktív 10% + Ötlet 10%
+            osszSzaz = pythonSzaz * 0.30 + webSzaz * 0.30 + quizSzaz * 0.20
+                     + aktivSzaz  * 0.10 + otletSzaz * 0.10 + tananyagBo;
+        osszSzaz = Math.Min(osszSzaz, 105);
+
+        int jegy = CalcJegy(osszSzaz);
+
+        // Szorgalmi jelölés: 1 kritérium elég
+        bool szorgJelolt = osszSzaz >= 90
+            || aktivNapok >= 15
+            || otletDb >= 5
+            || (pythonSzaz >= 80 && webSzaz >= 80)
+            || tananyagDb == 5;
+
+        // Szaktanári dicséret javaslat
+        bool dicsJavasolt = osszSzaz >= 95 || aktivNapok >= 20 || otletDb >= 10;
+
+        return new HaviJegyRow
+        {
+            Email            = email.ToLower().Trim(),
+            Ev               = ev,
+            Honap            = honap,
+            Jegy             = jegy,
+            PythonSzaz       = Math.Round(pythonSzaz, 1),
+            WebSzaz          = Math.Round(webSzaz,    1),
+            QuizSzaz         = Math.Round(quizSzaz,   1),
+            AktivNapok       = aktivNapok,
+            OtletDb          = otletDb,
+            TananyagDb       = tananyagDb,
+            OsszSzaz         = Math.Round(osszSzaz,   1),
+            SzorgalmiJelolt  = szorgJelolt,
+            DicseretJavasolt = dicsJavasolt,
+        };
+    }
+
+    public void UpsertHaviJegy(HaviJegyRow r)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO havijegyek
+                (email,ev,honap,jegy,python_szaz,web_szaz,quiz_szaz,
+                 aktiv_napok,otlet_db,tananyag_db,ossz_szaz,
+                 szorgalmi_jelolt,dicseret_javasolt,updated_at)
+            VALUES
+                ($e,$ev,$h,$j,$py,$wb,$qz,$ak,$ot,$ta,$os,$sz,$dc,datetime('now'))
+            ON CONFLICT(email,ev,honap) DO UPDATE SET
+                jegy=$j, python_szaz=$py, web_szaz=$wb, quiz_szaz=$qz,
+                aktiv_napok=$ak, otlet_db=$ot, tananyag_db=$ta, ossz_szaz=$os,
+                szorgalmi_jelolt=$sz, dicseret_javasolt=$dc, updated_at=datetime('now')
+            WHERE veglegesitve=0";
+        cmd.Parameters.AddWithValue("$e",  r.Email);
+        cmd.Parameters.AddWithValue("$ev", r.Ev);
+        cmd.Parameters.AddWithValue("$h",  r.Honap);
+        cmd.Parameters.AddWithValue("$j",  r.Jegy ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("$py", r.PythonSzaz);
+        cmd.Parameters.AddWithValue("$wb", r.WebSzaz);
+        cmd.Parameters.AddWithValue("$qz", r.QuizSzaz);
+        cmd.Parameters.AddWithValue("$ak", r.AktivNapok);
+        cmd.Parameters.AddWithValue("$ot", r.OtletDb);
+        cmd.Parameters.AddWithValue("$ta", r.TananyagDb);
+        cmd.Parameters.AddWithValue("$os", r.OsszSzaz);
+        cmd.Parameters.AddWithValue("$sz", r.SzorgalmiJelolt ? 1 : 0);
+        cmd.Parameters.AddWithValue("$dc", r.DicseretJavasolt ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<HaviJegyRow> GetHaviJegyek(int ev, int honap)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT h.id,h.email,h.ev,h.honap,h.jegy,
+                   h.python_szaz,h.web_szaz,h.quiz_szaz,
+                   h.aktiv_napok,h.otlet_db,h.tananyag_db,h.ossz_szaz,
+                   h.szorgalmi_jelolt,h.szorgalmi_jegy_db,h.dicseret_javasolt,
+                   h.veglegesitve,h.tanari_megjegyzes,
+                   u.vezeteknev||' '||u.keresztnev AS nev, u.osztaly, u.csoport, u.evfolyam
+            FROM havijegyek h
+            JOIN users u ON LOWER(u.email)=LOWER(h.email)
+            WHERE h.ev=$ev AND h.honap=$h
+              AND LOWER(h.email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
+              AND u.evfolyam = '10'
+            ORDER BY u.evfolyam, u.osztaly, u.csoport, nev";
+        cmd.Parameters.AddWithValue("$ev", ev);
+        cmd.Parameters.AddWithValue("$h",  honap);
+        var list = new List<HaviJegyRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadHaviJegyRow(r));
+        return list;
+    }
+
+    public List<HaviJegyRow> GetSajatHaviJegyek(string email)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT id,email,ev,honap,jegy,
+                   python_szaz,web_szaz,quiz_szaz,
+                   aktiv_napok,otlet_db,tananyag_db,ossz_szaz,
+                   szorgalmi_jelolt,szorgalmi_jegy_db,dicseret_javasolt,
+                   veglegesitve,tanari_megjegyzes,
+                   NULL,NULL,NULL,NULL
+            FROM havijegyek
+            WHERE LOWER(email)=$e AND veglegesitve=1
+            ORDER BY ev,honap";
+        cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        var list = new List<HaviJegyRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadHaviJegyRow(r));
+        return list;
+    }
+
+    public bool PatchHaviJegy(int id, int? jegy, int? szorgalmiJegyDb, bool? veglegesitve,
+                               bool? dicseretAdva, string? megjegyzes)
+    {
+        using var conn = Open();
+        using var cmd  = conn.CreateCommand();
+        var sets = new List<string> { "updated_at=datetime('now')" };
+        if (jegy.HasValue)           { sets.Add("jegy=$j");                cmd.Parameters.AddWithValue("$j",  jegy.Value); }
+        if (szorgalmiJegyDb.HasValue){ sets.Add("szorgalmi_jegy_db=$sz");  cmd.Parameters.AddWithValue("$sz", szorgalmiJegyDb.Value); }
+        if (veglegesitve.HasValue)   { sets.Add("veglegesitve=$v");        cmd.Parameters.AddWithValue("$v",  veglegesitve.Value ? 1 : 0); }
+        if (megjegyzes != null)      { sets.Add("tanari_megjegyzes=$m");   cmd.Parameters.AddWithValue("$m",  megjegyzes); }
+        cmd.CommandText = $"UPDATE havijegyek SET {string.Join(",", sets)} WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    private static HaviJegyRow ReadHaviJegyRow(Microsoft.Data.Sqlite.SqliteDataReader r) => new()
+    {
+        Id               = r.GetInt32(0),
+        Email            = r.GetString(1),
+        Ev               = r.GetInt32(2),
+        Honap            = r.GetInt32(3),
+        Jegy             = r.IsDBNull(4) ? null : r.GetInt32(4),
+        PythonSzaz       = r.GetDouble(5),
+        WebSzaz          = r.GetDouble(6),
+        QuizSzaz         = r.GetDouble(7),
+        AktivNapok       = r.GetInt32(8),
+        OtletDb          = r.GetInt32(9),
+        TananyagDb       = r.GetInt32(10),
+        OsszSzaz         = r.GetDouble(11),
+        SzorgalmiJelolt  = r.GetInt32(12) == 1,
+        SzorgalmiJegyDb  = r.GetInt32(13),
+        DicseretJavasolt = r.GetInt32(14) == 1,
+        Veglegesitve     = r.GetInt32(15) == 1,
+        TanariMegjegyzes = r.IsDBNull(16) ? null : r.GetString(16),
+        Nev              = r.IsDBNull(17) ? null : r.GetString(17),
+        Osztaly          = r.IsDBNull(18) ? null : r.GetString(18),
+        Csoport          = r.IsDBNull(19) ? null : r.GetString(19),
+        Evfolyam         = r.IsDBNull(20) ? null : r.GetString(20),
+    };
 }
 
 public record PasswordResetRequestRow(int Id, string Email, string Nev, string? Osztaly, string? Csoport, string CreatedAt);
