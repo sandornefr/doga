@@ -2915,7 +2915,7 @@ public class Database
         using var conn = Open();
         var user = GetUserByEmail(email);
 
-        // Python: legjobb % az adott hónapra szóló progress bejegyzések között
+        // Python: legjobb % a hónap végéig (kumulatív — localStorage deduplikáció miatt csak egyszer kerül be egy feladat)
         double pythonSzaz = 0;
         if (honap >= TartalmakHonapTol["python"])
         {
@@ -2924,14 +2924,16 @@ public class Database
                 SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
                 FROM progress
                 WHERE LOWER(email)=$e AND LOWER(targy)='python'
-                  AND (cel_honap=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)=$h))";
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y
+                  AND (cel_honap<=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)<=$h))";
             cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
             cmd.Parameters.AddWithValue("$h", honap);
+            cmd.Parameters.AddWithValue("$y", ev);
             var v = cmd.ExecuteScalar();
             if (v != DBNull.Value && v != null) pythonSzaz = Convert.ToDouble(v);
         }
 
-        // WEB: legjobb %
+        // WEB: legjobb % a hónap végéig (kumulatív)
         double webSzaz = 0;
         if (honap >= TartalmakHonapTol["web"])
         {
@@ -2940,9 +2942,11 @@ public class Database
                 SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
                 FROM progress
                 WHERE LOWER(email)=$e AND LOWER(targy)='web'
-                  AND (cel_honap=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)=$h))";
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y
+                  AND (cel_honap<=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)<=$h))";
             cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
             cmd.Parameters.AddWithValue("$h", honap);
+            cmd.Parameters.AddWithValue("$y", ev);
             var v = cmd.ExecuteScalar();
             if (v != DBNull.Value && v != null) webSzaz = Convert.ToDouble(v);
         }
