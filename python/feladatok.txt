@@ -3023,3 +3023,138 @@ elif szint <= 80:
 else:
     print("Plankton meg elvitte a receptet!")
 
+50. feladat
+Pont: 14
+Cim: Gondoltam egy számra
+Tipus: while,random,if
+Nehezseg: nehez
+Uj: igen
+Feladatkeszito: igen
+
+A gép titkosan gondol egy számra 1 és 10 között. A felhasználónak addig kell tippelnie, amíg el nem találja!
+
+Kérj be egy számot: "Adj meg egy számot 1 és 10 között: "
+Ha a tipp kisebb a gondolt számnál: "Túl kicsi!"
+Ha a tipp nagyobb a gondolt számnál: "Túl nagy!"
+Minden sikertelen próba után kérd be újra: "Próbáld újra: "
+Ha eltalálta: "Eltaláltad!"
+
+Minta kód:
+```
+Adj meg egy számot 1 és 10 között: 5
+Túl kicsi!
+Próbáld újra: 8
+Túl nagy!
+Próbáld újra: 7
+Eltaláltad!
+
+```
+
+Pontozas:
+import:random|Random modult importálja|Számokat véletlenszerűen sorsol a gép – melyik modult kell importálni? 🎲|🎲 A random modul importálva!
+tartalmaz:randint|random.randint()-et használja|Pontosan 1-10 között kell sorsolni – melyik függvénnyel? 🎯|🎯 A randint megvan – a gép gondolt egy számra!
+tartalmaz:1, 10|Az 1-10 tartomány megadva|Mi a sorsolt szám minimuma és maximuma? 🔢|🔢 Az 1-10 tartomány beállítva!
+bekeres:Adj meg egy számot 1 és 10 között: |Bekérés szövege: "Adj meg egy számot 1 és 10 között: "|A bekérés szövegét pontosan add meg! 💬|💬 A bekérés szövege tökéletesen egyezik!
+int_float:1|Az első tippet egész számmá alakítja|Az input() szöveget ad vissza – mivel alakítod egész számmá? 🔢|🔢 A tipp számként vizsgálható!
+while|While ciklust alkalmaz|A tippelés addig tart, amíg el nem találja – melyik ciklus alkalmas erre? 🔄|🔄 A while ciklus forog – a tippelés folytatódik!
+tartalmaz:!=|A while feltétele "nem egyenlő" vizsgálat|Mikor folytatódjon a ciklus? Amikor a tipp nem egyenlő a gép számával! ≠|≠ A != feltétel megvan – a ciklus jól áll meg!
+if|If feltételt alkalmaz a cikluson belül|A hibás tipp esetén meg kell mondani, merre keresd – melyik kulcsszóval döntöd el? 💡|💡 Az if megvan – irány van!
+tartalmaz:else|Else ágat is alkalmaz|Ha a tipp nem kisebb, akkor mi a másik eset? 🔀|🔀 Az else megvan – mindkét irány lefedve!
+tartalmaz:Túl kicsi!|"Túl kicsi!" üzenetet tartalmaz|Ha a tipp kisebb a gép számánál, mit ír ki a program? 📉|📉 "Túl kicsi!" – felfelé kell tippelni!
+tartalmaz:Túl nagy!|"Túl nagy!" üzenetet tartalmaz|Ha a tipp nagyobb, mit ír ki? 📈|📈 "Túl nagy!" – lefelé kell próbálni!
+bekeres:Próbáld újra: |Ismételt bekérés szövege: "Próbáld újra: "|A cikluson belüli újra-bekérés szövege pontos legyen! 🔁|🔁 Az ismételt bekérés szövege tökéletesen egyezik!
+int_float:2|A cikluson belüli tippet is egész számmá alakítja|A "Próbáld újra: " bekérés után is int()-re van szükség! 🔢|🔢 Mindkét bekérés számra konvertálva!
+tartalmaz:Eltaláltad!|"Eltaláltad!" üzenetet tartalmaz a ciklus után|Ha egyezik a tipp és a gép száma, mit kell kiírni a ciklus UTÁN? 🏆|🏆 "Eltaláltad!" – gratulálunk!
+
+Tippek:
+
+Megoldas:
+import random
+
+gep_szama = random.randint(1, 10)
+
+tipp = int(input("Adj meg egy számot 1 és 10 között: "))
+
+while tipp != gep_szama:
+    if tipp < gep_szama:
+        print("Túl kicsi!")
+    else:
+        print("Túl nagy!")
+
+    tipp = int(input("Próbáld újra: "))
+
+print("Eltaláltad!")
+
+51. feladat
+Pont: 14
+Cim: Agraelnek szótanítás
+Tipus: függvény,while,for
+Nehezseg: nehez
+Uj: igen
+Feladatkeszito: igen
+
+Készítettél egy AI modellt Agrael néven, és szavakat szeretnél megtanítani neki!
+
+Írj egy SzoMegado nevű függvényt, amely megkap egy szót, és visszaadja:
+Ha Agrael már ismeri: "Agrael már ismeri a {szó} szót"
+Ha nem ismeri: "Agrael megtanulta a {szó} szót."
+
+A főprogramban hozz létre egy listát a megtanult szavaknak!
+Egy ciklusban kérj be 5 szót ("{i}.szó amit meg kell tanulnia Agraelnek: ").
+Ha nem adtak meg szót (üres input): "Nem adtál meg Agrael számára szót" – kérd be újra!
+A ciklus után írd ki az összes szót: "A szók amiket Agrael megtanult: {lista}"
+
+Minta kód:
+```
+1.szó amit meg kell tanulnia Agraelnek: alma
+Agrael megtanulta a alma szót.
+2.szó amit meg kell tanulnia Agraelnek: körte
+Agrael megtanulta a körte szót.
+3.szó amit meg kell tanulnia Agraelnek:
+Nem adtál meg Agrael számára szót
+3.szó amit meg kell tanulnia Agraelnek: alma
+Agrael már ismeri a alma szót
+4.szó amit meg kell tanulnia Agraelnek: szilva
+Agrael megtanulta a szilva szót.
+5.szó amit meg kell tanulnia Agraelnek: dió
+Agrael megtanulta a dió szót.
+A szók amiket Agrael megtanult: ['alma', 'körte', 'szilva', 'dió']
+
+```
+
+Pontozas:
+def|Függvényt definiál (def)|Saját függvényt kell írni – melyik Python kulcsszóval hozod létre? 🛠️|🛠️ A függvény megalkotva – Agrael készen áll a tanulásra!
+return|Visszatérési értéket ad (return)|A függvény szöveget ad vissza – hogyan adja ezt vissza a főprogramnak? 📤|📤 A return megvan – az üzenet visszaér!
+tartalmaz:SzoMegado|SzoMegado névvel írja a függvényt|A függvény neve pontosan "SzoMegado" kell legyen – nagybetűk számítanak! 🔤|🔤 A SzoMegado függvény neve tökéletes!
+if|Elágazást alkalmaz a függvényen belül|Hogyan döntöd el, hogy Agrael ismeri-e már a szót? 🤔|🤔 Az if megvan – a döntés meghozva!
+tartalmaz:in|"in" operátort alkalmaz az ellenőrzéshez|Hogyan ellenőrzöd, hogy egy szó benne van-e a listában? 🔍|🔍 Az in operátor megvan – a lista ellenőrzése működik!
+tartalmaz:Agrael már ismeri|"Agrael már ismeri..." üzenetet tartalmaz|Mit mond Agrael, ha már tudja a szót? 🧠|🧠 "Agrael már ismeri" – a szótár naprakész!
+tartalmaz:Agrael megtanulta|"Agrael megtanulta..." üzenetet tartalmaz|Mit mond Agrael, ha most tanulja a szót? 📚|📚 "Agrael megtanulta" – új szó a tárban!
+tartalmaz:append|Listához adja a megtanult szót (.append)|Hogyan kerül a szó a listába, amikor Agrael megtanulja? 📝|📝 Az append megvan – Agrael szókincse bővül!
+for|For ciklust alkalmaz az 5 szóhoz|Pontosan 5 szót kell bekérni – melyik ciklussal mész végig 5-ször? 🔢|🔢 A for ciklus fut – 5 szó bekérése folyamatban!
+tartalmaz:.szó amit meg kell tanulnia Agraelnek: |A bekérés szövege tartalmazza a helyes formátumot|A bekérés szövege f-stringben: "{i}.szó amit meg kell tanulnia Agraelnek: " – a szövegrész megvan? 💬|💬 A bekérés formátuma helyes!
+while|While ciklust alkalmaz az üres bekérés kezelésére|Ha nem adtak meg szót, addig kérd be újra, amíg nem adnak – melyik ciklus alkalmas erre? 🔄|🔄 A while ciklus megvan – Agrael türelmesen vár a szóra!
+tartalmaz:Nem adtál meg Agrael számára szót|Üres bekérés esetén hibaüzenetet ír ki|Mi legyen a hibaüzenet, ha üresen küldik el a bekérést? ❌|❌ A hibaüzenet megvan – Agrael figyelmeztet!
+tartalmaz:A szók amiket Agrael megtanult: |A végső kiírás szövege megvan|A ciklus végén ki kell írni az összes szót – mi a kiírás szövege? 📋|📋 A végső lista kiírása megvan!
+teszt:alma,körte,szilva,dió,narancs:A szók amiket Agrael megtanult:|5 szó után kiírja a megtanult szavak listáját|alma,körte,szilva,dió,narancs szavakat ad meg – mit ír ki a program a végén? 📜|📜 A szavak listája sikeresen megjelenik!
+
+Tippek:
+
+Megoldas:
+Tudott_szavak = []
+
+def SzoMegado(szo):
+    if szo in Tudott_szavak:
+        return f"Agrael már ismeri a {szo} szót"
+    Tudott_szavak.append(szo)
+    return f"Agrael megtanulta a {szo} szót."
+
+for i in range(1, 6):
+    szo = input(f"{i}.szó amit meg kell tanulnia Agraelnek: ")
+    while szo == "":
+        print("Nem adtál meg Agrael számára szót")
+        szo = input(f"{i}.szó amit meg kell tanulnia Agraelnek: ")
+    print(SzoMegado(szo))
+
+print(f"A szók amiket Agrael megtanult: {Tudott_szavak}")
+
