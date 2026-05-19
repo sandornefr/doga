@@ -3265,3 +3265,61 @@ for ev, fiu, lany in [("2023", fiu_2023, lany_2023), ("2024", fiu_2024, lany_202
     else:
         print(f"{ev}: nincs benne az 50-ben")
 
+53. feladat
+Pont: 8
+Cim: Mucsi Zoltán idegállapot-mérő
+Tipus: if
+Nehezseg: kozepes
+Uj: igen
+Feladatkeszito: igen
+
+Ez a program a beállított feszültségszint alapján lövi be, hogy mikor fog Zoltán kerti kapával hadonászni.
+
+Kérj be egy egész számot (1-100 között, az idegállapot szintje): "Add meg az idegállapotod szintjét (1-100): "
+Ha érvénytelen (1-nél kisebb vagy 100-nál nagyobb): "Hiba: Ilyen idegállapot nincs, ne szórakozz velem!"
+Ha legfeljebb 30: "Még nyugalom van, lassan tolják a békét a fejedbe."
+Ha legfeljebb 80: "Vigyázz, a türelmedet már lassan tolják kifelé az ablakon!"
+Egyébként: "ROBBANÁS! Takarodj innen, jön a kerti kapa!"
+
+Minta kód:
+```
+Add meg az idegállapotod szintjét (1-100): 0
+Hiba: Ilyen idegállapot nincs, ne szórakozz velem!
+
+Add meg az idegállapotod szintjét (1-100): 20
+Még nyugalom van, lassan tolják a békét a fejedbe.
+
+Add meg az idegállapotod szintjét (1-100): 55
+Vigyázz, a türelmedet már lassan tolják kifelé az ablakon!
+
+Add meg az idegállapotod szintjét (1-100): 95
+ROBBANÁS! Takarodj innen, jön a kerti kapa!
+
+```
+
+Pontozas:
+bekeres:Add meg az idegállapotod szintjét (1-100): |Bekérés szövege: "Add meg az idegállapotod szintjét (1-100): "|Pontosan kell a szöveg zárójelekkel és kettősponttal! 🔍|✅ A bekérés szövege tökéletesen egyezik!
+int_float:1|A szintet egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A szám készen áll a vizsgálatra!
+if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
+tartalmaz:or|Összetett feltételt (or) alkalmaz|Hogyan ellenőrzöd egyszerre, hogy 1-100 között van-e a szám? 🔗|🔗 Az or operátor megvan – összetett feltétel kezelve!
+elif|elif ágat alkalmaz|Ha if után még más szintek is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden szint külön ágra kerül!
+tartalmaz:Hiba: Ilyen idegállapot nincs|Érvénytelen értéknél hibát jelez|0 vagy 101 esetén mi a hibaüzenet? 😤|😤 Az érvénytelen érték hibát dob!
+tartalmaz:Még nyugalom van|1-30 között a nyugodt üzenet|20-as szintnél mi a helyzet? 😌|😌 Még béke van, Zoltán nyugodt!
+tartalmaz:Vigyázz, a türelmedet|31-80 között a figyelmeztetés|55-ös szintnél mit mond a program? ⚠️|⚠️ Figyelmeztetés – a türelem fogyóban!
+teszt:20:Még nyugalom van|20-nál a nyugodt üzenet jelenik meg|20 egészséges idegszint? 😌|😌 20-nál minden rendben!
+teszt:95:ROBBANÁS|95-nél a robbanásos üzenet|95-nél jön a kerti kapa? 🌿|💥 ROBBANÁS – kapa a kézben!
+
+Tippek:
+
+Megoldas:
+szint = int(input("Add meg az idegállapotod szintjét (1-100): "))
+
+if szint < 1 or szint > 100:
+    print("Hiba: Ilyen idegállapot nincs, ne szórakozz velem!")
+elif szint <= 30:
+    print("Még nyugalom van, lassan tolják a békét a fejedbe.")
+elif szint <= 80:
+    print("Vigyázz, a türelmedet már lassan tolják kifelé az ablakon!")
+else:
+    print("ROBBANÁS! Takarodj innen, jön a kerti kapa!")
+

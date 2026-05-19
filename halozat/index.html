@@ -1929,6 +1929,8 @@ document.getElementById('term-input').addEventListener('keydown', handleTermKey)
 document.addEventListener('keydown', function(e) {
   if (!appState.activeCisco) return;
   const inp = document.getElementById('term-input');
+  const ae = document.activeElement;
+  if (ae && ae !== inp && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
   if (document.activeElement !== inp) {
     if (e.key === 'Tab') {
       e.preventDefault();
