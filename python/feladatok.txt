@@ -1,4 +1,5 @@
 1. feladat
+Pont: 8
 Cim: Kisebb-nagyobb
 Tipus: if
 Nehezseg: konnyu
@@ -38,6 +39,7 @@ else:
     print("A két szám egyenlő!")
 
 2. feladat
+Pont: 8
 Cim: Kő-papír-olló
 Tipus: if
 Nehezseg: kozepes
@@ -99,6 +101,7 @@ else:
     print("A gép nyert!")
 
 3. feladat
+Pont: 8
 Cim: Nettó-bruttó kalkulátor
 Tipus: if
 Nehezseg: konnyu
@@ -147,6 +150,7 @@ print(f"TB-járulék (18.5%): {tb_osszeg:.0f} Ft")
 print(f"Nettó bér: {netto_ber:.0f} Ft")
 
 4. feladat
+Pont: 8
 Cim: Napszak köszöntő
 Tipus: if
 Nehezseg: konnyu
@@ -190,6 +194,7 @@ else:
 print(f"{koszones}, {nev}!")
 
 5. feladat
+Pont: 8
 Cim: Lázmérő
 Tipus: if
 Nehezseg: konnyu
@@ -243,6 +248,7 @@ else:
     print("Nagyon magas lázad van.")
 
 6. feladat
+Pont: 8
 Cim: Sebességkategória
 Tipus: if
 Nehezseg: konnyu
@@ -295,6 +301,7 @@ else:
     print("Ki vagy te Villám McQueen?!")
 
 7. feladat
+Pont: 8
 Cim: Nyitvatartás
 Tipus: if
 Nehezseg: kozepes
@@ -346,6 +353,7 @@ else:
     print("A bolt zárva van.")
 
 8. feladat
+Pont: 8
 Cim: Évszakok
 Tipus: if
 Nehezseg: konnyu
@@ -408,6 +416,7 @@ else:
     print("Nincs ilyen hónap!")
 
 9. feladat
+Pont: 8
 Cim: Dolgozat pontszám
 Tipus: if
 Nehezseg: konnyu
@@ -468,6 +477,7 @@ else:
     print("Érvénytelen pontszám!")
 
 10. feladat
+Pont: 8
 Cim: BMI kalkulátor
 Tipus: if
 Nehezseg: kozepes
@@ -519,6 +529,7 @@ else:
     print("Elhízott vagy.")
 
 11. feladat
+Pont: 8
 Cim: Jegyek átlaga
 Tipus: if
 Nehezseg: kozepes
@@ -571,6 +582,7 @@ else:
     print("Nem felelt meg.")
 
 12. feladat
+Pont: 8
 Cim: Étterem értékelő
 Tipus: if
 Nehezseg: kozepes
@@ -1228,6 +1240,7 @@ if vegosszeg >= 2500:
 print(f"Fizetendő összeg: {vegosszeg} Ft")
 
 19. feladat
+Pont: 8
 Cim: Mozijegy
 Tipus: if
 Nehezseg: konnyu
@@ -1274,6 +1287,7 @@ else:
     print("A jegy ára: 900 Ft")
 
 20. feladat
+Pont: 8
 Cim: Pizza rendelés
 Tipus: if
 Nehezseg: kozepes
@@ -1323,6 +1337,7 @@ else:
     print("Ismeretlen méret!")
 
 21. feladat
+Pont: 8
 Cim: Ruhaméret
 Tipus: if
 Nehezseg: konnyu
@@ -1376,6 +1391,7 @@ else:
     print("Méreted: XL")
 
 22. feladat
+Pont: 8
 Cim: Taxi ár kalkulátor
 Tipus: if
 Nehezseg: konnyu
@@ -1421,6 +1437,7 @@ if km > 20:
 print(f"Fizetendő: {ar} Ft")
 
 23. feladat
+Pont: 8
 Cim: Szállodai szoba
 Tipus: if
 Nehezseg: kozepes
@@ -1479,6 +1496,7 @@ else:
     print("Ismeretlen szobatípus!")
 
 24. feladat
+Pont: 8
 Cim: Kutya életkor kalkulátor
 Tipus: if
 Nehezseg: kozepes
@@ -1533,6 +1551,7 @@ else:
 print(f"A kutyád emberi években: {emberi_ev} éves.")
 
 25. feladat
+Pont: 8
 Cim: Traffipax
 Tipus: if
 Nehezseg: kozepes
@@ -1676,6 +1695,7 @@ else:
     print("Súlyhatár rendben. Felszállás engedélyezve!")
 
 27. feladat
+Pont: 8
 Cim: Mobiladat Túllépés
 Tipus: if
 Nehezseg: kozepes
