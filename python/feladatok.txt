@@ -3158,3 +3158,110 @@ for i in range(1, 6):
 
 print(f"A szók amiket Agrael megtanult: {Tudott_szavak}")
 
+52. feladat
+Pont: 18
+Cim: Nevek
+Tipus: fájl,lista,for
+Nehezseg: nehez
+Uj: igen
+Feladatkeszito: igen
+ModulNev: legnepszerubb_nevek.txt
+ModulTartalom:
+Dominik; Olivér; Levente; Máté; Marcell; Bence; Milán; Noel; Zalán; Dániel; Ádám; Benett; Botond; Zsombor; Áron; Dávid; Nolen; Balázs; Nimród; Benedek; Márk; Kristóf; Zente; Péter; Barnabás; Tamás; Martin; Hunor; Kornél; László; Bálint; Zétény; Alex; Ábel; András; Gergő; István; Vince; Márton; Zoltán; Ákos; Bendegúz; Attila; Soma; Patrik; Nándor; Erik; Gábor; Zsolt; Benjámin
+Hanna; Anna; Luca; Zoé; Léna; Emma; Olívia; Boglárka; Lili; Kamilla; Laura; Szofia; Lilien; Mira; Alíz; Sára; Zsófia; Flóra; Lara; Adél; Izabella; Jázmin; Nóra; Janka; Liza; Bella; Linett; Lilla; Fanni; Maja; Gréta; Zselyke; Panna; Dorka; Emília; Blanka; Rebeka; Liliána; Abigél; Csenge; Elena; Milla; Nara; Natasa; Bianka; Elizabet; Eszter; Lotti; Dóra; Róza
+Dominik; Olivér; Levente; Marcell; Milán; Máté; Bence; Noel; Dániel; Benett; Zalán; Botond; Zsombor; Áron; Ádám; Dávid; Nolen; Benedek; Barnabás; Ábel; Balázs; Márk; Zente; Nimród; Kornél; Kristóf; László; Tamás; Vince; Péter; András; Alex; Martin; Zétény; Hunor; Soma; Bálint; Gergő; Zoltán; Bendegúz; Márton; Attila; Patrik; István; Krisztián; Ákos; Ármin; János; Csongor; Eliot
+Luca; Hanna; Zoé; Anna; Emma; Léna; Olívia; Laura; Alíz; Kamilla; Sára; Szofia; Lili; Flóra; Mira; Boglárka; Lilien; Zsófia; Lara; Adél; Linett; Nóra; Janka; Izabella; Liza; Jázmin; Lilla; Abigél; Maja; Bella; Gréta; Emília; Zselyke; Panna; Blanka; Milla; Csenge; Rebeka; Dorka; Nazira; Fanni; Elena; Nara; Elizabet; Liliána; Róza; Eliza; Elina; Bianka; Amira
+ModulVege
+
+A `legnepszerubb_nevek.txt` fájl a 2023-ban és 2024-ben születtek legnépszerűbb neveit tartalmazza pontosvesszővel elválasztva.
+Az 1. sor: 2023 fiúnevek, a 2. sor: 2023 lánynevek, a 3. sor: 2024 fiúnevek, a 4. sor: 2024 lánynevek (mindkét évben 50-50 név).
+
+a) Olvasd be a fájlt, és bontsd szét a négy névlistát!
+b) Írd ki, hány fiú- és lánynév szerepel csak az egyik évben (nincs meg mindkét listában)!
+   Minta: "Csak az egyik évben: X fiúnév, Y lánynév"
+c) Számold ki az átlagos névhosszt (mindkét év névlistáját együtt)!
+   Minta: "Átlagos fiú névhossz: X.X betű"
+   Minta: "Átlagos lány névhossz: X.X betű"
+d) Írd ki a top 5 nevet mindkét évből és mindkét nemből!
+   Minta: "2023 top 5 fiú: Dominik, Olivér, Levente, Máté, Marcell"
+e) Névkereső: kérj be egy nevet ("Keresett név: "), és írd ki, melyik évben hanyadik volt!
+   Ha megtalálható: "2023: 1. legnépszerűbb fiúnév"
+   Ha nem szerepel: "2023: nincs benne az 50-ben"
+
+Minta kód:
+```
+Csak az egyik évben: 10 fiúnév, 8 lánynév
+Átlagos fiú névhossz: 5.6 betű
+Átlagos lány névhossz: 5.2 betű
+2023 top 5 fiú: Dominik, Olivér, Levente, Máté, Marcell
+2023 top 5 lány: Hanna, Anna, Luca, Zoé, Léna
+2024 top 5 fiú: Dominik, Olivér, Levente, Marcell, Milán
+2024 top 5 lány: Luca, Hanna, Zoé, Anna, Emma
+Keresett név: Dominik
+2023: 1. legnépszerűbb fiúnév
+2024: 1. legnépszerűbb fiúnév
+
+```
+
+Pontozas:
+tartalmaz:open(|Fájlt megnyit (open())|Hogyan olvashatsz be adatokat egy .txt fájlból? 📂|📂 A fájl megnyitva!
+tartalmaz:legnepszerubb_nevek.txt|Helyes fájlnevet használja|A fájlnévnek pontosan "legnepszerubb_nevek.txt"-nek kell lennie! 🔤|🔤 A helyes fájlnév megvan!
+tartalmaz:readlines|Soronként olvassa a fájlt (readlines)|Hogyan olvasod be az összes sort egyszerre? 📄|📄 A readlines() megvan – mind a 4 sor beolvasva!
+vagy:split(";")~~split("; ")|Pontosvesszővel bontja szét a névlistát|A nevek pontosvesszővel vannak elválasztva – melyik metódussal bontod szét? ✂️|✂️ A split megvan – a nevek szétválasztva!
+tartalmaz:strip()|Levágja a szóközöket a nevekről|A split után maradhatnak szóközök a neveken – hogyan távolítod el? 🧹|🧹 A strip() megvan – a nevek tiszták!
+tartalmaz:set(|Halmazot alkalmaz az egyedi nevek meghatározásához|Hogyan találod meg azokat a neveket, amelyek csak az egyik évben szerepelnek? 🔢|🔢 A set() megvan – a halmazműveletek elindultak!
+tartalmaz:Csak az egyik évben|"Csak az egyik évben:" szöveg megjelenik|Az egyedi nevek darabszámát ki kell írni – mi a kiírás szövege? 📊|📊 Az egyedi nevek száma megjelenik!
+tartalmaz:sum(|sum() függvénnyel összegez|Az átlaghoz összegzed a névhosszokat – melyik függvénnyel? ➕|➕ A sum() megvan – a névhosszak összegzése folyamatban!
+tartalmaz:len(|len() függvénnyel számolja a hosszt/darabszámot|A névhosszat és a nevek számát is len()-nel kapod meg – megvan? 📏|📏 A len() megvan – a mérések elvégezve!
+tartalmaz:Átlagos fiú névhossz|"Átlagos fiú névhossz:" szöveg megjelenik|Hogyan jelenik meg az átlagos fiú névhossz? 👦|👦 Az átlagos fiú névhossz kiírása megvan!
+tartalmaz:Átlagos lány névhossz|"Átlagos lány névhossz:" szöveg megjelenik|Hogyan jelenik meg az átlagos lány névhossz? 👧|👧 Az átlagos lány névhossz kiírása megvan!
+tartalmaz:top 5|"top 5" szöveg megjelenik a kiírásban|A top 5 nevek kiírásánál szerepel a "top 5" szöveg? 🏆|🏆 A top 5 kiírása megvan!
+tartalmaz:join(|join() metódussal fűzi össze a neveket|A top 5 neveket vesszővel összefűzve kell kiírni – melyik metódussal? 🔗|🔗 A join() megvan – a nevek összefűzve!
+vagy:[:5]~~[0:5]|Az első 5 elemet szeletelési (slicing) módszerrel veszi ki|Hogyan veszed ki az első 5 nevet a listából? ✂️|✂️ A slicing megvan – az első 5 elem kinyerve!
+bekeres:Keresett név: |Bekérés szövege: "Keresett név: "|A névkereső bekérésének szövege pontosan "Keresett név: " legyen! 🔍|🔍 A névkereső bekérés szövege tökéletesen egyezik!
+tartalmaz:index(|index() metódussal keresi meg a sorrendi helyet|Hogyan tudja a program, hogy hanyadik helyen áll egy név? 🔢|🔢 Az index() megvan – a sorrend meghatározva!
+tartalmaz:nincs benne az 50-ben|"nincs benne az 50-ben" üzenet megjelenik|Mit ír ki a program, ha a keresett név nem szerepel a top 50-ben? ❌|❌ A "nincs benne az 50-ben" üzenet megvan!
+tartalmaz:legnépszerűbb|"legnépszerűbb" szó megjelenik a kimenetben|A névkereső eredményének szövegében szerepel a "legnépszerűbb" szó? 🌟|🌟 A "legnépszerűbb" szó megjelenik – a névkereső teljes!
+
+Tippek:
+A fájl beolvasása: with open("legnepszerubb_nevek.txt", encoding="utf-8") as f:
+A sorok szétbontása: nevek = [n.strip() for n in sor.split(";") if n.strip()]
+Halmazok metszete: set(fiu_2023).symmetric_difference(set(fiu_2024))
+Átlag számítása: sum(len(n) for n in lista) / len(lista)
+Top 5 kiírása: print(f"2023 top 5 fiú: {', '.join(fiu_2023[:5])}")
+Névkereső ciklus: for ev, fiu, lany in [("2023", fiu_2023, lany_2023), ("2024", fiu_2024, lany_2024)]:
+
+Megoldas:
+with open("legnepszerubb_nevek.txt", encoding="utf-8") as f:
+    sorok = f.readlines()
+
+fiu_2023 = [n.strip() for n in sorok[0].split(";") if n.strip()]
+lany_2023 = [n.strip() for n in sorok[1].split(";") if n.strip()]
+fiu_2024 = [n.strip() for n in sorok[2].split(";") if n.strip()]
+lany_2024 = [n.strip() for n in sorok[3].split(";") if n.strip()]
+
+egyedi_fiu = set(fiu_2023).symmetric_difference(set(fiu_2024))
+egyedi_lany = set(lany_2023).symmetric_difference(set(lany_2024))
+print(f"Csak az egyik évben: {len(egyedi_fiu)} fiúnév, {len(egyedi_lany)} lánynév")
+
+ossz_fiu = fiu_2023 + fiu_2024
+ossz_lany = lany_2023 + lany_2024
+atlag_fiu = sum(len(n) for n in ossz_fiu) / len(ossz_fiu)
+atlag_lany = sum(len(n) for n in ossz_lany) / len(ossz_lany)
+print(f"Átlagos fiú névhossz: {atlag_fiu:.1f} betű")
+print(f"Átlagos lány névhossz: {atlag_lany:.1f} betű")
+
+print(f"2023 top 5 fiú: {', '.join(fiu_2023[:5])}")
+print(f"2023 top 5 lány: {', '.join(lany_2023[:5])}")
+print(f"2024 top 5 fiú: {', '.join(fiu_2024[:5])}")
+print(f"2024 top 5 lány: {', '.join(lany_2024[:5])}")
+
+nev = input("Keresett név: ")
+for ev, fiu, lany in [("2023", fiu_2023, lany_2023), ("2024", fiu_2024, lany_2024)]:
+    if nev in fiu:
+        print(f"{ev}: {fiu.index(nev) + 1}. legnépszerűbb fiúnév")
+    elif nev in lany:
+        print(f"{ev}: {lany.index(nev) + 1}. legnépszerűbb lánynév")
+    else:
+        print(f"{ev}: nincs benne az 50-ben")
+
