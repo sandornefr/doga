@@ -587,57 +587,53 @@ Cim: Étterem értékelő
 Tipus: if
 Nehezseg: kozepes
 
-Készíts programot, amely bekér egy éttermi értékelést 1-10 között, majd kiírja a véleményt!
-1-2 pont: Szörnyű! Ide többet nem megyek.
-3-4 pont: Gyenge.
-5-6 pont: Átlagos.
-7-8 pont: Jó! Visszajövök.
-9-10 pont: Kiváló! Mindenkinek ajánlom!
+Készíts programot, amely bekér egy éttermi értékelést 1-5 csillag között, majd kiírja a véleményt!
+1 csillag: Szörnyű! Ide többet nem megyek.
+2 csillag: Gyenge.
+3 csillag: Átlagos.
+4 csillag: Jó! Visszajövök.
+5 csillag: Kiváló! Mindenkinek ajánlom!
 
 Minta kód:
 
 ```
-Add meg az értékelést (1-10): 2
+Add meg az értékelést (1-5): 1
 Szörnyű! Ide többet nem megyek.
 
-Add meg az értékelést (1-10): 5
+Add meg az értékelést (1-5): 3
 Átlagos.
 
-Add meg az értékelést (1-10): 8
-Jó! Visszajövök.
-
-Add meg az értékelést (1-10): 10
+Add meg az értékelést (1-5): 5
 Kiváló! Mindenkinek ajánlom!
 
 ```
 
 Pontozas:
-bekeres:Add meg az értékelést (1-10): |Bekérés szövege: "Add meg az értékelést (1-10): "|Pontosan kell a szöveg a zárójelekkel együtt! 🍽️|✅ A bekérés szövege tökéletesen egyezik!
+bekeres:Add meg az értékelést (1-5): |Bekérés szövege: "Add meg az értékelést (1-5): "|Pontosan kell a szöveg a zárójelekkel együtt! 🍽️|✅ A bekérés szövege tökéletesen egyezik!
 int_float:1|Számmá alakítja|Az értékelés szövegként érkezik – mivel alakítod számmá? 🔢|🔢 Az értékelés számként vizsgálható – az ítélet elkezdődhet!
 if|Elágazást használ|Öt kategória van – melyik kulcsszóval indítod az elágazást? 🍽️|🍽️ Az elágazás megvan – a kritikus megszólalt!
-elif|Több kategóriát kezel (elif)|Az if után mi jön a következő értékeléshez? 🔀|🔀 Minden értékelési kategóriának saját ága van!
-teszt:2:Szörnyű|1-2 pontnál Szörnyű értékelést ad|2 pont – ez a legrosszabb. Mit ír ki a programod? 😱|😱 Szörnyű! A program nem kíméli az éttermet!
-teszt:4:Gyenge|3-4 pontnál Gyenge értékelést ad|4 pont – nem jó, de nem is a legrosszabb. Melyik kategória? 😕|😕 Gyenge! Volt jobb is!
-teszt:6:Átlagos|5-6 pontnál Átlagos értékelést ad|6 pont – középen van. Mit ír ki a programod? 😐|😐 Átlagos! Semmi különös!
-teszt:10:Kiváló|9-10 pontnál Kiváló értékelést ad|10 pont – tökéletes! Mit ír ki a programod? ⭐|⭐ Kiváló! Mindenkinek ajánlom!
+elif|Több kategóriát kezel (elif)|Az if után mi jön a következő értékeléshez? 🔀|🔀 Minden csillagnak saját ága van!
+teszt:1:Szörnyű|1 csillagnál Szörnyű értékelést ad|1 csillag – a legrosszabb. Mit ír ki a programod? 😱|😱 Szörnyű! A program nem kíméli az éttermet!
+teszt:2:Gyenge|2 csillagnál Gyenge értékelést ad|2 csillag – nem sok. Melyik ágon fut? 😕|😕 Gyenge! Volt jobb is!
+teszt:3:Átlagos|3 csillagnál Átlagos értékelést ad|3 csillag – középen van. Mit ír ki a programod? 😐|😐 Átlagos! Semmi különös!
+teszt:4:Visszajövök|4 csillagnál Jó értékelést ad|4 csillag – majdnem tökéletes. Kijön az üzenet? 😊|😊 Jó! Visszajövök!
+teszt:5:Kiváló|5 csillagnál Kiváló értékelést ad|5 csillag – tökéletes! Mit ír ki a programod? ⭐|⭐ Kiváló! Mindenkinek ajánlom!
 
 Tippek:
 
 Megoldas:
-ertekeles = int(input("Add meg az értékelést (1-10): "))
+ertekeles = int(input("Add meg az értékelést (1-5): "))
 
-if ertekeles <= 2:
+if ertekeles == 1:
     print("Szörnyű! Ide többet nem megyek.")
-elif ertekeles <= 4:
+elif ertekeles == 2:
     print("Gyenge.")
-elif ertekeles <= 6:
+elif ertekeles == 3:
     print("Átlagos.")
-elif ertekeles <= 8:
+elif ertekeles == 4:
     print("Jó! Visszajövök.")
-elif ertekeles <= 10:
-    print("Kiváló! Mindenkinek ajánlom!")
 else:
-    print("Érvénytelen értékelés! Kérlek 1 és 10 közötti számot adj meg.")
+    print("Kiváló! Mindenkinek ajánlom!")
 
 13. feladat
 Pont: 14
