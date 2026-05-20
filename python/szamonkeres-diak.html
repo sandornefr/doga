@@ -211,11 +211,14 @@
           <i class="fas fa-play"></i> Futtatás
         </button>
       </div>
-      <div id="diak-inputs-wrap" style="display:none">
-        <div style="font-size:0.75rem;color:#64748b;margin-bottom:4px">input() értékek (soronként):</div>
-        <textarea id="diak-inputs" rows="2" placeholder="pl: 5&#10;Éva"></textarea>
+      <div id="diak-inputs-wrap" style="padding:6px 10px;border-bottom:1px solid #1f2937;background:#0b1120;flex-shrink:0">
+        <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+          <i class="fas fa-keyboard" style="color:#3b82f6"></i>
+          <strong>input() értékek</strong> — ide írd be a tesztadatokat soronként, aztán nyomj Futtatást!
+        </div>
+        <textarea id="diak-inputs" rows="3" placeholder="pl:&#10;Kovács Péter&#10;4"></textarea>
       </div>
-      <pre id="diak-output">(Nyomj Futtatás gombot a kód teszteléséhez)</pre>
+      <pre id="diak-output" style="color:#94a3b8">(Nyomj Futtatás gombot a kód teszteléséhez)</pre>
     </div>
 
   </div>
@@ -527,6 +530,7 @@ let diakMonaco = null;
 let diakPyodide = null;
 let diakPyodideLoading = false;
 let diakSubmitting = false;
+let pasteGuardInstalled = false;
 
 function openDiakOverlay(sz) {
   const rawFeladatok = JSON.parse(sz.feladatok || '[]');
@@ -645,7 +649,9 @@ async function autoSubmitAll() {
   for (let i = 0; i < diakState.feladatok.length; i++) {
     if (!diakState.feladatok[i].beadva) {
       diakState.currentIdx = i;
-      if (diakMonaco) diakState.drafts[diakState.feladatok[i].feladatId] = diakMonaco.getValue();
+      if (diakMonaco && diakState.models?.[i]) {
+        diakMonaco.setModel(diakState.models[i]);
+      }
       await diakBekules();
     }
   }
@@ -653,6 +659,8 @@ async function autoSubmitAll() {
 
 // ── Paste védelem ─────────────────────────────────────────────────────────────
 function installPasteGuard() {
+  if (pasteGuardInstalled) return;
+  pasteGuardInstalled = true;
   // Belső másolás figyelése (feladatleíró panelből)
   document.getElementById('diak-task-leiras').addEventListener('copy', () => {
     internalCopyFlag = true;
@@ -700,15 +708,16 @@ function showPasteWarn() {
 function diakGoTo(idx) {
   if (idx < 0 || idx >= diakState.feladatok.length) return;
 
-  // Piszkozat mentése az elhagyott feladathoz (ha még nem adta be)
-  const prev = diakState.feladatok[diakState.currentIdx];
-  if (diakMonaco && !prev.beadva) {
-    diakState.drafts[prev.feladatId] = diakMonaco.getValue();
-  }
-
   diakState.currentIdx = idx;
   const t = diakState.feladatok[idx];
-  const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
+
+  // Per-task Monaco model váltás
+  if (diakMonaco && diakState.models?.[idx]) {
+    diakMonaco.setModel(diakState.models[idx]);
+    diakMonaco.updateOptions({ readOnly: t.beadva });
+  }
+
+  const kod = t.beadva ? (t.beadas?.kod || '') : '';
 
   // Navigáció gombok
   document.querySelectorAll('.diak-nav-btn').forEach((btn, i) => {
@@ -757,21 +766,13 @@ function diakGoTo(idx) {
     sav.style.display = 'none';
   }
 
-  // Monaco tartalom és módja
-  if (diakMonaco) {
-    diakMonaco.setValue(kod);
-    diakMonaco.updateOptions({ readOnly: t.beadva });
-  }
   const ro = document.getElementById('diak-readonly-badge');
   if (ro) ro.style.display = t.beadva ? 'inline' : 'none';
 
-  // input() mező láthatósága
-  document.getElementById('diak-inputs-wrap').style.display =
-    kod.includes('input(') ? 'block' : 'none';
-
   // Kimenet törlése
-  document.getElementById('diak-output').textContent =
-    '(Nyomj Futtatás gombot a kód teszteléséhez)';
+  const outEl = document.getElementById('diak-output');
+  outEl.style.color = '#94a3b8';
+  outEl.textContent = '(Nyomj Futtatás gombot a kód teszteléséhez)';
 
   // Beküldés gomb
   const bekulesBtn = document.getElementById('diak-bekules-btn');
@@ -988,7 +989,8 @@ async function diakRunCode() {
     return;
   }
 
-  outputEl.textContent = '▶ Futtatás...\n';
+  outputEl.style.color = '#94a3b8';
+  outputEl.textContent = '▶ Futtatás...';
 
   const rawInputs = document.getElementById('diak-inputs')?.value || '';
   const inputQueue = rawInputs.split('\n').map(s => s.trim()).filter(Boolean);
@@ -1019,52 +1021,64 @@ builtins.input = _input
 
     const stdout = diakPyodide.runPython('_stdout.getvalue()');
     const stderr = diakPyodide.runPython('_stderr.getvalue()');
+    outputEl.style.color = '#4ade80';
     outputEl.textContent = stdout || '(nincs kimenet)';
-    if (stderr) outputEl.textContent += '\n⚠ Hibák:\n' + stderr;
+    if (stderr) {
+      outputEl.style.color = '#fca5a5';
+      outputEl.textContent = '⚠ Hiba:\n' + stderr;
+    }
   } catch(e) {
+    outputEl.style.color = '#fca5a5';
     outputEl.textContent = '✗ Hiba:\n' + e.message;
   } finally {
     try { diakPyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__'); } catch {}
   }
-
-  // input() mező láthatósága az aktuális kódhoz
-  document.getElementById('diak-inputs-wrap').style.display =
-    kod.includes('input(') ? 'block' : 'none';
 }
 
-// ── Monaco inicializálás ──────────────────────────────────────────────────────
-function initDiakMonaco() {
-  if (diakMonaco) {
-    // Már inicializálva van, csak frissítjük a tartalmat
-    const t = diakState.feladatok[diakState.currentIdx];
-    const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
-    diakMonaco.setValue(kod);
-    diakMonaco.updateOptions({ readOnly: t.beadva });
-    return;
+// ── Monaco per-task modellek ──────────────────────────────────────────────────
+function initDiakModels() {
+  // Régi modellek felszabadítása
+  if (diakState.models) {
+    diakState.models.forEach(m => { try { m?.dispose(); } catch {} });
   }
+  const szId = diakState.szamonkeres?.id || 0;
+  diakState.models = diakState.feladatok.map((t, i) => {
+    const uri = monaco.Uri.parse(`szam-${szId}-task-${i}-${Date.now()}`);
+    const code = t.beadva ? (t.beadas?.kod || '') : '';
+    return monaco.editor.createModel(code, 'python', uri);
+  });
+}
+
+function initDiakMonaco() {
   if (typeof require === 'undefined') return;
   require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
   require(['vs/editor/editor.main'], () => {
     const container = document.getElementById('diak-monaco-editor');
     if (!container || !diakState.feladatok.length) return;
-    const t = diakState.feladatok[diakState.currentIdx];
-    const kod = t.beadva ? (t.beadas?.kod || '') : (diakState.drafts[t.feladatId] || '');
+
+    // Per-task modellek létrehozása
+    initDiakModels();
+
+    const curIdx = diakState.currentIdx;
+    const t = diakState.feladatok[curIdx];
+
+    if (diakMonaco) {
+      // Már van editor — csak modellt váltunk
+      diakMonaco.setModel(diakState.models[curIdx]);
+      diakMonaco.updateOptions({ readOnly: t?.beadva || false });
+      return;
+    }
+
     diakMonaco = monaco.editor.create(container, {
-      value: kod,
+      model: diakState.models[curIdx],
       language: 'python',
       theme: 'vs-dark',
-      readOnly: t.beadva,
+      readOnly: t?.beadva || false,
       minimap: { enabled: false },
       fontSize: 14,
       lineNumbers: 'on',
       scrollBeyondLastLine: false,
       automaticLayout: true,
-    });
-    // input() mező frissítése gépelés közben
-    diakMonaco.onDidChangeModelContent(() => {
-      const v = diakMonaco.getValue();
-      document.getElementById('diak-inputs-wrap').style.display =
-        v.includes('input(') ? 'block' : 'none';
     });
   });
 }
