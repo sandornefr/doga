@@ -179,21 +179,16 @@
       <button onclick="closeGeminiSettings()" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:1.1rem"><i class="fas fa-xmark"></i></button>
     </div>
     <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:16px;line-height:1.65">
-      Az AI pontozáshoz <strong style="color:#e0e0e0">Google Gemini API kulcs</strong> szükséges.<br>
-      Ingyenesen igényelhető: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#818cf8">aistudio.google.com/app/apikey</a><br>
-      <span style="font-size:0.78rem;color:#64748b">A kulcs csak a böngésződben tárolódik, sehova nem kerül fel.</span>
+      Az AI pontozás a <strong style="color:#e0e0e0">Railway szerveren</strong> keresztül működik.<br>
+      A Gemini API kulcsot egyszer kell beállítani a Railway environment variables között.<br>
+      <span style="font-size:0.78rem;color:#64748b">A kulcs soha nem kerül a böngészőbe — a szerver hívja a Gemini-t.</span>
     </div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:0.82rem;color:#64748b;display:block;margin-bottom:6px">API kulcs (AIzaSy... kezdetű)</label>
-      <div style="display:flex;gap:8px">
-        <input type="password" id="gemini-key-input"
-          placeholder="AIzaSy..."
-          style="flex:1;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:0.9rem;font-family:monospace;outline:none">
-        <button onclick="toggleGeminiKeyVisible()" title="Megjelenítés/elrejtés"
-          style="padding:8px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#64748b;cursor:pointer">
-          <i class="fas fa-eye" id="gemini-eye-icon"></i>
-        </button>
-      </div>
+    <div style="background:#0b1120;border:1px solid #1f2937;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:0.83rem;color:#cbd5e1;line-height:1.7">
+      <strong style="color:#818cf8">Beállítás lépései:</strong><br>
+      1. Nyisd meg: <a href="https://railway.app" target="_blank" style="color:#818cf8">railway.app</a> → projekt → <strong>Variables</strong> fül<br>
+      2. Adj hozzá: <code style="background:#1e3a5f;padding:1px 6px;border-radius:4px;color:#93c5fd">GEMINI_API_KEY</code> = <em>az AIzaSy... kulcsod</em><br>
+      3. Railway automatikusan újraindítja a szervert<br>
+      4. Kattints az alábbi <strong>Tesztelés</strong> gombra — ha zöld, kész!
     </div>
     <div id="gemini-modal-msg" style="font-size:0.82rem;margin-bottom:12px;display:none"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1385,22 +1380,17 @@ function deleteGeminiKey() {
 }
 
 async function testGeminiKey() {
-  const inp = document.getElementById('gemini-key-input');
-  let val = inp.value.trim();
-  if (val.includes('•')) val = getGeminiKey();
-  if (!val) { showGeminiMsg('err', 'Előbb írd be a kulcsot!'); return; }
-  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés...');
+  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés a szerveren keresztül...');
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${val}`,
-      { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents:[{ parts:[{ text:'Mondj egy szót magyarul.' }] }] }) }
-    );
+    const res = await authFetch(`${API}/api/ai/pontozas`, {
+      method: 'POST',
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'Mondj egy szót magyarul.' }] }] })
+    });
     if (res.ok) {
-      showGeminiMsg('ok', '<i class="fas fa-check"></i> Kulcs érvényes, kapcsolat OK!');
+      showGeminiMsg('ok', '<i class="fas fa-check"></i> Szerver kapcsolat OK – AI pontozás elérhető!');
     } else {
-      const err = await res.json();
-      showGeminiMsg('err', `Hiba: ${err?.error?.message || res.status}`);
+      const err = await res.json().catch(() => ({}));
+      showGeminiMsg('err', `Hiba: ${err?.error?.message || err?.error || res.status}`);
     }
   } catch(e) { showGeminiMsg('err', 'Hálózati hiba: ' + e.message); }
 }
@@ -1420,12 +1410,7 @@ async function aiPontozas(beadasId) {
   const task = getSzambankTaskByBeadasId(b, sz);
   if (!task) { alert('Ehhez a feladathoz nincs AI pontozás (csak szambank feladatoknál érhető el).'); return; }
 
-  let apiKey = getGeminiKey();
-  if (!apiKey) {
-    openGeminiSettings();
-    showGeminiMsg('err', 'Előbb add meg a Gemini API kulcsot, majd nyomj Mentés gombot, és próbáld újra az AI pontozást.');
-    return;
-  }
+  // API hívás a Railway backend proxyn keresztül (kulcs a szerveren van)
 
   const promptSzoveg = `Te egy Python tanárt segítő AI vagy. Értékeld az alábbi megoldást!
 
@@ -1457,13 +1442,15 @@ JAVASOLT PONTSZÁM: X / ${task.pont}
   document.body.appendChild(toast);
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents:[{ parts:[{ text: promptSzoveg }] }] }) }
-    );
+    const res = await authFetch(`${API}/api/ai/pontozas`, {
+      method: 'POST',
+      body: JSON.stringify({ contents: [{ parts: [{ text: promptSzoveg }] }] })
+    });
     toast.remove();
-    if (!res.ok) { const err = await res.json(); throw new Error(err?.error?.message || `HTTP ${res.status}`); }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || err?.error || `HTTP ${res.status}`);
+    }
     const data = await res.json();
     const valasz = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nem érkezett válasz.';
     showAiModal(valasz, beadasId, task.pont);
