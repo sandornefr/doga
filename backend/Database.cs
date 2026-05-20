@@ -211,6 +211,8 @@ public class Database
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE otlet_lada ADD COLUMN tipus TEXT NOT NULL DEFAULT 'otlet'"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN cel_honap INTEGER"); } catch { }
+        try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN perc_limit INTEGER NOT NULL DEFAULT 60"); } catch { }
+        try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN started_at TEXT"); } catch { }
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS havijegyek (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -285,13 +287,6 @@ public class Database
     public int SaveSzamonkeres(SzamonkeresCreateRequest req, string oktatoEmail)
     {
         using var conn = Open();
-        // Meglévő DB-nél pótoljuk az új oszlopokat ha még nem léteznek
-        foreach (var col in new[] {
-            "ALTER TABLE szamonkeres ADD COLUMN perc_limit INTEGER NOT NULL DEFAULT 60",
-            "ALTER TABLE szamonkeres ADD COLUMN started_at TEXT"
-        }) {
-            try { using var a = conn.CreateCommand(); a.CommandText = col; a.ExecuteNonQuery(); } catch {}
-        }
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"INSERT INTO szamonkeres
             (oktato_email,cim,csoportok,feladatok,ponthatarak,perc_limit,statusz)
