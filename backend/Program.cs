@@ -1296,6 +1296,24 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
     return Results.Ok(new { szamonkeres = sz, beadasok });
 });
 
+// Számonkérés indítása (oktató → mindenki polling-gal kapja)
+app.MapPost("/api/szamonkeres/{id:int}/indit", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var email = GetOktatoEmail(ctx);
+    var ok = db.InditSzamonkeres(id, email);
+    return ok ? Results.Ok(new { success = true }) : Results.BadRequest(new { error = "Nem sikerült indítani (már aktív vagy nem a tiéd)" });
+});
+
+// Számonkérés lezárása (oktató)
+app.MapPost("/api/szamonkeres/{id:int}/lezar", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var email = GetOktatoEmail(ctx);
+    var ok = db.LezarSzamonkeres(id, email);
+    return ok ? Results.Ok(new { success = true }) : Results.BadRequest(new { error = "Nem sikerült lezárni" });
+});
+
 // Aktív számonkérések tanulónak
 app.MapGet("/api/szamonkeres/aktiv", (HttpContext ctx, Database db) =>
 {
@@ -1785,6 +1803,26 @@ app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
     if (celHonap < 3 || celHonap > 5) return Results.BadRequest(new { error = "celHonap 3-5 lehet" });
     var ok = db.SetProgressCelHonap(progressId, email, celHonap);
     return ok ? Results.Ok(new { success = true }) : Results.Forbid();
+});
+
+// ── Gemini AI proxy (tanárnak) ────────────────────────────────────────────────
+app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
+{
+    var (valid, _, role) = InspectAuthContext(ctx);
+    if (!valid || role != "oktato") return Results.Unauthorized();
+
+    var geminiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? "";
+    if (string.IsNullOrWhiteSpace(geminiKey))
+        return Results.BadRequest(new { error = "GEMINI_API_KEY nincs beállítva a szerveren." });
+
+    using var reader = new StreamReader(ctx.Request.Body);
+    var body = await reader.ReadToEndAsync();
+
+    using var http = new HttpClient();
+    var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={geminiKey}";
+    var resp = await http.PostAsync(url, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+    var content = await resp.Content.ReadAsStringAsync();
+    return Results.Content(content, "application/json", System.Text.Encoding.UTF8, (int)resp.StatusCode);
 });
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
