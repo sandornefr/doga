@@ -239,7 +239,7 @@
         </div>
 
         <!-- Módválasztó gombok -->
-        <div class="feladat-mode-btns">
+        <div class="feladat-mode-btns" style="grid-template-columns:1fr 1fr 1fr">
           <button class="feladat-mode-btn active" id="mode-btn-rendszer" onclick="setFeladatMode('rendszer')">
             <span class="mi"><i class="fas fa-list-check"></i></span>
             <span class="mt">Meglévő feladat</span>
@@ -250,6 +250,11 @@
             <span class="mt">Saját feladat</span>
             <span class="md">Te írod a feladatszöveget – a tanár értékeli kézzel</span>
           </button>
+          <button class="feladat-mode-btn" id="mode-btn-szambank" onclick="setFeladatMode('szambank')" style="border-color:#6366f1">
+            <span class="mi"><i class="fas fa-shuffle" style="color:#818cf8"></i></span>
+            <span class="mt">Automatikus kiosztás</span>
+            <span class="md">48 feladatos bankból – mindenki egyedi 1×8p + 1×14p + 1×18p kombinációt kap</span>
+          </button>
         </div>
 
         <!-- Rendszer feladatok panel -->
@@ -257,6 +262,37 @@
           <div id="feladat-lista" class="feladat-list">
             <div style="padding:16px;color:#64748b">Feladatok betöltése...</div>
           </div>
+        </div>
+
+        <!-- Automatikus kiosztás panel -->
+        <div id="panel-szambank" class="card" style="display:none">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #4338ca;border-radius:8px;font-size:0.82rem;color:#a5b4fc;margin-bottom:16px">
+            <i class="fas fa-circle-info" style="color:#818cf8;margin-top:2px;flex-shrink:0"></i>
+            <span>A rendszer az email cím alapján <strong>minden tanulónak egyedi feladatot</strong> oszt ki a 48 feladatos bankból. Felelet közben senki sem lesz szomszédjával azonos feladaton.</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#fcd34d">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">8 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">if / elif / else</div>
+            </div>
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#a5b4fc">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">14 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">def + for / while</div>
+            </div>
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#34d399">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">18 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">class + max / min</div>
+            </div>
+          </div>
+          <div style="background:#0b1120;border:1px solid #1f2937;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#94a3b8;display:flex;align-items:center;gap:12px">
+            <i class="fas fa-calculator" style="color:#6366f1;font-size:1.1rem;flex-shrink:0"></i>
+            <span>Minden tanuló <strong style="color:#e0e0e0">1 × 8 pont + 1 × 14 pont + 1 × 18 pont = max 40 pont</strong> feladatot kap. A kiosztás az <strong>Indítás</strong> gombig nem végleges – akkor generálódik.</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="szambankElonezet()"><i class="fas fa-eye"></i> Előnézet – minta feladatok megtekintése</button>
+          <div id="szambank-elonezet-wrap" style="margin-top:14px;display:none"></div>
         </div>
 
         <!-- Saját feladat panel -->
@@ -539,7 +575,7 @@ function validateStep(step) {
     }
   }
   if (step === 2) {
-    if (selectedFeladatok.length === 0) {
+    if (feladatMode !== 'szambank' && selectedFeladatok.length === 0) {
       alert('Adj hozzá legalább egy feladatot a folytatáshoz!');
       return false;
     }
@@ -549,12 +585,40 @@ function validateStep(step) {
 
 function setFeladatMode(mode) {
   feladatMode = mode;
-  document.getElementById('mode-btn-rendszer')?.classList.toggle('active', mode === 'rendszer');
-  document.getElementById('mode-btn-sajat')?.classList.toggle('active', mode === 'sajat');
-  const pr = document.getElementById('panel-rendszer');
-  const ps = document.getElementById('panel-sajat');
-  if (pr) pr.style.display = mode === 'rendszer' ? 'block' : 'none';
-  if (ps) ps.style.display = mode === 'sajat' ? 'block' : 'none';
+  ['rendszer','sajat','szambank'].forEach(m => {
+    document.getElementById('mode-btn-' + m)?.classList.toggle('active', m === mode);
+  });
+  document.getElementById('panel-rendszer').style.display  = mode === 'rendszer'  ? 'block' : 'none';
+  document.getElementById('panel-sajat').style.display     = mode === 'sajat'     ? 'block' : 'none';
+  document.getElementById('panel-szambank').style.display  = mode === 'szambank'  ? 'block' : 'none';
+}
+
+// ── Szambank előnézet ─────────────────────────────────────────────────────────
+function szambankElonezet() {
+  if (typeof szamonkeresFeladatok === 'undefined') {
+    alert('A feladatbank nem töltődött be. Frissítsd az oldalt.');
+    return;
+  }
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const f8  = pick(szamonkeresFeladatok.p8);
+  const f14 = pick(szamonkeresFeladatok.p14);
+  const f18 = pick(szamonkeresFeladatok.p18);
+
+  const wrap = document.getElementById('szambank-elonezet-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
+      Minta – egy tanuló lehetséges feladatsora:
+    </div>
+    ${[[f8,'#fcd34d','8'],[f14,'#a5b4fc','14'],[f18,'#34d399','18']].map(([f,c,p]) => `
+      <div style="padding:10px 14px;background:#0b1120;border:1px solid #1f2937;border-radius:8px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px">
+        <span style="padding:2px 9px;border-radius:10px;background:#1a1a1a;color:${c};font-size:0.75rem;font-weight:700;white-space:nowrap;flex-shrink:0">${p} pont</span>
+        <div>
+          <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0">${escH(f.cim)}</div>
+          <div style="font-size:0.78rem;color:#64748b;margin-top:2px;white-space:pre-line">${escH(f.leiras.substring(0,120))}…</div>
+        </div>
+      </div>`).join('')}
+    <div style="font-size:0.75rem;color:#4b5563;margin-top:4px"><i class="fas fa-rotate-right"></i> Minden kattintásra más minta jelenik meg.</div>`;
 }
 
 function updateStep1Counter() {
@@ -580,14 +644,20 @@ function updateStep3Summary() {
     }
     return formatCsoportKey(c);
   });
-  const maxOssz = selectedFeladatok.reduce((s, f) => s + (parseInt(f.pont) || 0), 0);
   const ph2 = document.getElementById('ph-2').value || '40';
   const ph3 = document.getElementById('ph-3').value || '55';
   const ph4 = document.getElementById('ph-4').value || '70';
   const ph5 = document.getElementById('ph-5').value || '85';
-  const feladatReszletek = selectedFeladatok.map(f =>
-    `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
-  ).join('<br>');
+  let feladatReszletek, maxOssz;
+  if (feladatMode === 'szambank') {
+    feladatReszletek = '<i class="fas fa-shuffle" style="color:#818cf8"></i> Automatikus kiosztás – 48 feladatos bank &nbsp;·&nbsp; <span style="color:#94a3b8">1×8p + 1×14p + 1×18p / tanuló</span>';
+    maxOssz = 40;
+  } else {
+    maxOssz = selectedFeladatok.reduce((s, f) => s + (parseInt(f.pont) || 0), 0);
+    feladatReszletek = selectedFeladatok.map(f =>
+      `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
+    ).join('<br>');
+  }
   const rows = [
     ['Tanulók / csoportok', escH(csoportNames.join(', ')) || '–'],
     ['Feladatok', feladatReszletek || '–'],
@@ -885,7 +955,7 @@ async function createSzamonkeres() {
 
   if (!cim) { showMsg(err,'Adj meg egy nevet a számonkérésnek!'); return; }
   if (selectedCsoportok.size === 0) { showMsg(err,'Válassz legalább egy csoportot!'); return; }
-  if (selectedFeladatok.length === 0) { showMsg(err,'Adj hozzá legalább egy feladatot!'); return; }
+  if (feladatMode !== 'szambank' && selectedFeladatok.length === 0) { showMsg(err,'Adj hozzá legalább egy feladatot!'); return; }
 
   const ph2=parseInt(document.getElementById('ph-2').value)||40;
   const ph3=parseInt(document.getElementById('ph-3').value)||55;
@@ -898,9 +968,18 @@ async function createSzamonkeres() {
       body: JSON.stringify({
         cim,
         csoportok: JSON.stringify([...selectedCsoportok]),
-        feladatok: JSON.stringify(selectedFeladatok),
         ponthatarak: JSON.stringify({ket:ph2,harom:ph3,negy:ph4,ot:ph5}),
-        percLimit: parseInt(document.getElementById('cr-perc').value) || 60
+        percLimit: parseInt(document.getElementById('cr-perc').value) || 60,
+        feladatok: feladatMode === 'szambank' ? (() => {
+          const sh = a => [...a].sort(() => Math.random() - 0.5);
+          return JSON.stringify([{
+            tipus: 'szambank_auto',
+            salt: Math.random().toString(36).slice(2, 10),
+            p8:  sh(szamonkeresFeladatok.p8).map(t => t.id),
+            p14: sh(szamonkeresFeladatok.p14).map(t => t.id),
+            p18: sh(szamonkeresFeladatok.p18).map(t => t.id)
+          }]);
+        })() : JSON.stringify(selectedFeladatok)
       })
     });
     const data = await res.json();
@@ -1153,22 +1232,37 @@ function letoltRubrika(beadasId) {
   const b = allBeadasok.find(x => x.id === beadasId);
   if (!b) return;
   const sz = currentSzamonkeres;
-  const feladatok = JSON.parse(sz?.feladatok || '[]');
-  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
+  const task = getSzambankTaskByBeadasId(b, sz);
   let rubrika = '';
-  if (feladat?.tipus === 'szambank' && typeof szamonkeresFeladatok !== 'undefined') {
-    const task = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18]
-      .find(t => t.id === feladat.feladat_id);
-    if (task) rubrika = [`Feladat: ${task.cim} (${task.pont} pont)`, '',
-      'FELADATLEÍRÁS:', task.leiras, '',
-      'MINTA KIMENET:', task.minta_kimenet||'(nincs)', '',
-      'PONTOZÁSI SZEMPONTOK:',
-      ...(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`)
-    ].join('\n');
-  }
+  if (task) rubrika = [`Feladat: ${task.cim} (${task.pont} pont)`, '',
+    'FELADATLEÍRÁS:', task.leiras, '',
+    'MINTA KIMENET:', task.minta_kimenet||'(nincs)', '',
+    'PONTOZÁSI SZEMPONTOK:',
+    ...(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`)
+  ].join('\n');
   if (!rubrika) { alert('Ehhez a feladathoz nincs letölthető rubrika.'); return; }
   downloadTxt(`Tanuló: ${b.tanuloNev}\nSzámonkérés: ${sz?.cim||''}\n${'─'.repeat(50)}\n\n` + rubrika,
     `${b.tanuloNev.replace(/\s+/g,'_')}_rubrika.txt`);
+}
+
+// ── Szambank task lookup beadás alapján ───────────────────────────────────────
+function getSzambankTaskByBeadasId(b, sz) {
+  if (typeof szamonkeresFeladatok === 'undefined') return null;
+  const allTasks = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18];
+
+  // 1. Direkt keresés: szambank_auto típusnál a feladatId maga a task id (pl. "S8_03")
+  const byId = allTasks.find(t => t.id === b.feladatId);
+  if (byId) return byId;
+
+  // 2. Régi szambank szimpla típus: feladatok tömbben keresés
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) =>
+    (f.tipus==='rendszer' ? `r_${f.feladat_szam}` : `s_${i}`) === b.feladatId
+  );
+  if (feladat?.tipus === 'szambank' && feladat.feladat_id) {
+    return allTasks.find(t => t.id === feladat.feladat_id) || null;
+  }
+  return null;
 }
 
 function downloadTxt(tartalom, fajlnev) {
@@ -1184,14 +1278,8 @@ async function aiPontozas(beadasId) {
   const b = allBeadasok.find(x => x.id === beadasId);
   if (!b?.kod) { alert('Nincs beadott kód.'); return; }
   const sz = currentSzamonkeres;
-  const feladatok = JSON.parse(sz?.feladatok || '[]');
-  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
-  let task = null;
-  if (feladat?.tipus === 'szambank' && typeof szamonkeresFeladatok !== 'undefined') {
-    task = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18]
-      .find(t => t.id === feladat.feladat_id);
-  }
-  if (!task) { alert('Ehhez a feladathoz nincs AI pontozás.'); return; }
+  const task = getSzambankTaskByBeadasId(b, sz);
+  if (!task) { alert('Ehhez a feladathoz nincs AI pontozás (csak szambank feladatoknál érhető el).'); return; }
 
   let apiKey = localStorage.getItem('geminiApiKey') || '';
   if (!apiKey) {

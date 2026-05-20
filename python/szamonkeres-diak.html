@@ -535,6 +535,17 @@ function openDiakOverlay(sz) {
   diakState.szamonkeres = sz;
   diakState.currentIdx = 0;
   diakState.drafts = {};
+
+  // ── Szambank automatikus kiosztás detektálása ──
+  const isSzambankAuto = rawFeladatok.length === 1 && rawFeladatok[0].tipus === 'szambank_auto';
+  if (isSzambankAuto) {
+    diakState.feladatok = getSzambankTasks(rawFeladatok[0], currentUser.email, sz.id)
+      .map(t => ({
+        ...t,
+        beadva: beadasok.some(b => b.feladatId === t.feladatId),
+        beadas: beadasok.find(b => b.feladatId === t.feladatId) || null,
+      }));
+  } else {
   diakState.feladatok = rawFeladatok.map((f, i) => {
     const feladatId  = getFeladatId(f, i);
     const isRendszer = f.tipus === 'rendszer';
@@ -575,6 +586,7 @@ function openDiakOverlay(sz) {
       beadas: beadasok.find(b => b.feladatId === feladatId) || null,
     };
   });
+  } // end else (nem szambank_auto)
 
   document.getElementById('diak-szam-cim').textContent = sz.cim;
 
@@ -887,6 +899,44 @@ function renderKivalaszto() {
           <i class="fas fa-chevron-right" style="color:#64748b;flex-shrink:0"></i>
         </div>`;
     }).join('')}`;
+}
+
+// ── Szambank automatikus feladat-kiosztás ────────────────────────────────────
+function emailHash(str, mod) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0;
+  }
+  return h % mod;
+}
+
+function getSzambankTasks(config, email, szId) {
+  if (typeof szamonkeresFeladatok === 'undefined') return [];
+  const allTasks = [
+    ...szamonkeresFeladatok.p8,
+    ...szamonkeresFeladatok.p14,
+    ...szamonkeresFeladatok.p18
+  ];
+  const salt = (config.salt || '') + String(szId);
+  const e    = (email || '').toLowerCase();
+
+  const idx8  = emailHash(e + salt + '8',  config.p8.length);
+  const idx14 = emailHash(e + salt + '14', config.p14.length);
+  const idx18 = emailHash(e + salt + '18', config.p18.length);
+
+  return [config.p8[idx8], config.p14[idx14], config.p18[idx18]].map(taskId => {
+    const t = allTasks.find(x => x.id === taskId);
+    if (!t) return null;
+    return {
+      feladatId:    t.id,
+      cim:          t.cim,
+      leiras:       t.leiras,
+      pont:         t.pont,
+      mintaKimenet: t.minta_kimenet || '',
+      modulNev:     t.modul_nev     || '',
+      modulKod:     t.modul_kod     || '',
+    };
+  }).filter(Boolean);
 }
 
 function toggleMinta() {
