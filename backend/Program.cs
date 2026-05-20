@@ -1296,6 +1296,24 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
     return Results.Ok(new { szamonkeres = sz, beadasok });
 });
 
+// Számonkérés indítása (oktató → mindenki polling-gal kapja)
+app.MapPost("/api/szamonkeres/{id:int}/indit", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var email = GetOktatoEmail(ctx);
+    var ok = db.InditSzamonkeres(id, email);
+    return ok ? Results.Ok(new { success = true }) : Results.BadRequest(new { error = "Nem sikerült indítani (már aktív vagy nem a tiéd)" });
+});
+
+// Számonkérés lezárása (oktató)
+app.MapPost("/api/szamonkeres/{id:int}/lezar", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var email = GetOktatoEmail(ctx);
+    var ok = db.LezarSzamonkeres(id, email);
+    return ok ? Results.Ok(new { success = true }) : Results.BadRequest(new { error = "Nem sikerült lezárni" });
+});
+
 // Aktív számonkérések tanulónak
 app.MapGet("/api/szamonkeres/aktiv", (HttpContext ctx, Database db) =>
 {

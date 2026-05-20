@@ -372,20 +372,23 @@ public record SzamonkeresCreateRequest(
     string Cim,
     string Csoportok,   // JSON: ["13C/1","13B"]
     string Feladatok,   // JSON array of task objects
-    string Ponthatarak  // JSON: {"ket":40,"harom":55,"negy":70,"ot":85}
+    string Ponthatarak, // JSON: {"ket":40,"harom":55,"negy":70,"ot":85}
+    int    PercLimit = 60
 );
 
 public class SzamonkeresItem
 {
-    public int    Id           { get; set; }
-    public string Cim          { get; set; } = "";
-    public string OktatoEmail  { get; set; } = "";
-    public string Csoportok    { get; set; } = "[]";
-    public string Feladatok    { get; set; } = "[]";
-    public string Ponthatarak  { get; set; } = "{}";
-    public string Statusz      { get; set; } = "aktiv"; // aktiv / lezart / kiadva
-    public string CreatedAt    { get; set; } = "";
-    public int    BeadasokSzama { get; set; }
+    public int     Id            { get; set; }
+    public string  Cim           { get; set; } = "";
+    public string  OktatoEmail   { get; set; } = "";
+    public string  Csoportok     { get; set; } = "[]";
+    public string  Feladatok     { get; set; } = "[]";
+    public string  Ponthatarak   { get; set; } = "{}";
+    public string  Statusz       { get; set; } = "varakozas"; // varakozas / aktiv / lezart / kiadva
+    public string  CreatedAt     { get; set; } = "";
+    public int     BeadasokSzama { get; set; }
+    public string? StartedAt     { get; set; }
+    public int     PercLimit     { get; set; } = 60;
 }
 
 public record BeadasCreateRequest(

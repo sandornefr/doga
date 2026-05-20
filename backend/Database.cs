@@ -257,7 +257,9 @@ public class Database
                 csoportok    TEXT NOT NULL DEFAULT '[]',
                 feladatok    TEXT NOT NULL DEFAULT '[]',
                 ponthatarak  TEXT NOT NULL DEFAULT '{}',
-                statusz      TEXT NOT NULL DEFAULT 'aktiv',
+                statusz      TEXT NOT NULL DEFAULT 'varakozas',
+                perc_limit   INTEGER NOT NULL DEFAULT 60,
+                started_at   TEXT,
                 created_at   TEXT DEFAULT (datetime('now','localtime'))
             );
             CREATE TABLE IF NOT EXISTS szamonkeres_beadas (
@@ -283,19 +285,50 @@ public class Database
     public int SaveSzamonkeres(SzamonkeresCreateRequest req, string oktatoEmail)
     {
         using var conn = Open();
+        // Meglévő DB-nél pótoljuk az új oszlopokat ha még nem léteznek
+        foreach (var col in new[] {
+            "ALTER TABLE szamonkeres ADD COLUMN perc_limit INTEGER NOT NULL DEFAULT 60",
+            "ALTER TABLE szamonkeres ADD COLUMN started_at TEXT"
+        }) {
+            try { using var a = conn.CreateCommand(); a.CommandText = col; a.ExecuteNonQuery(); } catch {}
+        }
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"INSERT INTO szamonkeres
-            (oktato_email,cim,csoportok,feladatok,ponthatarak)
-            VALUES ($email,$cim,$cs,$fj,$ph)";
+            (oktato_email,cim,csoportok,feladatok,ponthatarak,perc_limit,statusz)
+            VALUES ($email,$cim,$cs,$fj,$ph,$pl,'varakozas')";
         cmd.Parameters.AddWithValue("$email", oktatoEmail);
         cmd.Parameters.AddWithValue("$cim",   req.Cim);
         cmd.Parameters.AddWithValue("$cs",    req.Csoportok);
         cmd.Parameters.AddWithValue("$fj",    req.Feladatok);
         cmd.Parameters.AddWithValue("$ph",    req.Ponthatarak);
+        cmd.Parameters.AddWithValue("$pl",    req.PercLimit);
         cmd.ExecuteNonQuery();
         using var id = conn.CreateCommand();
         id.CommandText = "SELECT last_insert_rowid()";
         return (int)(long)id.ExecuteScalar()!;
+    }
+
+    public bool InditSzamonkeres(int id, string oktatoEmail)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE szamonkeres
+            SET statusz='aktiv', started_at=datetime('now','localtime')
+            WHERE id=$id AND oktato_email=$email AND statusz='varakozas'";
+        cmd.Parameters.AddWithValue("$id",    id);
+        cmd.Parameters.AddWithValue("$email", oktatoEmail);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool LezarSzamonkeres(int id, string oktatoEmail)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE szamonkeres SET statusz='lezart'
+            WHERE id=$id AND oktato_email=$email AND statusz='aktiv'";
+        cmd.Parameters.AddWithValue("$id",    id);
+        cmd.Parameters.AddWithValue("$email", oktatoEmail);
+        return cmd.ExecuteNonQuery() > 0;
     }
 
     public List<SzamonkeresItem> GetSzamonkeresekByOktato(string oktatoEmail)
@@ -304,7 +337,8 @@ public class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             SELECT s.id,s.cim,s.oktato_email,s.csoportok,s.feladatok,s.ponthatarak,s.statusz,s.created_at,
-                   COUNT(b.id) as beadasok
+                   COUNT(b.id) as beadasok,
+                   COALESCE(s.started_at,'') as started_at, COALESCE(s.perc_limit,60) as perc_limit
             FROM szamonkeres s
             LEFT JOIN szamonkeres_beadas b ON b.szamonkeres_id = s.id
             WHERE s.oktato_email = $email
@@ -319,7 +353,8 @@ public class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             SELECT s.id,s.cim,s.oktato_email,s.csoportok,s.feladatok,s.ponthatarak,s.statusz,s.created_at,
-                   COUNT(b.id) as beadasok
+                   COUNT(b.id) as beadasok,
+                   COALESCE(s.started_at,'') as started_at, COALESCE(s.perc_limit,60) as perc_limit
             FROM szamonkeres s
             LEFT JOIN szamonkeres_beadas b ON b.szamonkeres_id = s.id
             WHERE s.id = $id GROUP BY s.id";
@@ -332,8 +367,9 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT id,cim,oktato_email,csoportok,feladatok,ponthatarak,statusz,created_at,0 as beadasok
-            FROM szamonkeres WHERE statusz='aktiv'";
+            SELECT id,cim,oktato_email,csoportok,feladatok,ponthatarak,statusz,created_at,0 as beadasok,
+                   COALESCE(started_at,'') as started_at, COALESCE(perc_limit,60) as perc_limit
+            FROM szamonkeres WHERE statusz IN ('varakozas','aktiv')";
         var all = ReadSzamonkeresItems(cmd);
         // Filter in C# — csoportok is JSON array, match osztaly+csoport, osztaly, or individual email
         return all.Where(s => {
@@ -365,7 +401,9 @@ public class Database
                 Ponthatarak   = r.GetString(5),
                 Statusz       = r.GetString(6),
                 CreatedAt     = r.GetString(7),
-                BeadasokSzama = r.GetInt32(8)
+                BeadasokSzama = r.GetInt32(8),
+                StartedAt     = r.IsDBNull(9) ? null : r.GetString(9),
+                PercLimit     = r.IsDBNull(10) ? 60 : r.GetInt32(10)
             });
         return list;
     }
