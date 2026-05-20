@@ -163,7 +163,50 @@
   </a>
   <div class="topbar-right">
     <span id="oktato-nev" style="font-size:0.85rem;color:#94a3b8"></span>
+    <button id="gemini-key-btn" onclick="openGeminiSettings()" title="Gemini AI beállítása"
+      style="padding:5px 12px;border-radius:8px;border:1px solid #374151;background:transparent;cursor:pointer;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:6px;transition:.2s">
+      <i class="fas fa-robot"></i> <span id="gemini-key-label">AI kulcs beállítása</span>
+    </button>
     <a href="../portal.html" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i> Portál</a>
+  </div>
+</div>
+
+<!-- ── Gemini API kulcs beállítás modal ── -->
+<div id="gemini-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border:1px solid #6366f1;border-radius:14px;padding:28px;max-width:520px;width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-weight:700;font-size:1rem;color:#e0e0e0"><i class="fas fa-robot" style="color:#818cf8;margin-right:8px"></i>Gemini AI kulcs beállítása</div>
+      <button onclick="closeGeminiSettings()" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:1.1rem"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:16px;line-height:1.65">
+      Az AI pontozáshoz <strong style="color:#e0e0e0">Google Gemini API kulcs</strong> szükséges.<br>
+      Ingyenesen igényelhető: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#818cf8">aistudio.google.com/app/apikey</a><br>
+      <span style="font-size:0.78rem;color:#64748b">A kulcs csak a böngésződben tárolódik, sehova nem kerül fel.</span>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:0.82rem;color:#64748b;display:block;margin-bottom:6px">API kulcs (AIzaSy... kezdetű)</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="gemini-key-input"
+          placeholder="AIzaSy..."
+          style="flex:1;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:0.9rem;font-family:monospace;outline:none">
+        <button onclick="toggleGeminiKeyVisible()" title="Megjelenítés/elrejtés"
+          style="padding:8px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#64748b;cursor:pointer">
+          <i class="fas fa-eye" id="gemini-eye-icon"></i>
+        </button>
+      </div>
+    </div>
+    <div id="gemini-modal-msg" style="font-size:0.82rem;margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="saveGeminiKey()" style="padding:8px 20px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.88rem">
+        <i class="fas fa-check"></i> Mentés
+      </button>
+      <button onclick="testGeminiKey()" style="padding:8px 16px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.88rem">
+        <i class="fas fa-vial"></i> Tesztelés
+      </button>
+      <button onclick="deleteGeminiKey()" id="gemini-delete-btn" style="padding:8px 16px;background:transparent;border:1px solid #7f1d1d;border-radius:8px;color:#ef4444;cursor:pointer;font-size:0.88rem;display:none">
+        <i class="fas fa-trash"></i> Törlés
+      </button>
+    </div>
   </div>
 </div>
 
@@ -519,6 +562,7 @@ let currentSzamonkeres = null;
   userToken = u.token;
   document.getElementById('oktato-nev').textContent = u.nev || u.email;
   document.getElementById('main-ui').style.display = 'block';
+  updateGeminiKeyBtn();
   init();
 })();
 
@@ -1273,6 +1317,101 @@ function downloadTxt(tartalom, fajlnev) {
   a.click(); URL.revokeObjectURL(a.href);
 }
 
+// ── Gemini kulcs kezelés ──────────────────────────────────────────────────────
+function getGeminiKey() { return localStorage.getItem('geminiApiKey') || ''; }
+
+function updateGeminiKeyBtn() {
+  const van = !!getGeminiKey();
+  const btn = document.getElementById('gemini-key-btn');
+  const lbl = document.getElementById('gemini-key-label');
+  if (!btn) return;
+  btn.style.borderColor = van ? '#15803d' : '#6366f1';
+  btn.style.color = van ? '#4ade80' : '#a5b4fc';
+  if (lbl) lbl.textContent = van ? 'AI kulcs beállítva' : 'AI kulcs beállítása';
+}
+
+function openGeminiSettings() {
+  const modal = document.getElementById('gemini-modal');
+  modal.style.display = 'flex';
+  const inp = document.getElementById('gemini-key-input');
+  const existing = getGeminiKey();
+  inp.value = existing ? '••••••••••••••••••••' : '';
+  inp.type = 'password';
+  document.getElementById('gemini-eye-icon').className = 'fas fa-eye';
+  document.getElementById('gemini-delete-btn').style.display = existing ? 'inline-block' : 'none';
+  document.getElementById('gemini-modal-msg').style.display = 'none';
+  if (!existing) setTimeout(() => inp.focus(), 100);
+}
+
+function closeGeminiSettings() {
+  document.getElementById('gemini-modal').style.display = 'none';
+}
+
+function toggleGeminiKeyVisible() {
+  const inp = document.getElementById('gemini-key-input');
+  const icon = document.getElementById('gemini-eye-icon');
+  if (inp.type === 'password') {
+    const existing = getGeminiKey();
+    if (inp.value.includes('•') && existing) inp.value = existing;
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+function saveGeminiKey() {
+  const inp = document.getElementById('gemini-key-input');
+  const msg = document.getElementById('gemini-modal-msg');
+  let val = inp.value.trim();
+  if (val.includes('•')) val = getGeminiKey(); // nem módosított, megtartjuk
+  if (!val) { showGeminiMsg('err', 'Írd be az API kulcsot!'); return; }
+  if (!val.startsWith('AIza')) { showGeminiMsg('err', 'Érvénytelen kulcs — az AIzaSy... kezdetű kulcsot várom.'); return; }
+  localStorage.setItem('geminiApiKey', val);
+  updateGeminiKeyBtn();
+  document.getElementById('gemini-delete-btn').style.display = 'inline-block';
+  showGeminiMsg('ok', '<i class="fas fa-check"></i> Kulcs mentve!');
+  setTimeout(closeGeminiSettings, 1200);
+}
+
+function deleteGeminiKey() {
+  if (!confirm('Törlöd a mentett Gemini API kulcsot?')) return;
+  localStorage.removeItem('geminiApiKey');
+  document.getElementById('gemini-key-input').value = '';
+  document.getElementById('gemini-delete-btn').style.display = 'none';
+  updateGeminiKeyBtn();
+  showGeminiMsg('ok', 'Kulcs törölve.');
+}
+
+async function testGeminiKey() {
+  const inp = document.getElementById('gemini-key-input');
+  let val = inp.value.trim();
+  if (val.includes('•')) val = getGeminiKey();
+  if (!val) { showGeminiMsg('err', 'Előbb írd be a kulcsot!'); return; }
+  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés...');
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${val}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text:'Mondj egy szót magyarul.' }] }] }) }
+    );
+    if (res.ok) {
+      showGeminiMsg('ok', '<i class="fas fa-check"></i> Kulcs érvényes, kapcsolat OK!');
+    } else {
+      const err = await res.json();
+      showGeminiMsg('err', `Hiba: ${err?.error?.message || res.status}`);
+    }
+  } catch(e) { showGeminiMsg('err', 'Hálózati hiba: ' + e.message); }
+}
+
+function showGeminiMsg(type, html) {
+  const el = document.getElementById('gemini-modal-msg');
+  el.style.display = 'block';
+  el.style.color = type === 'ok' ? '#4ade80' : type === 'err' ? '#fca5a5' : '#94a3b8';
+  el.innerHTML = html;
+}
+
 // ── AI pontozás (Gemini) ───────────────────────────────────────────────────────
 async function aiPontozas(beadasId) {
   const b = allBeadasok.find(x => x.id === beadasId);
@@ -1281,12 +1420,11 @@ async function aiPontozas(beadasId) {
   const task = getSzambankTaskByBeadasId(b, sz);
   if (!task) { alert('Ehhez a feladathoz nincs AI pontozás (csak szambank feladatoknál érhető el).'); return; }
 
-  let apiKey = localStorage.getItem('geminiApiKey') || '';
+  let apiKey = getGeminiKey();
   if (!apiKey) {
-    apiKey = prompt('Add meg a Gemini API kulcsot (egyszer szükséges, a böngésző menti):');
-    if (!apiKey) return;
-    localStorage.setItem('geminiApiKey', apiKey.trim());
-    apiKey = apiKey.trim();
+    openGeminiSettings();
+    showGeminiMsg('err', 'Előbb add meg a Gemini API kulcsot, majd nyomj Mentés gombot, és próbáld újra az AI pontozást.');
+    return;
   }
 
   const promptSzoveg = `Te egy Python tanárt segítő AI vagy. Értékeld az alábbi megoldást!
