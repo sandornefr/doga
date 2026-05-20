@@ -142,8 +142,9 @@
 <!-- ── 10-es visszaszámláló overlay ── -->
 <div id="countdown-overlay">
   <div style="font-size:1rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em">A számonkérés kezdődik</div>
-  <div id="countdown-num">10</div>
+  <div id="countdown-num">5</div>
   <div id="countdown-sub" style="font-size:0.95rem;color:#64748b">Készülj fel!</div>
+  <div style="font-size:0.75rem;color:#374151;margin-top:8px">kattints bárhova a gyors indításhoz</div>
 </div>
 
 <!-- ── Teljes képernyős vizsga overlay ── -->
@@ -364,7 +365,7 @@ function startPolling() {
         clearInterval(pollingInterval); pollingInterval = null;
         document.getElementById('varakozas-screen').style.display = 'none';
         await loadOsszesSajatBeadas();
-        startCountdown(aktiv[0]);
+        startCountdown(aktiv[0]);  // 5-ös visszaszámláló, kattintásra ugorható
       }
     } catch {}
   }, 5000);
@@ -374,28 +375,52 @@ function startCountdown(sz) {
   const overlay = document.getElementById('countdown-overlay');
   const numEl   = document.getElementById('countdown-num');
   const subEl   = document.getElementById('countdown-sub');
+  if (!overlay) { openExamSafe(sz); return; }
+
   overlay.style.display = 'flex';
-  let n = 10;
+  let n = 5;
+  let done = false;
   numEl.textContent = n;
+  numEl.style.color = '';
   numEl.className = '';
   subEl.textContent = 'Készülj fel!';
+
+  function indulj() {
+    if (done) return;
+    done = true;
+    clearInterval(iv);
+    numEl.className = 'go';
+    numEl.textContent = 'RAJT!';
+    subEl.textContent = 'Sok sikert!';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      openExamSafe(sz);
+    }, 600);
+  }
+
+  // Kattintásra azonnal indul
+  overlay.addEventListener('click', indulj, { once: true });
 
   const iv = setInterval(() => {
     n--;
     if (n > 0) {
       numEl.textContent = n;
-      if (n <= 3) numEl.style.color = '#ef4444';
+      if (n <= 2) numEl.style.color = '#ef4444';
     } else {
-      clearInterval(iv);
-      numEl.className = 'go';
-      numEl.textContent = 'RAJT!';
-      subEl.textContent = 'Sok sikert!';
-      setTimeout(() => {
-        overlay.style.display = 'none';
-        openExam(sz);
-      }, 900);
+      indulj();
     }
   }, 1000);
+}
+
+function openExamSafe(sz) {
+  try {
+    openExam(sz);
+  } catch(e) {
+    document.getElementById('countdown-overlay').style.display = 'none';
+    document.getElementById('loading-state').innerHTML =
+      `<div class="msg msg-err"><i class="fas fa-triangle-exclamation"></i> Hiba az indításkor: ${e.message} – frissítsd az oldalt!</div>`;
+    document.getElementById('loading-state').style.display = 'block';
+  }
 }
 
 function openExam(sz) {
