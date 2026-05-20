@@ -6,6 +6,7 @@
   <title>Számonkérés-kezelő – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+  <script src="szamonkeres_feladatok.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -291,9 +292,16 @@
       <!-- ── 3. lépés: Részletek & Megerősítés ── -->
       <div class="wizard-panel" id="step-3">
         <div class="card">
-          <div class="form-row">
-            <label>Számonkérés neve / témája</label>
-            <input type="text" id="cr-cim" placeholder="pl. Python alapok – zárthelyi 2026. ápr.">
+          <div class="form-grid">
+            <div class="form-row">
+              <label>Számonkérés neve / témája</label>
+              <input type="text" id="cr-cim" placeholder="pl. Python alapok – zárthelyi 2026. ápr.">
+            </div>
+            <div class="form-row">
+              <label><i class="fas fa-clock"></i> Időkeret (perc)</label>
+              <input type="number" id="cr-perc" value="60" min="10" max="180" style="max-width:120px">
+              <div style="font-size:0.77rem;color:#64748b;margin-top:4px">A számonkérés az <strong>Indítás</strong> gomb megnyomásával kezdődik</div>
+            </div>
           </div>
 
           <div class="section-title" style="margin-top:18px"><i class="fas fa-graduation-cap"></i> Ponthatárok</div>
@@ -891,7 +899,8 @@ async function createSzamonkeres() {
         cim,
         csoportok: JSON.stringify([...selectedCsoportok]),
         feladatok: JSON.stringify(selectedFeladatok),
-        ponthatarak: JSON.stringify({ket:ph2,harom:ph3,negy:ph4,ot:ph5})
+        ponthatarak: JSON.stringify({ket:ph2,harom:ph3,negy:ph4,ot:ph5}),
+        percLimit: parseInt(document.getElementById('cr-perc').value) || 60
       })
     });
     const data = await res.json();
@@ -919,13 +928,17 @@ async function loadSzamonkeresek() {
     el.innerHTML = list.map(s => {
       const cs = JSON.parse(s.csoportok||'[]').join(', ');
       const fdb = JSON.parse(s.feladatok||'[]').length;
-      const stBadge = s.statusz==='aktiv'?'status-aktiv':s.statusz==='lezart'?'status-lezart':'status-kiadva';
-      const stLabel = s.statusz==='aktiv'?'Aktív':s.statusz==='lezart'?'Lezárt':'Kiadva';
+      const stBadge = s.statusz==='aktiv'?'status-aktiv':s.statusz==='lezart'?'status-lezart':s.statusz==='varakozas'?'status-kiadva':'status-kiadva';
+      const stLabel = s.statusz==='aktiv'?'Folyamatban':s.statusz==='lezart'?'Lezárt':s.statusz==='varakozas'?'Várakozik':'Kiadva';
+      const inditGomb = s.statusz==='varakozas'
+        ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();inditSzamonkeresKartya(${s.id},this)" style="flex-shrink:0"><i class="fas fa-play"></i> Indítás</button>`
+        : '';
       return `<div class="szam-card" onclick="openDetail(${s.id})">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="szam-cim">${escH(s.cim)}</div>
           <div class="szam-meta">${cs} &nbsp;·&nbsp; ${fdb} feladat &nbsp;·&nbsp; ${s.beadasokSzama} beadás &nbsp;·&nbsp; ${s.createdAt?.substring(0,16)||''}</div>
         </div>
+        ${inditGomb}
         <span class="status-badge ${stBadge}">${stLabel}</span>
       </div>`;
     }).join('');
@@ -972,14 +985,22 @@ function renderDetail(sz, beadasok) {
   // Gombok
   const actions = document.getElementById('detail-actions');
   actions.innerHTML = '';
-  if (sz.statusz === 'aktiv') {
-    actions.innerHTML += `<button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
+  if (sz.statusz === 'varakozas') {
+    actions.innerHTML = `
+      <button class="btn btn-success" onclick="inditSzamonkeres(${sz.id})">
+        <i class="fas fa-play"></i> Számonkérés indítása
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>`;
+  } else if (sz.statusz === 'aktiv') {
+    actions.innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
       <button class="btn btn-danger btn-sm" onclick="lezarSzamonkeres(${sz.id})"><i class="fas fa-lock"></i> Lezárás</button>`;
   } else if (sz.statusz === 'lezart') {
-    actions.innerHTML += `<button class="btn btn-success btn-sm" onclick="kuldjEredmenyek(${sz.id})"><i class="fas fa-paper-plane"></i> Eredmények kiadása tanulóknak</button>
+    actions.innerHTML = `
+      <button class="btn btn-success btn-sm" onclick="kuldjEredmenyek(${sz.id})"><i class="fas fa-paper-plane"></i> Eredmények kiadása</button>
       <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>`;
   } else {
-    actions.innerHTML += `<span style="color:#fcd34d;font-size:0.85rem"><i class="fas fa-check-circle"></i> Eredmények kiadva</span>`;
+    actions.innerHTML = `<span style="color:#fcd34d;font-size:0.85rem"><i class="fas fa-check-circle"></i> Eredmények kiadva</span>`;
   }
 
   // Beadások tábla
@@ -1005,7 +1026,13 @@ function renderDetail(sz, beadasok) {
       <td style="text-align:center">${b.maxPont}</td>
       <td style="font-size:0.78rem;color:#94a3b8">${escH(b.megjegyzes||'')}</td>
       <td>${b.kod ? `<button class="kod-btn" onclick="showKod(${b.id},'${escH(b.tanuloNev)} – ${escH(b.feladatId)}')"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#374151">–</span>'}</td>
-      <td></td>
+      <td style="white-space:nowrap">
+        ${b.kod ? `
+          <button class="kod-btn" onclick="letoltMegoldas(${b.id})" title="Megoldás letöltése"><i class="fas fa-download"></i></button>
+          <button class="kod-btn" onclick="letoltRubrika(${b.id})" title="Pontozási rubrika letöltése" style="margin-left:4px"><i class="fas fa-list-check"></i></button>
+          <button class="kod-btn" onclick="aiPontozas(${b.id})" title="AI pontozás (Gemini)" style="margin-left:4px;background:#1a1a4e;border-color:#6366f1;color:#a5b4fc"><i class="fas fa-robot"></i> AI</button>
+        ` : ''}
+      </td>
     </tr>`;
   }).join('');
 
@@ -1068,14 +1095,185 @@ function showKod(beadasId, cim) {
   document.getElementById('kod-modal').classList.add('open');
 }
 
+// ── Indítás ───────────────────────────────────────────────────────────────────
+async function inditSzamonkeres(id) {
+  if (!confirm('Elindítod a számonkérést? A tanulóknál azonnal megjelenik a feladat!')) return;
+  try {
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/indit`, { method: 'POST' });
+    if (!res.ok) throw new Error((await res.json()).error || 'Hiba');
+    showDetailMsg('ok', '<i class="fas fa-play"></i> Számonkérés elindítva! A tanulók most kapják meg.');
+    openDetail(id);
+  } catch(e) { showDetailMsg('err', 'Hiba az indítás során: ' + e.message); }
+}
+
+async function inditSzamonkeresKartya(id, btn) {
+  if (!confirm('Elindítod a számonkérést?')) return;
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  try {
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/indit`, { method: 'POST' });
+    if (!res.ok) throw new Error((await res.json()).error || 'Hiba');
+    loadSzamonkeresek();
+  } catch(e) {
+    alert('Hiba: ' + e.message);
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-play"></i> Indítás';
+  }
+}
+
 async function lezarSzamonkeres(id) {
   if (!confirm('Lezárod a számonkérést? Ezután a tanulók nem tudnak több beadást küldeni.')) return;
   try {
-    const res = await authFetch(`${API}/api/szamonkeres/${id}/lezar`, {method:'PATCH'});
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/lezar`, { method: 'POST' });
     if (!res.ok) throw new Error('Hiba');
     showDetailMsg('ok','<i class="fas fa-lock"></i> Számonkérés lezárva.');
     openDetail(id);
   } catch(e) { showDetailMsg('err', 'Hiba a lezárás során.'); }
+}
+
+// ── Megoldás letöltése (.txt) ──────────────────────────────────────────────────
+function letoltMegoldas(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b?.kod) return;
+  const sz = currentSzamonkeres;
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
+  const tartalom = [
+    `Tanuló: ${b.tanuloNev} (${b.tanuloEmail})`,
+    `Osztály: ${b.osztaly||''}${b.csoport?'/'+b.csoport:''}`,
+    `Számonkérés: ${sz?.cim||''}`,
+    `Feladat: ${feladat?.cim||b.feladatId} (${b.maxPont} pont)`,
+    `Beadás: ${b.submittedAt||''}`,
+    '─'.repeat(50), '',
+    b.kod
+  ].join('\n');
+  downloadTxt(tartalom, `${b.tanuloNev.replace(/\s+/g,'_')}_megoldas.txt`);
+}
+
+// ── Rubrika letöltése (.txt) ───────────────────────────────────────────────────
+function letoltRubrika(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b) return;
+  const sz = currentSzamonkeres;
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
+  let rubrika = '';
+  if (feladat?.tipus === 'szambank' && typeof szamonkeresFeladatok !== 'undefined') {
+    const task = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18]
+      .find(t => t.id === feladat.feladat_id);
+    if (task) rubrika = [`Feladat: ${task.cim} (${task.pont} pont)`, '',
+      'FELADATLEÍRÁS:', task.leiras, '',
+      'MINTA KIMENET:', task.minta_kimenet||'(nincs)', '',
+      'PONTOZÁSI SZEMPONTOK:',
+      ...(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`)
+    ].join('\n');
+  }
+  if (!rubrika) { alert('Ehhez a feladathoz nincs letölthető rubrika.'); return; }
+  downloadTxt(`Tanuló: ${b.tanuloNev}\nSzámonkérés: ${sz?.cim||''}\n${'─'.repeat(50)}\n\n` + rubrika,
+    `${b.tanuloNev.replace(/\s+/g,'_')}_rubrika.txt`);
+}
+
+function downloadTxt(tartalom, fajlnev) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([tartalom], {type:'text/plain;charset=utf-8'})),
+    download: fajlnev
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ── AI pontozás (Gemini) ───────────────────────────────────────────────────────
+async function aiPontozas(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b?.kod) { alert('Nincs beadott kód.'); return; }
+  const sz = currentSzamonkeres;
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
+  let task = null;
+  if (feladat?.tipus === 'szambank' && typeof szamonkeresFeladatok !== 'undefined') {
+    task = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18]
+      .find(t => t.id === feladat.feladat_id);
+  }
+  if (!task) { alert('Ehhez a feladathoz nincs AI pontozás.'); return; }
+
+  let apiKey = localStorage.getItem('geminiApiKey') || '';
+  if (!apiKey) {
+    apiKey = prompt('Add meg a Gemini API kulcsot (egyszer szükséges, a böngésző menti):');
+    if (!apiKey) return;
+    localStorage.setItem('geminiApiKey', apiKey.trim());
+    apiKey = apiKey.trim();
+  }
+
+  const promptSzoveg = `Te egy Python tanárt segítő AI vagy. Értékeld az alábbi megoldást!
+
+FELADAT: ${task.cim} (${task.pont} pont)
+FELADATLEÍRÁS:
+${task.leiras}
+
+PONTOZÁSI SZEMPONTOK (minden szempont 1 pont):
+${(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')}
+
+TANULÓ KÓDJA:
+\`\`\`python
+${b.kod}
+\`\`\`
+
+Kérlek értékeld az összes szempontot és adj javasolt pontszámot!
+
+FORMÁTUM (pontosan így):
+SZEMPONTOK:
+1. ✓/✗ [szempontnév]
+...
+
+JAVASOLT PONTSZÁM: X / ${task.pont}
+ÉRTÉKELÉS: [1-2 mondatos szöveges értékelés magyarul]`;
+
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;padding:12px 20px;border-radius:10px;font-size:0.88rem;font-weight:600;display:flex;align-items:center;gap:10px';
+  toast.innerHTML = '<i class="fas fa-robot" style="animation:spin 1s linear infinite"></i> Gemini értékel...';
+  document.body.appendChild(toast);
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text: promptSzoveg }] }] }) }
+    );
+    toast.remove();
+    if (!res.ok) { const err = await res.json(); throw new Error(err?.error?.message || `HTTP ${res.status}`); }
+    const data = await res.json();
+    const valasz = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nem érkezett válasz.';
+    showAiModal(valasz, beadasId, task.pont);
+  } catch(e) {
+    toast.remove();
+    alert('Gemini hiba: ' + e.message);
+  }
+}
+
+function showAiModal(szoveg, beadasId, maxPont) {
+  const pontMatch = szoveg.match(/JAVASOLT PONTSZÁM:\s*(\d+)\s*\/\s*\d+/i);
+  const javasoltPont = pontMatch ? parseInt(pontMatch[1]) : null;
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.style.zIndex = '9000';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:660px">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fas fa-robot" style="color:#6366f1;margin-right:8px"></i>AI értékelés</div>
+        <button class="close-btn" onclick="this.closest('.modal').remove()"><i class="fas fa-xmark"></i></button>
+      </div>
+      <pre style="white-space:pre-wrap;font-size:0.83rem;color:#cbd5e1;line-height:1.7;font-family:'Segoe UI',sans-serif;background:#0b1120;border-radius:8px;padding:14px;max-height:55vh;overflow-y:auto">${escH(szoveg)}</pre>
+      ${javasoltPont !== null ? `
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #1f2937;flex-wrap:wrap">
+          <span style="font-size:0.88rem;color:#94a3b8">Javasolt: <strong style="color:#e0e0e0;font-size:1.1rem">${javasoltPont} / ${maxPont} pont</strong></span>
+          <button onclick="setBeadasPont(${beadasId},${javasoltPont},'AI javaslat');this.closest('.modal').remove()"
+            style="padding:7px 18px;background:#15803d;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer">
+            <i class="fas fa-check"></i> Elfogadom
+          </button>
+          <button onclick="this.closest('.modal').remove()"
+            style="padding:7px 14px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer">
+            Mégse
+          </button>
+        </div>` : ''}
+    </div>`;
+  document.body.appendChild(modal);
 }
 
 async function kuldjEredmenyek(id) {
