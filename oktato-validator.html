@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Feladat Validátor – Kandó</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
+    .topbar{background:#16213e;border-bottom:1px solid #1f2937;padding:11px 20px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.95rem;color:#e0e0e0;text-decoration:none}
+    .topbar-logo img{height:30px}
+    a.back{padding:5px 14px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;font-size:.82rem;text-decoration:none;transition:.2s}
+    a.back:hover{border-color:#6b7280;color:#e0e0e0}
+    .container{max-width:1300px;margin:0 auto;padding:20px 16px}
+    /* Tabs */
+    .tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #1f2937}
+    .tab-btn{padding:9px 22px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.9rem;font-weight:600;color:#64748b;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;background:transparent;transition:.2s}
+    .tab-btn.active{background:#16213e;color:#e0e0e0;border-color:#1f2937}
+    .tab-btn:hover:not(.active){color:#94a3b8}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+    /* Layout */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+    .card{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:18px}
+    .card h3{font-size:.85rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+    label{font-size:.82rem;color:#94a3b8;display:block;margin-bottom:4px}
+    textarea{width:100%;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-family:monospace;font-size:.82rem;resize:vertical;outline:none;transition:border .2s}
+    textarea:focus{border-color:#3b82f6}
+    select{width:100%;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:.85rem;outline:none}
+    .btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s}
+    .btn-primary{background:#1d4ed8;color:#fff}.btn-primary:hover{background:#2563eb}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .form-row{margin-bottom:14px}
+    /* Eredmény panel */
+    .result-panel{margin-top:16px}
+    .result-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:.85rem}
+    .result-ok{background:#0a2a1a;border:1px solid #15803d;color:#86efac}
+    .result-err{background:#2a0a0a;border:1px solid #dc2626;color:#fca5a5}
+    .result-warn{background:#2a1a00;border:1px solid #d97706;color:#fcd34d}
+    .result-info{background:#0d1a2e;border:1px solid #374151;color:#94a3b8}
+    .result-icon{flex-shrink:0;margin-top:1px}
+    .result-label{font-weight:600}
+    .result-detail{font-size:.78rem;color:#64748b;margin-top:2px}
+    .summary-box{padding:14px 18px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+    .summary-ok{background:#0a2a1a;border:1px solid #16a34a}
+    .summary-warn{background:#2a1500;border:1px solid #d97706}
+    .summary-err{background:#2a0a0a;border:1px solid #dc2626}
+    .summary-score{font-size:1.8rem;font-weight:900}
+    .score-ok{color:#4ade80}.score-warn{color:#fcd34d}.score-err{color:#f87171}
+    .pyodide-status{font-size:.75rem;color:#64748b;margin-left:10px}
+    .pyodide-status.ready{color:#4ade80}
+    .tag{display:inline-block;padding:1px 7px;border-radius:8px;font-size:.7rem;font-weight:700;margin-right:4px}
+    .tag-ok{background:#14532d;color:#86efac}
+    .tag-err{background:#7f1d1d;color:#fca5a5}
+    .tag-skip{background:#1e3a5f;color:#93c5fd}
+    .separator{height:1px;background:#1f2937;margin:16px 0}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="portal.html">
+    <img src="kandologo2.png" alt="Kandó">
+    Feladat Validátor
+  </a>
+  <a class="back" href="portal.html"><i class="fas fa-arrow-left"></i> Portál</a>
+</div>
+
+<div class="container">
+
+  <div id="auth-err" style="display:none;padding:14px 18px;background:#7f1d1d;border:1px solid #dc2626;border-radius:10px;margin-bottom:20px;color:#fca5a5">
+    <i class="fas fa-lock"></i> Oktatói bejelentkezés szükséges.
+    <a href="portal.html" style="color:#fca5a5;margin-left:8px">← Portál</a>
+  </div>
+
+  <div id="main-ui">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('python')">
+        <i class="fab fa-python"></i> Python feladat
+      </button>
+      <button class="tab-btn" onclick="switchTab('web')">
+        <i class="fas fa-code"></i> WEB feladat
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ PYTHON TAB -->
+    <div class="tab-panel active" id="tab-python">
+      <div class="two-col">
+
+        <!-- Bal: bevitel -->
+        <div>
+          <div class="card">
+            <h3><i class="fas fa-paste"></i> Bevitel</h3>
+            <div class="form-row">
+              <label>Pontozas: blokk (feladatok.txt-ből)</label>
+              <textarea id="py-pontozas" rows="10" placeholder="def|Függvény definiálása|...
+return|Visszatérési érték|...
+tartalmaz:JegyAr(|Függvény hívása|...
+while|While ciklust használ|...
+bekeres:Termék kódja (0 = fizetés): |Bekérés|...
+int_float:1|Számmá alakítja|...
+teszt:2,0:Köszönjük|Sima vásárlás|..."></textarea>
+            </div>
+            <div class="form-row">
+              <label>Mintakód (megoldás)</label>
+              <textarea id="py-kod" rows="18" placeholder="def JegyAr(kod):
+    if kod == 1:
+        return 450
+    ..."></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <button class="btn btn-primary" id="py-validate-btn" onclick="validatePython()" disabled>
+                <i class="fas fa-play"></i> Validálás
+              </button>
+              <span class="pyodide-status" id="py-status">Python betöltése...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobb: eredmény -->
+        <div>
+          <div class="card" id="py-result-card" style="min-height:300px">
+            <h3><i class="fas fa-chart-bar"></i> Eredmény</h3>
+            <div id="py-result">
+              <div class="result-info result-item">
+                <i class="fas fa-info-circle result-icon"></i>
+                <span>Illeszd be a pontozást és a mintakódot, majd kattints Validálás.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ WEB TAB -->
+    <div class="tab-panel" id="tab-web">
+      <div class="two-col">
+
+        <!-- Bal: bevitel -->
+        <div>
+          <div class="card">
+            <h3><i class="fas fa-paste"></i> Bevitel</h3>
+            <div class="form-row">
+              <label>Feladat azonosítója (app.js-ből, pl. bogyo_gyumolcsok)</label>
+              <div style="display:flex;gap:8px">
+                <select id="web-task-select" style="flex:1">
+                  <option value="">– app.js betöltése folyamatban –</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadWebTask()" style="padding:8px 14px">
+                  <i class="fas fa-download"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Forrás HTML (amit a diák kap – hiányos)</label>
+              <textarea id="web-source" rows="10" placeholder="<!DOCTYPE html>&#10;<html lang='hu'>&#10;<head>&#10;  ...hiányos...&#10;</head>&#10;<body>&#10;  ..."></textarea>
+            </div>
+            <div class="form-row">
+              <label>Megoldás HTML (amit a tanár ír – teljes)</label>
+              <textarea id="web-solution" rows="10" placeholder="<!DOCTYPE html>&#10;<html lang='hu'>&#10;<head>&#10;  <meta charset='UTF-8'>&#10;  ...teljes..."></textarea>
+            </div>
+            <div class="form-row">
+              <label>CSS (ha külön fájl – opcionális)</label>
+              <textarea id="web-css" rows="4" placeholder="body { ... }"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="validateWeb()">
+              <i class="fas fa-play"></i> Validálás
+            </button>
+          </div>
+        </div>
+
+        <!-- Jobb: eredmény -->
+        <div>
+          <div class="card" style="min-height:300px">
+            <h3><i class="fas fa-chart-bar"></i> Eredmény</h3>
+            <div id="web-result">
+              <div class="result-info result-item">
+                <i class="fas fa-info-circle result-icon"></i>
+                <span>Válassz feladatot, illeszd be a forrást és a megoldást.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main-ui -->
+</div>
+
+<!-- Sandbox iframe WEB ellenőrzéshez -->
+<iframe id="sandbox" style="display:none;position:absolute;left:-9999px;top:-9999px;width:1200px;height:900px"
+  sandbox="allow-same-origin"></iframe>
+
+<!-- Pyodide -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+
+<script>
+// ── Auth ───────────────────────────────────────────────────────────────────
+(function() {
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  if (!u.token && !u._tesztMod) {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('main-ui').style.display = 'none';
+  }
+})();
+
+// ── Tab váltás ─────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['python','web'][i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach((p,i) => {
+    p.classList.toggle('active', ['python','web'][i] === name);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PYODIDE – Python futtatás
+// ════════════════════════════════════════════════════════════════════════════
+let pyodide = null;
+
+(async function() {
+  try {
+    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' });
+    const btn = document.getElementById('py-validate-btn');
+    const st  = document.getElementById('py-status');
+    btn.disabled = false;
+    st.textContent = 'Python kész ✓';
+    st.className = 'pyodide-status ready';
+  } catch(e) {
+    document.getElementById('py-status').textContent = 'Python betöltési hiba';
+  }
+})();
+
+async function runPythonCode(code, inputs) {
+  if (!pyodide) return { stdout: '', stderr: 'Pyodide nincs betöltve' };
+  try {
+    pyodide.globals.set('_val_inputs', pyodide.toPy(inputs));
+    await pyodide.runPythonAsync(`
+import sys, builtins
+from io import StringIO
+_out = StringIO(); _err = StringIO()
+sys.stdout = _out; sys.stderr = _err
+_q = list(_val_inputs); _qi = [0]
+def _inp(prompt=''):
+    sys.stdout.write(str(prompt))
+    if _qi[0] < len(_q):
+        v = str(_q[_qi[0]]); _qi[0] += 1
+        sys.stdout.write(v + '\\n'); return v
+    return ''
+builtins.input = _inp
+`);
+    await pyodide.runPythonAsync(code);
+    const stdout = pyodide.runPython('_out.getvalue()');
+    const stderr = pyodide.runPython('_err.getvalue()');
+    pyodide.runPython('sys.stdout=sys.__stdout__; sys.stderr=sys.__stderr__');
+    return { stdout, stderr };
+  } catch(e) {
+    try { pyodide.runPython('sys.stdout=sys.__stdout__; sys.stderr=sys.__stderr__'); } catch {}
+    return { stdout: '', stderr: e.message };
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PYTHON VALIDÁTOR
+// ════════════════════════════════════════════════════════════════════════════
+
+function parsePontozasBlock(raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(l =>
+    l && !l.startsWith('//') && !l.startsWith('#')
+  );
+  return lines.map(line => {
+    const parts = line.split('|');
+    const spec  = parts[0]?.trim() || '';
+    const label = parts[1]?.trim() || spec;
+    return { spec, label, raw: line };
+  });
+}
+
+function checkStatic(spec, code) {
+  const s = spec.toLowerCase();
+
+  // Egyszerű kulcsszó ellenőrzések
+  if (s === 'def')    return /\bdef\b/.test(code);
+  if (s === 'return') return /\breturn\b/.test(code);
+  if (s === 'while')  return /\bwhile\b/.test(code);
+  if (s === 'for')    return /\bfor\b/.test(code);
+  if (s === 'if')     return /\bif\b/.test(code);
+  if (s === 'elif')   return /\belif\b/.test(code);
+
+  // tartalmaz:X
+  if (spec.startsWith('tartalmaz:')) {
+    const val = spec.slice('tartalmaz:'.length);
+    return code.includes(val);
+  }
+
+  // bekeres:szöveg
+  if (spec.startsWith('bekeres:')) {
+    const val = spec.slice('bekeres:'.length);
+    return code.includes(val);
+  }
+
+  // int_float:N
+  if (spec.startsWith('int_float:')) {
+    return /\bint\s*\(/.test(code) || /\bfloat\s*\(/.test(code);
+  }
+
+  // import:modul
+  if (spec.startsWith('import:')) {
+    const mod = spec.slice('import:'.length).split('|')[0];
+    return new RegExp('\\bimport\\s+' + escapeRe(mod)).test(code) ||
+           code.includes('class ' + mod[0].toUpperCase() + mod.slice(1));
+  }
+
+  // lista:name (egyéni szintaxis)
+  if (spec.startsWith('lista:')) {
+    const name = spec.slice('lista:'.length);
+    return code.includes(name);
+  }
+
+  // def:FuncName (egyéni)
+  if (spec.startsWith('def:')) {
+    const name = spec.slice('def:'.length);
+    return new RegExp('\\bdef\\s+' + escapeRe(name) + '\\s*\\(').test(code);
+  }
+
+  // teszt: → runtime, nem statikus
+  if (spec.startsWith('teszt:')) return null;
+  if (spec.startsWith('vagy:'))  return null; // alternatív feltétel, skip
+
+  return null; // ismeretlen
+}
+
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function parseTestSpec(spec) {
+  // teszt:in1,in2:elvart
+  const rest = spec.slice('teszt:'.length);
+  const colIdx = rest.lastIndexOf(':');
+  if (colIdx < 0) return null;
+  const inputs  = rest.slice(0, colIdx).split(',').map(s => s.trim());
+  const expected = rest.slice(colIdx + 1).trim();
+  return { inputs, expected };
+}
+
+async function validatePython() {
+  const raw    = document.getElementById('py-pontozas').value.trim();
+  const code   = document.getElementById('py-kod').value.trim();
+  const resDiv = document.getElementById('py-result');
+
+  if (!raw || !code) {
+    resDiv.innerHTML = makeItem('warn', 'fas fa-triangle-exclamation',
+      'Hiányzó adat', 'Illeszd be a pontozást és a mintakódot!');
+    return;
+  }
+
+  const btn = document.getElementById('py-validate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ellenőrzés...';
+  resDiv.innerHTML = '';
+
+  const criteria = parsePontozasBlock(raw);
+  const items = [];
+  let okCount = 0, errCount = 0, skipCount = 0;
+
+  // 1. Statikus ellenőrzések
+  for (const c of criteria) {
+    if (c.spec.startsWith('teszt:')) continue;
+
+    const result = checkStatic(c.spec, code);
+    if (result === null) {
+      items.push({ type:'skip', label: c.label, detail: `(${c.spec}) – manuális ellenőrzés szükséges` });
+      skipCount++;
+    } else if (result) {
+      items.push({ type:'ok', label: c.label, detail: `✓ ${c.spec}` });
+      okCount++;
+    } else {
+      items.push({ type:'err', label: c.label, detail: `✗ A mintakód nem teljesíti: ${c.spec}` });
+      errCount++;
+    }
+  }
+
+  // 2. Teszt-futtatások (Pyodide)
+  const tesztek = criteria.filter(c => c.spec.startsWith('teszt:'));
+  for (const c of tesztek) {
+    const parsed = parseTestSpec(c.spec);
+    if (!parsed) {
+      items.push({ type:'skip', label: c.label, detail: 'Nem sikerült értelmezni a teszt specifikációt' });
+      skipCount++; continue;
+    }
+    const { stdout, stderr } = await runPythonCode(code, parsed.inputs);
+    if (stderr && !stdout) {
+      items.push({ type:'err', label: c.label,
+        detail: `Futási hiba: ${stderr.split('\n').pop()}` });
+      errCount++;
+    } else if (stdout.includes(parsed.expected)) {
+      items.push({ type:'ok', label: c.label,
+        detail: `✓ Kimenet tartalmazza: "${parsed.expected}"` });
+      okCount++;
+    } else {
+      items.push({ type:'err', label: c.label,
+        detail: `✗ Elvárt: "${parsed.expected}" | Kapott: "${stdout.trim().replace(/\n/g,' ↵ ').slice(0,100)}"` });
+      errCount++;
+    }
+  }
+
+  // Összesítés
+  const total = okCount + errCount;
+  const pct   = total > 0 ? Math.round(okCount / total * 100) : 0;
+  const cls   = errCount === 0 ? 'summary-ok' : pct >= 60 ? 'summary-warn' : 'summary-err';
+  const sccls = errCount === 0 ? 'score-ok' : pct >= 60 ? 'score-warn' : 'score-err';
+
+  let html = `<div class="summary-box ${cls}">
+    <div class="summary-score ${sccls}">${okCount}/${total}</div>
+    <div>
+      <div style="font-weight:700;font-size:.95rem">
+        ${errCount === 0 ? '✅ Minden kritérium teljesül!' : `⚠️ ${errCount} kritérium hibás`}
+      </div>
+      <div style="font-size:.8rem;color:#94a3b8;margin-top:2px">
+        ${okCount} ok · ${errCount} hiba · ${skipCount} átugrott
+        ${skipCount > 0 ? ' <span class="tag tag-skip">VAGY / egyéni típus manuálisan ellenőrizd</span>' : ''}
+      </div>
+    </div>
+  </div>`;
+
+  for (const it of items) {
+    const ico = it.type === 'ok' ? 'fa-circle-check' :
+                it.type === 'err' ? 'fa-circle-xmark' : 'fa-circle-info';
+    html += makeItem(it.type === 'skip' ? 'info' : it.type, 'fas ' + ico, it.label, it.detail);
+  }
+
+  resDiv.innerHTML = html;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-play"></i> Validálás';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// WEB VALIDÁTOR
+// ════════════════════════════════════════════════════════════════════════════
+
+let webTasksLoaded = false;
+
+// App.js betöltése
+(function loadAppJs() {
+  const script = document.createElement('script');
+  script.src = 'web/app.js';
+  script.onload = function() {
+    try {
+      if (typeof webTasks !== 'undefined') {
+        const sel = document.getElementById('web-task-select');
+        sel.innerHTML = '<option value="">– Válassz feladatot –</option>';
+        Object.keys(webTasks).sort().forEach(key => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = webTasks[key].name || key;
+          sel.appendChild(opt);
+        });
+        webTasksLoaded = true;
+      }
+    } catch(e) {}
+  };
+  script.onerror = function() {
+    document.getElementById('web-task-select').innerHTML =
+      '<option value="">app.js nem töltődött be – manuális bevitel</option>';
+  };
+  document.head.appendChild(script);
+})();
+
+function loadWebTask() {
+  const key = document.getElementById('web-task-select').value;
+  if (!key || typeof webTasks === 'undefined') return;
+  const task = webTasks[key];
+  if (!task) return;
+  // Ha van basePath, megpróbáljuk betölteni a forrást
+  const srcArea = document.getElementById('web-source');
+  if (task.htmlFile && task.basePath) {
+    fetch('web/' + task.basePath + '/' + task.htmlFile)
+      .then(r => r.text()).then(t => { srcArea.value = t; })
+      .catch(() => {});
+  }
+}
+
+async function validateWeb() {
+  const key      = document.getElementById('web-task-select').value;
+  const srcHtml  = document.getElementById('web-source').value.trim();
+  const solHtml  = document.getElementById('web-solution').value.trim();
+  const extraCss = document.getElementById('web-css').value.trim();
+  const resDiv   = document.getElementById('web-result');
+
+  if (!solHtml) {
+    resDiv.innerHTML = makeItem('warn','fas fa-triangle-exclamation','Hiányzó megoldás','Illeszd be a megoldás HTML-t!');
+    return;
+  }
+  if (!webTasksLoaded || !key) {
+    resDiv.innerHTML = makeItem('warn','fas fa-triangle-exclamation','Feladat nincs kiválasztva',
+      'Válassz feladatot a legördülő listából!');
+    return;
+  }
+
+  const task = webTasks[key];
+  if (!task || !task.checks) {
+    resDiv.innerHTML = makeItem('err','fas fa-circle-xmark','Feladat nem található',
+      'Nincs check definíció ehhez a feladathoz.');
+    return;
+  }
+
+  resDiv.innerHTML = '<div class="result-info result-item"><i class="fas fa-spinner fa-spin"></i> Ellenőrzés...</div>';
+
+  // CSS kinyerése a megoldásból
+  let cssFromSol = extraCss;
+  const styleMatch = solHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  if (styleMatch) cssFromSol += '\n' + styleMatch[1];
+
+  // Megoldás DOM betöltése sandboxba
+  const frame = document.getElementById('sandbox');
+  const solDoc = await loadIntoIframe(frame, solHtml);
+
+  // Forrás DOM betöltése egy második iframebe
+  let srcDoc = null;
+  if (srcHtml) {
+    const frame2 = document.createElement('iframe');
+    frame2.style.cssText = 'display:none;position:absolute;left:-9999px';
+    frame2.setAttribute('sandbox', 'allow-same-origin');
+    document.body.appendChild(frame2);
+    srcDoc = await loadIntoIframe(frame2, srcHtml);
+    // cleanup after use
+    setTimeout(() => frame2.remove(), 5000);
+  }
+
+  // Futtatjuk a checkeket
+  let okSol = 0, errSol = 0;
+  let srcAlreadyPass = 0;
+  const items = [];
+
+  for (const chk of task.checks) {
+    let solPasses = false;
+    try {
+      solPasses = !!chk.check(solDoc, solHtml, cssFromSol);
+    } catch(e) { solPasses = false; }
+
+    let srcPasses = false;
+    if (srcDoc) {
+      try {
+        const srcCss = '';
+        srcPasses = !!chk.check(srcDoc, srcHtml, srcCss);
+      } catch(e) { srcPasses = false; }
+    }
+
+    if (solPasses) {
+      okSol++;
+      if (srcPasses && srcHtml) {
+        srcAlreadyPass++;
+        items.push({ type:'warn', label: chk.label,
+          detail: '⚠️ Forrásban MÁR MEGVAN – a tanuló nem tudja megcsinálni!' });
+      } else {
+        items.push({ type:'ok', label: chk.label, detail: '✓' });
+      }
+    } else {
+      errSol++;
+      items.push({ type:'err', label: chk.label, detail: '✗ Megoldás nem teljesíti' });
+    }
+  }
+
+  const total = task.checks.length;
+  const cls = errSol === 0 && srcAlreadyPass === 0 ? 'summary-ok' :
+              errSol === 0 ? 'summary-warn' : 'summary-err';
+  const sccls = errSol === 0 ? 'score-ok' : okSol >= total*0.8 ? 'score-warn' : 'score-err';
+
+  let html = `<div class="summary-box ${cls}">
+    <div class="summary-score ${sccls}">${okSol}/${total}</div>
+    <div>
+      <div style="font-weight:700;font-size:.95rem">
+        ${errSol === 0 && srcAlreadyPass === 0
+          ? '✅ Megoldás tökéletes, forrás konzisztens!'
+          : errSol === 0
+            ? `⚠️ Megoldás OK, de ${srcAlreadyPass} check már a forrásban van`
+            : `✗ ${errSol} check nem teljesül a megoldáson`}
+      </div>
+      <div style="font-size:.8rem;color:#94a3b8;margin-top:2px">
+        ${okSol} átment · ${errSol} hibás
+        ${srcAlreadyPass > 0
+          ? ` · <span class="tag tag-err">${srcAlreadyPass} forrásban már megvan</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+
+  // Csak hibákat és figyelmeztetéseket listázzuk (ok-okat összecsukjuk)
+  const errs  = items.filter(i => i.type !== 'ok');
+  const oks   = items.filter(i => i.type === 'ok');
+
+  for (const it of errs) {
+    const ico = it.type === 'err' ? 'fa-circle-xmark' : 'fa-triangle-exclamation';
+    html += makeItem(it.type, 'fas ' + ico, it.label, it.detail);
+  }
+  if (oks.length > 0) {
+    html += `<div class="result-ok result-item" style="cursor:pointer" onclick="toggleOkList()">
+      <i class="fas fa-circle-check result-icon"></i>
+      <span><b>${oks.length} check rendben</b> <span style="font-size:.75rem;color:#4ade80">(kattints a listához)</span></span>
+    </div>
+    <div id="ok-list" style="display:none">`;
+    for (const it of oks) {
+      html += makeItem('ok','fas fa-circle-check', it.label, it.detail);
+    }
+    html += '</div>';
+  }
+
+  resDiv.innerHTML = html;
+}
+
+function toggleOkList() {
+  const el = document.getElementById('ok-list');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function loadIntoIframe(frame, html) {
+  return new Promise(resolve => {
+    frame.onload = () => resolve(frame.contentDocument || frame.contentWindow?.document);
+    try {
+      const doc = frame.contentDocument || frame.contentWindow?.document;
+      doc.open(); doc.write(html); doc.close();
+      if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+        resolve(frame.contentDocument);
+      }
+    } catch(e) { resolve(null); }
+    setTimeout(() => resolve(frame.contentDocument || frame.contentWindow?.document), 800);
+  });
+}
+
+// ── Segédfüggvény: HTML elem generálás ─────────────────────────────────────
+function makeItem(type, icon, label, detail) {
+  const cls = type === 'ok' ? 'result-ok' :
+              type === 'err' ? 'result-err' :
+              type === 'warn' ? 'result-warn' : 'result-info';
+  return `<div class="${cls} result-item">
+    <i class="${icon} result-icon"></i>
+    <div>
+      <div class="result-label">${escHtml(label)}</div>
+      ${detail ? `<div class="result-detail">${escHtml(detail)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
