@@ -157,17 +157,12 @@
             </div>
           </div>
 
-          <!-- API kulcs + indítás -->
+          <!-- Indítás -->
           <div class="card">
-            <h3><i class="fas fa-robot"></i> Groq AI kulcs</h3>
-            <div class="form-row">
-              <div class="api-row">
-                <input type="password" class="api-input" id="py-groq-key"
-                  placeholder="gsk_..." value="">
-                <button class="btn btn-ghost btn-sm" onclick="togglePyGroqKey()">
-                  <i class="fas fa-eye" id="py-groq-eye"></i>
-                </button>
-              </div>
+            <h3><i class="fas fa-robot"></i> AI elemzés</h3>
+            <div style="font-size:.8rem;color:#64748b;margin-bottom:12px">
+              <i class="fas fa-check" style="color:#4ade80"></i>
+              A Groq API kulcs a Railway szerveren van beállítva — itt nem kell megadni semmit.
             </div>
             <div style="display:flex;align-items:center;gap:10px">
               <button class="btn btn-primary" id="py-validate-btn" onclick="validatePythonFull()" disabled style="flex:1">
@@ -263,21 +258,12 @@
             </div>
           </div>
 
-          <!-- Groq API kulcs -->
+          <!-- Indítás -->
           <div class="card">
-            <h3><i class="fas fa-robot"></i> Groq AI kulcs</h3>
-            <div class="form-row">
-              <label>API kulcs (console.groq.com → API Keys)</label>
-              <div class="api-row">
-                <input type="password" class="api-input" id="web-groq-key"
-                  placeholder="gsk_..." value="">
-                <button class="btn btn-ghost btn-sm" onclick="toggleGroqKey()">
-                  <i class="fas fa-eye" id="groq-eye"></i>
-                </button>
-              </div>
-              <div style="font-size:.74rem;color:#4b5563;margin-top:4px">
-                Mentve a böngésző memóriájában — AI elemzés nélkül is fut
-              </div>
+            <h3><i class="fas fa-robot"></i> AI elemzés</h3>
+            <div style="font-size:.8rem;color:#64748b;margin-bottom:12px">
+              <i class="fas fa-check" style="color:#4ade80"></i>
+              A Groq API kulcs a Railway szerveren van beállítva — itt nem kell megadni semmit.
             </div>
             <button class="btn btn-primary" id="web-validate-btn" onclick="validateWebFull()" style="width:100%">
               <i class="fas fa-microscope"></i> Teljes validálás indítása
@@ -327,16 +313,7 @@
     document.getElementById('auth-err').style.display = 'block';
     document.getElementById('main-ui').style.display = 'none';
   }
-  const saved = localStorage.getItem('groqApiKey') || '';
-  if (saved) { document.getElementById('web-groq-key').value = saved; document.getElementById('py-groq-key').value = saved; }
 })();
-
-function togglePyGroqKey() {
-  const inp = document.getElementById('py-groq-key');
-  const icon = document.getElementById('py-groq-eye');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  icon.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-}
 
 function toggleGroqKey() {
   const inp = document.getElementById('web-groq-key');
@@ -467,21 +444,11 @@ async function validatePythonFull() {
   // Pontozás kinyerése Excel-ből
   const pontozasRaw = xlsxToPontozas(pyState.xlsxRows);
 
-  // Groq API kulcs
-  const apiKey = (document.getElementById('py-groq-key').value.trim()) ||
-                 (document.getElementById('web-groq-key').value.trim());
-  if (apiKey) localStorage.setItem('groqApiKey', apiKey);
-
-  // 1. Statikus + teszt ellenőrzések (meglévő logika)
+  // 1. Statikus + teszt ellenőrzések
   let statHtml = await runStaticAndTests(pontozasRaw, kod, pyState.modul, pyState.modulNev);
 
-  // 2. Groq AI elemzés
-  let aiHtml = '';
-  if (apiKey) {
-    aiHtml = await pyGroqAnalysis(apiKey, kod, pontozasRaw, pyState.docxText, pyState.modulNev, pyState.modul);
-  } else {
-    aiHtml = makeItem('warn','fas fa-robot','AI elemzés kihagyva','Add meg a Groq API kulcsot');
-  }
+  // 2. Groq AI elemzés (Railway proxyn keresztül)
+  let aiHtml = await pyGroqAnalysis(kod, pontozasRaw, pyState.docxText, pyState.modulNev, pyState.modul);
 
   res.innerHTML = statHtml +
     '<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>' +
@@ -546,7 +513,8 @@ pathlib.Path(_modul_nev).write_text(_modul_kod)
   return html;
 }
 
-async function pyGroqAnalysis(apiKey, kod, pontozas, taskDesc, modulNev, modulKod) {
+async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
+  const apiKey = null; // Railway proxyn megy
   const trim = (s,n) => !s?'':s.length>n?s.slice(0,n)+'...[csonkítva]':s;
   const feladatTipus = pontozas.includes('ModulNev:') ? '18 pontos (class + fájl)' :
                        pontozas.includes('while') ? '14 pontos (def + while)' :
@@ -574,26 +542,7 @@ FELADATOD:
 
 Legyél konkrét, tömör, magyarul. Csak technikai hibákat keress.`;
 
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-      body: JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        messages:[{role:'user',content:prompt}],
-        max_tokens:2000, temperature:0.2
-      })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      return makeItem('err','fas fa-robot','Groq hiba', err?.error?.message||'HTTP '+res.status);
-    }
-    const data = await res.json();
-    const text = data.choices?.[0]?.message?.content || 'Nem érkezett válasz.';
-    return `<div class="ai-box">${escHtml(text)}</div>`;
-  } catch(e) {
-    return makeItem('err','fas fa-robot','Hálózati hiba', e.message);
-  }
+  return groqViaProxy(prompt);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -763,9 +712,6 @@ async function validateWebFull() {
   const srcCss = findCss(webFiles.src);
   const solCss = findCss(webFiles.sol);
 
-  // API kulcs mentése
-  const apiKey = document.getElementById('web-groq-key').value.trim();
-  if (apiKey) localStorage.setItem('groqApiKey', apiKey);
 
   // Statikus diff
   const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss);
@@ -777,13 +723,7 @@ async function validateWebFull() {
   }
 
   // Groq AI (ha van kulcs vagy docx)
-  let aiHtml = '';
-  if (apiKey && (docxText || true)) {
-    aiHtml = await callGroqAnalysis(apiKey, srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows);
-  } else {
-    aiHtml = makeItem('warn','fas fa-robot','AI elemzés kihagyva',
-      'Add meg a Groq API kulcsot a részletes elemzéshez (console.groq.com – ingyenes)');
-  }
+  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows);
 
   // Render
   const resDiv = document.getElementById('web-result');
@@ -946,7 +886,7 @@ function renderXlsxChecks(rows, solHtml, solCss) {
 }
 
 // ── Groq API hívás ───────────────────────────────────────────────────────────
-async function callGroqAnalysis(apiKey, srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows) {
+async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows) {
   const maxLen = 3000;
   const trim = (s,n) => s?.length>n ? s.slice(0,n)+'...[csonkítva]' : (s||'');
 
@@ -986,23 +926,30 @@ ${excelSummary ? '## PONTOZÁSI CHECKEK:\n'+excelSummary+'\n\n' : ''}
 
 Legyél konkrét és tömör. Ne értékeld a pedagógiai minőséget.`;
 
+  return groqViaProxy(prompt);
+}
+
+// ── Közös Groq proxy hívó (Railway backend) ──────────────────────────────────
+const API = 'https://agazati.up.railway.app';
+
+function getAuthHeader() {
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  return u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
+}
+
+async function groqViaProxy(prompt) {
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const res = await fetch(API + '/api/ai/pontozas', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [{role:'user', content:prompt}],
-        max_tokens: 2000,
-        temperature: 0.2
-      })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+      body: JSON.stringify({ prompt })
     });
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
-      return makeItem('err','fas fa-robot','Groq hiba',err?.error?.message||'HTTP '+res.status);
+      return makeItem('err','fas fa-robot','AI hiba', err?.error || 'HTTP ' + res.status);
     }
     const data = await res.json();
-    const text = data.choices?.[0]?.message?.content || 'Nem érkezett válasz.';
+    const text = data.text || 'Nem érkezett válasz.';
     return `<div class="ai-box">${escHtml(text)}</div>`;
   } catch(e) {
     return makeItem('err','fas fa-robot','Hálózati hiba', e.message);
