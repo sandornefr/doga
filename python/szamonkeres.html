@@ -1090,10 +1090,14 @@ function renderDetail(sz, beadasok) {
   // Feladatok lista
   const feladatok = JSON.parse(sz.feladatok||'[]');
   const ph = JSON.parse(sz.ponthatarak||'{}');
-  const maxOssz = feladatok.reduce((s,f)=>s+f.pont,0);
+  const isSzambankAuto = feladatok.length === 1 && feladatok[0].tipus === 'szambank_auto';
+  const maxOssz = isSzambankAuto ? 40 : feladatok.reduce((s,f)=>s+(f.pont||0),0);
+  const feladatSzoveg = isSzambankAuto
+    ? '<i class="fas fa-shuffle" style="color:#818cf8"></i> Automatikus kiosztás (8p + 14p + 18p = 40 pont/tanuló)'
+    : feladatok.map(f=>`${escH(f.cim||'–')} (${f.pont||0} pt)`).join(' &nbsp;·&nbsp; ');
   document.getElementById('detail-feladatok').innerHTML =
     `<div style="margin-bottom:8px;font-size:0.85rem;color:#94a3b8">
-      <strong>Feladatok:</strong> ${feladatok.map(f=>`${escH(f.cim)} (${f.pont} pt)`).join(' &nbsp;·&nbsp; ')}
+      <strong>Feladatok:</strong> ${feladatSzoveg}
       &nbsp;·&nbsp; <strong>Max összpont:</strong> ${maxOssz} &nbsp;·&nbsp;
       <strong>Határok:</strong> 2≥${ph.ket}% &nbsp; 3≥${ph.harom}% &nbsp; 4≥${ph.negy}% &nbsp; 5≥${ph.ot}%
     </div>`;
@@ -1137,6 +1141,7 @@ function renderDetail(sz, beadasok) {
       <td style="text-align:center">${b.autoPont}</td>
       <td style="text-align:center">
         <input class="pont-input" type="number" min="0" max="${b.maxPont}" value="${vegPont}"
+          id="pont-input-${b.id}"
           onchange="setBeadasPont(${b.id},this.value,'')" ${sz.statusz==='kiadva'?'disabled':''}>
       </td>
       <td style="text-align:center">${b.maxPont}</td>
@@ -1185,22 +1190,45 @@ function renderOsszes(beadasok, feladatok, ph, maxOssz) {
 }
 
 async function setBeadasPont(beadasId, pont, megjegyzes) {
+  const ujPont = parseInt(pont) || 0;
   try {
-    await authFetch(`${API}/api/szamonkeres/beadas/${beadasId}/pont`, {
+    const res = await authFetch(`${API}/api/szamonkeres/beadas/${beadasId}/pont`, {
       method:'PATCH',
-      body: JSON.stringify({pont: parseInt(pont)||0, megjegyzes: megjegyzes||null})
+      body: JSON.stringify({ pont: ujPont, megjegyzes: megjegyzes || null })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
     // Frissítjük az allBeadasok-ban
     const b = allBeadasok.find(x => x.id === beadasId);
-    if (b) b.manualisPont = parseInt(pont)||0;
-    // Re-render összesítés
+    if (b) {
+      b.manualisPont = ujPont;
+      if (megjegyzes) b.megjegyzes = megjegyzes;
+    }
+
+    // Input mező frissítése a táblában
+    const inputEl = document.getElementById(`pont-input-${beadasId}`);
+    if (inputEl) {
+      inputEl.value = ujPont;
+      inputEl.style.background = '#0a2a0a';
+      inputEl.style.borderColor = '#16a34a';
+      setTimeout(() => {
+        inputEl.style.background = '';
+        inputEl.style.borderColor = '';
+      }, 1500);
+    }
+
+    // Re-render összesítés (szambank_auto: 40 pont max)
     if (currentSzamonkeres) {
-      const feladatok = JSON.parse(currentSzamonkeres.feladatok||'[]');
-      const ph = JSON.parse(currentSzamonkeres.ponthatarak||'{}');
-      const maxOssz = feladatok.reduce((s,f)=>s+f.pont,0);
+      const feladatok = JSON.parse(currentSzamonkeres.feladatok || '[]');
+      const ph = JSON.parse(currentSzamonkeres.ponthatarak || '{}');
+      const isSzambankAuto = feladatok.length === 1 && feladatok[0].tipus === 'szambank_auto';
+      const maxOssz = isSzambankAuto ? 40 : feladatok.reduce((s, f) => s + (f.pont || 0), 0);
       renderOsszes(allBeadasok, feladatok, ph, maxOssz);
     }
-  } catch(e) { console.error('Pont mentési hiba', e); }
+  } catch(e) {
+    console.error('Pont mentési hiba', e);
+    showDetailMsg('err', `Hiba a pont mentésekor: ${e.message}`);
+  }
 }
 
 function showKod(beadasId, cim) {
