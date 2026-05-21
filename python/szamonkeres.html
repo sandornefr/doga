@@ -179,14 +179,15 @@
       <button onclick="closeGeminiSettings()" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:1.1rem"><i class="fas fa-xmark"></i></button>
     </div>
     <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:16px;line-height:1.65">
-      Az AI pontozás a <strong style="color:#e0e0e0">Railway szerveren</strong> keresztül működik.<br>
-      A Gemini API kulcsot egyszer kell beállítani a Railway environment variables között.<br>
-      <span style="font-size:0.78rem;color:#64748b">A kulcs soha nem kerül a böngészőbe — a szerver hívja a Gemini-t.</span>
+      Az AI pontozás a <strong style="color:#e0e0e0">Groq AI</strong> segítségével működik (ingyenes, gyors).<br>
+      A Groq API kulcsot egyszer kell beállítani a Railway environment variables között.<br>
+      <span style="font-size:0.78rem;color:#64748b">Kulcs igénylése: console.groq.com → API Keys → Create (ingyenes, nem kell billing)</span>
     </div>
     <div style="background:#0b1120;border:1px solid #1f2937;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:0.83rem;color:#cbd5e1;line-height:1.7">
       <strong style="color:#818cf8">Beállítás lépései:</strong><br>
-      1. Nyisd meg: <a href="https://railway.app" target="_blank" style="color:#818cf8">railway.app</a> → projekt → <strong>Variables</strong> fül<br>
-      2. Adj hozzá: <code style="background:#1e3a5f;padding:1px 6px;border-radius:4px;color:#93c5fd">GEMINI_API_KEY</code> = <em>az AIzaSy... kulcsod</em><br>
+      1. Nyisd meg: <a href="https://console.groq.com" target="_blank" style="color:#818cf8">console.groq.com</a> → API Keys → Create API key<br>
+      2. <a href="https://railway.app" target="_blank" style="color:#818cf8">railway.app</a> → projekt → <strong>Variables</strong> fül → adj hozzá:<br>
+      &nbsp;&nbsp;&nbsp;<code style="background:#1e3a5f;padding:1px 6px;border-radius:4px;color:#93c5fd">GROQ_API_KEY</code> = <em>a gsk_... kulcsod</em><br>
       3. Railway automatikusan újraindítja a szervert<br>
       4. Kattints az alábbi <strong>Tesztelés</strong> gombra — ha zöld, kész!
     </div>
@@ -1380,17 +1381,18 @@ function deleteGeminiKey() {
 }
 
 async function testGeminiKey() {
-  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés a szerveren keresztül...');
+  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés (Groq AI)...');
   try {
     const res = await authFetch(`${API}/api/ai/pontozas`, {
       method: 'POST',
-      body: JSON.stringify({ contents: [{ parts: [{ text: 'Mondj egy szót magyarul.' }] }] })
+      body: JSON.stringify({ prompt: 'Mondj egy szót magyarul. Csak egyetlen szót írj!' })
     });
     if (res.ok) {
-      showGeminiMsg('ok', '<i class="fas fa-check"></i> Szerver kapcsolat OK – AI pontozás elérhető!');
+      const data = await res.json();
+      showGeminiMsg('ok', `<i class="fas fa-check"></i> AI kapcsolat OK! Válasz: "${data.text?.trim()}"`);
     } else {
       const err = await res.json().catch(() => ({}));
-      showGeminiMsg('err', `Hiba: ${err?.error?.message || err?.error || res.status}`);
+      showGeminiMsg('err', `Hiba: ${err?.error || res.status}`);
     }
   } catch(e) { showGeminiMsg('err', 'Hálózati hiba: ' + e.message); }
 }
@@ -1444,19 +1446,19 @@ JAVASOLT PONTSZÁM: X / ${task.pont}
   try {
     const res = await authFetch(`${API}/api/ai/pontozas`, {
       method: 'POST',
-      body: JSON.stringify({ contents: [{ parts: [{ text: promptSzoveg }] }] })
+      body: JSON.stringify({ prompt: promptSzoveg })
     });
     toast.remove();
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || err?.error || `HTTP ${res.status}`);
+      throw new Error(err?.error || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    const valasz = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nem érkezett válasz.';
+    const valasz = data.text || 'Nem érkezett válasz.';
     showAiModal(valasz, beadasId, task.pont);
   } catch(e) {
     toast.remove();
-    alert('Gemini hiba: ' + e.message);
+    alert('AI hiba: ' + e.message);
   }
 }
 
