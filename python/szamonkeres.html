@@ -193,14 +193,11 @@
     </div>
     <div id="gemini-modal-msg" style="font-size:0.82rem;margin-bottom:12px;display:none"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button onclick="saveGeminiKey()" style="padding:8px 20px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.88rem">
-        <i class="fas fa-check"></i> Mentés
+      <button onclick="testGeminiKey()" style="padding:8px 20px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.88rem">
+        <i class="fas fa-vial"></i> Kapcsolat tesztelése
       </button>
-      <button onclick="testGeminiKey()" style="padding:8px 16px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.88rem">
-        <i class="fas fa-vial"></i> Tesztelés
-      </button>
-      <button onclick="deleteGeminiKey()" id="gemini-delete-btn" style="padding:8px 16px;background:transparent;border:1px solid #7f1d1d;border-radius:8px;color:#ef4444;cursor:pointer;font-size:0.88rem;display:none">
-        <i class="fas fa-trash"></i> Törlés
+      <button onclick="closeGeminiSettings()" style="padding:8px 16px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.88rem">
+        Bezárás
       </button>
     </div>
   </div>
@@ -1317,13 +1314,12 @@ function downloadTxt(tartalom, fajlnev) {
 function getGeminiKey() { return localStorage.getItem('geminiApiKey') || ''; }
 
 function updateGeminiKeyBtn() {
-  const van = !!getGeminiKey();
   const btn = document.getElementById('gemini-key-btn');
   const lbl = document.getElementById('gemini-key-label');
   if (!btn) return;
-  btn.style.borderColor = van ? '#15803d' : '#6366f1';
-  btn.style.color = van ? '#4ade80' : '#a5b4fc';
-  if (lbl) lbl.textContent = van ? 'AI kulcs beállítva' : 'AI kulcs beállítása';
+  btn.style.borderColor = '#6366f1';
+  btn.style.color = '#a5b4fc';
+  if (lbl) lbl.textContent = 'AI pontozás';
 }
 
 function openGeminiSettings() {
