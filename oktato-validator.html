@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Feladat Validátor – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -13,83 +15,94 @@
     .topbar-logo img{height:30px}
     a.back{padding:5px 14px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;font-size:.82rem;text-decoration:none;transition:.2s}
     a.back:hover{border-color:#6b7280;color:#e0e0e0}
-    .container{max-width:1300px;margin:0 auto;padding:20px 16px}
-    /* Tabs */
+    .container{max-width:1400px;margin:0 auto;padding:20px 16px}
     .tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #1f2937}
     .tab-btn{padding:9px 22px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.9rem;font-weight:600;color:#64748b;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;background:transparent;transition:.2s}
     .tab-btn.active{background:#16213e;color:#e0e0e0;border-color:#1f2937}
-    .tab-btn:hover:not(.active){color:#94a3b8}
     .tab-panel{display:none}.tab-panel.active{display:block}
-    /* Layout */
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:900px){.two-col{grid-template-columns:1fr}}
-    .card{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:18px}
-    .card h3{font-size:.85rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+    .two-col{display:grid;grid-template-columns:420px 1fr;gap:16px}
+    @media(max-width:1000px){.two-col{grid-template-columns:1fr}}
+    .card{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:18px;margin-bottom:14px}
+    .card h3{font-size:.82rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:7px}
     label{font-size:.82rem;color:#94a3b8;display:block;margin-bottom:4px}
-    textarea{width:100%;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-family:monospace;font-size:.82rem;resize:vertical;outline:none;transition:border .2s}
+    textarea{width:100%;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-family:monospace;font-size:.8rem;resize:vertical;outline:none;transition:border .2s}
     textarea:focus{border-color:#3b82f6}
     select{width:100%;padding:9px 12px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:.85rem;outline:none}
-    .btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s}
+    .btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
     .btn-primary{background:#1d4ed8;color:#fff}.btn-primary:hover{background:#2563eb}
     .btn-primary:disabled{opacity:.5;cursor:not-allowed}
-    .form-row{margin-bottom:14px}
-    /* Eredmény panel */
-    .result-panel{margin-top:16px}
-    .result-item{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:.85rem}
+    .btn-ghost{background:transparent;border:1px solid #374151;color:#9ca3af}.btn-ghost:hover{border-color:#6b7280;color:#e0e0e0}
+    .btn-sm{padding:5px 12px;font-size:.8rem}
+    .form-row{margin-bottom:12px}
+    /* Upload zone */
+    .upload-zone{border:2px dashed #374151;border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:.2s;background:#0b1120;position:relative}
+    .upload-zone:hover{border-color:#3b82f6;background:#0d1a2e}
+    .upload-zone.has-files{border-color:#15803d;background:#0a2a1a}
+    .upload-zone.optional{border-color:#1e3a5f}
+    .upload-zone.optional.has-files{border-color:#4f46e5;background:#1a1040}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:1.4rem;margin-bottom:6px}
+    .upload-label{font-size:.85rem;font-weight:600;color:#e0e0e0}
+    .upload-sub{font-size:.75rem;color:#64748b;margin-top:3px}
+    .file-list{margin-top:8px;text-align:left}
+    .file-chip{display:inline-block;padding:2px 8px;background:#1e3a5f;border-radius:6px;font-size:.72rem;color:#93c5fd;margin:2px 2px 0 0}
+    .file-chip.css{background:#1a1040;color:#a5b4fc}
+    .file-chip.doc{background:#1a2a1a;color:#86efac}
+    .file-chip.xls{background:#2a1a00;color:#fcd34d}
+    /* Results */
+    .result-item{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:8px;margin-bottom:7px;font-size:.85rem}
     .result-ok{background:#0a2a1a;border:1px solid #15803d;color:#86efac}
     .result-err{background:#2a0a0a;border:1px solid #dc2626;color:#fca5a5}
     .result-warn{background:#2a1a00;border:1px solid #d97706;color:#fcd34d}
     .result-info{background:#0d1a2e;border:1px solid #374151;color:#94a3b8}
     .result-icon{flex-shrink:0;margin-top:1px}
     .result-label{font-weight:600}
-    .result-detail{font-size:.78rem;color:#64748b;margin-top:2px}
+    .result-detail{font-size:.77rem;color:#64748b;margin-top:2px;font-family:monospace}
     .summary-box{padding:14px 18px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
     .summary-ok{background:#0a2a1a;border:1px solid #16a34a}
     .summary-warn{background:#2a1500;border:1px solid #d97706}
     .summary-err{background:#2a0a0a;border:1px solid #dc2626}
-    .summary-score{font-size:1.8rem;font-weight:900}
+    .sum-score{font-size:2rem;font-weight:900}
     .score-ok{color:#4ade80}.score-warn{color:#fcd34d}.score-err{color:#f87171}
-    .pyodide-status{font-size:.75rem;color:#64748b;margin-left:10px}
+    .ai-box{background:#0b1120;border:1px solid #1e3a5f;border-radius:10px;padding:16px;font-size:.85rem;line-height:1.7;white-space:pre-wrap;max-height:600px;overflow-y:auto;color:#cbd5e1}
+    .section-title{font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px}
+    .status-row{display:flex;align-items:center;gap:8px;font-size:.8rem;color:#64748b;margin-bottom:6px}
+    .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .dot-ok{background:#22c55e}.dot-warn{background:#f59e0b}.dot-none{background:#374151}
+    .pyodide-status{font-size:.75rem;margin-left:8px}
     .pyodide-status.ready{color:#4ade80}
-    .tag{display:inline-block;padding:1px 7px;border-radius:8px;font-size:.7rem;font-weight:700;margin-right:4px}
-    .tag-ok{background:#14532d;color:#86efac}
-    .tag-err{background:#7f1d1d;color:#fca5a5}
-    .tag-skip{background:#1e3a5f;color:#93c5fd}
-    .separator{height:1px;background:#1f2937;margin:16px 0}
+    /* API key */
+    .api-row{display:flex;gap:8px;align-items:center}
+    .api-input{flex:1;padding:7px 10px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:.82rem;font-family:monospace;outline:none}
+    .api-input:focus{border-color:#4f46e5}
   </style>
 </head>
 <body>
 
 <div class="topbar">
-  <a class="topbar-logo" href="portal.html">
-    <img src="kandologo2.png" alt="Kandó">
+  <a class="topbar-logo" href="../portal.html">
+    <img src="../kandologo2.png" alt="Kandó">
     Feladat Validátor
   </a>
-  <a class="back" href="portal.html"><i class="fas fa-arrow-left"></i> Portál</a>
+  <a class="back" href="../portal.html"><i class="fas fa-arrow-left"></i> Portál</a>
 </div>
 
 <div class="container">
 
-  <div id="auth-err" style="display:none;padding:14px 18px;background:#7f1d1d;border:1px solid #dc2626;border-radius:10px;margin-bottom:20px;color:#fca5a5">
+  <div id="auth-err" style="display:none;padding:14px;background:#7f1d1d;border:1px solid #dc2626;border-radius:10px;margin-bottom:16px;color:#fca5a5">
     <i class="fas fa-lock"></i> Oktatói bejelentkezés szükséges.
-    <a href="portal.html" style="color:#fca5a5;margin-left:8px">← Portál</a>
+    <a href="../portal.html" style="color:#fca5a5;margin-left:8px">← Portál</a>
   </div>
 
   <div id="main-ui">
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('python')">
-        <i class="fab fa-python"></i> Python feladat
-      </button>
-      <button class="tab-btn" onclick="switchTab('web')">
-        <i class="fas fa-code"></i> WEB feladat
-      </button>
+      <button class="tab-btn active" onclick="switchTab('python')"><i class="fab fa-python"></i> Python feladat</button>
+      <button class="tab-btn" onclick="switchTab('web')"><i class="fas fa-code"></i> WEB feladat</button>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════ PYTHON TAB -->
+    <!-- ══════════════════════════════ PYTHON TAB -->
     <div class="tab-panel active" id="tab-python">
       <div class="two-col">
-
-        <!-- Bal: bevitel -->
         <div>
           <div class="card">
             <h3><i class="fas fa-paste"></i> Bevitel</h3>
@@ -99,18 +112,15 @@
 return|Visszatérési érték|...
 tartalmaz:JegyAr(|Függvény hívása|...
 while|While ciklust használ|...
-bekeres:Termék kódja (0 = fizetés): |Bekérés|...
+bekeres:Termék kódja: |Bekérés|...
 int_float:1|Számmá alakítja|...
 teszt:2,0:Köszönjük|Sima vásárlás|..."></textarea>
             </div>
             <div class="form-row">
               <label>Mintakód (megoldás)</label>
-              <textarea id="py-kod" rows="18" placeholder="def JegyAr(kod):
-    if kod == 1:
-        return 450
-    ..."></textarea>
+              <textarea id="py-kod" rows="16" placeholder="def JegyAr(kod):&#10;    if kod == 1:&#10;        return 450&#10;    ..."></textarea>
             </div>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
               <button class="btn btn-primary" id="py-validate-btn" onclick="validatePython()" disabled>
                 <i class="fas fa-play"></i> Validálás
               </button>
@@ -118,68 +128,116 @@ teszt:2,0:Köszönjük|Sima vásárlás|..."></textarea>
             </div>
           </div>
         </div>
-
-        <!-- Jobb: eredmény -->
-        <div>
-          <div class="card" id="py-result-card" style="min-height:300px">
-            <h3><i class="fas fa-chart-bar"></i> Eredmény</h3>
-            <div id="py-result">
-              <div class="result-info result-item">
-                <i class="fas fa-info-circle result-icon"></i>
-                <span>Illeszd be a pontozást és a mintakódot, majd kattints Validálás.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════ WEB TAB -->
-    <div class="tab-panel" id="tab-web">
-      <div class="two-col">
-
-        <!-- Bal: bevitel -->
-        <div>
-          <div class="card">
-            <h3><i class="fas fa-paste"></i> Bevitel</h3>
-            <div class="form-row">
-              <label>Feladat azonosítója (app.js-ből, pl. bogyo_gyumolcsok)</label>
-              <div style="display:flex;gap:8px">
-                <select id="web-task-select" style="flex:1">
-                  <option value="">– app.js betöltése folyamatban –</option>
-                </select>
-                <button class="btn btn-primary" onclick="loadWebTask()" style="padding:8px 14px">
-                  <i class="fas fa-download"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>Forrás HTML (amit a diák kap – hiányos)</label>
-              <textarea id="web-source" rows="10" placeholder="<!DOCTYPE html>&#10;<html lang='hu'>&#10;<head>&#10;  ...hiányos...&#10;</head>&#10;<body>&#10;  ..."></textarea>
-            </div>
-            <div class="form-row">
-              <label>Megoldás HTML (amit a tanár ír – teljes)</label>
-              <textarea id="web-solution" rows="10" placeholder="<!DOCTYPE html>&#10;<html lang='hu'>&#10;<head>&#10;  <meta charset='UTF-8'>&#10;  ...teljes..."></textarea>
-            </div>
-            <div class="form-row">
-              <label>CSS (ha külön fájl – opcionális)</label>
-              <textarea id="web-css" rows="4" placeholder="body { ... }"></textarea>
-            </div>
-            <button class="btn btn-primary" onclick="validateWeb()">
-              <i class="fas fa-play"></i> Validálás
-            </button>
-          </div>
-        </div>
-
-        <!-- Jobb: eredmény -->
         <div>
           <div class="card" style="min-height:300px">
             <h3><i class="fas fa-chart-bar"></i> Eredmény</h3>
+            <div id="py-result">
+              <div class="result-info result-item"><i class="fas fa-info-circle result-icon"></i>
+                <span>Illeszd be a pontozást és a mintakódot, majd kattints Validálás.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════ WEB TAB -->
+    <div class="tab-panel" id="tab-web">
+      <div class="two-col">
+
+        <!-- Bal: feltöltés -->
+        <div>
+
+          <!-- Kötelező: forrás + megoldás -->
+          <div class="card">
+            <h3><i class="fas fa-folder-open"></i> Mappák feltöltése <span style="color:#ef4444">*</span></h3>
+
+            <div class="form-row">
+              <label>Forrás mappa (amit a diák kap)</label>
+              <div class="upload-zone" id="zone-src">
+                <input type="file" webkitdirectory multiple id="inp-src" onchange="handleFolderUpload(this,'src')">
+                <div class="upload-icon"><i class="fas fa-folder" style="color:#3b82f6"></i></div>
+                <div class="upload-label">Kattints vagy húzd ide a forrás mappát</div>
+                <div class="upload-sub">HTML, CSS, képek – mindent válassz ki</div>
+                <div class="file-list" id="files-src"></div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label>Megoldás mappa (a helyes megoldás)</label>
+              <div class="upload-zone" id="zone-sol">
+                <input type="file" webkitdirectory multiple id="inp-sol" onchange="handleFolderUpload(this,'sol')">
+                <div class="upload-icon"><i class="fas fa-folder-open" style="color:#22c55e"></i></div>
+                <div class="upload-label">Kattints vagy húzd ide a megoldás mappát</div>
+                <div class="upload-sub">HTML, CSS, képek – mindent válassz ki</div>
+                <div class="file-list" id="files-sol"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opcionális: docx + xlsx -->
+          <div class="card">
+            <h3><i class="fas fa-file-import"></i> Opcionális dokumentumok</h3>
+
+            <div class="form-row">
+              <label>Feladatleírás (.docx) — AI elemzéshez ajánlott</label>
+              <div class="upload-zone optional" id="zone-docx">
+                <input type="file" accept=".docx" id="inp-docx" onchange="handleDocxUpload(this)">
+                <div class="upload-icon"><i class="fas fa-file-word" style="color:#4ade80"></i></div>
+                <div class="upload-label">Feladatleírás .docx fájl</div>
+                <div class="upload-sub" id="docx-status">Nem töltöttek fel fájlt</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label>Pontozó (.xlsx) — check-ek ellenőrzéséhez</label>
+              <div class="upload-zone optional" id="zone-xlsx">
+                <input type="file" accept=".xlsx,.xls" id="inp-xlsx" onchange="handleXlsxUpload(this)">
+                <div class="upload-icon"><i class="fas fa-file-excel" style="color:#fcd34d"></i></div>
+                <div class="upload-label">Pontozó Excel fájl</div>
+                <div class="upload-sub" id="xlsx-status">Nem töltöttek fel fájlt</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Groq API kulcs -->
+          <div class="card">
+            <h3><i class="fas fa-robot"></i> Groq AI kulcs</h3>
+            <div class="form-row">
+              <label>API kulcs (console.groq.com → API Keys)</label>
+              <div class="api-row">
+                <input type="password" class="api-input" id="web-groq-key"
+                  placeholder="gsk_..." value="">
+                <button class="btn btn-ghost btn-sm" onclick="toggleGroqKey()">
+                  <i class="fas fa-eye" id="groq-eye"></i>
+                </button>
+              </div>
+              <div style="font-size:.74rem;color:#4b5563;margin-top:4px">
+                Mentve a böngésző memóriájában — AI elemzés nélkül is fut
+              </div>
+            </div>
+            <button class="btn btn-primary" id="web-validate-btn" onclick="validateWebFull()" style="width:100%">
+              <i class="fas fa-microscope"></i> Teljes validálás indítása
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Jobb: eredmény -->
+        <div>
+          <div class="card" style="min-height:400px">
+            <h3><i class="fas fa-chart-bar"></i> Validálási eredmény</h3>
             <div id="web-result">
               <div class="result-info result-item">
                 <i class="fas fa-info-circle result-icon"></i>
-                <span>Válassz feladatot, illeszd be a forrást és a megoldást.</span>
+                <div>
+                  <div class="result-label">Hogyan használd?</div>
+                  <div class="result-detail" style="font-family:inherit;color:#94a3b8;margin-top:4px;line-height:1.6">
+                    1. Töltsd fel a forrás és megoldás mappát<br>
+                    2. Opcionálisan: .docx feladatleírás és .xlsx pontozó<br>
+                    3. Add meg a Groq API kulcsot (ingyenes: console.groq.com)<br>
+                    4. Kattints: Teljes validálás indítása
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -188,462 +246,498 @@ teszt:2,0:Köszönjük|Sima vásárlás|..."></textarea>
       </div>
     </div>
 
-  </div><!-- /main-ui -->
+  </div>
 </div>
 
-<!-- Sandbox iframe WEB ellenőrzéshez -->
-<iframe id="sandbox" style="display:none;position:absolute;left:-9999px;top:-9999px;width:1200px;height:900px"
+<!-- Sandbox iframe -->
+<iframe id="sandbox" style="display:none;position:absolute;left:-9999px;width:1200px;height:900px"
   sandbox="allow-same-origin"></iframe>
 
-<!-- Pyodide -->
 <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-
 <script>
+
 // ── Auth ───────────────────────────────────────────────────────────────────
-(function() {
+(function(){
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
   if (!u.token && !u._tesztMod) {
     document.getElementById('auth-err').style.display = 'block';
     document.getElementById('main-ui').style.display = 'none';
   }
+  // Groq kulcs visszatöltése
+  const saved = localStorage.getItem('groqApiKey') || '';
+  if (saved) document.getElementById('web-groq-key').value = saved;
 })();
 
-// ── Tab váltás ─────────────────────────────────────────────────────────────
+function toggleGroqKey() {
+  const inp = document.getElementById('web-groq-key');
+  const icon = document.getElementById('groq-eye');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  icon.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+// ── Tab váltás ──────────────────────────────────────────────────────────────
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['python','web'][i] === name);
-  });
-  document.querySelectorAll('.tab-panel').forEach((p,i) => {
-    p.classList.toggle('active', ['python','web'][i] === name);
-  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['python','web'][i]===name));
+  document.querySelectorAll('.tab-panel').forEach((p,i) => p.classList.toggle('active', ['python','web'][i]===name));
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// PYODIDE – Python futtatás
+// PYODIDE
 // ════════════════════════════════════════════════════════════════════════════
 let pyodide = null;
-
-(async function() {
+(async()=>{
   try {
-    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' });
-    const btn = document.getElementById('py-validate-btn');
-    const st  = document.getElementById('py-status');
-    btn.disabled = false;
-    st.textContent = 'Python kész ✓';
-    st.className = 'pyodide-status ready';
-  } catch(e) {
-    document.getElementById('py-status').textContent = 'Python betöltési hiba';
-  }
+    pyodide = await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'});
+    document.getElementById('py-validate-btn').disabled = false;
+    const st = document.getElementById('py-status');
+    st.textContent = 'Python kész ✓'; st.className = 'pyodide-status ready';
+  } catch(e){ document.getElementById('py-status').textContent = 'Python betöltési hiba'; }
 })();
 
-async function runPythonCode(code, inputs) {
-  if (!pyodide) return { stdout: '', stderr: 'Pyodide nincs betöltve' };
+async function runPy(code, inputs) {
+  if (!pyodide) return {stdout:'',stderr:'Pyodide nincs betöltve'};
   try {
-    pyodide.globals.set('_val_inputs', pyodide.toPy(inputs));
+    pyodide.globals.set('_vi', pyodide.toPy(inputs));
     await pyodide.runPythonAsync(`
-import sys, builtins
+import sys,builtins
 from io import StringIO
-_out = StringIO(); _err = StringIO()
-sys.stdout = _out; sys.stderr = _err
-_q = list(_val_inputs); _qi = [0]
-def _inp(prompt=''):
-    sys.stdout.write(str(prompt))
-    if _qi[0] < len(_q):
-        v = str(_q[_qi[0]]); _qi[0] += 1
-        sys.stdout.write(v + '\\n'); return v
+_o=StringIO();_e=StringIO()
+sys.stdout=_o;sys.stderr=_e
+_q=list(_vi);_qi=[0]
+def _inp(p=''):
+    sys.stdout.write(str(p))
+    if _qi[0]<len(_q): v=str(_q[_qi[0]]);_qi[0]+=1;sys.stdout.write(v+'\\n');return v
     return ''
-builtins.input = _inp
+builtins.input=_inp
 `);
     await pyodide.runPythonAsync(code);
-    const stdout = pyodide.runPython('_out.getvalue()');
-    const stderr = pyodide.runPython('_err.getvalue()');
-    pyodide.runPython('sys.stdout=sys.__stdout__; sys.stderr=sys.__stderr__');
-    return { stdout, stderr };
-  } catch(e) {
-    try { pyodide.runPython('sys.stdout=sys.__stdout__; sys.stderr=sys.__stderr__'); } catch {}
-    return { stdout: '', stderr: e.message };
-  }
+    const out=pyodide.runPython('_o.getvalue()');
+    const err=pyodide.runPython('_e.getvalue()');
+    pyodide.runPython('sys.stdout=sys.__stdout__;sys.stderr=sys.__stderr__');
+    return {stdout:out,stderr:err};
+  } catch(e){ try{pyodide.runPython('sys.stdout=sys.__stdout__;sys.stderr=sys.__stderr__');}catch{} return{stdout:'',stderr:e.message}; }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // PYTHON VALIDÁTOR
 // ════════════════════════════════════════════════════════════════════════════
-
-function parsePontozasBlock(raw) {
-  const lines = raw.split('\n').map(l => l.trim()).filter(l =>
-    l && !l.startsWith('//') && !l.startsWith('#')
-  );
-  return lines.map(line => {
-    const parts = line.split('|');
-    const spec  = parts[0]?.trim() || '';
-    const label = parts[1]?.trim() || spec;
-    return { spec, label, raw: line };
+function parsePontozas(raw) {
+  return raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('//')).map(l=>{
+    const parts=l.split('|');
+    return {spec:parts[0]?.trim()||'', label:parts[1]?.trim()||parts[0]?.trim(), raw:l};
   });
 }
 
 function checkStatic(spec, code) {
-  const s = spec.toLowerCase();
-
-  // Egyszerű kulcsszó ellenőrzések
-  if (s === 'def')    return /\bdef\b/.test(code);
-  if (s === 'return') return /\breturn\b/.test(code);
-  if (s === 'while')  return /\bwhile\b/.test(code);
-  if (s === 'for')    return /\bfor\b/.test(code);
-  if (s === 'if')     return /\bif\b/.test(code);
-  if (s === 'elif')   return /\belif\b/.test(code);
-
-  // tartalmaz:X
-  if (spec.startsWith('tartalmaz:')) {
-    const val = spec.slice('tartalmaz:'.length);
-    return code.includes(val);
-  }
-
-  // bekeres:szöveg
-  if (spec.startsWith('bekeres:')) {
-    const val = spec.slice('bekeres:'.length);
-    return code.includes(val);
-  }
-
-  // int_float:N
-  if (spec.startsWith('int_float:')) {
-    return /\bint\s*\(/.test(code) || /\bfloat\s*\(/.test(code);
-  }
-
-  // import:modul
-  if (spec.startsWith('import:')) {
-    const mod = spec.slice('import:'.length).split('|')[0];
-    return new RegExp('\\bimport\\s+' + escapeRe(mod)).test(code) ||
-           code.includes('class ' + mod[0].toUpperCase() + mod.slice(1));
-  }
-
-  // lista:name (egyéni szintaxis)
-  if (spec.startsWith('lista:')) {
-    const name = spec.slice('lista:'.length);
-    return code.includes(name);
-  }
-
-  // def:FuncName (egyéni)
-  if (spec.startsWith('def:')) {
-    const name = spec.slice('def:'.length);
-    return new RegExp('\\bdef\\s+' + escapeRe(name) + '\\s*\\(').test(code);
-  }
-
-  // teszt: → runtime, nem statikus
-  if (spec.startsWith('teszt:')) return null;
-  if (spec.startsWith('vagy:'))  return null; // alternatív feltétel, skip
-
-  return null; // ismeretlen
+  const s=spec.toLowerCase();
+  if(s==='def') return /\bdef\b/.test(code);
+  if(s==='return') return /\breturn\b/.test(code);
+  if(s==='while') return /\bwhile\b/.test(code);
+  if(s==='for') return /\bfor\b/.test(code);
+  if(s==='if') return /\bif\b/.test(code);
+  if(s==='elif') return /\belif\b/.test(code);
+  if(spec.startsWith('tartalmaz:')) return code.includes(spec.slice(10));
+  if(spec.startsWith('bekeres:')) return code.includes(spec.slice(8));
+  if(spec.startsWith('int_float:')) return /\bint\s*\(/.test(code)||/\bfloat\s*\(/.test(code);
+  if(spec.startsWith('import:')) return new RegExp('\\bimport\\s+'+spec.slice(7)).test(code)||code.includes('class '+spec.slice(7,8).toUpperCase()+spec.slice(8));
+  if(spec.startsWith('lista:')) return code.includes(spec.slice(6));
+  if(spec.startsWith('def:')) return new RegExp('\\bdef\\s+'+spec.slice(4)+'\\s*\\(').test(code);
+  if(spec.startsWith('teszt:')||spec.startsWith('vagy:')) return null;
+  return null;
 }
 
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function parseTestSpec(spec) {
-  // teszt:in1,in2:elvart
-  const rest = spec.slice('teszt:'.length);
-  const colIdx = rest.lastIndexOf(':');
-  if (colIdx < 0) return null;
-  const inputs  = rest.slice(0, colIdx).split(',').map(s => s.trim());
-  const expected = rest.slice(colIdx + 1).trim();
-  return { inputs, expected };
+function parseTest(spec) {
+  const rest=spec.slice(6);
+  const ci=rest.lastIndexOf(':');
+  if(ci<0) return null;
+  return {inputs:rest.slice(0,ci).split(',').map(s=>s.trim()), expected:rest.slice(ci+1).trim()};
 }
 
 async function validatePython() {
-  const raw    = document.getElementById('py-pontozas').value.trim();
-  const code   = document.getElementById('py-kod').value.trim();
-  const resDiv = document.getElementById('py-result');
+  const raw=document.getElementById('py-pontozas').value.trim();
+  const code=document.getElementById('py-kod').value.trim();
+  const res=document.getElementById('py-result');
+  if(!raw||!code){res.innerHTML=makeItem('warn','fas fa-triangle-exclamation','Hiányzó adat','Illeszd be a pontozást és a mintakódot!');return;}
+  const btn=document.getElementById('py-validate-btn');
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Ellenőrzés...';
+  res.innerHTML='';
+  const criteria=parsePontozas(raw);
+  const items=[];
+  let ok=0,err=0,skip=0;
+  for(const c of criteria) {
+    if(c.spec.startsWith('teszt:')) continue;
+    const r=checkStatic(c.spec,code);
+    if(r===null){items.push({type:'skip',label:c.label,detail:`(${c.spec}) – manuális ellenőrzés`});skip++;}
+    else if(r){items.push({type:'ok',label:c.label,detail:`✓ ${c.spec}`});ok++;}
+    else{items.push({type:'err',label:c.label,detail:`✗ A mintakód nem teljesíti: ${c.spec}`});err++;}
+  }
+  for(const c of criteria.filter(c=>c.spec.startsWith('teszt:'))) {
+    const p=parseTest(c.spec);
+    if(!p){items.push({type:'skip',label:c.label,detail:'Nem értelmezhető teszt spec'});skip++;continue;}
+    const {stdout,stderr}=await runPy(code,p.inputs);
+    if(stderr&&!stdout){items.push({type:'err',label:c.label,detail:`Futási hiba: ${stderr.split('\n').pop()}`});err++;}
+    else if(stdout.includes(p.expected)){items.push({type:'ok',label:c.label,detail:`✓ Kimenet tartalmazza: "${p.expected}"`});ok++;}
+    else{items.push({type:'err',label:c.label,detail:`✗ Elvárt: "${p.expected}" | Kapott: "${stdout.trim().slice(0,80)}"`});err++;}
+  }
+  const total=ok+err;
+  const cls=err===0?'summary-ok':ok/total>=.6?'summary-warn':'summary-err';
+  const sc=err===0?'score-ok':ok/total>=.6?'score-warn':'score-err';
+  let html=`<div class="summary-box ${cls}"><div class="sum-score ${sc}">${ok}/${total}</div><div>
+    <div style="font-weight:700">${err===0?'✅ Minden kritérium teljesül!':'⚠️ '+err+' kritérium hibás'}</div>
+    <div style="font-size:.8rem;color:#94a3b8;margin-top:2px">${ok} ok · ${err} hiba · ${skip} átugrott</div></div></div>`;
+  for(const it of items) html+=makeItem(it.type==='skip'?'info':it.type,'fas '+(it.type==='ok'?'fa-circle-check':it.type==='err'?'fa-circle-xmark':'fa-circle-info'),it.label,it.detail);
+  res.innerHTML=html;
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-play"></i> Validálás';
+}
 
-  if (!raw || !code) {
-    resDiv.innerHTML = makeItem('warn', 'fas fa-triangle-exclamation',
-      'Hiányzó adat', 'Illeszd be a pontozást és a mintakódot!');
+// ════════════════════════════════════════════════════════════════════════════
+// WEB VALIDÁTOR – fájlkezelés
+// ════════════════════════════════════════════════════════════════════════════
+const webFiles = {src:{}, sol:{}};
+let docxText = '';
+let xlsxRows = [];
+
+function readAsText(file) {
+  return new Promise(res => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsText(file,'utf-8'); });
+}
+function readAsBuffer(file) {
+  return new Promise(res => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsArrayBuffer(file); });
+}
+
+async function handleFolderUpload(input, target) {
+  const files = input.files;
+  if (!files.length) return;
+  webFiles[target] = {};
+  const zone = document.getElementById('zone-'+target);
+  const listEl = document.getElementById('files-'+target);
+  const chips = [];
+  for (const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (['html','css','txt'].includes(ext)) {
+      const parts = file.webkitRelativePath.split('/');
+      const rel = parts.slice(1).join('/') || file.name;
+      webFiles[target][rel] = await readAsText(file);
+      chips.push(`<span class="file-chip ${ext==='css'?'css':''}">${rel}</span>`);
+    }
+  }
+  zone.classList.add('has-files');
+  listEl.innerHTML = chips.join('');
+}
+
+async function handleDocxUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const st = document.getElementById('docx-status');
+  st.textContent = 'Feldolgozás...';
+  try {
+    const buf = await readAsBuffer(file);
+    const result = await mammoth.extractRawText({arrayBuffer: buf});
+    docxText = result.value;
+    document.getElementById('zone-docx').classList.add('has-files');
+    st.textContent = `✓ Betöltve (${Math.round(docxText.length/100)/10} KB szöveg)`;
+  } catch(e) { st.textContent = 'Hiba: ' + e.message; }
+}
+
+async function handleXlsxUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const st = document.getElementById('xlsx-status');
+  st.textContent = 'Feldolgozás...';
+  try {
+    const buf = await readAsBuffer(file);
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    xlsxRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    document.getElementById('zone-xlsx').classList.add('has-files');
+    st.textContent = `✓ Betöltve (${xlsxRows.length} sor)`;
+  } catch(e) { st.textContent = 'Hiba: ' + e.message; }
+}
+
+function findFile(files, ext) {
+  // Főbb HTML/CSS keresése: legyen a root szintű .html
+  const entries = Object.entries(files);
+  const byExt = entries.filter(([k]) => k.endsWith('.'+ext) && !k.includes('bootstrap'));
+  // Preferáljuk a legrövidebb útvonalat
+  byExt.sort((a,b) => a[0].split('/').length - b[0].split('/').length || a[0].localeCompare(b[0]));
+  return byExt[0]?.[1] || '';
+}
+
+function findCss(files) {
+  const entries = Object.entries(files).filter(([k]) => k.endsWith('.css') && !k.includes('bootstrap'));
+  return entries.map(([k,v]) => `/* ${k} */\n${v}`).join('\n\n');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// WEB VALIDÁTOR – Groq AI elemzés
+// ════════════════════════════════════════════════════════════════════════════
+async function validateWebFull() {
+  const srcHtml = findFile(webFiles.src, 'html');
+  const solHtml = findFile(webFiles.sol, 'html');
+
+  if (!srcHtml || !solHtml) {
+    document.getElementById('web-result').innerHTML =
+      makeItem('err','fas fa-circle-xmark','Hiányzó fájlok','Töltsd fel a forrás és megoldás mappákat!');
     return;
   }
 
-  const btn = document.getElementById('py-validate-btn');
+  const btn = document.getElementById('web-validate-btn');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ellenőrzés...';
-  resDiv.innerHTML = '';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Elemzés folyamatban...';
 
-  const criteria = parsePontozasBlock(raw);
-  const items = [];
-  let okCount = 0, errCount = 0, skipCount = 0;
+  const srcCss = findCss(webFiles.src);
+  const solCss = findCss(webFiles.sol);
 
-  // 1. Statikus ellenőrzések
-  for (const c of criteria) {
-    if (c.spec.startsWith('teszt:')) continue;
+  // API kulcs mentése
+  const apiKey = document.getElementById('web-groq-key').value.trim();
+  if (apiKey) localStorage.setItem('groqApiKey', apiKey);
 
-    const result = checkStatic(c.spec, code);
-    if (result === null) {
-      items.push({ type:'skip', label: c.label, detail: `(${c.spec}) – manuális ellenőrzés szükséges` });
-      skipCount++;
-    } else if (result) {
-      items.push({ type:'ok', label: c.label, detail: `✓ ${c.spec}` });
-      okCount++;
-    } else {
-      items.push({ type:'err', label: c.label, detail: `✗ A mintakód nem teljesíti: ${c.spec}` });
-      errCount++;
-    }
+  // Statikus diff
+  const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss);
+
+  // Excel checkek (statikus)
+  let xlsxHtml = '';
+  if (xlsxRows.length > 0) {
+    xlsxHtml = renderXlsxChecks(xlsxRows, solHtml, solCss);
   }
 
-  // 2. Teszt-futtatások (Pyodide)
-  const tesztek = criteria.filter(c => c.spec.startsWith('teszt:'));
-  for (const c of tesztek) {
-    const parsed = parseTestSpec(c.spec);
-    if (!parsed) {
-      items.push({ type:'skip', label: c.label, detail: 'Nem sikerült értelmezni a teszt specifikációt' });
-      skipCount++; continue;
-    }
-    const { stdout, stderr } = await runPythonCode(code, parsed.inputs);
-    if (stderr && !stdout) {
-      items.push({ type:'err', label: c.label,
-        detail: `Futási hiba: ${stderr.split('\n').pop()}` });
-      errCount++;
-    } else if (stdout.includes(parsed.expected)) {
-      items.push({ type:'ok', label: c.label,
-        detail: `✓ Kimenet tartalmazza: "${parsed.expected}"` });
-      okCount++;
-    } else {
-      items.push({ type:'err', label: c.label,
-        detail: `✗ Elvárt: "${parsed.expected}" | Kapott: "${stdout.trim().replace(/\n/g,' ↵ ').slice(0,100)}"` });
-      errCount++;
-    }
+  // Groq AI (ha van kulcs vagy docx)
+  let aiHtml = '';
+  if (apiKey && (docxText || true)) {
+    aiHtml = await callGroqAnalysis(apiKey, srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows);
+  } else {
+    aiHtml = makeItem('warn','fas fa-robot','AI elemzés kihagyva',
+      'Add meg a Groq API kulcsot a részletes elemzéshez (console.groq.com – ingyenes)');
   }
 
-  // Összesítés
-  const total = okCount + errCount;
-  const pct   = total > 0 ? Math.round(okCount / total * 100) : 0;
-  const cls   = errCount === 0 ? 'summary-ok' : pct >= 60 ? 'summary-warn' : 'summary-err';
-  const sccls = errCount === 0 ? 'score-ok' : pct >= 60 ? 'score-warn' : 'score-err';
+  // Render
+  const resDiv = document.getElementById('web-result');
+  resDiv.innerHTML = `
+    ${diffResult}
+    ${xlsxHtml ? '<div class="section-title"><i class="fas fa-list-check"></i> Excel checkek</div>' + xlsxHtml : ''}
+    <div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>
+    ${aiHtml}
+  `;
 
-  let html = `<div class="summary-box ${cls}">
-    <div class="summary-score ${sccls}">${okCount}/${total}</div>
-    <div>
-      <div style="font-weight:700;font-size:.95rem">
-        ${errCount === 0 ? '✅ Minden kritérium teljesül!' : `⚠️ ${errCount} kritérium hibás`}
-      </div>
-      <div style="font-size:.8rem;color:#94a3b8;margin-top:2px">
-        ${okCount} ok · ${errCount} hiba · ${skipCount} átugrott
-        ${skipCount > 0 ? ' <span class="tag tag-skip">VAGY / egyéni típus manuálisan ellenőrizd</span>' : ''}
-      </div>
-    </div>
-  </div>`;
-
-  for (const it of items) {
-    const ico = it.type === 'ok' ? 'fa-circle-check' :
-                it.type === 'err' ? 'fa-circle-xmark' : 'fa-circle-info';
-    html += makeItem(it.type === 'skip' ? 'info' : it.type, 'fas ' + ico, it.label, it.detail);
-  }
-
-  resDiv.innerHTML = html;
   btn.disabled = false;
-  btn.innerHTML = '<i class="fas fa-play"></i> Validálás';
+  btn.innerHTML = '<i class="fas fa-microscope"></i> Teljes validálás indítása';
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// WEB VALIDÁTOR
-// ════════════════════════════════════════════════════════════════════════════
+// ── Statikus diff ───────────────────────────────────────────────────────────
+function computeDiff(srcHtml, solHtml, srcCss, solCss) {
+  const srcDoc = new DOMParser().parseFromString(srcHtml, 'text/html');
+  const solDoc = new DOMParser().parseFromString(solHtml, 'text/html');
+  const changes = [];
 
-let webTasksLoaded = false;
+  // HTML tag attribútumok
+  checkAttrChange(srcDoc.documentElement, solDoc.documentElement, 'lang', changes, 'html[lang]');
 
-// App.js betöltése
-(function loadAppJs() {
-  const script = document.createElement('script');
-  script.src = 'web/app.js';
-  script.onload = function() {
-    try {
-      if (typeof webTasks !== 'undefined') {
-        const sel = document.getElementById('web-task-select');
-        sel.innerHTML = '<option value="">– Válassz feladatot –</option>';
-        Object.keys(webTasks).sort().forEach(key => {
-          const opt = document.createElement('option');
-          opt.value = key;
-          opt.textContent = webTasks[key].name || key;
-          sel.appendChild(opt);
-        });
-        webTasksLoaded = true;
-      }
-    } catch(e) {}
-  };
-  script.onerror = function() {
-    document.getElementById('web-task-select').innerHTML =
-      '<option value="">app.js nem töltődött be – manuális bevitel</option>';
-  };
-  document.head.appendChild(script);
-})();
+  // Head elemek
+  const sh = srcDoc.head, dh = solDoc.head;
+  if (!sh.querySelector('meta[charset]') && dh.querySelector('meta[charset]'))
+    changes.push({t:'ok', l:'charset meta hozzáadva', d: dh.querySelector('meta[charset]').outerHTML});
 
-function loadWebTask() {
-  const key = document.getElementById('web-task-select').value;
-  if (!key || typeof webTasks === 'undefined') return;
-  const task = webTasks[key];
-  if (!task) return;
-  // Ha van basePath, megpróbáljuk betölteni a forrást
-  const srcArea = document.getElementById('web-source');
-  if (task.htmlFile && task.basePath) {
-    fetch('web/' + task.basePath + '/' + task.htmlFile)
-      .then(r => r.text()).then(t => { srcArea.value = t; })
-      .catch(() => {});
-  }
-}
+  const st = sh.querySelector('title')?.textContent?.trim();
+  const dt = dh.querySelector('title')?.textContent?.trim();
+  if (dt && dt !== st) changes.push({t:'ok', l:'title hozzáadva', d:`"${dt}"`});
 
-async function validateWeb() {
-  const key      = document.getElementById('web-task-select').value;
-  const srcHtml  = document.getElementById('web-source').value.trim();
-  const solHtml  = document.getElementById('web-solution').value.trim();
-  const extraCss = document.getElementById('web-css').value.trim();
-  const resDiv   = document.getElementById('web-result');
-
-  if (!solHtml) {
-    resDiv.innerHTML = makeItem('warn','fas fa-triangle-exclamation','Hiányzó megoldás','Illeszd be a megoldás HTML-t!');
-    return;
-  }
-  if (!webTasksLoaded || !key) {
-    resDiv.innerHTML = makeItem('warn','fas fa-triangle-exclamation','Feladat nincs kiválasztva',
-      'Válassz feladatot a legördülő listából!');
-    return;
+  const srcLinks = [...sh.querySelectorAll('link[rel=stylesheet]')].map(l=>l.getAttribute('href')||'');
+  const solLinks = [...dh.querySelectorAll('link[rel=stylesheet]')].map(l=>l.getAttribute('href')||'');
+  for (const sl of solLinks) {
+    if (!srcLinks.some(x => x.includes(sl.split('/').pop()) || sl.includes(x.split('/').pop())))
+      changes.push({t:'ok', l:'CSS hivatkozás hozzáadva', d: sl});
   }
 
-  const task = webTasks[key];
-  if (!task || !task.checks) {
-    resDiv.innerHTML = makeItem('err','fas fa-circle-xmark','Feladat nem található',
-      'Nincs check definíció ehhez a feladathoz.');
-    return;
-  }
-
-  resDiv.innerHTML = '<div class="result-info result-item"><i class="fas fa-spinner fa-spin"></i> Ellenőrzés...</div>';
-
-  // CSS kinyerése a megoldásból
-  let cssFromSol = extraCss;
-  const styleMatch = solHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-  if (styleMatch) cssFromSol += '\n' + styleMatch[1];
-
-  // Megoldás DOM betöltése sandboxba
-  const frame = document.getElementById('sandbox');
-  const solDoc = await loadIntoIframe(frame, solHtml);
-
-  // Forrás DOM betöltése egy második iframebe
-  let srcDoc = null;
-  if (srcHtml) {
-    const frame2 = document.createElement('iframe');
-    frame2.style.cssText = 'display:none;position:absolute;left:-9999px';
-    frame2.setAttribute('sandbox', 'allow-same-origin');
-    document.body.appendChild(frame2);
-    srcDoc = await loadIntoIframe(frame2, srcHtml);
-    // cleanup after use
-    setTimeout(() => frame2.remove(), 5000);
-  }
-
-  // Futtatjuk a checkeket
-  let okSol = 0, errSol = 0;
-  let srcAlreadyPass = 0;
-  const items = [];
-
-  for (const chk of task.checks) {
-    let solPasses = false;
-    try {
-      solPasses = !!chk.check(solDoc, solHtml, cssFromSol);
-    } catch(e) { solPasses = false; }
-
-    let srcPasses = false;
-    if (srcDoc) {
-      try {
-        const srcCss = '';
-        srcPasses = !!chk.check(srcDoc, srcHtml, srcCss);
-      } catch(e) { srcPasses = false; }
-    }
-
-    if (solPasses) {
-      okSol++;
-      if (srcPasses && srcHtml) {
-        srcAlreadyPass++;
-        items.push({ type:'warn', label: chk.label,
-          detail: '⚠️ Forrásban MÁR MEGVAN – a tanuló nem tudja megcsinálni!' });
-      } else {
-        items.push({ type:'ok', label: chk.label, detail: '✓' });
-      }
-    } else {
-      errSol++;
-      items.push({ type:'err', label: chk.label, detail: '✗ Megoldás nem teljesíti' });
+  // Navigáció
+  const srcNav = srcDoc.querySelector('nav'), solNav = solDoc.querySelector('nav');
+  if (srcNav && solNav) {
+    if (srcNav.className !== solNav.className)
+      changes.push({t:'warn', l:'nav osztályok megváltoztak', d:`${srcNav.className} → ${solNav.className}`});
+    const sLinks = srcNav.querySelectorAll('a'), dLinks = solNav.querySelectorAll('a');
+    if (dLinks.length > sLinks.length)
+      changes.push({t:'ok', l:`Navigációs link hozzáadva (+${dLinks.length-sLinks.length})`,
+        d:[...dLinks].slice(sLinks.length).map(a=>a.outerHTML).join(' ')});
+    // target="_blank"
+    for (const a of dLinks) {
+      if (a.target==='_blank' && ![...sLinks].some(s=>s.href===a.href&&s.target==='_blank'))
+        changes.push({t:'ok', l:'Külső link (target="_blank")', d:a.outerHTML});
     }
   }
 
-  const total = task.checks.length;
-  const cls = errSol === 0 && srcAlreadyPass === 0 ? 'summary-ok' :
-              errSol === 0 ? 'summary-warn' : 'summary-err';
-  const sccls = errSol === 0 ? 'score-ok' : okSol >= total*0.8 ? 'score-warn' : 'score-err';
-
-  let html = `<div class="summary-box ${cls}">
-    <div class="summary-score ${sccls}">${okSol}/${total}</div>
-    <div>
-      <div style="font-weight:700;font-size:.95rem">
-        ${errSol === 0 && srcAlreadyPass === 0
-          ? '✅ Megoldás tökéletes, forrás konzisztens!'
-          : errSol === 0
-            ? `⚠️ Megoldás OK, de ${srcAlreadyPass} check már a forrásban van`
-            : `✗ ${errSol} check nem teljesül a megoldáson`}
-      </div>
-      <div style="font-size:.8rem;color:#94a3b8;margin-top:2px">
-        ${okSol} átment · ${errSol} hibás
-        ${srcAlreadyPass > 0
-          ? ` · <span class="tag tag-err">${srcAlreadyPass} forrásban már megvan</span>` : ''}
-      </div>
-    </div>
-  </div>`;
-
-  // Csak hibákat és figyelmeztetéseket listázzuk (ok-okat összecsukjuk)
-  const errs  = items.filter(i => i.type !== 'ok');
-  const oks   = items.filter(i => i.type === 'ok');
-
-  for (const it of errs) {
-    const ico = it.type === 'err' ? 'fa-circle-xmark' : 'fa-triangle-exclamation';
-    html += makeItem(it.type, 'fas ' + ico, it.label, it.detail);
+  // Body elemek azonosítók és osztályok
+  const srcIds = new Set([...srcDoc.querySelectorAll('[id]')].map(e=>e.id));
+  for (const el of solDoc.querySelectorAll('[id]')) {
+    if (!srcIds.has(el.id))
+      changes.push({t:'ok', l:`id="${el.id}" elem hozzáadva`, d:`<${el.tagName.toLowerCase()}>`});
   }
-  if (oks.length > 0) {
-    html += `<div class="result-ok result-item" style="cursor:pointer" onclick="toggleOkList()">
-      <i class="fas fa-circle-check result-icon"></i>
-      <span><b>${oks.length} check rendben</b> <span style="font-size:.75rem;color:#4ade80">(kattints a listához)</span></span>
-    </div>
-    <div id="ok-list" style="display:none">`;
-    for (const it of oks) {
-      html += makeItem('ok','fas fa-circle-check', it.label, it.detail);
+
+  // Listák
+  const srcOl=srcDoc.querySelectorAll('ol').length, solOl=solDoc.querySelectorAll('ol').length;
+  if(solOl>srcOl) changes.push({t:'ok',l:`Számozott lista (<ol>) hozzáadva (+${solOl-srcOl})`,d:''});
+  const srcUl=srcDoc.querySelectorAll('ul').length, solUl=solDoc.querySelectorAll('ul').length;
+  if(solUl>srcUl) changes.push({t:'ok',l:`Felsorolás (<ul>) hozzáadva (+${solUl-srcUl})`,d:''});
+
+  // Képek osztályai
+  for (const img of solDoc.querySelectorAll('img')) {
+    const srcImg = srcDoc.querySelector(`img[src*="${img.src?.split('/').pop()}"]`);
+    if (srcImg && img.className !== srcImg.className)
+      changes.push({t:'ok', l:`Kép osztály megváltozott (${img.src?.split('/').pop()})`, d:`${srcImg.className||'(nincs)'} → ${img.className}`});
+    if (!srcImg && img.src)
+      changes.push({t:'ok', l:`Kép hozzáadva`, d: img.outerHTML.slice(0,120)});
+  }
+
+  // Táblázat
+  if (!srcDoc.querySelector('thead') && solDoc.querySelector('thead'))
+    changes.push({t:'ok', l:'<thead> hozzáadva a táblázathoz', d:''});
+  const srcRows=srcDoc.querySelectorAll('tbody tr').length, solRows=solDoc.querySelectorAll('tbody tr').length;
+  if(solRows>srcRows) changes.push({t:'ok', l:`Táblázat sor hozzáadva (+${solRows-srcRows})`, d:''});
+
+  // Headingek
+  for (let i=1; i<=6; i++) {
+    const s=srcDoc.querySelectorAll('h'+i).length, d=solDoc.querySelectorAll('h'+i).length;
+    if(d>s) changes.push({t:'ok', l:`<h${i}> elem hozzáadva (+${d-s})`, d:''});
+  }
+
+  // Lábléc link
+  if (!srcDoc.querySelector('footer a') && solDoc.querySelector('footer a'))
+    changes.push({t:'ok', l:'Lábléc hivatkozás hozzáadva', d: solDoc.querySelector('footer a').outerHTML});
+
+  // CSS diff
+  if (srcCss && solCss) {
+    const cssChanges = cssDiff(srcCss, solCss);
+    changes.push(...cssChanges);
+  }
+
+  // Render
+  if (!changes.length) {
+    return makeItem('warn','fas fa-triangle-exclamation','Nem találtam különbséget',
+      'Ellenőrizd hogy a megfelelő mappákat töltötted fel.');
+  }
+
+  let html = `<div class="summary-box summary-ok">
+    <div class="sum-score score-ok" style="font-size:1.4rem">${changes.filter(c=>c.t==='ok').length}</div>
+    <div><div style="font-weight:700">Változtatás észlelve</div>
+    <div style="font-size:.8rem;color:#94a3b8">${changes.filter(c=>c.t==='ok').length} hozzáadás/módosítás · ${changes.filter(c=>c.t==='warn').length} figyelmeztetés</div>
+    </div></div>
+    <div class="section-title"><i class="fas fa-list-ul"></i> Forrás → Megoldás változások</div>`;
+
+  for (const c of changes)
+    html += makeItem(c.t==='warn'?'warn':'ok', 'fas '+(c.t==='warn'?'fa-triangle-exclamation':'fa-circle-check'), c.l, c.d);
+
+  return html;
+}
+
+function checkAttrChange(srcEl, solEl, attr, out, label) {
+  const s = srcEl?.getAttribute(attr) || '';
+  const d = solEl?.getAttribute(attr) || '';
+  if (d && d !== s) out.push({t:'ok', l:`${label}: ${s||'(nincs)'} → ${d}`, d:''});
+}
+
+function cssDiff(srcCss, solCss) {
+  const changes = [];
+  // Egyszerű: sorok amiket a megoldás tartalmaz de a forrás nem
+  const srcLines = new Set(srcCss.split('\n').map(l=>l.trim()).filter(Boolean));
+  const newLines = solCss.split('\n').map(l=>l.trim()).filter(l => l && !l.startsWith('/*') && !srcLines.has(l));
+
+  // Csoportosítás: szelektor blokkok
+  let currentSel = '';
+  const newRules = {};
+  for (const line of solCss.split('\n').map(l=>l.trim())) {
+    if (line.endsWith('{')) { currentSel = line.slice(0,-1).trim(); newRules[currentSel] = newRules[currentSel] || []; }
+    else if (line !== '}' && line && !line.startsWith('/*') && !srcLines.has(line))
+      newRules[currentSel]?.push(line);
+  }
+  for (const [sel, props] of Object.entries(newRules)) {
+    if (props.length > 0)
+      changes.push({t:'ok', l:`CSS: ${sel} – új tulajdonság(ok)`, d: props.join('; ')});
+  }
+  // Törölt sorok a forrásból
+  const solLinesSet = new Set(solCss.split('\n').map(l=>l.trim()).filter(Boolean));
+  const removed = [...srcLines].filter(l => l && !l.startsWith('/*') && l.includes(':') && !solLinesSet.has(l));
+  if (removed.length > 0)
+    changes.push({t:'warn', l:`CSS: ${removed.length} sor törölve a forrásból`, d: removed.slice(0,5).join(' | ')});
+  return changes;
+}
+
+// ── Excel checkek statikus elemzése ─────────────────────────────────────────
+function renderXlsxChecks(rows, solHtml, solCss) {
+  const checks = rows.flat().filter(c => typeof c === 'string' && c.trim().length > 5);
+  let html = '';
+  for (const chk of checks.slice(0, 50)) {
+    // Egyszerű keresés: tartalmaz-e a check szövege alapján bármit a megoldásban
+    html += makeItem('info','fas fa-list-check', chk.slice(0,80), '');
+  }
+  return html || makeItem('info','fas fa-info-circle','Excel betöltve',''+rows.length+' sor');
+}
+
+// ── Groq API hívás ───────────────────────────────────────────────────────────
+async function callGroqAnalysis(apiKey, srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows) {
+  const maxLen = 3000;
+  const trim = (s,n) => s?.length>n ? s.slice(0,n)+'...[csonkítva]' : (s||'');
+
+  const excelSummary = xlsxRows.length > 0
+    ? xlsxRows.flat().filter(c=>typeof c==='string'&&c.length>3).slice(0,30).join('\n')
+    : '';
+
+  const prompt = `Te egy webfejlesztés vizsgafeladat validátora vagy. Elemezd az alábbi feladatot és adj részletes, konkrét választ MAGYARUL.
+
+${taskDesc ? '## FELADATLEÍRÁS:\n' + trim(taskDesc,2500) + '\n\n' : ''}
+## FORRÁS HTML (diák kapja – hiányos):
+\`\`\`html
+${trim(srcHtml,2500)}
+\`\`\`
+
+## MEGOLDÁS HTML (helyes megoldás):
+\`\`\`html
+${trim(solHtml,2500)}
+\`\`\`
+
+## FORRÁS CSS:
+\`\`\`css
+${trim(srcCss,1200)}
+\`\`\`
+
+## MEGOLDÁS CSS:
+\`\`\`css
+${trim(solCss,1200)}
+\`\`\`
+
+${excelSummary ? '## PONTOZÁSI CHECKEK:\n'+excelSummary+'\n\n' : ''}
+## FELADATOD:
+1. **VÁLTOZÁSOK LISTÁJA**: Mi különbözik forrás→megoldás közt? ${taskDesc?'Minden változásnál jelöld: ✅ megvan a feladatban / ⚠️ nincs a feladatban / ❌ ellentmondás':''}
+2. **FELADATLEÍRÁS HIBÁK**: ${taskDesc?'Elírások, rossz fájlnevek, hibás utasítások a feladatban':'(feladatleírás nincs feltöltve)'}
+3. **MEGOLDÁS HIBÁK**: A megoldás eltér-e a feladatleírástól?
+4. **ÖSSZEFOGLALÁS**: HIBÁTLAN / HIBÁS – főbb problémák listája
+
+Legyél konkrét és tömör. Ne értékeld a pedagógiai minőséget.`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{role:'user', content:prompt}],
+        max_tokens: 2000,
+        temperature: 0.2
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      return makeItem('err','fas fa-robot','Groq hiba',err?.error?.message||'HTTP '+res.status);
     }
-    html += '</div>';
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'Nem érkezett válasz.';
+    return `<div class="ai-box">${escHtml(text)}</div>`;
+  } catch(e) {
+    return makeItem('err','fas fa-robot','Hálózati hiba', e.message);
   }
-
-  resDiv.innerHTML = html;
 }
 
-function toggleOkList() {
-  const el = document.getElementById('ok-list');
-  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-function loadIntoIframe(frame, html) {
-  return new Promise(resolve => {
-    frame.onload = () => resolve(frame.contentDocument || frame.contentWindow?.document);
-    try {
-      const doc = frame.contentDocument || frame.contentWindow?.document;
-      doc.open(); doc.write(html); doc.close();
-      if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
-        resolve(frame.contentDocument);
-      }
-    } catch(e) { resolve(null); }
-    setTimeout(() => resolve(frame.contentDocument || frame.contentWindow?.document), 800);
-  });
-}
-
-// ── Segédfüggvény: HTML elem generálás ─────────────────────────────────────
+// ── Segédfüggvények ──────────────────────────────────────────────────────────
 function makeItem(type, icon, label, detail) {
-  const cls = type === 'ok' ? 'result-ok' :
-              type === 'err' ? 'result-err' :
-              type === 'warn' ? 'result-warn' : 'result-info';
+  const cls = type==='ok'?'result-ok':type==='err'?'result-err':type==='warn'?'result-warn':'result-info';
   return `<div class="${cls} result-item">
     <i class="${icon} result-icon"></i>
-    <div>
-      <div class="result-label">${escHtml(label)}</div>
-      ${detail ? `<div class="result-detail">${escHtml(detail)}</div>` : ''}
-    </div>
-  </div>`;
+    <div><div class="result-label">${escHtml(label)}</div>
+    ${detail?`<div class="result-detail">${escHtml(detail)}</div>`:''}</div></div>`;
 }
 
 function escHtml(s) {
