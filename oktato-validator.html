@@ -717,6 +717,11 @@ async function validateWebFull() {
   const diffChanges = [];
   const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss, diffChanges);
 
+  // Specifikus előfeldolgozás: fájlnév + szöveg összevetés
+  const specificFindings = docxText
+    ? analyzeSpecific(docxText, srcHtml, solHtml, srcCss, solCss)
+    : [];
+
   // Excel checkek (statikus)
   let xlsxHtml = '';
   if (xlsxRows.length > 0) {
@@ -724,12 +729,21 @@ async function validateWebFull() {
   }
 
   // Groq AI (ha van kulcs vagy docx)
-  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges);
+  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges, specificFindings);
 
   // Render
+  // Specifikus leletek megjelenítése közvetlenül
+  let specHtml = '';
+  if (specificFindings.length > 0) {
+    specHtml = `<div class="section-title"><i class="fas fa-magnifying-glass"></i> Automatikus fájlnév/szöveg ellenőrzés</div>`;
+    for (const f of specificFindings)
+      specHtml += makeItem('err','fas fa-circle-xmark', `[${f.type}] ${f.task} → ${f.solution}`, f.desc);
+  }
+
   const resDiv = document.getElementById('web-result');
   resDiv.innerHTML = `
     ${diffResult}
+    ${specHtml}
     ${xlsxHtml ? '<div class="section-title"><i class="fas fa-list-check"></i> Excel checkek</div>' + xlsxHtml : ''}
     <div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>
     ${aiHtml}
@@ -890,13 +904,18 @@ function renderXlsxChecks(rows, solHtml, solCss) {
 }
 
 // ── Groq API hívás ───────────────────────────────────────────────────────────
-async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows, diffChanges) {
+async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows, diffChanges, specificFindings) {
   const trim = (s,n) => !s ? '' : s.length>n ? s.slice(0,n)+'...[csonkítva]' : s;
 
-  // Diff szövegként a prompthoz
+  // Diff szövegként
   const diffText = diffChanges && diffChanges.length > 0
     ? diffChanges.map(c => `- [${c.t==='warn'?'FIGYELMEZTETÉS':'VÁLTOZÁS'}] ${c.l}${c.d?' → '+c.d:''}`).join('\n')
     : '(automatikus diff nem elérhető)';
+
+  // Specifikus leletek (fájlnevek, szövegek)
+  const specText = specificFindings && specificFindings.length > 0
+    ? specificFindings.map(f => `⚠️ [${f.type}] ${f.desc}`).join('\n')
+    : '(automatikus fájlnév/szöveg elemzés nem talált eltérést)';
 
   const excelText = xlsxRows.length > 0
     ? xlsxRows.flat().filter(c=>typeof c==='string'&&c.length>3).slice(0,40).join('\n')
@@ -905,6 +924,9 @@ async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsx
   const prompt = `Te egy szigorú webfejlesztés vizsgafeladat-ellenőrző vagy. Feladatod KONKRÉT, TECHNIKAI HIBÁK keresése.
 
 ${taskDesc ? '## FELADATLEÍRÁS (teljes szöveg):\n' + trim(taskDesc,3500) + '\n\n' : '## FELADATLEÍRÁS: (nem töltötték fel)\n\n'}
+
+## ELŐZETES AUTOMATIKUS ELEMZÉS – FÁJLNÉV ÉS SZÖVEG ELTÉRÉSEK:
+${specText}
 
 ## AUTOMATIKUSAN DETEKTÁLT VÁLTOZÁSOK (forrás→megoldás):
 ${diffText}
@@ -960,6 +982,72 @@ HIBÁTLAN / HIBÁS – [max 3 mondatos összegzés]
 FONTOS: Ha nem találsz hibát egy kategóriában, írd: "Nem találtam hibát." Ha nem töltötték fel a feladatleírást, csak a HTML/CSS összehasonlítást végezd el.`;
 
   return groqViaProxy(prompt);
+}
+
+// ── Specifikus előfeldolgozás: fájlnév + szövegek ───────────────────────────
+function analyzeSpecific(taskDesc, srcHtml, solHtml, srcCss, solCss) {
+  const findings = [];
+  const allSol = solHtml + '\n' + solCss;
+
+  // 1. Fájlnevek a feladatleírásból (pl. ibiza.png, history_icon.png)
+  const taskFiles = [...new Set([...taskDesc.matchAll(/[\w\-]+\.(jpg|jpeg|png|gif|svg|css|js|py|html)/gi)].map(m=>m[0].toLowerCase()))];
+  for (const tf of taskFiles) {
+    // Van-e ilyen a megoldásban?
+    if (!allSol.toLowerCase().includes(tf)) {
+      // Van-e hasonló (más kiterjesztéssel vagy kötőjel/aláhúzás cserével)?
+      const base = tf.replace(/\.\w+$/, '').replace(/[-_]/g, '');
+      const inSol = [...allSol.matchAll(/[\w\-]+\.(jpg|jpeg|png|gif|svg|css|js|py|html)/gi)]
+        .find(m => m[0].replace(/\.\w+$/, '').replace(/[-_]/g, '').toLowerCase() === base);
+      if (inSol) {
+        findings.push({ type:'FÁJLNÉV ELTÉRÉS', task: tf, solution: inSol[0].toLowerCase(),
+          desc: `Feladatban: "${tf}" | Megoldásban: "${inSol[0].toLowerCase()}" — kiterjesztés vagy névírás eltér!` });
+      } else {
+        findings.push({ type:'FÁJL HIÁNYZIK', task: tf, solution: '(nem található)',
+          desc: `A feladatban említett "${tf}" nem szerepel a megoldásban.` });
+      }
+    }
+  }
+
+  // 2. Idézőjeles szövegek a feladatból (menüpont nevek, hivatkozás szövegek stb.)
+  const quotedTexts = [...taskDesc.matchAll(/[„""]([^„"""]{3,60})["""]/g)].map(m=>m[1].trim());
+  for (const qt of quotedTexts) {
+    if (qt.length < 3 || /^\d+$/.test(qt)) continue;
+    const inSol = solHtml.includes(qt);
+    if (!inSol) {
+      // Van-e közel hasonló?
+      const qtNorm = qt.toLowerCase().replace(/\s+/g,' ').trim();
+      const solLower = solHtml.toLowerCase();
+      const partMatch = qtNorm.split(' ').filter(w=>w.length>3).every(w=>solLower.includes(w));
+      if (!partMatch) {
+        findings.push({ type:'SZÖVEG ELTÉRÉS', task: qt, solution: '(nem találtam)',
+          desc: `Feladatban: "${qt}" — nem szerepel pontosan a megoldásban.` });
+      }
+    }
+  }
+
+  // 3. CSS osztályok a feladatból (class="x" alakban)
+  const taskClasses = [...taskDesc.matchAll(/[„""]([a-z][\w-]{1,30})["""]\s*(osztály|class|azonosít|id)/gi)].map(m=>m[1]);
+  taskClasses.push(...[...taskDesc.matchAll(/\b(class|id|azonosító)\s*[„""']([a-z][\w-]{1,30})[„""']/gi)].map(m=>m[2]));
+  for (const cls of [...new Set(taskClasses)]) {
+    if (!solHtml.includes(cls) && !solCss.includes(cls)) {
+      findings.push({ type:'OSZTÁLY/ID HIÁNYZIK', task: cls, solution: '(nem található)',
+        desc: `A feladatban említett "${cls}" osztály/azonosító nem szerepel a megoldásban.` });
+    }
+  }
+
+  // 4. Nem kért változtatások: ha src CSS tartalmaz valamit ami a sol CSS-ből hiányzik
+  if (srcCss && solCss) {
+    const srcRules = srcCss.match(/[\w#.][^{]*\{[^}]*\}/g) || [];
+    for (const rule of srcRules) {
+      const prop = rule.match(/(\w[\w-]+)\s*:/)?.[1];
+      if (prop && !solCss.includes(prop) && ['text-shadow','font-weight','letter-spacing','border'].includes(prop)) {
+        findings.push({ type:'CSS TÖRÖLVE', task: prop, solution: '(hiányzik a megoldás CSS-ből)',
+          desc: `"${prop}" CSS tulajdonság a forrás stíluslapban van, de a megoldásból hiányzik — törölték, bár a feladat nem kérte!` });
+      }
+    }
+  }
+
+  return findings;
 }
 
 // ── Közös Groq proxy hívó (Railway backend) ──────────────────────────────────
