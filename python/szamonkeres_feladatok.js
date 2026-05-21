@@ -928,7 +928,7 @@ A főprogramban:
         self.max_sebesseg = max_sebesseg`,
       leiras: `A program három autó adatait tárolja objektumokban.
 
-a) Az Auto osztály rendelkezésre áll az auto.py fájlban. Töltsd be ezt a modult!
+a) Az Auto osztály rendelkezésre áll az auto.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három autó márkáját és maximális sebességét (egész szám, km/h)! Hozz létre Auto osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes autó adatait ebben a formában: "A(z) [márka] max. sebessége: X km/h"
 d) Határozd meg a leggyorsabb autót, és a márkáját írd be a "leggyorsabb.txt" fájlba: "A leggyorsabb autó: [márka]"`,
@@ -965,7 +965,7 @@ d) Határozd meg a leggyorsabb autót, és a márkáját írd be a "leggyorsabb.
         self.emelet = emelet`,
       leiras: `A program három épület adatait tárolja objektumokban.
 
-a) Az Epulet osztály rendelkezésre áll az epulet.py fájlban. Töltsd be ezt a modult!
+a) Az Epulet osztály rendelkezésre áll az epulet.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három épület nevét és emeletszámát (egész szám)! Hozz létre Epulet osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes épület adatait ebben a formában: "A(z) [név] épület [X] emeletes."
 d) Határozd meg a legmagasabb épületet, és a nevét írd be a "legmagasabb.txt" fájlba: "A legmagasabb épület: [név]"`,
@@ -1002,7 +1002,7 @@ d) Határozd meg a legmagasabb épületet, és a nevét írd be a "legmagasabb.t
         self.golok = golok`,
       leiras: `A program három focicsapat szezonbeli góljait tárolja objektumokban.
 
-a) A Csapat osztály rendelkezésre áll a csapat.py fájlban. Töltsd be ezt a modult!
+a) A Csapat osztály rendelkezésre áll a csapat.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három csapat nevét és a szezonban szerzett góljainak számát (egész szám)! Hozz létre Csapat osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes csapat adatait: "A(z) [csapatnév] [X] gólt szerzett."
 d) Határozd meg a legtöbb gólt szerző csapatot, és a nevét írd be a "legjobb_csapat.txt" fájlba: "A legtöbb gólt szerzett csapat: [csapatnév]"`,
@@ -1039,7 +1039,7 @@ d) Határozd meg a legtöbb gólt szerző csapatot, és a nevét írd be a "legj
         self.pontszam = pontszam`,
       leiras: `A program három tanuló dolgozatpontszámát tárolja objektumokban.
 
-a) A Diak osztály rendelkezésre áll a diak.py fájlban. Töltsd be ezt a modult!
+a) A Diak osztály rendelkezésre áll a diak.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három tanuló nevét és pontszámát (egész szám, 0–100)! Hozz létre Diak osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes tanuló adatait: "[Név] pontszáma: X pont"
 d) Határozd meg a legjobb pontszámú tanulót, és a nevét írd be a "legjobb_diak.txt" fájlba: "[Név] a legjobb tanuló."`,
@@ -1076,7 +1076,7 @@ d) Határozd meg a legjobb pontszámú tanulót, és a nevét írd be a "legjobb
         self.kaloria = kaloria`,
       leiras: `A program három étel kalóriatartalmát tárolja objektumokban.
 
-a) Az Etel osztály rendelkezésre áll az etel.py fájlban. Töltsd be ezt a modult!
+a) Az Etel osztály rendelkezésre áll az etel.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három étel nevét és kalóriatartalmát (egész szám, kcal)! Hozz létre Etel osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes étel adatait: "A(z) [étel neve] [X] kcal."
 d) Határozd meg a legkalóriásabb ételt, és a nevét írd be a "legkaloriasabb.txt" fájlba: "A legkalóriásabb étel: [étel neve]"`,
@@ -1113,7 +1113,7 @@ d) Határozd meg a legkalóriásabb ételt, és a nevét írd be a "legkaloriasa
         self.ar = ar`,
       leiras: `A program három termék adatait tárolja objektumokban.
 
-a) A Termek osztály rendelkezésre áll a termek.py fájlban. Töltsd be ezt a modult!
+a) A Termek osztály rendelkezésre áll a termek.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három termék nevét és árát (egész szám, Ft)! Hozz létre Termek osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes termék adatait: "A(z) [terméknév] ára: X Ft"
 d) Határozd meg a legdrágább terméket, és a nevét írd be a "legdragabb.txt" fájlba: "A legdrágább termék: [terméknév]"`,
@@ -1150,7 +1150,7 @@ d) Határozd meg a legdrágább terméket, és a nevét írd be a "legdragabb.tx
         self.nepesseg = nepesseg`,
       leiras: `A program három város népességét tárolja objektumokban.
 
-a) A Varos osztály rendelkezésre áll a varos.py fájlban. Töltsd be ezt a modult!
+a) A Varos osztály rendelkezésre áll a varos.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három város nevét és népességét (egész szám, fő)! Hozz létre Varos osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes város adatait: "[Városnév] népessége: X fő"
 d) Határozd meg a legnépesebb várost, és a nevét írd be a "legnepesebb.txt" fájlba: "A legnépesebb város: [városnév]"`,
@@ -1187,7 +1187,7 @@ d) Határozd meg a legnépesebb várost, és a nevét írd be a "legnepesebb.txt
         self.magassag = magassag`,
       leiras: `A program három hegy adatait tárolja objektumokban.
 
-a) A Hegy osztály rendelkezésre áll a hegy.py fájlban. Töltsd be ezt a modult!
+a) A Hegy osztály rendelkezésre áll a hegy.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három hegy nevét és magasságát méterben (egész szám)! Hozz létre Hegy osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes hegy adatait: "A(z) [hegyNév] [X] méter magas."
 d) Határozd meg a legmagasabb hegyet, és a nevét írd be a "legmagasabb_hegy.txt" fájlba: "A legmagasabb hegy: [hegyNév]"`,
@@ -1226,7 +1226,7 @@ d) Határozd meg a legmagasabb hegyet, és a nevét írd be a "legmagasabb_hegy.
         self.fogyasztas = fogyasztas`,
       leiras: `A program három autó üzemanyag-fogyasztását tárolja objektumokban.
 
-a) Az Auto osztály rendelkezésre áll az auto.py fájlban. Töltsd be ezt a modult!
+a) Az Auto osztály rendelkezésre áll az auto.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három autó márkáját és fogyasztását (tizedes szám, l/100km)! Hozz létre Auto osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes autó adatait: "A(z) [márka] fogyasztása: X l/100km"
 d) Határozd meg a leggazdaságosabb autót (legkisebb fogyasztás!), és a márkáját írd be a "leggazdasagosabb.txt" fájlba: "A leggazdaságosabb autó: [márka]"`,
@@ -1263,7 +1263,7 @@ d) Határozd meg a leggazdaságosabb autót (legkisebb fogyasztás!), és a már
         self.ar = ar`,
       leiras: `A program három termék adatait tárolja objektumokban.
 
-a) A Termek osztály rendelkezésre áll a termek.py fájlban. Töltsd be ezt a modult!
+a) A Termek osztály rendelkezésre áll a termek.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három termék nevét és árát (egész szám, Ft)! Hozz létre Termek osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes termék adatait: "A(z) [terméknév] ára: X Ft"
 d) Határozd meg a legolcsóbb terméket, és a nevét írd be a "legolcsobb.txt" fájlba: "A legolcsóbb termék: [terméknév]"`,
@@ -1300,7 +1300,7 @@ d) Határozd meg a legolcsóbb terméket, és a nevét írd be a "legolcsobb.txt
         self.jegy = jegy`,
       leiras: `A program három tanuló osztályzatát tárolja objektumokban.
 
-a) A Tanulo osztály rendelkezésre áll a tanulo.py fájlban. Töltsd be ezt a modult!
+a) A Tanulo osztály rendelkezésre áll a tanulo.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három tanuló nevét és osztályzatát (egész szám, 1–5)! Hozz létre Tanulo osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes tanuló adatait: "[Tanuló neve] jegye: X"
 d) Határozd meg a leggyengébb jegyű tanulót (legkisebb szám!), és a nevét írd be a "leggyengebb.txt" fájlba: "[Tanuló neve] kapta a leggyengébb jegyet."`,
@@ -1337,7 +1337,7 @@ d) Határozd meg a leggyengébb jegyű tanulót (legkisebb szám!), és a nevét
         self.tavolsag = tavolsag`,
       leiras: `A program három közeli bolt adatait tárolja objektumokban.
 
-a) A Bolt osztály rendelkezésre áll a bolt.py fájlban. Töltsd be ezt a modult!
+a) A Bolt osztály rendelkezésre áll a bolt.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három bolt nevét és távolságát méterben (egész szám)! Hozz létre Bolt osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes bolt adatait: "A(z) [boltnév] [X] méterre van."
 d) Határozd meg a legközelebb lévő boltot, és a nevét írd be a "legkozelebbi.txt" fájlba: "A legközelebbi bolt: [boltnév]"`,
@@ -1374,7 +1374,7 @@ d) Határozd meg a legközelebb lévő boltot, és a nevét írd be a "legkozele
         self.kaloria = kaloria`,
       leiras: `A program három étel kalóriatartalmát tárolja objektumokban.
 
-a) Az Etel osztály rendelkezésre áll az etel.py fájlban. Töltsd be ezt a modult!
+a) Az Etel osztály rendelkezésre áll az etel.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három étel nevét és kalóriatartalmát (egész szám, kcal)! Hozz létre Etel osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes étel adatait: "A(z) [étel neve] [X] kcal."
 d) Határozd meg a legkevesebb kalóriájú ételt, és a nevét írd be a "legegeszsegesebb.txt" fájlba: "A legegészségesebb étel: [étel neve]"`,
@@ -1411,7 +1411,7 @@ d) Határozd meg a legkevesebb kalóriájú ételt, és a nevét írd be a "lege
         self.perc = perc`,
       leiras: `A program három film hosszát tárolja objektumokban.
 
-a) A Film osztály rendelkezésre áll a film.py fájlban. Töltsd be ezt a modult!
+a) A Film osztály rendelkezésre áll a film.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három film címét és hosszát percben (egész szám)! Hozz létre Film osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes film adatait: "A(z) [filmcím] [X] perces."
 d) Határozd meg a legrövidebb filmet, és a címét írd be a "legroevidebb.txt" fájlba: "A legrövidebb film: [filmcím]"`,
@@ -1448,7 +1448,7 @@ d) Határozd meg a legrövidebb filmet, és a címét írd be a "legroevidebb.tx
         self.ido = ido`,
       leiras: `A program három futóversenyző eredményét tárolja objektumokban.
 
-a) A Futo osztály rendelkezésre áll a futo.py fájlban. Töltsd be ezt a modult!
+a) A Futo osztály rendelkezésre áll a futo.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három futó nevét és befutási idejét másodpercben (egész szám)! Hozz létre Futo osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes futó adatait: "A(z) [Név] ideje: X mp"
 d) Határozd meg a leggyorsabb futót (legkisebb idő!), és a nevét írd be a "gyoztes_futo.txt" fájlba: "[Név] a verseny győztese."`,
@@ -1485,7 +1485,7 @@ d) Határozd meg a leggyorsabb futót (legkisebb idő!), és a nevét írd be a 
         self.pont = pont`,
       leiras: `A program három diák vizsgapontszámát tárolja objektumokban.
 
-a) A Vizsga osztály rendelkezésre áll a vizsga.py fájlban. Töltsd be ezt a modult!
+a) A Vizsga osztály rendelkezésre áll a vizsga.py fájlban. Töltsd be ezt a modult, vagy másold be az osztálydefiníciót a saját kódodba!
 b) Kérd be három diák nevét és vizsgapontszámát (egész szám, 0–100)! Hozz létre Vizsga osztályú objektumokat, és tárold őket egy listában!
 c) Jelenítsd meg az összes diák adatait: "[Név] pontszáma: X pont"
 d) Határozd meg a legkevesebb pontot szerzett diákot, és a nevét írd be a "legkevesebb_pont.txt" fájlba: "[Név] szerezte a legkevesebb pontot."`,
