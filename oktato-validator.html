@@ -713,8 +713,9 @@ async function validateWebFull() {
   const solCss = findCss(webFiles.sol);
 
 
-  // Statikus diff
-  const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss);
+  // Statikus diff (változások listája + HTML)
+  const diffChanges = [];
+  const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss, diffChanges);
 
   // Excel checkek (statikus)
   let xlsxHtml = '';
@@ -723,7 +724,7 @@ async function validateWebFull() {
   }
 
   // Groq AI (ha van kulcs vagy docx)
-  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows);
+  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges);
 
   // Render
   const resDiv = document.getElementById('web-result');
@@ -739,7 +740,7 @@ async function validateWebFull() {
 }
 
 // ── Statikus diff ───────────────────────────────────────────────────────────
-function computeDiff(srcHtml, solHtml, srcCss, solCss) {
+function computeDiff(srcHtml, solHtml, srcCss, solCss, outChanges) {
   const srcDoc = new DOMParser().parseFromString(srcHtml, 'text/html');
   const solDoc = new DOMParser().parseFromString(solHtml, 'text/html');
   const changes = [];
@@ -839,6 +840,9 @@ function computeDiff(srcHtml, solHtml, srcCss, solCss) {
   for (const c of changes)
     html += makeItem(c.t==='warn'?'warn':'ok', 'fas '+(c.t==='warn'?'fa-triangle-exclamation':'fa-circle-check'), c.l, c.d);
 
+  // Átadjuk a változásokat a Groq prompthoz
+  if (outChanges) outChanges.push(...changes);
+
   return html;
 }
 
@@ -886,25 +890,33 @@ function renderXlsxChecks(rows, solHtml, solCss) {
 }
 
 // ── Groq API hívás ───────────────────────────────────────────────────────────
-async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows) {
-  const maxLen = 3000;
-  const trim = (s,n) => s?.length>n ? s.slice(0,n)+'...[csonkítva]' : (s||'');
+async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsxRows, diffChanges) {
+  const trim = (s,n) => !s ? '' : s.length>n ? s.slice(0,n)+'...[csonkítva]' : s;
 
-  const excelSummary = xlsxRows.length > 0
-    ? xlsxRows.flat().filter(c=>typeof c==='string'&&c.length>3).slice(0,30).join('\n')
+  // Diff szövegként a prompthoz
+  const diffText = diffChanges && diffChanges.length > 0
+    ? diffChanges.map(c => `- [${c.t==='warn'?'FIGYELMEZTETÉS':'VÁLTOZÁS'}] ${c.l}${c.d?' → '+c.d:''}`).join('\n')
+    : '(automatikus diff nem elérhető)';
+
+  const excelText = xlsxRows.length > 0
+    ? xlsxRows.flat().filter(c=>typeof c==='string'&&c.length>3).slice(0,40).join('\n')
     : '';
 
-  const prompt = `Te egy webfejlesztés vizsgafeladat validátora vagy. Elemezd az alábbi feladatot és adj részletes, konkrét választ MAGYARUL.
+  const prompt = `Te egy szigorú webfejlesztés vizsgafeladat-ellenőrző vagy. Feladatod KONKRÉT, TECHNIKAI HIBÁK keresése.
 
-${taskDesc ? '## FELADATLEÍRÁS:\n' + trim(taskDesc,2500) + '\n\n' : ''}
-## FORRÁS HTML (diák kapja – hiányos):
+${taskDesc ? '## FELADATLEÍRÁS (teljes szöveg):\n' + trim(taskDesc,3500) + '\n\n' : '## FELADATLEÍRÁS: (nem töltötték fel)\n\n'}
+
+## AUTOMATIKUSAN DETEKTÁLT VÁLTOZÁSOK (forrás→megoldás):
+${diffText}
+
+## FORRÁS HTML:
 \`\`\`html
-${trim(srcHtml,2500)}
+${trim(srcHtml,2000)}
 \`\`\`
 
-## MEGOLDÁS HTML (helyes megoldás):
+## MEGOLDÁS HTML:
 \`\`\`html
-${trim(solHtml,2500)}
+${trim(solHtml,2000)}
 \`\`\`
 
 ## FORRÁS CSS:
@@ -917,14 +929,35 @@ ${trim(srcCss,1200)}
 ${trim(solCss,1200)}
 \`\`\`
 
-${excelSummary ? '## PONTOZÁSI CHECKEK:\n'+excelSummary+'\n\n' : ''}
-## FELADATOD:
-1. **VÁLTOZÁSOK LISTÁJA**: Mi különbözik forrás→megoldás közt? ${taskDesc?'Minden változásnál jelöld: ✅ megvan a feladatban / ⚠️ nincs a feladatban / ❌ ellentmondás':''}
-2. **FELADATLEÍRÁS HIBÁK**: ${taskDesc?'Elírások, rossz fájlnevek, hibás utasítások a feladatban':'(feladatleírás nincs feltöltve)'}
-3. **MEGOLDÁS HIBÁK**: A megoldás eltér-e a feladatleírástól?
-4. **ÖSSZEFOGLALÁS**: HIBÁTLAN / HIBÁS – főbb problémák listája
+${excelText ? '## PONTOZÓ CHECKEK:\n' + excelText + '\n\n' : ''}
 
-Legyél konkrét és tömör. Ne értékeld a pedagógiai minőséget.`;
+## ELLENŐRZÉSI FELADATOK (MIND ELVÉGZENDŐ!):
+
+**A) FÁJLNÉV ELLENŐRZÉS** – keresd meg a feladatleírásban szereplő ÖSSZES fájlnevet (.jpg, .png, .css, .js, .py stb.) és hasonlítsd össze a megoldásban szereplőkkel. Figyeld a kiterjesztést (.jpg vs .png), az aláhúzás/kötőjel különbséget, a kis/nagybetűt!
+
+**B) CSS OSZTÁLYOK ÉS AZONOSÍTÓK** – keresd meg a feladatban megnevezett összes CSS osztályt (pl. class="x") és id-t. Pontosan egyeznek-e a megoldásban?
+
+**C) NEM KÉRT VÁLTOZTATÁSOK** – van-e a megoldásban olyan változtatás amit a feladatleírás NEM kért? (pl. navbar szín megváltozott, CSS tulajdonság törölve, extra elem hozzáadva ami nem szerepelt a feladatban)
+
+**D) SZÖVEG PONTOSSÁG** – a feladatban megadott konkrét szövegek (menüpont neve, hivatkozás szövege, alt szöveg stb.) pontosan egyeznek-e a megoldásban?
+
+**E) CSS MEGLÉVŐ SZABÁLYOK** – ha a feladat azt mondja "az új szabályokat a fájl végére tedd", ellenőrizd hogy a forrásban meglévő CSS szabályok megmaradtak-e a megoldásban.
+
+## VÁLASZ FORMÁTUM:
+
+### ❌ FELADATLEÍRÁS HIBÁK (elírások a feladatban):
+[minden talált hibát sorolj fel konkrétan: "X.y fájl neve a feladatban Z.y de a mappában W.y"]
+
+### ❌ MEGOLDÁS HIBÁK (a megoldás nem egyezik a feladattal):
+[minden eltérést sorolj fel: "feladat: X, megoldás: Y"]
+
+### ⚠️ NEM KÉRT VÁLTOZTATÁSOK:
+[ami a megoldásban van de a feladatban nem szerepelt]
+
+### ✅ ÖSSZEFOGLALÁS:
+HIBÁTLAN / HIBÁS – [max 3 mondatos összegzés]
+
+FONTOS: Ha nem találsz hibát egy kategóriában, írd: "Nem találtam hibát." Ha nem töltötték fel a feladatleírást, csak a HTML/CSS összehasonlítást végezd el.`;
 
   return groqViaProxy(prompt);
 }
