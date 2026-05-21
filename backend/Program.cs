@@ -1805,24 +1805,49 @@ app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
     return ok ? Results.Ok(new { success = true }) : Results.Forbid();
 });
 
-// ── Gemini AI proxy (tanárnak) ────────────────────────────────────────────────
+// ── Groq AI proxy (tanárnak) ──────────────────────────────────────────────────
 app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
 {
     var (valid, _, role) = InspectAuthContext(ctx);
     if (!valid || role != "oktato") return Results.Unauthorized();
 
-    var geminiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? "";
-    if (string.IsNullOrWhiteSpace(geminiKey))
-        return Results.BadRequest(new { error = "GEMINI_API_KEY nincs beállítva a szerveren." });
+    var groqKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") ?? "";
+    if (string.IsNullOrWhiteSpace(groqKey))
+        return Results.BadRequest(new { error = "GROQ_API_KEY nincs beállítva a szerveren. Állítsd be Railway Variables-ben!" });
 
     using var reader = new StreamReader(ctx.Request.Body);
-    var body = await reader.ReadToEndAsync();
+    var reqBody = await reader.ReadToEndAsync();
+
+    // A frontend {prompt: "..."} formátumban küldi
+    string promptText;
+    try {
+        var doc = JsonDocument.Parse(reqBody).RootElement;
+        promptText = doc.GetProperty("prompt").GetString() ?? "";
+    } catch {
+        return Results.BadRequest(new { error = "Hibás kérés formátum" });
+    }
+
+    var payload = System.Text.Json.JsonSerializer.Serialize(new {
+        model    = "llama-3.3-70b-versatile",
+        messages = new[] { new { role = "user", content = promptText } },
+        max_tokens       = 1500,
+        temperature      = 0.3
+    });
 
     using var http = new HttpClient();
-    var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={geminiKey}";
-    var resp = await http.PostAsync(url, new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
-    var content = await resp.Content.ReadAsStringAsync();
-    return Results.Content(content, "application/json", System.Text.Encoding.UTF8, (int)resp.StatusCode);
+    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {groqKey}");
+    var resp = await http.PostAsync(
+        "https://api.groq.com/openai/v1/chat/completions",
+        new StringContent(payload, System.Text.Encoding.UTF8, "application/json"));
+    var respBody = await resp.Content.ReadAsStringAsync();
+
+    if (!resp.IsSuccessStatusCode)
+        return Results.BadRequest(new { error = $"Groq hiba ({(int)resp.StatusCode}): {respBody}" });
+
+    // Kinyerjük a szöveges választ
+    var respDoc = JsonDocument.Parse(respBody).RootElement;
+    var text = respDoc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "";
+    return Results.Ok(new { text });
 });
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
