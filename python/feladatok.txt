@@ -3339,3 +3339,102 @@ elif szint <= 80:
 else:
     print("ROBBANÁS! Takarodj innen, jön a kerti kapa!")
 
+54. feladat
+Pont: 14
+Cim: BKV Jegyautomata
+Tipus: függvény,while
+Nehezseg: kozepes
+Uj: igen
+
+Készíts programot egy érintőképernyős jegyautomatához! A vásárló addig adhatja a kosarához a jegyeket, amíg a fizetést nem választja.
+
+Írj egy JegyAr nevű függvényt, ami a termék kódja alapján visszaadja az árát:
+1 - Vonaljegy (450 Ft)
+2 - Napijegy (2500 Ft)
+3 - Havibérlet (9500 Ft)
+Bármely más kód esetén a függvény 0-t adjon vissza!
+
+A főprogramban hozz létre egy üres listát kosar néven!
+
+Készíts egy ciklust, ami addig fut, amíg igaz rá a feltétel (while True)!
+Kérd be a vásárolni kívánt termék kódját: "Termék kódja (0 = fizetés): "
+
+Ha a kód 0, lépj ki a ciklusból (break)!
+Egyéb esetben hívd meg a függvényt! Ha az ár nagyobb mint 0, írd ki: "Hozzáadva: [X] Ft", és fűzd hozzá az árat a listához! Ha 0, írd ki: "Érvénytelen termékkód!"
+
+A ciklus befejezése után összegezd a kosár elemeit! Írd ki a fizetendő összeget: "Fizetendő összesen: [X] Ft"
+Ha a végösszeg eléri vagy meghaladja a 10000 Ft-ot, írd ki: "Ajándék BKK hálózati térkép nyomtatva!", ellenkező esetben: "Köszönjük a vásárlást!"
+
+Minta kód:
+
+```
+Termék kódja (0 = fizetés): 2
+Hozzáadva: 2500 Ft
+Termék kódja (0 = fizetés): 1
+Hozzáadva: 450 Ft
+Termék kódja (0 = fizetés): 9
+Érvénytelen termékkód!
+Termék kódja (0 = fizetés): 0
+--------------------
+Fizetendő összesen: 2950 Ft
+Köszönjük a vásárlást!
+```
+
+Pontozas:
+tartalmaz:def JegyAr|Függvény definiálása (def JegyAr)|Megvan a JegyAr nevű függvény? 🎫|✅ A JegyAr függvény megvan!
+return|Visszatérési értéket használ (return)|Visszaadja az árat a return kulcsszóval? 🔙|✅ A return működik!
+tartalmaz:kosar|Kosar nevű lista létrehozva|Megvan a kosar nevű lista? 🛒|✅ A kosár lista készen áll!
+while|While ciklust használ|while True ciklust használsz? 🔄|✅ Az automata ciklusa pörög!
+bekeres:Termék kódja (0 = fizetés): |Bekérés szövege pontosan egyezik|Pontosan így kéred be: "Termék kódja (0 = fizetés): "? 🔢|✅ Termékkód bekérése hibátlan!
+int_float:1|A bekért kódot egész számmá alakítja|Az input() szöveget ad vissza – számmá kell alakítani! 🔢|✅ Kód számmá alakítva!
+tartalmaz:break|Break-kel lép ki 0 esetén|Benne van a break a 0 kód esetére? 🚪|✅ Fizetés gomb (0) működik!
+tartalmaz:JegyAr(|Meghívja a JegyAr függvényt|Meghívod a JegyAr függvényt a kód feldolgozásához? 📞|✅ Függvényhívás sikeres!
+tartalmaz:append|Listához fűzi az árat|Hozzáadod az árat a kosár listához? ➕|✅ A lista telik a tételekkel!
+for|For ciklussal összegezi a listát|Összeadod a kosár elemeit for ciklussal? 🧮|✅ Az összegzés hibátlan!
+tartalmaz:Fizetendő összesen:|Kiírja a fizetendő összeget|Kiírod: "Fizetendő összesen: [X] Ft"? 💵|✅ Az összeg megjelenik a kijelzőn!
+if|Elágazás a 10000 Ft-os határhoz|Van if-else a 10000 Ft-os ajándék feltételhez? 🌿|✅ Az ajándék térkép feltétel működik!
+teszt:3,3,0:Ajándék|Két bérlet vásárlásakor megjelenik az ajándék|3+3 → 19000 Ft ≥ 10000 Ft: jár a térkép? 🗺️|✅ Az ajándék feltétel helyesen működik!
+teszt:2,0:Köszönjük|Sima vásárlásnál a köszönő üzenet jelenik meg|Csak napijegy (2500 Ft): megjelenik a sima üzenet? 🚌|✅ A vásárlási köszönő üzenet tökéletes!
+
+Tippek:
+
+Megoldas:
+def JegyAr(kod):
+    if kod == 1:
+        return 450
+    elif kod == 2:
+        return 2500
+    elif kod == 3:
+        return 9500
+    else:
+        return 0
+
+kosar = []
+
+while True:
+    kod = int(input("Termék kódja (0 = fizetés): "))
+
+    if kod == 0:
+        break
+
+    ar = JegyAr(kod)
+
+    if ar > 0:
+        print(f"Hozzáadva: {ar} Ft")
+        kosar.append(ar)
+    else:
+        print("Érvénytelen termékkód!")
+
+print("--------------------")
+
+vegosszeg = 0
+for tetel in kosar:
+    vegosszeg += tetel
+
+print(f"Fizetendő összesen: {vegosszeg} Ft")
+
+if vegosszeg >= 10000:
+    print("Ajándék BKK hálózati térkép nyomtatva!")
+else:
+    print("Köszönjük a vásárlást!")
+
