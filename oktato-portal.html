@@ -159,6 +159,10 @@ body {
 .card-haladas:hover { border-color:#3fb950; box-shadow:0 8px 32px rgba(63,185,80,.15); }
 .card-haladas::before { background:linear-gradient(90deg,#3fb950,#238636); }
 
+.card-validator { border-color:#1a2a3a; }
+.card-validator:hover { border-color:#38bdf8; box-shadow:0 8px 32px rgba(56,189,248,.15); }
+.card-validator::before { background:linear-gradient(90deg,#38bdf8,#0ea5e9); }
+
 .card-icon-wrap {
     width:58px;
     height:58px;
@@ -173,6 +177,7 @@ body {
 .icon-agazati    { background:#0d2a45; color:#58a6ff; }
 .icon-szamonkeres { background:#1e1040; color:#a371f7; }
 .icon-haladas    { background:#0b2016; color:#3fb950; }
+.icon-validator  { background:#0a1f2e; color:#38bdf8; }
 
 .card-title {
     font-size:1.2rem;
@@ -396,6 +401,26 @@ body {
             </div>
         </div>
         <div class="card-arrow">
+            Megnyitás <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+
+    <!-- Feladat Validátor -->
+    <a class="big-card card-validator" href="oktato-validator.html">
+        <div class="card-icon-wrap icon-validator">
+            <i class="fas fa-microscope"></i>
+        </div>
+        <div class="card-title">Feladat Validátor</div>
+        <div class="card-desc">
+            Ellenőrizd le az új feladataidat mielőtt kiadod: futtatja a mintakódot, ellenőrzi a pontozást, és megvizsgálja a WEB forrás konzisztenciáját.
+        </div>
+        <div class="card-bullets">
+            <div class="card-bullet" style="color:#7dd3fc"><i class="fab fa-python"></i> Python: mintakód + pontozó ellenőrzés</div>
+            <div class="card-bullet" style="color:#7dd3fc"><i class="fas fa-code"></i> WEB: 40 check lefuttatása megoldáson</div>
+            <div class="card-bullet" style="color:#7dd3fc"><i class="fas fa-triangle-exclamation"></i> Forrás konzisztencia figyelmeztetés</div>
+        </div>
+        <div class="card-arrow" style="color:#38bdf8">
             Megnyitás <i class="fas fa-arrow-right"></i>
         </div>
     </a>
