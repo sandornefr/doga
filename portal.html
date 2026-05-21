@@ -1862,8 +1862,11 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
-            // Jegybeírás banner — load után hívjuk, mert a függvény egy másik script blokkban van
-            window.addEventListener('load', () => typeof showJegybeirasBanner === 'function' && showJegybeirasBanner());
+            // Jegybeírás banner — csak 10. évfolyamosoknak jelenik meg
+            window.addEventListener('load', () => {
+                if (typeof showJegybeirasBanner === 'function' && parseInt(user.evfolyam) === 10)
+                    showJegybeirasBanner();
+            });
             // Ötlet Láda gomb, megvalósult ötletek, tesztelő badge
             document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
             loadMegvalasultOtletek();
