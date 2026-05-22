@@ -648,6 +648,8 @@ async function handleFolderUpload(input, target) {
       const rel = parts.slice(1).join('/') || file.name;
       webFiles[target][rel] = await readAsText(file);
       chips.push(`<span class="file-chip ${ext==='css'?'css':''}">${rel}</span>`);
+    } else if (['jpg','jpeg','png','gif','svg','webp'].includes(ext) && !file.name.toLowerCase().includes('bootstrap')) {
+      chips.push(`<span class="file-chip" style="background:#1a2040;color:#93c5fd"><i class="fas fa-image" style="font-size:.65rem"></i> ${file.name}</span>`);
     }
   }
   zone.classList.add('has-files');
