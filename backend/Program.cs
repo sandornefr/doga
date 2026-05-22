@@ -1823,7 +1823,7 @@ app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
     }
 
     var payload = System.Text.Json.JsonSerializer.Serialize(new {
-        model    = "llama-3.3-70b-versatile",
+        model    = "llama-3.1-8b-instant",
         messages = new[] { new { role = "user", content = promptText } },
         max_tokens       = 1500,
         temperature      = 0.3
