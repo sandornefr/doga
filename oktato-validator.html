@@ -520,29 +520,67 @@ pathlib.Path(_modul_nev).write_text(_modul_kod)
 async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
   const trim = (s,n) => !s?'':s.length>n?s.slice(0,n)+'...[csonkítva]':s;
 
-  const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. Három dolgot vizsgálj MAGYARUL, tömören:
+  const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. MAGYARUL válaszolj, PONTOSAN az alábbi formátumban:
 
-${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : '(feladatleírás nincs feltöltve)\n'}
-MEGOLDÁS FÁJLOK (# === fájlnév.py === jelöléssel):
+###SZINTAXIS
+[Ha van szintaktikai hiba: "HIBA: leírás". Ha nincs: "OK"]
+
+###PONTOZO
+${pontozas ? '[Ha a pontozási kritériumok nem fedik le a feladatleírást vagy a megoldást: felsorolás kötőjellel. Ha minden rendben: "OK"]' : 'KIHAGYVA (nincs pontozó feltöltve)'}
+
+###EGYEZES
+${taskDesc ? '[Ha a feladatleírás és a megoldás között eltérés van (bekérés szövege, kiírás formátuma, fájlnév, függvénynév stb.): felsorolás kötőjellel. Ha minden egyezik: "OK"]' : 'KIHAGYVA (nincs feladatleírás feltöltve)'}
+
+---
+${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
+MEGOLDÁS FÁJLOK:
 \`\`\`python
 ${trim(kod, 5000)}
 \`\`\`
 ${pontozas ? '\nPONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) : ''}
 
-ELLENŐRZÉSI FELADATOK:
+FONTOS: Csak a ###SZINTAXIS, ###PONTOZO, ###EGYEZES szekciók legyenek a válaszban, semmi más.`;
 
-**1. SZINTAKTIKAI ELLENŐRZÉS**
-Van-e szintaktikai hiba valamelyik megoldás fájlban? Ha nincs: "Nincs szintaktikai hiba."
+  const raw = await groqViaProxy(prompt, true);
+  return renderPythonResult(raw);
+}
 
-**2. PONTOZÓ KONZISZTENCIA**
-${pontozas ? 'A pontozási kritériumok lefedik-e azt, amit a feladatleírás kér ÉS amit a megoldás kód megvalósít? Ha hiányzik vagy felesleges valami: sorold fel konkrétan.' : '(pontozó nincs feltöltve – ez az ellenőrzés kihagyva)'}
+function renderPythonResult(raw) {
+  if (raw.startsWith('<div')) return raw; // hiba esetén már formázott
+  const sections = { SZINTAXIS: '', PONTOZO: '', EGYEZES: '' };
+  let current = null;
+  for (const line of raw.split('\n')) {
+    const m = line.match(/^###(SZINTAXIS|PONTOZO|EGYEZES)/);
+    if (m) { current = m[1]; continue; }
+    if (current) sections[current] += (sections[current] ? '\n' : '') + line;
+  }
 
-**3. FELADATLEÍRÁS ↔ MEGOLDÁS EGYEZÉS**
-${taskDesc ? 'A feladatleírás pontosan azt írja-e le, ahogy a megoldás elkészült? Pl. helyes-e a bekérés szövege, a kiírás formátuma, a fájlnév, a függvénynév stb.? Ha eltérés van: sorold fel.' : '(feladatleírás nincs feltöltve – ez az ellenőrzés kihagyva)'}
+  const render = (key, label, icon) => {
+    const text = sections[key].trim();
+    if (!text || text === 'KIHAGYVA') return makeItem('info', 'fas fa-minus-circle', label, text || 'Kihagyva');
+    const isOk = text === 'OK';
+    const type = isOk ? 'ok' : 'err';
+    const ico = isOk ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+    return makeItem(type, ico, label, isOk ? 'Rendben' : text.replace(/^- /gm, '• '));
+  };
 
-Csak tényleges problémákat írj. Ha minden rendben: "Rendben."`;
+  const errCount = ['SZINTAXIS','PONTOZO','EGYEZES'].filter(k => {
+    const t = sections[k].trim();
+    return t && t !== 'OK' && t !== 'KIHAGYVA' && !t.startsWith('KIHAGYVA');
+  }).length;
 
-  return groqViaProxy(prompt);
+  const statusCls = errCount > 0 ? 'summary-err' : 'summary-ok';
+  const statusColor = errCount > 0 ? '#f87171' : '#4ade80';
+  const header = `<div class="summary-box ${statusCls}">
+    <div style="font-size:1.6rem;font-weight:900;color:${statusColor}">${errCount > 0 ? errCount : '✓'}</div>
+    <div><div style="font-weight:700">${errCount > 0 ? errCount + ' probléma találva' : 'Nem találtam problémát'}</div>
+    <div style="font-size:.8rem;color:#94a3b8">Szintaxis · Pontozó · Feladatleírás egyezés</div></div>
+  </div>`;
+
+  return header +
+    render('SZINTAXIS', 'Szintaktikai ellenőrzés') +
+    render('PONTOZO', 'Pontozó konzisztencia') +
+    render('EGYEZES', 'Feladatleírás ↔ Megoldás egyezés');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1107,7 +1145,7 @@ function getAuthHeader() {
   return u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
 }
 
-async function groqViaProxy(prompt) {
+async function groqViaProxy(prompt, rawText = false) {
   try {
     const res = await fetch(API + '/api/ai/pontozas', {
       method: 'POST',
@@ -1120,6 +1158,7 @@ async function groqViaProxy(prompt) {
     }
     const data = await res.json();
     const text = data.text || 'Nem érkezett válasz.';
+    if (rawText) return text;
     return `<div class="ai-box">${escHtml(text)}</div>`;
   } catch(e) {
     return makeItem('err','fas fa-robot','Hálózati hiba', e.message);
