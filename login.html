@@ -346,6 +346,15 @@
             </div>
         </div>
 
+        <!-- Oktatói kód mező -->
+        <div class="teacher-code-field" id="teacher-code-field">
+            <div class="form-group">
+                <label>Oktatói kód</label>
+                <input type="password" id="reg-oktato-kod" placeholder="••••••••">
+                <div class="hint">Az iskolai rendszergazdától kapott kód</div>
+            </div>
+        </div>
+
         <!-- Tanulói mezők -->
         <div class="student-fields show" id="student-fields">
             <div class="form-row">
@@ -526,6 +535,7 @@
         document.getElementById('role-tanulo').classList.toggle('selected', role === 'tanulo');
         document.getElementById('role-oktato').classList.toggle('selected', role === 'oktato');
         document.getElementById('student-fields').classList.toggle('show', role === 'tanulo');
+        document.getElementById('teacher-code-field').classList.toggle('show', role === 'oktato');
     }
 
     // Csoport opciók frissítése osztály és évfolyam alapján
@@ -682,7 +692,7 @@
             jelszo,
             jelszoMegerosites: jelszo2,
             szerep: selectedRole,
-            oktatoiKod:  null,
+            oktatoiKod:  selectedRole === 'oktato' ? (document.getElementById('reg-oktato-kod').value.trim() || null) : null,
             evfolyam:    selectedRole === 'tanulo'  ? document.getElementById('reg-evfolyam').value || null : null,
             osztaly:     selectedRole === 'tanulo'  ? document.getElementById('reg-osztaly').value || null : null,
             csoport:     csoportVal === 'nincs' ? null : csoportVal,
