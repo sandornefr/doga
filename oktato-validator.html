@@ -953,13 +953,21 @@ ${trim(solCss,3000)}
 
 ${excelText ? '## PONTOZÓ CHECKEK:\n' + excelText + '\n\n' : ''}
 
+## BOOTSTRAP RÁCSRENDSZER – KRITIKUS TUDNIVALÓK:
+Bootstrap 12 oszlopos rendszer: col-md-1=1/12, col-md-2=1/6, col-md-3=1/4, col-md-4=**1/3**, col-md-6=1/2, col-md-8=**2/3**, col-md-9=3/4.
+Ha a feladat "1/3 – 2/3 osztást" kér, az col-md-4 + col-md-8. Ne jelezd hibának!
+Ha a feladat "negyed-háromnegyed osztást" kér, az col-md-3 + col-md-9. Ne jelezd hibának!
+
+## AZ AUTOMATIKUS DIFF MEGBÍZHATÓ – NE MONDD HIBÁNAK AMI MEGVÁLTOZOTT:
+Az "AUTOMATIKUSAN DETEKTÁLT VÁLTOZÁSOK" szakaszban felsorolt módosítások TÉNYLEGESEN jelen vannak a megoldásban (kódelemzéssel ellenőrizve). Ha egy elem ott szerepel "VÁLTOZÁS"-ként, az a megoldásban MEGVAN — ne mondd hiányosságnak!
+
 ## ELLENŐRZÉSI FELADATOK (MIND ELVÉGZENDŐ!):
 
 **A) FÁJLNÉV ELLENŐRZÉS** – keresd meg a feladatleírásban szereplő ÖSSZES fájlnevet (.jpg, .png, .css, .js, .py stb.) és hasonlítsd össze a megoldásban szereplőkkel. Figyeld a kiterjesztést (.jpg vs .png), az aláhúzás/kötőjel különbséget, a kis/nagybetűt!
 
-**B) CSS OSZTÁLYOK ÉS AZONOSÍTÓK** – keresd meg a feladatban megnevezett összes CSS osztályt (pl. class="x") és id-t. Pontosan egyeznek-e a megoldásban?
+**B) CSS OSZTÁLYOK ÉS AZONOSÍTÓK** – keresd meg a feladatban megnevezett összes CSS osztályt (pl. class="x") és id-t. Mielőtt hibát jelzel, ellenőrizd a MEGOLDÁS HTML-ben szó szerint! Csak akkor jelezd hibának, ha valóban nem szerepel.
 
-**C) NEM KÉRT VÁLTOZTATÁSOK** – van-e a megoldásban olyan változtatás amit a feladatleírás NEM kért? (pl. navbar szín megváltozott, CSS tulajdonság törölve, extra elem hozzáadva ami nem szerepelt a feladatban)
+**C) NEM KÉRT VÁLTOZTATÁSOK** – van-e a megoldásban olyan változtatás amit a feladatleírás NEM kért? (pl. navbar szín megváltozott, CSS tulajdonság törölve, extra elem hozzáadva ami nem szerepelt a feladatban). CSS tulajdonságokat csak akkor jelezd "nem kért"-nek, ha a feladatleírásban valóban NEM szerepel az a CSS feladat.
 
 **D) SZÖVEG PONTOSSÁG** – a feladatban megadott konkrét szövegek (menüpont neve, hivatkozás szövege, alt szöveg stb.) pontosan egyeznek-e a megoldásban?
 
