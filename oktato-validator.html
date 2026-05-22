@@ -522,6 +522,8 @@ async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
 
   const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. MAGYARUL válaszolj, PONTOSAN az alábbi formátumban. Csak valódi, konkrét hibákat jelezz — ha kétséges, inkább ne jelezd.
 
+FONTOS: A fájlok neve "_oktatói" utótaggal végződhet (pl. verseny_oktatói.py) — ezek a tanár megoldásfájljai. Az "_oktatói" utótagot hagyd figyelmen kívül, a tényleges fájlnév az utótag nélküli rész (pl. verseny.py). Ne jelezd hibának az "_oktatói" utótagot!
+
 ###SZINTAXIS
 [Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
