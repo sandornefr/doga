@@ -518,31 +518,31 @@ pathlib.Path(_modul_nev).write_text(_modul_kod)
 }
 
 async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
-  const apiKey = null; // Railway proxyn megy
   const trim = (s,n) => !s?'':s.length>n?s.slice(0,n)+'...[csonkítva]':s;
-  const feladatTipus = pontozas.includes('ModulNev:') ? '18 pontos (class + fájl)' :
-                       pontozas.includes('while') ? '14 pontos (def + while)' :
-                       pontozas.includes('for') ? '14 pontos (def + for)' : '8 pontos (if/elif)';
 
-  const prompt = `Te egy Python vizsgafeladat validátora vagy. Elemezd az alábbi feladatot MAGYARUL.
+  const prompt = `Te egy Python vizsgafeladat validátora vagy. Elemezd az alábbi megoldásokat MAGYARUL.
 
-FELADAT TÍPUSA: ${feladatTipus}
-${taskDesc ? '\nFELADATLEÍRÁS:\n' + trim(taskDesc, 2000) + '\n' : ''}
-${modulNev ? `\nOSZTÁLY FÁJL (${modulNev}):\n\`\`\`python\n${trim(modulKod,500)}\n\`\`\`\n` : ''}
-MEGOLDÁS KÓD:
+A feltöltött kódban több Python fájl is szerepel (fájlnevekkel jelölve: # === fájlnév.py ===).
+Azonosítsd automatikusan melyik fájl melyik feladattípus:
+- 8 pontos: csak if/elif elágazás, nincs függvény definíció
+- 14 pontos: saját függvény (def) + for vagy while ciklus
+- 18 pontos: más modulból importált osztály (import + példányosítás) + lista + fájlírás
+- Osztály/modul fájl: class definíciót tartalmaz, ez nem a diák megoldása
+
+${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
+MEGOLDÁS FÁJLOK:
 \`\`\`python
-${trim(kod, 2000)}
+${trim(kod, 5000)}
 \`\`\`
 
-PONTOZÁSI KRITÉRIUMOK (Excel-ből):
-${trim(pontozas, 1500)}
+${pontozas ? 'PONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) + '\n' : ''}
 
-FELADATOD:
-1. **PONTOZÓ ELLENŐRZÉS**: Minden kritérium logikailag helyes-e? Lefedi-e a megoldás kód valóban azt amit a kritérium elvár?
-2. **FELADATLEÍRÁS vs PONTOZÓ**: ${taskDesc ? 'Minden feladatleírásban szereplő követelménynek megvan-e a pontozója? Van-e felesleges vagy hiányzó kritérium?' : '(feladatleírás nincs feltöltve)'}
-3. **MEGOLDÁS KÓD HIBÁK**: Van-e logikai hiba, elírás vagy hiányosság a megoldásban?
-4. **18P SPECIFIKUS**: ${modulNev ? `Az osztály fájl (${modulNev}) konzisztens-e a megoldással és a pontozóval?` : '(nem 18p feladat)'}
-5. **ÖSSZEFOGLALÁS**: HIBÁTLAN / HIBÁS – konkrét problémák listája
+FELADATOD (minden fájlra külön):
+1. **FELADATTÍPUS AZONOSÍTÁS**: Melyik fájl melyik feladattípus (8p/14p/18p/modul)?
+2. **MEGOLDÁS KÓD HIBÁK**: Van-e logikai hiba, elírás vagy hiányosság az egyes megoldásokban?
+3. **PONTOZÓ ELLENŐRZÉS**: ${pontozas ? 'A kritériumok lefedik-e a megoldásokat? Van-e hiányzó vagy felesleges kritérium?' : '(pontozó nincs feltöltve)'}
+4. **18P SPECIFIKUS**: Ha van 18p feladat – az osztályfájl és a megoldás konzisztens-e?
+5. **ÖSSZEFOGLALÁS**: HIBÁTLAN / HIBÁS – konkrét problémák listája feladatonként
 
 Legyél konkrét, tömör, magyarul. Csak technikai hibákat keress.`;
 
