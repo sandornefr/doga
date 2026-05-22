@@ -109,7 +109,7 @@
 
           <!-- Kötelező fájlok -->
           <div class="card">
-            <h3><i class="fas fa-file-import"></i> Kötelező fájlok <span style="color:#ef4444">*</span></h3>
+            <h3><i class="fas fa-file-import"></i> Kötelező fájl <span style="color:#ef4444">*</span></h3>
 
             <div class="form-row">
               <label>Megoldás kód (.py)</label>
@@ -120,21 +120,21 @@
                 <div class="upload-sub" id="py-status-kod">Fájl nem töltöttek fel</div>
               </div>
             </div>
-
-            <div class="form-row">
-              <label>Pontozó (.xlsx)</label>
-              <div class="upload-zone" id="py-zone-xlsx">
-                <input type="file" accept=".xlsx,.xls" id="py-inp-xlsx" onchange="pyHandleXlsx(this)">
-                <div class="upload-icon"><i class="fas fa-file-excel" style="color:#fcd34d"></i></div>
-                <div class="upload-label">Pontozó Excel fájl</div>
-                <div class="upload-sub" id="py-status-xlsx">Fájl nem töltöttek fel</div>
-              </div>
-            </div>
           </div>
 
           <!-- Opcionális fájlok -->
           <div class="card">
             <h3><i class="fas fa-file-import"></i> Opcionális</h3>
+
+            <div class="form-row">
+              <label>Pontozó (.xlsx)</label>
+              <div class="upload-zone optional" id="py-zone-xlsx">
+                <input type="file" accept=".xlsx,.xls" id="py-inp-xlsx" onchange="pyHandleXlsx(this)">
+                <div class="upload-icon"><i class="fas fa-file-excel" style="color:#fcd34d"></i></div>
+                <div class="upload-label">Pontozó Excel fájl</div>
+                <div class="upload-sub" id="py-status-xlsx">Nem kötelező</div>
+              </div>
+            </div>
 
             <div class="form-row">
               <label>Feladatleírás (.docx) — AI elemzéshez</label>
@@ -430,10 +430,6 @@ async function validatePythonFull() {
 
   if (!kod) {
     res.innerHTML = makeItem('err','fas fa-circle-xmark','Hiányzó megoldás kód','Töltsd fel a megoldás .py fájlt!');
-    return;
-  }
-  if (!pyState.xlsxRows.length) {
-    res.innerHTML = makeItem('err','fas fa-circle-xmark','Hiányzó pontozó','Töltsd fel a pontozó .xlsx fájlt!');
     return;
   }
 
