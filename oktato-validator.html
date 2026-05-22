@@ -520,31 +520,27 @@ pathlib.Path(_modul_nev).write_text(_modul_kod)
 async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
   const trim = (s,n) => !s?'':s.length>n?s.slice(0,n)+'...[csonkítva]':s;
 
-  const prompt = `Te egy Python vizsgafeladat validátora vagy. Elemezd az alábbi megoldásokat MAGYARUL.
+  const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. Három dolgot vizsgálj MAGYARUL, tömören:
 
-A feltöltött kódban több Python fájl is szerepel (fájlnevekkel jelölve: # === fájlnév.py ===).
-Azonosítsd automatikusan melyik fájl melyik feladattípus:
-- 8 pontos: csak if/elif elágazás, nincs függvény definíció
-- 14 pontos: saját függvény (def) + for vagy while ciklus
-- 18 pontos: más modulból importált osztály (import + példányosítás) + lista + fájlírás
-- Osztály/modul fájl: class definíciót tartalmaz, ez nem a diák megoldása
-
-${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
-MEGOLDÁS FÁJLOK:
+${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : '(feladatleírás nincs feltöltve)\n'}
+MEGOLDÁS FÁJLOK (# === fájlnév.py === jelöléssel):
 \`\`\`python
 ${trim(kod, 5000)}
 \`\`\`
+${pontozas ? '\nPONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) : ''}
 
-${pontozas ? 'PONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) + '\n' : ''}
+ELLENŐRZÉSI FELADATOK:
 
-FELADATOD (minden fájlra külön):
-1. **FELADATTÍPUS AZONOSÍTÁS**: Melyik fájl melyik feladattípus (8p/14p/18p/modul)?
-2. **MEGOLDÁS KÓD HIBÁK**: Van-e logikai hiba, elírás vagy hiányosság az egyes megoldásokban?
-3. **PONTOZÓ ELLENŐRZÉS**: ${pontozas ? 'A kritériumok lefedik-e a megoldásokat? Van-e hiányzó vagy felesleges kritérium?' : '(pontozó nincs feltöltve)'}
-4. **18P SPECIFIKUS**: Ha van 18p feladat – az osztályfájl és a megoldás konzisztens-e?
-5. **ÖSSZEFOGLALÁS**: HIBÁTLAN / HIBÁS – konkrét problémák listája feladatonként
+**1. SZINTAKTIKAI ELLENŐRZÉS**
+Van-e szintaktikai hiba valamelyik megoldás fájlban? Ha nincs: "Nincs szintaktikai hiba."
 
-Legyél konkrét, tömör, magyarul. Csak technikai hibákat keress.`;
+**2. PONTOZÓ KONZISZTENCIA**
+${pontozas ? 'A pontozási kritériumok lefedik-e azt, amit a feladatleírás kér ÉS amit a megoldás kód megvalósít? Ha hiányzik vagy felesleges valami: sorold fel konkrétan.' : '(pontozó nincs feltöltve – ez az ellenőrzés kihagyva)'}
+
+**3. FELADATLEÍRÁS ↔ MEGOLDÁS EGYEZÉS**
+${taskDesc ? 'A feladatleírás pontosan azt írja-e le, ahogy a megoldás elkészült? Pl. helyes-e a bekérés szövege, a kiírás formátuma, a fájlnév, a függvénynév stb.? Ha eltérés van: sorold fel.' : '(feladatleírás nincs feltöltve – ez az ellenőrzés kihagyva)'}
+
+Csak tényleges problémákat írj. Ha minden rendben: "Rendben."`;
 
   return groqViaProxy(prompt);
 }
