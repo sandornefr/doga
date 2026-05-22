@@ -719,7 +719,7 @@ async function validateWebFull() {
 
   // Specifikus előfeldolgozás: fájlnév + szöveg összevetés
   const specificFindings = docxText
-    ? analyzeSpecific(docxText, srcHtml, solHtml, srcCss, solCss)
+    ? analyzeSpecific(docxText, srcHtml, solHtml, srcCss, solCss, Object.keys(webFiles.src))
     : [];
 
   // Excel checkek (statikus)
@@ -985,13 +985,24 @@ FONTOS: Ha nem találsz hibát egy kategóriában, írd: "Nem találtam hibát."
 }
 
 // ── Specifikus előfeldolgozás: fájlnév + szövegek ───────────────────────────
-function analyzeSpecific(taskDesc, srcHtml, solHtml, srcCss, solCss) {
+function analyzeSpecific(taskDesc, srcHtml, solHtml, srcCss, solCss, srcFileList) {
   const findings = [];
   const allSol = solHtml + '\n' + solCss;
+
+  // Kizárt fájlok: bootstrap, cdn, validátor fájlok
+  const EXCLUDE = ['bootstrap', 'cdn', 'validator', 'validalas', 'stylevalidalas'];
+  // A forrás mappában szereplő fájlok nevei (kisbetűsen) — ezek rendelkezésre állnak, nem "hiányzók"
+  const srcFileNames = new Set((srcFileList || []).map(f => f.split('/').pop().toLowerCase()));
 
   // 1. Fájlnevek a feladatleírásból (pl. ibiza.png, history_icon.png)
   const taskFiles = [...new Set([...taskDesc.matchAll(/[\w\-]+\.(jpg|jpeg|png|gif|svg|css|js|py|html)/gi)].map(m=>m[0].toLowerCase()))];
   for (const tf of taskFiles) {
+    // Kizárás: bootstrap, cdn
+    if (EXCLUDE.some(ex => tf.includes(ex))) continue;
+    // .html fájlok kizárása (ezek mindig a szerkesztendő fájlok, nem beágyazott erőforrások)
+    if (tf.endsWith('.html')) continue;
+    // Ha a fájl a forrás mappában már megvan (mintakép, mellékelt anyag) → kizár
+    if (srcFileNames.has(tf.split('/').pop())) continue;
     // Van-e ilyen a megoldásban?
     if (!allSol.toLowerCase().includes(tf)) {
       // Van-e hasonló (más kiterjesztéssel vagy kötőjel/aláhúzás cserével)?
