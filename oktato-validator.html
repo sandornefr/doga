@@ -1026,8 +1026,11 @@ function analyzeSpecific(taskDesc, srcHtml, solHtml, srcCss, solCss, srcFileList
 
   // Kizárt fájlok: bootstrap, cdn, validátor fájlok
   const EXCLUDE = ['bootstrap', 'cdn', 'validator', 'validalas', 'stylevalidalas'];
-  // A forrás mappában szereplő fájlok nevei (kisbetűsen) — ezek rendelkezésre állnak, nem "hiányzók"
-  const srcFileNames = new Set((srcFileList || []).map(f => f.split('/').pop().toLowerCase()));
+  // A forrás mappában szereplő fájlok nevei — szövegfájlok + képfájlok egyaránt
+  const srcFileNames = new Set([
+    ...(srcFileList || []).map(f => f.split('/').pop().toLowerCase()),
+    ...webFileNames.src
+  ]);
 
   // 1. Fájlnevek a feladatleírásból (pl. ibiza.png, history_icon.png)
   const taskFiles = [...new Set([...taskDesc.matchAll(/[\w\-]+\.(jpg|jpeg|png|gif|svg|css|js|py|html)/gi)].map(m=>m[0].toLowerCase()))];
@@ -1038,8 +1041,8 @@ function analyzeSpecific(taskDesc, srcHtml, solHtml, srcCss, solCss, srcFileList
     if (tf.endsWith('.html')) continue;
     // Ha a fájl a forrás mappában már megvan (mintakép, mellékelt anyag) → kizár
     if (srcFileNames.has(tf.split('/').pop())) continue;
-    // Van-e ilyen a megoldásban?
-    if (!allSol.toLowerCase().includes(tf)) {
+    // Van-e ilyen a megoldásban? (HTML/CSS szövegben VAGY feltöltött fájlok közt)
+    if (!allSol.toLowerCase().includes(tf) && !webFileNames.sol.has(tf.split('/').pop())) {
       // Van-e hasonló (más kiterjesztéssel vagy kötőjel/aláhúzás cserével)?
       const base = tf.replace(/\.\w+$/, '').replace(/[-_]/g, '');
       const inSol = [...allSol.matchAll(/[\w\-]+\.(jpg|jpeg|png|gif|svg|css|js|py|html)/gi)]
