@@ -697,15 +697,17 @@ function findCss(files) {
 
 function checkReferenceImages() {
   let html = '';
+  let count = 0;
   for (const name of webFileNames.src) {
     if (/\.(png|jpg|jpeg|gif|svg)$/i.test(name) && !name.includes('bootstrap')) {
       if (!webFileNames.sol.has(name)) {
-        html += makeItem('warn','fas fa-image',`Hiányzó kép a megoldás mappából: ${name}`,
-          'Ez a kép (referencia/minta) a forrás mappában megvan, de a megoldásból hiányzik.');
+        html += makeItem('err','fas fa-image',`Hiányzó kép: ${name}`,
+          'Ez a kép a forrás mappában megvan, de a megoldás mappájából hiányzik — a weboldal hibás lesz nélküle!');
+        count++;
       }
     }
   }
-  return html;
+  return { html, count };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -733,7 +735,7 @@ async function validateWebFull() {
   const { infoHtml, warnHtml, okCount, warnCount } = computeDiff(srcHtml, solHtml, srcCss, solCss, diffChanges);
 
   // Referencia képek ellenőrzése
-  const imgWarnHtml = checkReferenceImages();
+  const { html: imgErrHtml, count: imgErrCount } = checkReferenceImages();
 
   // Specifikus előfeldolgozás: fájlnév + szöveg összevetés
   const specificFindings = docxText
@@ -745,8 +747,8 @@ async function validateWebFull() {
     specHtml += makeItem('err','fas fa-circle-xmark', `[${f.type}] ${f.task} → ${f.solution}`, f.desc);
 
   // Összesített fejléc
-  const errCount = specificFindings.length;
-  const totalWarn = warnCount + (imgWarnHtml ? 1 : 0);
+  const errCount = specificFindings.length + imgErrCount;
+  const totalWarn = warnCount;
   const statusCls = errCount > 0 ? 'summary-err' : totalWarn > 0 ? 'summary-warn' : 'summary-ok';
   const statusColor = errCount > 0 ? '#f87171' : totalWarn > 0 ? '#fcd34d' : '#4ade80';
   const statusText = errCount > 0 ? `${errCount} hiba találva` : totalWarn > 0 ? `${totalWarn} figyelmeztetés` : 'Nem találtam hibát';
@@ -762,12 +764,12 @@ async function validateWebFull() {
   const spinnerHtml = `<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>
     ${makeItem('info','fas fa-spinner fa-spin','Elemzés folyamatban...','A Groq AI értékeli a megoldást')}`;
 
-  resDiv.innerHTML = headerHtml + infoHtml + specHtml + imgWarnHtml + warnHtml + spinnerHtml;
+  resDiv.innerHTML = headerHtml + infoHtml + imgErrHtml + specHtml + warnHtml + spinnerHtml;
 
   // Groq AI (async) — Excel adatot átadja a promptnak, de nem jeleníti meg külön
   const aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges, specificFindings);
 
-  resDiv.innerHTML = headerHtml + infoHtml + specHtml + imgWarnHtml + warnHtml +
+  resDiv.innerHTML = headerHtml + infoHtml + imgErrHtml + specHtml + warnHtml +
     `<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>` + aiHtml;
 
   btn.disabled = false;
