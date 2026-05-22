@@ -441,14 +441,19 @@ async function validatePythonFull() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ellenőrzés...';
 
-  // Pontozás kinyerése Excel-ből
+  // Pontozás kinyerése Excel-ből (feladatok.txt formátum)
   const pontozasRaw = xlsxToPontozas(pyState.xlsxRows);
+
+  // Ha nincs feladatok.txt formátumú sor, az összes Excel-tartalmat szövegként adjuk az AI-nak
+  const xlsxSzoveg = pyState.xlsxRows.flat()
+    .filter(c => typeof c === 'string' && c.trim().length > 3)
+    .join('\n');
 
   // 1. Statikus + teszt ellenőrzések
   let statHtml = await runStaticAndTests(pontozasRaw, kod, pyState.modul, pyState.modulNev);
 
   // 2. Groq AI elemzés (Railway proxyn keresztül)
-  let aiHtml = await pyGroqAnalysis(kod, pontozasRaw, pyState.docxText, pyState.modulNev, pyState.modul);
+  let aiHtml = await pyGroqAnalysis(kod, pontozasRaw || xlsxSzoveg, pyState.docxText, pyState.modulNev, pyState.modul);
 
   res.innerHTML = statHtml +
     '<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>' +
