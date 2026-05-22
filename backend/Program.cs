@@ -352,11 +352,6 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     if (requestedRole is not ("tanulo" or "oktato"))
         return Results.BadRequest(new { error = "Érvénytelen szerepkör!" });
 
-    if (requestedRole == "oktato")
-    {
-        if (string.IsNullOrWhiteSpace(req.OktatoiKod) || !string.Equals(req.OktatoiKod.Trim(), teacherCode, StringComparison.Ordinal))
-            return Results.BadRequest(new { error = "Érvénytelen oktatói kód!" });
-    }
 
     if (string.IsNullOrWhiteSpace(req.Vezeteknev) || string.IsNullOrWhiteSpace(req.Keresztnev))
         return Results.BadRequest(new { error = "Kérlek add meg a nevedet!" });
