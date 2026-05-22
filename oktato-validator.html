@@ -958,24 +958,24 @@ ${specText}
 ## AUTOMATIKUSAN DETEKTÁLT VÁLTOZÁSOK (forrás→megoldás):
 ${diffText}
 
-## FORRÁS HTML:
+## FORRÁS HTML (részlet – a teljes diff fentebb látható):
 \`\`\`html
-${trim(srcHtml,8000)}
+${trim(srcHtml,3000)}
 \`\`\`
 
 ## MEGOLDÁS HTML:
 \`\`\`html
-${trim(solHtml,8000)}
+${trim(solHtml,6000)}
 \`\`\`
 
 ## FORRÁS CSS:
 \`\`\`css
-${trim(srcCss,3000)}
+${trim(srcCss,2000)}
 \`\`\`
 
 ## MEGOLDÁS CSS:
 \`\`\`css
-${trim(solCss,3000)}
+${trim(solCss,2000)}
 \`\`\`
 
 ${excelText ? '## PONTOZÓ CHECKEK:\n' + excelText + '\n\n' : ''}
