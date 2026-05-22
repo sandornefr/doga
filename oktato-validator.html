@@ -698,15 +698,22 @@ function findCss(files) {
 }
 
 function checkReferenceImages() {
+  // A megoldás HTML+CSS-ben hivatkozott képeket keressük meg,
+  // és ellenőrizzük hogy megvannak-e a forrás vagy megoldás mappában.
+  const solContent = findFile(webFiles.sol, 'html') + '\n' + findCss(webFiles.sol);
+  const allAvailable = new Set([...webFileNames.src, ...webFileNames.sol]);
+
+  const refs = [...solContent.matchAll(/["']([^"'\s>]+\.(jpg|jpeg|png|gif|svg|webp))["']/gi)]
+    .map(m => m[1].split('/').pop().toLowerCase());
+
   let html = '';
   let count = 0;
-  for (const name of webFileNames.src) {
-    if (/\.(png|jpg|jpeg|gif|svg)$/i.test(name) && !name.includes('bootstrap')) {
-      if (!webFileNames.sol.has(name)) {
-        html += makeItem('err','fas fa-image',`Hiányzó kép: ${name}`,
-          'Ez a kép a forrás mappában megvan, de a megoldás mappájából hiányzik — a weboldal hibás lesz nélküle!');
-        count++;
-      }
+  for (const name of new Set(refs)) {
+    if (name.includes('bootstrap') || name.includes('cdn')) continue;
+    if (!allAvailable.has(name)) {
+      html += makeItem('err','fas fa-image',`Hiányzó kép: ${name}`,
+        'A megoldásban hivatkozott kép nincs feltöltve — a weboldal hibás lesz nélküle!');
+      count++;
     }
   }
   return { html, count };
