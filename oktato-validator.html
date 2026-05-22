@@ -621,6 +621,7 @@ async function validatePython() {
 // WEB VALIDÁTOR – fájlkezelés
 // ════════════════════════════════════════════════════════════════════════════
 const webFiles = {src:{}, sol:{}};
+const webFileNames = {src: new Set(), sol: new Set()};
 let docxText = '';
 let xlsxRows = [];
 
@@ -635,11 +636,13 @@ async function handleFolderUpload(input, target) {
   const files = input.files;
   if (!files.length) return;
   webFiles[target] = {};
+  webFileNames[target] = new Set();
   const zone = document.getElementById('zone-'+target);
   const listEl = document.getElementById('files-'+target);
   const chips = [];
   for (const file of files) {
     const ext = file.name.split('.').pop().toLowerCase();
+    webFileNames[target].add(file.name.toLowerCase());
     if (['html','css','txt'].includes(ext)) {
       const parts = file.webkitRelativePath.split('/');
       const rel = parts.slice(1).join('/') || file.name;
@@ -692,6 +695,19 @@ function findCss(files) {
   return entries.map(([k,v]) => `/* ${k} */\n${v}`).join('\n\n');
 }
 
+function checkReferenceImages() {
+  let html = '';
+  for (const name of webFileNames.src) {
+    if (/\.(png|jpg|jpeg|gif|svg)$/i.test(name) && !name.includes('bootstrap')) {
+      if (!webFileNames.sol.has(name)) {
+        html += makeItem('warn','fas fa-image',`Hiányzó kép a megoldás mappából: ${name}`,
+          'Ez a kép (referencia/minta) a forrás mappában megvan, de a megoldásból hiányzik.');
+      }
+    }
+  }
+  return html;
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // WEB VALIDÁTOR – Groq AI elemzés
 // ════════════════════════════════════════════════════════════════════════════
@@ -712,42 +728,47 @@ async function validateWebFull() {
   const srcCss = findCss(webFiles.src);
   const solCss = findCss(webFiles.sol);
 
-
-  // Statikus diff (változások listája + HTML)
+  // Statikus diff
   const diffChanges = [];
-  const diffResult = computeDiff(srcHtml, solHtml, srcCss, solCss, diffChanges);
+  const { infoHtml, warnHtml, okCount, warnCount } = computeDiff(srcHtml, solHtml, srcCss, solCss, diffChanges);
+
+  // Referencia képek ellenőrzése
+  const imgWarnHtml = checkReferenceImages();
 
   // Specifikus előfeldolgozás: fájlnév + szöveg összevetés
   const specificFindings = docxText
     ? analyzeSpecific(docxText, srcHtml, solHtml, srcCss, solCss, Object.keys(webFiles.src))
     : [];
 
-  // Excel checkek (statikus)
-  let xlsxHtml = '';
-  if (xlsxRows.length > 0) {
-    xlsxHtml = renderXlsxChecks(xlsxRows, solHtml, solCss);
-  }
-
-  // Groq AI (ha van kulcs vagy docx)
-  let aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges, specificFindings);
-
-  // Render
-  // Specifikus leletek megjelenítése közvetlenül
   let specHtml = '';
-  if (specificFindings.length > 0) {
-    specHtml = `<div class="section-title"><i class="fas fa-magnifying-glass"></i> Automatikus fájlnév/szöveg ellenőrzés</div>`;
-    for (const f of specificFindings)
-      specHtml += makeItem('err','fas fa-circle-xmark', `[${f.type}] ${f.task} → ${f.solution}`, f.desc);
-  }
+  for (const f of specificFindings)
+    specHtml += makeItem('err','fas fa-circle-xmark', `[${f.type}] ${f.task} → ${f.solution}`, f.desc);
+
+  // Összesített fejléc
+  const errCount = specificFindings.length;
+  const totalWarn = warnCount + (imgWarnHtml ? 1 : 0);
+  const statusCls = errCount > 0 ? 'summary-err' : totalWarn > 0 ? 'summary-warn' : 'summary-ok';
+  const statusColor = errCount > 0 ? '#f87171' : totalWarn > 0 ? '#fcd34d' : '#4ade80';
+  const statusText = errCount > 0 ? `${errCount} hiba találva` : totalWarn > 0 ? `${totalWarn} figyelmeztetés` : 'Nem találtam hibát';
+  const headerHtml = `<div class="summary-box ${statusCls}">
+    <div style="font-size:1.6rem;font-weight:900;color:${statusColor}">${errCount > 0 ? errCount : (totalWarn || '✓')}</div>
+    <div>
+      <div style="font-weight:700">${statusText}</div>
+      <div style="font-size:.8rem;color:#94a3b8">${okCount} változtatás ellenőrizve · ${errCount} hiba · ${totalWarn} figyelmeztetés</div>
+    </div>
+  </div>`;
 
   const resDiv = document.getElementById('web-result');
-  resDiv.innerHTML = `
-    ${diffResult}
-    ${specHtml}
-    ${xlsxHtml ? '<div class="section-title"><i class="fas fa-list-check"></i> Excel checkek</div>' + xlsxHtml : ''}
-    <div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>
-    ${aiHtml}
-  `;
+  const spinnerHtml = `<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>
+    ${makeItem('info','fas fa-spinner fa-spin','Elemzés folyamatban...','A Groq AI értékeli a megoldást')}`;
+
+  resDiv.innerHTML = headerHtml + infoHtml + specHtml + imgWarnHtml + warnHtml + spinnerHtml;
+
+  // Groq AI (async) — Excel adatot átadja a promptnak, de nem jeleníti meg külön
+  const aiHtml = await callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, docxText, xlsxRows, diffChanges, specificFindings);
+
+  resDiv.innerHTML = headerHtml + infoHtml + specHtml + imgWarnHtml + warnHtml +
+    `<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>` + aiHtml;
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-microscope"></i> Teljes validálás indítása';
@@ -838,26 +859,21 @@ function computeDiff(srcHtml, solHtml, srcCss, solCss, outChanges) {
     changes.push(...cssChanges);
   }
 
-  // Render
-  if (!changes.length) {
-    return makeItem('warn','fas fa-triangle-exclamation','Nem találtam különbséget',
-      'Ellenőrizd hogy a megfelelő mappákat töltötted fel.');
-  }
-
-  let html = `<div class="summary-box summary-ok">
-    <div class="sum-score score-ok" style="font-size:1.4rem">${changes.filter(c=>c.t==='ok').length}</div>
-    <div><div style="font-weight:700">Változtatás észlelve</div>
-    <div style="font-size:.8rem;color:#94a3b8">${changes.filter(c=>c.t==='ok').length} hozzáadás/módosítás · ${changes.filter(c=>c.t==='warn').length} figyelmeztetés</div>
-    </div></div>
-    <div class="section-title"><i class="fas fa-list-ul"></i> Forrás → Megoldás változások</div>`;
-
-  for (const c of changes)
-    html += makeItem(c.t==='warn'?'warn':'ok', 'fas '+(c.t==='warn'?'fa-triangle-exclamation':'fa-circle-check'), c.l, c.d);
-
   // Átadjuk a változásokat a Groq prompthoz
   if (outChanges) outChanges.push(...changes);
 
-  return html;
+  if (!changes.length) {
+    return { infoHtml: makeItem('warn','fas fa-triangle-exclamation','Nem találtam különbséget',
+      'Ellenőrizd hogy a megfelelő mappákat töltötted fel.'), warnHtml: '', okCount: 0, warnCount: 0 };
+  }
+
+  const okCount = changes.filter(c => c.t === 'ok').length;
+  const warnItems = changes.filter(c => c.t === 'warn');
+  let warnHtml = '';
+  for (const c of warnItems)
+    warnHtml += makeItem('warn', 'fas fa-triangle-exclamation', c.l, c.d);
+
+  return { infoHtml: '', warnHtml, okCount, warnCount: warnItems.length };
 }
 
 function checkAttrChange(srcEl, solEl, attr, out, label) {
