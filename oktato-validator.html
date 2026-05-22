@@ -528,11 +528,15 @@ FONTOS: A fájlok neve "_oktatói" utótaggal végződhet (pl. verseny_oktatói.
 [Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
 ###PONTOZO
-${pontozas ? `[Ellenőrizd a pontozási kritériumokat HÁROMFÉLEKÉPPEN:
-1. TERMINOLÓGIA: A pontozóban szereplő nevek (függvénynevek, változónevek, fájlnevek, kiírt szövegek) egyeznek-e a feladatleírásban és a megoldás kódban szereplőkkel? Ha pl. a pontozó "legolcsóbb telefon"-t ír de a feladat futárról szól, az HIBA.
-2. LEFEDETTSÉG: Minden kritérium megvalósul-e a megoldásban?
-3. FELESLEGES: Van-e a pontozóban olyan kritérium ami nem illik ehhez a feladathoz (más feladatból maradt copy-paste)?
-Ha hibát találsz: "- konkrét leírás". Ha minden rendben: pontosan "OK"]` : 'KIHAGYVA'}
+${pontozas ? `[Végezd el ezt a 3 lépéses ellenőrzést:
+
+LÉPÉS 1 – Gyűjtsd össze a feladatleírás témaszavait: milyen tárgyakról, személyekről, fájlokról, függvényekről szól a feladat? (pl. "futár, szállítási idő, leggyorsabb, leggyorsabb.txt, Futar, perc")
+
+LÉPÉS 2 – Keresd meg a pontozóban az összes főnevet és kulcsszót. Van-e köztük olyan ami NEM szerepel a feladatleírásban? (pl. "telefon", "legolcsóbb", "sorozat", "könyv" – bármi ami más feladathoz tartozna). Ha igen: "- IDEGEN SZÓTÉVEDÉS: a pontozóban szerepel '...' de ez nem része ennek a feladatnak"
+
+LÉPÉS 3 – Minden kritérium megvalósul-e a megoldás kódban?
+
+Ha hibát találsz: felsorolás kötőjellel. Ha minden rendben: pontosan "OK"]` : 'KIHAGYVA'}
 
 ###EGYEZES
 ${taskDesc ? '[Hasonlítsd össze SZÓRÓL SZÓRA a feladatleírásban szereplő bekérési szövegeket, kiírási szövegeket, fájlneveket és függvényneveket a megoldás kódjával. Csak akkor jelezz hibát ha TÉNYLEGESEN KÜLÖNBÖZNEK. Ha mindkét helyen ugyanaz a szöveg szerepel: az nem hiba. Ha minden egyezik: pontosan "OK"]' : 'KIHAGYVA'}
