@@ -107,24 +107,23 @@
         <!-- Bal: feltöltés -->
         <div>
 
-          <!-- Kötelező fájlok -->
+          <!-- Python fájlok -->
           <div class="card">
-            <h3><i class="fas fa-file-import"></i> Kötelező fájl <span style="color:#ef4444">*</span></h3>
-
+            <h3><i class="fas fa-folder-open"></i> Python megoldás mappa <span style="color:#ef4444">*</span></h3>
             <div class="form-row">
-              <label>Megoldás kód (.py)</label>
               <div class="upload-zone" id="py-zone-kod">
-                <input type="file" accept=".py,.txt" id="py-inp-kod" onchange="pyHandleFile(this,'kod')">
+                <input type="file" accept=".py,.txt" multiple webkitdirectory id="py-inp-kod" onchange="pyHandleFolder(this)">
                 <div class="upload-icon"><i class="fab fa-python" style="color:#3b82f6"></i></div>
-                <div class="upload-label">Megoldás .py fájl</div>
-                <div class="upload-sub" id="py-status-kod">Fájl nem töltöttek fel</div>
+                <div class="upload-label">Kattints vagy húzd ide a mappát</div>
+                <div class="upload-sub">Minden .py fájl feltöltődik (megoldások + osztály fájlok)</div>
+                <div class="file-list" id="py-file-list"></div>
               </div>
             </div>
           </div>
 
           <!-- Opcionális fájlok -->
           <div class="card">
-            <h3><i class="fas fa-file-import"></i> Opcionális</h3>
+            <h3><i class="fas fa-file-import"></i> Opcionális dokumentumok</h3>
 
             <div class="form-row">
               <label>Pontozó (.xlsx)</label>
@@ -137,22 +136,12 @@
             </div>
 
             <div class="form-row">
-              <label>Feladatleírás (.docx) — AI elemzéshez</label>
+              <label>Feladatleírás (.docx) — AI elemzéshez ajánlott</label>
               <div class="upload-zone optional" id="py-zone-docx">
                 <input type="file" accept=".docx" id="py-inp-docx" onchange="pyHandleDocx(this)">
                 <div class="upload-icon"><i class="fas fa-file-word" style="color:#4ade80"></i></div>
                 <div class="upload-label">Feladatleírás .docx</div>
                 <div class="upload-sub" id="py-status-docx">Nem töltöttek fel fájlt</div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <label>Osztály fájl (.py) — 18 pontos feladathoz (pl. tanulo.py, auto.py)</label>
-              <div class="upload-zone optional" id="py-zone-modul">
-                <input type="file" accept=".py,.txt" id="py-inp-modul" onchange="pyHandleFile(this,'modul')">
-                <div class="upload-icon"><i class="fas fa-cube" style="color:#a5b4fc"></i></div>
-                <div class="upload-label">Osztály .py fájl (opcionális)</div>
-                <div class="upload-sub" id="py-status-modul">Nem szükséges 8p/14p feladatnál</div>
               </div>
             </div>
           </div>
@@ -164,12 +153,9 @@
               <i class="fas fa-check" style="color:#4ade80"></i>
               A Groq API kulcs a Railway szerveren van beállítva — itt nem kell megadni semmit.
             </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-primary" id="py-validate-btn" onclick="validatePythonFull()" disabled style="flex:1">
-                <i class="fas fa-microscope"></i> Teljes validálás
-              </button>
-              <span class="pyodide-status" id="py-status">Python betöltése...</span>
-            </div>
+            <button class="btn btn-primary" id="py-validate-btn" onclick="validatePythonFull()" style="width:100%">
+              <i class="fas fa-microscope"></i> Teljes validálás indítása
+            </button>
           </div>
 
         </div>
@@ -368,15 +354,27 @@ builtins.input=_inp
 // ════════════════════════════════════════════════════════════════════════════
 // PYTHON – fájlkezelés
 // ════════════════════════════════════════════════════════════════════════════
-const pyState = { kod:'', modul:'', modulNev:'', docxText:'', xlsxRows:[] };
+const pyState = { files:{}, docxText:'', xlsxRows:[] };
 
+async function pyHandleFolder(input) {
+  const files = input.files; if (!files.length) return;
+  pyState.files = {};
+  const chips = [];
+  for (const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (['py','txt'].includes(ext)) {
+      pyState.files[file.name] = await readAsText(file);
+      chips.push(`<span class="file-chip">${file.name}</span>`);
+    }
+  }
+  document.getElementById('py-zone-kod').classList.add('has-files');
+  document.getElementById('py-file-list').innerHTML = chips.join('');
+}
+
+// Visszafelé kompatibilitás (ha valaki mégis egyfájlosan hívná)
 async function pyHandleFile(input, key) {
   const file = input.files[0]; if (!file) return;
-  pyState[key] = await readAsText(file);
-  const st = document.getElementById('py-status-'+key);
-  if (key === 'modul') pyState.modulNev = file.name;
-  st.textContent = `✓ ${file.name} betöltve (${Math.round(file.size/100)/10} KB)`;
-  document.getElementById('py-zone-'+key).classList.add('has-files');
+  pyState.files[file.name] = await readAsText(file);
 }
 
 async function pyHandleDocx(input) {
@@ -425,13 +423,16 @@ function xlsxToPontozas(rows) {
 
 // ── Teljes Python validálás ──────────────────────────────────────────────────
 async function validatePythonFull() {
-  const kod = pyState.kod;
   const res = document.getElementById('py-result');
+  const fileNames = Object.keys(pyState.files);
 
-  if (!kod) {
-    res.innerHTML = makeItem('err','fas fa-circle-xmark','Hiányzó megoldás kód','Töltsd fel a megoldás .py fájlt!');
+  if (!fileNames.length) {
+    res.innerHTML = makeItem('err','fas fa-circle-xmark','Hiányzó fájlok','Töltsd fel a megoldás mappát!');
     return;
   }
+
+  // Megoldás fájlok összefűzve, fájlnévvel jelölve
+  const kod = fileNames.map(n => `# === ${n} ===\n${pyState.files[n]}`).join('\n\n');
 
   const btn = document.getElementById('py-validate-btn');
   btn.disabled = true;
@@ -445,11 +446,13 @@ async function validatePythonFull() {
     .filter(c => typeof c === 'string' && c.trim().length > 3)
     .join('\n');
 
-  // 1. Statikus + teszt ellenőrzések
-  let statHtml = await runStaticAndTests(pontozasRaw, kod, pyState.modul, pyState.modulNev);
+  // 1. Statikus + teszt ellenőrzések (csak ha van feladatok.txt formátumú pontozás)
+  let statHtml = pontozasRaw
+    ? await runStaticAndTests(pontozasRaw, kod, null, null)
+    : makeItem('info','fas fa-info-circle','Statikus ellenőrzés kihagyva','Nincs feladatok.txt formátumú pontozó – csak AI elemzés fut.');
 
   // 2. Groq AI elemzés (Railway proxyn keresztül)
-  let aiHtml = await pyGroqAnalysis(kod, pontozasRaw || xlsxSzoveg, pyState.docxText, pyState.modulNev, pyState.modul);
+  let aiHtml = await pyGroqAnalysis(kod, pontozasRaw || xlsxSzoveg, pyState.docxText, '', '');
 
   res.innerHTML = statHtml +
     '<div class="section-title"><i class="fas fa-robot"></i> AI elemzés (Groq)</div>' +
