@@ -1,2 +1,6 @@
 .DS_Store
 doga.sln
+
+# Titkos vizsgalapok – ne kerüljenek fel GitHubra
+vizsgalap_*.md
+vizsgafeladatok_2026.md
