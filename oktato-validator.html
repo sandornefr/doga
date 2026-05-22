@@ -520,16 +520,16 @@ pathlib.Path(_modul_nev).write_text(_modul_kod)
 async function pyGroqAnalysis(kod, pontozas, taskDesc, modulNev, modulKod) {
   const trim = (s,n) => !s?'':s.length>n?s.slice(0,n)+'...[csonkítva]':s;
 
-  const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. MAGYARUL válaszolj, PONTOSAN az alábbi formátumban:
+  const prompt = `Te egy Python vizsgafeladat ellenőrző vagy. MAGYARUL válaszolj, PONTOSAN az alábbi formátumban. Csak valódi, konkrét hibákat jelezz — ha kétséges, inkább ne jelezd.
 
 ###SZINTAXIS
-[Ha van szintaktikai hiba: "HIBA: leírás". Ha nincs: "OK"]
+[Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
 ###PONTOZO
-${pontozas ? '[Ha a pontozási kritériumok nem fedik le a feladatleírást vagy a megoldást: felsorolás kötőjellel. Ha minden rendben: "OK"]' : 'KIHAGYVA (nincs pontozó feltöltve)'}
+${pontozas ? '[Ha valamelyik pontozási kritérium NEM szerepel a megoldásban, vagy a megoldásban van valami ami nincs a pontozóban: "- konkrét eltérés". Ha a pontozó lefedi a megoldást: pontosan "OK"]' : 'KIHAGYVA'}
 
 ###EGYEZES
-${taskDesc ? '[Ha a feladatleírás és a megoldás között eltérés van (bekérés szövege, kiírás formátuma, fájlnév, függvénynév stb.): felsorolás kötőjellel. Ha minden egyezik: "OK"]' : 'KIHAGYVA (nincs feladatleírás feltöltve)'}
+${taskDesc ? '[Hasonlítsd össze SZÓRÓL SZÓRA a feladatleírásban szereplő bekérési szövegeket, kiírási szövegeket, fájlneveket és függvényneveket a megoldás kódjával. Csak akkor jelezz hibát ha TÉNYLEGESEN KÜLÖNBÖZNEK. Ha mindkét helyen ugyanaz a szöveg szerepel: az nem hiba. Ha minden egyezik: pontosan "OK"]' : 'KIHAGYVA'}
 
 ---
 ${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
@@ -539,7 +539,7 @@ ${trim(kod, 5000)}
 \`\`\`
 ${pontozas ? '\nPONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) : ''}
 
-FONTOS: Csak a ###SZINTAXIS, ###PONTOZO, ###EGYEZES szekciók legyenek a válaszban, semmi más.`;
+FONTOS: CSAK a ###SZINTAXIS, ###PONTOZO, ###EGYEZES szekciók szerepeljenek. Semmi más szöveg.`;
 
   const raw = await groqViaProxy(prompt, true);
   return renderPythonResult(raw);
