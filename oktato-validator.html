@@ -528,7 +528,11 @@ FONTOS: A fájlok neve "_oktatói" utótaggal végződhet (pl. verseny_oktatói.
 [Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
 ###PONTOZO
-${pontozas ? '[Ha valamelyik pontozási kritérium NEM szerepel a megoldásban, vagy a megoldásban van valami ami nincs a pontozóban: "- konkrét eltérés". Ha a pontozó lefedi a megoldást: pontosan "OK"]' : 'KIHAGYVA'}
+${pontozas ? `[Ellenőrizd a pontozási kritériumokat HÁROMFÉLEKÉPPEN:
+1. TERMINOLÓGIA: A pontozóban szereplő nevek (függvénynevek, változónevek, fájlnevek, kiírt szövegek) egyeznek-e a feladatleírásban és a megoldás kódban szereplőkkel? Ha pl. a pontozó "legolcsóbb telefon"-t ír de a feladat futárról szól, az HIBA.
+2. LEFEDETTSÉG: Minden kritérium megvalósul-e a megoldásban?
+3. FELESLEGES: Van-e a pontozóban olyan kritérium ami nem illik ehhez a feladathoz (más feladatból maradt copy-paste)?
+Ha hibát találsz: "- konkrét leírás". Ha minden rendben: pontosan "OK"]` : 'KIHAGYVA'}
 
 ###EGYEZES
 ${taskDesc ? '[Hasonlítsd össze SZÓRÓL SZÓRA a feladatleírásban szereplő bekérési szövegeket, kiírási szövegeket, fájlneveket és függvényneveket a megoldás kódjával. Csak akkor jelezz hibát ha TÉNYLEGESEN KÜLÖNBÖZNEK. Ha mindkét helyen ugyanaz a szöveg szerepel: az nem hiba. Ha minden egyezik: pontosan "OK"]' : 'KIHAGYVA'}
