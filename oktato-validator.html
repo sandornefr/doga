@@ -534,7 +534,7 @@ PYTHON SZEMANTIKA: range(1, N) pontosan N-1 iterációt jelent (pl. range(1, 6) 
 [Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
 ###PONTOZO
-${pontozas ? `[Belülről ellenőrizd (a lépéseket NE írd ki): van-e a pontozóban más feladathoz tartozó szó vagy kritérium? Megvalósul-e minden kritérium a megoldásban? — Csak a végeredményt írd: ha minden rendben, pontosan "OK". Ha hibát találsz, kötőjeles felsorolás röviden.]` : 'KIHAGYVA'}
+${pontozas ? `[Csak ezt ellenőrizd: van-e a pontozóban olyan szó, fájlnév vagy fogalom, ami NEM szerepel a feladatleírásban és nyilvánvalóan más feladathoz tartozik (pl. egy másik .py fájlnév, más téma)? Ha igen: kötőjeles felsorolás. Ha minden rendben: pontosan "OK". NE ellenőrizd, hogy a kód teljesíti-e a kritériumokat — az nem a te feladatod itt.]` : 'KIHAGYVA'}
 
 ###EGYEZES
 ${taskDesc ? '[Hasonlítsd össze a feladatleírás bekérési szövegeit, kiírási szövegeit és függvényneveit a megoldás kódjával. A "# === fájlnév.py ===" fejlécek a fájlneveket jelölik — ne jelezd hibának! Csak valódi szöveges eltérést jelezz. Csak a végeredményt írd: ha minden egyezik, pontosan "OK". Ha eltérést találsz, kötőjeles felsorolás röviden.]' : 'KIHAGYVA'}
