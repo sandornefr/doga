@@ -528,18 +528,10 @@ FONTOS: A fájlok neve "_oktatói" utótaggal végződhet (pl. verseny_oktatói.
 [Ha Python szintaktikai hiba van: "HIBA: konkrét leírás". Ha a kód szintaktikailag helyes: pontosan "OK"]
 
 ###PONTOZO
-${pontozas ? `[Végezd el ezt a 3 lépéses ellenőrzést:
-
-LÉPÉS 1 – Gyűjtsd össze a feladatleírás témaszavait: milyen tárgyakról, személyekről, fájlokról, függvényekről szól a feladat? (pl. "futár, szállítási idő, leggyorsabb, leggyorsabb.txt, Futar, perc")
-
-LÉPÉS 2 – Keresd meg a pontozóban az összes főnevet és kulcsszót. Van-e köztük olyan ami NEM szerepel a feladatleírásban? (pl. "telefon", "legolcsóbb", "sorozat", "könyv" – bármi ami más feladathoz tartozna). Ha igen: "- IDEGEN SZÓTÉVEDÉS: a pontozóban szerepel '...' de ez nem része ennek a feladatnak"
-
-LÉPÉS 3 – Minden kritérium megvalósul-e a megoldás kódban?
-
-Ha hibát találsz: felsorolás kötőjellel. Ha minden rendben: pontosan "OK"]` : 'KIHAGYVA'}
+${pontozas ? `[Belülről ellenőrizd (a lépéseket NE írd ki): van-e a pontozóban más feladathoz tartozó szó vagy kritérium? Megvalósul-e minden kritérium a megoldásban? — Csak a végeredményt írd: ha minden rendben, pontosan "OK". Ha hibát találsz, kötőjeles felsorolás röviden.]` : 'KIHAGYVA'}
 
 ###EGYEZES
-${taskDesc ? '[Hasonlítsd össze SZÓRÓL SZÓRA a feladatleírásban szereplő bekérési szövegeket, kiírási szövegeket, fájlneveket és függvényneveket a megoldás kódjával. Csak akkor jelezz hibát ha TÉNYLEGESEN KÜLÖNBÖZNEK. Ha mindkét helyen ugyanaz a szöveg szerepel: az nem hiba. Ha minden egyezik: pontosan "OK"]' : 'KIHAGYVA'}
+${taskDesc ? '[Hasonlítsd össze a feladatleírás bekérési szövegeit, kiírási szövegeit, fájlneveit és függvényneveit a megoldás kódjával. Az elemzést NE írd ki — csak a végeredményt: ha minden egyezik, pontosan "OK". Ha eltérést találsz, kötőjeles felsorolás röviden (pl. "- A kiírás eltér: feladatban X, kódban Y").]' : 'KIHAGYVA'}
 
 ---
 ${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
