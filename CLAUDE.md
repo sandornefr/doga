@@ -11,6 +11,25 @@ Online exam system for vocational IT students. Three separate exams:
 
 Live at: https://sandornefr.github.io/doga/
 
+## Titkos vizsgalapok (nem kerülnek GitHubra)
+
+A `vizsgalap_*.md` fájlok `.gitignore`-ban vannak — **soha ne commitold őket**.
+
+Négy változat: A, B, C, K — mindegyik 40 pontos Python dolgozat (8 + 14 + 18 pont).
+
+A tényleges Word/Excel fájlok helye: `C:\Users\feker\Desktop\ÁGAZATI_2026\PYTHON\`
+```
+Python_A/  Python_B/  Python_C/  Python_K/
+  ├── *_tanulói_feladatleírás.docx  (diák kapja)
+  ├── *_pontozo.xlsx                (tanár pontozója)
+  └── Python_megoldás/
+        ├── 8 pontos/   *.py
+        ├── 14 pontos/  *.py
+        └── 18 pontos/  *.py + eloado.py (forrás)
+```
+
+A `vizsgalap_*.md` fájlok a Word tartalmát tükrözik (feladatleírás + megoldáskód) — ezek az egyetlen szerkesztendő forrás, a Word-öt manuálisan szinkronizálják.
+
 ## Architecture
 
 ### Portal / Login / Review
@@ -31,9 +50,7 @@ Live at: https://sandornefr.github.io/doga/
 - `pro.html` — Profi szint gyakorló (19 feladat)
 - `agazati-gyakorlo.html` — Gyakorló feladatok vendégeknek is, 3 nehézségi szint (Pyodide futtatja)
 
-**Task selection:** 2 random 8-point tasks + 1 random 14-point task (45 min total). Cross-device deduplication via Railway backend `/api/user-state/{email}/lastTasks`.
-
-**Task selection:** 2 random 8-point tasks + 1 random 14-point task (45 min total). 31 tasks total (11 könnyű, 12 közepes, 8 nehéz — `Nehezseg:` mező alapján).
+**Task selection:** 2 random 8-point tasks + 1 random 14-point task (45 min total). 31 tasks total (11 könnyű, 12 közepes, 8 nehéz — `Nehezseg:` mező alapján). Cross-device deduplication via Railway backend `/api/user-state/{email}/lastTasks`.
 
 **Hint rendszer (mindhárom gyakorló fájlban):**
 - Level 0: "Segítség" gomb → tananyag flash panel
@@ -71,7 +88,7 @@ for|leírás
 
 **Tananyag láncolat:** HTML → CSS → Bootstrap → Emmet → HTML gyakorló
 
-**⚠️ Emmet oldal hiányos integrációi (2026-03-30 állapot):**
+**⚠️ Emmet oldal hiányos integrációi (2026-03-30 állapot, még nem javítva):**
 - `learn-emmet.html` nincs committolva (git untracked)
 - `portal.html` nem tartalmaz linket a `learn-emmet.html`-re (csak HTML/CSS/Bootstrap gomb van)
 - `learn-bootstrap.html` befejező modalja azt mondja "Elvégezted az összes szintet" — holott az Emmet még következik
@@ -98,11 +115,25 @@ Each task has exactly **40 checks** (1 point each). CSS-only checks have `cssChe
 
 **Wrong tasks** (fixed 2025-03): `baglyok`, `egijelensegek`, `evmadarai`, `gombak`, `hobbiallatok`, `hullok`, `tropusi_gyumolcsok` — now all have 40 checks matching the official Excel scoring sheet.
 
+## Feladat Validátor (`doga/oktato-validator.html`)
+
+Oktatói eszköz Python és WEB vizsgafeladatok ellenőrzésére. Python fülön:
+- Megoldás `.py` fájlok + `.xlsx` pontozó feltöltése
+- Statikus ellenőrzés (szintaxis, kulcsszavak)
+- Groq AI elemzés (Railway proxyn, `/api/ai/pontozas`): 3 szekció: `###SZINTAXIS`, `###PONTOZO`, `###EGYEZES`
+
+**AI prompt tudnivalók:**
+- Modell: `llama-3.1-8b-instant` (Railway backend állítja be)
+- 429 rate limit esetén automatikus retry 7 mp után
+- A fájlokat `# === fájlnév.py ===` fejlécek jelölik a kódban — az AI tudja ezt
+- `range(1, N)` = N-1 iteráció — az AI promptban expliciten szerepel, hogy ne jelezze hibának
+- A `###PONTOZO` szekció **csak copy-paste hibát** keres (idegen szavak a pontozóban) — nem értékeli hogy a kód teljesíti-e a kritériumokat
+
 ## Key External Services
 - **Google Apps Script** — backend for Python exam submissions (Sheets DB). URL in memory.
 - **EmailJS** — sends submission email on student submit (live mode only).
 - **Pyodide** — runs Python code in-browser. `input()` calls are async-wrapped to show modal.
-- **Railway** — C# backend deployment (ASP.NET Core). Config in `backend/railway.toml`.
+- **Railway** — ASP.NET Core backend. Config in `backend/railway.toml`. Groq AI proxy is itt fut.
 
 ## Development Notes
 - No build step — plain HTML/JS/CSS, served via GitHub Pages.
