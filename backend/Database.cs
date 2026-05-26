@@ -211,6 +211,8 @@ public class Database
         try { Exec(conn, "ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE otlet_lada ADD COLUMN tipus TEXT NOT NULL DEFAULT 'otlet'"); } catch { }
         try { Exec(conn, "ALTER TABLE progress ADD COLUMN cel_honap INTEGER"); } catch { }
+        try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN perc_limit INTEGER NOT NULL DEFAULT 60"); } catch { }
+        try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN started_at TEXT"); } catch { }
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS havijegyek (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2948,72 +2950,85 @@ public class Database
         return false;
     }
 
+    // ── Kvóták (darabszám/hónap) ──────────────────────────────────────────────
+    // Python: 3 feladat/hónap × 3 hónap = 9 összesen
+    // WEB:    1 feladat/hónap × 3 hónap = 3 összesen
+    // Interaktív: 1 teszt/hónap, elérhető 4. hónaptól = 2 összesen
+    // Háló:   1 elvégzés, csak 5. hónap
+    private static int PythonKvota(int honap)    => 3 * (honap - 2);           // 3,6,9
+    private static int WebKvota(int honap)        => honap - 2;                 // 1,2,3
+    private static int InteraktivKvota(int honap) => Math.Max(0, honap - 3);   // 0,1,2
+
     public HaviJegyRow CalcHaviJegy(string email, int ev, int honap)
     {
         using var conn = Open();
         var user = GetUserByEmail(email);
+        var e    = email.ToLower().Trim();
 
-        // Python: legjobb % a hónap végéig (kumulatív — localStorage deduplikáció miatt csak egyszer kerül be egy feladat)
+        // ── Python: összes elvégzett egyedi feladat száma (kumulatív) ──────
         double pythonSzaz = 0;
         if (honap >= TartalmakHonapTol["python"])
         {
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
-                FROM progress
+                SELECT COUNT(DISTINCT feladat) FROM progress
                 WHERE LOWER(email)=$e AND LOWER(targy)='python'
-                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y
-                  AND (cel_honap<=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)<=$h))";
-            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
-            cmd.Parameters.AddWithValue("$h", honap);
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$y", ev);
-            var v = cmd.ExecuteScalar();
-            if (v != DBNull.Value && v != null) pythonSzaz = Convert.ToDouble(v);
+            int db  = Convert.ToInt32(cmd.ExecuteScalar());
+            int kvt = PythonKvota(honap);
+            pythonSzaz = kvt > 0 ? Math.Min(db / (double)kvt * 100, 100) : 100;
         }
 
-        // WEB: legjobb % a hónap végéig (kumulatív)
+        // ── WEB: összes elvégzett egyedi feladat száma (kumulatív) ─────────
         double webSzaz = 0;
         if (honap >= TartalmakHonapTol["web"])
         {
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT MAX(CAST(pont AS REAL) / NULLIF(max_pont,0) * 100)
-                FROM progress
+                SELECT COUNT(DISTINCT feladat) FROM progress
                 WHERE LOWER(email)=$e AND LOWER(targy)='web'
-                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y
-                  AND (cel_honap<=$h OR (cel_honap IS NULL AND CAST(strftime('%m',datum) AS INTEGER)<=$h))";
-            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
-            cmd.Parameters.AddWithValue("$h", honap);
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$y", ev);
-            var v = cmd.ExecuteScalar();
-            if (v != DBNull.Value && v != null) webSzaz = Convert.ToDouble(v);
+            int db  = Convert.ToInt32(cmd.ExecuteScalar());
+            int kvt = WebKvota(honap);
+            webSzaz = kvt > 0 ? Math.Min(db / (double)kvt * 100, 100) : 100;
         }
 
-        // Quiz: a hónapra beleszámítható típusok legmagasabb %-a
-        double quizSzaz = 0;
-        var quizTipusok = new List<string>();
-        if (honap >= TartalmakHonapTol["quiz_html"])   quizTipusok.Add("html");
-        if (honap >= TartalmakHonapTol["quiz_css"])    quizTipusok.Add("css");
-        if (honap >= TartalmakHonapTol["quiz_bootstrap"]) quizTipusok.Add("bootstrap");
-        if (honap >= TartalmakHonapTol["interaktiv"])  quizTipusok.Add("interaktiv");
-        if (quizTipusok.Count > 0)
+        // ── Interaktív teszt: elvégzett tesztek száma (kumulatív) ──────────
+        double interaktivSzaz = 100; // ha még nem kötelező, ne büntessen
+        if (honap >= TartalmakHonapTol["interaktiv"])
         {
-            var inList = string.Join(",", quizTipusok.Select((_, i) => $"$t{i}"));
             var cmd = conn.CreateCommand();
-            cmd.CommandText = $@"
-                SELECT MAX(szazalek) FROM quiz_results
-                WHERE LOWER(email)=$e
-                  AND LOWER(tipus) IN ({inList})
-                  AND CAST(strftime('%m', submitted_at) AS INTEGER) <= $honap_max";
-            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
-            cmd.Parameters.AddWithValue("$honap_max", honap);
-            for (int i = 0; i < quizTipusok.Count; i++)
-                cmd.Parameters.AddWithValue($"$t{i}", quizTipusok[i]);
-            var v = cmd.ExecuteScalar();
-            if (v != DBNull.Value && v != null) quizSzaz = Convert.ToDouble(v);
+            cmd.CommandText = @"
+                SELECT COUNT(*) FROM quiz_results
+                WHERE LOWER(email)=$e AND LOWER(tipus)='interaktiv'
+                  AND CAST(strftime('%Y', submitted_at) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", e);
+            cmd.Parameters.AddWithValue("$y", ev);
+            int db  = Convert.ToInt32(cmd.ExecuteScalar());
+            int kvt = InteraktivKvota(honap);
+            interaktivSzaz = kvt > 0 ? Math.Min(db / (double)kvt * 100, 100) : 100;
         }
 
-        // Aktív napok az adott hónapban (csak az adott hónap számít, nem pótolható)
+        // ── Háló: csak május, 1 elvégzés kell ──────────────────────────────
+        double halozatSzaz = 100; // nem büntessen ha még nem elérhető
+        if (honap >= TartalmakHonapTol["halozat"])
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT COUNT(*) FROM progress
+                WHERE LOWER(email)=$e AND LOWER(targy)='halozat'
+                  AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", e);
+            cmd.Parameters.AddWithValue("$y", ev);
+            int db = Convert.ToInt32(cmd.ExecuteScalar());
+            halozatSzaz = db >= 1 ? 100 : 0;
+        }
+
+        // ── Aktív napok az adott hónapban ──────────────────────────────────
         int aktivNapok = 0;
         {
             var cmd = conn.CreateCommand();
@@ -3022,13 +3037,13 @@ public class Database
                 WHERE LOWER(email)=$e
                   AND CAST(strftime('%m',datum) AS INTEGER)=$h
                   AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
-            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$h", honap);
             cmd.Parameters.AddWithValue("$y", ev);
             aktivNapok = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        // Ötlet + hibajelentés az adott hónapban
+        // ── Ötletláda: CSAK szorgalmi, nem számít a jegybe ─────────────────
         int otletDb = 0;
         {
             var cmd = conn.CreateCommand();
@@ -3037,13 +3052,13 @@ public class Database
                 WHERE LOWER(email)=$e
                   AND CAST(strftime('%m',created_at) AS INTEGER)=$h
                   AND CAST(strftime('%Y',created_at) AS INTEGER)=$y";
-            cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+            cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$h", honap);
             cmd.Parameters.AddWithValue("$y", ev);
             otletDb = Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        // Tananyag: hány van teljesítve összesen (user_state)
+        // ── Tananyag ───────────────────────────────────────────────────────
         int tananyagDb = 0;
         var tananyagKulcsok = new[] { "tananyagHtml","tananyagCss","tananyagBootstrap","pythonKezdo","pythonHalado" };
         foreach (var k in tananyagKulcsok)
@@ -3052,34 +3067,42 @@ public class Database
             if (!string.IsNullOrEmpty(v) && v != "false" && v != "0") tananyagDb++;
         }
 
-        // Súlyozott összpont — csoport alapján eltérő súlyok
+        // ── Súlyozott összpont (csoport alapján) ───────────────────────────
         double aktivSzaz  = Math.Min(aktivNapok / 8.0 * 100, 100);
-        double otletSzaz  = Math.Min(otletDb    / 2.0 * 100, 100);
         double tananyagBo = Math.Round(tananyagDb / 5.0 * 5, 1);
 
         bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
         double osszSzaz;
-        if (webOnly)
-            // WEB 45% + Quiz 30% + Aktív 15% + Ötlet 10% (Python nem számít)
-            osszSzaz = webSzaz * 0.45 + quizSzaz * 0.30
-                     + aktivSzaz * 0.15 + otletSzaz * 0.10 + tananyagBo;
+
+        if (honap >= TartalmakHonapTol["halozat"])
+        {
+            // Május: Python 28% + WEB 22% + Interaktív 20% + Háló 20% + Aktív 10%
+            if (webOnly)
+                osszSzaz = webSzaz * 0.35 + interaktivSzaz * 0.30 + halozatSzaz * 0.25 + aktivSzaz * 0.10;
+            else
+                osszSzaz = pythonSzaz * 0.28 + webSzaz * 0.22 + interaktivSzaz * 0.20
+                         + halozatSzaz * 0.20 + aktivSzaz * 0.10;
+        }
         else
-            // Teljes: Python 30% + WEB 30% + Quiz 20% + Aktív 10% + Ötlet 10%
-            osszSzaz = pythonSzaz * 0.30 + webSzaz * 0.30 + quizSzaz * 0.20
-                     + aktivSzaz  * 0.10 + otletSzaz * 0.10 + tananyagBo;
-        osszSzaz = Math.Min(osszSzaz, 105);
+        {
+            // Március–Április: Python 35% + WEB 30% + Interaktív 25% + Aktív 10%
+            if (webOnly)
+                osszSzaz = webSzaz * 0.55 + interaktivSzaz * 0.35 + aktivSzaz * 0.10;
+            else
+                osszSzaz = pythonSzaz * 0.35 + webSzaz * 0.30 + interaktivSzaz * 0.25
+                         + aktivSzaz * 0.10;
+        }
+        osszSzaz = Math.Min(osszSzaz + tananyagBo, 105);
 
         int jegy = CalcJegy(osszSzaz);
 
-        // Szorgalmi jelölés: 1 kritérium elég
+        // ── Szorgalmi: Ötletláda most már CSAK ide számít ──────────────────
         bool szorgJelolt = osszSzaz >= 90
             || aktivNapok >= 15
-            || otletDb >= 5
-            || (pythonSzaz >= 80 && webSzaz >= 80)
+            || otletDb >= 3
             || tananyagDb == 5;
 
-        // Szaktanári dicséret javaslat
-        bool dicsJavasolt = osszSzaz >= 95 || aktivNapok >= 20 || otletDb >= 10;
+        bool dicsJavasolt = osszSzaz >= 95 || aktivNapok >= 20 || otletDb >= 8;
 
         return new HaviJegyRow
         {
@@ -3087,13 +3110,13 @@ public class Database
             Ev               = ev,
             Honap            = honap,
             Jegy             = jegy,
-            PythonSzaz       = Math.Round(pythonSzaz, 1),
-            WebSzaz          = Math.Round(webSzaz,    1),
-            QuizSzaz         = Math.Round(quizSzaz,   1),
+            PythonSzaz       = Math.Round(pythonSzaz,    1),
+            WebSzaz          = Math.Round(webSzaz,       1),
+            QuizSzaz         = Math.Round(interaktivSzaz,1),
             AktivNapok       = aktivNapok,
             OtletDb          = otletDb,
             TananyagDb       = tananyagDb,
-            OsszSzaz         = Math.Round(osszSzaz,   1),
+            OsszSzaz         = Math.Round(osszSzaz,      1),
             SzorgalmiJelolt  = szorgJelolt,
             DicseretJavasolt = dicsJavasolt,
         };

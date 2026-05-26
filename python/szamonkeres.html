@@ -6,6 +6,7 @@
   <title>Számonkérés-kezelő – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+  <script src="szamonkeres_feladatok.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -162,7 +163,43 @@
   </a>
   <div class="topbar-right">
     <span id="oktato-nev" style="font-size:0.85rem;color:#94a3b8"></span>
+    <button id="gemini-key-btn" onclick="openGeminiSettings()" title="Gemini AI beállítása"
+      style="padding:5px 12px;border-radius:8px;border:1px solid #374151;background:transparent;cursor:pointer;font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:6px;transition:.2s">
+      <i class="fas fa-robot"></i> <span id="gemini-key-label">AI kulcs beállítása</span>
+    </button>
     <a href="../portal.html" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i> Portál</a>
+  </div>
+</div>
+
+<!-- ── Gemini API kulcs beállítás modal ── -->
+<div id="gemini-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px">
+  <div style="background:#16213e;border:1px solid #6366f1;border-radius:14px;padding:28px;max-width:520px;width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-weight:700;font-size:1rem;color:#e0e0e0"><i class="fas fa-robot" style="color:#818cf8;margin-right:8px"></i>Gemini AI kulcs beállítása</div>
+      <button onclick="closeGeminiSettings()" style="background:transparent;border:none;color:#64748b;cursor:pointer;font-size:1.1rem"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:16px;line-height:1.65">
+      Az AI pontozás a <strong style="color:#e0e0e0">Groq AI</strong> segítségével működik (ingyenes, gyors).<br>
+      A Groq API kulcsot egyszer kell beállítani a Railway environment variables között.<br>
+      <span style="font-size:0.78rem;color:#64748b">Kulcs igénylése: console.groq.com → API Keys → Create (ingyenes, nem kell billing)</span>
+    </div>
+    <div style="background:#0b1120;border:1px solid #1f2937;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:0.83rem;color:#cbd5e1;line-height:1.7">
+      <strong style="color:#818cf8">Beállítás lépései:</strong><br>
+      1. Nyisd meg: <a href="https://console.groq.com" target="_blank" style="color:#818cf8">console.groq.com</a> → API Keys → Create API key<br>
+      2. <a href="https://railway.app" target="_blank" style="color:#818cf8">railway.app</a> → projekt → <strong>Variables</strong> fül → adj hozzá:<br>
+      &nbsp;&nbsp;&nbsp;<code style="background:#1e3a5f;padding:1px 6px;border-radius:4px;color:#93c5fd">GROQ_API_KEY</code> = <em>a gsk_... kulcsod</em><br>
+      3. Railway automatikusan újraindítja a szervert<br>
+      4. Kattints az alábbi <strong>Tesztelés</strong> gombra — ha zöld, kész!
+    </div>
+    <div id="gemini-modal-msg" style="font-size:0.82rem;margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="testGeminiKey()" style="padding:8px 20px;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:0.88rem">
+        <i class="fas fa-vial"></i> Kapcsolat tesztelése
+      </button>
+      <button onclick="closeGeminiSettings()" style="padding:8px 16px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.88rem">
+        Bezárás
+      </button>
+    </div>
   </div>
 </div>
 
@@ -238,7 +275,7 @@
         </div>
 
         <!-- Módválasztó gombok -->
-        <div class="feladat-mode-btns">
+        <div class="feladat-mode-btns" style="grid-template-columns:1fr 1fr 1fr">
           <button class="feladat-mode-btn active" id="mode-btn-rendszer" onclick="setFeladatMode('rendszer')">
             <span class="mi"><i class="fas fa-list-check"></i></span>
             <span class="mt">Meglévő feladat</span>
@@ -249,6 +286,11 @@
             <span class="mt">Saját feladat</span>
             <span class="md">Te írod a feladatszöveget – a tanár értékeli kézzel</span>
           </button>
+          <button class="feladat-mode-btn" id="mode-btn-szambank" onclick="setFeladatMode('szambank')" style="border-color:#6366f1">
+            <span class="mi"><i class="fas fa-shuffle" style="color:#818cf8"></i></span>
+            <span class="mt">Automatikus kiosztás</span>
+            <span class="md">48 feladatos bankból – mindenki egyedi 1×8p + 1×14p + 1×18p kombinációt kap</span>
+          </button>
         </div>
 
         <!-- Rendszer feladatok panel -->
@@ -256,6 +298,37 @@
           <div id="feladat-lista" class="feladat-list">
             <div style="padding:16px;color:#64748b">Feladatok betöltése...</div>
           </div>
+        </div>
+
+        <!-- Automatikus kiosztás panel -->
+        <div id="panel-szambank" class="card" style="display:none">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #4338ca;border-radius:8px;font-size:0.82rem;color:#a5b4fc;margin-bottom:16px">
+            <i class="fas fa-circle-info" style="color:#818cf8;margin-top:2px;flex-shrink:0"></i>
+            <span>A rendszer az email cím alapján <strong>minden tanulónak egyedi feladatot</strong> oszt ki a 48 feladatos bankból. Felelet közben senki sem lesz szomszédjával azonos feladaton.</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#fcd34d">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">8 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">if / elif / else</div>
+            </div>
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#a5b4fc">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">14 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">def + for / while</div>
+            </div>
+            <div style="padding:14px;background:#0b1120;border:1px solid #1f2937;border-radius:10px;text-align:center">
+              <div style="font-size:1.8rem;font-weight:900;color:#34d399">16</div>
+              <div style="font-size:0.8rem;font-weight:700;color:#e0e0e0;margin-top:2px">18 pontos</div>
+              <div style="font-size:0.72rem;color:#64748b;margin-top:2px">class + max / min</div>
+            </div>
+          </div>
+          <div style="background:#0b1120;border:1px solid #1f2937;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#94a3b8;display:flex;align-items:center;gap:12px">
+            <i class="fas fa-calculator" style="color:#6366f1;font-size:1.1rem;flex-shrink:0"></i>
+            <span>Minden tanuló <strong style="color:#e0e0e0">1 × 8 pont + 1 × 14 pont + 1 × 18 pont = max 40 pont</strong> feladatot kap. A kiosztás az <strong>Indítás</strong> gombig nem végleges – akkor generálódik.</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="szambankElonezet()"><i class="fas fa-eye"></i> Előnézet – minta feladatok megtekintése</button>
+          <div id="szambank-elonezet-wrap" style="margin-top:14px;display:none"></div>
         </div>
 
         <!-- Saját feladat panel -->
@@ -291,9 +364,16 @@
       <!-- ── 3. lépés: Részletek & Megerősítés ── -->
       <div class="wizard-panel" id="step-3">
         <div class="card">
-          <div class="form-row">
-            <label>Számonkérés neve / témája</label>
-            <input type="text" id="cr-cim" placeholder="pl. Python alapok – zárthelyi 2026. ápr.">
+          <div class="form-grid">
+            <div class="form-row">
+              <label>Számonkérés neve / témája</label>
+              <input type="text" id="cr-cim" placeholder="pl. Python alapok – zárthelyi 2026. ápr.">
+            </div>
+            <div class="form-row">
+              <label><i class="fas fa-clock"></i> Időkeret (perc)</label>
+              <input type="number" id="cr-perc" value="60" min="10" max="180" style="max-width:120px">
+              <div style="font-size:0.77rem;color:#64748b;margin-top:4px">A számonkérés az <strong>Indítás</strong> gomb megnyomásával kezdődik</div>
+            </div>
           </div>
 
           <div class="section-title" style="margin-top:18px"><i class="fas fa-graduation-cap"></i> Ponthatárok</div>
@@ -475,6 +555,7 @@ let currentSzamonkeres = null;
   userToken = u.token;
   document.getElementById('oktato-nev').textContent = u.nev || u.email;
   document.getElementById('main-ui').style.display = 'block';
+  updateGeminiKeyBtn();
   init();
 })();
 
@@ -531,7 +612,7 @@ function validateStep(step) {
     }
   }
   if (step === 2) {
-    if (selectedFeladatok.length === 0) {
+    if (feladatMode !== 'szambank' && selectedFeladatok.length === 0) {
       alert('Adj hozzá legalább egy feladatot a folytatáshoz!');
       return false;
     }
@@ -541,12 +622,40 @@ function validateStep(step) {
 
 function setFeladatMode(mode) {
   feladatMode = mode;
-  document.getElementById('mode-btn-rendszer')?.classList.toggle('active', mode === 'rendszer');
-  document.getElementById('mode-btn-sajat')?.classList.toggle('active', mode === 'sajat');
-  const pr = document.getElementById('panel-rendszer');
-  const ps = document.getElementById('panel-sajat');
-  if (pr) pr.style.display = mode === 'rendszer' ? 'block' : 'none';
-  if (ps) ps.style.display = mode === 'sajat' ? 'block' : 'none';
+  ['rendszer','sajat','szambank'].forEach(m => {
+    document.getElementById('mode-btn-' + m)?.classList.toggle('active', m === mode);
+  });
+  document.getElementById('panel-rendszer').style.display  = mode === 'rendszer'  ? 'block' : 'none';
+  document.getElementById('panel-sajat').style.display     = mode === 'sajat'     ? 'block' : 'none';
+  document.getElementById('panel-szambank').style.display  = mode === 'szambank'  ? 'block' : 'none';
+}
+
+// ── Szambank előnézet ─────────────────────────────────────────────────────────
+function szambankElonezet() {
+  if (typeof szamonkeresFeladatok === 'undefined') {
+    alert('A feladatbank nem töltődött be. Frissítsd az oldalt.');
+    return;
+  }
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const f8  = pick(szamonkeresFeladatok.p8);
+  const f14 = pick(szamonkeresFeladatok.p14);
+  const f18 = pick(szamonkeresFeladatok.p18);
+
+  const wrap = document.getElementById('szambank-elonezet-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
+      Minta – egy tanuló lehetséges feladatsora:
+    </div>
+    ${[[f8,'#fcd34d','8'],[f14,'#a5b4fc','14'],[f18,'#34d399','18']].map(([f,c,p]) => `
+      <div style="padding:10px 14px;background:#0b1120;border:1px solid #1f2937;border-radius:8px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px">
+        <span style="padding:2px 9px;border-radius:10px;background:#1a1a1a;color:${c};font-size:0.75rem;font-weight:700;white-space:nowrap;flex-shrink:0">${p} pont</span>
+        <div>
+          <div style="font-weight:600;font-size:0.88rem;color:#e0e0e0">${escH(f.cim)}</div>
+          <div style="font-size:0.78rem;color:#64748b;margin-top:2px;white-space:pre-line">${escH(f.leiras.substring(0,120))}…</div>
+        </div>
+      </div>`).join('')}
+    <div style="font-size:0.75rem;color:#4b5563;margin-top:4px"><i class="fas fa-rotate-right"></i> Minden kattintásra más minta jelenik meg.</div>`;
 }
 
 function updateStep1Counter() {
@@ -572,14 +681,20 @@ function updateStep3Summary() {
     }
     return formatCsoportKey(c);
   });
-  const maxOssz = selectedFeladatok.reduce((s, f) => s + (parseInt(f.pont) || 0), 0);
   const ph2 = document.getElementById('ph-2').value || '40';
   const ph3 = document.getElementById('ph-3').value || '55';
   const ph4 = document.getElementById('ph-4').value || '70';
   const ph5 = document.getElementById('ph-5').value || '85';
-  const feladatReszletek = selectedFeladatok.map(f =>
-    `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
-  ).join('<br>');
+  let feladatReszletek, maxOssz;
+  if (feladatMode === 'szambank') {
+    feladatReszletek = '<i class="fas fa-shuffle" style="color:#818cf8"></i> Automatikus kiosztás – 48 feladatos bank &nbsp;·&nbsp; <span style="color:#94a3b8">1×8p + 1×14p + 1×18p / tanuló</span>';
+    maxOssz = 40;
+  } else {
+    maxOssz = selectedFeladatok.reduce((s, f) => s + (parseInt(f.pont) || 0), 0);
+    feladatReszletek = selectedFeladatok.map(f =>
+      `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
+    ).join('<br>');
+  }
   const rows = [
     ['Tanulók / csoportok', escH(csoportNames.join(', ')) || '–'],
     ['Feladatok', feladatReszletek || '–'],
@@ -877,7 +992,7 @@ async function createSzamonkeres() {
 
   if (!cim) { showMsg(err,'Adj meg egy nevet a számonkérésnek!'); return; }
   if (selectedCsoportok.size === 0) { showMsg(err,'Válassz legalább egy csoportot!'); return; }
-  if (selectedFeladatok.length === 0) { showMsg(err,'Adj hozzá legalább egy feladatot!'); return; }
+  if (feladatMode !== 'szambank' && selectedFeladatok.length === 0) { showMsg(err,'Adj hozzá legalább egy feladatot!'); return; }
 
   const ph2=parseInt(document.getElementById('ph-2').value)||40;
   const ph3=parseInt(document.getElementById('ph-3').value)||55;
@@ -890,8 +1005,18 @@ async function createSzamonkeres() {
       body: JSON.stringify({
         cim,
         csoportok: JSON.stringify([...selectedCsoportok]),
-        feladatok: JSON.stringify(selectedFeladatok),
-        ponthatarak: JSON.stringify({ket:ph2,harom:ph3,negy:ph4,ot:ph5})
+        ponthatarak: JSON.stringify({ket:ph2,harom:ph3,negy:ph4,ot:ph5}),
+        percLimit: parseInt(document.getElementById('cr-perc').value) || 60,
+        feladatok: feladatMode === 'szambank' ? (() => {
+          const sh = a => [...a].sort(() => Math.random() - 0.5);
+          return JSON.stringify([{
+            tipus: 'szambank_auto',
+            salt: Math.random().toString(36).slice(2, 10),
+            p8:  sh(szamonkeresFeladatok.p8).map(t => t.id),
+            p14: sh(szamonkeresFeladatok.p14).map(t => t.id),
+            p18: sh(szamonkeresFeladatok.p18).map(t => t.id)
+          }]);
+        })() : JSON.stringify(selectedFeladatok)
       })
     });
     const data = await res.json();
@@ -919,13 +1044,17 @@ async function loadSzamonkeresek() {
     el.innerHTML = list.map(s => {
       const cs = JSON.parse(s.csoportok||'[]').join(', ');
       const fdb = JSON.parse(s.feladatok||'[]').length;
-      const stBadge = s.statusz==='aktiv'?'status-aktiv':s.statusz==='lezart'?'status-lezart':'status-kiadva';
-      const stLabel = s.statusz==='aktiv'?'Aktív':s.statusz==='lezart'?'Lezárt':'Kiadva';
+      const stBadge = s.statusz==='aktiv'?'status-aktiv':s.statusz==='lezart'?'status-lezart':s.statusz==='varakozas'?'status-kiadva':'status-kiadva';
+      const stLabel = s.statusz==='aktiv'?'Folyamatban':s.statusz==='lezart'?'Lezárt':s.statusz==='varakozas'?'Várakozik':'Kiadva';
+      const inditGomb = s.statusz==='varakozas'
+        ? `<button class="btn btn-success btn-sm" onclick="event.stopPropagation();inditSzamonkeresKartya(${s.id},this)" style="flex-shrink:0"><i class="fas fa-play"></i> Indítás</button>`
+        : '';
       return `<div class="szam-card" onclick="openDetail(${s.id})">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="szam-cim">${escH(s.cim)}</div>
           <div class="szam-meta">${cs} &nbsp;·&nbsp; ${fdb} feladat &nbsp;·&nbsp; ${s.beadasokSzama} beadás &nbsp;·&nbsp; ${s.createdAt?.substring(0,16)||''}</div>
         </div>
+        ${inditGomb}
         <span class="status-badge ${stBadge}">${stLabel}</span>
       </div>`;
     }).join('');
@@ -961,10 +1090,14 @@ function renderDetail(sz, beadasok) {
   // Feladatok lista
   const feladatok = JSON.parse(sz.feladatok||'[]');
   const ph = JSON.parse(sz.ponthatarak||'{}');
-  const maxOssz = feladatok.reduce((s,f)=>s+f.pont,0);
+  const isSzambankAuto = feladatok.length === 1 && feladatok[0].tipus === 'szambank_auto';
+  const maxOssz = isSzambankAuto ? 40 : feladatok.reduce((s,f)=>s+(f.pont||0),0);
+  const feladatSzoveg = isSzambankAuto
+    ? '<i class="fas fa-shuffle" style="color:#818cf8"></i> Automatikus kiosztás (8p + 14p + 18p = 40 pont/tanuló)'
+    : feladatok.map(f=>`${escH(f.cim||'–')} (${f.pont||0} pt)`).join(' &nbsp;·&nbsp; ');
   document.getElementById('detail-feladatok').innerHTML =
     `<div style="margin-bottom:8px;font-size:0.85rem;color:#94a3b8">
-      <strong>Feladatok:</strong> ${feladatok.map(f=>`${escH(f.cim)} (${f.pont} pt)`).join(' &nbsp;·&nbsp; ')}
+      <strong>Feladatok:</strong> ${feladatSzoveg}
       &nbsp;·&nbsp; <strong>Max összpont:</strong> ${maxOssz} &nbsp;·&nbsp;
       <strong>Határok:</strong> 2≥${ph.ket}% &nbsp; 3≥${ph.harom}% &nbsp; 4≥${ph.negy}% &nbsp; 5≥${ph.ot}%
     </div>`;
@@ -972,14 +1105,22 @@ function renderDetail(sz, beadasok) {
   // Gombok
   const actions = document.getElementById('detail-actions');
   actions.innerHTML = '';
-  if (sz.statusz === 'aktiv') {
-    actions.innerHTML += `<button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
+  if (sz.statusz === 'varakozas') {
+    actions.innerHTML = `
+      <button class="btn btn-success" onclick="inditSzamonkeres(${sz.id})">
+        <i class="fas fa-play"></i> Számonkérés indítása
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>`;
+  } else if (sz.statusz === 'aktiv') {
+    actions.innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
       <button class="btn btn-danger btn-sm" onclick="lezarSzamonkeres(${sz.id})"><i class="fas fa-lock"></i> Lezárás</button>`;
   } else if (sz.statusz === 'lezart') {
-    actions.innerHTML += `<button class="btn btn-success btn-sm" onclick="kuldjEredmenyek(${sz.id})"><i class="fas fa-paper-plane"></i> Eredmények kiadása tanulóknak</button>
+    actions.innerHTML = `
+      <button class="btn btn-success btn-sm" onclick="kuldjEredmenyek(${sz.id})"><i class="fas fa-paper-plane"></i> Eredmények kiadása</button>
       <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>`;
   } else {
-    actions.innerHTML += `<span style="color:#fcd34d;font-size:0.85rem"><i class="fas fa-check-circle"></i> Eredmények kiadva</span>`;
+    actions.innerHTML = `<span style="color:#fcd34d;font-size:0.85rem"><i class="fas fa-check-circle"></i> Eredmények kiadva</span>`;
   }
 
   // Beadások tábla
@@ -1000,12 +1141,19 @@ function renderDetail(sz, beadasok) {
       <td style="text-align:center">${b.autoPont}</td>
       <td style="text-align:center">
         <input class="pont-input" type="number" min="0" max="${b.maxPont}" value="${vegPont}"
+          id="pont-input-${b.id}"
           onchange="setBeadasPont(${b.id},this.value,'')" ${sz.statusz==='kiadva'?'disabled':''}>
       </td>
       <td style="text-align:center">${b.maxPont}</td>
       <td style="font-size:0.78rem;color:#94a3b8">${escH(b.megjegyzes||'')}</td>
       <td>${b.kod ? `<button class="kod-btn" onclick="showKod(${b.id},'${escH(b.tanuloNev)} – ${escH(b.feladatId)}')"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#374151">–</span>'}</td>
-      <td></td>
+      <td style="white-space:nowrap">
+        ${b.kod ? `
+          <button class="kod-btn" onclick="letoltMegoldas(${b.id})" title="Megoldás letöltése"><i class="fas fa-download"></i></button>
+          <button class="kod-btn" onclick="letoltRubrika(${b.id})" title="Pontozási rubrika letöltése" style="margin-left:4px"><i class="fas fa-list-check"></i></button>
+          <button class="kod-btn" onclick="aiPontozas(${b.id})" title="AI pontozás (Gemini)" style="margin-left:4px;background:#1a1a4e;border-color:#6366f1;color:#a5b4fc"><i class="fas fa-robot"></i> AI</button>
+        ` : ''}
+      </td>
     </tr>`;
   }).join('');
 
@@ -1042,22 +1190,45 @@ function renderOsszes(beadasok, feladatok, ph, maxOssz) {
 }
 
 async function setBeadasPont(beadasId, pont, megjegyzes) {
+  const ujPont = parseInt(pont) || 0;
   try {
-    await authFetch(`${API}/api/szamonkeres/beadas/${beadasId}/pont`, {
+    const res = await authFetch(`${API}/api/szamonkeres/beadas/${beadasId}/pont`, {
       method:'PATCH',
-      body: JSON.stringify({pont: parseInt(pont)||0, megjegyzes: megjegyzes||null})
+      body: JSON.stringify({ pont: ujPont, megjegyzes: megjegyzes || null })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
     // Frissítjük az allBeadasok-ban
     const b = allBeadasok.find(x => x.id === beadasId);
-    if (b) b.manualisPont = parseInt(pont)||0;
-    // Re-render összesítés
+    if (b) {
+      b.manualisPont = ujPont;
+      if (megjegyzes) b.megjegyzes = megjegyzes;
+    }
+
+    // Input mező frissítése a táblában
+    const inputEl = document.getElementById(`pont-input-${beadasId}`);
+    if (inputEl) {
+      inputEl.value = ujPont;
+      inputEl.style.background = '#0a2a0a';
+      inputEl.style.borderColor = '#16a34a';
+      setTimeout(() => {
+        inputEl.style.background = '';
+        inputEl.style.borderColor = '';
+      }, 1500);
+    }
+
+    // Re-render összesítés (szambank_auto: 40 pont max)
     if (currentSzamonkeres) {
-      const feladatok = JSON.parse(currentSzamonkeres.feladatok||'[]');
-      const ph = JSON.parse(currentSzamonkeres.ponthatarak||'{}');
-      const maxOssz = feladatok.reduce((s,f)=>s+f.pont,0);
+      const feladatok = JSON.parse(currentSzamonkeres.feladatok || '[]');
+      const ph = JSON.parse(currentSzamonkeres.ponthatarak || '{}');
+      const isSzambankAuto = feladatok.length === 1 && feladatok[0].tipus === 'szambank_auto';
+      const maxOssz = isSzambankAuto ? 40 : feladatok.reduce((s, f) => s + (f.pont || 0), 0);
       renderOsszes(allBeadasok, feladatok, ph, maxOssz);
     }
-  } catch(e) { console.error('Pont mentési hiba', e); }
+  } catch(e) {
+    console.error('Pont mentési hiba', e);
+    showDetailMsg('err', `Hiba a pont mentésekor: ${e.message}`);
+  }
 }
 
 function showKod(beadasId, cim) {
@@ -1068,14 +1239,280 @@ function showKod(beadasId, cim) {
   document.getElementById('kod-modal').classList.add('open');
 }
 
+// ── Indítás ───────────────────────────────────────────────────────────────────
+async function inditSzamonkeres(id) {
+  if (!confirm('Elindítod a számonkérést? A tanulóknál azonnal megjelenik a feladat!')) return;
+  try {
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/indit`, { method: 'POST' });
+    if (!res.ok) throw new Error((await res.json()).error || 'Hiba');
+    showDetailMsg('ok', '<i class="fas fa-play"></i> Számonkérés elindítva! A tanulók most kapják meg.');
+    openDetail(id);
+  } catch(e) { showDetailMsg('err', 'Hiba az indítás során: ' + e.message); }
+}
+
+async function inditSzamonkeresKartya(id, btn) {
+  if (!confirm('Elindítod a számonkérést?')) return;
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  try {
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/indit`, { method: 'POST' });
+    if (!res.ok) throw new Error((await res.json()).error || 'Hiba');
+    loadSzamonkeresek();
+  } catch(e) {
+    alert('Hiba: ' + e.message);
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-play"></i> Indítás';
+  }
+}
+
 async function lezarSzamonkeres(id) {
   if (!confirm('Lezárod a számonkérést? Ezután a tanulók nem tudnak több beadást küldeni.')) return;
   try {
-    const res = await authFetch(`${API}/api/szamonkeres/${id}/lezar`, {method:'PATCH'});
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/lezar`, { method: 'POST' });
     if (!res.ok) throw new Error('Hiba');
     showDetailMsg('ok','<i class="fas fa-lock"></i> Számonkérés lezárva.');
     openDetail(id);
   } catch(e) { showDetailMsg('err', 'Hiba a lezárás során.'); }
+}
+
+// ── Megoldás letöltése (.txt) ──────────────────────────────────────────────────
+function letoltMegoldas(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b?.kod) return;
+  const sz = currentSzamonkeres;
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
+  const tartalom = [
+    `Tanuló: ${b.tanuloNev} (${b.tanuloEmail})`,
+    `Osztály: ${b.osztaly||''}${b.csoport?'/'+b.csoport:''}`,
+    `Számonkérés: ${sz?.cim||''}`,
+    `Feladat: ${feladat?.cim||b.feladatId} (${b.maxPont} pont)`,
+    `Beadás: ${b.submittedAt||''}`,
+    '─'.repeat(50), '',
+    b.kod
+  ].join('\n');
+  downloadTxt(tartalom, `${b.tanuloNev.replace(/\s+/g,'_')}_megoldas.txt`);
+}
+
+// ── Rubrika letöltése (.txt) ───────────────────────────────────────────────────
+function letoltRubrika(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b) return;
+  const sz = currentSzamonkeres;
+  const task = getSzambankTaskByBeadasId(b, sz);
+  let rubrika = '';
+  if (task) rubrika = [`Feladat: ${task.cim} (${task.pont} pont)`, '',
+    'FELADATLEÍRÁS:', task.leiras, '',
+    'MINTA KIMENET:', task.minta_kimenet||'(nincs)', '',
+    'PONTOZÁSI SZEMPONTOK:',
+    ...(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`)
+  ].join('\n');
+  if (!rubrika) { alert('Ehhez a feladathoz nincs letölthető rubrika.'); return; }
+  downloadTxt(`Tanuló: ${b.tanuloNev}\nSzámonkérés: ${sz?.cim||''}\n${'─'.repeat(50)}\n\n` + rubrika,
+    `${b.tanuloNev.replace(/\s+/g,'_')}_rubrika.txt`);
+}
+
+// ── Szambank task lookup beadás alapján ───────────────────────────────────────
+function getSzambankTaskByBeadasId(b, sz) {
+  if (typeof szamonkeresFeladatok === 'undefined') return null;
+  const allTasks = [...szamonkeresFeladatok.p8, ...szamonkeresFeladatok.p14, ...szamonkeresFeladatok.p18];
+
+  // 1. Direkt keresés: szambank_auto típusnál a feladatId maga a task id (pl. "S8_03")
+  const byId = allTasks.find(t => t.id === b.feladatId);
+  if (byId) return byId;
+
+  // 2. Régi szambank szimpla típus: feladatok tömbben keresés
+  const feladatok = JSON.parse(sz?.feladatok || '[]');
+  const feladat = feladatok.find((f, i) =>
+    (f.tipus==='rendszer' ? `r_${f.feladat_szam}` : `s_${i}`) === b.feladatId
+  );
+  if (feladat?.tipus === 'szambank' && feladat.feladat_id) {
+    return allTasks.find(t => t.id === feladat.feladat_id) || null;
+  }
+  return null;
+}
+
+function downloadTxt(tartalom, fajlnev) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([tartalom], {type:'text/plain;charset=utf-8'})),
+    download: fajlnev
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ── Gemini kulcs kezelés ──────────────────────────────────────────────────────
+function getGeminiKey() { return localStorage.getItem('geminiApiKey') || ''; }
+
+function updateGeminiKeyBtn() {
+  const btn = document.getElementById('gemini-key-btn');
+  const lbl = document.getElementById('gemini-key-label');
+  if (!btn) return;
+  btn.style.borderColor = '#6366f1';
+  btn.style.color = '#a5b4fc';
+  if (lbl) lbl.textContent = 'AI pontozás';
+}
+
+function openGeminiSettings() {
+  const modal = document.getElementById('gemini-modal');
+  modal.style.display = 'flex';
+  const inp = document.getElementById('gemini-key-input');
+  const existing = getGeminiKey();
+  inp.value = existing ? '••••••••••••••••••••' : '';
+  inp.type = 'password';
+  document.getElementById('gemini-eye-icon').className = 'fas fa-eye';
+  document.getElementById('gemini-delete-btn').style.display = existing ? 'inline-block' : 'none';
+  document.getElementById('gemini-modal-msg').style.display = 'none';
+  if (!existing) setTimeout(() => inp.focus(), 100);
+}
+
+function closeGeminiSettings() {
+  document.getElementById('gemini-modal').style.display = 'none';
+}
+
+function toggleGeminiKeyVisible() {
+  const inp = document.getElementById('gemini-key-input');
+  const icon = document.getElementById('gemini-eye-icon');
+  if (inp.type === 'password') {
+    const existing = getGeminiKey();
+    if (inp.value.includes('•') && existing) inp.value = existing;
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+function saveGeminiKey() {
+  const inp = document.getElementById('gemini-key-input');
+  const msg = document.getElementById('gemini-modal-msg');
+  let val = inp.value.trim();
+  if (val.includes('•')) val = getGeminiKey(); // nem módosított, megtartjuk
+  if (!val) { showGeminiMsg('err', 'Írd be az API kulcsot!'); return; }
+  if (!val.startsWith('AIza')) { showGeminiMsg('err', 'Érvénytelen kulcs — az AIzaSy... kezdetű kulcsot várom.'); return; }
+  localStorage.setItem('geminiApiKey', val);
+  updateGeminiKeyBtn();
+  document.getElementById('gemini-delete-btn').style.display = 'inline-block';
+  showGeminiMsg('ok', '<i class="fas fa-check"></i> Kulcs mentve!');
+  setTimeout(closeGeminiSettings, 1200);
+}
+
+function deleteGeminiKey() {
+  if (!confirm('Törlöd a mentett Gemini API kulcsot?')) return;
+  localStorage.removeItem('geminiApiKey');
+  document.getElementById('gemini-key-input').value = '';
+  document.getElementById('gemini-delete-btn').style.display = 'none';
+  updateGeminiKeyBtn();
+  showGeminiMsg('ok', 'Kulcs törölve.');
+}
+
+async function testGeminiKey() {
+  showGeminiMsg('info', '<i class="fas fa-spinner fa-spin"></i> Tesztelés (Groq AI)...');
+  try {
+    const res = await authFetch(`${API}/api/ai/pontozas`, {
+      method: 'POST',
+      body: JSON.stringify({ prompt: 'Mondj egy szót magyarul. Csak egyetlen szót írj!' })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      showGeminiMsg('ok', `<i class="fas fa-check"></i> AI kapcsolat OK! Válasz: "${data.text?.trim()}"`);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showGeminiMsg('err', `Hiba: ${err?.error || res.status}`);
+    }
+  } catch(e) { showGeminiMsg('err', 'Hálózati hiba: ' + e.message); }
+}
+
+function showGeminiMsg(type, html) {
+  const el = document.getElementById('gemini-modal-msg');
+  el.style.display = 'block';
+  el.style.color = type === 'ok' ? '#4ade80' : type === 'err' ? '#fca5a5' : '#94a3b8';
+  el.innerHTML = html;
+}
+
+// ── AI pontozás (Gemini) ───────────────────────────────────────────────────────
+async function aiPontozas(beadasId) {
+  const b = allBeadasok.find(x => x.id === beadasId);
+  if (!b?.kod) { alert('Nincs beadott kód.'); return; }
+  const sz = currentSzamonkeres;
+  const task = getSzambankTaskByBeadasId(b, sz);
+  if (!task) { alert('Ehhez a feladathoz nincs AI pontozás (csak szambank feladatoknál érhető el).'); return; }
+
+  // API hívás a Railway backend proxyn keresztül (kulcs a szerveren van)
+
+  const promptSzoveg = `Te egy Python tanárt segítő AI vagy. Értékeld az alábbi megoldást!
+
+FELADAT: ${task.cim} (${task.pont} pont)
+FELADATLEÍRÁS:
+${task.leiras}
+
+PONTOZÁSI SZEMPONTOK (minden szempont 1 pont):
+${(task.pontozasi_szempontok||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')}
+
+TANULÓ KÓDJA:
+\`\`\`python
+${b.kod}
+\`\`\`
+
+Kérlek értékeld az összes szempontot és adj javasolt pontszámot!
+
+FORMÁTUM (pontosan így):
+SZEMPONTOK:
+1. ✓/✗ [szempontnév]
+...
+
+JAVASOLT PONTSZÁM: X / ${task.pont}
+ÉRTÉKELÉS: [1-2 mondatos szöveges értékelés magyarul]`;
+
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;padding:12px 20px;border-radius:10px;font-size:0.88rem;font-weight:600;display:flex;align-items:center;gap:10px';
+  toast.innerHTML = '<i class="fas fa-robot" style="animation:spin 1s linear infinite"></i> Gemini értékel...';
+  document.body.appendChild(toast);
+
+  try {
+    const res = await authFetch(`${API}/api/ai/pontozas`, {
+      method: 'POST',
+      body: JSON.stringify({ prompt: promptSzoveg })
+    });
+    toast.remove();
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const valasz = data.text || 'Nem érkezett válasz.';
+    showAiModal(valasz, beadasId, task.pont);
+  } catch(e) {
+    toast.remove();
+    alert('AI hiba: ' + e.message);
+  }
+}
+
+function showAiModal(szoveg, beadasId, maxPont) {
+  const pontMatch = szoveg.match(/JAVASOLT PONTSZÁM:\s*(\d+)\s*\/\s*\d+/i);
+  const javasoltPont = pontMatch ? parseInt(pontMatch[1]) : null;
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.style.zIndex = '9000';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:660px">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fas fa-robot" style="color:#6366f1;margin-right:8px"></i>AI értékelés</div>
+        <button class="close-btn" onclick="this.closest('.modal').remove()"><i class="fas fa-xmark"></i></button>
+      </div>
+      <pre style="white-space:pre-wrap;font-size:0.83rem;color:#cbd5e1;line-height:1.7;font-family:'Segoe UI',sans-serif;background:#0b1120;border-radius:8px;padding:14px;max-height:55vh;overflow-y:auto">${escH(szoveg)}</pre>
+      ${javasoltPont !== null ? `
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid #1f2937;flex-wrap:wrap">
+          <span style="font-size:0.88rem;color:#94a3b8">Javasolt: <strong style="color:#e0e0e0;font-size:1.1rem">${javasoltPont} / ${maxPont} pont</strong></span>
+          <button onclick="setBeadasPont(${beadasId},${javasoltPont},'AI javaslat');this.closest('.modal').remove()"
+            style="padding:7px 18px;background:#15803d;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer">
+            <i class="fas fa-check"></i> Elfogadom
+          </button>
+          <button onclick="this.closest('.modal').remove()"
+            style="padding:7px 14px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer">
+            Mégse
+          </button>
+        </div>` : ''}
+    </div>`;
+  document.body.appendChild(modal);
 }
 
 async function kuldjEredmenyek(id) {

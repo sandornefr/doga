@@ -352,11 +352,6 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     if (requestedRole is not ("tanulo" or "oktato"))
         return Results.BadRequest(new { error = "Érvénytelen szerepkör!" });
 
-    if (requestedRole == "oktato")
-    {
-        if (string.IsNullOrWhiteSpace(req.OktatoiKod) || !string.Equals(req.OktatoiKod.Trim(), teacherCode, StringComparison.Ordinal))
-            return Results.BadRequest(new { error = "Érvénytelen oktatói kód!" });
-    }
 
     if (string.IsNullOrWhiteSpace(req.Vezeteknev) || string.IsNullOrWhiteSpace(req.Keresztnev))
         return Results.BadRequest(new { error = "Kérlek add meg a nevedet!" });
@@ -1803,6 +1798,51 @@ app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
     if (celHonap < 3 || celHonap > 5) return Results.BadRequest(new { error = "celHonap 3-5 lehet" });
     var ok = db.SetProgressCelHonap(progressId, email, celHonap);
     return ok ? Results.Ok(new { success = true }) : Results.Forbid();
+});
+
+// ── Groq AI proxy (tanárnak) ──────────────────────────────────────────────────
+app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
+{
+    var (valid, _, role) = InspectAuthContext(ctx);
+    if (!valid || role != "oktato") return Results.Unauthorized();
+
+    var groqKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") ?? "";
+    if (string.IsNullOrWhiteSpace(groqKey))
+        return Results.BadRequest(new { error = "GROQ_API_KEY nincs beállítva a szerveren. Állítsd be Railway Variables-ben!" });
+
+    using var reader = new StreamReader(ctx.Request.Body);
+    var reqBody = await reader.ReadToEndAsync();
+
+    // A frontend {prompt: "..."} formátumban küldi
+    string promptText;
+    try {
+        var doc = JsonDocument.Parse(reqBody).RootElement;
+        promptText = doc.GetProperty("prompt").GetString() ?? "";
+    } catch {
+        return Results.BadRequest(new { error = "Hibás kérés formátum" });
+    }
+
+    var payload = System.Text.Json.JsonSerializer.Serialize(new {
+        model    = "llama-3.1-8b-instant",
+        messages = new[] { new { role = "user", content = promptText } },
+        max_tokens       = 1500,
+        temperature      = 0.3
+    });
+
+    using var http = new HttpClient();
+    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {groqKey}");
+    var resp = await http.PostAsync(
+        "https://api.groq.com/openai/v1/chat/completions",
+        new StringContent(payload, System.Text.Encoding.UTF8, "application/json"));
+    var respBody = await resp.Content.ReadAsStringAsync();
+
+    if (!resp.IsSuccessStatusCode)
+        return Results.BadRequest(new { error = $"Groq hiba ({(int)resp.StatusCode}): {respBody}" });
+
+    // Kinyerjük a szöveges választ
+    var respDoc = JsonDocument.Parse(respBody).RootElement;
+    var text = respDoc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "";
+    return Results.Ok(new { text });
 });
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
