@@ -534,12 +534,12 @@ ${pontozas ? `[Belülről ellenőrizd (a lépéseket NE írd ki): van-e a pontoz
 ${taskDesc ? '[Hasonlítsd össze a feladatleírás bekérési szövegeit, kiírási szövegeit, fájlneveit és függvényneveit a megoldás kódjával. Az elemzést NE írd ki — csak a végeredményt: ha minden egyezik, pontosan "OK". Ha eltérést találsz, kötőjeles felsorolás röviden (pl. "- A kiírás eltér: feladatban X, kódban Y").]' : 'KIHAGYVA'}
 
 ---
-${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 2500) + '\n' : ''}
+${taskDesc ? 'FELADATLEÍRÁS:\n' + trim(taskDesc, 1500) + '\n' : ''}
 MEGOLDÁS FÁJLOK:
 \`\`\`python
-${trim(kod, 5000)}
+${trim(kod, 3000)}
 \`\`\`
-${pontozas ? '\nPONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1500) : ''}
+${pontozas ? '\nPONTOZÁSI KRITÉRIUMOK:\n' + trim(pontozas, 1000) : ''}
 
 FONTOS: CSAK a ###SZINTAXIS, ###PONTOZO, ###EGYEZES szekciók szerepeljenek. Semmi más szöveg.`;
 
@@ -1147,7 +1147,7 @@ function getAuthHeader() {
   return u.token ? { 'Authorization': 'Bearer ' + u.token } : {};
 }
 
-async function groqViaProxy(prompt, rawText = false) {
+async function groqViaProxy(prompt, rawText = false, retry = true) {
   try {
     const res = await fetch(API + '/api/ai/pontozas', {
       method: 'POST',
@@ -1156,6 +1156,10 @@ async function groqViaProxy(prompt, rawText = false) {
     });
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
+      if (res.status === 429 && retry) {
+        await new Promise(r => setTimeout(r, 7000));
+        return groqViaProxy(prompt, rawText, false);
+      }
       return makeItem('err','fas fa-robot','AI hiba', err?.error || 'HTTP ' + res.status);
     }
     const data = await res.json();
