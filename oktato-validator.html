@@ -40,11 +40,11 @@
     .upload-zone.has-files{border-color:#15803d;background:#0a2a1a}
     .upload-zone.optional{border-color:#1e3a5f}
     .upload-zone.optional.has-files{border-color:#4f46e5;background:#1a1040}
-    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .upload-icon{font-size:1.4rem;margin-bottom:6px}
-    .upload-label{font-size:.85rem;font-weight:600;color:#e0e0e0}
-    .upload-sub{font-size:.75rem;color:#64748b;margin-top:3px}
-    .file-list{margin-top:8px;text-align:left}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10}
+    .upload-icon{font-size:1.4rem;margin-bottom:6px;pointer-events:none}
+    .upload-label{font-size:.85rem;font-weight:600;color:#e0e0e0;pointer-events:none}
+    .upload-sub{font-size:.75rem;color:#64748b;margin-top:3px;pointer-events:none}
+    .file-list{margin-top:8px;text-align:left;pointer-events:none}
     .file-chip{display:inline-block;padding:2px 8px;background:#1e3a5f;border-radius:6px;font-size:.72rem;color:#93c5fd;margin:2px 2px 0 0}
     .file-chip.css{background:#1a1040;color:#a5b4fc}
     .file-chip.doc{background:#1a2a1a;color:#86efac}
@@ -112,7 +112,7 @@
             <h3><i class="fas fa-folder-open"></i> Python megoldás mappa <span style="color:#ef4444">*</span></h3>
             <div class="form-row">
               <div class="upload-zone" id="py-zone-kod">
-                <input type="file" accept=".py,.txt" multiple webkitdirectory id="py-inp-kod" onchange="pyHandleFolder(this)">
+                <input type="file" multiple webkitdirectory id="py-inp-kod" onchange="pyHandleFolder(this)">
                 <div class="upload-icon"><i class="fab fa-python" style="color:#3b82f6"></i></div>
                 <div class="upload-label">Kattints vagy húzd ide a mappát</div>
                 <div class="upload-sub">Minden .py fájl feltöltődik (megoldások + osztály fájlok)</div>
