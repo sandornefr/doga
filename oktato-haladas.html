@@ -519,14 +519,16 @@ async function doLogin() {
     errEl.textContent = '';
     if (!user || !pass) { errEl.textContent = 'Töltsd ki mindkét mezőt!'; return; }
     try {
-        const res = await fetch(`${API}/api/auth/login`, {
+        const res = await fetch(`${API}/api/auth/user-login`, {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ username:user, password:pass })
+            body: JSON.stringify({ email:user, jelszo:pass })
         });
-        if (!res.ok) { errEl.textContent = 'Hibás felhasználónév vagy jelszó!'; return; }
+        if (!res.ok) { errEl.textContent = 'Hibás email vagy jelszó!'; return; }
         const data = await res.json();
-        if (data.role !== 'oktato') { errEl.textContent = 'Csak oktatók érhetik el ezt a felületet!'; return; }
+        if (data.szerep !== 'oktato') { errEl.textContent = 'Csak oktatók érhetik el ezt a felületet!'; return; }
         authToken = data.token;
+        sessionStorage.setItem('kandoUser', JSON.stringify({ token: data.token, szerep: data.szerep, email: data.email, nev: data.nev }));
+        localStorage.setItem('kandoUser', JSON.stringify({ token: data.token, szerep: data.szerep, email: data.email, nev: data.nev }));
         showMainPage();
     } catch(e) { errEl.textContent = 'Kapcsolódási hiba!'; }
 }
@@ -535,7 +537,12 @@ document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key===
 
 (function autoLogin() {
     try {
-        const u = JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
+        let stored = sessionStorage.getItem('kandoUser');
+        if (!stored) {
+            const ls = localStorage.getItem('kandoUser');
+            if (ls) { try { const lsU = JSON.parse(ls); if (lsU.szerep === 'oktato') { sessionStorage.setItem('kandoUser', ls); stored = ls; } } catch(e) {} }
+        }
+        const u = JSON.parse(stored||'{}');
         if (u.szerep === 'oktato' && u.token) {
             authToken = u.token;
             document.getElementById('login-screen').style.display = 'none';
@@ -564,7 +571,7 @@ async function loadAll() {
             authFetch(`${API}/api/haladas`),
             authFetch(`${API}/api/user-state/${encodeURIComponent(getTeacherEmail())}/oktato_csoportok`).catch(()=>null)
         ]);
-        if (!haladasRes.ok) throw new Error();
+        if (!haladasRes.ok) { const err = new Error(); err._status = haladasRes.status; throw err; }
         allData = await haladasRes.json();
         if (csoportRes?.ok) {
             try {
@@ -576,6 +583,12 @@ async function loadAll() {
         if (myCsoportok.length) activateMyCsoportok();
         else applyFilters();
     } catch(e) {
+        if (e && e._status === 401) {
+            sessionStorage.removeItem('kandoUser');
+            localStorage.removeItem('kandoUser');
+            location.href = 'login.html?expired=1';
+            return;
+        }
         document.getElementById('left-panel').innerHTML =
             '<div class="loading-msg"><i class="fas fa-exclamation-triangle" style="color:#f85149"></i> Betöltési hiba!</div>';
     }

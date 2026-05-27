@@ -740,6 +740,11 @@
         window.location.replace('portal.html');
     }
 
+    // Lejárt session üzenet
+    if (new URLSearchParams(location.search).get('expired') === '1') {
+        showError('login-error', 'A munkamenet lejárt. Kérlek lépj be újra!');
+    }
+
     // Ha már be van lépve, átirányítás
     const stored = sessionStorage.getItem('kandoUser');
     if (stored) {
