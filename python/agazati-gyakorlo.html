@@ -890,7 +890,6 @@ function saveAgazatiProgress(task) {
 
   const lsKey = `agazati_done_${task.id}_${u.email}`;
   if (localStorage.getItem(lsKey)) return; // már mentve
-  localStorage.setItem(lsKey, '1');
 
   const osztaly = u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '';
   fetch('https://agazati.up.railway.app/api/progress', {
@@ -898,10 +897,10 @@ function saveAgazatiProgress(task) {
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + u.token },
     body: JSON.stringify({
       email: u.email, nev: u.nev || '', osztaly,
-      targy: 'agazati', feladat: task.cim,
+      targy: 'python', feladat: task.cim,
       pont: task.pont, maxPont: task.pont, mode: 'practice'
     })
-  }).catch(() => {});
+  }).then(r => { if (r.ok) localStorage.setItem(lsKey, '1'); }).catch(() => {});
 }
 
 // ═══════════════════════════════════════════════════════════════════

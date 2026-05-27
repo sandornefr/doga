@@ -2972,7 +2972,7 @@ public class Database
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
                 SELECT COUNT(DISTINCT feladat) FROM progress
-                WHERE LOWER(email)=$e AND LOWER(targy)='python'
+                WHERE LOWER(email)=$e AND LOWER(targy) IN ('python','agazati')
                   AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
             cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$y", ev);

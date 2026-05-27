@@ -1983,7 +1983,6 @@ function sendPracticeProgress(targy, feladat, pont, maxPont){
   if(!u.token||!u.email) return;
   const lsKey=`pp_${targy}_${feladat}_${u.email}`;
   if(localStorage.getItem(lsKey)) return;
-  localStorage.setItem(lsKey,'1');
   fetch('https://agazati.up.railway.app/api/progress',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
@@ -1992,7 +1991,7 @@ function sendPracticeProgress(targy, feladat, pont, maxPont){
       osztaly:u.osztaly?`${u.evfolyam||''}.${u.osztaly}`:'',
       targy, feladat, pont, maxPont, mode:'practice'
     })
-  }).catch(()=>{});
+  }).then(r=>{ if(r.ok) localStorage.setItem(lsKey,'1'); }).catch(()=>{});
 }
 
 // LOAD / SAVE
