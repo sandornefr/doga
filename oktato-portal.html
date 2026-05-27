@@ -566,9 +566,10 @@ function logout() {
     if(!tok){body.innerHTML='<div class="rp-empty">Bejelentkezés szükséges.</div>';return;}
     const h={Authorization:'Bearer '+tok};
     function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function chk401(r){if(r.status===401){sessionStorage.removeItem('kandoUser');localStorage.removeItem('kandoUser');location.replace('login.html?expired=1');}return r;}
     try{
       if(rpTab==='streak'){
-        const r=await fetch(API+'/api/leaderboard/streak'+qp(),{headers:h});
+        const r=chk401(await fetch(API+'/api/leaderboard/streak'+qp(),{headers:h}));
         if(!r.ok)throw new Error();
         const data=await r.json();
         body.innerHTML=data.length?data.map(d=>`<div class="rp-row">
@@ -577,7 +578,7 @@ function logout() {
           <div class="rp-val">${d.aktivNap??0} nap</div>
         </div>`).join(''):'<div class="rp-empty">Nincs adat.</div>';
       }else if(rpTab==='agazati'){
-        const r=await fetch(API+'/api/leaderboard/agazati'+qp(),{headers:h});
+        const r=chk401(await fetch(API+'/api/leaderboard/agazati'+qp(),{headers:h}));
         if(!r.ok)throw new Error();
         const data=await r.json();
         body.innerHTML=data.length?data.map(d=>`<div class="rp-task-block">
@@ -587,7 +588,7 @@ function logout() {
           </div>
         </div>`).join(''):'<div class="rp-empty">Még nincs ágazati adat.</div>';
       }else if(rpTab==='duel'){
-        const r=await fetch(API+'/api/leaderboard/duel'+qp(),{headers:h});
+        const r=chk401(await fetch(API+'/api/leaderboard/duel'+qp(),{headers:h}));
         if(!r.ok)throw new Error();
         const data=await r.json();
         body.innerHTML=data.length?data.map(d=>{

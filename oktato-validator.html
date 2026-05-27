@@ -1161,6 +1161,12 @@ async function groqViaProxy(prompt, rawText = false, retry = true) {
       body: JSON.stringify({ prompt })
     });
     if (!res.ok) {
+      if (res.status === 401) {
+        sessionStorage.removeItem('kandoUser');
+        localStorage.removeItem('kandoUser');
+        location.replace('login.html?expired=1');
+        return;
+      }
       const err = await res.json().catch(()=>({}));
       if (res.status === 429 && retry) {
         await new Promise(r => setTimeout(r, 7000));
