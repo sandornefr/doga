@@ -2467,8 +2467,8 @@ hullok: {
     },
     {
       id: "css-hullo-bg",
-      label: "34. CSS: A hullo osztály háttérszíne #d2ffad",
-      check: (doc, html, css) => css && /\.hullo\s*\{[^}]*background(-color)?\s*:\s*#d2ffad/i.test(css),
+      label: "34. CSS: A hullo osztály háttérszíne rgb(210, 255, 173)",
+      check: (doc, html, css) => css && /\.hullo\s*\{[^}]*background(-color)?\s*:\s*(#d2ffad|rgb\s*\(\s*210\s*,\s*255\s*,\s*173\s*\))/i.test(css),
       cssCheck: true,
     },
     {
