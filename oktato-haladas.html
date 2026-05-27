@@ -1732,12 +1732,21 @@ function renderOsztalyozasTable(data, honap) {
     const panelekHtml = csoportok.map(([kulcs, tagok]) => {
         const vegles    = tagok.filter(t => t.veglegesitve).length;
         const szorgDb   = tagok.filter(t => t.szorgalmiJelolt).length;
-        return `<div class="oz-panel" data-kulcs="${escHtml(kulcs)}"
+        const kulcsEsc = escHtml(kulcs);
+        return `<div class="oz-panel" data-kulcs="${kulcsEsc}"
                   style="display:${kulcs===elsoKulcs?'block':'none'};">
-            <div style="display:flex;gap:14px;align-items:center;padding:6px 2px;margin-bottom:6px;flex-wrap:wrap;">
+            <div style="display:flex;gap:10px;align-items:center;padding:6px 2px;margin-bottom:6px;flex-wrap:wrap;">
                 <span style="color:#475569;font-size:.78rem;">${tagok.length} tanuló</span>
                 <span style="color:#4ade80;font-size:.78rem;">✓ ${vegles} véglegesítve</span>
                 ${szorgDb ? `<span style="color:#fbbf24;font-size:.78rem;">⭐ ${szorgDb} szorgalmi jelölt</span>` : ''}
+                <button onclick="ozMentMind('${kulcsEsc}',this)"
+                  style="padding:3px 12px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:6px;color:#93c5fd;font-size:.75rem;cursor:pointer;margin-left:auto;">
+                  <i class="fas fa-save"></i> Mentés mind
+                </button>
+                <button onclick="ozVeglegesitMind('${kulcsEsc}',this)"
+                  style="padding:3px 12px;background:#14532d;border:1px solid #16a34a;border-radius:6px;color:#86efac;font-size:.75rem;cursor:pointer;">
+                  <i class="fas fa-check-double"></i> Véglegesít mind
+                </button>
             </div>
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
@@ -1787,6 +1796,43 @@ async function ozVeglegesit(id, veglegesitve) {
         const honap = parseInt(document.getElementById('oz-honap').value);
         await loadOsztalyozas();
     }
+}
+
+async function ozMentMind(kulcs, btn) {
+    const rows = document.querySelectorAll(`.oz-panel[data-kulcs="${kulcs}"] tr[id^="oz-row-"]`);
+    const ids = [...rows].map(r => parseInt(r.id.replace('oz-row-', '')));
+    if (!ids.length) return;
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+    await Promise.all(ids.map(async id => {
+        const jegy    = parseInt(document.getElementById(`oz-jegy-${id}`).value);
+        const szorgDb = parseInt(document.getElementById(`oz-szorg-${id}`).value);
+        const meg     = document.getElementById(`oz-meg-${id}`).value;
+        await authFetch(`${API}/api/havijegy/${id}`, {
+            method:'PATCH', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ jegy, szorgalmiJegyDb: szorgDb, tanariMegjegyzes: meg })
+        });
+    }));
+    btn.innerHTML = '<i class="fas fa-check"></i> Mentve!';
+    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
+}
+
+async function ozVeglegesitMind(kulcs, btn) {
+    const rows = document.querySelectorAll(`.oz-panel[data-kulcs="${kulcs}"] tr[id^="oz-row-"]`);
+    const ids = [...rows].map(r => parseInt(r.id.replace('oz-row-', '')));
+    if (!ids.length) return;
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+    await Promise.all(ids.map(async id => {
+        const jegy    = parseInt(document.getElementById(`oz-jegy-${id}`).value);
+        const szorgDb = parseInt(document.getElementById(`oz-szorg-${id}`).value);
+        const meg     = document.getElementById(`oz-meg-${id}`).value;
+        await authFetch(`${API}/api/havijegy/${id}`, {
+            method:'PATCH', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ jegy, szorgalmiJegyDb: szorgDb, veglegesitve: true, tanariMegjegyzes: meg })
+        });
+    }));
+    await loadOsztalyozas();
 }
 
 function ozJegyChange(id, val) { /* automatikus — mentéskor érvényesül */ }

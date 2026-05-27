@@ -2022,6 +2022,7 @@ function openPcGui(devId, devDef) {
   document.getElementById('pc-msg-ok').style.display = 'none';
   document.getElementById('pc-msg-err').style.display = 'none';
   document.getElementById('pc-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('pc-ip').focus(), 50);
 }
 
 function savePcConfig() {
@@ -2064,6 +2065,7 @@ function openRouterGui(devId, devDef) {
   document.getElementById('router-msg-ok').style.display = 'none';
   document.getElementById('router-msg-err').style.display = 'none';
   document.getElementById('router-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('r-password').focus(), 50);
 }
 
 function onSecurityChange() {
@@ -2127,6 +2129,7 @@ function openWifiConnect(devId, devDef) {
   document.getElementById('wifi-networks').innerHTML = netsHtml;
   _selectedWifiNet = null;
   document.getElementById('wifi-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('wifi-pw-input').focus(), 50);
 }
 
 let _selectedWifiNet = null;
