@@ -120,6 +120,10 @@
       font-size:0.88rem; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--font); }
     .btn-run:hover { background:#15803d; color:#fff; }
     .btn-run:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-stop { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px;
+      background:#7f1d1d; border:1.5px solid #ef4444; color:#fca5a5;
+      font-size:0.88rem; font-weight:700; cursor:pointer; transition:all .2s; font-family:var(--font); }
+    .btn-stop:hover { background:#991b1b; color:#fff; }
     .btn-sol { display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px;
       background:transparent; border:1.5px solid #374151; color:#9ca3af;
       font-size:0.84rem; cursor:pointer; transition:all .2s; font-family:var(--font); }
@@ -290,6 +294,9 @@
     <i class="fas fa-play"></i> Futtatás
     <span id="run-spinner"><i class="fas fa-spinner fa-spin"></i></span>
   </button>
+  <button class="btn-stop" id="btn-stop" style="display:none;" onclick="stopCode()">
+    <i class="fas fa-stop"></i> Leállítás
+  </button>
   <button class="btn-check" id="btn-check" onclick="checkCode()" disabled>
     <i class="fas fa-check-circle"></i> Ellenőrzés
   </button>
@@ -346,9 +353,29 @@ let filteredTasks = [];
 let currentTask = null;
 let currentTab = 'konnyu';
 let editor = null;
-let pyodide = null;
-let pyLoading = false;
 let lastOutput = '';
+
+// Pyodide Web Worker
+let pyWorker = null;
+let pyWorkerReady = false;
+let _runResolve = null;
+let _runTimeout = null;
+const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/';
+const WORKER_SRC = `importScripts('${PYODIDE_URL}pyodide.js');
+let py=null;
+(async()=>{
+  try{py=await loadPyodide({indexURL:'${PYODIDE_URL}'});self.postMessage({type:'ready'});}
+  catch(e){self.postMessage({type:'loadError',msg:e.message});}
+})();
+self.onmessage=async function(e){
+  if(e.data.type!=='run'||!py)return;
+  let out='',hasErr=false;
+  py.setStdout({batched:t=>{out+=t+'\\n';}});
+  py.setStderr({batched:t=>{out+=t+'\\n';hasErr=true;}});
+  try{await py.runPythonAsync(e.data.code);}
+  catch(ex){out+=ex.message+'\\n';hasErr=true;}
+  self.postMessage({type:'result',output:out.trim(),hasError:hasErr});
+};`;
 
 // ═══════════════════════════════════════════════════════════════════
 // TESZT MÓD BANNER
@@ -598,6 +625,14 @@ function esc(s) {
 // ═══════════════════════════════════════════════════════════════════
 // MONACO
 // ═══════════════════════════════════════════════════════════════════
+window.MonacoEnvironment = {
+  getWorkerUrl: function() {
+    const base = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/';
+    return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(
+      `self.MonacoEnvironment={baseUrl:'${base}'};importScripts('${base}vs/editor/editor.worker.js');`
+    );
+  }
+};
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 require(['vs/editor/editor.main'], function () {
   monaco.editor.defineTheme('kandoDark', {
@@ -611,78 +646,114 @@ require(['vs/editor/editor.main'], function () {
     fontSize: 14, lineNumbers: 'on', minimap: { enabled: false },
     scrollBeyondLastLine: false, wordWrap: 'on', automaticLayout: true,
     tabSize: 4, insertSpaces: true,
+    quickSuggestions: { other: true, comments: false, strings: false },
+    suggestOnTriggerCharacters: true,
+    wordBasedSuggestions: 'allDocuments',
+    acceptSuggestionOnEnter: 'on',
+    snippetSuggestions: 'bottom',
   });
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// PYODIDE
+// PYODIDE WEB WORKER
 // ═══════════════════════════════════════════════════════════════════
 function setPyStatus(msg, cls='') {
   const el = document.getElementById('pyodide-status');
   el.textContent = msg; el.className = cls;
 }
 
-async function ensurePyodide() {
-  if (pyodide) return pyodide;
-  if (pyLoading) return new Promise(r => { const iv = setInterval(() => { if(pyodide){clearInterval(iv);r(pyodide);} }, 150); });
-  pyLoading = true;
+function initPyWorker() {
+  const blob = new Blob([WORKER_SRC], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  pyWorker = new Worker(url);
+  URL.revokeObjectURL(url);
+  pyWorkerReady = false;
   setPyStatus('Betöltés... (~10 mp)', '');
-  try {
-    pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/' });
-    setPyStatus('Kész ✓', 'ready');
-  } catch(e) { setPyStatus('Hiba', 'error'); pyLoading = false; throw e; }
-  return pyodide;
+  pyWorker.onmessage = function(e) {
+    if (e.data.type === 'ready') {
+      pyWorkerReady = true;
+      setPyStatus('Kész ✓', 'ready');
+    } else if (e.data.type === 'loadError') {
+      setPyStatus('Hiba', 'error');
+    } else if (e.data.type === 'result') {
+      clearTimeout(_runTimeout); _runTimeout = null;
+      if (_runResolve) { _runResolve(e.data); _runResolve = null; }
+    }
+  };
+  pyWorker.onerror = function() {
+    clearTimeout(_runTimeout); _runTimeout = null;
+    if (_runResolve) { _runResolve({ output: 'Worker hiba – próbáld újra!', hasError: true }); _runResolve = null; }
+    pyWorker = null; pyWorkerReady = false;
+    setPyStatus('Hiba', 'error');
+  };
 }
 
-window.addEventListener('load', () => {
-  if (window.loadPyodide) ensurePyodide().catch(() => {});
-});
+function stopCode() {
+  if (pyWorker) { pyWorker.terminate(); pyWorker = null; }
+  pyWorkerReady = false;
+  clearTimeout(_runTimeout); _runTimeout = null;
+  if (_runResolve) { _runResolve({ output: '⏹ Futtatás leállítva.', hasError: false }); _runResolve = null; }
+  initPyWorker();
+  document.getElementById('btn-run').disabled = false;
+  document.getElementById('run-spinner').style.display = 'none';
+  document.getElementById('btn-stop').style.display = 'none';
+}
+
+function runPyCode(fullCode, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    _runResolve = resolve;
+    _runTimeout = setTimeout(() => {
+      _runResolve = null;
+      resolve({ output: '⏱️ Időtúllépés – a kód ' + (timeoutMs/1000) + ' mp-nél tovább futott.\nVégtelen ciklus? Ellenőrizd a megállási feltételt!', hasError: true });
+      if (pyWorker) { pyWorker.terminate(); pyWorker = null; }
+      pyWorkerReady = false;
+      initPyWorker();
+    }, timeoutMs);
+    pyWorker.postMessage({ type: 'run', code: fullCode });
+  });
+}
+
+window.addEventListener('load', () => { initPyWorker(); });
 
 // ═══════════════════════════════════════════════════════════════════
 // KÓDFUTTATÁS
 // ═══════════════════════════════════════════════════════════════════
 async function runCode() {
   if (!editor) return;
+  if (!pyWorkerReady) {
+    const term = document.getElementById('terminal');
+    term.textContent = 'A Python motor még töltődik, kérlek várj...';
+    term.className = 'empty';
+    return;
+  }
   const btn = document.getElementById('btn-run');
+  const btnStop = document.getElementById('btn-stop');
   const spinner = document.getElementById('run-spinner');
-  btn.disabled = true; spinner.style.display = 'inline';
+  btn.disabled = true; btnStop.style.display = 'flex'; spinner.style.display = 'inline';
   const term = document.getElementById('terminal');
   term.className = 'empty'; term.textContent = 'Futtatás...';
 
-  try {
-    const py = await ensurePyodide();
-    const code = editor.getValue();
-    const rawInputs = document.getElementById('input-values').value;
-    const inputs = rawInputs.trim() ? rawInputs.split('\n').map(s => s.trimEnd()) : [];
+  const code = editor.getValue();
+  const rawInputs = document.getElementById('input-values').value;
+  const inputs = rawInputs.trim() ? rawInputs.split('\n').map(s => s.trimEnd()) : [];
 
-    // Figyelmeztetés ha input() van a kódban de nincs megadva érték
-    if (inputs.length === 0 && /\binput\s*\(/.test(code)) {
-      flashInputHint();
-    }
+  if (inputs.length === 0 && /\binput\s*\(/.test(code)) {
+    flashInputHint();
+  }
 
-    let output = '', hasError = false;
-    py.setStdout({ batched: t => { output += t + '\n'; } });
-    py.setStderr({ batched: t => { output += t + '\n'; hasError = true; } });
+  const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+  const res = await runPyCode(setup + '\n' + code);
 
-    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
-    try { await py.runPythonAsync(setup + '\n' + code); }
-    catch(e) {
-      // Érthetőbb hibaüzenet ha az input() mező üres volt
-      let msg = e.message || '';
-      if (inputs.length === 0 && /\binput\s*\(/.test(code) && (msg.includes("invalid literal") || msg.includes("ValueError"))) {
-        msg = '⚠️ A kód input()-ot vár, de nem adtál meg értéket!\nÍrd be az input() értékeket a jobb alsó mezőbe (soronként), majd futtasd újra.\n\n' + msg;
-      }
-      output += msg + '\n'; hasError = true;
-    }
+  let outText = res.output;
+  if (res.hasError && inputs.length === 0 && /\binput\s*\(/.test(code) &&
+      (outText.includes('invalid literal') || outText.includes('ValueError'))) {
+    outText = '⚠️ A kód input()-ot vár, de nem adtál meg értéket!\nÍrd be az input() értékeket a jobb alsó mezőbe (soronként), majd futtasd újra.\n\n' + outText;
+  }
 
-    lastOutput = output.trim();
-    term.textContent = lastOutput || (hasError ? '' : '(Nincs kimenet)');
-    term.className = hasError ? 'has-error' : '';
-
-  } catch(e) {
-    term.textContent = 'Pyodide hiba: ' + e.message;
-    term.className = 'has-error';
-  } finally { btn.disabled = false; spinner.style.display = 'none'; }
+  lastOutput = outText || (res.hasError ? '' : '(Nincs kimenet)');
+  term.textContent = lastOutput;
+  term.className = res.hasError ? 'has-error' : '';
+  btn.disabled = false; btnStop.style.display = 'none'; spinner.style.display = 'none';
 }
 
 function flashInputHint() {
@@ -786,14 +857,11 @@ async function checkCode() {
 }
 
 async function runWithMockInputs(code, inputs, expected) {
-  if (!pyodide) return false;
+  if (!pyWorker || !pyWorkerReady) return false;
   try {
-    let out = '';
-    pyodide.setStdout({ batched: t => { out += t + '\n'; } });
-    pyodide.setStderr({ batched: () => {} });
     const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
-    await pyodide.runPythonAsync(setup + '\n' + code);
-    return out.includes(expected);
+    const result = await runPyCode(setup + '\n' + code, 5000);
+    return !result.hasError && result.output.includes(expected);
   } catch { return false; }
 }
 
@@ -840,13 +908,6 @@ function saveAgazatiProgress(task) {
 // INIT
 // ═══════════════════════════════════════════════════════════════════
 loadTasks();
-</script>
-
-<!-- Pyodide (lazy) -->
-<script>
-const pyScript = document.createElement('script');
-pyScript.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js';
-document.head.appendChild(pyScript);
 </script>
 
 <script src="../special-roles.js"></script>
