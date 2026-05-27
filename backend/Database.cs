@@ -3004,7 +3004,7 @@ public class Database
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
                 SELECT COUNT(*) FROM quiz_results
-                WHERE LOWER(email)=$e AND LOWER(tipus)='interaktiv'
+                WHERE LOWER(email)=$e AND LOWER(tipus) IN ('html','css','bootstrap','interaktiv')
                   AND CAST(strftime('%Y', submitted_at) AS INTEGER)=$y";
             cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$y", ev);

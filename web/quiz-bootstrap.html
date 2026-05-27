@@ -204,7 +204,7 @@ async function sendQuizResult(pont, maxPont, szazalek, jegy) {
     const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
     await fetch(`${RAILWAY}/api/quiz-result`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (user.token || '') },
       body: JSON.stringify({
         nev: user.nev || 'Ismeretlen', email: user.email || '',
         osztaly: user.osztaly || '', csoport: user.csoport || '',
@@ -692,23 +692,6 @@ function showResults() {
     det.appendChild(div);
   });
 
-  saveResult(totalEarned, totalMax, pct, grade);
-}
-
-// ── BACKEND MENTÉS ────────────────────────────────────────────────────
-function saveResult(earned, max, pct, grade) {
-  const u = JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
-  if (!u.token || !u.email) return;
-  fetch(`${RAILWAY}/api/quiz-result`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
-    body:JSON.stringify({
-      email: u.email,
-      subject: 'bootstrap',
-      earned, max, pct, grade,
-      timestamp: new Date().toISOString()
-    })
-  }).catch(()=>{});
 }
 
 </script>
