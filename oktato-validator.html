@@ -996,7 +996,7 @@ async function callGroqAnalysis(srcHtml, solHtml, srcCss, solCss, taskDesc, xlsx
 
   const prompt = `Te egy szigorú webfejlesztés vizsgafeladat-ellenőrző vagy. Feladatod KONKRÉT, TECHNIKAI HIBÁK keresése.
 
-${taskDesc ? '## FELADATLEÍRÁS (teljes szöveg):\n' + trim(taskDesc,3500) + '\n\n' : '## FELADATLEÍRÁS: (nem töltötték fel)\n\n'}
+${taskDesc ? '## FELADATLEÍRÁS (teljes szöveg):\n' + trim(taskDesc,1500) + '\n\n' : '## FELADATLEÍRÁS: (nem töltötték fel)\n\n'}
 
 ## ELŐZETES AUTOMATIKUS ELEMZÉS – FÁJLNÉV ÉS SZÖVEG ELTÉRÉSEK:
 ${specText}
@@ -1006,22 +1006,22 @@ ${diffText}
 
 ## FORRÁS HTML (részlet – a teljes diff fentebb látható):
 \`\`\`html
-${trim(srcHtml,3000)}
+${trim(srcHtml,1200)}
 \`\`\`
 
 ## MEGOLDÁS HTML:
 \`\`\`html
-${trim(solHtml,6000)}
+${trim(solHtml,2500)}
 \`\`\`
 
 ## FORRÁS CSS:
 \`\`\`css
-${trim(srcCss,2000)}
+${trim(srcCss,1000)}
 \`\`\`
 
 ## MEGOLDÁS CSS:
 \`\`\`css
-${trim(solCss,2000)}
+${trim(solCss,1200)}
 \`\`\`
 
 ${excelText ? '## PONTOZÓ CHECKEK:\n' + excelText + '\n\n' : ''}
