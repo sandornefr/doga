@@ -214,6 +214,16 @@ public class Database
         try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN perc_limit INTEGER NOT NULL DEFAULT 60"); } catch { }
         try { Exec(conn, "ALTER TABLE szamonkeres ADD COLUMN started_at TEXT"); } catch { }
         Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS password_reset_codes (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                used       INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
+            );
+        ");
+        Exec(conn, @"
             CREATE TABLE IF NOT EXISTS havijegyek (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
                 email               TEXT NOT NULL,
@@ -1640,6 +1650,54 @@ public class Database
         cmd.Parameters.AddWithValue("$h", newHash);
         cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
         return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // ── Jelszó reset kódok ────────────────────────────────────────────────────
+
+    public (bool found, string nev) SaveResetCode(string email, string code)
+    {
+        var user = GetUserByEmail(email);
+        if (user == null) return (false, "");
+        using var conn = Open();
+        // Régi kódok törlése ehhez az emailhez
+        using (var del = conn.CreateCommand())
+        {
+            del.CommandText = "DELETE FROM password_reset_codes WHERE LOWER(email) = LOWER($e)";
+            del.Parameters.AddWithValue("$e", email);
+            del.ExecuteNonQuery();
+        }
+        using var ins = conn.CreateCommand();
+        ins.CommandText = @"
+            INSERT INTO password_reset_codes (email, code, expires_at)
+            VALUES ($e, $c, datetime('now', '+15 minutes'))";
+        ins.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        ins.Parameters.AddWithValue("$c", code);
+        ins.ExecuteNonQuery();
+        return (true, $"{user.Vezeteknev} {user.Keresztnev}");
+    }
+
+    public bool VerifyAndConsumeResetCode(string email, string code, string newPasswordHash)
+    {
+        using var conn = Open();
+        using var sel = conn.CreateCommand();
+        sel.CommandText = @"
+            SELECT id FROM password_reset_codes
+            WHERE LOWER(email) = LOWER($e)
+              AND code = $c
+              AND used = 0
+              AND datetime(expires_at) > datetime('now')
+            LIMIT 1";
+        sel.Parameters.AddWithValue("$e", email);
+        sel.Parameters.AddWithValue("$c", code);
+        var id = sel.ExecuteScalar();
+        if (id == null) return false;
+
+        using var upd = conn.CreateCommand();
+        upd.CommandText = "UPDATE password_reset_codes SET used = 1 WHERE id = $id";
+        upd.Parameters.AddWithValue("$id", id);
+        upd.ExecuteNonQuery();
+
+        return UpdatePassword(email, newPasswordHash);
     }
 
     // ── Task Ratings ──────────────────────────────────────────────────────────

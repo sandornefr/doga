@@ -1172,6 +1172,36 @@ app.MapDelete("/api/password-reset-request/{id}", (HttpContext ctx, int id, Data
     return Results.Ok(new { success = true });
 });
 
+// Önkiszolgáló reset: kód generálása (nyilvános)
+app.MapPost("/api/auth/generate-reset-code", (GenerateResetCodeRequest req, Database db) =>
+{
+    var email = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(email))
+        return Results.BadRequest(new { error = "Érvénytelen email cím" });
+
+    var code = new Random().Next(100000, 999999).ToString();
+    var (found, nev) = db.SaveResetCode(email, code);
+
+    // Mindig 200-t adunk vissza; ha nem találtuk a felhasználót, a found=false
+    return Results.Ok(new { success = true, found, nev, code = found ? code : "" });
+}).RequireRateLimiting("auth");
+
+// Önkiszolgáló reset: kód + új jelszó beküldése (nyilvános)
+app.MapPost("/api/auth/reset-password-code", (ResetWithCodeRequest req, Database db) =>
+{
+    var email = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(email) || string.IsNullOrWhiteSpace(req.Code) || string.IsNullOrWhiteSpace(req.NewPassword))
+        return Results.BadRequest(new { error = "Hiányzó adatok" });
+    if (req.NewPassword.Length < 6)
+        return Results.BadRequest(new { error = "A jelszó legalább 6 karakter legyen!" });
+
+    var hash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+    var ok = db.VerifyAndConsumeResetCode(email, req.Code.Trim(), hash);
+    return ok
+        ? Results.Ok(new { success = true })
+        : Results.BadRequest(new { error = "Érvénytelen vagy lejárt kód." });
+}).RequireRateLimiting("auth");
+
 // ── Quiz eredmények ────────────────────────────────────────────────────────
 
 // Kvíz eredmény mentése (diák küldi)
@@ -1856,5 +1886,7 @@ namespace KandoTest
     public record ResetPasswordRequest(string Email, string NewPassword);
     public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);
     public record PasswordResetRequestInput(string Email, string Nev, string? Osztaly, string? Csoport);
+    public record GenerateResetCodeRequest(string Email);
+    public record ResetWithCodeRequest(string Email, string Code, string NewPassword);
     public record SaveMegoldasRequest(string FeladatId, string Solution, string Hint1, string Hint2, string Hint3);
 }
