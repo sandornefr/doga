@@ -778,6 +778,20 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── SZIGETEK – 40 szempont (check + find a kódban) ─────────────────────────
 function ajGetChecks() {
+  // Ibiza col megkeresése – csak ha Kréta UTÁN és Ciprus ELŐTT van a #szigeteken belül
+  function ibizaCol(d) {
+    const sz = d.querySelector('#szigetek');
+    if (!sz) return null;
+    const h3s = Array.from(sz.querySelectorAll('h3'));
+    const kH = h3s.find(h => h.textContent.trim() === 'Kréta');
+    const iH = h3s.find(h => h.textContent.trim() === 'Ibiza');
+    const cH = h3s.find(h => h.textContent.trim() === 'Ciprus');
+    if (!iH) return null;
+    if (kH && !(kH.compareDocumentPosition(iH) & Node.DOCUMENT_POSITION_FOLLOWING)) return null;
+    if (cH && !(cH.compareDocumentPosition(iH) & Node.DOCUMENT_POSITION_PRECEDING)) return null;
+    return iH.closest('[class*="col"]') || iH.parentElement;
+  }
+
   return [
     { section:'Beállította az oldal fejrészében:' },
     { id:1,  label:'A weboldal nyelvezete magyar, a karakterkódolása UTF-8.',
@@ -819,10 +833,10 @@ function ajGetChecks() {
       check: d => Array.from(d.querySelectorAll('nav a')).some(a=>a.textContent.includes('Roadster')),
       find: { in:'html', term:'Roadster', fallback:'navbar-nav' } },
     { id:8,  label:'A link a "https://roadster.hu/legjobb-europai-szigetek/" oldalra hivatkozik.',
-      check: d => !!d.querySelector('a[href*="roadster.hu"]'),
+      check: d => !!d.querySelector('nav a[href*="roadster.hu"]'),
       find: { in:'html', term:'roadster.hu', fallback:'navbar-nav' } },
     { id:9,  label:'A linkre alkalmazta a target="_blank" attribútumot.',
-      check: d => { const a=d.querySelector('a[href*="roadster.hu"]'); return a&&a.getAttribute('target')==='_blank'; },
+      check: d => { const a=d.querySelector('nav a[href*="roadster.hu"]'); return a&&a.getAttribute('target')==='_blank'; },
       find: { in:'html', term:'target="_blank"', fallback:'roadster.hu' } },
 
     { section:'A "Leírás" részben elvégezte a következő módosítást:' },
@@ -848,7 +862,13 @@ function ajGetChecks() {
       check: d => { const ol=d.querySelector('#szigetek ol'); return ol&&ol.querySelectorAll('li').length>=5; },
       find: { in:'html', term:'<ol', fallback:'Mallorca' } },
     { id:13, label:'A "Kréta" leírásnál a "Történelmi helyszínek:" szöveg köré <i> elemet rakott.',
-      check: d => Array.from(d.querySelectorAll('i')).some(el=>el.textContent.includes('Történelmi')),
+      check: d => {
+        const h3s = Array.from(d.querySelectorAll('h3'));
+        const kretaH3 = h3s.find(h => h.textContent.trim() === 'Kréta');
+        if (!kretaH3) return false;
+        const col = kretaH3.closest('[class*="col"]') || kretaH3.parentElement;
+        return !!col && Array.from(col.querySelectorAll('i')).some(el => el.textContent.includes('Történelmi'));
+      },
       find: { in:'html', term:'Történelmi', fallback:'Kréta' } },
     { id:14, label:'Az alatta lévő szövegekre <ul> elemet használt és a listaelemeket <li>-be helyezte.',
       check: d => { const ul=d.querySelector('ul#tortenelmi')||d.querySelector('#szigetek ul:not(.navbar-nav)');
@@ -862,28 +882,23 @@ function ajGetChecks() {
       find: { in:'html', term:'class="img-fluid sziget"', fallback:'img-fluid' } },
 
     { section:'Az "Ibiza" részt létrehozta és elvégezte az alábbi feladatot:' },
-    { id:17, label:'Az "Ibiza" szöveget <h3> elembe helyezte.',
-      check: d => Array.from(d.querySelectorAll('h3')).some(h=>h.textContent.trim()==='Ibiza'),
+    { id:17, label:'Az "Ibiza" szöveget <h3> elembe helyezte (Kréta és Ciprus közé).',
+      check: d => !!ibizaCol(d),
       find: { in:'html', term:'<!-- Ibiza', fallback:'Ibiza' } },
     { id:18, label:'A szövegrészt 2 részre bontotta <p> elemek segítségével.',
-      check: d => { const h=Array.from(d.querySelectorAll('h3')).find(x=>x.textContent.trim()==='Ibiza');
-                    if(!h)return false; const col=h.closest('[class*="col"]')||h.parentElement;
-                    return col&&col.querySelectorAll('p').length>=2; },
+      check: d => { const col=ibizaCol(d); return !!col && col.querySelectorAll('p').length>=2; },
       find: { in:'html', term:'Ibiza' } },
     { id:19, label:'A képet a címsor után helyezte és az "img" mappán belüli "ibiza.jpg" képet jeleníti meg.',
-      check: d => {
-        const ibizaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Ibiza');
-        if (!ibizaH3) return false;
-        const col = ibizaH3.closest('[class*="col"]') || ibizaH3.parentElement;
-        return !!col && !!col.querySelector('img[src*="ibiza"]');
-      },
+      check: d => { const col=ibizaCol(d); return !!col && !!col.querySelector('img[src*="ibiza"]'); },
       find: { in:'html', term:'ibiza.jpg', fallback:'ibiza' } },
     { id:20, label:'A képre alt-ot és title-t állított, amelyeknek szövege „Ibiza".',
-      check: d => { const img=d.querySelector('img[src*="ibiza"]');
+      check: d => { const col=ibizaCol(d); if(!col) return false;
+                    const img=col.querySelector('img[src*="ibiza"]');
                     return img&&img.getAttribute('alt')==='Ibiza'&&img.getAttribute('title')==='Ibiza'; },
       find: { in:'html', term:'alt="Ibiza"', fallback:'ibiza' } },
     { id:21, label:'A képre alkalmazta az "img-fluid sziget" osztályjelölőket.',
-      check: d => { const img=d.querySelector('img[src*="ibiza"]');
+      check: d => { const col=ibizaCol(d); if(!col) return false;
+                    const img=col.querySelector('img[src*="ibiza"]');
                     return img&&img.classList.contains('img-fluid')&&img.classList.contains('sziget'); },
       find: { in:'html', term:'ibiza' } },
 
