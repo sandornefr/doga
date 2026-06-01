@@ -245,7 +245,7 @@ async function ajStart() {
     if (c.screenshotCheck) {
       ajScores[c.id] = null; // mindig manuális
     } else if (c.cssCheck) {
-      try { ajScores[c.id] = c.cssCheck(ajCss, cssR) ? 1 : 0; } catch { ajScores[c.id] = null; }
+      try { ajScores[c.id] = c.cssCheck(ajCss) ? 1 : 0; } catch { ajScores[c.id] = null; }
     } else {
       try { ajScores[c.id] = c.check(ajDoc, ajHtml, ajCss) ? 1 : 0; } catch { ajScores[c.id] = null; }
     }
@@ -341,28 +341,23 @@ function ajJumpToCode(id) {
   hint.style.color = '#f59e0b';
 }
 
-// ── CSS parser ─────────────────────────────────────────────────────────────
-function ajParseCss(cssText) {
-  const rules = {};
-  const clean = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
-  const re = /([^{@\n][^{]*)\{([^}]*)\}/g;
-  let m;
-  while ((m = re.exec(clean)) !== null) {
-    m[1].trim().split(',').forEach(sel => {
-      sel = sel.trim(); if (!sel) return;
-      if (!rules[sel]) rules[sel] = {};
-      m[2].split(';').forEach(d => {
-        const ci = d.indexOf(':');
-        if (ci > 0) {
-          const p = d.slice(0,ci).trim().toLowerCase();
-          const v = d.slice(ci+1).trim().toLowerCase();
-          if (p) rules[sel][p] = v;
-        }
-      });
-    });
-  }
-  return rules;
+// ── CSS segédfüggvény: adott szelektor blokkjában van-e property:value ──────
+function cssHas(css, selector, property, valuePattern) {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Escape selector for regex
+  const selEsc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(selEsc + '\\s*\\{([^}]*)\\}', 'i');
+  const m = re.exec(clean);
+  if (!m) return false;
+  const block = m[1];
+  const propEsc = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const valRe = valuePattern instanceof RegExp
+    ? new RegExp(propEsc + '\\s*:\\s*' + valuePattern.source, 'i')
+    : new RegExp(propEsc + '\\s*:\\s*' + String(valuePattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  return valRe.test(block);
 }
+
+function ajParseCss(css) { return css; } // megtartjuk a hívási helyek miatt
 
 // ── Kritérium lista ─────────────────────────────────────────────────────────
 function ajRenderList(checks) {
@@ -625,43 +620,41 @@ function ajGetChecks() {
 
     { section:'A style.css külső stíluslap módosításai:' },
     { id:27, label:'A "body" elemkijelölőben: "font-family: Georgia".',
-      cssCheck: (_,r) => (r['body']?.['font-family']||'').includes('georgia'),
+      cssCheck: css => cssHas(css, 'body', 'font-family', /georgia/i),
       find: { in:'css', term:'font-family', fallback:'body' } },
     { id:28, label:'A "#fejlec" elemkijelölőben: "width: 100%".',
-      cssCheck: (_,r) => r['#fejlec']?.['width']==='100%',
+      cssCheck: css => cssHas(css, '#fejlec', 'width', '100%'),
       find: { in:'css', term:'#fejlec' } },
     { id:29, label:'A "#szigetek p" elemkijelölőben: "padding: 20px".',
-      cssCheck: (_,r) => (r['#szigetek p']?.['padding']||'').includes('20px'),
+      cssCheck: css => cssHas(css, '#szigetek p', 'padding', /20px/),
       find: { in:'css', term:'#szigetek p', fallback:'#szigetek' } },
     { id:30, label:'A ".tablazat" elemkijelölőben: "border-radius: 10px".',
-      cssCheck: (_,r) => r['.tablazat']?.['border-radius']==='10px',
+      cssCheck: css => cssHas(css, '\\.tablazat', 'border-radius', '10px'),
       find: { in:'css', term:'border-radius', fallback:'.tablazat' } },
     { id:31, label:'A ".tablazat" elemkijelölőben: "font-size: 1.1em" (vagy 110%).',
-      cssCheck: (_,r) => { const fs=r['.tablazat']?.['font-size']||''; return fs==='1.1em'||fs==='110%'; },
+      cssCheck: css => cssHas(css, '\\.tablazat', 'font-size', /1\.1em|110%/),
       find: { in:'css', term:'.tablazat' } },
     { id:32, label:'A ".center-btn" elemkijelölőben: "background-color: rgb(201,159,62)".',
-      cssCheck: (_,r) => { const bg=r['.center-btn']?.['background-color']||'';
-                           return /201/.test(bg)&&/159/.test(bg)&&/\b62\b/.test(bg); },
+      cssCheck: css => cssHas(css, '\\.center-btn', 'background-color', /201[\s,]*159[\s,]*62/),
       find: { in:'css', term:'.center-btn' } },
     { id:33, label:'A ".center-btn" elemkijelölőben: "font-variant: small-caps".',
-      cssCheck: (_,r) => r['.center-btn']?.['font-variant']==='small-caps',
+      cssCheck: css => cssHas(css, '\\.center-btn', 'font-variant', 'small-caps'),
       find: { in:'css', term:'font-variant', fallback:'.center-btn' } },
     { id:34, label:'Az "a" elemkijelölőben: "text-decoration: none".',
-      cssCheck: (_,r) => r['a']?.['text-decoration']==='none',
-      find: { in:'css', term:'text-decoration', fallback:'\na {' } },
+      cssCheck: css => cssHas(css, /(?:^|\n)\s*a\s*/.source.slice(1), 'text-decoration', 'none') || /\ba\s*\{[^}]*text-decoration\s*:\s*none/i.test(css),
+      find: { in:'css', term:'text-decoration', fallback:'a {' } },
     { id:35, label:'Az "a" elemkijelölőben: "color: rgb(122,84,6)".',
-      cssCheck: (_,r) => { const c=r['a']?.['color']||''; return /122/.test(c)&&/84/.test(c)&&/\b6\b/.test(c); },
-      find: { in:'css', term:'122', fallback:'\na {' } },
+      cssCheck: css => /\ba\s*\{[^}]*color\s*:[^}]*122[^}]*84[^}]*\b6\b/is.test(css),
+      find: { in:'css', term:'rgb(122', fallback:'a {' } },
     { id:36, label:'Létrehozta a "#tortenelmi" elemkijelölőt.',
       cssCheck: css => /#tortenelmi/.test(css),
       find: { in:'css', term:'#tortenelmi' } },
     { id:37, label:'Beállította: "list-style-image: url(\'../img/history-icon.png\')".',
-      cssCheck: (css,r) => /history-icon\.png/.test(r['#tortenelmi']?.['list-style-image']||'') ||
-                           (/history-icon\.png/.test(css)&&/#tortenelmi/.test(css)),
+      cssCheck: css => /history-icon\.png/.test(css) && /#tortenelmi/.test(css),
       find: { in:'css', term:'list-style-image', fallback:'history-icon' } },
     { id:38, label:'Létrehozta a "p" elemkijelölőt és beállította: "text-align: justify".',
-      cssCheck: (_,r) => r['p']?.['text-align']==='justify',
-      find: { in:'css', term:'text-align', fallback:'\np {' } },
+      cssCheck: css => /(?:^|\n)\s*p\s*\{[^}]*text-align\s*:\s*justify/i.test(css),
+      find: { in:'css', term:'text-align', fallback:'justify' } },
 
     { section:'Elvégezte a szükséges validációkat:' },
     { id:39, label:'A HTML oldalt validálta (https://validator.w3.org/) – fájlnév: "szigetekValidalas", tartalma hibátlan.',
