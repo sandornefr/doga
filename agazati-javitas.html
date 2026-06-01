@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ágazati Javítás – Kandó</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
+    .topbar{background:#16213e;border-bottom:1px solid #1f2937;padding:11px 20px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.95rem;color:#e0e0e0;text-decoration:none}
+    .topbar-logo img{height:30px}
+    a.back{padding:5px 14px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;font-size:.82rem;text-decoration:none;transition:.2s}
+    a.back:hover{border-color:#6b7280;color:#e0e0e0}
+    .container{max-width:1500px;margin:0 auto;padding:20px 16px}
+    /* Tantárgy tabs */
+    .subj-tabs{display:flex;gap:8px;margin-bottom:20px}
+    .subj-btn{padding:8px 20px;border-radius:8px;border:1px solid #374151;background:transparent;color:#64748b;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+    .subj-btn.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+    .subj-btn:disabled{opacity:.35;cursor:not-allowed}
+    /* Upload */
+    .card{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:18px;margin-bottom:14px}
+    label{font-size:.82rem;color:#94a3b8;display:block;margin-bottom:4px}
+    input[type=text],select{width:100%;padding:8px 11px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:.88rem;outline:none;transition:border .2s}
+    input[type=text]:focus,select:focus{border-color:#3b82f6}
+    .upload-zone{border:2px dashed #374151;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.2s;background:#0b1120;position:relative}
+    .upload-zone:hover,.upload-zone.dragover{border-color:#3b82f6;background:#0d1a2e}
+    .upload-zone.has-files{border-color:#15803d;background:#0a2a1a}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10}
+    .btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+    .btn-primary{background:#1d4ed8;color:#fff}.btn-primary:hover:not(:disabled){background:#2563eb}
+    .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+    .btn-ghost{background:transparent;border:1px solid #374151;color:#9ca3af}.btn-ghost:hover{border-color:#6b7280;color:#e0e0e0}
+    .btn-sm{padding:5px 12px;font-size:.8rem}
+    .form-row{margin-bottom:12px}
+    /* Grading */
+    .grading-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;background:#16213e;border:1px solid #1f2937;border-radius:10px;margin-bottom:14px}
+    .split{display:flex;gap:14px;align-items:flex-start}
+    .preview-col{width:44%;flex-shrink:0}
+    .criteria-col{flex:1;overflow-y:auto;max-height:520px}
+    .preview-wrap{background:#16213e;border:1px solid #1f2937;border-radius:10px;overflow:hidden}
+    .preview-bar{padding:5px 12px;background:#0b1120;display:flex;justify-content:space-between;align-items:center}
+    /* Criteria list */
+    .aj-sec{background:#0d1a2e;border-left:3px solid #3b82f6;padding:6px 12px;margin:10px 0 3px;border-radius:0 6px 6px 0;color:#64748b;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .aj-row{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;margin-bottom:2px;transition:background .15s}
+    .aj-row:hover{background:rgba(255,255,255,.03)}
+    .aj-row.pass{border-left:3px solid #22c55e}
+    .aj-row.fail{border-left:3px solid #ef4444}
+    .aj-row.manual{border-left:3px solid #f59e0b}
+    .aj-row-lbl{flex:1;font-size:.79rem;color:#cbd5e1;line-height:1.4}
+    .aj-btns{display:flex;gap:3px;flex-shrink:0}
+    .aj-btn{width:30px;height:26px;border:1px solid #374151;border-radius:5px;background:#0b1120;color:#4b5563;font-size:.8rem;font-weight:700;cursor:pointer;transition:.15s}
+    .aj-btn:hover{border-color:#3b82f6;color:#94a3b8}
+    .aj-btn.a1{background:#22c55e;border-color:#22c55e;color:#0b1120}
+    .aj-btn.a05{background:#f59e0b;border-color:#f59e0b;color:#0b1120}
+    .aj-btn.a0{background:#ef4444;border-color:#ef4444;color:#fff}
+    .aj-thumb{max-width:100%;max-height:100px;border-radius:5px;border:1px solid #374151;margin-top:4px;display:block;cursor:pointer}
+    @media(max-width:900px){.split{flex-direction:column}.preview-col{width:100%}}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="portal.html">
+    <img src="kandologo2.png" alt="Kandó">
+    Ágazati Javítás
+  </a>
+  <a class="back" href="portal.html"><i class="fas fa-arrow-left"></i> Vissza a portálra</a>
+</div>
+
+<div class="container">
+
+  <div id="auth-err" style="display:none;padding:14px;background:#7f1d1d;border:1px solid #dc2626;border-radius:10px;margin-bottom:16px;color:#fca5a5">
+    <i class="fas fa-lock"></i> Oktatói bejelentkezés szükséges.
+    <a href="portal.html" style="color:#fca5a5;margin-left:8px">← Portál</a>
+  </div>
+
+  <div id="main-ui">
+
+    <!-- Tantárgy választó -->
+    <div class="subj-tabs">
+      <button class="subj-btn active"><i class="fas fa-globe"></i> WEB</button>
+      <button class="subj-btn" disabled title="Hamarosan..."><i class="fas fa-code"></i> PYTHON</button>
+    </div>
+
+    <!-- ══ FELTÖLTÉS ══ -->
+    <div id="aj-upload-step">
+      <div class="card">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+          <div style="flex:1;min-width:160px;" class="form-row">
+            <label>Tanuló neve</label>
+            <input type="text" id="aj-nev" placeholder="pl. Kovács Béla">
+          </div>
+          <div style="flex:1;min-width:160px;" class="form-row">
+            <label>Feladat</label>
+            <select id="aj-feladat">
+              <option value="szigetek">Szigetek – Weboldal kódolása</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="upload-zone" id="aj-drop-zone"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="ajDrop(event)">
+          <input type="file" id="aj-folder-input" webkitdirectory multiple onchange="ajSelect(this.files)">
+          <div style="font-size:2rem;color:#3b82f6;margin-bottom:8px;pointer-events:none"><i class="fas fa-folder-open"></i></div>
+          <div style="font-size:.9rem;font-weight:600;margin-bottom:4px;pointer-events:none">Húzd ide a tanuló megoldás mappáját</div>
+          <div style="font-size:.78rem;color:#64748b;pointer-events:none">vagy kattints a kiválasztáshoz (egész mappa egyszerre)</div>
+          <div id="aj-upload-info" style="margin-top:10px;font-size:.82rem;color:#4ade80;min-height:18px;pointer-events:none"></div>
+        </div>
+
+        <button class="btn btn-primary" id="aj-start-btn" onclick="ajStart()" disabled style="margin-top:14px;width:100%;">
+          <i class="fas fa-play"></i> Javítás indítása
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ JAVÍTÁS ══ -->
+    <div id="aj-grading-step" style="display:none;">
+
+      <div class="grading-header">
+        <span style="font-weight:700;font-size:.95rem;" id="aj-nev-display"></span>
+        <span style="color:#374151;">|</span>
+        <span style="font-size:.88rem;color:#94a3b8;">
+          Összpontszám: <b id="aj-total" style="color:#4ade80;font-size:1.05rem;">0</b><span style="color:#374151;">/40</span>
+        </span>
+        <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#94a3b8;cursor:pointer;margin-left:auto;">
+          <input type="checkbox" id="aj-only-bad" onchange="ajFilter()"> Csak kétes / hibás
+        </label>
+        <button class="btn btn-ghost btn-sm" onclick="ajExport()"><i class="fas fa-file-export"></i> Export</button>
+        <button class="btn btn-ghost btn-sm" onclick="ajReset()" style="color:#f87171;border-color:#7f1d1d;">
+          <i class="fas fa-rotate-left"></i> Új tanuló
+        </button>
+      </div>
+
+      <div class="split">
+        <!-- Előnézet -->
+        <div class="preview-col">
+          <div class="preview-wrap">
+            <div class="preview-bar">
+              <span style="color:#64748b;font-size:.75rem;"><i class="fas fa-eye"></i> Tanuló előnézet</span>
+              <span style="color:#374151;font-size:.7rem;">Lokális képek betöltve</span>
+            </div>
+            <iframe id="aj-iframe" sandbox="allow-same-origin allow-scripts"
+              style="width:100%;height:500px;border:none;background:#fff;display:block;"></iframe>
+          </div>
+        </div>
+        <!-- Szempontlista -->
+        <div class="criteria-col" id="aj-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Auth ───────────────────────────────────────────────────────────────────
+(function(){
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  if (!u.token && !u._tesztMod) {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('main-ui').style.display = 'none';
+  }
+})();
+
+// ── Állapot ────────────────────────────────────────────────────────────────
+let ajFiles = {}, ajHtml = '', ajCss = '', ajDoc = null, ajScores = {}, ajNev = '';
+
+// ── Fájlkezelés ────────────────────────────────────────────────────────────
+function ajDrop(e) {
+  e.preventDefault();
+  document.getElementById('aj-drop-zone').classList.remove('dragover');
+  if (e.dataTransfer.files?.length) ajProcess(Array.from(e.dataTransfer.files));
+}
+function ajSelect(files) { ajProcess(Array.from(files)); }
+
+function ajProcess(files) {
+  ajFiles = {};
+  for (const f of files) {
+    const rel = f.webkitRelativePath || f.name;
+    const parts = rel.split('/');
+    const key = (parts.length > 1 ? parts.slice(1).join('/') : parts[0]).toLowerCase();
+    ajFiles[key] = { file: f, blobUrl: URL.createObjectURL(f) };
+  }
+  const n = Object.keys(ajFiles).length;
+  const info = document.getElementById('aj-upload-info');
+  info.textContent = n ? `${n} fájl betöltve` : '';
+  const zone = document.getElementById('aj-drop-zone');
+  zone.classList.toggle('has-files', n > 0);
+  const btn = document.getElementById('aj-start-btn');
+  btn.disabled = n === 0;
+  btn.style.opacity = n ? '1' : '.45';
+  btn.style.cursor = n ? 'pointer' : 'not-allowed';
+}
+
+// ── Javítás indítása ────────────────────────────────────────────────────────
+async function ajStart() {
+  ajNev = document.getElementById('aj-nev').value.trim() || 'Ismeretlen tanuló';
+  const htmlKey = Object.keys(ajFiles).find(k => k.endsWith('.html'));
+  const cssKey  = Object.keys(ajFiles).find(k => k.includes('css/') && k.endsWith('.css'))
+               || Object.keys(ajFiles).find(k => k.endsWith('.css'));
+  if (!htmlKey) { alert('Nem található .html fájl a feltöltött mappában!'); return; }
+
+  ajHtml = await ajFiles[htmlKey].file.text();
+  ajCss  = cssKey ? await ajFiles[cssKey].file.text() : '';
+  ajDoc  = new DOMParser().parseFromString(ajHtml, 'text/html');
+
+  await ajRenderPreview();
+
+  const checks = ajGetChecks();
+  const cssR = ajParseCss(ajCss);
+  ajScores = {};
+  for (const c of checks) {
+    if (c.section) continue;
+    if (c.fileCheck) {
+      ajScores[c.id] = Object.keys(ajFiles).some(k => k.includes(c.fileCheck)) ? 1 : 0;
+    } else if (c.cssCheck) {
+      try { ajScores[c.id] = c.cssCheck(ajCss, cssR) ? 1 : 0; } catch { ajScores[c.id] = null; }
+    } else {
+      try { ajScores[c.id] = c.check(ajDoc, ajHtml, ajCss) ? 1 : 0; } catch { ajScores[c.id] = null; }
+    }
+  }
+
+  ajRenderList(checks);
+  ajUpdateTotal();
+  document.getElementById('aj-upload-step').style.display = 'none';
+  document.getElementById('aj-grading-step').style.display = 'block';
+  document.getElementById('aj-nev-display').textContent = ajNev;
+}
+
+// ── Előnézet ───────────────────────────────────────────────────────────────
+async function ajRenderPreview() {
+  let html = ajHtml;
+  if (ajCss) {
+    let css = ajCss.replace(/url\(["']?\.\.\/img\/([^"')]+)["']?\)/g, (_, n) => {
+      const k = Object.keys(ajFiles).find(p => p.endsWith('img/' + n.toLowerCase()));
+      return k ? `url("${ajFiles[k].blobUrl}")` : _;
+    });
+    html = html.replace(/<link[^>]+\.css[^>]*>/i, `<style>${css}</style>`);
+  }
+  html = html.replace(/src=["']img\/([^"']+)["']/gi, (_, n) => {
+    const k = Object.keys(ajFiles).find(p => p.endsWith('img/' + n.toLowerCase()));
+    return k ? `src="${ajFiles[k].blobUrl}"` : _;
+  });
+  const blob = new Blob([html], { type: 'text/html' });
+  document.getElementById('aj-iframe').src = URL.createObjectURL(blob);
+}
+
+// ── CSS parser ─────────────────────────────────────────────────────────────
+function ajParseCss(cssText) {
+  const rules = {};
+  const clean = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+  const re = /([^{@\n][^{]*)\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(clean)) !== null) {
+    m[1].trim().split(',').forEach(sel => {
+      sel = sel.trim(); if (!sel) return;
+      if (!rules[sel]) rules[sel] = {};
+      m[2].split(';').forEach(d => {
+        const ci = d.indexOf(':');
+        if (ci > 0) {
+          const p = d.slice(0,ci).trim().toLowerCase();
+          const v = d.slice(ci+1).trim().toLowerCase();
+          if (p) rules[sel][p] = v;
+        }
+      });
+    });
+  }
+  return rules;
+}
+
+// ── Lista renderelés ────────────────────────────────────────────────────────
+function ajRenderList(checks) {
+  const list = document.getElementById('aj-list');
+  list.innerHTML = '';
+  checks.forEach(c => {
+    if (c.section) {
+      const d = document.createElement('div');
+      d.className = 'aj-sec';
+      d.innerHTML = `<i class="fas fa-chevron-right"></i> ${esc(c.section)}`;
+      list.appendChild(d); return;
+    }
+    const score = ajScores[c.id];
+    const status = score === null ? 'manual' : score >= 1 ? 'pass' : 'fail';
+    const icon = status === 'pass'
+      ? '<i class="fas fa-check-circle" style="color:#22c55e;font-size:.9rem;"></i>'
+      : status === 'fail'
+      ? '<i class="fas fa-times-circle" style="color:#ef4444;font-size:.9rem;"></i>'
+      : '<i class="fas fa-question-circle" style="color:#f59e0b;font-size:.9rem;"></i>';
+    const cur = score ?? 0;
+
+    let imgHtml = '';
+    if (c.fileCheck) {
+      const imgKey = Object.keys(ajFiles).find(k => k.includes(c.fileCheck) && /\.(png|jpg|jpeg|gif|webp)$/i.test(k));
+      imgHtml = imgKey
+        ? `<a href="${ajFiles[imgKey].blobUrl}" target="_blank"><img src="${ajFiles[imgKey].blobUrl}" class="aj-thumb" title="Kép megtekintése"></a>`
+        : `<span style="color:#4b5563;font-size:.73rem;font-style:italic;">Fájl nem található a mappában</span>`;
+    }
+
+    const row = document.createElement('div');
+    row.className = `aj-row ${status}`;
+    row.dataset.id = c.id; row.dataset.status = status;
+    row.innerHTML = `
+      <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+      <div class="aj-row-lbl">
+        ${esc(c.label)}
+        ${imgHtml ? `<div style="margin-top:4px;">${imgHtml}</div>` : ''}
+      </div>
+      <div class="aj-btns">
+        <button class="aj-btn ${cur===0?'a0':''}" onclick="ajSet(${c.id},0)">0</button>
+        <button class="aj-btn ${cur===0.5?'a05':''}" onclick="ajSet(${c.id},0.5)">½</button>
+        <button class="aj-btn ${cur===1?'a1':''}" onclick="ajSet(${c.id},1)">1</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function ajSet(id, val) {
+  ajScores[id] = val;
+  const row = document.querySelector(`.aj-row[data-id="${id}"]`);
+  if (!row) return;
+  const btns = row.querySelectorAll('.aj-btn');
+  btns.forEach(b => b.className = 'aj-btn');
+  btns[0].classList.toggle('a0',  val === 0);
+  btns[1].classList.toggle('a05', val === 0.5);
+  btns[2].classList.toggle('a1',  val === 1);
+  ajUpdateTotal();
+}
+
+function ajUpdateTotal() {
+  let t = 0;
+  Object.values(ajScores).forEach(v => { if (v !== null) t += v; });
+  document.getElementById('aj-total').textContent = t % 1 === 0 ? t : t.toFixed(1);
+}
+
+function ajFilter() {
+  const only = document.getElementById('aj-only-bad').checked;
+  document.querySelectorAll('.aj-row').forEach(row => {
+    const id = parseInt(row.dataset.id);
+    const isGreen = row.dataset.status === 'pass' && ajScores[id] === 1;
+    row.style.display = (only && isGreen) ? 'none' : '';
+  });
+  document.querySelectorAll('.aj-sec').forEach(hdr => {
+    let next = hdr.nextElementSibling, vis = false;
+    while (next && !next.classList.contains('aj-sec')) {
+      if (next.style.display !== 'none') vis = true;
+      next = next.nextElementSibling;
+    }
+    hdr.style.display = vis ? '' : 'none';
+  });
+}
+
+function ajReset() {
+  document.getElementById('aj-grading-step').style.display = 'none';
+  document.getElementById('aj-upload-step').style.display = 'block';
+  document.getElementById('aj-nev').value = '';
+  document.getElementById('aj-upload-info').textContent = '';
+  document.getElementById('aj-only-bad').checked = false;
+  document.getElementById('aj-drop-zone').classList.remove('has-files');
+  document.getElementById('aj-folder-input').value = '';
+  document.getElementById('aj-start-btn').disabled = true;
+  document.getElementById('aj-start-btn').style.opacity = '.45';
+  document.getElementById('aj-start-btn').style.cursor = 'not-allowed';
+  ajFiles = {}; ajHtml = ''; ajCss = ''; ajDoc = null; ajScores = {};
+}
+
+function ajExport() {
+  const checks = ajGetChecks();
+  let lines = [`ÁGAZATI WEB FELADAT JAVÍTÁS\nTanuló: ${ajNev}\nDátum: ${new Date().toLocaleDateString('hu-HU')}\nFeladat: Szigetek – Weboldal kódolása\n\n`];
+  let total = 0;
+  checks.forEach(c => {
+    if (c.section) { lines.push(`\n[${c.section}]\n`); return; }
+    const v = ajScores[c.id] ?? 0; total += v;
+    lines.push(`  [${v === 0.5 ? '0.5' : v}/1] ${c.label}\n`);
+  });
+  lines.push(`\n${'─'.repeat(50)}\nÖSSZESEN: ${total % 1 === 0 ? total : total.toFixed(1)}/40 pont\n`);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('')], {type:'text/plain;charset=utf-8'}));
+  a.download = `javitas_${ajNev.replace(/\s+/g,'_')}.txt`;
+  a.click();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── SZIGETEK – 40 szempont ─────────────────────────────────────────────────
+function ajGetChecks() {
+  return [
+    { section:'Beállította az oldal fejrészében:' },
+    { id:1, label:'A weboldal nyelvezete magyar, a karakterkódolása UTF-8.',
+      check: d => d.documentElement.getAttribute('lang')==='hu' &&
+                  !!(d.querySelector('meta[charset="UTF-8"]')||d.querySelector('meta[charset="utf-8"]')) },
+    { id:2, label:'A böngésző címsorában megjelenő cím „Európa legszebb szigetei".',
+      check: d => d.title.trim()==='Európa legszebb szigetei' },
+    { id:3, label:'A "css" mappán belüli "style.css" fájl hivatkozása elkészült a Bootstrap stíluslap alá.',
+      check: (_,h) => /href=["']css\/style\.css["']/.test(h) },
+
+    { section:'A „Fejléc" részben elvégezte az alábbi feladatokat:' },
+    { id:4, label:'A képet az üres részbe helyezte és az "img" mappán belüli "fejlec.jpg" képet jeleníti meg.',
+      check: (_,h) => /src=["'][^"']*fejlec\.jpg["']/i.test(h) },
+    { id:5, label:'A képre alt-ot és title-t állított, amelyeknek szövege „Európa szigetei".',
+      check: d => { const img=d.querySelector('#fejlec')||d.querySelector('img[alt="Európa szigetei"]');
+                    return img&&img.getAttribute('alt')==='Európa szigetei'&&img.getAttribute('title')==='Európa szigetei'; } },
+    { id:6, label:'A képre alkalmazta a „fejlec" egyedi azonosítót.',
+      check: d => !!d.querySelector('#fejlec') },
+
+    { section:'A weboldalon új menüpontot készített:' },
+    { id:7, label:'Elkészítette a menüpontot a megfelelő helyre, a "Roadster – Legjobb szigetek" szöveggel.',
+      check: d => Array.from(d.querySelectorAll('nav a')).some(a=>a.textContent.includes('Roadster')) },
+    { id:8, label:'A link a "https://roadster.hu/legjobb-europai-szigetek/" oldalra hivatkozik.',
+      check: d => !!d.querySelector('a[href*="roadster.hu"]') },
+    { id:9, label:'A linkre alkalmazta a target="_blank" attribútumot.',
+      check: d => { const a=d.querySelector('a[href*="roadster.hu"]'); return a&&a.getAttribute('target')==='_blank'; } },
+
+    { section:'A "Leírás" részben elvégezte a következő módosítást:' },
+    { id:10, label:'Az "Európa szigetei" szöveget <h2> elembe helyezte.',
+      check: d => Array.from(d.querySelectorAll('h2')).some(h=>h.textContent.includes('Európa szigetei')) },
+
+    { section:'A „Szigetek" részben elvégezte az alábbi feladatokat:' },
+    { id:11, label:'A "Mallorca" leírásnál a "Legismertebb látnivalók:" szöveg köré <b> elemet rakott.',
+      check: d => Array.from(d.querySelectorAll('b')).some(b=>b.textContent.includes('Legismertebb')) },
+    { id:12, label:'A látnivalókhoz <ol> elemet használt és a listaelemeket <li>-be helyezte.',
+      check: d => { const ol=d.querySelector('#szigetek ol'); return ol&&ol.querySelectorAll('li').length>=5; } },
+    { id:13, label:'A "Kréta" leírásnál a "Történelmi helyszínek:" szöveg köré <i> elemet rakott.',
+      check: d => Array.from(d.querySelectorAll('i')).some(el=>el.textContent.includes('Történelmi')) },
+    { id:14, label:'Az alatta lévő szövegekre <ul> elemet használt és a listaelemeket <li>-be helyezte.',
+      check: d => { const ul=d.querySelector('ul#tortenelmi')||d.querySelector('#szigetek ul:not(.navbar-nav)');
+                    return ul&&ul.querySelectorAll('li').length>=5; } },
+    { id:15, label:'Az <ul> elemnek "tortenelmi" egyedi azonosítót állított be.',
+      check: d => !!d.querySelector('ul#tortenelmi') },
+    { id:16, label:'Mindegyik sziget képéhez (4 helyen) hozzáadta a "sziget" osztályjelölőt.',
+      check: d => d.querySelectorAll('img.sziget').length>=4 },
+
+    { section:'Az "Ibiza" részt létrehozta és elvégezte az alábbi feladatot:' },
+    { id:17, label:'Az "Ibiza" szöveget <h3> elembe helyezte.',
+      check: d => Array.from(d.querySelectorAll('h3')).some(h=>h.textContent.trim()==='Ibiza') },
+    { id:18, label:'A szövegrészt 2 részre bontotta <p> elemek segítségével.',
+      check: d => { const h=Array.from(d.querySelectorAll('h3')).find(x=>x.textContent.trim()==='Ibiza');
+                    if(!h)return false; const col=h.closest('[class*="col"]')||h.parentElement;
+                    return col&&col.querySelectorAll('p').length>=2; } },
+    { id:19, label:'A képet a címsor után helyezte és az "img" mappán belüli "ibiza.jpg" képet jeleníti meg.',
+      check: (_,h) => /src=["'][^"']*ibiza\.jpg["']/i.test(h) },
+    { id:20, label:'A képre alt-ot és title-t állított, amelyeknek szövege „Ibiza".',
+      check: d => { const img=d.querySelector('img[src*="ibiza"]');
+                    return img&&img.getAttribute('alt')==='Ibiza'&&img.getAttribute('title')==='Ibiza'; } },
+    { id:21, label:'A képre alkalmazta az "img-fluid sziget" osztályjelölőket.',
+      check: d => { const img=d.querySelector('img[src*="ibiza"]');
+                    return img&&img.classList.contains('img-fluid')&&img.classList.contains('sziget'); } },
+
+    { section:'Az „A szigetek adatai" részben elvégezte az alábbi feladatokat:' },
+    { id:22, label:'Az Ibizára vonatkozó adatokat elhelyezte a táblázatban a "Kréta" és "Ciprus" sorok közé, megfelelően alkalmazva a <tr> és <td> elemeket.',
+      check: d => Array.from(d.querySelectorAll('td')).some(td=>td.textContent.trim()==='Ibiza') },
+    { id:23, label:'A táblázat első sorára alkalmazta a <thead> elemet.',
+      check: d => !!d.querySelector('table thead') },
+
+    { section:'A „További szigetek" részben elvégezte az alábbi módosítást:' },
+    { id:24, label:'A col-md-6 osztály besorolást módosította a "Santorini" esetében col-md-4-re, a "Szigetek sokszínűsége" esetében col-md-8-ra.',
+      check: d => { const h=Array.from(d.querySelectorAll('h3')).find(x=>x.textContent.includes('Santorini'));
+                    if(!h)return false; const col=h.closest('[class*="col-md-"]');
+                    return col&&col.classList.contains('col-md-4'); } },
+
+    { section:'Módosította a lábléc beállításait:' },
+    { id:25, label:'Készített egy hivatkozást, amely a weboldalon belül a „leiras" egyedi azonosítójú keretre hivatkozik.',
+      check: d => !!d.querySelector('footer a[href="#leiras"]') },
+    { id:26, label:'A hivatkozás szövege „Vissza a tetejére".',
+      check: d => Array.from(d.querySelectorAll('footer a')).some(a=>a.textContent.includes('Vissza a tetejére')) },
+
+    { section:'A style.css külső stíluslap módosításai:' },
+    { id:27, label:'A "body" elemkijelölőben: "font-family: Georgia".',
+      cssCheck: (_,r) => (r['body']?.['font-family']||'').includes('georgia') },
+    { id:28, label:'A "#fejlec" elemkijelölőben: "width: 100%".',
+      cssCheck: (_,r) => r['#fejlec']?.['width']==='100%' },
+    { id:29, label:'A "#szigetek p" elemkijelölőben: "padding: 20px".',
+      cssCheck: (_,r) => (r['#szigetek p']?.['padding']||'').includes('20px') },
+    { id:30, label:'A ".tablazat" elemkijelölőben: "border-radius: 10px".',
+      cssCheck: (_,r) => r['.tablazat']?.['border-radius']==='10px' },
+    { id:31, label:'A ".tablazat" elemkijelölőben: "font-size: 1.1em" (vagy 110%).',
+      cssCheck: (_,r) => { const fs=r['.tablazat']?.['font-size']||''; return fs==='1.1em'||fs==='110%'; } },
+    { id:32, label:'A ".center-btn" elemkijelölőben: "background-color: rgb(201,159,62)".',
+      cssCheck: (_,r) => { const bg=r['.center-btn']?.['background-color']||'';
+                           return /201/.test(bg)&&/159/.test(bg)&&/\b62\b/.test(bg); } },
+    { id:33, label:'A ".center-btn" elemkijelölőben: "font-variant: small-caps".',
+      cssCheck: (_,r) => r['.center-btn']?.['font-variant']==='small-caps' },
+    { id:34, label:'Az "a" elemkijelölőben: "text-decoration: none".',
+      cssCheck: (_,r) => r['a']?.['text-decoration']==='none' },
+    { id:35, label:'Az "a" elemkijelölőben: "color: rgb(122,84,6)".',
+      cssCheck: (_,r) => { const c=r['a']?.['color']||''; return /122/.test(c)&&/84/.test(c)&&/\b6\b/.test(c); } },
+    { id:36, label:'Létrehozta a "#tortenelmi" elemkijelölőt.',
+      cssCheck: css => /#tortenelmi/.test(css) },
+    { id:37, label:'Beállította: "list-style-image: url(\'../img/history-icon.png\')".',
+      cssCheck: (css,r) => /history-icon\.png/.test(r['#tortenelmi']?.['list-style-image']||'') ||
+                           (/history-icon\.png/.test(css)&&/#tortenelmi/.test(css)) },
+    { id:38, label:'Létrehozta a "p" elemkijelölőt és beállította: "text-align: justify".',
+      cssCheck: (_,r) => r['p']?.['text-align']==='justify' },
+
+    { section:'Elvégezte a szükséges validációkat:' },
+    { id:39, label:'A HTML oldalt validálta (https://validator.w3.org/) – "szigetekValidalas" képernyőkép.',
+      fileCheck: 'szigetekvalidalas' },
+    { id:40, label:'A stíluslapot ellenőrizte (https://jigsaw.w3.org/css-validator/) – "stylevalidalas" képernyőkép.',
+      fileCheck: 'stylevalidalas' }
+  ];
+}
+</script>
+</body>
+</html>
