@@ -503,17 +503,34 @@ function ajReset() {
 
 function ajExport() {
   const checks = ajGetChecks();
-  let lines = [`ÁGAZATI WEB FELADAT JAVÍTÁS\nTanuló: ${ajNev}\nDátum: ${new Date().toLocaleDateString('hu-HU')}\nFeladat: Szigetek – Weboldal kódolása\n\n`];
-  let total = 0;
+  const datum = new Date().toLocaleDateString('hu-HU');
+  let total = 0, maxPont = 0;
+  checks.forEach(c => { if (!c.section) { total += ajScores[c.id] ?? 0; maxPont++; } });
+
+  let md = `# Ágazati WEB feladat – Javítási lap\n\n`;
+  md += `| | |\n|---|---|\n`;
+  md += `| **Tanuló** | ${ajNev} |\n`;
+  md += `| **Feladat** | Szigetek – Weboldal kódolása |\n`;
+  md += `| **Dátum** | ${datum} |\n`;
+  md += `| **Összpontszám** | **${total % 1 === 0 ? total : total.toFixed(1)} / ${maxPont}** |\n\n`;
+
+  let currentSection = '';
   checks.forEach(c => {
-    if (c.section) { lines.push(`\n[${c.section}]\n`); return; }
-    const v = ajScores[c.id] ?? 0; total += v;
-    lines.push(`  [${v === 0.5 ? '0.5' : v}/1] ${c.label}\n`);
+    if (c.section) {
+      currentSection = c.section;
+      md += `\n## ${c.section}\n\n`;
+      md += `| Pont | Szempont |\n|:---:|---|\n`;
+      return;
+    }
+    const v = ajScores[c.id] ?? 0;
+    const vStr = v === 0.5 ? '½' : String(v);
+    const icon = v >= 1 ? '✅' : v === 0.5 ? '🟡' : '❌';
+    md += `| ${icon} ${vStr} | ${c.label} |\n`;
   });
-  lines.push(`\n${'─'.repeat(50)}\nÖSSZESEN: ${total % 1 === 0 ? total : total.toFixed(1)}/40 pont\n`);
+
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([lines.join('')], {type:'text/plain;charset=utf-8'}));
-  a.download = `javitas_${ajNev.replace(/\s+/g,'_')}.txt`;
+  a.href = URL.createObjectURL(new Blob([md], {type:'text/markdown;charset=utf-8'}));
+  a.download = `javitas_${ajNev.replace(/\s+/g,'_')}.md`;
   a.click();
 }
 
