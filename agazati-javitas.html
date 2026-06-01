@@ -395,7 +395,7 @@ function initMonaco() {
     require(['vs/editor/editor.main'], () => {
       ajEditor = monaco.editor.create(document.getElementById('aj-monaco-container'), {
         value: '', language: 'html', theme: 'vs-dark',
-        readOnly: true, minimap: { enabled: true },
+        readOnly: true, minimap: { enabled: false },
         fontSize: 12, lineNumbers: 'on',
         scrollBeyondLastLine: false, automaticLayout: true,
         wordWrap: 'off', renderWhitespace: 'none',
