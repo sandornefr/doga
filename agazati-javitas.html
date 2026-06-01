@@ -47,7 +47,6 @@
     .code-tab{padding:6px 18px;border:none;background:transparent;color:#64748b;font-size:.8rem;font-weight:700;cursor:pointer;transition:.15s;border-right:1px solid #1f2937}
     .code-tab.active{background:#16213e;color:#e0e0e0}
     .code-tab:hover:not(.active){color:#94a3b8}
-    #aj-code-view{width:100%;height:500px;background:#0b1120;color:#cbd5e1;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:.76rem;border:none;padding:12px;resize:none;outline:none;line-height:1.6;display:block}
     .code-hint{padding:5px 12px;background:#0d1a2e;font-size:.72rem;color:#374151;min-height:22px;font-family:monospace}
     /* Criteria */
     .aj-sec{background:#0d1a2e;border-left:3px solid #3b82f6;padding:6px 12px;margin:10px 0 3px;border-radius:0 6px 6px 0;color:#64748b;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
@@ -389,19 +388,25 @@ let ajEditor = null;
 let ajDecorations = [];
 
 function initMonaco() {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     if (ajEditor) { resolve(); return; }
-    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
-    require(['vs/editor/editor.main'], () => {
-      ajEditor = monaco.editor.create(document.getElementById('aj-monaco-container'), {
-        value: '', language: 'html', theme: 'vs-dark',
-        readOnly: true, minimap: { enabled: false },
-        fontSize: 12, lineNumbers: 'on',
-        scrollBeyondLastLine: false, automaticLayout: true,
-        wordWrap: 'off', renderWhitespace: 'none',
+    if (typeof require === 'undefined') { reject(new Error('Monaco loader nem elérhető')); return; }
+    try {
+      require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+      require(['vs/editor/editor.main'], () => {
+        try {
+          const container = document.getElementById('aj-monaco-container');
+          ajEditor = monaco.editor.create(container, {
+            value: '', language: 'html', theme: 'vs-dark',
+            readOnly: true, minimap: { enabled: false },
+            fontSize: 12, lineNumbers: 'on',
+            scrollBeyondLastLine: false, automaticLayout: true,
+            wordWrap: 'off', renderWhitespace: 'none',
+          });
+          resolve();
+        } catch(e) { reject(e); }
       });
-      resolve();
-    });
+    } catch(e) { reject(e); }
   });
 }
 
@@ -463,16 +468,24 @@ async function ajStart() {
   ajCss  = cssKey ? await ajFiles[cssKey].file.text() : '';
   ajDoc  = new DOMParser().parseFromString(ajHtml, 'text/html');
 
-  // Monaco inicializálás és HTML betöltés
-  await initMonaco();
+  // Grading lépés megmutatása előbb (Monaco méretezéshez kell a látható container)
+  document.getElementById('aj-upload-step').style.display = 'none';
+  document.getElementById('aj-grading-step').style.display = 'block';
+  document.getElementById('aj-nev-display').textContent = ajNev;
+
+  // Monaco inicializálás – container már látható (grading step megmutattuk fentebb)
   ajCurrentCodeTab = 'html';
-  document.getElementById('ctab-html').classList.add('active');
-  document.getElementById('ctab-css').classList.remove('active');
-  document.getElementById('ctab-feladat').classList.remove('active');
-  monaco.editor.setModelLanguage(ajEditor.getModel(), 'html');
-  ajEditor.setValue(ajHtml);
+  ['ctab-html','ctab-css','ctab-feladat'].forEach((id,i) =>
+    document.getElementById(id)?.classList.toggle('active', i===0));
+  try {
+    await initMonaco();
+    monaco.editor.setModelLanguage(ajEditor.getModel(), 'html');
+    ajEditor.setValue(ajHtml);
+    ajEditor.layout();
+  } catch(e) {
+    console.warn('Monaco nem töltött be:', e);
+  }
   document.getElementById('aj-monaco-container').style.display = 'block';
-  document.getElementById('aj-feladat-html-view').style.display = 'none';
 
   const checks = ajGetChecks();
   const cssR = ajParseCss(ajCss);
@@ -498,9 +511,6 @@ async function ajStart() {
 
   ajRenderList(checks);
   ajUpdateTotal();
-  document.getElementById('aj-upload-step').style.display = 'none';
-  document.getElementById('aj-grading-step').style.display = 'block';
-  document.getElementById('aj-nev-display').textContent = ajNev;
 }
 
 // ── Kód nézet ──────────────────────────────────────────────────────────────
@@ -559,7 +569,6 @@ function ajJumpToCode(id) {
   const code = tab === 'css' ? ajCss : ajHtml;
   showCodeTab(tab);
 
-  const tv = document.getElementById('aj-code-view');
   const hint = document.getElementById('aj-code-hint');
 
   // Próbálkozások sorban: find.term, aztán find.fallback
