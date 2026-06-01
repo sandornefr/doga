@@ -6,6 +6,7 @@
   <title>Ágazati Javítás – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -65,6 +66,28 @@
     .aj-btn.a0{background:#ef4444;border-color:#ef4444;color:#fff}
     .aj-thumb{max-width:100%;max-height:100px;border-radius:5px;border:1px solid #374151;margin-top:4px;display:block;cursor:pointer}
     @media(max-width:900px){.split{flex-direction:column}.code-col{width:100%}}
+    /* Python szekció */
+    .py-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:700px){.py-upload-grid{grid-template-columns:1fr}}
+    .py-file-zone{border:1.5px dashed #374151;border-radius:9px;padding:11px 14px;cursor:pointer;transition:.2s;background:#0b1120;position:relative;display:flex;align-items:center;gap:10px}
+    .py-file-zone:hover{border-color:#3b82f6;background:#0d1a2e}
+    .py-file-zone.loaded{border-color:#15803d;background:#0a2a1a}
+    .py-file-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5}
+    .py-file-icon{font-size:1.3rem;flex-shrink:0}
+    .py-file-info{font-size:.8rem}
+    .py-file-label{color:#94a3b8;font-weight:600}
+    .py-file-name{color:#4ade80;font-size:.75rem;margin-top:2px}
+    .py-section{background:#16213e;border:1px solid #1f2937;border-radius:10px;margin-bottom:10px;overflow:hidden}
+    .py-section-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+    .py-section-hdr:hover{background:rgba(255,255,255,.03)}
+    .py-section-title{font-weight:700;font-size:.9rem;flex:1}
+    .py-section-score{font-size:.85rem;color:#94a3b8}
+    .py-section-body{padding:10px 14px;border-top:1px solid #1f2937;display:none}
+    .py-section-body.open{display:block}
+    .py-ai-box{background:#0b1120;border:1px solid #1e3a5f;border-radius:8px;padding:12px;font-size:.78rem;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;color:#cbd5e1;margin-top:10px;font-family:monospace}
+    .py-code-tabs{display:flex;gap:0;background:#0b1120;border-bottom:1px solid #1f2937}
+    .py-code-tab{padding:5px 14px;border:none;background:transparent;color:#64748b;font-size:.78rem;font-weight:700;cursor:pointer;border-right:1px solid #1f2937;transition:.15s}
+    .py-code-tab.active{background:#16213e;color:#e0e0e0}
   </style>
 </head>
 <body>
@@ -87,10 +110,11 @@
   <div id="main-ui">
 
     <div class="subj-tabs">
-      <button class="subj-btn active"><i class="fas fa-globe"></i> WEB</button>
-      <button class="subj-btn" disabled title="Hamarosan..."><i class="fas fa-code"></i> PYTHON</button>
+      <button class="subj-btn active" id="btn-web" onclick="switchSubj('web')"><i class="fas fa-globe"></i> WEB</button>
+      <button class="subj-btn" id="btn-py" onclick="switchSubj('py')"><i class="fab fa-python"></i> PYTHON</button>
     </div>
 
+    <div id="web-section">
     <!-- ══ FELTÖLTÉS ══ -->
     <div id="aj-upload-step">
       <div class="card">
@@ -168,6 +192,180 @@
         <div class="criteria-col" id="aj-list"></div>
       </div>
     </div>
+
+    </div><!-- /web-section -->
+
+    <!-- ══ PYTHON SZEKCIÓ ══ -->
+    <div id="py-section" style="display:none;">
+
+      <!-- Feltöltés -->
+      <div id="py-upload-step">
+        <div class="card">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+            <div style="flex:1;min-width:160px;" class="form-row">
+              <label>Tanuló neve</label>
+              <input type="text" id="py-nev" placeholder="pl. Kovács Béla">
+            </div>
+            <div style="flex:1;min-width:160px;" class="form-row">
+              <label>Feladatsor</label>
+              <select id="py-variant">
+                <option value="A">A változat</option>
+                <option value="B">B változat</option>
+                <option value="C">C változat</option>
+                <option value="K">K változat</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3 megoldás fájl -->
+          <div class="py-upload-grid" style="margin-bottom:12px;">
+            <div class="py-file-zone" onclick="document.getElementById('py-f8').click()">
+              <input type="file" id="py-f8" accept=".py" onchange="pyLoadCode('t8',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#3b82f6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">8 pontos megoldás (.py)</div>
+                <div class="py-file-name" id="py-f8-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone" onclick="document.getElementById('py-f14').click()">
+              <input type="file" id="py-f14" accept=".py" onchange="pyLoadCode('t14',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#f59e0b"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">14 pontos megoldás (.py)</div>
+                <div class="py-file-name" id="py-f14-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone" onclick="document.getElementById('py-f18').click()">
+              <input type="file" id="py-f18" accept=".py" onchange="pyLoadCode('t18',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#a855f7"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">18 pontos megoldás (.py)</div>
+                <div class="py-file-name" id="py-f18-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone" onclick="document.getElementById('py-feloado').click()">
+              <input type="file" id="py-feloado" accept=".py" onchange="pyLoadCode('eloado',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-cube" style="color:#ec4899"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">18pt osztály forrás (.py) <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-feloado-name">Nincs fájl</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pontozó + feladatleírás -->
+          <div class="py-upload-grid" style="margin-bottom:16px;">
+            <div class="py-file-zone" onclick="document.getElementById('py-fpontozo').click()">
+              <input type="file" id="py-fpontozo" accept=".xlsx" onchange="pyLoadPontozo(this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-table" style="color:#22c55e"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Pontozó (.xlsx)</div>
+                <div class="py-file-name" id="py-fpontozo-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone" onclick="document.getElementById('py-ffeladat').click()">
+              <input type="file" id="py-ffeladat" accept=".docx,.txt" onchange="pyLoadFeladat(this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-lines" style="color:#f59e0b"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Feladat leírás (.docx/.txt) <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-ffeladat-name">Nincs fájl</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="py-start-btn" onclick="pyStart()" disabled style="width:100%;opacity:.45;cursor:not-allowed;">
+            <i class="fas fa-play"></i> Javítás indítása
+          </button>
+        </div>
+      </div>
+
+      <!-- Javítás nézet -->
+      <div id="py-grading-step" style="display:none;">
+
+        <div class="grading-header">
+          <span style="font-weight:700;font-size:.95rem;" id="py-nev-display"></span>
+          <span style="color:#374151;">|</span>
+          <span style="font-size:.88rem;color:#94a3b8;">
+            Összpontszám: <b id="py-total" style="color:#4ade80;font-size:1.05rem;">0</b><span style="color:#374151;">/40</span>
+          </span>
+          <span style="font-size:.8rem;color:#64748b;">
+            <span id="py-sub8" style="color:#3b82f6">8pt: 0/8</span> &nbsp;
+            <span id="py-sub14" style="color:#f59e0b">14pt: 0/14</span> &nbsp;
+            <span id="py-sub18" style="color:#a855f7">18pt: 0/18</span>
+          </span>
+          <button class="btn btn-ghost btn-sm" onclick="pyExport()" style="margin-left:auto;"><i class="fas fa-file-export"></i> Export</button>
+          <button class="btn btn-ghost btn-sm" onclick="pyReset()" style="color:#f87171;border-color:#7f1d1d;"><i class="fas fa-rotate-left"></i> Új tanuló</button>
+        </div>
+
+        <div class="split">
+          <!-- Bal: kód nézet -->
+          <div class="code-col">
+            <div class="code-wrap">
+              <div class="py-code-tabs">
+                <button class="py-code-tab active" id="pctab-t8"  onclick="pyShowCode('t8')">8pt</button>
+                <button class="py-code-tab" id="pctab-t14" onclick="pyShowCode('t14')">14pt</button>
+                <button class="py-code-tab" id="pctab-t18" onclick="pyShowCode('t18')">18pt</button>
+                <button class="py-code-tab" id="pctab-eloado" onclick="pyShowCode('eloado')" style="display:none;">Osztály</button>
+                <button class="py-code-tab" id="pctab-feladat" onclick="pyShowCode('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i></button>
+              </div>
+              <textarea id="py-code-view" readonly spellcheck="false" style="width:100%;height:500px;background:#0b1120;color:#cbd5e1;font-family:monospace;font-size:.76rem;border:none;padding:12px;resize:none;outline:none;line-height:1.6;display:block;"></textarea>
+              <div id="py-feladat-view" style="display:none;height:500px;overflow-y:auto;padding:16px;background:#0f1923;font-size:.83rem;line-height:1.7;color:#cbd5e1;"></div>
+            </div>
+          </div>
+
+          <!-- Jobb: 3 pontozó szekció -->
+          <div class="criteria-col">
+
+            <div class="py-section" id="pys-t8">
+              <div class="py-section-hdr" onclick="pyToggle('t8')">
+                <i class="fas fa-chevron-down" id="pychev-t8"></i>
+                <span class="py-section-title" style="color:#3b82f6"><i class="fas fa-star-half-stroke"></i> 8 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t8">0 / 8</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t8')" id="pyai-t8" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t8">
+                <div id="pylist-t8"></div>
+                <div id="pyai-box-t8" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+            <div class="py-section" id="pys-t14">
+              <div class="py-section-hdr" onclick="pyToggle('t14')">
+                <i class="fas fa-chevron-down" id="pychev-t14"></i>
+                <span class="py-section-title" style="color:#f59e0b"><i class="fas fa-star"></i> 14 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t14">0 / 14</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t14')" id="pyai-t14" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t14">
+                <div id="pylist-t14"></div>
+                <div id="pyai-box-t14" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+            <div class="py-section" id="pys-t18">
+              <div class="py-section-hdr" onclick="pyToggle('t18')">
+                <i class="fas fa-chevron-down" id="pychev-t18"></i>
+                <span class="py-section-title" style="color:#a855f7"><i class="fas fa-star"></i><i class="fas fa-star" style="font-size:.7em"></i> 18 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t18">0 / 18</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t18')" id="pyai-t18" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t18">
+                <div id="pylist-t18"></div>
+                <div id="pyai-box-t18" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /py-section -->
 
   </div>
 </div>
@@ -688,6 +886,249 @@ function ajGetChecks() {
     { id:40, label:'A stíluslapot ellenőrizte (https://jigsaw.w3.org/css-validator/) – fájlnév: "styleValidalas", tartalma hibátlan.',
       screenshotCheck: 'css' }
   ];
+}
+
+// ══ TANTÁRGY VÁLTÓ ══════════════════════════════════════════════════════════
+function switchSubj(subj) {
+  document.getElementById('web-section').style.display = subj === 'web' ? '' : 'none';
+  document.getElementById('py-section').style.display  = subj === 'py'  ? '' : 'none';
+  document.getElementById('btn-web').classList.toggle('active', subj === 'web');
+  document.getElementById('btn-py').classList.toggle('active',  subj === 'py');
+}
+
+// ══ PYTHON ÁLLAPOT ══════════════════════════════════════════════════════════
+const RAILWAY = 'https://agazati.up.railway.app';
+let pyCode = { t8: '', t14: '', t18: '', eloado: '' };
+let pyFeladatHtml = '';
+let pyCriteria = { t8: [], t14: [], t18: [] };
+let pyScores = { t8: {}, t14: {}, t18: {} };
+let pyNev = '';
+
+async function pyLoadCode(key, file) {
+  if (!file) return;
+  pyCode[key] = await file.text();
+  const n = key === 'eloado' ? 'eloado' : key.replace('t','');
+  const nm = document.getElementById(`py-f${n}-name`);
+  if (nm) { nm.textContent = file.name; nm.closest('.py-file-zone').classList.add('loaded'); }
+  if (key !== 'eloado') document.getElementById(`pctab-${key}`).style.display = '';
+  else document.getElementById('pctab-eloado').style.display = '';
+  pyCheckReady();
+}
+
+async function pyLoadFeladat(file) {
+  if (!file) return;
+  document.getElementById('py-ffeladat-name').textContent = file.name;
+  document.getElementById('py-ffeladat').closest('.py-file-zone').classList.add('loaded');
+  try {
+    pyFeladatHtml = file.name.endsWith('.docx')
+      ? (await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() })).value
+      : '<pre style="white-space:pre-wrap">' + esc(await file.text()) + '</pre>';
+  } catch(e) { pyFeladatHtml = `<p style="color:#ef4444">Betöltési hiba: ${esc(e.message)}</p>`; }
+}
+
+async function pyLoadPontozo(file) {
+  if (!file) return;
+  document.getElementById('py-fpontozo-name').textContent = file.name;
+  document.getElementById('py-fpontozo').closest('.py-file-zone').classList.add('loaded');
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+    let id = 1, sum = 0;
+    pyCriteria = { t8: [], t14: [], t18: [] };
+    for (const r of rows) {
+      const label = String(r[0]||'').trim(), max = parseFloat(r[1])||0;
+      if (!max || !label) continue;
+      const c = { id: id++, label, max };
+      sum += max;
+      if (sum <= 8) pyCriteria.t8.push(c);
+      else if (sum <= 22) pyCriteria.t14.push(c);
+      else pyCriteria.t18.push(c);
+    }
+  } catch(e) { console.error('Pontozó hiba:', e); }
+  pyCheckReady();
+}
+
+function pyCheckReady() {
+  const ok = !!(pyCode.t8 || pyCode.t14 || pyCode.t18);
+  const btn = document.getElementById('py-start-btn');
+  btn.disabled = !ok; btn.style.opacity = ok?'1':'.45'; btn.style.cursor = ok?'pointer':'not-allowed';
+}
+
+function pyStart() {
+  pyNev = document.getElementById('py-nev').value.trim() || 'Ismeretlen tanuló';
+  if (!pyCriteria.t8.length && !pyCriteria.t14.length && !pyCriteria.t18.length) pyDefaultCriteria();
+  pyScores = { t8:{}, t14:{}, t18:{} };
+  ['t8','t14','t18'].forEach(s => pyCriteria[s].forEach(c => { pyScores[s][c.id] = pyStaticCheck(pyCode[s], c.label); }));
+  pyRenderAll(); pyUpdateTotals();
+  document.getElementById('py-upload-step').style.display = 'none';
+  document.getElementById('py-grading-step').style.display = 'block';
+  document.getElementById('py-nev-display').textContent = pyNev;
+  pyShowCode('t8');
+}
+
+function pyDefaultCriteria() {
+  let id = 1; const mk = (l,m=1) => ({id:id++,label:l,max:m});
+  pyCriteria.t8 = [
+    mk('Legalább 1 db input() hívás'), mk('Egész vagy tört számmá alakítás (int/float)'),
+    mk('Elágazás (if)'), mk('Eredmény kiíratása (print)'),
+    mk('Változó használata'), mk('Helyes futási eredmény'),
+    mk('Szintaktikailag hibátlan kód'), mk('Feladatnak megfelelő logika'),
+  ];
+  pyCriteria.t14 = Array.from({length:14},(_,i)=>mk(`14pt – ${i+1}. szempont`));
+  pyCriteria.t18 = Array.from({length:18},(_,i)=>mk(`18pt – ${i+1}. szempont`));
+}
+
+function pyStaticCheck(code, label) {
+  if (!code) return null;
+  const l = label.toLowerCase(), c = code;
+  if (l.includes('input'))  return (c.match(/\binput\s*\(/g)||[]).length >= 1;
+  if (l.includes('int(') || l.includes('float(') || (l.includes('int') && l.includes('float')))
+    return /\bint\s*\(|\bfloat\s*\(/.test(c);
+  if (l.includes('import')) { const m=l.match(/import\s+(\w+)/); return m ? new RegExp('\\bimport\\s+'+m[1]).test(c) : /\bimport\b/.test(c); }
+  if (l.includes('elif'))  return /\belif\b/.test(c);
+  if (l.includes(' if ') || l.startsWith('if') || l.includes('elágazás')) return /\bif\b/.test(c);
+  if (l.includes('for'))   return /\bfor\b/.test(c);
+  if (l.includes('while')) return /\bwhile\b/.test(c);
+  if (l.includes('def'))   return /\bdef\b/.test(c);
+  if (l.includes('return'))return /\breturn\b/.test(c);
+  if (l.includes('class')) return /\bclass\b/.test(c);
+  if (l.includes('print')) return /\bprint\s*\(/.test(c);
+  return null;
+}
+
+function pyRenderAll() { ['t8','t14','t18'].forEach(s => pyRenderSection(s)); }
+
+function pyRenderSection(sec) {
+  const list = document.getElementById(`pylist-${sec}`);
+  list.innerHTML = '';
+  pyCriteria[sec].forEach(c => {
+    const score = pyScores[sec][c.id];
+    const status = score === null ? 'manual' : score >= 1 ? 'pass' : 'fail';
+    const icon = status==='pass'?'<i class="fas fa-check-circle" style="color:#22c55e;font-size:.85rem;"></i>'
+                :status==='fail'?'<i class="fas fa-times-circle" style="color:#ef4444;font-size:.85rem;"></i>'
+                :'<i class="fas fa-question-circle" style="color:#f59e0b;font-size:.85rem;"></i>';
+    const cur = score ?? 0;
+    const row = document.createElement('div');
+    row.className = `aj-row ${status}`;
+    row.dataset.sec = sec; row.dataset.id = c.id; row.dataset.status = status;
+    row.innerHTML = `
+      <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+      <div class="aj-row-lbl">${esc(c.label)}</div>
+      <div class="aj-btns">
+        <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="pySet('${sec}',${c.id},0)">0</button>
+        <button class="aj-btn ${cur===.5?'a05':''}" data-val="0.5" onclick="pySet('${sec}',${c.id},0.5)">½</button>
+        <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="pySet('${sec}',${c.id},1)">1</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function pySet(sec, id, val) {
+  pyScores[sec][id] = val;
+  const row = document.querySelector(`.aj-row[data-sec="${sec}"][data-id="${id}"]`);
+  if (row) {
+    row.querySelectorAll('.aj-btn').forEach(b => {
+      b.className = 'aj-btn';
+      if (parseFloat(b.dataset.val) === val) b.classList.add(val===0?'a0':val===.5?'a05':'a1');
+    });
+    const ns = val>=1?'pass':val===.5?'manual':'fail';
+    row.className=`aj-row ${ns}`; row.dataset.status=ns;
+  }
+  pyUpdateTotals();
+}
+
+function pyUpdateTotals() {
+  const sum = s => Object.values(pyScores[s]).reduce((a,v)=>a+(v??0),0);
+  const fmt = v => v%1===0?v:v.toFixed(1);
+  const s8=sum('t8'), s14=sum('t14'), s18=sum('t18'), tot=s8+s14+s18;
+  document.getElementById('py-total').textContent = fmt(tot);
+  document.getElementById('py-sub8').textContent  = `8pt: ${fmt(s8)}/8`;
+  document.getElementById('py-sub14').textContent = `14pt: ${fmt(s14)}/14`;
+  document.getElementById('py-sub18').textContent = `18pt: ${fmt(s18)}/18`;
+  document.getElementById('pyscore-t8').textContent  = `${fmt(s8)} / 8`;
+  document.getElementById('pyscore-t14').textContent = `${fmt(s14)} / 14`;
+  document.getElementById('pyscore-t18').textContent = `${fmt(s18)} / 18`;
+}
+
+function pyToggle(sec) {
+  const body=document.getElementById(`pybody-${sec}`), chev=document.getElementById(`pychev-${sec}`);
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? '' : 'rotate(-90deg)';
+}
+
+function pyShowCode(tab) {
+  ['t8','t14','t18','eloado','feladat'].forEach(t => document.getElementById(`pctab-${t}`)?.classList.toggle('active',t===tab));
+  const tv=document.getElementById('py-code-view'), fv=document.getElementById('py-feladat-view');
+  if (tab==='feladat') { tv.style.display='none'; fv.style.display='block'; fv.innerHTML=pyFeladatHtml||'<p style="color:#4b5563;padding:20px;">Feladat leírás nem lett feltöltve.</p>'; }
+  else { tv.style.display='block'; fv.style.display='none'; tv.value=pyCode[tab]||'# (nincs fájl feltöltve)'; }
+}
+
+async function pyGroq(sec) {
+  const btn=document.getElementById(`pyai-${sec}`), box=document.getElementById(`pyai-box-${sec}`);
+  if (!pyCode[sec]) { alert('Először töltsd fel a megoldás fájlt!'); return; }
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Elemzés...';
+  box.style.display='block'; box.textContent='Groq AI elemzés folyamatban...';
+  const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py ===\n${pyCode.eloado}` : '';
+  const pontozSzoveg = pyCriteria[sec].map((c,i)=>`${i+1}. ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
+  const pts = {t8:'8',t14:'14',t18:'18'}[sec];
+  const KOD = `# === ${pts} pontos megoldás ===\n${pyCode[sec]}${eloado}`;
+  try {
+    const res = await fetch(`${RAILWAY}/api/ai/pontozas`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kod: KOD, pontozo: pontozSzoveg })
+    });
+    if (res.status===429) {
+      box.textContent='Rate limit – újrapróbálás 7 mp után...';
+      await new Promise(r=>setTimeout(r,7000));
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+      return pyGroq(sec);
+    }
+    const data = await res.json();
+    box.textContent = data.result || data.text || JSON.stringify(data);
+  } catch(e) { box.textContent='Hiba: '+e.message; }
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+}
+
+function pyReset() {
+  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyFeladatHtml='';
+  pyCriteria={t8:[],t14:[],t18:[]}; pyScores={t8:{},t14:{},t18:{}};
+  document.getElementById('py-grading-step').style.display='none';
+  document.getElementById('py-upload-step').style.display='block';
+  document.getElementById('py-nev').value='';
+  ['t8','t14','t18','eloado'].forEach(k=>{
+    const n=k==='eloado'?'eloado':k.replace('t','');
+    const nm=document.getElementById(`py-f${n}-name`);
+    if(nm){nm.textContent='Nincs fájl'; nm.closest('.py-file-zone').classList.remove('loaded');}
+  });
+  ['py-fpontozo','py-ffeladat'].forEach(id=>{
+    document.getElementById(id+'-name').textContent='Nincs fájl';
+    document.getElementById(id).closest('.py-file-zone').classList.remove('loaded');
+  });
+  const btn=document.getElementById('py-start-btn');
+  btn.disabled=true; btn.style.opacity='.45'; btn.style.cursor='not-allowed';
+}
+
+function pyExport() {
+  const datum=new Date().toLocaleDateString('hu-HU');
+  const fmt=v=>v%1===0?v:v.toFixed(1);
+  const sum=s=>Object.values(pyScores[s]).reduce((a,v)=>a+(v??0),0);
+  const s8=sum('t8'),s14=sum('t14'),s18=sum('t18'),tot=s8+s14+s18;
+  let md=`# Ágazati PYTHON feladat – Javítási lap\n\n| | |\n|---|---|\n`;
+  md+=`| **Tanuló** | ${pyNev} |\n| **Feladatsor** | ${document.getElementById('py-variant').value} változat |\n`;
+  md+=`| **Dátum** | ${datum} |\n| **8 pontos** | ${fmt(s8)} / 8 |\n| **14 pontos** | ${fmt(s14)} / 14 |\n| **18 pontos** | ${fmt(s18)} / 18 |\n`;
+  md+=`| **Összpontszám** | **${fmt(tot)} / 40** |\n\n`;
+  ['t8','t14','t18'].forEach((sec,i)=>{
+    const pts=[8,14,18][i];
+    md+=`\n## ${pts} pontos feladat\n\n| Pont | Szempont |\n|:---:|---|\n`;
+    pyCriteria[sec].forEach(c=>{
+      const v=pyScores[sec][c.id]??0;
+      md+=`| ${v>=1?'✅':v===.5?'🟡':'❌'} ${v===.5?'½':v} | ${c.label} |\n`;
+    });
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'}));
+  a.download=`javitas_py_${pyNev.replace(/\s+/g,'_')}.md`;
+  a.click();
 }
 </script>
 </body>
