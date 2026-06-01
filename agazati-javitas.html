@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>window.MonacoEnvironment={getWorkerUrl:()=>URL.createObjectURL(new Blob([],{type:'application/javascript'}))};</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -65,6 +67,8 @@
     .aj-btn.a05{background:#f59e0b;border-color:#f59e0b;color:#0b1120}
     .aj-btn.a0{background:#ef4444;border-color:#ef4444;color:#fff}
     .aj-thumb{max-width:100%;max-height:100px;border-radius:5px;border:1px solid #374151;margin-top:4px;display:block;cursor:pointer}
+    .aj-highlighted-line{background:rgba(245,158,11,0.18)!important;}
+    .aj-highlighted-text{background:rgba(245,158,11,0.35);border-radius:2px;}
     @media(max-width:900px){.split{flex-direction:column}.code-col{width:100%}}
     /* Python szekció */
     .py-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -183,7 +187,7 @@
               <button class="code-tab" id="ctab-css" onclick="showCodeTab('css')">CSS</button>
               <button class="code-tab" id="ctab-feladat" onclick="showCodeTab('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i> Feladat</button>
             </div>
-            <textarea id="aj-code-view" readonly spellcheck="false"></textarea>
+            <div id="aj-monaco-container" style="height:500px;"></div>
             <div id="aj-feladat-html-view" style="display:none;height:500px;overflow-y:auto;padding:16px;background:#0f1923;font-size:.83rem;line-height:1.7;color:#cbd5e1;"></div>
             <div class="code-hint" id="aj-code-hint">← A piros szempontra kattintva ide ugrik a kód</div>
           </div>
@@ -380,6 +384,27 @@
   }
 })();
 
+// ── Monaco ─────────────────────────────────────────────────────────────────
+let ajEditor = null;
+let ajDecorations = [];
+
+function initMonaco() {
+  return new Promise(resolve => {
+    if (ajEditor) { resolve(); return; }
+    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+    require(['vs/editor/editor.main'], () => {
+      ajEditor = monaco.editor.create(document.getElementById('aj-monaco-container'), {
+        value: '', language: 'html', theme: 'vs-dark',
+        readOnly: true, minimap: { enabled: true },
+        fontSize: 12, lineNumbers: 'on',
+        scrollBeyondLastLine: false, automaticLayout: true,
+        wordWrap: 'off', renderWhitespace: 'none',
+      });
+      resolve();
+    });
+  });
+}
+
 // ── Állapot ────────────────────────────────────────────────────────────────
 let ajFiles = {}, ajHtml = '', ajCss = '', ajDoc = null, ajScores = {}, ajNev = '';
 let ajCurrentCodeTab = 'html', ajFeladatHtml = '';
@@ -421,11 +446,16 @@ async function ajStart() {
   ajCss  = cssKey ? await ajFiles[cssKey].file.text() : '';
   ajDoc  = new DOMParser().parseFromString(ajHtml, 'text/html');
 
-  // Kód nézet feltöltése
-  document.getElementById('aj-code-view').value = ajHtml;
+  // Monaco inicializálás és HTML betöltés
+  await initMonaco();
   ajCurrentCodeTab = 'html';
   document.getElementById('ctab-html').classList.add('active');
   document.getElementById('ctab-css').classList.remove('active');
+  document.getElementById('ctab-feladat').classList.remove('active');
+  monaco.editor.setModelLanguage(ajEditor.getModel(), 'html');
+  ajEditor.setValue(ajHtml);
+  document.getElementById('aj-monaco-container').style.display = 'block';
+  document.getElementById('aj-feladat-html-view').style.display = 'none';
 
   const checks = ajGetChecks();
   const cssR = ajParseCss(ajCss);
@@ -460,18 +490,23 @@ async function ajStart() {
 function showCodeTab(tab) {
   ajCurrentCodeTab = tab;
   ['html','css','feladat'].forEach(t => document.getElementById('ctab-'+t)?.classList.toggle('active', t===tab));
-  const tv = document.getElementById('aj-code-view');
+  const mc = document.getElementById('aj-monaco-container');
   const fv = document.getElementById('aj-feladat-html-view');
   const hint = document.getElementById('aj-code-hint');
   if (tab === 'feladat') {
-    tv.style.display = 'none';
+    mc.style.display = 'none';
     fv.style.display = 'block';
     fv.innerHTML = ajFeladatHtml || '<p style="color:#4b5563;padding:20px;">Feladat leírás nem lett feltöltve.</p>';
     hint.textContent = 'Feladat leírás';
   } else {
-    tv.style.display = 'block';
+    mc.style.display = 'block';
     fv.style.display = 'none';
-    tv.value = tab === 'css' ? ajCss : ajHtml;
+    if (ajEditor) {
+      const lang = tab === 'css' ? 'css' : 'html';
+      const content = tab === 'css' ? ajCss : ajHtml;
+      monaco.editor.setModelLanguage(ajEditor.getModel(), lang);
+      ajEditor.setValue(content);
+    }
     hint.textContent = '← A piros szempontra kattintva ide ugrik a kód';
     hint.style.color = '#374151';
   }
@@ -527,16 +562,20 @@ function ajJumpToCode(id) {
     return;
   }
 
-  // Sor kiszámítása a görgetéshez
-  const linesBefore = code.slice(0, pos).split('\n').length - 1;
-  const lineHeight = parseFloat(getComputedStyle(tv).lineHeight) || 19;
-  const targetScroll = Math.max(0, (linesBefore - 3) * lineHeight);
-  tv.setSelectionRange(pos, pos + matchLen);
-  // requestAnimationFrame: focus() scroll-t felülír, ezért utána állítjuk be kétszer is
-  tv.scrollTop = targetScroll;
-  requestAnimationFrame(() => { tv.scrollTop = targetScroll; });
+  // Monaco: sor kiszámítás + ugrás + kiemelés
+  const lineNum = code.slice(0, pos).split('\n').length;
+  const colStart = pos - code.lastIndexOf('\n', pos - 1);
+  const colEnd = colStart + matchLen;
 
-  const lineNum = linesBefore + 1;
+  if (ajEditor) {
+    ajDecorations = ajEditor.deltaDecorations(ajDecorations, [{
+      range: new monaco.Range(lineNum, 1, lineNum, 9999),
+      options: { isWholeLine: true, className: 'aj-highlighted-line', inlineClassName: 'aj-highlighted-text' }
+    }]);
+    ajEditor.revealLineInCenter(lineNum);
+    ajEditor.setSelection(new monaco.Range(lineNum, colStart, lineNum, colEnd));
+  }
+
   hint.textContent = `${lineNum}. sor – ${tab.toUpperCase()} kód`;
   hint.style.color = '#f59e0b';
 }
@@ -753,7 +792,12 @@ function ajGetChecks() {
 
     { section:'A „Fejléc" részben elvégezte az alábbi feladatokat:' },
     { id:4,  label:'A képet az üres részbe helyezte és az "img" mappán belüli "fejlec.jpg" képet jeleníti meg.',
-      check: (_,h) => /src=["'][^"']*fejlec\.jpg["']/i.test(h),
+      check: d => {
+        const header = d.querySelector('header');
+        if (!header) return false;
+        const img = header.querySelector('img[src*="fejlec"]');
+        return !!img;
+      },
       find: { in:'html', term:'fejlec', fallback:'<!-- Kép helye' } },
     { id:5,  label:'A képre alt-ot és title-t állított, amelyeknek szövege „Európa szigetei".',
       check: d => { const img=d.querySelector('#fejlec')||d.querySelector('img[alt="Európa szigetei"]');
@@ -810,7 +854,12 @@ function ajGetChecks() {
                     return col&&col.querySelectorAll('p').length>=2; },
       find: { in:'html', term:'Ibiza' } },
     { id:19, label:'A képet a címsor után helyezte és az "img" mappán belüli "ibiza.jpg" képet jeleníti meg.',
-      check: (_,h) => /src=["'][^"']*ibiza\.jpg["']/i.test(h),
+      check: d => {
+        const ibizaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Ibiza');
+        if (!ibizaH3) return false;
+        const col = ibizaH3.closest('[class*="col"]') || ibizaH3.parentElement;
+        return !!col && !!col.querySelector('img[src*="ibiza"]');
+      },
       find: { in:'html', term:'ibiza.jpg', fallback:'ibiza' } },
     { id:20, label:'A képre alt-ot és title-t állított, amelyeknek szövege „Ibiza".',
       check: d => { const img=d.querySelector('img[src*="ibiza"]');
