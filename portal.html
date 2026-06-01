@@ -809,6 +809,24 @@
         .tmc-teszt:hover  { box-shadow: 0 8px 28px rgba(63,185,80,.25); border-color: #86efac !important; }
         .tmc-teszt .tmc-icon  { color: #3fb950; }
         .teacher-sub-view { display: none; }
+        .teacher-sub-view .options-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        @media(max-width:600px){ .teacher-sub-view .options-grid { grid-template-columns: repeat(2,1fr); } }
+        .teacher-sub-view .option-card {
+            padding: 14px 10px;
+        }
+        .teacher-sub-view .option-card .icon {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+        }
+        .teacher-sub-view .option-card .label {
+            font-size: 0.85rem;
+        }
+        .teacher-sub-view .option-card .desc {
+            font-size: 0.72rem;
+        }
         .teacher-sub-back {
             display: inline-flex; align-items: center; gap: 8px;
             background: none; border: 1px solid #30363d; color: #8b949e;
