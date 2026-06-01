@@ -658,7 +658,7 @@ function ajRenderList(checks) {
     row.dataset.id = c.id; row.dataset.status = status;
 
     if (c.screenshotCheck) {
-      // Screenshot sor: kép + gomb egy blokkban, egymás alatt
+      // Screenshot sor: kép mellé téve a pont gomb
       row.style.flexDirection = 'column';
       row.style.alignItems = 'stretch';
       row.innerHTML = `
@@ -666,11 +666,11 @@ function ajRenderList(checks) {
           <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
           <div class="aj-row-lbl">${esc(c.label)}</div>
         </div>
-        <div style="padding-left:27px;margin-top:4px;">
-          ${extraContent}
-          <div class="aj-btns" style="margin-top:8px;">
-            <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="ajSet(${c.id},0)">0</button>
-            <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="ajSet(${c.id},1)">1</button>
+        <div style="padding-left:27px;margin-top:4px;display:flex;align-items:flex-start;gap:10px;">
+          <div style="flex:1;">${extraContent}</div>
+          <div class="aj-btns" style="flex-shrink:0;flex-direction:column;gap:4px;">
+            <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="ajSet(${c.id},1)" style="width:36px;height:32px;font-size:.85rem;">1</button>
+            <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="ajSet(${c.id},0)" style="width:36px;height:32px;font-size:.85rem;">0</button>
           </div>
         </div>`;
     } else {
