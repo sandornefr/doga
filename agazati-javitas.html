@@ -188,7 +188,7 @@
               <button class="code-tab" id="ctab-feladat" onclick="showCodeTab('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i> Feladat</button>
             </div>
             <div id="aj-monaco-container" style="height:500px;"></div>
-            <div id="aj-feladat-html-view" style="display:none;height:500px;overflow-y:auto;padding:16px;background:#0f1923;font-size:.83rem;line-height:1.7;color:#cbd5e1;"></div>
+            <iframe id="aj-feladat-iframe" style="display:none;width:100%;height:500px;border:none;background:#fff;" sandbox="allow-same-origin"></iframe>
             <div class="code-hint" id="aj-code-hint">← A piros szempontra kattintva ide ugrik a kód</div>
           </div>
         </div>
@@ -313,7 +313,7 @@
                 <button class="py-code-tab" id="pctab-feladat" onclick="pyShowCode('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i></button>
               </div>
               <textarea id="py-code-view" readonly spellcheck="false" style="width:100%;height:500px;background:#0b1120;color:#cbd5e1;font-family:monospace;font-size:.76rem;border:none;padding:12px;resize:none;outline:none;line-height:1.6;display:block;"></textarea>
-              <div id="py-feladat-view" style="display:none;height:500px;overflow-y:auto;padding:16px;background:#0f1923;font-size:.83rem;line-height:1.7;color:#cbd5e1;"></div>
+              <iframe id="py-feladat-view" style="display:none;width:100%;height:500px;border:none;background:#fff;" sandbox="allow-same-origin"></iframe>
             </div>
           </div>
 
@@ -407,7 +407,24 @@ function initMonaco() {
 
 // ── Állapot ────────────────────────────────────────────────────────────────
 let ajFiles = {}, ajHtml = '', ajCss = '', ajDoc = null, ajScores = {}, ajNev = '';
-let ajCurrentCodeTab = 'html', ajFeladatHtml = '';
+let ajCurrentCodeTab = 'html', ajFeladatBlobUrl = '';
+
+function feladatHtmlWrap(inner) {
+  return `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><style>
+    body{font-family:Calibri,'Segoe UI',sans-serif;font-size:11pt;line-height:1.5;color:#1a1a1a;margin:12px 16px;padding:0;background:#fff}
+    p{margin:4px 0 6px;text-align:justify}
+    h1{font-size:14pt;font-weight:700;margin:4px 0 10px}
+    h2{font-size:12pt;font-weight:700;margin:6px 0 8px}
+    h3{font-size:11pt;font-weight:700;margin:4px 0 6px}
+    ol{margin:6px 0;padding-left:22px} ol li{margin:5px 0;text-align:justify}
+    ul{margin:4px 0;padding-left:22px} ul li{margin:3px 0;text-align:justify}
+    table{border-collapse:collapse;width:100%;margin:8px 0}
+    td,th{border:1px solid #ccc;padding:4px 8px;font-size:10pt}
+    strong,b{font-weight:700} em,i{font-style:italic} u{text-decoration:underline}
+    hr{border:none;border-top:1px solid #ccc;margin:10px 0}
+    pre{font-family:Consolas,monospace;font-size:10pt;background:#f5f5f5;padding:8px;border-radius:4px;white-space:pre-wrap}
+  </style></head><body>${inner}</body></html>`;
+}
 
 // ── Fájlkezelés ────────────────────────────────────────────────────────────
 function ajDrop(e) {
@@ -491,12 +508,13 @@ function showCodeTab(tab) {
   ajCurrentCodeTab = tab;
   ['html','css','feladat'].forEach(t => document.getElementById('ctab-'+t)?.classList.toggle('active', t===tab));
   const mc = document.getElementById('aj-monaco-container');
-  const fv = document.getElementById('aj-feladat-html-view');
   const hint = document.getElementById('aj-code-hint');
+  const fv = document.getElementById('aj-feladat-iframe');
   if (tab === 'feladat') {
     mc.style.display = 'none';
     fv.style.display = 'block';
-    fv.innerHTML = ajFeladatHtml || '<p style="color:#4b5563;padding:20px;">Feladat leírás nem lett feltöltve.</p>';
+    fv.src = ajFeladatBlobUrl || 'about:blank';
+    if (!ajFeladatBlobUrl) fv.srcdoc = '<body style="font-family:Calibri,sans-serif;color:#888;padding:20px">Feladat leírás nem lett feltöltve.</body>';
     hint.textContent = 'Feladat leírás';
   } else {
     mc.style.display = 'block';
@@ -517,13 +535,15 @@ async function ajLoadFeladat(file) {
   const info = document.getElementById('aj-feladat-info');
   info.textContent = `Betöltés: ${file.name}…`;
   try {
+    let inner;
     if (file.name.endsWith('.docx')) {
-      const buf = await file.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer: buf });
-      ajFeladatHtml = result.value;
+      const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+      inner = result.value;
     } else {
-      ajFeladatHtml = '<pre style="white-space:pre-wrap">' + esc(await file.text()) + '</pre>';
+      inner = '<pre>' + esc(await file.text()) + '</pre>';
     }
+    if (ajFeladatBlobUrl) URL.revokeObjectURL(ajFeladatBlobUrl);
+    ajFeladatBlobUrl = URL.createObjectURL(new Blob([feladatHtmlWrap(inner)], { type: 'text/html' }));
     info.innerHTML = `<i class="fas fa-check" style="color:#4ade80"></i> ${esc(file.name)} betöltve`;
   } catch(e) {
     info.innerHTML = `<i class="fas fa-times" style="color:#ef4444"></i> Hiba: ${esc(e.message)}`;
@@ -992,7 +1012,7 @@ function switchSubj(subj) {
 // ══ PYTHON ÁLLAPOT ══════════════════════════════════════════════════════════
 const RAILWAY = 'https://agazati.up.railway.app';
 let pyCode = { t8: '', t14: '', t18: '', eloado: '' };
-let pyFeladatHtml = '';
+let pyFeladatBlobUrl = '';
 let pyCriteria = { t8: [], t14: [], t18: [] };
 let pyScores = { t8: {}, t14: {}, t18: {} };
 let pyNev = '';
@@ -1013,10 +1033,12 @@ async function pyLoadFeladat(file) {
   document.getElementById('py-ffeladat-name').textContent = file.name;
   document.getElementById('py-ffeladat').closest('.py-file-zone').classList.add('loaded');
   try {
-    pyFeladatHtml = file.name.endsWith('.docx')
+    const inner = file.name.endsWith('.docx')
       ? (await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() })).value
-      : '<pre style="white-space:pre-wrap">' + esc(await file.text()) + '</pre>';
-  } catch(e) { pyFeladatHtml = `<p style="color:#ef4444">Betöltési hiba: ${esc(e.message)}</p>`; }
+      : '<pre>' + esc(await file.text()) + '</pre>';
+    if (pyFeladatBlobUrl) URL.revokeObjectURL(pyFeladatBlobUrl);
+    pyFeladatBlobUrl = URL.createObjectURL(new Blob([feladatHtmlWrap(inner)], { type: 'text/html' }));
+  } catch(e) { pyFeladatBlobUrl = ''; }
 }
 
 async function pyLoadPontozo(file) {
@@ -1152,7 +1174,10 @@ function pyToggle(sec) {
 function pyShowCode(tab) {
   ['t8','t14','t18','eloado','feladat'].forEach(t => document.getElementById(`pctab-${t}`)?.classList.toggle('active',t===tab));
   const tv=document.getElementById('py-code-view'), fv=document.getElementById('py-feladat-view');
-  if (tab==='feladat') { tv.style.display='none'; fv.style.display='block'; fv.innerHTML=pyFeladatHtml||'<p style="color:#4b5563;padding:20px;">Feladat leírás nem lett feltöltve.</p>'; }
+  if (tab==='feladat') { tv.style.display='none'; fv.style.display='block';
+    fv.src = pyFeladatBlobUrl || 'about:blank';
+    if (!pyFeladatBlobUrl) fv.srcdoc = '<body style="font-family:Calibri,sans-serif;color:#888;padding:20px">Feladat leírás nem lett feltöltve.</body>';
+  }
   else { tv.style.display='block'; fv.style.display='none'; tv.value=pyCode[tab]||'# (nincs fájl feltöltve)'; }
 }
 
@@ -1183,7 +1208,7 @@ async function pyGroq(sec) {
 }
 
 function pyReset() {
-  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyFeladatHtml='';
+  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyFeladatBlobUrl='';
   pyCriteria={t8:[],t14:[],t18:[]}; pyScores={t8:{},t14:{},t18:{}};
   document.getElementById('py-grading-step').style.display='none';
   document.getElementById('py-upload-step').style.display='block';
