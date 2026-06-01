@@ -108,7 +108,7 @@
         </div>
         <div class="form-row" style="margin-bottom:16px;">
           <label><i class="fas fa-file-lines" style="color:#f59e0b"></i> Feladat leírás <span style="color:#4b5563;font-weight:400;">(opcionális – .docx vagy .txt)</span></label>
-          <div class="upload-zone" style="padding:14px;" onclick="document.getElementById('aj-feladat-inp').click()">
+          <div class="upload-zone" style="padding:14px;position:relative;">
             <input type="file" id="aj-feladat-inp" accept=".docx,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10;" onchange="ajLoadFeladat(this.files[0])">
             <div style="font-size:.85rem;color:#64748b;pointer-events:none;" id="aj-feladat-info">
               <i class="fas fa-file-word" style="color:#f59e0b"></i> Kattints a feladat .docx feltöltéséhez
