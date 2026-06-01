@@ -530,9 +530,11 @@ function ajJumpToCode(id) {
   // Sor kiszámítása a görgetéshez
   const linesBefore = code.slice(0, pos).split('\n').length - 1;
   const lineHeight = parseFloat(getComputedStyle(tv).lineHeight) || 19;
-  tv.scrollTop = Math.max(0, (linesBefore - 3) * lineHeight);
-  tv.focus();
+  const targetScroll = Math.max(0, (linesBefore - 3) * lineHeight);
   tv.setSelectionRange(pos, pos + matchLen);
+  // requestAnimationFrame: focus() scroll-t felülír, ezért utána állítjuk be kétszer is
+  tv.scrollTop = targetScroll;
+  requestAnimationFrame(() => { tv.scrollTop = targetScroll; });
 
   const lineNum = linesBefore + 1;
   hint.textContent = `${lineNum}. sor – ${tab.toUpperCase()} kód`;
@@ -746,7 +748,7 @@ function ajGetChecks() {
       check: d => d.title.trim()==='Európa legszebb szigetei',
       find: { in:'html', term:'<title' } },
     { id:3,  label:'A "css" mappán belüli "style.css" fájl hivatkozása elkészült a Bootstrap stíluslap alá.',
-      check: (_,h) => /href=["']css\/style\.css["']/.test(h),
+      check: (_,h) => /href=["']\.?\/?css\/style\.css["']/.test(h),
       find: { in:'html', term:'style.css', fallback:'<link' } },
 
     { section:'A „Fejléc" részben elvégezte az alábbi feladatokat:' },
