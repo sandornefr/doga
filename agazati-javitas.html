@@ -797,7 +797,13 @@ function ajGetChecks() {
         const header = d.querySelector('header');
         if (!header) return false;
         const img = header.querySelector('img[src*="fejlec"]');
-        return !!img;
+        if (!img) return false;
+        // .text-center divben kell lennie
+        const inTextCenter = !!img.closest('.text-center');
+        // A nav ELŐTT kell lennie
+        const nav = header.querySelector('nav');
+        const beforeNav = !nav || !!(nav.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_PRECEDING);
+        return inTextCenter && beforeNav;
       },
       find: { in:'html', term:'fejlec', fallback:'<!-- Kép helye' } },
     { id:5,  label:'A képre alt-ot és title-t állított, amelyeknek szövege „Európa szigetei".',
@@ -821,12 +827,22 @@ function ajGetChecks() {
 
     { section:'A "Leírás" részben elvégezte a következő módosítást:' },
     { id:10, label:'Az "Európa szigetei" szöveget <h2> elembe helyezte.',
-      check: d => Array.from(d.querySelectorAll('h2')).some(h=>h.textContent.includes('Európa szigetei')),
+      check: d => {
+        const leiras = d.querySelector('#leiras');
+        if (!leiras) return false;
+        return Array.from(leiras.querySelectorAll('h2')).some(h => h.textContent.includes('Európa szigetei'));
+      },
       find: { in:'html', term:'id="leiras"', fallback:'leiras' } },
 
     { section:'A „Szigetek" részben elvégezte az alábbi feladatokat:' },
     { id:11, label:'A "Mallorca" leírásnál a "Legismertebb látnivalók:" szöveg köré <b> elemet rakott.',
-      check: d => Array.from(d.querySelectorAll('b')).some(b=>b.textContent.includes('Legismertebb')),
+      check: d => {
+        const h3s = Array.from(d.querySelectorAll('h3'));
+        const mallorcaH3 = h3s.find(h => h.textContent.trim() === 'Mallorca');
+        if (!mallorcaH3) return false;
+        const col = mallorcaH3.closest('[class*="col"]') || mallorcaH3.parentElement;
+        return !!col && Array.from(col.querySelectorAll('b')).some(b => b.textContent.includes('Legismertebb'));
+      },
       find: { in:'html', term:'Legismertebb', fallback:'Mallorca' } },
     { id:12, label:'A látnivalókhoz <ol> elemet használt és a listaelemeket <li>-be helyezte.',
       check: d => { const ol=d.querySelector('#szigetek ol'); return ol&&ol.querySelectorAll('li').length>=5; },
@@ -873,7 +889,17 @@ function ajGetChecks() {
 
     { section:'Az „A szigetek adatai" részben elvégezte az alábbi feladatokat:' },
     { id:22, label:'Az Ibizára vonatkozó adatokat elhelyezte a táblázatban a "Kréta" és "Ciprus" sorok közé, megfelelően alkalmazva a <tr> és <td> elemeket.',
-      check: d => Array.from(d.querySelectorAll('td')).some(td=>td.textContent.trim()==='Ibiza'),
+      check: d => {
+        const rows = Array.from(d.querySelectorAll('table tr'));
+        let kreta=-1, ibiza=-1, ciprus=-1;
+        rows.forEach((r,i)=>{
+          const t = r.querySelector('td')?.textContent.trim();
+          if(t==='Kréta') kreta=i;
+          if(t==='Ibiza') ibiza=i;
+          if(t==='Ciprus') ciprus=i;
+        });
+        return ibiza>=0 && kreta>=0 && ciprus>=0 && kreta<ibiza && ibiza<ciprus;
+      },
       find: { in:'html', term:'tablazat', fallback:'<table' } },
     { id:23, label:'A táblázat első sorára alkalmazta a <thead> elemet.',
       check: d => !!d.querySelector('table thead'),
