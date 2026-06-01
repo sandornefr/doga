@@ -418,25 +418,34 @@ function ajRenderList(checks) {
     row.className = `aj-row ${status}`;
     row.dataset.id = c.id; row.dataset.status = status;
 
-    // Screenshothoz csak 0 és 1 gomb (fél pont nem adható)
-    const btnsHtml = c.screenshotCheck
-      ? `<div class="aj-btns">
-          <button class="aj-btn ${cur===0?'a0':''}" onclick="ajSet(${c.id},0)">0</button>
-          <button class="aj-btn ${cur===1?'a1':''}" onclick="ajSet(${c.id},1)">1</button>
-        </div>`
-      : `<div class="aj-btns">
+    if (c.screenshotCheck) {
+      // Screenshot sor: kép + gomb egy blokkban, egymás alatt
+      row.style.flexDirection = 'column';
+      row.style.alignItems = 'stretch';
+      row.innerHTML = `
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+          <div class="aj-row-lbl">${esc(c.label)}</div>
+        </div>
+        <div style="padding-left:27px;margin-top:4px;">
+          ${extraContent}
+          <div class="aj-btns" style="margin-top:8px;">
+            <button class="aj-btn ${cur===0?'a0':''}" onclick="ajSet(${c.id},0)">0</button>
+            <button class="aj-btn ${cur===1?'a1':''}" onclick="ajSet(${c.id},1)">1</button>
+          </div>
+        </div>`;
+    } else {
+      row.innerHTML = `
+        <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+        <div class="aj-row-lbl" ${clickAttr}>
+          ${esc(c.label)}${jumpHint}
+        </div>
+        <div class="aj-btns">
           <button class="aj-btn ${cur===0?'a0':''}" onclick="ajSet(${c.id},0)">0</button>
           <button class="aj-btn ${cur===0.5?'a05':''}" onclick="ajSet(${c.id},0.5)">½</button>
           <button class="aj-btn ${cur===1?'a1':''}" onclick="ajSet(${c.id},1)">1</button>
         </div>`;
-
-    row.innerHTML = `
-      <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
-      <div class="aj-row-lbl" ${clickAttr}>
-        ${esc(c.label)}${jumpHint}
-        ${extraContent}
-      </div>
-      ${btnsHtml}`;
+    }
     list.appendChild(row);
   });
 }
