@@ -385,28 +385,29 @@ function ajRenderList(checks) {
 
     let extraContent = '';
     if (c.screenshotCheck) {
-      // Extra képek megjelenítése (nem referencia fájlok)
-      const REF = new Set(['szigetek.html','css/style.css','szigetek.png',
-        'img/ciprus.jpg','img/fejlec.jpg','img/history-icon.png','img/ibiza.jpg',
-        'img/kreta.jpg','img/mallorca.jpg','img/santorini.jpg',
-        'bootstrap/bootstrap.bundle.min.js','bootstrap/bootstrap.min.css']);
-      const extras = Object.keys(ajFiles).filter(k =>
-        /\.(png|jpg|jpeg|gif|webp)$/i.test(k) && !REF.has(k));
-      if (extras.length) {
-        extraContent = extras.map(k => {
-          const correctName = c.screenshotCheck === 'html' ? 'szigetekValidalas' : 'styleValidalas';
-          const fileName = k.split('/').pop();
-          const nameOk = fileName.toLowerCase().startsWith(correctName.toLowerCase());
-          const nameStatus = nameOk
-            ? `<span style="color:#4ade80;font-size:.7rem;"><i class="fas fa-check"></i> fájlnév ok</span>`
-            : `<span style="color:#ef4444;font-size:.7rem;"><i class="fas fa-times"></i> helytelen fájlnév (kell: ${correctName})</span>`;
-          return `<div style="margin-top:6px;">
-            <div style="font-size:.72rem;color:#94a3b8;margin-bottom:3px;">${esc(fileName)} ${nameStatus}</div>
-            <a href="${ajFiles[k].blobUrl}" target="_blank">
-              <img src="${ajFiles[k].blobUrl}" class="aj-thumb" title="${esc(fileName)} – kattints a nagyításhoz">
-            </a>
-          </div>`;
-        }).join('');
+      // Csak a releváns validálási képet keressük fájlnév alapján
+      const correctName = c.screenshotCheck === 'html' ? 'szigetekvalidalas' : 'stylevalidalas';
+      const searchFn = c.screenshotCheck === 'html'
+        ? fn => fn.includes('szigetek') && fn.includes('valid')
+        : fn => fn.includes('stylevalidalas') || (fn.includes('style') && fn.includes('valid'));
+      const imgKey = Object.keys(ajFiles).find(k => {
+        if (!/\.(png|jpg|jpeg|gif|webp)$/i.test(k)) return false;
+        const fn = k.split('/').pop().toLowerCase().replace(/\.[^.]+$/, '');
+        return searchFn(fn);
+      });
+      if (imgKey) {
+        const fileName = imgKey.split('/').pop();
+        const fnNoExt = fileName.toLowerCase().replace(/\.[^.]+$/, '');
+        const nameOk = fnNoExt === correctName;
+        const nameStatus = nameOk
+          ? `<span style="color:#4ade80;font-size:.7rem;"><i class="fas fa-check"></i> fájlnév helyes</span>`
+          : `<span style="color:#ef4444;font-size:.7rem;"><i class="fas fa-times"></i> helytelen fájlnév – kell: <b>${c.screenshotCheck === 'html' ? 'szigetekValidalas' : 'styleValidalas'}</b></span>`;
+        extraContent = `<div style="margin-top:6px;">
+          <div style="font-size:.72rem;color:#94a3b8;margin-bottom:3px;">${esc(fileName)} ${nameStatus}</div>
+          <a href="${ajFiles[imgKey].blobUrl}" target="_blank">
+            <img src="${ajFiles[imgKey].blobUrl}" class="aj-thumb" title="${esc(fileName)} – kattints a nagyításhoz">
+          </a>
+        </div>`;
       } else {
         extraContent = `<div style="color:#4b5563;font-size:.73rem;font-style:italic;margin-top:4px;">
           <i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i> Nem találtam validálási képet a mappában</div>`;
