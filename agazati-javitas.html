@@ -352,8 +352,8 @@ function cssHas(css, selector, property, valuePattern) {
   const block = m[1];
   const propEsc = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const valRe = valuePattern instanceof RegExp
-    ? new RegExp(propEsc + '\\s*:\\s*' + valuePattern.source, 'i')
-    : new RegExp(propEsc + '\\s*:\\s*' + String(valuePattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    ? new RegExp(propEsc + '\\s*:[^;\\n]*?' + valuePattern.source, 'i')
+    : new RegExp(propEsc + '\\s*:[^;\\n]*?' + String(valuePattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
   return valRe.test(block);
 }
 
