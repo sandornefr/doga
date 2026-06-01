@@ -770,6 +770,9 @@ function ajReset() {
   ajFiles = {}; ajHtml = ''; ajCss = ''; ajDoc = null; ajScores = {};
 }
 
+// HTML tageket backtick-be teszi Markdown exporthoz (pl. <h2> → `<h2>`)
+function mdLabel(s) { return String(s).replace(/<([^>]+)>/g, '`<$1>`'); }
+
 function ajExport() {
   const checks = ajGetChecks();
   const datum = new Date().toLocaleDateString('hu-HU');
@@ -794,7 +797,7 @@ function ajExport() {
     const v = ajScores[c.id] ?? 0;
     const vStr = v === 0.5 ? '½' : String(v);
     const icon = v >= 1 ? '✅' : v === 0.5 ? '🟡' : '❌';
-    md += `| ${icon} ${vStr} | ${c.label} |\n`;
+    md += `| ${icon} ${vStr} | ${mdLabel(c.label)} |\n`;
   });
 
   const a = document.createElement('a');
@@ -1249,7 +1252,7 @@ function pyExport() {
     md+=`\n## ${pts} pontos feladat\n\n| Pont | Szempont |\n|:---:|---|\n`;
     pyCriteria[sec].forEach(c=>{
       const v=pyScores[sec][c.id]??0;
-      md+=`| ${v>=1?'✅':v===.5?'🟡':'❌'} ${v===.5?'½':v} | ${c.label} |\n`;
+      md+=`| ${v>=1?'✅':v===.5?'🟡':'❌'} ${v===.5?'½':v} | ${mdLabel(c.label)} |\n`;
     });
   });
   const a=document.createElement('a');
