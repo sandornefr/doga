@@ -1356,9 +1356,10 @@ async function pyGroq(sec) {
   const token = u.token || '';
   const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py (osztály forrás) ===\n${pyCode.eloado}` : '';
   const refSzoveg = pyRefCode[sec] ? `\n\n# === mintamegoldas.py (referencia – más kód is helyes lehet, a lényeg az azonos futási viselkedés) ===\n${pyRefCode[sec]}` : '';
-  const pontozSzoveg = pyCriteria[sec].map((c,i)=>`${i+1}. ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
+  const criteria = pyCriteria[sec];
+  const pontozSzoveg = criteria.map((c,i)=>`${i+1}. [max:${c.max}] ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
   const pts = {t8:'8',t14:'14',t18:'18'}[sec];
-  const prompt = `Értékeld az alábbi Python megoldást a pontozási szempontok alapján!\n\nPONTOZÁSI SZEMPONTOK:\n${pontozSzoveg}\n\nTANULÓ ${pts} PONTOS MEGOLDÁSA:\n${pyCode[sec]}${eloado}${refSzoveg}\n\nMinden szempontnál jelezd: teljesítette-e a tanuló (igen/nem/részben), és röviden indokold!`;
+  const prompt = `Értékeld az alábbi Python megoldást és add meg a pontszámokat!\n\nPONTOZÁSI SZEMPONTOK (sorszám. [max pont] leírás):\n${pontozSzoveg}\n\nTANULÓ ${pts} PONTOS MEGOLDÁSA:\n${pyCode[sec]}${eloado}${refSzoveg}\n\nUtasítások:\n- Minden szempontnál röviden indokold az ítéletet (1-2 mondat)\n- A végén KÖTELEZŐEN add meg a pontokat PONTOSAN ebben a formátumban (csak ezt a sort változtasd):\n\nPONTOK:\n${criteria.map((_,i)=>`${i+1}: ?`).join('\n')}\n\nA ? helyére 0, 0.5 vagy 1 kerüljön (max pont alapján). Ne hagyj ki sort!`;
   try {
     const res = await fetch(`${RAILWAY}/api/ai/pontozas`, {
       method:'POST',
@@ -1380,7 +1381,25 @@ async function pyGroq(sec) {
     let data;
     try { data = JSON.parse(rawText); }
     catch(e) { box.textContent = `Hiba: Nem értelmezhető szerver válasz (${res.status}):\n${rawText.slice(0,200)}`; btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq'; return; }
-    box.textContent = data.result || data.text || data.error || JSON.stringify(data);
+    const aiText = data.result || data.text || data.error || JSON.stringify(data);
+
+    // PONTOK: blokk kinyerése és automatikus beírás
+    const pontokMatch = aiText.match(/PONTOK:\s*([\s\S]+?)(?:\n\n|$)/i);
+    let autoCount = 0;
+    if (pontokMatch && criteria.length) {
+      const lines = pontokMatch[1].trim().split('\n');
+      for (const line of lines) {
+        const m = line.match(/^(\d+)\s*:\s*([\d.]+)/);
+        if (!m) continue;
+        const idx = parseInt(m[1]) - 1;
+        const score = Math.min(parseFloat(m[2]) || 0, criteria[idx]?.max ?? 1);
+        if (criteria[idx]) { pySet(sec, criteria[idx].id, score); autoCount++; }
+      }
+    }
+
+    // Megjelenítés: elemzés szöveg a PONTOK: blokk nélkül, + összesítő sor
+    const displayText = aiText.replace(/PONTOK:\s*[\s\S]+$/i, '').trim();
+    box.textContent = displayText + (autoCount ? `\n\n✓ ${autoCount} szempont pontszáma automatikusan beírva.` : '');
   } catch(e) { box.textContent='Hiba: '+e.message; }
   btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
 }
