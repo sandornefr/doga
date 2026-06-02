@@ -2173,15 +2173,20 @@
         { min:  3, icon: 'fa-fire',              color: '#86efac', name: 'Ügyes Kezdő' },
     ];
 
-    function streakHtml(streak) {
-        if (!streak || streak < 3) return '';
-        const t = STREAK_TITLES.find(s => streak >= s.min) || null;
-        if (!t) return '';
-        return `<div class="ered-streak-row">
-            <i class="fas ${t.icon}" style="color:${t.color};margin-right:6px;"></i>
-            <strong>${streak} aktív nap</strong>
-            <span class="ered-streak-title" style="color:${t.color};">– ${t.name}</span>
-        </div>`;
+    function streakHtml(streak, consec) {
+        const parts = [];
+        // Egymást követő napok (elveszíthető streak)
+        if (consec >= 1) {
+            const fire = consec >= 14 ? '#ff4500' : consec >= 7 ? '#f97316' : consec >= 3 ? '#fbbf24' : '#86efac';
+            parts.push(`<i class="fas fa-fire" style="color:${fire};margin-right:4px;"></i><strong>${consec} napos sorozat</strong><span style="color:#6b7280;font-size:.78rem;margin-left:4px;">– ha ma is aktív vagy, holnap ${consec+1} lesz!</span>`);
+        }
+        // Összes aktív nap cím
+        if (streak >= 3) {
+            const t = STREAK_TITLES.find(s => streak >= s.min) || null;
+            if (t) parts.push(`<i class="fas ${t.icon}" style="color:${t.color};margin-right:6px;"></i><strong>${streak} aktív nap összesen</strong><span class="ered-streak-title" style="color:${t.color};">– ${t.name}</span>`);
+        }
+        if (!parts.length) return '';
+        return parts.map(p => `<div class="ered-streak-row">${p}</div>`).join('');
     }
 
     function calcLevel(avgPct, targy) {
@@ -2414,7 +2419,7 @@
             document.getElementById('ered-content').innerHTML =
                 examCountdown() +
                 sessionTimeHtml(sessData) +
-                streakHtml(rankData?.streak ?? 0) +
+                streakHtml(rankData?.streak ?? 0, rankData?.consecStreak ?? 0) +
                 renderSubject(progress.web,    '🌐 WEB feladat',    'ered-bar-web',    'web',    rankData?.web) +
                 renderSubject(progress.python, '🐍 Python feladat', 'ered-bar-python', 'python', rankData?.python) +
                 renderSzamonkeresEredmenyek(szamEredmenyek, szamAktivak, szamAktivBeadasok) +

@@ -193,7 +193,8 @@ public record StudentRankResult(
     ThreeScopeRanks Web,
     ThreeScopeRanks Python,
     ThreeScopeRanks Quiz,
-    int Streak
+    int Streak,
+    int ConsecStreak = 0
 );
 
 // ── Completion Stats ───────────────────────────────────────────────────────

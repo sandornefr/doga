@@ -287,6 +287,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e0e0e0;height:1
           <div class="score-progress"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
           <button class="check-btn" onclick="checkAll()">Ellenőrzés</button>
         </div>
+        <div id="score-details" style="padding:6px 10px 4px;font-size:.72rem;border-top:1px solid #21262d;display:none;flex-wrap:wrap;gap:4px 10px;"></div>
       </div>
 
       <!-- Terminal panel (right) -->
@@ -1545,10 +1546,20 @@ function renderTaskCard(task) {
       : (isPlaceTask && !hasGhost
         ? `<div style="margin-top:10px;padding:8px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:7px;font-size:0.77rem;color:#22c55e;display:flex;align-items:center;gap:8px"><i class="fas fa-check"></i>Minden eszköz elhelyezve!</div>`
         : '');
+    // Tipp gomb: az IP-táblából + elvart adatokból generált segítség
+    const tippLines = [];
+    if (task.ipTabla?.length) {
+      task.ipTabla.forEach(r => tippLines.push(`${r.eszkoz} ${r.int}: ${r.ip} ${r.maszk||''}`));
+    }
+    if (task.tippek?.[idx]) tippLines.push('→ ' + task.tippek[idx]);
+    const tippHtml = tippLines.length ? `
+      <div id="halozat-tipp-${idx}" style="display:none;margin-top:8px;background:#0d1117;border:1px solid #3b82f644;border-radius:7px;padding:8px 11px;font-size:.73rem;font-family:monospace;color:#79c0ff;line-height:1.7;white-space:pre-wrap;">${tippLines.join('\n')}</div>
+      <button onclick="var el=document.getElementById('halozat-tipp-${idx}');el.style.display=el.style.display==='none'?'block':'none';this.textContent=el.style.display==='none'?'💡 Tipp':'💡 Tipp elrejtése'"
+        style="margin-top:7px;padding:3px 10px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:5px;color:#93c5fd;font-size:.75rem;cursor:pointer;">💡 Tipp</button>` : '';
     body.innerHTML = _konzolGomb(task) + `<div style="display:flex;align-items:flex-start;gap:8px">
       <span class="tc-card-num" style="background:#3b82f622;color:#3b82f6">${idx + 1}</span>
       <div class="tc-card-text">${itemText}</div>
-    </div>${placeHint}`;
+    </div>${placeHint}${tippHtml}`;
   }
 
   updateScore(task);
@@ -1670,6 +1681,22 @@ function updateScore(task) {
   document.getElementById('score-val').textContent = pts + ' / 40';
   document.getElementById('score-fill').style.width = (pts / 40 * 100) + '%';
   document.getElementById('score-val').style.color = pts >= 28 ? '#22c55e' : pts >= 16 ? '#e3b341' : '#f85149';
+
+  // Live eszközszintű visszajelzés
+  const det = document.getElementById('score-details');
+  if (!det || !allIds.length) return;
+  det.style.display = 'flex';
+  det.innerHTML = allIds.map(id => {
+    const devDef = task.topologia.eszkozok.find(d => d.id === id);
+    const details = getDeviceDetails(task, id);
+    const okN = details.filter(d => d.ok).length;
+    const allN = details.length;
+    const ok = okN === allN && allN > 0;
+    const nev = devDef?.nev || id;
+    return `<span style="color:${ok?'#22c55e':'#f87171'};white-space:nowrap" title="${details.map(d=>(d.ok?'✓ ':'✗ ')+d.label).join('\n')}">
+      ${ok?'✓':'✗'} <b>${nev}</b>${allN?` ${okN}/${allN}`:''}
+    </span>`;
+  }).join('<span style="color:#374151">·</span>');
 }
 
 function updateProgress() {

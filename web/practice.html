@@ -1038,7 +1038,9 @@ function renderChecklist(results) {
       } else {
         const exp = document.createElement('div');
         exp.className = 'check-exp visible';
-        exp.innerHTML = ch.explanation;
+        exp.innerHTML = ch.explanation ||
+          `<span style="color:#94a3b8">Szempont: <strong style="color:#e0e0e0">${ch.label}</strong><br>
+          Nyisd meg az előnézetet és hasonlítsd össze az elvárttal!</span>`;
         textWrap.appendChild(exp);
 
         if (ch.snippet) {

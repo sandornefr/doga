@@ -1198,7 +1198,8 @@ public class Database
             new ThreeScopeRanks(wcso, wosz, wevf, wkando),
             new ThreeScopeRanks(pcso, posz, pevf, pkando),
             new ThreeScopeRanks(qcso, qosz, qevf, qkando),
-            GetStreak(email)
+            GetStreak(email),
+            GetConsecStreak(email)
         );
     }
 
@@ -1610,6 +1611,33 @@ public class Database
             if (DateTime.TryParse(r.GetString(0), out var d))
                 dates.Add(d.Date);
         return CalcStreak(dates);
+    }
+
+    public int GetConsecStreak(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT DISTINCT DATE(datum) FROM progress
+            WHERE LOWER(email)=$email AND datum IS NOT NULL AND datum != ''
+            ORDER BY 1 DESC";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        var dates = new List<DateTime>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            if (DateTime.TryParse(r.GetString(0), out var d))
+                dates.Add(d.Date);
+        if (!dates.Any()) return 0;
+        var today = DateTime.Today;
+        // Ha legutóbb 2+ napja volt aktív → streak eltört
+        if (dates[0].Date < today.AddDays(-1)) return 0;
+        int streak = 1;
+        for (int i = 1; i < dates.Count; i++)
+        {
+            if (dates[i].Date == dates[i - 1].Date.AddDays(-1)) streak++;
+            else break;
+        }
+        return streak;
     }
 
     public Dictionary<string, int> GetAllStreaks()

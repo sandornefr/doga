@@ -1597,8 +1597,8 @@ function initMonaco(task,idx){
     const el=document.getElementById('med'); if(!el) return;
     state.monacoEd=monaco.editor.create(el,{
       value:task.starterHtml, language:'html', theme:'vs-dark',
-      fontSize:14, minimap:{enabled:false}, automaticLayout:true,
-      wordWrap:'on', scrollBeyondLastLine:false, tabSize:2,
+      fontSize:15, minimap:{enabled:false}, automaticLayout:true,
+      mouseWheelZoom:true, wordWrap:'on', scrollBeyondLastLine:false, tabSize:2,
       quickSuggestions:{other:true,comments:false,strings:true}
     });
     // Wrap gomb + Shift+Alt+W billentyűparancs
