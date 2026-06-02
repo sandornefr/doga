@@ -399,9 +399,9 @@ function initMonaco() {
           ajEditor = monaco.editor.create(container, {
             value: '', language: 'html', theme: 'vs-dark',
             readOnly: true, minimap: { enabled: false },
-            fontSize: 12, lineNumbers: 'on',
+            fontSize: 15, lineNumbers: 'on',
             scrollBeyondLastLine: false, automaticLayout: true,
-            wordWrap: 'off', renderWhitespace: 'none',
+            wordWrap: 'on', renderWhitespace: 'none',
           });
           resolve();
         } catch(e) { reject(e); }
@@ -768,6 +768,17 @@ function ajReset() {
   const btn = document.getElementById('aj-start-btn');
   btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'not-allowed';
   ajFiles = {}; ajHtml = ''; ajCss = ''; ajDoc = null; ajScores = {};
+  if (ajEditor) {
+    ajDecorations = ajEditor.deltaDecorations(ajDecorations, []);
+    ajEditor.setValue('');
+  }
+  ajDecorations = [];
+  document.getElementById('aj-list').innerHTML = '';
+  document.getElementById('aj-total').textContent = '0';
+  const hint = document.getElementById('aj-code-hint');
+  hint.textContent = '← A piros szempontra kattintva ide ugrik a kód';
+  hint.style.color = '';
+  if (ajFeladatBlobUrl) { URL.revokeObjectURL(ajFeladatBlobUrl); ajFeladatBlobUrl = ''; }
 }
 
 // HTML tageket backtick-be teszi Markdown exporthoz (pl. <h2> → `<h2>`)
