@@ -80,6 +80,20 @@
     .py-file-info{font-size:.8rem}
     .py-file-label{color:#94a3b8;font-weight:600}
     .py-file-name{color:#4ade80;font-size:.75rem;margin-top:2px}
+    /* Python mappa hozzárendelés */
+    .py-assign-wrap{background:#0d1a2e;border:1px solid #1e3a5f;border-radius:9px;padding:10px 14px;margin-bottom:12px}
+    .py-assign-row{display:flex;align-items:center;gap:10px;padding:5px 2px;border-bottom:1px solid #1f2937}
+    .py-assign-row:last-child{border-bottom:none}
+    .py-assign-fname{flex:1;font-size:.8rem;font-family:monospace;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .py-slot-btns{display:flex;gap:3px;flex-shrink:0}
+    .py-slot-btn{padding:3px 8px;border:1px solid #374151;border-radius:5px;background:#0b1120;color:#4b5563;font-size:.73rem;font-weight:700;cursor:pointer;transition:.15s}
+    .py-slot-btn:hover{border-color:#3b82f6;color:#94a3b8}
+    .py-slot-btn.s8{} .py-slot-btn.s8.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+    .py-slot-btn.s14.active{background:#d97706;border-color:#d97706;color:#fff}
+    .py-slot-btn.s18.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
+    .py-slot-btn.sel.active{background:#db2777;border-color:#db2777;color:#fff}
+    .py-docs-divider{font-size:.75rem;color:#4b5563;font-weight:700;margin:12px 0 6px;display:flex;align-items:center;gap:8px}
+    .py-docs-divider::after{content:'';flex:1;height:1px;background:#1f2937}
     .py-section{background:#16213e;border:1px solid #1f2937;border-radius:10px;margin-bottom:10px;overflow:hidden}
     .py-section-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
     .py-section-hdr:hover{background:rgba(255,255,255,.03)}
@@ -220,74 +234,28 @@
             </div>
           </div>
 
-          <!-- Tanuló megoldásai -->
-          <div style="font-size:.78rem;color:#94a3b8;font-weight:700;margin-bottom:6px;"><i class="fas fa-user-graduate"></i> Tanuló megoldásai</div>
+          <!-- Tanuló mapája (minden tanulónál újratölt) -->
+          <div style="font-size:.78rem;color:#94a3b8;font-weight:700;margin-bottom:6px;"><i class="fas fa-user-graduate"></i> Tanuló mapája</div>
+          <div class="upload-zone" id="py-drop-zone"
+              ondragover="event.preventDefault();this.classList.add('dragover')"
+              ondragleave="this.classList.remove('dragover')"
+              ondrop="pyFolderDrop(event)" style="margin-bottom:10px;">
+            <input type="file" id="py-folder-input" webkitdirectory multiple onchange="pyFolderSelect(this.files)">
+            <div style="font-size:1.6rem;color:#3b82f6;margin-bottom:6px;pointer-events:none"><i class="fas fa-folder-open"></i></div>
+            <div style="font-size:.88rem;font-weight:600;margin-bottom:3px;pointer-events:none">Húzd ide a tanuló mappáját</div>
+            <div style="font-size:.75rem;color:#64748b;pointer-events:none">vagy kattints a kiválasztáshoz</div>
+            <div id="py-folder-info" style="margin-top:8px;font-size:.8rem;color:#4ade80;min-height:16px;pointer-events:none"></div>
+          </div>
+
+          <!-- .py hozzárendelés -->
+          <div id="py-assign-wrap" class="py-assign-wrap" style="display:none;">
+            <div style="font-size:.72rem;color:#64748b;margin-bottom:6px;">Kattints a kívánt feladatosztályra a hozzárendeléshez — automatikus sorrend módosítható:</div>
+            <div id="py-assign-table"></div>
+          </div>
+
+          <!-- Vizsgadokumentumok (megmaradnak "Új tanuló"-nál) -->
+          <div class="py-docs-divider"><i class="fas fa-bookmark"></i> Vizsgadokumentumok <span style="font-weight:400;">(egyszeri betöltés – megmarad)</span></div>
           <div class="py-upload-grid" style="margin-bottom:10px;">
-            <div class="py-file-zone">
-              <input type="file" id="py-f8" accept=".py" onchange="pyLoadCode('t8',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#3b82f6"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Tanuló – 8pt megoldás (.py)</div>
-                <div class="py-file-name" id="py-f8-name">Nincs fájl</div>
-              </div>
-            </div>
-            <div class="py-file-zone">
-              <input type="file" id="py-f14" accept=".py" onchange="pyLoadCode('t14',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#f59e0b"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Tanuló – 14pt megoldás (.py)</div>
-                <div class="py-file-name" id="py-f14-name">Nincs fájl</div>
-              </div>
-            </div>
-            <div class="py-file-zone">
-              <input type="file" id="py-f18" accept=".py" onchange="pyLoadCode('t18',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-code" style="color:#a855f7"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Tanuló – 18pt megoldás (.py)</div>
-                <div class="py-file-name" id="py-f18-name">Nincs fájl</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mintamegoldások -->
-          <div style="font-size:.78rem;color:#64748b;font-weight:700;margin-bottom:6px;"><i class="fas fa-key"></i> Mintamegoldások <span style="font-weight:400;color:#4b5563;">(opcionális – Groq viszonyítási alap)</span></div>
-          <div class="py-upload-grid" style="margin-bottom:12px;">
-            <div class="py-file-zone">
-              <input type="file" id="py-fref8" accept=".py" onchange="pyLoadRef('t8',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#3b82f6;opacity:.6"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Mintamegoldás 8pt (.py)</div>
-                <div class="py-file-name" id="py-fref8-name">Nincs fájl</div>
-              </div>
-            </div>
-            <div class="py-file-zone">
-              <input type="file" id="py-fref14" accept=".py" onchange="pyLoadRef('t14',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#f59e0b;opacity:.6"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Mintamegoldás 14pt (.py)</div>
-                <div class="py-file-name" id="py-fref14-name">Nincs fájl</div>
-              </div>
-            </div>
-            <div class="py-file-zone">
-              <input type="file" id="py-fref18" accept=".py" onchange="pyLoadRef('t18',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#a855f7;opacity:.6"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">Mintamegoldás 18pt (.py)</div>
-                <div class="py-file-name" id="py-fref18-name">Nincs fájl</div>
-              </div>
-            </div>
-            <div class="py-file-zone">
-              <input type="file" id="py-feloado" accept=".py" onchange="pyLoadCode('eloado',this.files[0])">
-              <div class="py-file-icon"><i class="fas fa-cube" style="color:#ec4899"></i></div>
-              <div class="py-file-info">
-                <div class="py-file-label">18pt osztály forrás (.py) <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
-                <div class="py-file-name" id="py-feloado-name">Nincs fájl</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pontozó + feladatleírás -->
-          <div class="py-upload-grid" style="margin-bottom:16px;">
             <div class="py-file-zone">
               <input type="file" id="py-fpontozo" accept=".xlsx" onchange="pyLoadPontozo(this.files[0])">
               <div class="py-file-icon"><i class="fas fa-table" style="color:#22c55e"></i></div>
@@ -302,6 +270,42 @@
               <div class="py-file-info">
                 <div class="py-file-label">Feladat leírás (.docx/.txt) <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
                 <div class="py-file-name" id="py-ffeladat-name">Nincs fájl</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mintamegoldások (megmaradnak) -->
+          <div class="py-upload-grid" style="margin-bottom:14px;">
+            <div class="py-file-zone">
+              <input type="file" id="py-fref8" accept=".py" onchange="pyLoadRef('t8',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#3b82f6;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 8pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref8-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref14" accept=".py" onchange="pyLoadRef('t14',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#f59e0b;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 14pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref14-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref18" accept=".py" onchange="pyLoadRef('t18',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#a855f7;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 18pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref18-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-feloado" accept=".py" onchange="pyLoadCode('eloado',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-cube" style="color:#ec4899"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Osztály forrás 18pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-feloado-name">Nincs fájl</div>
               </div>
             </div>
           </div>
@@ -1066,6 +1070,8 @@ function switchSubj(subj) {
 const RAILWAY = 'https://agazati.up.railway.app';
 let pyCode = { t8: '', t14: '', t18: '', eloado: '' };
 let pyRefCode = { t8: '', t14: '', t18: '' };
+let pyFolderFiles = {};
+let pyMapping = {};
 let pyFeladatBlobUrl = '';
 let pyCriteria = { t8: [], t14: [], t18: [] };
 let pyScores = { t8: {}, t14: {}, t18: {} };
@@ -1076,6 +1082,91 @@ async function pyLoadRef(key, file) {
   pyRefCode[key] = await file.text();
   const nm = document.getElementById(`py-fref${key.replace('t','')}-name`);
   if (nm) { nm.textContent = file.name; nm.closest('.py-file-zone').classList.add('loaded'); }
+}
+
+async function pyFolderDrop(e) {
+  e.preventDefault();
+  document.getElementById('py-drop-zone').classList.remove('dragover');
+  if (e.dataTransfer.files?.length) await pyFolderProcess(Array.from(e.dataTransfer.files));
+}
+async function pyFolderSelect(files) { await pyFolderProcess(Array.from(files)); }
+
+async function pyFolderProcess(files) {
+  pyFolderFiles = {};
+  for (const f of files) {
+    const name = (f.webkitRelativePath || f.name).split('/').pop();
+    pyFolderFiles[name] = f;
+  }
+  const pyFiles = Object.keys(pyFolderFiles).filter(n => /\.py$/i.test(n)).sort();
+  const xlsxF  = Object.keys(pyFolderFiles).find(n => /\.xlsx?$/i.test(n));
+  const docxF  = Object.keys(pyFolderFiles).find(n => /\.(docx|txt)$/i.test(n));
+
+  const n = Object.keys(pyFolderFiles).length;
+  document.getElementById('py-folder-info').textContent = n ? `${n} fájl betöltve (${pyFiles.length} .py)` : '';
+  document.getElementById('py-drop-zone').classList.toggle('has-files', n > 0);
+
+  // Auto-betölt pontozó/feladat ha még nincs és van a mappában
+  if (xlsxF && !pyCriteria.t8.length && !pyCriteria.t14.length && !pyCriteria.t18.length)
+    await pyLoadPontozo(pyFolderFiles[xlsxF]);
+  if (docxF && !pyFeladatBlobUrl)
+    await pyLoadFeladat(pyFolderFiles[docxF]);
+
+  // Auto-hozzárendelés: ábécé sorrendben 8pt, 14pt, 18pt, eloado
+  const slots = ['t8','t14','t18','eloado'];
+  pyMapping = {};
+  pyCode = { t8:'', t14:'', t18:'', eloado:'' };
+  for (let i = 0; i < pyFiles.length && i < slots.length; i++) {
+    pyMapping[slots[i]] = pyFiles[i];
+    pyCode[slots[i]] = await pyFolderFiles[pyFiles[i]].text();
+  }
+  pyRenderAssignment(pyFiles);
+  pyCheckReady();
+}
+
+function pyRenderAssignment(pyFiles) {
+  const wrap = document.getElementById('py-assign-wrap');
+  const tbl  = document.getElementById('py-assign-table');
+  if (!pyFiles.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  const rev = {};
+  for (const [slot,name] of Object.entries(pyMapping)) rev[name]=slot;
+  const slotDef = [
+    {key:'t8',    label:'8pt',    cls:'s8'},
+    {key:'t14',   label:'14pt',   cls:'s14'},
+    {key:'t18',   label:'18pt',   cls:'s18'},
+    {key:'eloado',label:'osztály',cls:'sel'},
+  ];
+  tbl.innerHTML = pyFiles.map(name => {
+    const cur = rev[name];
+    const btns = slotDef.map(({key,label,cls}) =>
+      `<button class="py-slot-btn ${cls}${cur===key?' active':''}" onclick="pyReassign('${name}','${key}')">${label}</button>`
+    ).join('');
+    return `<div class="py-assign-row">
+      <span class="py-assign-fname"><i class="fas fa-file-code" style="color:${cur?'#4ade80':'#4b5563'};margin-right:5px"></i>${esc(name)}</span>
+      <div class="py-slot-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+async function pyReassign(filename, newSlot) {
+  const prevFileForSlot = pyMapping[newSlot];
+  const prevSlotForFile = Object.keys(pyMapping).find(s => pyMapping[s]===filename);
+  // Felszabadítjuk az eddigi hozzárendeléseket
+  if (prevSlotForFile) { delete pyMapping[prevSlotForFile]; pyCode[prevSlotForFile]=''; }
+  // Ha a célslot foglalt volt, az ott lévő fájl kerül az előbb felszabadult helyre (swap)
+  if (prevFileForSlot && prevFileForSlot!==filename) {
+    if (prevSlotForFile) {
+      pyMapping[prevSlotForFile] = prevFileForSlot;
+      pyCode[prevSlotForFile] = await pyFolderFiles[prevFileForSlot].text();
+    } else {
+      pyCode[newSlot] = '';
+    }
+  }
+  pyMapping[newSlot] = filename;
+  pyCode[newSlot] = await pyFolderFiles[filename].text();
+  const pyFiles = Object.keys(pyFolderFiles).filter(n => /\.py$/i.test(n)).sort();
+  pyRenderAssignment(pyFiles);
+  pyCheckReady();
 }
 
 async function pyLoadCode(key, file) {
@@ -1295,24 +1386,20 @@ async function pyGroq(sec) {
 }
 
 function pyReset() {
-  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyRefCode={t8:'',t14:'',t18:''}; pyFeladatBlobUrl='';
-  pyCriteria={t8:[],t14:[],t18:[]}; pyScores={t8:{},t14:{},t18:{}};
+  // Tanuló-specifikus adat törlése
+  pyCode={t8:'',t14:'',t18:'',eloado:''};
+  pyFolderFiles={}; pyMapping={};
+  pyScores={t8:{},t14:{},t18:{}};
+  // Vizsgadokumentumok (pyCriteria, pyFeladatBlobUrl, pyRefCode) MEGMARADNAK
   document.getElementById('py-grading-step').style.display='none';
   document.getElementById('py-upload-step').style.display='block';
   document.getElementById('py-nev').value='';
-  ['t8','t14','t18','eloado'].forEach(k=>{
-    const n=k==='eloado'?'eloado':k.replace('t','');
-    const nm=document.getElementById(`py-f${n}-name`);
-    if(nm){nm.textContent='Nincs fájl'; nm.closest('.py-file-zone').classList.remove('loaded');}
-  });
-  ['py-fref8','py-fref14','py-fref18'].forEach(id=>{
-    const nm=document.getElementById(id+'-name');
-    if(nm){nm.textContent='Nincs fájl'; nm.closest('.py-file-zone').classList.remove('loaded');}
-  });
-  ['py-fpontozo','py-ffeladat'].forEach(id=>{
-    document.getElementById(id+'-name').textContent='Nincs fájl';
-    document.getElementById(id).closest('.py-file-zone').classList.remove('loaded');
-  });
+  // Mappa drop zone visszaállítása
+  document.getElementById('py-folder-info').textContent='';
+  document.getElementById('py-drop-zone').classList.remove('has-files');
+  document.getElementById('py-folder-input').value='';
+  document.getElementById('py-assign-wrap').style.display='none';
+  document.getElementById('py-assign-table').innerHTML='';
   const btn=document.getElementById('py-start-btn');
   btn.disabled=true; btn.style.opacity='.45'; btn.style.cursor='not-allowed';
 }
