@@ -1261,15 +1261,18 @@ async function pyGroq(sec) {
   if (!pyCode[sec]) { alert('Először töltsd fel a megoldás fájlt!'); return; }
   btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Elemzés...';
   box.style.display='block'; box.textContent='Groq AI elemzés folyamatban...';
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  const token = u.token || '';
   const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py (osztály forrás) ===\n${pyCode.eloado}` : '';
-  const refSzoveg = pyRefCode[sec] ? `\n\n# === mintamegoldas.py (referencia – más kód is helyes lehet) ===\n${pyRefCode[sec]}` : '';
+  const refSzoveg = pyRefCode[sec] ? `\n\n# === mintamegoldas.py (referencia – más kód is helyes lehet, a lényeg az azonos futási viselkedés) ===\n${pyRefCode[sec]}` : '';
   const pontozSzoveg = pyCriteria[sec].map((c,i)=>`${i+1}. ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
   const pts = {t8:'8',t14:'14',t18:'18'}[sec];
-  const KOD = `# === tanuló ${pts} pontos megoldása ===\n${pyCode[sec]}${eloado}${refSzoveg}`;
+  const prompt = `Értékeld az alábbi Python megoldást a pontozási szempontok alapján!\n\nPONTOZÁSI SZEMPONTOK:\n${pontozSzoveg}\n\nTANULÓ ${pts} PONTOS MEGOLDÁSA:\n${pyCode[sec]}${eloado}${refSzoveg}\n\nMinden szempontnál jelezd: teljesítette-e a tanuló (igen/nem/részben), és röviden indokold!`;
   try {
     const res = await fetch(`${RAILWAY}/api/ai/pontozas`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ kod: KOD, pontozo: pontozSzoveg })
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
+      body: JSON.stringify({ prompt })
     });
     if (res.status===429) {
       box.textContent='Rate limit – újrapróbálás 7 mp után...';
@@ -1277,8 +1280,16 @@ async function pyGroq(sec) {
       btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
       return pyGroq(sec);
     }
-    const data = await res.json();
-    box.textContent = data.result || data.text || JSON.stringify(data);
+    const rawText = await res.text();
+    if (!rawText || !rawText.trim()) {
+      box.textContent = `Hiba: A szerver üres választ küldött (HTTP ${res.status}). Próbáld újra.`;
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+      return;
+    }
+    let data;
+    try { data = JSON.parse(rawText); }
+    catch(e) { box.textContent = `Hiba: Nem értelmezhető szerver válasz (${res.status}):\n${rawText.slice(0,200)}`; btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq'; return; }
+    box.textContent = data.result || data.text || data.error || JSON.stringify(data);
   } catch(e) { box.textContent='Hiba: '+e.message; }
   btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
 }
