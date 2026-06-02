@@ -1783,6 +1783,24 @@ app.MapGet("/api/havijegy/aktualis", (HttpContext ctx, Database db) =>
     return Results.Ok(eredmenyek);
 });
 
+// Saját jegy automatikus frissítése (diák hívja, profil betöltésekor) — POST /api/havijegy/refresh-own
+// Csak nem-véglegesített jegyeket frissít; véglegesített tanári jegyet nem írja felül.
+app.MapPost("/api/havijegy/refresh-own", (HttpContext ctx, Database db) =>
+{
+    var (valid, email, role) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    if (role == "vendeg") return Results.Ok(new { skipped = true });
+
+    var results = new List<HaviJegyRow>();
+    foreach (var honap in new[] { 3, 4, 5 })
+    {
+        var sor = db.CalcHaviJegy(email, 2026, honap);
+        db.UpsertHaviJegy(sor);   // csak ha veglegesitve=0
+        results.Add(sor);
+    }
+    return Results.Ok(results);
+});
+
 // Tanár módosít / véglegesít — PATCH /api/havijegy/{id}
 app.MapPatch("/api/havijegy/{id}", (int id, HaviJegyPatchRequest req, HttpContext ctx, Database db) =>
 {

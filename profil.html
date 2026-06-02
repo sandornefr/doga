@@ -649,7 +649,21 @@ async function loadTanuloProfile(u, page) {
         const duelStats       = duelRes?.ok   ? (await duelRes.json()) : null;
         const szamEredmenyek  = szamEredRes?.ok ? await szamEredRes.json() : [];
         const szamAktivak     = szamAktivRes?.ok ? await szamAktivRes.json() : [];
-        const haviJegyek      = jegyRes?.ok ? await jegyRes.json() : [];
+        // Tanuló saját jegyének automatikus frissítése (csak nem-véglegesítetteket)
+        let haviJegyek = jegyRes?.ok ? await jegyRes.json() : [];
+        if (!u._oktatoNez) {
+            try {
+                const refreshRes = await apiFetch(`${API}/api/havijegy/refresh-own`, { method: 'POST' });
+                if (refreshRes?.ok) {
+                    const frissek = await refreshRes.json();
+                    if (Array.isArray(frissek)) {
+                        // Véglegesített jegyeket megtartjuk, a többit a friss számítás felváltja
+                        const veglesMap = Object.fromEntries(haviJegyek.filter(j=>j.veglegesitve).map(j=>[j.honap,j]));
+                        haviJegyek = frissek.map(f => veglesMap[f.honap] ?? f);
+                    }
+                }
+            } catch(e) { /* csend – ha nem sikerül, a régi adatot mutatja */ }
+        }
         const aktualisData    = (!u._oktatoNez && aktualisRes?.ok) ? await aktualisRes.json() : [];
 
         // feladatok.txt → névfeloldás (r_5 → "Napszak köszöntő")
