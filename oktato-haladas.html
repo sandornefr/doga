@@ -1611,18 +1611,27 @@ async function calcOsztalyozas() {
     finally { loading.style.display = 'none'; }
 }
 
-function ozSorHtml(d) {
+function ozSorHtml(d, honap) {
     const szorgIkonok = d.szorgalmiJelolt
         ? `<span style="color:#fbbf24;font-size:.8rem;" title="Szorgalmi jelölt">⭐ Jelölt</span>` : '';
     const dicsIcon = d.dicseretJavasolt
         ? `<span style="color:#a78bfa;font-size:.8rem;" title="Szaktanári dicséret javasolt">🏅 Dicséret</span>` : '';
     const vegSt   = d.veglegesitve ? 'color:#4ade80' : 'color:#6b7280';
     const vegLabel = d.veglegesitve ? '✓ Végleges' : '○ Piszkozat';
+    const pyKvt   = OZ_PY_KVOTA[honap]   || 9;
+    const webKvt  = OZ_WEB_KVOTA[honap]  || 3;
+    const quizKvt = OZ_QUIZ_KVOTA[honap] || 2;
+    const halTd = honap >= 5
+        ? `<td style="padding:6px 8px;text-align:center;">${(d.halozatSzaz||0) > 0
+            ? '<span style="color:#4ade80;font-weight:700;">✓</span>'
+            : '<span style="color:#ef4444;">✗</span>'}</td>`
+        : '';
     return `<tr id="oz-row-${d.id}" style="border-bottom:1px solid #1e293b;">
       <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev||d.email)}</td>
-      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.pythonSzaz)}%</td>
-      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.webSzaz)}%</td>
-      <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${Math.round(d.quizSzaz)}%</td>
+      <td style="padding:6px 8px;text-align:right;">${ozCount(d.pythonSzaz, pyKvt)}</td>
+      <td style="padding:6px 8px;text-align:right;">${ozCount(d.webSzaz, webKvt)}</td>
+      <td style="padding:6px 8px;text-align:right;">${ozCount(d.quizSzaz, quizKvt)}</td>
+      ${halTd}
       <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.aktivNapok} nap</td>
       <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.otletDb} db</td>
       <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.tananyagDb}/5</td>
@@ -1659,12 +1668,19 @@ function ozSorHtml(d) {
     </tr>`;
 }
 
-const OZ_FEJLEC = `<thead>
+const OZ_PY_KVOTA  = { 3:3, 4:6, 5:9 };
+const OZ_WEB_KVOTA = { 3:1, 4:2, 5:3 };
+const OZ_QUIZ_KVOTA= { 3:0, 4:1, 5:2 };
+
+function ozFejlec(honap) {
+  const halTh = honap >= 5 ? `<th style="padding:6px 8px;text-align:center;" title="Hálózat szimulátor (máj. 20%)">Hálózat</th>` : '';
+  return `<thead>
   <tr style="color:#6b7280;border-bottom:1px solid #1e293b;text-align:left;">
     <th style="padding:6px 8px;">Név</th>
-    <th style="padding:6px 8px;text-align:right;">Python</th>
-    <th style="padding:6px 8px;text-align:right;">WEB</th>
-    <th style="padding:6px 8px;text-align:right;">Quiz</th>
+    <th style="padding:6px 8px;text-align:right;" title="db/kvóta (${OZ_PY_KVOTA[honap]||9} kötelező)">Python</th>
+    <th style="padding:6px 8px;text-align:right;" title="db/kvóta (${OZ_WEB_KVOTA[honap]||3} kötelező)">WEB</th>
+    <th style="padding:6px 8px;text-align:right;" title="db/kvóta (${OZ_QUIZ_KVOTA[honap]||2} kötelező)">Quiz</th>
+    ${halTh}
     <th style="padding:6px 8px;text-align:right;">Aktív</th>
     <th style="padding:6px 8px;text-align:right;">Ötlet</th>
     <th style="padding:6px 8px;text-align:right;">Tananyag</th>
@@ -1677,6 +1693,14 @@ const OZ_FEJLEC = `<thead>
     <th style="padding:6px 8px;">Állapot</th>
   </tr>
 </thead>`;
+}
+
+function ozCount(szaz, kvt) {
+  if (!kvt) return '<span style="color:#374151">–</span>';
+  const done = Math.round(szaz / 100 * kvt);
+  const ok = done >= kvt;
+  return `<span style="color:${ok?'#4ade80':'#f87171'};font-weight:${ok?'700':'400'}">${done}</span><span style="color:#374151">/${kvt}</span>`;
+}
 
 let ozAktivCsoport = null;
 
@@ -1750,8 +1774,8 @@ function renderOsztalyozasTable(data, honap) {
             </div>
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
-                    ${OZ_FEJLEC}
-                    <tbody>${tagok.map(ozSorHtml).join('')}</tbody>
+                    ${ozFejlec(honap)}
+                    <tbody>${tagok.map(d => ozSorHtml(d, honap)).join('')}</tbody>
                 </table>
             </div>
         </div>`;

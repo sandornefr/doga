@@ -247,6 +247,7 @@ public class Database
             );
         ");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
+        try { Exec(conn, "ALTER TABLE havijegyek ADD COLUMN halozat_szaz REAL NOT NULL DEFAULT 0"); } catch { }
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS quiz_results (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3171,6 +3172,7 @@ public class Database
             PythonSzaz       = Math.Round(pythonSzaz,    1),
             WebSzaz          = Math.Round(webSzaz,       1),
             QuizSzaz         = Math.Round(interaktivSzaz,1),
+            HalozatSzaz      = Math.Round(halozatSzaz,   1),
             AktivNapok       = aktivNapok,
             OtletDb          = otletDb,
             TananyagDb       = tananyagDb,
@@ -3227,13 +3229,13 @@ public class Database
         using var cmd  = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT INTO havijegyek
-                (email,ev,honap,jegy,python_szaz,web_szaz,quiz_szaz,
+                (email,ev,honap,jegy,python_szaz,web_szaz,quiz_szaz,halozat_szaz,
                  aktiv_napok,otlet_db,tananyag_db,ossz_szaz,
                  szorgalmi_jelolt,dicseret_javasolt,updated_at)
             VALUES
-                ($e,$ev,$h,$j,$py,$wb,$qz,$ak,$ot,$ta,$os,$sz,$dc,datetime('now'))
+                ($e,$ev,$h,$j,$py,$wb,$qz,$hal,$ak,$ot,$ta,$os,$sz,$dc,datetime('now'))
             ON CONFLICT(email,ev,honap) DO UPDATE SET
-                jegy=$j, python_szaz=$py, web_szaz=$wb, quiz_szaz=$qz,
+                jegy=$j, python_szaz=$py, web_szaz=$wb, quiz_szaz=$qz, halozat_szaz=$hal,
                 aktiv_napok=$ak, otlet_db=$ot, tananyag_db=$ta, ossz_szaz=$os,
                 szorgalmi_jelolt=$sz, dicseret_javasolt=$dc, updated_at=datetime('now')
             WHERE veglegesitve=0";
@@ -3241,10 +3243,11 @@ public class Database
         cmd.Parameters.AddWithValue("$ev", r.Ev);
         cmd.Parameters.AddWithValue("$h",  r.Honap);
         cmd.Parameters.AddWithValue("$j",  r.Jegy ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("$py", r.PythonSzaz);
-        cmd.Parameters.AddWithValue("$wb", r.WebSzaz);
-        cmd.Parameters.AddWithValue("$qz", r.QuizSzaz);
-        cmd.Parameters.AddWithValue("$ak", r.AktivNapok);
+        cmd.Parameters.AddWithValue("$py",  r.PythonSzaz);
+        cmd.Parameters.AddWithValue("$wb",  r.WebSzaz);
+        cmd.Parameters.AddWithValue("$qz",  r.QuizSzaz);
+        cmd.Parameters.AddWithValue("$hal", r.HalozatSzaz);
+        cmd.Parameters.AddWithValue("$ak",  r.AktivNapok);
         cmd.Parameters.AddWithValue("$ot", r.OtletDb);
         cmd.Parameters.AddWithValue("$ta", r.TananyagDb);
         cmd.Parameters.AddWithValue("$os", r.OsszSzaz);
@@ -3263,7 +3266,8 @@ public class Database
                    h.aktiv_napok,h.otlet_db,h.tananyag_db,h.ossz_szaz,
                    h.szorgalmi_jelolt,h.szorgalmi_jegy_db,h.dicseret_javasolt,
                    h.veglegesitve,h.tanari_megjegyzes,
-                   u.vezeteknev||' '||u.keresztnev AS nev, u.osztaly, u.csoport, u.evfolyam
+                   u.vezeteknev||' '||u.keresztnev AS nev, u.osztaly, u.csoport, u.evfolyam,
+                   COALESCE(h.halozat_szaz,0)
             FROM havijegyek h
             JOIN users u ON LOWER(u.email)=LOWER(h.email)
             WHERE h.ev=$ev AND h.honap=$h
@@ -3288,7 +3292,8 @@ public class Database
                    aktiv_napok,otlet_db,tananyag_db,ossz_szaz,
                    szorgalmi_jelolt,szorgalmi_jegy_db,dicseret_javasolt,
                    veglegesitve,tanari_megjegyzes,
-                   NULL,NULL,NULL,NULL
+                   NULL,NULL,NULL,NULL,
+                   COALESCE(halozat_szaz,0)
             FROM havijegyek
             WHERE LOWER(email)=$e AND veglegesitve=1
             ORDER BY ev,honap";
@@ -3337,6 +3342,7 @@ public class Database
         Osztaly          = r.IsDBNull(18) ? null : r.GetString(18),
         Csoport          = r.IsDBNull(19) ? null : r.GetString(19),
         Evfolyam         = r.IsDBNull(20) ? null : r.GetString(20),
+        HalozatSzaz      = r.IsDBNull(21) ? 0 : r.GetDouble(21),
     };
     public List<VizsgaBecslésRow> GetVizsgaBecslések()
     {

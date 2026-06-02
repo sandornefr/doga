@@ -625,6 +625,7 @@ public class HaviJegyRow
     public int     OtletDb          { get; set; }
     public int     TananyagDb       { get; set; }
     public double  OsszSzaz         { get; set; }
+    public double  HalozatSzaz      { get; set; }
     public bool    SzorgalmiJelolt  { get; set; }
     public int     SzorgalmiJegyDb  { get; set; }
     public bool    DicseretJavasolt { get; set; }
