@@ -220,33 +220,63 @@
             </div>
           </div>
 
-          <!-- 3 megoldás fájl -->
-          <div class="py-upload-grid" style="margin-bottom:12px;">
-            <div class="py-file-zone" onclick="document.getElementById('py-f8').click()">
+          <!-- Tanuló megoldásai -->
+          <div style="font-size:.78rem;color:#94a3b8;font-weight:700;margin-bottom:6px;"><i class="fas fa-user-graduate"></i> Tanuló megoldásai</div>
+          <div class="py-upload-grid" style="margin-bottom:10px;">
+            <div class="py-file-zone">
               <input type="file" id="py-f8" accept=".py" onchange="pyLoadCode('t8',this.files[0])">
               <div class="py-file-icon"><i class="fas fa-file-code" style="color:#3b82f6"></i></div>
               <div class="py-file-info">
-                <div class="py-file-label">8 pontos megoldás (.py)</div>
+                <div class="py-file-label">Tanuló – 8pt megoldás (.py)</div>
                 <div class="py-file-name" id="py-f8-name">Nincs fájl</div>
               </div>
             </div>
-            <div class="py-file-zone" onclick="document.getElementById('py-f14').click()">
+            <div class="py-file-zone">
               <input type="file" id="py-f14" accept=".py" onchange="pyLoadCode('t14',this.files[0])">
               <div class="py-file-icon"><i class="fas fa-file-code" style="color:#f59e0b"></i></div>
               <div class="py-file-info">
-                <div class="py-file-label">14 pontos megoldás (.py)</div>
+                <div class="py-file-label">Tanuló – 14pt megoldás (.py)</div>
                 <div class="py-file-name" id="py-f14-name">Nincs fájl</div>
               </div>
             </div>
-            <div class="py-file-zone" onclick="document.getElementById('py-f18').click()">
+            <div class="py-file-zone">
               <input type="file" id="py-f18" accept=".py" onchange="pyLoadCode('t18',this.files[0])">
               <div class="py-file-icon"><i class="fas fa-file-code" style="color:#a855f7"></i></div>
               <div class="py-file-info">
-                <div class="py-file-label">18 pontos megoldás (.py)</div>
+                <div class="py-file-label">Tanuló – 18pt megoldás (.py)</div>
                 <div class="py-file-name" id="py-f18-name">Nincs fájl</div>
               </div>
             </div>
-            <div class="py-file-zone" onclick="document.getElementById('py-feloado').click()">
+          </div>
+
+          <!-- Mintamegoldások -->
+          <div style="font-size:.78rem;color:#64748b;font-weight:700;margin-bottom:6px;"><i class="fas fa-key"></i> Mintamegoldások <span style="font-weight:400;color:#4b5563;">(opcionális – Groq viszonyítási alap)</span></div>
+          <div class="py-upload-grid" style="margin-bottom:12px;">
+            <div class="py-file-zone">
+              <input type="file" id="py-fref8" accept=".py" onchange="pyLoadRef('t8',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#3b82f6;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 8pt (.py)</div>
+                <div class="py-file-name" id="py-fref8-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref14" accept=".py" onchange="pyLoadRef('t14',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#f59e0b;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 14pt (.py)</div>
+                <div class="py-file-name" id="py-fref14-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref18" accept=".py" onchange="pyLoadRef('t18',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#a855f7;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 18pt (.py)</div>
+                <div class="py-file-name" id="py-fref18-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
               <input type="file" id="py-feloado" accept=".py" onchange="pyLoadCode('eloado',this.files[0])">
               <div class="py-file-icon"><i class="fas fa-cube" style="color:#ec4899"></i></div>
               <div class="py-file-info">
@@ -258,7 +288,7 @@
 
           <!-- Pontozó + feladatleírás -->
           <div class="py-upload-grid" style="margin-bottom:16px;">
-            <div class="py-file-zone" onclick="document.getElementById('py-fpontozo').click()">
+            <div class="py-file-zone">
               <input type="file" id="py-fpontozo" accept=".xlsx" onchange="pyLoadPontozo(this.files[0])">
               <div class="py-file-icon"><i class="fas fa-table" style="color:#22c55e"></i></div>
               <div class="py-file-info">
@@ -266,7 +296,7 @@
                 <div class="py-file-name" id="py-fpontozo-name">Nincs fájl</div>
               </div>
             </div>
-            <div class="py-file-zone" onclick="document.getElementById('py-ffeladat').click()">
+            <div class="py-file-zone">
               <input type="file" id="py-ffeladat" accept=".docx,.txt" onchange="pyLoadFeladat(this.files[0])">
               <div class="py-file-icon"><i class="fas fa-file-lines" style="color:#f59e0b"></i></div>
               <div class="py-file-info">
@@ -1035,10 +1065,18 @@ function switchSubj(subj) {
 // ══ PYTHON ÁLLAPOT ══════════════════════════════════════════════════════════
 const RAILWAY = 'https://agazati.up.railway.app';
 let pyCode = { t8: '', t14: '', t18: '', eloado: '' };
+let pyRefCode = { t8: '', t14: '', t18: '' };
 let pyFeladatBlobUrl = '';
 let pyCriteria = { t8: [], t14: [], t18: [] };
 let pyScores = { t8: {}, t14: {}, t18: {} };
 let pyNev = '';
+
+async function pyLoadRef(key, file) {
+  if (!file) return;
+  pyRefCode[key] = await file.text();
+  const nm = document.getElementById(`py-fref${key.replace('t','')}-name`);
+  if (nm) { nm.textContent = file.name; nm.closest('.py-file-zone').classList.add('loaded'); }
+}
 
 async function pyLoadCode(key, file) {
   if (!file) return;
@@ -1074,7 +1112,15 @@ async function pyLoadPontozo(file) {
     let id = 1, sum = 0;
     pyCriteria = { t8: [], t14: [], t18: [] };
     for (const r of rows) {
-      const label = String(r[0]||'').trim(), max = parseFloat(r[1])||0;
+      const label = String(r[0]||'').trim();
+      // Pontszám: H oszlop (index 7) az Excel struktúrában; fallback: első 1-10 közötti szám
+      let max = parseFloat(r[7]) || 0;
+      if (!max) {
+        for (let i = 1; i < Math.min(r.length, 12); i++) {
+          const v = parseFloat(r[i]);
+          if (v > 0 && v <= 10) { max = v; break; }
+        }
+      }
       if (!max || !label) continue;
       const c = { id: id++, label, max };
       sum += max;
@@ -1082,6 +1128,9 @@ async function pyLoadPontozo(file) {
       else if (sum <= 22) pyCriteria.t14.push(c);
       else pyCriteria.t18.push(c);
     }
+    const total = pyCriteria.t8.length + pyCriteria.t14.length + pyCriteria.t18.length;
+    document.getElementById('py-fpontozo-name').textContent =
+      `${file.name}  ✓ ${total} kritérium (8pt: ${pyCriteria.t8.length}, 14pt: ${pyCriteria.t14.length}, 18pt: ${pyCriteria.t18.length})`;
   } catch(e) { console.error('Pontozó hiba:', e); }
   pyCheckReady();
 }
@@ -1102,6 +1151,9 @@ function pyStart() {
   document.getElementById('py-grading-step').style.display = 'block';
   document.getElementById('py-nev-display').textContent = pyNev;
   pyShowCode('t8');
+  // Auto-Groq: szekciónként egymás után, rate limit elkerülésére staggerelve
+  const autoSecs = ['t8','t14','t18'].filter(s => pyCode[s]);
+  autoSecs.forEach((s, i) => setTimeout(() => pyGroq(s), 600 + i * 8500));
 }
 
 function pyDefaultCriteria() {
@@ -1209,10 +1261,11 @@ async function pyGroq(sec) {
   if (!pyCode[sec]) { alert('Először töltsd fel a megoldás fájlt!'); return; }
   btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Elemzés...';
   box.style.display='block'; box.textContent='Groq AI elemzés folyamatban...';
-  const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py ===\n${pyCode.eloado}` : '';
+  const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py (osztály forrás) ===\n${pyCode.eloado}` : '';
+  const refSzoveg = pyRefCode[sec] ? `\n\n# === mintamegoldas.py (referencia – más kód is helyes lehet) ===\n${pyRefCode[sec]}` : '';
   const pontozSzoveg = pyCriteria[sec].map((c,i)=>`${i+1}. ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
   const pts = {t8:'8',t14:'14',t18:'18'}[sec];
-  const KOD = `# === ${pts} pontos megoldás ===\n${pyCode[sec]}${eloado}`;
+  const KOD = `# === tanuló ${pts} pontos megoldása ===\n${pyCode[sec]}${eloado}${refSzoveg}`;
   try {
     const res = await fetch(`${RAILWAY}/api/ai/pontozas`, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -1231,7 +1284,7 @@ async function pyGroq(sec) {
 }
 
 function pyReset() {
-  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyFeladatBlobUrl='';
+  pyCode={t8:'',t14:'',t18:'',eloado:''}; pyRefCode={t8:'',t14:'',t18:''}; pyFeladatBlobUrl='';
   pyCriteria={t8:[],t14:[],t18:[]}; pyScores={t8:{},t14:{},t18:{}};
   document.getElementById('py-grading-step').style.display='none';
   document.getElementById('py-upload-step').style.display='block';
@@ -1239,6 +1292,10 @@ function pyReset() {
   ['t8','t14','t18','eloado'].forEach(k=>{
     const n=k==='eloado'?'eloado':k.replace('t','');
     const nm=document.getElementById(`py-f${n}-name`);
+    if(nm){nm.textContent='Nincs fájl'; nm.closest('.py-file-zone').classList.remove('loaded');}
+  });
+  ['py-fref8','py-fref14','py-fref18'].forEach(id=>{
+    const nm=document.getElementById(id+'-name');
     if(nm){nm.textContent='Nincs fájl'; nm.closest('.py-file-zone').classList.remove('loaded');}
   });
   ['py-fpontozo','py-ffeladat'].forEach(id=>{
