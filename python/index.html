@@ -1920,11 +1920,8 @@
                 return;
             }
             document.getElementById('plusido-modal').style.display = 'none';
-            if (typeof window.globalTimeRemaining !== 'undefined') {
-                window.globalTimeRemaining += perc * 60;
-            }
-            if (typeof window.startGlobalTimer === 'function') {
-                window.startGlobalTimer();
+            if (typeof window.addExtraTime === 'function') {
+                window.addExtraTime(perc * 60);
             }
         }
 

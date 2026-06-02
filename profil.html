@@ -391,6 +391,74 @@ const JEGY_NOEL = ['–','Elégtelen','Elégséges','Közepes','Jó','Jeles'];
 const JEGY_BG   = { 1:'#2d0e0e', 2:'#2d1a0e', 3:'#2d2a10', 4:'#1a3a1a', 5:'#0e4429' };
 const JEGY_CL   = { 1:'#f87171', 2:'#fb923c', 3:'#fbbf24', 4:'#86efac', 5:'#39d353' };
 
+function buildAktualisSection(data) {
+    if (!data || !data.length) return '';
+    const HONAP = {3:'március', 4:'április', 5:'május'};
+    const JEGY_CL = {5:'#93c5fd',4:'#86efac',3:'#fcd34d',2:'#fca5a5',1:'#fca5a5'};
+    const JEGY_BG = {5:'#1e3a5f',4:'#1a3a1a',3:'#78350f',2:'#7f1d1d',1:'#7f1d1d'};
+
+    const bar = (pct) => {
+        const f = Math.min(100, Math.max(0, Math.round(pct)));
+        const c = f >= 100 ? '#22c55e' : f >= 60 ? '#f59e0b' : '#ef4444';
+        return `<div style="flex:1;height:5px;background:#1f2937;border-radius:3px;overflow:hidden;"><div style="width:${f}%;height:100%;background:${c};"></div></div>`;
+    };
+    const row = (label, pct, right) =>
+        `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            <span style="font-size:.71rem;color:#64748b;width:66px;flex-shrink:0;">${label}</span>
+            ${bar(pct)}<span style="font-size:.71rem;color:#94a3b8;width:30px;text-align:right;flex-shrink:0;">${right}</span>
+        </div>`;
+
+    const cards = data.map(r => {
+        const h = r.alap.honap;
+        const jegy = r.alap.jegy ?? 1;
+        const cl = JEGY_CL[jegy] || '#94a3b8';
+        const bg = JEGY_BG[jegy] || '#1e293b';
+        const ossz = Math.round(r.alap.osszSzaz);
+        const aktivPct = Math.min(100, r.alap.aktivNapok / 8 * 100);
+
+        const halozatRow = h >= 5
+            ? row('Hálózat', r.halozatSzaz > 0 ? 100 : 0, r.halozatSzaz > 0 ? '<span style="color:#22c55e">✓</span>' : '<span style="color:#ef4444">✗</span>')
+            : '';
+
+        // Mi hiányzik az 5-öshez
+        let hint = '';
+        if (jegy < 5) {
+            const todo = [];
+            if (r.alap.pythonSzaz < 100) todo.push(`Python: ${Math.round(r.alap.pythonSzaz)}% — csinálj még feladatokat`);
+            if (r.alap.webSzaz < 100)    todo.push(`WEB: ${Math.round(r.alap.webSzaz)}% — csinálj még WEB feladatot`);
+            if (r.alap.quizSzaz < 100)   todo.push(`Tudáspróba: ${Math.round(r.alap.quizSzaz)}% — végezz el még tesztet`);
+            if (h >= 5 && r.halozatSzaz < 1) todo.push('Hálózat szimulátor — még egy feladat sem kész!');
+            if (r.alap.aktivNapok < 8)   todo.push(`Aktív napok: ${r.alap.aktivNapok}/8 — lépj be még ${8-r.alap.aktivNapok} napot`);
+            if (todo.length) hint = `<div style="margin-top:9px;padding:8px 10px;background:#0b1120;border:1px solid #374151;border-radius:7px;">
+                <div style="font-size:.7rem;color:#fbbf24;font-weight:700;margin-bottom:5px;">💡 Az 5-öshez még:</div>
+                ${todo.map(t=>`<div style="font-size:.7rem;color:#94a3b8;margin-bottom:2px;">• ${t}</div>`).join('')}
+            </div>`;
+        } else {
+            hint = `<div style="margin-top:8px;font-size:.72rem;color:#22c55e;text-align:center;">✓ 5-ös teljesítve!</div>`;
+        }
+
+        return `<div style="background:${bg};border:1px solid ${cl}44;border-radius:10px;padding:14px 16px;flex:1;min-width:180px;">
+            <div style="font-size:.74rem;color:#6b7280;margin-bottom:5px;">2026. ${HONAP[h]}</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;">
+                <div style="font-size:2.4rem;font-weight:900;color:${cl};line-height:1;">${jegy}</div>
+                <div style="font-size:.75rem;color:${cl};opacity:.7;padding-bottom:4px;">${ossz}%</div>
+            </div>
+            ${row('Python', r.alap.pythonSzaz, Math.round(r.alap.pythonSzaz)+'%')}
+            ${row('WEB', r.alap.webSzaz, Math.round(r.alap.webSzaz)+'%')}
+            ${row('Tudáspróba', r.alap.quizSzaz, Math.round(r.alap.quizSzaz)+'%')}
+            ${halozatRow}
+            ${row('Aktív napok', aktivPct, r.alap.aktivNapok+'/8')}
+            ${hint}
+        </div>`;
+    }).join('');
+
+    return `<div class="section" id="aktualis-jegy">
+        <div class="section-title"><i class="fas fa-chart-line"></i> Havi állásod (élő előnézet)</div>
+        <div style="font-size:.78rem;color:#64748b;margin-bottom:12px;">Automatikusan frissül — nem kell tanári újraszámolás.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">${cards}</div>
+    </div>`;
+}
+
 function buildHaviJegyekHtml(jegyek, u) {
     // Banner: hamarosan jegybeírás (mindig látszik ha van nyílt határidő)
     const HATÁRIDŐK = [
@@ -544,7 +612,7 @@ async function loadTanuloProfile(u, page) {
         if (u.osztaly) szamParams2.append('osztaly', u.osztaly);
         if (u.csoport) szamParams2.append('csoport', u.csoport);
 
-        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, szamEredRes, szamAktivRes, jegyRes] = await Promise.all([
+        const [progRes, rankRes, sessRes, itemsRes, quizRes, teszteloRes, feladatKeszRes, statsRes, duelRes, szamEredRes, szamAktivRes, jegyRes, aktualisRes] = await Promise.all([
             apiFetch(`${API}/api/progress/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/leaderboard/rank/${encodeURIComponent(email)}`).catch(()=>null),
             apiFetch(`${API}/api/session/stats/${encodeURIComponent(u.email)}`).catch(()=>null),
@@ -557,6 +625,7 @@ async function loadTanuloProfile(u, page) {
             apiFetch(`${API}/api/szamonkeres/eredmeny${u._oktatoNez ? '?email='+encodeURIComponent(u.email) : ''}`).catch(()=>null),
             apiFetch(`${API}/api/szamonkeres/aktiv?${szamParams2}`).catch(()=>null),
             apiFetch(`${API}/api/havijegy/sajat`).catch(()=>null),
+            u._oktatoNez ? Promise.resolve(null) : apiFetch(`${API}/api/havijegy/aktualis`).catch(()=>null),
         ]);
 
         if (!progRes || progRes.status === 503 || progRes.status === 502) {
@@ -581,6 +650,7 @@ async function loadTanuloProfile(u, page) {
         const szamEredmenyek  = szamEredRes?.ok ? await szamEredRes.json() : [];
         const szamAktivak     = szamAktivRes?.ok ? await szamAktivRes.json() : [];
         const haviJegyek      = jegyRes?.ok ? await jegyRes.json() : [];
+        const aktualisData    = (!u._oktatoNez && aktualisRes?.ok) ? await aktualisRes.json() : [];
 
         // feladatok.txt → névfeloldás (r_5 → "Napszak köszöntő")
         const feladatNevek = {};
@@ -712,7 +782,8 @@ async function loadTanuloProfile(u, page) {
         <!-- Visszaszámló -->
         ${examCountdownHtml()}
 
-        <!-- Havi jegyek -->
+        <!-- Havi jegyek – élő előnézet + végleges -->
+        ${buildAktualisSection(aktualisData)}
         ${buildHaviJegyekHtml(haviJegyek, u)}
 
         <!-- Aktív napok -->
