@@ -475,12 +475,16 @@ function ajSelect(files) { ajProcess(Array.from(files)); }
 
 function ajProcess(files) {
   ajFiles = {};
+  let folderName = '';
   for (const f of files) {
     const rel = f.webkitRelativePath || f.name;
     const parts = rel.split('/');
+    if (!folderName && parts.length > 1) folderName = parts[0];
     const key = (parts.length > 1 ? parts.slice(1).join('/') : parts[0]).toLowerCase();
     ajFiles[key] = { file: f, blobUrl: URL.createObjectURL(f) };
   }
+  const nevInput = document.getElementById('aj-nev');
+  if (folderName && !nevInput.value.trim()) nevInput.value = folderName;
   const n = Object.keys(ajFiles).length;
   document.getElementById('aj-upload-info').textContent = n ? `${n} fájl betöltve` : '';
   document.getElementById('aj-drop-zone').classList.toggle('has-files', n > 0);
