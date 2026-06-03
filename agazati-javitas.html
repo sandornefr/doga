@@ -535,7 +535,7 @@ async function ajStart() {
   for (const c of checks) {
     if (c.section) continue;
     if (c.screenshotCheck) {
-      ajScores[c.id] = null; // mindig manuális
+      ajScores[c.id] = 0;
     } else if (c.cssCheck) {
       try { const r=c.cssCheck(ajCss); ajScores[c.id]=typeof r==='number'?r:(r?1:0); } catch { ajScores[c.id]=null; }
     } else {
@@ -545,6 +545,7 @@ async function ajStart() {
 
   ajRenderList(checks);
   ajUpdateTotal();
+  ajAnalyzeScreenshots(checks);
 }
 
 // ── Kód nézet ──────────────────────────────────────────────────────────────
@@ -773,6 +774,80 @@ function ajSet(id, val) {
   row.className = `aj-row ${newStatus}`;
   row.dataset.status = newStatus;
   ajUpdateTotal();
+}
+
+// ── Validálási kép elemzés (canvas pixel-analízis) ──────────────────────────
+function analyzeValidationImage(blobUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, 600 / img.width);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let green = 0, red = 0, total = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (g > 80 && g > r * 1.4 && g > b * 1.4) green++;
+        if (r > 150 && r > g * 1.4 && r > b * 1.1) red++;
+      }
+      resolve({ greenRatio: green/total, redRatio: red/total });
+    };
+    img.onerror = () => resolve(null);
+    img.src = blobUrl;
+  });
+}
+
+async function ajAnalyzeScreenshots(checks) {
+  const correctNames = { html: 'szigetekvalidalas', css: 'stylevalidalas' };
+  const knownImgs = new Set(['fejlec','mallorca','kreta','ibiza','ciprus','santorini','history-icon','szigetek']);
+  const isKnown = k => knownImgs.has(k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''));
+  const searchFns = {
+    html: fn => fn.includes('szigetek') && fn.includes('valid'),
+    css:  fn => fn.includes('stylevalidalas') || (fn.includes('style') && fn.includes('valid'))
+  };
+
+  for (const c of checks) {
+    if (!c.screenshotCheck) continue;
+    const type = c.screenshotCheck;
+    const allImgKeys = Object.keys(ajFiles).filter(k => /\.(png|jpg|jpeg|gif|webp)$/i.test(k));
+    const imgKey = allImgKeys.find(k => { const fn=k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''); return searchFns[type](fn); })
+                || allImgKeys.find(k => !isKnown(k));
+    if (!imgKey) { ajScores[c.id] = 0; ajUpdateTotal(); continue; }
+
+    const fileName = imgKey.split('/').pop();
+    const fnNoExt = fileName.toLowerCase().replace(/\.[^.]+$/,'');
+    const nameOk = fnNoExt === correctNames[type];
+
+    const result = await analyzeValidationImage(ajFiles[imgKey].blobUrl);
+    if (!result) continue;
+
+    const greenOk = result.greenRatio > 0.015;
+    const score = (nameOk && greenOk) ? 1 : (nameOk || greenOk) ? 0.5 : 0;
+    ajScores[c.id] = score;
+
+    // UI frissítés
+    const row = document.querySelector(`.aj-row[data-id="${c.id}"]`);
+    if (row) {
+      const newStatus = score >= 1 ? 'pass' : score > 0 ? 'half' : 'fail';
+      row.className = `aj-row ${newStatus}`;
+      row.dataset.status = newStatus;
+      const iconEl = row.querySelector('div[style*="width:18px"]');
+      if (iconEl) iconEl.innerHTML =
+        score >= 1 ? '<i class="fas fa-check-circle" style="color:#22c55e;font-size:.9rem;"></i>'
+        : score > 0 ? '<i class="fas fa-adjust" style="color:#f59e0b;font-size:.9rem;"></i>'
+        : '<i class="fas fa-times-circle" style="color:#ef4444;font-size:.9rem;"></i>';
+      // Aktív pont gomb kiemelése
+      row.querySelectorAll('.aj-btn').forEach(b => {
+        const v = parseFloat(b.dataset.val);
+        b.className = `aj-btn${v===score?(score===0?' a0':score===0.5?' a05':' a1'):''}`;
+      });
+    }
+    ajUpdateTotal();
+  }
 }
 
 function ajUpdateTotal() {
