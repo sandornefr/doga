@@ -1015,7 +1015,12 @@ function ajGetChecks() {
       },
       find: { in:'html', term:'tortenelmi' } },
     { id:16, label:'Mindegyik sziget képéhez (4 helyen) hozzáadta a "sziget" osztályjelölőt.',
-      check: d => { const n=d.querySelectorAll('img.sziget').length; return n>=4?1:n>=2?0.5:0; },
+      check: (d,h) => {
+        const domCount = d.querySelectorAll('img.sziget').length;
+        const rawCount = (h.match(/<img\b[^>]*>/gi)||[]).filter(tag=>/class\s*=\s*["'][^"']*\bsziget\b[^"']*["']/.test(tag)).length;
+        const n = Math.max(domCount, rawCount);
+        return n>=4?1:n>=2?0.5:0;
+      },
       find: { in:'html', term:'class="img-fluid sziget"', fallback:'img-fluid' } },
 
     { section:'Az "Ibiza" részt létrehozta és elvégezte az alábbi feladatot:' },
