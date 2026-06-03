@@ -944,7 +944,16 @@ function ajGetChecks() {
       },
       find: { in:'html', term:'Legismertebb', fallback:'Mallorca' } },
     { id:12, label:'A látnivalókhoz <ol> elemet használt és a listaelemeket <li>-be helyezte.',
-      check: d => { const ol=d.querySelector('#szigetek ol'); return ol&&ol.querySelectorAll('li').length>=5; },
+      check: d => {
+        const mallorcaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Mallorca');
+        if (!mallorcaH3) return false;
+        const col = mallorcaH3.closest('[class*="col"]') || mallorcaH3.parentElement;
+        if (!col) return false;
+        const ol = col.querySelector('ol');
+        if (!ol) return false;
+        if (!(mallorcaH3.compareDocumentPosition(ol) & Node.DOCUMENT_POSITION_FOLLOWING)) return false;
+        return ol.querySelectorAll('li').length >= 5;
+      },
       find: { in:'html', term:'<ol', fallback:'Mallorca' } },
     { id:13, label:'A "Kréta" leírásnál a "Történelmi helyszínek:" szöveg köré <i> elemet rakott.',
       check: d => {
