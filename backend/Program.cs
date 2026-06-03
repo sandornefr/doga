@@ -1851,8 +1851,7 @@ app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
 // ── Groq AI proxy (tanárnak) ──────────────────────────────────────────────────
 app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
 {
-    var (valid, _, role) = InspectAuthContext(ctx);
-    if (!valid || role != "oktato") return Results.Unauthorized();
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
 
     var groqKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") ?? "";
     if (string.IsNullOrWhiteSpace(groqKey))

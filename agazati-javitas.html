@@ -895,7 +895,7 @@ function ajGetChecks() {
       check: d => {
         const header = d.querySelector('header');
         if (!header) return false;
-        const img = header.querySelector('img[src*="fejlec"]');
+        const img = header.querySelector('img[src*="img/fejlec.jpg"]');
         if (!img) return false;
         // .text-center divben kell lennie
         const inTextCenter = !!img.closest('.text-center');
@@ -940,7 +940,7 @@ function ajGetChecks() {
         const mallorcaH3 = h3s.find(h => h.textContent.trim() === 'Mallorca');
         if (!mallorcaH3) return false;
         const col = mallorcaH3.closest('[class*="col"]') || mallorcaH3.parentElement;
-        return !!col && Array.from(col.querySelectorAll('b')).some(b => b.textContent.includes('Legismertebb'));
+        return !!col && Array.from(col.querySelectorAll('b,strong')).some(b => b.textContent.includes('Legismertebb'));
       },
       find: { in:'html', term:'Legismertebb', fallback:'Mallorca' } },
     { id:12, label:'A látnivalókhoz <ol> elemet használt és a listaelemeket <li>-be helyezte.',
@@ -961,12 +961,20 @@ function ajGetChecks() {
         const kretaH3 = h3s.find(h => h.textContent.trim() === 'Kréta');
         if (!kretaH3) return false;
         const col = kretaH3.closest('[class*="col"]') || kretaH3.parentElement;
-        return !!col && Array.from(col.querySelectorAll('i')).some(el => el.textContent.includes('Történelmi'));
+        return !!col && Array.from(col.querySelectorAll('i,em')).some(el => el.textContent.includes('Történelmi'));
       },
       find: { in:'html', term:'Történelmi', fallback:'Kréta' } },
     { id:14, label:'Az alatta lévő szövegekre <ul> elemet használt és a listaelemeket <li>-be helyezte.',
-      check: d => { const ul=d.querySelector('ul#tortenelmi')||d.querySelector('#szigetek ul:not(.navbar-nav)');
-                    return ul&&ul.querySelectorAll('li').length>=5; },
+      check: d => {
+        const kretaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Kréta');
+        if (!kretaH3) return false;
+        const col = kretaH3.closest('[class*="col"]') || kretaH3.parentElement;
+        if (!col) return false;
+        const ul = col.querySelector('ul:not(.navbar-nav)');
+        if (!ul) return false;
+        if (!(kretaH3.compareDocumentPosition(ul) & Node.DOCUMENT_POSITION_FOLLOWING)) return false;
+        return ul.querySelectorAll('li').length >= 5;
+      },
       find: { in:'html', term:'tortenelmi', fallback:'Kréta' } },
     { id:15, label:'Az <ul> elemnek "tortenelmi" egyedi azonosítót állított be.',
       check: d => !!d.querySelector('ul#tortenelmi'),
@@ -1137,13 +1145,25 @@ async function pyFolderProcess(files) {
   if (docxF && !pyFeladatBlobUrl)
     await pyLoadFeladat(pyFolderFiles[docxF]);
 
-  // Auto-hozzárendelés: ábécé sorrendben 8pt, 14pt, 18pt, eloado
-  const slots = ['t8','t14','t18','eloado'];
+  // Auto-hozzárendelés: 1. pass – mappa/fájlnév alapján (8/14/18 pontos); 2. pass – ábécé fallback
   pyMapping = {};
   pyCode = { t8:'', t14:'', t18:'', eloado:'' };
-  for (let i = 0; i < pyFiles.length && i < slots.length; i++) {
-    pyMapping[slots[i]] = pyFiles[i];
-    pyCode[slots[i]] = await pyFolderFiles[pyFiles[i]].text();
+  for (const f of files) {
+    if (!/\.py$/i.test(f.name)) continue;
+    const path = (f.webkitRelativePath || f.name).toLowerCase();
+    let slot = null;
+    if (/\b8[ _]?pont/.test(path))       slot = 't8';
+    else if (/\b14[ _]?pont/.test(path)) slot = 't14';
+    else if (/\b18[ _]?pont/.test(path)) slot = 't18';
+    else if (/eloado/.test(path))        slot = 'eloado';
+    if (slot && !pyMapping[slot]) { pyMapping[slot] = f.name; pyCode[slot] = await f.text(); }
+  }
+  const slots = ['t8','t14','t18','eloado'];
+  const unassigned = pyFiles.filter(n => !Object.values(pyMapping).includes(n));
+  const freeSlots  = slots.filter(s => !pyMapping[s]);
+  for (let i = 0; i < unassigned.length && i < freeSlots.length; i++) {
+    pyMapping[freeSlots[i]] = unassigned[i];
+    pyCode[freeSlots[i]] = await pyFolderFiles[unassigned[i]].text();
   }
   pyRenderAssignment(pyFiles);
   pyCheckReady();
