@@ -693,7 +693,7 @@ function ajRenderList(checks) {
       const searchFn = c.screenshotCheck === 'html'
         ? fn => fn.includes('szigetek') && fn.includes('valid')
         : fn => fn.includes('stylevalidalas') || (fn.includes('style') && fn.includes('valid'));
-      const knownImgs = new Set(['fejlec','mallorca','kreta','ibiza','ciprus','santorini','history-icon']);
+      const knownImgs = new Set(['fejlec','mallorca','kreta','ibiza','ciprus','santorini','history-icon','szigetek']);
       const isKnown = k => { const fn = k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''); return knownImgs.has(fn); };
       const allImgKeys = Object.keys(ajFiles).filter(k => /\.(png|jpg|jpeg|gif|webp)$/i.test(k));
 
