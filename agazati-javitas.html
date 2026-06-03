@@ -944,7 +944,7 @@ function ajGetChecks() {
       check: d => {
         const links = Array.from(d.querySelectorAll('nav a'));
         if (links.some(a => a.textContent.trim() === 'Roadster – Legjobb szigetek')) return 1;
-        if (links.some(a => a.textContent.includes('Roadster'))) return 0.5;
+        if (d.querySelector('nav a[href*="roadster.hu"]')) return 0.5;
         return 0;
       },
       find: { in:'html', term:'Roadster', fallback:'navbar-nav' } },
