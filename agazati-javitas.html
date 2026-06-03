@@ -1022,7 +1022,8 @@ function ajGetChecks() {
     { id:7,  label:'Elkészítette a menüpontot a megfelelő helyre, a "Roadster – Legjobb szigetek" szöveggel.',
       check: d => {
         const links = Array.from(d.querySelectorAll('nav a'));
-        if (links.some(a => a.textContent.trim() === 'Roadster – Legjobb szigetek')) return 1;
+        const normalize = t => t.trim().replace(/\s*[–-]\s*/,' - ');
+        if (links.some(a => normalize(a.textContent) === 'Roadster - Legjobb szigetek')) return 1;
         if (d.querySelector('nav a[href*="roadster.hu"]')) return 0.5;
         return 0;
       },
