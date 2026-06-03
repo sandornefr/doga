@@ -998,18 +998,18 @@ function ajGetChecks() {
     { id:19, label:'A képet a címsor után helyezte és az "img" mappán belüli "ibiza.jpg" képet jeleníti meg.',
       check: d => { const col=ibizaCol(d); if(!col) return false;
                     const iH=Array.from(col.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Ibiza')||col.querySelector('h3');
-                    const img=col.querySelector('img[src*="ibiza"]');
+                    const img=col.querySelector('img[src*="img/ibiza.jpg"]');
                     if(!iH||!img) return false;
                     return !!(iH.compareDocumentPosition(img)&Node.DOCUMENT_POSITION_FOLLOWING); },
       find: { in:'html', term:'ibiza.jpg', fallback:'ibiza' } },
     { id:20, label:'A képre alt-ot és title-t állított, amelyeknek szövege „Ibiza".',
       check: d => { const col=ibizaCol(d); if(!col) return false;
-                    const img=col.querySelector('img[src*="ibiza"]');
+                    const img=col.querySelector('img[src*="img/ibiza.jpg"]');
                     return img&&img.getAttribute('alt')==='Ibiza'&&img.getAttribute('title')==='Ibiza'; },
       find: { in:'html', term:'alt="Ibiza"', fallback:'ibiza' } },
     { id:21, label:'A képre alkalmazta az "img-fluid sziget" osztályjelölőket.',
       check: d => { const col=ibizaCol(d); if(!col) return false;
-                    const img=col.querySelector('img[src*="ibiza"]');
+                    const img=col.querySelector('img[src*="img/ibiza.jpg"]');
                     return img&&img.classList.contains('img-fluid')&&img.classList.contains('sziget'); },
       find: { in:'html', term:'ibiza' } },
 
@@ -1033,9 +1033,14 @@ function ajGetChecks() {
 
     { section:'A „További szigetek" részben elvégezte az alábbi módosítást:' },
     { id:24, label:'A col-md-6 osztály besorolást módosította a "Santorini" esetében col-md-4-re, a "Szigetek sokszínűsége" esetében col-md-8-ra.',
-      check: d => { const h=Array.from(d.querySelectorAll('h3')).find(x=>x.textContent.includes('Santorini'));
-                    if(!h)return false; const col=h.closest('[class*="col-md-"]');
-                    return col&&col.classList.contains('col-md-4'); },
+      check: d => {
+        const h=Array.from(d.querySelectorAll('h3')).find(x=>x.textContent.includes('Santorini'));
+        if(!h) return false;
+        const santCol=h.closest('[class*="col-md-"]');
+        if(!santCol||!santCol.classList.contains('col-md-4')) return false;
+        const sokCol=Array.from(d.querySelectorAll('[class*="col-md-"]')).find(el=>el.textContent.includes('Szigetek sokszínűsége'));
+        return !!sokCol&&sokCol.classList.contains('col-md-8');
+      },
       find: { in:'html', term:'Santorini' } },
 
     { section:'Módosította a lábléc beállításait:' },
@@ -1078,7 +1083,7 @@ function ajGetChecks() {
       cssCheck: css => /#tortenelmi/.test(css),
       find: { in:'css', term:'#tortenelmi' } },
     { id:37, label:'Beállította: "list-style-image: url(\'../img/history-icon.png\')".',
-      cssCheck: css => /history-icon\.png/.test(css) && /#tortenelmi/.test(css),
+      cssCheck: css => cssHas(css, '#tortenelmi', 'list-style-image', /url\s*\(\s*['"]?\.\.\/img\/history-icon\.png['"]?\s*\)/),
       find: { in:'css', term:'list-style-image' } },
     { id:38, label:'Létrehozta a "p" elemkijelölőt és beállította: "text-align: justify".',
       cssCheck: css => /(?:^|[}\n])\s*p\s*\{[^}]*text-align\s*:\s*justify/im.test(css),
