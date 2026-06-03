@@ -1046,7 +1046,10 @@ function ajGetChecks() {
         const mallorcaH3 = h3s.find(h => h.textContent.trim() === 'Mallorca');
         if (!mallorcaH3) return false;
         const col = mallorcaH3.closest('[class*="col"]') || mallorcaH3.parentElement;
-        return !!col && Array.from(col.querySelectorAll('b,strong')).some(b => b.textContent.includes('Legismertebb'));
+        if (!col) return 0;
+        const el = Array.from(col.querySelectorAll('b,strong')).find(b => b.textContent.includes('Legismertebb'));
+        if (!el) return 0;
+        return el.closest('p') ? 1 : 0.5;
       },
       find: { in:'html', term:'Legismertebb', fallback:'Mallorca' } },
     { id:12, label:'A látnivalókhoz <ol> elemet használt és a listaelemeket <li>-be helyezte.',
@@ -1067,7 +1070,10 @@ function ajGetChecks() {
         const kretaH3 = h3s.find(h => h.textContent.trim() === 'Kréta');
         if (!kretaH3) return false;
         const col = kretaH3.closest('[class*="col"]') || kretaH3.parentElement;
-        return !!col && Array.from(col.querySelectorAll('i,em')).some(el => el.textContent.includes('Történelmi'));
+        if (!col) return 0;
+        const el = Array.from(col.querySelectorAll('i,em')).find(e => e.textContent.includes('Történelmi'));
+        if (!el) return 0;
+        return el.closest('p') ? 1 : 0.5;
       },
       find: { in:'html', term:'Történelmi', fallback:'Kréta' } },
     { id:14, label:'Az alatta lévő szövegekre <ul> elemet használt és a listaelemeket <li>-be helyezte.',
