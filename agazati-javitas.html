@@ -1261,13 +1261,15 @@ function ajGetChecks() {
     { id:36, label:'Létrehozta a "#tortenelmi" elemkijelölőt.',
       cssCheck: css => {
         if (/#tortenelmi/.test(css)) return 1;
-        if (/\.?tortenelmi/.test(css)) return 0.5;
+        if (/[#.]?torte[a-z]*elmi/.test(css)) return 0.5;
         return 0;
       },
       find: { in:'css', term:'#tortenelmi' } },
     { id:37, label:'Beállította: "list-style-image: url(\'../img/history-icon.png\')".',
       cssCheck: css => {
         if (cssHas(css, '#tortenelmi', 'list-style-image', /url\s*\(\s*['"]?\.\.\/img\/history-icon\.png['"]?\s*\)/)) return 1;
+        const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+        if (/torte[a-z]*elmi\s*\{[^}]*list-style-image/i.test(clean)) return 0.5;
         if (cssHas(css, '#tortenelmi', 'list-style-image', /.+/)) return 0.5;
         return 0;
       },
