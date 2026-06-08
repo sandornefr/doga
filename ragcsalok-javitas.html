@@ -1,0 +1,1702 @@
+﻿<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Rágcsálók Javítás – Kandó</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>window.MonacoEnvironment={getWorkerUrl:()=>URL.createObjectURL(new Blob([],{type:'application/javascript'}))};</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
+    .topbar{background:#16213e;border-bottom:1px solid #1f2937;padding:11px 20px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.95rem;color:#e0e0e0;text-decoration:none}
+    .topbar-logo img{height:30px}
+    a.back{padding:5px 14px;border-radius:8px;border:1px solid #374151;background:transparent;color:#9ca3af;font-size:.82rem;text-decoration:none;transition:.2s}
+    a.back:hover{border-color:#6b7280;color:#e0e0e0}
+    .container{max-width:1500px;margin:0 auto;padding:20px 16px}
+    .subj-tabs{display:flex;gap:8px;margin-bottom:20px}
+    .subj-btn{padding:8px 20px;border-radius:8px;border:1px solid #374151;background:transparent;color:#64748b;font-size:.88rem;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+    .subj-btn.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+    .subj-btn:disabled{opacity:.35;cursor:not-allowed}
+    .card{background:#16213e;border:1px solid #1f2937;border-radius:12px;padding:18px;margin-bottom:14px}
+    label{font-size:.82rem;color:#94a3b8;display:block;margin-bottom:4px}
+    input[type=text],select{width:100%;padding:8px 11px;background:#0b1120;border:1px solid #374151;border-radius:8px;color:#e0e0e0;font-size:.88rem;outline:none;transition:border .2s}
+    input[type=text]:focus,select:focus{border-color:#3b82f6}
+    .upload-zone{border:2px dashed #374151;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.2s;background:#0b1120;position:relative}
+    .upload-zone:hover,.upload-zone.dragover{border-color:#3b82f6;background:#0d1a2e}
+    .upload-zone.has-files{border-color:#15803d;background:#0a2a1a}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10}
+    .btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+    .btn-primary{background:#1d4ed8;color:#fff}.btn-primary:hover:not(:disabled){background:#2563eb}
+    .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+    .btn-ghost{background:transparent;border:1px solid #374151;color:#9ca3af}.btn-ghost:hover{border-color:#6b7280;color:#e0e0e0}
+    .btn-sm{padding:5px 12px;font-size:.8rem}
+    .form-row{margin-bottom:12px}
+    /* Grading layout */
+    .grading-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;background:#16213e;border:1px solid #1f2937;border-radius:10px;margin-bottom:14px}
+    .split{display:flex;gap:14px;align-items:flex-start}
+    .code-col{width:46%;flex-shrink:0}
+    .criteria-col{flex:1;overflow-y:auto;max-height:540px}
+    /* Code viewer */
+    .code-wrap{background:#16213e;border:1px solid #1f2937;border-radius:10px;overflow:hidden}
+    .code-tabbar{display:flex;gap:0;background:#0b1120;border-bottom:1px solid #1f2937}
+    .code-tab{padding:6px 18px;border:none;background:transparent;color:#64748b;font-size:.8rem;font-weight:700;cursor:pointer;transition:.15s;border-right:1px solid #1f2937}
+    .code-tab.active{background:#16213e;color:#e0e0e0}
+    .code-tab:hover:not(.active){color:#94a3b8}
+    .code-hint{padding:5px 12px;background:#0d1a2e;font-size:.72rem;color:#374151;min-height:22px;font-family:monospace}
+    /* Criteria */
+    .aj-sec{background:#0d1a2e;border-left:3px solid #3b82f6;padding:6px 12px;margin:10px 0 3px;border-radius:0 6px 6px 0;color:#64748b;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .aj-row{display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:7px;margin-bottom:2px;transition:background .15s}
+    .aj-row:hover{background:rgba(255,255,255,.03)}
+    .aj-row.pass{border-left:3px solid #22c55e}
+    .aj-row.fail{border-left:3px solid #ef4444}
+    .aj-row.manual{border-left:3px solid #f59e0b}
+    .aj-row-lbl{flex:1;font-size:.79rem;color:#cbd5e1;line-height:1.4}
+    .aj-row.fail .aj-row-lbl{cursor:pointer}
+    .aj-row.fail .aj-row-lbl:hover{color:#fff;text-decoration:underline dotted #ef4444}
+    .clickhint{font-size:.68rem;color:#4b5563;margin-left:4px;font-style:italic}
+    .aj-btns{display:flex;gap:3px;flex-shrink:0}
+    .aj-btn{width:30px;height:26px;border:1px solid #374151;border-radius:5px;background:#0b1120;color:#4b5563;font-size:.8rem;font-weight:700;cursor:pointer;transition:.15s}
+    .aj-btn:hover{border-color:#3b82f6;color:#94a3b8}
+    .aj-btn.a1{background:#22c55e;border-color:#22c55e;color:#0b1120}
+    .aj-btn.a05{background:#f59e0b;border-color:#f59e0b;color:#0b1120}
+    .aj-btn.a0{background:#ef4444;border-color:#ef4444;color:#fff}
+    .aj-thumb{max-width:100%;max-height:100px;border-radius:5px;border:1px solid #374151;margin-top:4px;display:block;cursor:pointer}
+    .aj-highlighted-line{background:rgba(245,158,11,0.18)!important;}
+    .aj-highlighted-text{background:rgba(245,158,11,0.35);border-radius:2px;}
+    @media(max-width:900px){.split{flex-direction:column}.code-col{width:100%}}
+    /* Python szekció */
+    .py-upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:700px){.py-upload-grid{grid-template-columns:1fr}}
+    .py-file-zone{border:1.5px dashed #374151;border-radius:9px;padding:11px 14px;cursor:pointer;transition:.2s;background:#0b1120;position:relative;display:flex;align-items:center;gap:10px}
+    .py-file-zone:hover{border-color:#3b82f6;background:#0d1a2e}
+    .py-file-zone.loaded{border-color:#15803d;background:#0a2a1a}
+    .py-file-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5}
+    .py-file-icon{font-size:1.3rem;flex-shrink:0}
+    .py-file-info{font-size:.8rem}
+    .py-file-label{color:#94a3b8;font-weight:600}
+    .py-file-name{color:#4ade80;font-size:.75rem;margin-top:2px}
+    /* Python mappa hozzárendelés */
+    .py-assign-wrap{background:#0d1a2e;border:1px solid #1e3a5f;border-radius:9px;padding:10px 14px;margin-bottom:12px}
+    .py-assign-row{display:flex;align-items:center;gap:10px;padding:5px 2px;border-bottom:1px solid #1f2937}
+    .py-assign-row:last-child{border-bottom:none}
+    .py-assign-fname{flex:1;font-size:.8rem;font-family:monospace;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .py-slot-btns{display:flex;gap:3px;flex-shrink:0}
+    .py-slot-btn{padding:3px 8px;border:1px solid #374151;border-radius:5px;background:#0b1120;color:#4b5563;font-size:.73rem;font-weight:700;cursor:pointer;transition:.15s}
+    .py-slot-btn:hover{border-color:#3b82f6;color:#94a3b8}
+    .py-slot-btn.s8{} .py-slot-btn.s8.active{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+    .py-slot-btn.s14.active{background:#d97706;border-color:#d97706;color:#fff}
+    .py-slot-btn.s18.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
+    .py-slot-btn.sel.active{background:#db2777;border-color:#db2777;color:#fff}
+    .py-docs-divider{font-size:.75rem;color:#4b5563;font-weight:700;margin:12px 0 6px;display:flex;align-items:center;gap:8px}
+    .py-docs-divider::after{content:'';flex:1;height:1px;background:#1f2937}
+    .py-section{background:#16213e;border:1px solid #1f2937;border-radius:10px;margin-bottom:10px;overflow:hidden}
+    .py-section-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+    .py-section-hdr:hover{background:rgba(255,255,255,.03)}
+    .py-section-title{font-weight:700;font-size:.9rem;flex:1}
+    .py-section-score{font-size:.85rem;color:#94a3b8}
+    .py-section-body{padding:10px 14px;border-top:1px solid #1f2937;display:none}
+    .py-section-body.open{display:block}
+    .py-ai-box{background:#0b1120;border:1px solid #1e3a5f;border-radius:8px;padding:12px;font-size:.78rem;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;color:#cbd5e1;margin-top:10px;font-family:monospace}
+    .py-code-tabs{display:flex;gap:0;background:#0b1120;border-bottom:1px solid #1f2937}
+    .py-code-tab{padding:5px 14px;border:none;background:transparent;color:#64748b;font-size:.78rem;font-weight:700;cursor:pointer;border-right:1px solid #1f2937;transition:.15s}
+    .py-code-tab.active{background:#16213e;color:#e0e0e0}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="portal.html">
+    <img src="kandologo2.png" alt="Kandó">
+    Rágcsálók Javítás
+  </a>
+  <a class="back" href="portal.html"><i class="fas fa-arrow-left"></i> Vissza a portálra</a>
+</div>
+
+<div class="container">
+
+  <div id="auth-err" style="display:none;padding:14px;background:#7f1d1d;border:1px solid #dc2626;border-radius:10px;margin-bottom:16px;color:#fca5a5">
+    <i class="fas fa-lock"></i> Oktatói bejelentkezés szükséges.
+    <a href="portal.html" style="color:#fca5a5;margin-left:8px">← Portál</a>
+  </div>
+
+  <div id="main-ui">
+
+    <div class="subj-tabs">
+      <button class="subj-btn active" id="btn-web" onclick="switchSubj('web')"><i class="fas fa-globe"></i> WEB</button>
+      <button class="subj-btn" id="btn-py" onclick="switchSubj('py')"><i class="fab fa-python"></i> PYTHON</button>
+    </div>
+
+    <div id="web-section">
+    <!-- ══ FELTÖLTÉS ══ -->
+    <div id="aj-upload-step">
+      <div class="card">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+          <div style="flex:1;min-width:160px;" class="form-row">
+            <label>Tanuló neve</label>
+            <input type="text" id="aj-nev" placeholder="pl. Kovács Béla">
+          </div>
+          <div style="flex:1;min-width:160px;" class="form-row">
+            <label>Feladat</label>
+            <select id="aj-feladat">
+              <option value="ragcsalok">Rágcsálók – Weboldal kódolása</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:16px;">
+          <label><i class="fas fa-file-lines" style="color:#f59e0b"></i> Feladat leírás <span style="color:#4b5563;font-weight:400;">(opcionális – .docx vagy .txt)</span></label>
+          <div class="upload-zone" style="padding:14px;position:relative;">
+            <input type="file" id="aj-feladat-inp" accept=".docx,.txt" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:10;" onchange="ajLoadFeladat(this.files[0])">
+            <div style="font-size:.85rem;color:#64748b;pointer-events:none;" id="aj-feladat-info">
+              <i class="fas fa-file-word" style="color:#f59e0b"></i> Kattints a feladat .docx feltöltéséhez
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-zone" id="aj-drop-zone"
+            ondragover="event.preventDefault();this.classList.add('dragover')"
+            ondragleave="this.classList.remove('dragover')"
+            ondrop="ajDrop(event)">
+          <input type="file" id="aj-folder-input" webkitdirectory multiple onchange="ajSelect(this.files)">
+          <div style="font-size:2rem;color:#3b82f6;margin-bottom:8px;pointer-events:none"><i class="fas fa-folder-open"></i></div>
+          <div style="font-size:.9rem;font-weight:600;margin-bottom:4px;pointer-events:none">Húzd ide a tanuló megoldás mappáját</div>
+          <div style="font-size:.78rem;color:#64748b;pointer-events:none">vagy kattints a kiválasztáshoz (egész mappa egyszerre)</div>
+          <div id="aj-upload-info" style="margin-top:10px;font-size:.82rem;color:#4ade80;min-height:18px;pointer-events:none"></div>
+        </div>
+        <button class="btn btn-primary" id="aj-start-btn" onclick="ajStart()" disabled style="margin-top:14px;width:100%;">
+          <i class="fas fa-play"></i> Javítás indítása
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ JAVÍTÁS ══ -->
+    <div id="aj-grading-step" style="display:none;">
+
+      <div class="grading-header">
+        <span style="font-weight:700;font-size:.95rem;" id="aj-nev-display"></span>
+        <span style="color:#374151;">|</span>
+        <span style="font-size:.88rem;color:#94a3b8;">
+          Összpontszám: <b id="aj-total" style="color:#4ade80;font-size:1.05rem;">0</b><span style="color:#374151;">/40</span>
+        </span>
+        <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#94a3b8;cursor:pointer;margin-left:auto;">
+          <input type="checkbox" id="aj-only-bad" onchange="ajFilter()"> Csak kétes / hibás
+        </label>
+        <button class="btn btn-ghost btn-sm" onclick="ajExport()"><i class="fas fa-file-export"></i> Export</button>
+        <button class="btn btn-ghost btn-sm" onclick="ajReset()" style="color:#f87171;border-color:#7f1d1d;">
+          <i class="fas fa-rotate-left"></i> Új tanuló
+        </button>
+      </div>
+
+      <div class="split">
+        <!-- Kód nézet -->
+        <div class="code-col">
+          <div class="code-wrap">
+            <div class="code-tabbar">
+              <button class="code-tab active" id="ctab-html" onclick="showCodeTab('html')">HTML</button>
+              <button class="code-tab" id="ctab-css" onclick="showCodeTab('css')">CSS</button>
+              <button class="code-tab" id="ctab-feladat" onclick="showCodeTab('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i> Feladat</button>
+            </div>
+            <div id="aj-monaco-container" style="height:500px;"></div>
+            <iframe id="aj-feladat-iframe" style="display:none;width:100%;height:500px;border:none;background:#fff;" sandbox="allow-same-origin"></iframe>
+            <div class="code-hint" id="aj-code-hint">← A piros szempontra kattintva ide ugrik a kód</div>
+          </div>
+        </div>
+        <!-- Szempontlista -->
+        <div class="criteria-col" id="aj-list"></div>
+      </div>
+    </div>
+
+    </div><!-- /web-section -->
+
+    <!-- ══ PYTHON SZEKCIÓ ══ -->
+    <div id="py-section" style="display:none;">
+
+      <!-- Feltöltés -->
+      <div id="py-upload-step">
+        <div class="card">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+            <div style="flex:1;min-width:160px;" class="form-row">
+              <label>Tanuló neve</label>
+              <input type="text" id="py-nev" placeholder="pl. Kovács Béla">
+            </div>
+            <div style="flex:1;min-width:160px;" class="form-row">
+              <label>Feladatsor</label>
+              <select id="py-variant">
+                <option value="A">A változat</option>
+                <option value="B">B változat</option>
+                <option value="C">C változat</option>
+                <option value="K">K változat</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tanuló mapája (minden tanulónál újratölt) -->
+          <div style="font-size:.78rem;color:#94a3b8;font-weight:700;margin-bottom:6px;"><i class="fas fa-user-graduate"></i> Tanuló mapája</div>
+          <div class="upload-zone" id="py-drop-zone"
+              ondragover="event.preventDefault();this.classList.add('dragover')"
+              ondragleave="this.classList.remove('dragover')"
+              ondrop="pyFolderDrop(event)" style="margin-bottom:10px;">
+            <input type="file" id="py-folder-input" webkitdirectory multiple onchange="pyFolderSelect(this.files)">
+            <div style="font-size:1.6rem;color:#3b82f6;margin-bottom:6px;pointer-events:none"><i class="fas fa-folder-open"></i></div>
+            <div style="font-size:.88rem;font-weight:600;margin-bottom:3px;pointer-events:none">Húzd ide a tanuló mappáját</div>
+            <div style="font-size:.75rem;color:#64748b;pointer-events:none">vagy kattints a kiválasztáshoz</div>
+            <div id="py-folder-info" style="margin-top:8px;font-size:.8rem;color:#4ade80;min-height:16px;pointer-events:none"></div>
+          </div>
+
+          <!-- .py hozzárendelés -->
+          <div id="py-assign-wrap" class="py-assign-wrap" style="display:none;">
+            <div style="font-size:.72rem;color:#64748b;margin-bottom:6px;">Kattints a kívánt feladatosztályra a hozzárendeléshez — automatikus sorrend módosítható:</div>
+            <div id="py-assign-table"></div>
+          </div>
+
+          <!-- Vizsgadokumentumok (megmaradnak "Új tanuló"-nál) -->
+          <div class="py-docs-divider"><i class="fas fa-bookmark"></i> Vizsgadokumentumok <span style="font-weight:400;">(egyszeri betöltés – megmarad)</span></div>
+          <div class="py-upload-grid" style="margin-bottom:10px;">
+            <div class="py-file-zone">
+              <input type="file" id="py-fpontozo" accept=".xlsx" onchange="pyLoadPontozo(this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-table" style="color:#22c55e"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Pontozó (.xlsx)</div>
+                <div class="py-file-name" id="py-fpontozo-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-ffeladat" accept=".docx,.txt" onchange="pyLoadFeladat(this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-lines" style="color:#f59e0b"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Feladat leírás (.docx/.txt) <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-ffeladat-name">Nincs fájl</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mintamegoldások (megmaradnak) -->
+          <div class="py-upload-grid" style="margin-bottom:14px;">
+            <div class="py-file-zone">
+              <input type="file" id="py-fref8" accept=".py" onchange="pyLoadRef('t8',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#3b82f6;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 8pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref8-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref14" accept=".py" onchange="pyLoadRef('t14',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#f59e0b;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 14pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref14-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-fref18" accept=".py" onchange="pyLoadRef('t18',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-file-shield" style="color:#a855f7;opacity:.6"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Mintamegoldás 18pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-fref18-name">Nincs fájl</div>
+              </div>
+            </div>
+            <div class="py-file-zone">
+              <input type="file" id="py-feloado" accept=".py" onchange="pyLoadCode('eloado',this.files[0])">
+              <div class="py-file-icon"><i class="fas fa-cube" style="color:#ec4899"></i></div>
+              <div class="py-file-info">
+                <div class="py-file-label">Osztály forrás 18pt <span style="color:#4b5563;font-weight:400;">opcionális</span></div>
+                <div class="py-file-name" id="py-feloado-name">Nincs fájl</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="py-start-btn" onclick="pyStart()" disabled style="width:100%;opacity:.45;cursor:not-allowed;">
+            <i class="fas fa-play"></i> Javítás indítása
+          </button>
+        </div>
+      </div>
+
+      <!-- Javítás nézet -->
+      <div id="py-grading-step" style="display:none;">
+
+        <div class="grading-header">
+          <span style="font-weight:700;font-size:.95rem;" id="py-nev-display"></span>
+          <span style="color:#374151;">|</span>
+          <span style="font-size:.88rem;color:#94a3b8;">
+            Összpontszám: <b id="py-total" style="color:#4ade80;font-size:1.05rem;">0</b><span style="color:#374151;">/40</span>
+          </span>
+          <span style="font-size:.8rem;color:#64748b;">
+            <span id="py-sub8" style="color:#3b82f6">8pt: 0/8</span> &nbsp;
+            <span id="py-sub14" style="color:#f59e0b">14pt: 0/14</span> &nbsp;
+            <span id="py-sub18" style="color:#a855f7">18pt: 0/18</span>
+          </span>
+          <button class="btn btn-ghost btn-sm" onclick="pyExport()" style="margin-left:auto;"><i class="fas fa-file-export"></i> Export</button>
+          <button class="btn btn-ghost btn-sm" onclick="pyReset()" style="color:#f87171;border-color:#7f1d1d;"><i class="fas fa-rotate-left"></i> Új tanuló</button>
+        </div>
+
+        <div class="split">
+          <!-- Bal: kód nézet -->
+          <div class="code-col">
+            <div class="code-wrap">
+              <div class="py-code-tabs">
+                <button class="py-code-tab active" id="pctab-t8"  onclick="pyShowCode('t8')">8pt</button>
+                <button class="py-code-tab" id="pctab-t14" onclick="pyShowCode('t14')">14pt</button>
+                <button class="py-code-tab" id="pctab-t18" onclick="pyShowCode('t18')">18pt</button>
+                <button class="py-code-tab" id="pctab-eloado" onclick="pyShowCode('eloado')" style="display:none;">Osztály</button>
+                <button class="py-code-tab" id="pctab-feladat" onclick="pyShowCode('feladat')"><i class="fas fa-file-lines" style="color:#f59e0b"></i></button>
+              </div>
+              <textarea id="py-code-view" readonly spellcheck="false" style="width:100%;height:500px;background:#0b1120;color:#cbd5e1;font-family:monospace;font-size:.76rem;border:none;padding:12px;resize:none;outline:none;line-height:1.6;display:block;"></textarea>
+              <iframe id="py-feladat-view" style="display:none;width:100%;height:500px;border:none;background:#fff;" sandbox="allow-same-origin"></iframe>
+            </div>
+          </div>
+
+          <!-- Jobb: 3 pontozó szekció -->
+          <div class="criteria-col">
+
+            <div class="py-section" id="pys-t8">
+              <div class="py-section-hdr" onclick="pyToggle('t8')">
+                <i class="fas fa-chevron-down" id="pychev-t8"></i>
+                <span class="py-section-title" style="color:#3b82f6"><i class="fas fa-star-half-stroke"></i> 8 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t8">0 / 8</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t8')" id="pyai-t8" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t8">
+                <div id="pylist-t8"></div>
+                <div id="pyai-box-t8" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+            <div class="py-section" id="pys-t14">
+              <div class="py-section-hdr" onclick="pyToggle('t14')">
+                <i class="fas fa-chevron-down" id="pychev-t14"></i>
+                <span class="py-section-title" style="color:#f59e0b"><i class="fas fa-star"></i> 14 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t14">0 / 14</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t14')" id="pyai-t14" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t14">
+                <div id="pylist-t14"></div>
+                <div id="pyai-box-t14" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+            <div class="py-section" id="pys-t18">
+              <div class="py-section-hdr" onclick="pyToggle('t18')">
+                <i class="fas fa-chevron-down" id="pychev-t18"></i>
+                <span class="py-section-title" style="color:#a855f7"><i class="fas fa-star"></i><i class="fas fa-star" style="font-size:.7em"></i> 18 pontos feladat</span>
+                <span class="py-section-score" id="pyscore-t18">0 / 18</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();pyGroq('t18')" id="pyai-t18" style="font-size:.75rem;padding:3px 10px;">
+                  <i class="fas fa-robot"></i> Groq
+                </button>
+              </div>
+              <div class="py-section-body open" id="pybody-t18">
+                <div id="pylist-t18"></div>
+                <div id="pyai-box-t18" style="display:none;" class="py-ai-box"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /py-section -->
+
+  </div>
+</div>
+
+<script>
+// ── Auth ───────────────────────────────────────────────────────────────────
+(function(){
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  if (!u.token && !u._tesztMod) {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('main-ui').style.display = 'none';
+  }
+})();
+
+// ── Monaco ─────────────────────────────────────────────────────────────────
+let ajEditor = null;
+let ajDecorations = [];
+
+function initMonaco() {
+  return new Promise((resolve, reject) => {
+    if (ajEditor) { resolve(); return; }
+    if (typeof require === 'undefined') { reject(new Error('Monaco loader nem elérhető')); return; }
+    try {
+      require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+      require(['vs/editor/editor.main'], () => {
+        try {
+          const container = document.getElementById('aj-monaco-container');
+          ajEditor = monaco.editor.create(container, {
+            value: '', language: 'html', theme: 'vs-dark',
+            readOnly: true, minimap: { enabled: false },
+            fontSize: 15, lineNumbers: 'on',
+            scrollBeyondLastLine: false, automaticLayout: true,
+            wordWrap: 'on', renderWhitespace: 'none',
+          });
+          resolve();
+        } catch(e) { reject(e); }
+      });
+    } catch(e) { reject(e); }
+  });
+}
+
+// ── Állapot ────────────────────────────────────────────────────────────────
+let ajFiles = {}, ajHtml = '', ajCss = '', ajDoc = null, ajScores = {}, ajNev = '';
+let ajCurrentCodeTab = 'html', ajFeladatBlobUrl = '';
+
+function feladatHtmlWrap(inner) {
+  return `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><style>
+    body{font-family:Calibri,'Segoe UI',sans-serif;font-size:11pt;line-height:1.5;color:#1a1a1a;margin:12px 16px;padding:0;background:#fff}
+    p{margin:4px 0 6px;text-align:justify}
+    h1{font-size:14pt;font-weight:700;margin:4px 0 10px}
+    h2{font-size:12pt;font-weight:700;margin:6px 0 8px}
+    h3{font-size:11pt;font-weight:700;margin:4px 0 6px}
+    ol{margin:6px 0;padding-left:22px} ol li{margin:5px 0;text-align:justify}
+    ul{margin:4px 0;padding-left:22px} ul li{margin:3px 0;text-align:justify}
+    table{border-collapse:collapse;width:100%;margin:8px 0}
+    td,th{border:1px solid #ccc;padding:4px 8px;font-size:10pt}
+    strong,b{font-weight:700} em,i{font-style:italic} u{text-decoration:underline}
+    hr{border:none;border-top:1px solid #ccc;margin:10px 0}
+    pre{font-family:Consolas,monospace;font-size:10pt;background:#f5f5f5;padding:8px;border-radius:4px;white-space:pre-wrap}
+  </style></head><body>${inner}</body></html>`;
+}
+
+// ── Fájlkezelés ────────────────────────────────────────────────────────────
+function ajDrop(e) {
+  e.preventDefault();
+  document.getElementById('aj-drop-zone').classList.remove('dragover');
+  if (e.dataTransfer.files?.length) ajProcess(Array.from(e.dataTransfer.files));
+}
+function ajSelect(files) { ajProcess(Array.from(files)); }
+
+function ajProcess(files) {
+  ajFiles = {};
+  let folderName = '';
+  for (const f of files) {
+    const rel = f.webkitRelativePath || f.name;
+    const parts = rel.split('/');
+    if (!folderName && parts.length > 1) folderName = parts[0];
+    const key = (parts.length > 1 ? parts.slice(1).join('/') : parts[0]).toLowerCase();
+    ajFiles[key] = { file: f, blobUrl: URL.createObjectURL(f) };
+  }
+  const nevInput = document.getElementById('aj-nev');
+  if (folderName && !nevInput.value.trim()) nevInput.value = folderName;
+  const n = Object.keys(ajFiles).length;
+  document.getElementById('aj-upload-info').textContent = n ? `${n} fájl betöltve` : '';
+  document.getElementById('aj-drop-zone').classList.toggle('has-files', n > 0);
+  const btn = document.getElementById('aj-start-btn');
+  btn.disabled = n === 0;
+  btn.style.opacity = n ? '1' : '.45';
+  btn.style.cursor = n ? 'pointer' : 'not-allowed';
+}
+
+// ── Javítás indítása ────────────────────────────────────────────────────────
+async function ajStart() {
+  ajNev = document.getElementById('aj-nev').value.trim() || 'Ismeretlen tanuló';
+  const htmlKey = Object.keys(ajFiles).find(k => k.endsWith('.html'));
+  const cssKey  = Object.keys(ajFiles).find(k => k.includes('css/') && k.endsWith('.css'))
+               || Object.keys(ajFiles).find(k => k.endsWith('.css'));
+  if (!htmlKey) { alert('Nem található .html fájl a feltöltött mappában!'); return; }
+
+  ajHtml = await ajFiles[htmlKey].file.text();
+  ajCss  = cssKey ? await ajFiles[cssKey].file.text() : '';
+  ajDoc  = new DOMParser().parseFromString(ajHtml, 'text/html');
+
+  // Grading lépés megmutatása előbb (Monaco méretezéshez kell a látható container)
+  document.getElementById('aj-upload-step').style.display = 'none';
+  document.getElementById('aj-grading-step').style.display = 'block';
+  document.getElementById('aj-nev-display').textContent = ajNev;
+
+  // Monaco inicializálás – container már látható (grading step megmutattuk fentebb)
+  ajCurrentCodeTab = 'html';
+  ['ctab-html','ctab-css','ctab-feladat'].forEach((id,i) =>
+    document.getElementById(id)?.classList.toggle('active', i===0));
+  try {
+    await initMonaco();
+    monaco.editor.setModelLanguage(ajEditor.getModel(), 'html');
+    ajEditor.setValue(ajHtml);
+    ajEditor.layout();
+  } catch(e) {
+    console.warn('Monaco nem töltött be:', e);
+  }
+  document.getElementById('aj-monaco-container').style.display = 'block';
+
+  const checks = ajGetChecks();
+  const cssR = ajParseCss(ajCss);
+  ajScores = {};
+  // Referencia fájlok – ezek NEM screenshot-ok
+  const REF_FILES = new Set(['ragcsalok.html','css/style.css','ragcsalok.png',
+    'img/elohely.jpg','img/fejlec.jpg','img/hod.png','img/kapibara.png',
+    'img/mormota.png','img/nutria.png','img/pakarana.png','img/ragcsaloikon.png',
+    'img/tarajos_sul.png',
+    'bootstrap/bootstrap.bundle.min.js','bootstrap/bootstrap.min.css']);
+  const extraImgs = Object.keys(ajFiles).filter(k =>
+    /\.(png|jpg|jpeg|gif|webp)$/i.test(k) && !REF_FILES.has(k));
+
+  for (const c of checks) {
+    if (c.section) continue;
+    if (c.screenshotCheck) {
+      ajScores[c.id] = 0;
+    } else if (c.cssCheck) {
+      try { const r=c.cssCheck(ajCss); ajScores[c.id]=typeof r==='number'?r:(r?1:0); } catch { ajScores[c.id]=null; }
+    } else {
+      try { const r=c.check(ajDoc,ajHtml,ajCss); ajScores[c.id]=typeof r==='number'?r:(r?1:0); } catch { ajScores[c.id]=null; }
+    }
+  }
+
+  ajRenderList(checks);
+  ajUpdateTotal();
+  ajAnalyzeScreenshots(checks);
+}
+
+// ── Kód nézet ──────────────────────────────────────────────────────────────
+function showCodeTab(tab) {
+  ajCurrentCodeTab = tab;
+  ['html','css','feladat'].forEach(t => document.getElementById('ctab-'+t)?.classList.toggle('active', t===tab));
+  const mc = document.getElementById('aj-monaco-container');
+  const hint = document.getElementById('aj-code-hint');
+  const fv = document.getElementById('aj-feladat-iframe');
+  if (tab === 'feladat') {
+    mc.style.display = 'none';
+    fv.style.display = 'block';
+    fv.src = ajFeladatBlobUrl || 'about:blank';
+    if (!ajFeladatBlobUrl) fv.srcdoc = '<body style="font-family:Calibri,sans-serif;color:#888;padding:20px">Feladat leírás nem lett feltöltve.</body>';
+    hint.textContent = 'Feladat leírás';
+  } else {
+    mc.style.display = 'block';
+    fv.style.display = 'none';
+    if (ajEditor) {
+      const lang = tab === 'css' ? 'css' : 'html';
+      const content = tab === 'css' ? ajCss : ajHtml;
+      monaco.editor.setModelLanguage(ajEditor.getModel(), lang);
+      ajEditor.setValue(content);
+    }
+    hint.textContent = '← A piros szempontra kattintva ide ugrik a kód';
+    hint.style.color = '#374151';
+  }
+}
+
+async function ajLoadFeladat(file) {
+  if (!file) return;
+  const info = document.getElementById('aj-feladat-info');
+  info.textContent = `Betöltés: ${file.name}…`;
+  try {
+    let inner;
+    if (file.name.endsWith('.docx')) {
+      const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+      inner = result.value;
+    } else {
+      inner = '<pre>' + esc(await file.text()) + '</pre>';
+    }
+    if (ajFeladatBlobUrl) URL.revokeObjectURL(ajFeladatBlobUrl);
+    ajFeladatBlobUrl = URL.createObjectURL(new Blob([feladatHtmlWrap(inner)], { type: 'text/html' }));
+    info.innerHTML = `<i class="fas fa-check" style="color:#4ade80"></i> ${esc(file.name)} betöltve`;
+  } catch(e) {
+    info.innerHTML = `<i class="fas fa-times" style="color:#ef4444"></i> Hiba: ${esc(e.message)}`;
+  }
+}
+
+function ajJumpToCode(id) {
+  const checks = ajGetChecks();
+  const c = checks.find(x => x.id === id);
+  if (!c || !c.find) return;
+
+  const tab = c.find.in;
+  const code = tab === 'css' ? ajCss : ajHtml;
+  showCodeTab(tab);
+
+  const hint = document.getElementById('aj-code-hint');
+
+  // Próbálkozások sorban: find.term, aztán find.fallback
+  const terms = [c.find.term, c.find.fallback].filter(Boolean);
+  let pos = -1, matchLen = 0;
+
+  for (const term of terms) {
+    if (term instanceof RegExp) {
+      const m = code.match(term);
+      if (m) { pos = code.indexOf(m[0]); matchLen = m[0].length; break; }
+    } else {
+      const idx = code.toLowerCase().indexOf(term.toLowerCase());
+      if (idx >= 0) { pos = idx; matchLen = term.length; break; }
+    }
+  }
+
+  if (pos < 0) {
+    hint.textContent = 'A keresett elem nem található a kódban (hiányzik).';
+    hint.style.color = '#ef4444';
+    return;
+  }
+
+  // Monaco: sor kiszámítás + ugrás + kiemelés
+  const lineNum = code.slice(0, pos).split('\n').length;
+  const colStart = pos - code.lastIndexOf('\n', pos - 1);
+  const colEnd = colStart + matchLen;
+
+  if (ajEditor) {
+    ajDecorations = ajEditor.deltaDecorations(ajDecorations, [{
+      range: new monaco.Range(lineNum, 1, lineNum, 9999),
+      options: { isWholeLine: true, className: 'aj-highlighted-line', inlineClassName: 'aj-highlighted-text' }
+    }]);
+    ajEditor.revealLineInCenter(lineNum);
+    ajEditor.setSelection(new monaco.Range(lineNum, colStart, lineNum, colEnd));
+  }
+
+  hint.textContent = `${lineNum}. sor – ${tab.toUpperCase()} kód`;
+  hint.style.color = '#f59e0b';
+}
+
+// ── CSS segédfüggvény: adott szelektor blokkjában van-e property:value ──────
+function cssHas(css, selector, property, valuePattern) {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Escape selector for regex
+  const selEsc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(selEsc + '\\s*\\{([^}]*)\\}', 'i');
+  const m = re.exec(clean);
+  if (!m) return false;
+  const block = m[1];
+  const propEsc = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const valRe = valuePattern instanceof RegExp
+    ? new RegExp(propEsc + '\\s*:[^;\\n]*?' + valuePattern.source, 'i')
+    : new RegExp(propEsc + '\\s*:[^;\\n]*?' + String(valuePattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  return valRe.test(block);
+}
+
+function ajParseCss(css) { return css; } // megtartjuk a hívási helyek miatt
+
+// ── Kritérium lista ─────────────────────────────────────────────────────────
+function ajRenderList(checks) {
+  const list = document.getElementById('aj-list');
+  list.innerHTML = '';
+  checks.forEach(c => {
+    if (c.section) {
+      const d = document.createElement('div');
+      d.className = 'aj-sec';
+      d.innerHTML = `<i class="fas fa-chevron-right"></i> ${esc(c.section)}`;
+      list.appendChild(d); return;
+    }
+    const score = ajScores[c.id];
+    const status = score === null ? 'manual' : score >= 1 ? 'pass' : score > 0 ? 'half' : 'fail';
+    const icon = status === 'pass'
+      ? '<i class="fas fa-check-circle" style="color:#22c55e;font-size:.9rem;"></i>'
+      : status === 'half'
+      ? '<i class="fas fa-adjust" style="color:#f59e0b;font-size:.9rem;"></i>'
+      : status === 'fail'
+      ? '<i class="fas fa-times-circle" style="color:#ef4444;font-size:.9rem;"></i>'
+      : '<i class="fas fa-question-circle" style="color:#f59e0b;font-size:.9rem;"></i>';
+    const cur = score ?? 0;
+
+    const canJump = status === 'fail' && c.find;
+    const clickAttr = canJump ? `onclick="ajJumpToCode(${c.id})" title="Kattints a kódban való ugráshoz"` : '';
+    const jumpHint = canJump ? `<span class="clickhint"><i class="fas fa-arrow-pointer"></i> ugrás a kódhoz</span>` : '';
+
+    let extraContent = '';
+    if (c.screenshotCheck) {
+      const correctName = c.screenshotCheck === 'html' ? 'ragcsalokvalidalas' : 'stylevalidalas';
+      const searchFn = c.screenshotCheck === 'html'
+        ? fn => fn.includes('ragcsalok') && fn.includes('valid')
+        : fn => fn.includes('stylevalidalas') || (fn.includes('style') && fn.includes('valid'));
+      const knownImgs = new Set(['fejlec','elohely','hod','kapibara','mormota','nutria','pakarana','ragcsaloikon','tarajos_sul','ragcsalok']);
+      const isKnown = k => { const fn = k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''); return knownImgs.has(fn); };
+      const allImgKeys = Object.keys(ajFiles).filter(k => /\.(png|jpg|jpeg|gif|webp)$/i.test(k));
+
+      // 1. névminta alapú keresés
+      const imgKey = allImgKeys.find(k => { const fn=k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''); return searchFn(fn); });
+      // 2. fallback: összes nem-sziget kép
+      const fallbackKeys = imgKey ? [] : allImgKeys.filter(k => !isKnown(k));
+      const displayKeys = imgKey ? [imgKey] : fallbackKeys;
+
+      if (displayKeys.length) {
+        extraContent = '<div style="margin-top:6px;">' + displayKeys.map(k => {
+          const fileName = k.split('/').pop();
+          const fnNoExt = fileName.toLowerCase().replace(/\.[^.]+$/,'');
+          const nameOk = fnNoExt === correctName;
+          const nameStatus = nameOk
+            ? `<span style="color:#4ade80;font-size:.7rem;"><i class="fas fa-check"></i> fájlnév helyes</span>`
+            : `<span style="color:#ef4444;font-size:.7rem;"><i class="fas fa-times"></i> helytelen fájlnév – kell: <b>${c.screenshotCheck === 'html' ? 'ragcsalokValidalas' : 'styleValidalas'}</b></span>`;
+          return `<div style="margin-bottom:6px;">
+            <div style="font-size:.72rem;color:#94a3b8;margin-bottom:3px;">${esc(fileName)} ${nameStatus}</div>
+            <a href="${ajFiles[k].blobUrl}" target="_blank">
+              <img src="${ajFiles[k].blobUrl}" class="aj-thumb" title="${esc(fileName)} – kattints a nagyításhoz">
+            </a></div>`;
+        }).join('') + '</div>';
+      } else {
+        extraContent = `<div style="color:#4b5563;font-size:.73rem;font-style:italic;margin-top:4px;">
+          <i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i> Nem találtam validálási képet a mappában</div>`;
+      }
+    }
+
+    const row = document.createElement('div');
+    row.className = `aj-row ${status}`;
+    row.dataset.id = c.id; row.dataset.status = status;
+
+    if (c.screenshotCheck) {
+      // Screenshot sor: kép mellé téve a pont gomb
+      row.style.flexDirection = 'column';
+      row.style.alignItems = 'stretch';
+      row.innerHTML = `
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+          <div class="aj-row-lbl">${esc(c.label)}</div>
+        </div>
+        <div style="padding-left:27px;margin-top:4px;display:flex;align-items:flex-start;gap:10px;">
+          <div style="flex:1;">${extraContent}</div>
+          <div class="aj-btns" style="flex-shrink:0;align-self:center;">
+            <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="ajSet(${c.id},0)">0</button>
+            <button class="aj-btn ${cur===.5?'a05':''}" data-val="0.5" onclick="ajSet(${c.id},0.5)">½</button>
+            <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="ajSet(${c.id},1)">1</button>
+          </div>
+        </div>`;
+    } else {
+      row.innerHTML = `
+        <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+        <div class="aj-row-lbl" ${clickAttr}>
+          ${esc(c.label)}${jumpHint}
+        </div>
+        <div class="aj-btns">
+          <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="ajSet(${c.id},0)">0</button>
+          <button class="aj-btn ${cur===0.5?'a05':''}" data-val="0.5" onclick="ajSet(${c.id},0.5)">½</button>
+          <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="ajSet(${c.id},1)">1</button>
+        </div>`;
+    }
+    list.appendChild(row);
+  });
+}
+
+function ajSet(id, val) {
+  ajScores[id] = val;
+  const row = document.querySelector(`.aj-row[data-id="${id}"]`);
+  if (!row) return;
+  row.querySelectorAll('.aj-btn').forEach(b => {
+    b.className = 'aj-btn';
+    const bval = parseFloat(b.dataset.val);
+    if (bval === val) b.classList.add(val === 0 ? 'a0' : val === 0.5 ? 'a05' : 'a1');
+  });
+  const newStatus = val === 1 ? 'pass' : val === 0.5 ? 'manual' : 'fail';
+  row.className = `aj-row ${newStatus}`;
+  row.dataset.status = newStatus;
+  ajUpdateTotal();
+}
+
+// ── Validálási kép elemzés (canvas pixel-analízis) ──────────────────────────
+function analyzeValidationImage(blobUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, 600 / img.width);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let green = 0, red = 0, total = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2];
+        // Zöld: telített zöld VAGY türkiz/teal VAGY halványzöld (W3C HTML validator banner)
+        const isGreen      = g > 80  && g > r * 1.3 && g > b * 1.2;
+        const isTeal       = g > 100 && b > 80 && r < 120 && g > r * 1.2;
+        const isLightGreen = g > 180 && g > r + 6 && g > b + 4;
+        if (isGreen || isTeal || isLightGreen) green++;
+        if (r > 150 && r > g * 1.4 && r > b * 1.1) red++;
+      }
+      resolve({ greenRatio: green/total, redRatio: red/total });
+    };
+    img.onerror = () => resolve(null);
+    img.src = blobUrl;
+  });
+}
+
+async function ajAnalyzeScreenshots(checks) {
+  const correctNames = { html: 'ragcsalokvalidalas', css: 'stylevalidalas' };
+  const knownImgs = new Set(['fejlec','elohely','hod','kapibara','mormota','nutria','pakarana','ragcsaloikon','tarajos_sul','ragcsalok']);
+  const isKnown = k => knownImgs.has(k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''));
+  const searchFns = {
+    html: fn => fn.includes('ragcsalok') && fn.includes('valid'),
+    css:  fn => fn.includes('stylevalidalas') || (fn.includes('style') && fn.includes('valid'))
+  };
+
+  for (const c of checks) {
+    if (!c.screenshotCheck) continue;
+    const type = c.screenshotCheck;
+    const allImgKeys = Object.keys(ajFiles).filter(k => /\.(png|jpg|jpeg|gif|webp)$/i.test(k));
+    const imgKey = allImgKeys.find(k => { const fn=k.split('/').pop().toLowerCase().replace(/\.[^.]+$/,''); return searchFns[type](fn); })
+                || allImgKeys.find(k => !isKnown(k));
+    if (!imgKey) { ajScores[c.id] = 0; ajUpdateTotal(); continue; }
+
+    const fileName = imgKey.split('/').pop();
+    const fnNoExt = fileName.toLowerCase().replace(/\.[^.]+$/,'');
+    const nameOk = fnNoExt === correctNames[type];
+
+    const result = await analyzeValidationImage(ajFiles[imgKey].blobUrl);
+    if (!result) continue;
+
+    const greenOk = result.greenRatio > 0.015;
+    const score = (nameOk && greenOk) ? 1 : (nameOk || greenOk) ? 0.5 : 0;
+    ajScores[c.id] = score;
+
+    // UI frissítés
+    const row = document.querySelector(`.aj-row[data-id="${c.id}"]`);
+    if (row) {
+      const newStatus = score >= 1 ? 'pass' : score > 0 ? 'half' : 'fail';
+      row.className = `aj-row ${newStatus}`;
+      row.dataset.status = newStatus;
+      const iconEl = row.querySelector('div[style*="width:18px"]');
+      if (iconEl) iconEl.innerHTML =
+        score >= 1 ? '<i class="fas fa-check-circle" style="color:#22c55e;font-size:.9rem;"></i>'
+        : score > 0 ? '<i class="fas fa-adjust" style="color:#f59e0b;font-size:.9rem;"></i>'
+        : '<i class="fas fa-times-circle" style="color:#ef4444;font-size:.9rem;"></i>';
+      // Aktív pont gomb kiemelése
+      row.querySelectorAll('.aj-btn').forEach(b => {
+        const v = parseFloat(b.dataset.val);
+        b.className = `aj-btn${v===score?(score===0?' a0':score===0.5?' a05':' a1'):''}`;
+      });
+    }
+    ajUpdateTotal();
+  }
+}
+
+function ajUpdateTotal() {
+  let t = 0;
+  Object.values(ajScores).forEach(v => { if (v !== null) t += v; });
+  document.getElementById('aj-total').textContent = t % 1 === 0 ? t : t.toFixed(1);
+}
+
+function ajFilter() {
+  const only = document.getElementById('aj-only-bad').checked;
+  document.querySelectorAll('.aj-row').forEach(row => {
+    const id = parseInt(row.dataset.id);
+    const isGreen = row.dataset.status === 'pass' && ajScores[id] === 1;
+    row.style.display = (only && isGreen) ? 'none' : '';
+  });
+  document.querySelectorAll('.aj-sec').forEach(hdr => {
+    let next = hdr.nextElementSibling, vis = false;
+    while (next && !next.classList.contains('aj-sec')) {
+      if (next.style.display !== 'none') vis = true;
+      next = next.nextElementSibling;
+    }
+    hdr.style.display = vis ? '' : 'none';
+  });
+}
+
+function ajReset() {
+  document.getElementById('aj-grading-step').style.display = 'none';
+  document.getElementById('aj-upload-step').style.display = 'block';
+  document.getElementById('aj-nev').value = '';
+  document.getElementById('aj-upload-info').textContent = '';
+  document.getElementById('aj-only-bad').checked = false;
+  document.getElementById('aj-drop-zone').classList.remove('has-files');
+  document.getElementById('aj-folder-input').value = '';
+  const btn = document.getElementById('aj-start-btn');
+  btn.disabled = true; btn.style.opacity = '.45'; btn.style.cursor = 'not-allowed';
+  ajFiles = {}; ajHtml = ''; ajCss = ''; ajDoc = null; ajScores = {};
+  if (ajEditor) {
+    ajDecorations = ajEditor.deltaDecorations(ajDecorations, []);
+    ajEditor.setValue('');
+  }
+  ajDecorations = [];
+  document.getElementById('aj-list').innerHTML = '';
+  document.getElementById('aj-total').textContent = '0';
+  const hint = document.getElementById('aj-code-hint');
+  hint.textContent = '← A piros szempontra kattintva ide ugrik a kód';
+  hint.style.color = '';
+  if (ajFeladatBlobUrl) { URL.revokeObjectURL(ajFeladatBlobUrl); ajFeladatBlobUrl = ''; }
+}
+
+// HTML tageket backtick-be teszi Markdown exporthoz (pl. <h2> → `<h2>`)
+function mdLabel(s) { return String(s).replace(/<([^>]+)>/g, '`<$1>`'); }
+
+function ajExport() {
+  const checks = ajGetChecks();
+  const datum = new Date().toLocaleDateString('hu-HU');
+  let total = 0, maxPont = 0;
+  checks.forEach(c => { if (!c.section) { total += ajScores[c.id] ?? 0; maxPont++; } });
+
+  let md = `# Rágcsálók WEB feladat – Javítási lap\n\n`;
+  md += `| | |\n|---|---|\n`;
+  md += `| **Tanuló** | ${ajNev} |\n`;
+  md += `| **Feladat** | Rágcsálók – Weboldal kódolása |\n`;
+  md += `| **Dátum** | ${datum} |\n`;
+  md += `| **Összpontszám** | **${total % 1 === 0 ? total : total.toFixed(1)} / ${maxPont}** |\n\n`;
+
+  let currentSection = '';
+  checks.forEach(c => {
+    if (c.section) {
+      currentSection = c.section;
+      md += `\n## ${c.section}\n\n`;
+      md += `| Pont | Szempont |\n|:---:|---|\n`;
+      return;
+    }
+    const v = ajScores[c.id] ?? 0;
+    const vStr = v === 0.5 ? '½' : String(v);
+    const icon = v >= 1 ? '✅' : v === 0.5 ? '🟡' : '❌';
+    md += `| ${icon} ${vStr} | ${mdLabel(c.label)} |\n`;
+  });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md], {type:'text/markdown;charset=utf-8'}));
+  a.download = `javitas_${ajNev.replace(/\s+/g,'_')}.md`;
+  a.click();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── RÁGCSÁLÓK – 40 szempont (check + find a kódban) ────────────────────────
+function ajGetChecks() {
+  return [
+    { section:'Beállította az oldal fejrészében:' },
+    { id:1,  label:'A weboldal nyelvezete magyar, a karakterkódolása UTF-8.',
+      check: d => {
+        const lang = (d.documentElement.getAttribute('lang')||'').toLowerCase();
+        const hasLang = lang==='hu' || lang==='hu-hu';
+        const hasCharset = !!(d.querySelector('meta[charset="UTF-8"]')||d.querySelector('meta[charset="utf-8"]'));
+        if (hasLang && hasCharset) return 1;
+        if (hasLang || hasCharset) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'<html', fallback:'lang=' } },
+    { id:2,  label:'A böngésző címsorában megjelenő cím „Nagytestű rágcsálók".',
+      check: d => {
+        const t = d.title.trim();
+        if (t === 'Nagytestű rágcsálók') return 1;
+        if (t && t.toLowerCase().includes('rágcsáló')) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'<title' } },
+    { id:3,  label:'A "css" mappán belüli "style.css" fájl hivatkozása elkészült a Bootstrap stíluslap alá.',
+      check: (d) => {
+        const links = Array.from(d.querySelectorAll('link[rel="stylesheet"]'));
+        const bsLink      = links.find(l => /bootstrap/i.test(l.getAttribute('href')||''));
+        const correctLink = links.find(l => /css\/style\.css/.test(l.getAttribute('href')||''));
+        const anyStyleLink = links.find(l => /style\.css/i.test(l.getAttribute('href')||''));
+        if (correctLink) {
+          if (!bsLink) return 1;
+          return !!(bsLink.compareDocumentPosition(correctLink) & Node.DOCUMENT_POSITION_FOLLOWING) ? 1 : 0.5;
+        }
+        if (anyStyleLink) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'style.css', fallback:'<link' } },
+
+    { section:'A „Fejléc" részben elvégezte az alábbi feladatokat:' },
+    { id:4,  label:'A fejlec.jpg képet a megfelelő helyre helyezte.',
+      check: d => {
+        const img = d.querySelector('img[src*="img/fejlec.jpg"]');
+        if (!img) return 0;
+        const header = d.querySelector('header');
+        const inHeader = !!header && header.contains(img);
+        const inTextCenter = !!img.closest('.text-center');
+        const nav = header?.querySelector('nav');
+        const beforeNav = !nav || !!(nav.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_PRECEDING);
+        return (inHeader && inTextCenter && beforeNav) ? 1 : 0.5;
+      },
+      find: { in:'html', term:'fejlec', fallback:'<!-- Kép helye' } },
+    { id:5,  label:'A képre alt-ot és title-t állított, amelynek szövege „Nagytestű rágcsálók".',
+      check: d => {
+        const img = d.querySelector('#fejlec') || d.querySelector('img[src*="img/fejlec.jpg"]');
+        if (!img) return 0;
+        const hasAlt   = img.getAttribute('alt')   === 'Nagytestű rágcsálók';
+        const hasTitle = img.getAttribute('title') === 'Nagytestű rágcsálók';
+        if (hasAlt && hasTitle) return 1;
+        if (hasAlt || hasTitle) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'Nagytestű rágcsálók', fallback:'fejlec' } },
+    { id:6,  label:'A képre alkalmazta a „fejlec" egyedi azonosítót.',
+      check: d => !!d.querySelector('#fejlec') ? 1 : 0,
+      find: { in:'html', term:'id="fejlec"', fallback:'fejlec' } },
+
+    { section:'A weboldalon új menüpontot készített:' },
+    { id:7,  label:'Elkészítette a menüpontot és a "https://hu.wikipedia.org/wiki/Rágcsálók" oldalra hivatkozik.',
+      check: d => {
+        if (d.querySelector('nav a[href*="wikipedia.org/wiki/R"]')) return 1;
+        if (d.querySelector('nav a[href*="wikipedia.org"]')) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'wikipedia', fallback:'navbar-nav' } },
+    { id:8,  label:'A linkre kattintva a tartalom új lapon jelenik meg a böngészőben.',
+      check: d => { const a=d.querySelector('nav a[href*="wikipedia.org"]'); return (a&&/^_?blank$/.test(a.getAttribute('target')||'')) ? 1 : 0; },
+      find: { in:'html', term:'target="_blank"', fallback:'wikipedia' } },
+
+    { section:'Az alábbi szövegkiemeléseket elvégezte:' },
+    { id:9,  label:'Kiemelte <b> vagy <strong> elemmel a rágcsálóneveket (legalább 3 hely: ½ pont, 6 hely: 1 pont).',
+      check: d => {
+        const names = ['kapibara','mormota','hód','tarajos sül','nutria','pakarána'];
+        let count = 0;
+        names.forEach(name => {
+          const found = Array.from(d.querySelectorAll('b,strong')).some(el =>
+            el.textContent.toLowerCase().includes(name) && !!el.closest('p')
+          );
+          if (found) count++;
+        });
+        return count >= 6 ? 1 : count >= 3 ? 0.5 : 0;
+      },
+      find: { in:'html', term:'<b>', fallback:'kapibara' } },
+    { id:10, label:'A „Dél-Amerika" / „Dél-Amerikában" szövegeket <i> vagy <em> elemmel dőlt betűssé alakította.',
+      check: d => {
+        const hasA   = Array.from(d.querySelectorAll('i,em')).some(el => el.textContent.includes('Dél-Amerika') && !el.textContent.includes('Dél-Amerikában'));
+        const hasAban = Array.from(d.querySelectorAll('i,em')).some(el => el.textContent.includes('Dél-Amerikában'));
+        if (hasA && hasAban) return 1;
+        if (hasA || hasAban) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'Dél-Amerika', fallback:'<i>' } },
+
+    { section:'A „Mormota" részben a megfelelő részekből számozott felsorolást alakított:' },
+    { id:11, label:'<ol> elemet használt és a listaelemeket <li>-be helyezte.',
+      check: d => {
+        const mormotaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Mormota');
+        if (!mormotaH3) return 0;
+        const col = mormotaH3.closest('[class*="col"]') || mormotaH3.parentElement;
+        if (!col) return 0;
+        const ol = col.querySelector('ol');
+        if (!ol) return 0;
+        if (!(mormotaH3.compareDocumentPosition(ol) & Node.DOCUMENT_POSITION_FOLLOWING)) return 0;
+        return ol.querySelectorAll('li').length >= 5 ? 1 : 0.5;
+      },
+      find: { in:'html', term:'<ol', fallback:'Mormota' } },
+
+    { section:'A „Hód" részben a megfelelő részekből számozatlan felsorolást készített:' },
+    { id:12, label:'<ul> elemet használt és a listaelemeket <li>-be helyezte.',
+      check: d => {
+        const hodH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Hód');
+        if (!hodH3) return 0;
+        const col = hodH3.closest('[class*="col"]') || hodH3.parentElement;
+        if (!col) return 0;
+        const ul = col.querySelector('ul:not(.navbar-nav)');
+        if (!ul) return 0;
+        if (!(hodH3.compareDocumentPosition(ul) & Node.DOCUMENT_POSITION_FOLLOWING)) return 0;
+        return ul.querySelectorAll('li').length >= 4 ? 1 : 0.5;
+      },
+      find: { in:'html', term:'<ul', fallback:'Hód' } },
+    { id:13, label:'A felsorolást ellátta egy "erdekessegek" egyedi azonosítóval.',
+      check: d => {
+        if (d.querySelector('ul#erdekessegek')) return 1;
+        if (d.querySelector('ul.erdekessegek')) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'erdekessegek' } },
+
+    { section:'A „Nutria" részben kialakítja a tartalmat a minta alapján:' },
+    { id:14, label:'A címsort hármas szintűvé alakítja (<h3>Nutria</h3>).',
+      check: d => Array.from(d.querySelectorAll('h3')).some(h=>h.textContent.trim()==='Nutria') ? 1 : 0,
+      find: { in:'html', term:'Nutria', fallback:'<h3>' } },
+    { id:15, label:'A szövegrész bekezdéseit kialakítja (a Nutria szövege <p> elemben van).',
+      check: d => {
+        const nutriaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Nutria');
+        if (!nutriaH3) return 0;
+        const col = nutriaH3.closest('[class*="col"]') || nutriaH3.parentElement;
+        if (!col) return 0;
+        let node = nutriaH3.nextElementSibling;
+        while (node && node.tagName !== 'H3') {
+          if (node.tagName === 'P' && node.textContent.toLowerCase().includes('nutria')) return 1;
+          node = node.nextElementSibling;
+        }
+        return 0;
+      },
+      find: { in:'html', term:'nutria', fallback:'Nutria' } },
+    { id:16, label:'A kép forrását az img könyvtárban található "nutria.png"-re állítja.',
+      check: d => {
+        const img = d.querySelector('img[src*="img/nutria.png"]');
+        if (!img) return 0;
+        const nutriaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Nutria');
+        if (!nutriaH3) return 0.5;
+        return !!(nutriaH3.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING) ? 1 : 0.5;
+      },
+      find: { in:'html', term:'nutria.png', fallback:'nutria' } },
+    { id:17, label:'A képre alt-ot és title-t állított, amelynek szövege „Nutria".',
+      check: d => {
+        const img = d.querySelector('img[src*="img/nutria.png"]');
+        if (!img) return 0;
+        const hasAlt   = img.getAttribute('alt')   === 'Nutria';
+        const hasTitle = img.getAttribute('title') === 'Nutria';
+        if (hasAlt && hasTitle) return 1;
+        if (hasAlt || hasTitle) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'alt="Nutria"', fallback:'nutria' } },
+    { id:18, label:'Képaláírást állított, melynek szövege „Nutria".',
+      check: d => {
+        const nutriaH3 = Array.from(d.querySelectorAll('h3')).find(h=>h.textContent.trim()==='Nutria');
+        if (!nutriaH3) return 0;
+        const col = nutriaH3.closest('[class*="col"]') || nutriaH3.parentElement;
+        if (!col) return 0;
+        return Array.from(col.querySelectorAll('.card-text, .card-body p')).some(el => el.textContent.trim() === 'Nutria') ? 1 : 0;
+      },
+      find: { in:'html', term:'Nutria', fallback:'card-text' } },
+
+    { section:'A „Rágcsáló adatok" táblázatban elvégezte az alábbi feladatokat:' },
+    { id:19, label:'A Nutriára vonatkozó adatokat elhelyezte a táblázatban a „Tarajos sül" és „Pakarána" sorok közé.',
+      check: d => {
+        const rows = Array.from(d.querySelectorAll('table tr'));
+        let tarajos=-1, nutria=-1, pakarana=-1;
+        rows.forEach((r,i) => {
+          const t = r.querySelector('td')?.textContent.trim();
+          if (t==='Tarajos sül') tarajos=i;
+          if (t==='Nutria') nutria=i;
+          if (t==='Pakarána') pakarana=i;
+        });
+        if (nutria < 0) return 0;
+        if (tarajos>=0 && pakarana>=0 && tarajos<nutria && nutria<pakarana) return 1;
+        return 0.5;
+      },
+      find: { in:'html', term:'Nutria', fallback:'<table' } },
+    { id:20, label:'A táblázathoz hozzáadta a "text-center" osztályjelölőt.',
+      check: d => d.querySelector('table.text-center') ? 1 : 0,
+      find: { in:'html', term:'text-center', fallback:'<table' } },
+    { id:21, label:'A táblázat fejlécének első sorában alkalmazta a "text-uppercase" osztályjelölőt.',
+      check: d => {
+        const thead = d.querySelector('table thead');
+        return (thead && thead.querySelector('tr.text-uppercase')) ? 1 : 0;
+      },
+      find: { in:'html', term:'text-uppercase', fallback:'thead' } },
+    { id:22, label:'A táblázatban összevonta a szükséges cellákat (Faj: rowspan=2, Adatok: colspan=2).',
+      check: d => {
+        const fajTh = Array.from(d.querySelectorAll('table th')).find(th=>th.textContent.trim()==='Faj');
+        const adatokTh = Array.from(d.querySelectorAll('table th')).find(th=>th.textContent.trim()==='Adatok');
+        const hasFaj = fajTh && (fajTh.getAttribute('rowspan')==='2' || fajTh.rowSpan===2);
+        const hasAdat = adatokTh && (adatokTh.getAttribute('colspan')==='2' || adatokTh.colSpan===2);
+        if (hasFaj && hasAdat) return 1;
+        if (hasFaj || hasAdat) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'rowspan', fallback:'<table' } },
+    { id:23, label:'A táblázat első két sorát <thead>, a többi sorát <tbody> elemek közé rakta.',
+      check: d => {
+        const hasThead = !!d.querySelector('table thead');
+        const hasTbody = !!d.querySelector('table tbody');
+        if (hasThead && hasTbody) return 1;
+        if (hasThead || hasTbody) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'<thead', fallback:'<table' } },
+
+    { section:'Az „Élőhely és életmód" részben:' },
+    { id:24, label:'A Bootstrap oszlopelrendezést col-md-8/col-md-4 osztásról col-md-6/col-md-6-ra módosította.',
+      check: d => {
+        const elohely = d.querySelector('#elohely');
+        if (!elohely) return 0;
+        const cols = Array.from(elohely.querySelectorAll('[class*="col-md-"]'));
+        const md6count = cols.filter(c => c.classList.contains('col-md-6')).length;
+        const hasMd8 = cols.some(c => c.classList.contains('col-md-8'));
+        const hasMd4 = cols.some(c => c.classList.contains('col-md-4'));
+        if (md6count >= 2 && !hasMd8 && !hasMd4) return 1;
+        if (md6count >= 1) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'col-md-6', fallback:'elohely' } },
+
+    { section:'Módosította a lábléc beállításait:' },
+    { id:25, label:'Készített egy hivatkozást, amely a weboldalon belül a „leiras" egyedi azonosítójú keretre hivatkozik.',
+      check: d => {
+        if (d.querySelector('.lablec a[href="#leiras"]') || d.querySelector('[class*="lablec"] a[href="#leiras"]')) return 1;
+        if (d.querySelector('.lablec a') || d.querySelector('[class*="lablec"] a')) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'#leiras', fallback:'lablec' } },
+    { id:26, label:'A hivatkozás szövege „Az oldal tetejére".',
+      check: d => {
+        const links = Array.from(d.querySelectorAll('.lablec a, [class*="lablec"] a'));
+        if (links.some(a => a.textContent.trim() === 'Az oldal tetejére')) return 1;
+        if (links.some(a => a.textContent.toLowerCase().includes('tetej'))) return 0.5;
+        return 0;
+      },
+      find: { in:'html', term:'Az oldal tetejére', fallback:'lablec' } },
+
+    { section:'A style.css külső stíluslap módosításai:' },
+    { id:27, label:'Az oldal betűtípusát Lucida Sans-ra állította (body elemkijelölőben).',
+      cssCheck: css => cssHas(css, 'body', 'font-family', /lucida/i) ? 1 : 0,
+      find: { in:'css', term:'font-family' } },
+    { id:28, label:'A hármas szintű címsor betűméretét 2em-re vagy 200%-ra állította (h3 elemkijelölőben).',
+      cssCheck: css => {
+        if (cssHas(css, 'h3', 'font-size', /2em|200%/)) return 1;
+        if (cssHas(css, 'h3', 'font-size', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'font-size' } },
+    { id:29, label:'A ".ragcsalo" elemkijelölőnek rgb(232,214,181) háttérszínt állított.',
+      cssCheck: css => {
+        if (cssHas(css, '.ragcsalo', 'background-color', /232[\s,]*214[\s,]*181/)) return 1;
+        if (cssHas(css, '.ragcsalo', 'background-color', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.ragcsalo' } },
+    { id:30, label:'A ".ragcsalo" elemkijelölőre 1px vastag, folytonos, fekete szegélyt állított.',
+      cssCheck: css => {
+        if (cssHas(css, '.ragcsalo', 'border', /1px\s+solid\s+black|1px\s+solid\s+rgb\s*\(\s*0\s*,\s*0\s*,\s*0/)) return 1;
+        if (cssHas(css, '.ragcsalo', 'border', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.ragcsalo' } },
+    { id:31, label:'A ".lablec a" elemkijelölőhöz fekete betűszínt állított.',
+      cssCheck: css => {
+        if (cssHas(css, '.lablec a', 'color', /black|rgb\s*\(\s*0\s*,\s*0\s*,\s*0/)) return 1;
+        if (cssHas(css, '.lablec a', 'color', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.lablec a' } },
+    { id:32, label:'A ".lablec a" elemkijelölőnél megszüntette az aláhúzást (text-decoration: none).',
+      cssCheck: css => {
+        if (cssHas(css, '.lablec a', 'text-decoration', /none/)) return 1;
+        if (cssHas(css, '.lablec a', 'text-decoration', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.lablec a' } },
+    { id:33, label:'A ".lablec a" elemkijelölő stílusát dőlt betűssé alakította (font-style: italic).',
+      cssCheck: css => {
+        if (cssHas(css, '.lablec a', 'font-style', /italic/)) return 1;
+        if (cssHas(css, '.lablec a', 'font-style', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.lablec a' } },
+    { id:34, label:'Elemkijelölőt készített (p), ami sorkizárt igazítású (text-align: justify).',
+      cssCheck: css => {
+        if (/(?:^|[}\n])\s*p\s*\{[^}]*text-align\s*:\s*justify/im.test(css)) return 1;
+        if (/(?:^|[}\n])\s*p\s*\{[^}]*text-align\s*:/im.test(css)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'text-align: justify' } },
+    { id:35, label:'A ".table" elemkijelölőn a szélességet 50%-ra állította.',
+      cssCheck: css => {
+        if (cssHas(css, '.table', 'width', /50%/)) return 1;
+        if (cssHas(css, '.table', 'width', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'.table' } },
+    { id:36, label:'Létrehozta az "#erdekessegek" egyedi azonosítóhoz tartozó elemkijelölőt.',
+      cssCheck: css => {
+        if (/#erdekessegek/.test(css)) return 1;
+        if (/[#.]?erd[eé]kess[eé]gek/.test(css)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'#erdekessegek' } },
+    { id:37, label:'Az #erdekessegek elemkijelölőben a listaelem stílus képét "../img/ragcsaloikon.png"-re állította.',
+      cssCheck: css => {
+        if (cssHas(css, '#erdekessegek', 'list-style-image', /url\s*\(\s*['"]?\.\.\/img\/ragcsaloikon\.png['"]?\s*\)/)) return 1;
+        const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+        if (/erd[eé]kess[eé]gek\s*\{[^}]*list-style-image/i.test(clean)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'list-style-image' } },
+    { id:38, label:'Az #erdekessegek elemkijelölőben 50px értékű bal margót állított.',
+      cssCheck: css => {
+        if (cssHas(css, '#erdekessegek', 'margin-left', /50px/)) return 1;
+        if (cssHas(css, '#erdekessegek', 'margin-left', /.+/)) return 0.5;
+        return 0;
+      },
+      find: { in:'css', term:'margin-left' } },
+
+    { section:'Elvégezte a szükséges validációkat:' },
+    { id:39, label:'A HTML oldalt validálta (https://validator.w3.org/) – fájlnév: "ragcsalokValidalas", tartalma hibátlan.',
+      screenshotCheck: 'html' },
+    { id:40, label:'A stíluslapot ellenőrizte (https://jigsaw.w3.org/css-validator/) – fájlnév: "styleValidalas", tartalma hibátlan.',
+      screenshotCheck: 'css' }
+  ];
+}
+
+
+// ══ TANTÁRGY VÁLTÓ ══════════════════════════════════════════════════════════
+function switchSubj(subj) {
+  document.getElementById('web-section').style.display = subj === 'web' ? '' : 'none';
+  document.getElementById('py-section').style.display  = subj === 'py'  ? '' : 'none';
+  document.getElementById('btn-web').classList.toggle('active', subj === 'web');
+  document.getElementById('btn-py').classList.toggle('active',  subj === 'py');
+}
+
+// ══ PYTHON ÁLLAPOT ══════════════════════════════════════════════════════════
+const RAILWAY = 'https://agazati.up.railway.app';
+let pyCode = { t8: '', t14: '', t18: '', eloado: '' };
+let pyRefCode = { t8: '', t14: '', t18: '' };
+let pyFolderFiles = {};
+let pyMapping = {};
+let pyFeladatBlobUrl = '';
+let pyCriteria = { t8: [], t14: [], t18: [] };
+let pyScores = { t8: {}, t14: {}, t18: {} };
+let pyNev = '';
+
+async function pyLoadRef(key, file) {
+  if (!file) return;
+  pyRefCode[key] = await file.text();
+  const nm = document.getElementById(`py-fref${key.replace('t','')}-name`);
+  if (nm) { nm.textContent = file.name; nm.closest('.py-file-zone').classList.add('loaded'); }
+}
+
+async function pyFolderDrop(e) {
+  e.preventDefault();
+  document.getElementById('py-drop-zone').classList.remove('dragover');
+  if (e.dataTransfer.files?.length) await pyFolderProcess(Array.from(e.dataTransfer.files));
+}
+async function pyFolderSelect(files) { await pyFolderProcess(Array.from(files)); }
+
+async function pyFolderProcess(files) {
+  pyFolderFiles = {};
+  for (const f of files) {
+    const name = (f.webkitRelativePath || f.name).split('/').pop();
+    pyFolderFiles[name] = f;
+  }
+  const pyFiles = Object.keys(pyFolderFiles).filter(n => /\.py$/i.test(n)).sort();
+  const xlsxF  = Object.keys(pyFolderFiles).find(n => /\.xlsx?$/i.test(n));
+  const docxF  = Object.keys(pyFolderFiles).find(n => /\.(docx|txt)$/i.test(n));
+
+  const n = Object.keys(pyFolderFiles).length;
+  document.getElementById('py-folder-info').textContent = n ? `${n} fájl betöltve (${pyFiles.length} .py)` : '';
+  document.getElementById('py-drop-zone').classList.toggle('has-files', n > 0);
+
+  // Auto-betölt pontozó/feladat ha még nincs és van a mappában
+  if (xlsxF && !pyCriteria.t8.length && !pyCriteria.t14.length && !pyCriteria.t18.length)
+    await pyLoadPontozo(pyFolderFiles[xlsxF]);
+  if (docxF && !pyFeladatBlobUrl)
+    await pyLoadFeladat(pyFolderFiles[docxF]);
+
+  // Auto-hozzárendelés: 1. pass – mappa/fájlnév alapján (8/14/18 pontos); 2. pass – ábécé fallback
+  pyMapping = {};
+  pyCode = { t8:'', t14:'', t18:'', eloado:'' };
+  for (const f of files) {
+    if (!/\.py$/i.test(f.name)) continue;
+    const path = (f.webkitRelativePath || f.name).toLowerCase();
+    let slot = null;
+    if (/\b8[ _]?pont/.test(path))       slot = 't8';
+    else if (/\b14[ _]?pont/.test(path)) slot = 't14';
+    else if (/\b18[ _]?pont/.test(path)) slot = 't18';
+    else if (/eloado/.test(path))        slot = 'eloado';
+    if (slot && !pyMapping[slot]) { pyMapping[slot] = f.name; pyCode[slot] = await f.text(); }
+  }
+  const slots = ['t8','t14','t18','eloado'];
+  const unassigned = pyFiles.filter(n => !Object.values(pyMapping).includes(n));
+  const freeSlots  = slots.filter(s => !pyMapping[s]);
+  for (let i = 0; i < unassigned.length && i < freeSlots.length; i++) {
+    pyMapping[freeSlots[i]] = unassigned[i];
+    pyCode[freeSlots[i]] = await pyFolderFiles[unassigned[i]].text();
+  }
+  pyRenderAssignment(pyFiles);
+  pyCheckReady();
+}
+
+function pyRenderAssignment(pyFiles) {
+  const wrap = document.getElementById('py-assign-wrap');
+  const tbl  = document.getElementById('py-assign-table');
+  if (!pyFiles.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  const rev = {};
+  for (const [slot,name] of Object.entries(pyMapping)) rev[name]=slot;
+  const slotDef = [
+    {key:'t8',    label:'8pt',    cls:'s8'},
+    {key:'t14',   label:'14pt',   cls:'s14'},
+    {key:'t18',   label:'18pt',   cls:'s18'},
+    {key:'eloado',label:'osztály',cls:'sel'},
+  ];
+  tbl.innerHTML = pyFiles.map(name => {
+    const cur = rev[name];
+    const btns = slotDef.map(({key,label,cls}) =>
+      `<button class="py-slot-btn ${cls}${cur===key?' active':''}" onclick="pyReassign('${name}','${key}')">${label}</button>`
+    ).join('');
+    return `<div class="py-assign-row">
+      <span class="py-assign-fname"><i class="fas fa-file-code" style="color:${cur?'#4ade80':'#4b5563'};margin-right:5px"></i>${esc(name)}</span>
+      <div class="py-slot-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+async function pyReassign(filename, newSlot) {
+  const prevFileForSlot = pyMapping[newSlot];
+  const prevSlotForFile = Object.keys(pyMapping).find(s => pyMapping[s]===filename);
+  // Felszabadítjuk az eddigi hozzárendeléseket
+  if (prevSlotForFile) { delete pyMapping[prevSlotForFile]; pyCode[prevSlotForFile]=''; }
+  // Ha a célslot foglalt volt, az ott lévő fájl kerül az előbb felszabadult helyre (swap)
+  if (prevFileForSlot && prevFileForSlot!==filename) {
+    if (prevSlotForFile) {
+      pyMapping[prevSlotForFile] = prevFileForSlot;
+      pyCode[prevSlotForFile] = await pyFolderFiles[prevFileForSlot].text();
+    } else {
+      pyCode[newSlot] = '';
+    }
+  }
+  pyMapping[newSlot] = filename;
+  pyCode[newSlot] = await pyFolderFiles[filename].text();
+  const pyFiles = Object.keys(pyFolderFiles).filter(n => /\.py$/i.test(n)).sort();
+  pyRenderAssignment(pyFiles);
+  pyCheckReady();
+}
+
+async function pyLoadCode(key, file) {
+  if (!file) return;
+  pyCode[key] = await file.text();
+  const n = key === 'eloado' ? 'eloado' : key.replace('t','');
+  const nm = document.getElementById(`py-f${n}-name`);
+  if (nm) { nm.textContent = file.name; nm.closest('.py-file-zone').classList.add('loaded'); }
+  if (key !== 'eloado') document.getElementById(`pctab-${key}`).style.display = '';
+  else document.getElementById('pctab-eloado').style.display = '';
+  pyCheckReady();
+}
+
+async function pyLoadFeladat(file) {
+  if (!file) return;
+  document.getElementById('py-ffeladat-name').textContent = file.name;
+  document.getElementById('py-ffeladat').closest('.py-file-zone').classList.add('loaded');
+  try {
+    const inner = file.name.endsWith('.docx')
+      ? (await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() })).value
+      : '<pre>' + esc(await file.text()) + '</pre>';
+    if (pyFeladatBlobUrl) URL.revokeObjectURL(pyFeladatBlobUrl);
+    pyFeladatBlobUrl = URL.createObjectURL(new Blob([feladatHtmlWrap(inner)], { type: 'text/html' }));
+  } catch(e) { pyFeladatBlobUrl = ''; }
+}
+
+async function pyLoadPontozo(file) {
+  if (!file) return;
+  document.getElementById('py-fpontozo-name').textContent = file.name;
+  document.getElementById('py-fpontozo').closest('.py-file-zone').classList.add('loaded');
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+    let id = 1, sum = 0;
+    pyCriteria = { t8: [], t14: [], t18: [] };
+    for (const r of rows) {
+      const label = String(r[0]||'').trim();
+      // Pontszám: H oszlop (index 7) az Excel struktúrában; fallback: első 1-10 közötti szám
+      let max = parseFloat(r[7]) || 0;
+      if (!max) {
+        for (let i = 1; i < Math.min(r.length, 12); i++) {
+          const v = parseFloat(r[i]);
+          if (v > 0 && v <= 10) { max = v; break; }
+        }
+      }
+      if (!max || !label) continue;
+      const c = { id: id++, label, max };
+      sum += max;
+      if (sum <= 8) pyCriteria.t8.push(c);
+      else if (sum <= 22) pyCriteria.t14.push(c);
+      else pyCriteria.t18.push(c);
+    }
+    const total = pyCriteria.t8.length + pyCriteria.t14.length + pyCriteria.t18.length;
+    document.getElementById('py-fpontozo-name').textContent =
+      `${file.name}  ✓ ${total} kritérium (8pt: ${pyCriteria.t8.length}, 14pt: ${pyCriteria.t14.length}, 18pt: ${pyCriteria.t18.length})`;
+  } catch(e) { console.error('Pontozó hiba:', e); }
+  pyCheckReady();
+}
+
+function pyCheckReady() {
+  const ok = !!(pyCode.t8 || pyCode.t14 || pyCode.t18);
+  const btn = document.getElementById('py-start-btn');
+  btn.disabled = !ok; btn.style.opacity = ok?'1':'.45'; btn.style.cursor = ok?'pointer':'not-allowed';
+}
+
+function pyStart() {
+  pyNev = document.getElementById('py-nev').value.trim() || 'Ismeretlen tanuló';
+  if (!pyCriteria.t8.length && !pyCriteria.t14.length && !pyCriteria.t18.length) pyDefaultCriteria();
+  pyScores = { t8:{}, t14:{}, t18:{} };
+  ['t8','t14','t18'].forEach(s => pyCriteria[s].forEach(c => { pyScores[s][c.id] = pyStaticCheck(pyCode[s], c.label); }));
+  pyRenderAll(); pyUpdateTotals();
+  document.getElementById('py-upload-step').style.display = 'none';
+  document.getElementById('py-grading-step').style.display = 'block';
+  document.getElementById('py-nev-display').textContent = pyNev;
+  pyShowCode('t8');
+  // Auto-Groq: szekciónként egymás után, rate limit elkerülésére staggerelve
+  const autoSecs = ['t8','t14','t18'].filter(s => pyCode[s]);
+  autoSecs.forEach((s, i) => setTimeout(() => pyGroq(s), 600 + i * 8500));
+}
+
+function pyDefaultCriteria() {
+  let id = 1; const mk = (l,m=1) => ({id:id++,label:l,max:m});
+  pyCriteria.t8 = [
+    mk('Legalább 1 db input() hívás'), mk('Egész vagy tört számmá alakítás (int/float)'),
+    mk('Elágazás (if)'), mk('Eredmény kiíratása (print)'),
+    mk('Változó használata'), mk('Helyes futási eredmény'),
+    mk('Szintaktikailag hibátlan kód'), mk('Feladatnak megfelelő logika'),
+  ];
+  pyCriteria.t14 = Array.from({length:14},(_,i)=>mk(`14pt – ${i+1}. szempont`));
+  pyCriteria.t18 = Array.from({length:18},(_,i)=>mk(`18pt – ${i+1}. szempont`));
+}
+
+function pyStaticCheck(code, label) {
+  if (!code) return null;
+  const l = label.toLowerCase(), c = code;
+  if (l.includes('input'))  return (c.match(/\binput\s*\(/g)||[]).length >= 1;
+  if (l.includes('int(') || l.includes('float(') || (l.includes('int') && l.includes('float')))
+    return /\bint\s*\(|\bfloat\s*\(/.test(c);
+  if (l.includes('import')) { const m=l.match(/import\s+(\w+)/); return m ? new RegExp('\\bimport\\s+'+m[1]).test(c) : /\bimport\b/.test(c); }
+  if (l.includes('elif'))  return /\belif\b/.test(c);
+  if (l.includes(' if ') || l.startsWith('if') || l.includes('elágazás')) return /\bif\b/.test(c);
+  if (l.includes('for'))   return /\bfor\b/.test(c);
+  if (l.includes('while')) return /\bwhile\b/.test(c);
+  if (l.includes('def'))   return /\bdef\b/.test(c);
+  if (l.includes('return'))return /\breturn\b/.test(c);
+  if (l.includes('class')) return /\bclass\b/.test(c);
+  if (l.includes('print')) return /\bprint\s*\(/.test(c);
+  return null;
+}
+
+function pyRenderAll() { ['t8','t14','t18'].forEach(s => pyRenderSection(s)); }
+
+function pyRenderSection(sec) {
+  const list = document.getElementById(`pylist-${sec}`);
+  list.innerHTML = '';
+  pyCriteria[sec].forEach(c => {
+    const score = pyScores[sec][c.id];
+    const status = score === null ? 'manual' : score >= 1 ? 'pass' : 'fail';
+    const icon = status==='pass'?'<i class="fas fa-check-circle" style="color:#22c55e;font-size:.85rem;"></i>'
+                :status==='fail'?'<i class="fas fa-times-circle" style="color:#ef4444;font-size:.85rem;"></i>'
+                :'<i class="fas fa-question-circle" style="color:#f59e0b;font-size:.85rem;"></i>';
+    const cur = score ?? 0;
+    const row = document.createElement('div');
+    row.className = `aj-row ${status}`;
+    row.dataset.sec = sec; row.dataset.id = c.id; row.dataset.status = status;
+    row.innerHTML = `
+      <div style="flex-shrink:0;width:18px;text-align:center;">${icon}</div>
+      <div class="aj-row-lbl">${esc(c.label)}</div>
+      <div class="aj-btns">
+        <button class="aj-btn ${cur===0?'a0':''}" data-val="0" onclick="pySet('${sec}',${c.id},0)">0</button>
+        <button class="aj-btn ${cur===.5?'a05':''}" data-val="0.5" onclick="pySet('${sec}',${c.id},0.5)">½</button>
+        <button class="aj-btn ${cur===1?'a1':''}" data-val="1" onclick="pySet('${sec}',${c.id},1)">1</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function pySet(sec, id, val) {
+  pyScores[sec][id] = val;
+  const row = document.querySelector(`.aj-row[data-sec="${sec}"][data-id="${id}"]`);
+  if (row) {
+    row.querySelectorAll('.aj-btn').forEach(b => {
+      b.className = 'aj-btn';
+      if (parseFloat(b.dataset.val) === val) b.classList.add(val===0?'a0':val===.5?'a05':'a1');
+    });
+    const ns = val>=1?'pass':val===.5?'manual':'fail';
+    row.className=`aj-row ${ns}`; row.dataset.status=ns;
+  }
+  pyUpdateTotals();
+}
+
+function pyUpdateTotals() {
+  const sum = s => Object.values(pyScores[s]).reduce((a,v)=>a+(v??0),0);
+  const fmt = v => v%1===0?v:v.toFixed(1);
+  const s8=sum('t8'), s14=sum('t14'), s18=sum('t18'), tot=s8+s14+s18;
+  document.getElementById('py-total').textContent = fmt(tot);
+  document.getElementById('py-sub8').textContent  = `8pt: ${fmt(s8)}/8`;
+  document.getElementById('py-sub14').textContent = `14pt: ${fmt(s14)}/14`;
+  document.getElementById('py-sub18').textContent = `18pt: ${fmt(s18)}/18`;
+  document.getElementById('pyscore-t8').textContent  = `${fmt(s8)} / 8`;
+  document.getElementById('pyscore-t14').textContent = `${fmt(s14)} / 14`;
+  document.getElementById('pyscore-t18').textContent = `${fmt(s18)} / 18`;
+}
+
+function pyToggle(sec) {
+  const body=document.getElementById(`pybody-${sec}`), chev=document.getElementById(`pychev-${sec}`);
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? '' : 'rotate(-90deg)';
+}
+
+function pyShowCode(tab) {
+  ['t8','t14','t18','eloado','feladat'].forEach(t => document.getElementById(`pctab-${t}`)?.classList.toggle('active',t===tab));
+  const tv=document.getElementById('py-code-view'), fv=document.getElementById('py-feladat-view');
+  if (tab==='feladat') { tv.style.display='none'; fv.style.display='block';
+    fv.src = pyFeladatBlobUrl || 'about:blank';
+    if (!pyFeladatBlobUrl) fv.srcdoc = '<body style="font-family:Calibri,sans-serif;color:#888;padding:20px">Feladat leírás nem lett feltöltve.</body>';
+  }
+  else { tv.style.display='block'; fv.style.display='none'; tv.value=pyCode[tab]||'# (nincs fájl feltöltve)'; }
+}
+
+async function pyGroq(sec) {
+  const btn=document.getElementById(`pyai-${sec}`), box=document.getElementById(`pyai-box-${sec}`);
+  if (!pyCode[sec]) { alert('Először töltsd fel a megoldás fájlt!'); return; }
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Elemzés...';
+  box.style.display='block'; box.textContent='Groq AI elemzés folyamatban...';
+  const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+  const token = u.token || '';
+  const eloado = sec==='t18'&&pyCode.eloado ? `\n\n# === eloado.py (osztály forrás) ===\n${pyCode.eloado}` : '';
+  const refSzoveg = pyRefCode[sec] ? `\n\n# === mintamegoldas.py (referencia – más kód is helyes lehet, a lényeg az azonos futási viselkedés) ===\n${pyRefCode[sec]}` : '';
+  const criteria = pyCriteria[sec];
+  const pontozSzoveg = criteria.map((c,i)=>`${i+1}. [max:${c.max}] ${c.label}`).join('\n') || 'Általános értékelés szükséges.';
+  const pts = {t8:'8',t14:'14',t18:'18'}[sec];
+  const prompt = `Értékeld az alábbi Python megoldást és add meg a pontszámokat!\n\nPONTOZÁSI SZEMPONTOK (sorszám. [max pont] leírás):\n${pontozSzoveg}\n\nTANULÓ ${pts} PONTOS MEGOLDÁSA:\n${pyCode[sec]}${eloado}${refSzoveg}\n\nUtasítások:\n- Minden szempontnál röviden indokold az ítéletet (1-2 mondat)\n- A végén KÖTELEZŐEN add meg a pontokat PONTOSAN ebben a formátumban (csak ezt a sort változtasd):\n\nPONTOK:\n${criteria.map((_,i)=>`${i+1}: ?`).join('\n')}\n\nA ? helyére 0, 0.5 vagy 1 kerüljön (max pont alapján). Ne hagyj ki sort!`;
+  try {
+    const res = await fetch(`${RAILWAY}/api/ai/pontozas`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
+      body: JSON.stringify({ prompt })
+    });
+    if (res.status===429) {
+      box.textContent='Rate limit – újrapróbálás 7 mp után...';
+      await new Promise(r=>setTimeout(r,7000));
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+      return pyGroq(sec);
+    }
+    const rawText = await res.text();
+    if (!rawText || !rawText.trim()) {
+      box.textContent = `Hiba: A szerver üres választ küldött (HTTP ${res.status}). Próbáld újra.`;
+      btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+      return;
+    }
+    let data;
+    try { data = JSON.parse(rawText); }
+    catch(e) { box.textContent = `Hiba: Nem értelmezhető szerver válasz (${res.status}):\n${rawText.slice(0,200)}`; btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq'; return; }
+    const aiText = data.result || data.text || data.error || JSON.stringify(data);
+
+    // PONTOK: blokk kinyerése és automatikus beírás
+    const pontokMatch = aiText.match(/PONTOK:\s*([\s\S]+?)(?:\n\n|$)/i);
+    let autoCount = 0;
+    if (pontokMatch && criteria.length) {
+      const lines = pontokMatch[1].trim().split('\n');
+      for (const line of lines) {
+        const m = line.match(/^(\d+)\s*:\s*([\d.]+)/);
+        if (!m) continue;
+        const idx = parseInt(m[1]) - 1;
+        const score = Math.min(parseFloat(m[2]) || 0, criteria[idx]?.max ?? 1);
+        if (criteria[idx]) { pySet(sec, criteria[idx].id, score); autoCount++; }
+      }
+    }
+
+    // Megjelenítés: elemzés szöveg a PONTOK: blokk nélkül, + összesítő sor
+    const displayText = aiText.replace(/PONTOK:\s*[\s\S]+$/i, '').trim();
+    box.textContent = displayText + (autoCount ? `\n\n✓ ${autoCount} szempont pontszáma automatikusan beírva.` : '');
+  } catch(e) { box.textContent='Hiba: '+e.message; }
+  btn.disabled=false; btn.innerHTML='<i class="fas fa-robot"></i> Groq';
+}
+
+function pyReset() {
+  // Tanuló-specifikus adat törlése
+  pyCode={t8:'',t14:'',t18:'',eloado:''};
+  pyFolderFiles={}; pyMapping={};
+  pyScores={t8:{},t14:{},t18:{}};
+  // Vizsgadokumentumok (pyCriteria, pyFeladatBlobUrl, pyRefCode) MEGMARADNAK
+  document.getElementById('py-grading-step').style.display='none';
+  document.getElementById('py-upload-step').style.display='block';
+  document.getElementById('py-nev').value='';
+  // Mappa drop zone visszaállítása
+  document.getElementById('py-folder-info').textContent='';
+  document.getElementById('py-drop-zone').classList.remove('has-files');
+  document.getElementById('py-folder-input').value='';
+  document.getElementById('py-assign-wrap').style.display='none';
+  document.getElementById('py-assign-table').innerHTML='';
+  const btn=document.getElementById('py-start-btn');
+  btn.disabled=true; btn.style.opacity='.45'; btn.style.cursor='not-allowed';
+}
+
+function pyExport() {
+  const datum=new Date().toLocaleDateString('hu-HU');
+  const fmt=v=>v%1===0?v:v.toFixed(1);
+  const sum=s=>Object.values(pyScores[s]).reduce((a,v)=>a+(v??0),0);
+  const s8=sum('t8'),s14=sum('t14'),s18=sum('t18'),tot=s8+s14+s18;
+  let md=`# Ágazati PYTHON feladat – Javítási lap\n\n| | |\n|---|---|\n`;
+  md+=`| **Tanuló** | ${pyNev} |\n| **Feladatsor** | ${document.getElementById('py-variant').value} változat |\n`;
+  md+=`| **Dátum** | ${datum} |\n| **8 pontos** | ${fmt(s8)} / 8 |\n| **14 pontos** | ${fmt(s14)} / 14 |\n| **18 pontos** | ${fmt(s18)} / 18 |\n`;
+  md+=`| **Összpontszám** | **${fmt(tot)} / 40** |\n\n`;
+  ['t8','t14','t18'].forEach((sec,i)=>{
+    const pts=[8,14,18][i];
+    md+=`\n## ${pts} pontos feladat\n\n| Pont | Szempont |\n|:---:|---|\n`;
+    pyCriteria[sec].forEach(c=>{
+      const v=pyScores[sec][c.id]??0;
+      md+=`| ${v>=1?'✅':v===.5?'🟡':'❌'} ${v===.5?'½':v} | ${mdLabel(c.label)} |\n`;
+    });
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'}));
+  a.download=`javitas_py_${pyNev.replace(/\s+/g,'_')}.md`;
+  a.click();
+}
+</script>
+</body>
+</html>
