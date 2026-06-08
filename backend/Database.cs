@@ -3158,18 +3158,19 @@ public class Database
         // Feladatok 100%-ra normálva; aktív napok és tananyag csak bónusz (+max 5-5 pont)
         double tananyagBo = Math.Round(tananyagDb / 5.0 * 5, 1);
         double aktivBonus = Math.Round(Math.Min(aktivNapok / 8.0 * 5, 5), 1);
+        double halozatBonus = honap >= TartalmakHonapTol["halozat"]
+            ? Math.Round(halozatSzaz >= 100 ? 5.0 : 0.0, 1) : 0.0;
 
         bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
         double osszSzaz;
 
         if (honap >= TartalmakHonapTol["halozat"])
         {
-            // Május: Python 31% + WEB 25% + Interaktív 22% + Háló 22% = 100%
+            // Május: Python 40% + WEB 31% + Interaktív 29% = 100% (háló: bónusz)
             if (webOnly)
-                osszSzaz = webSzaz * 0.39 + interaktivSzaz * 0.33 + halozatSzaz * 0.28;
+                osszSzaz = webSzaz * 0.54 + interaktivSzaz * 0.46;
             else
-                osszSzaz = pythonSzaz * 0.31 + webSzaz * 0.25 + interaktivSzaz * 0.22
-                         + halozatSzaz * 0.22;
+                osszSzaz = pythonSzaz * 0.40 + webSzaz * 0.31 + interaktivSzaz * 0.29;
         }
         else
         {
@@ -3179,14 +3180,14 @@ public class Database
             else
                 osszSzaz = pythonSzaz * 0.39 + webSzaz * 0.33 + interaktivSzaz * 0.28;
         }
-        osszSzaz = Math.Min(osszSzaz + tananyagBo + aktivBonus, 105);
+        osszSzaz = Math.Min(osszSzaz + tananyagBo + aktivBonus + halozatBonus, 105);
 
         int jegy = CalcJegy(osszSzaz);
 
         // ── Ha minden kötelező kvóta 100%, automatikusan jeles ─────────────
         // (az aktív napok nem akadályozhatják a jelest ha minden feladatot elvégzett)
-        bool halozatTeljesitve = honap < TartalmakHonapTol["halozat"] || halozatSzaz >= 100;
-        bool mindenKvotaTeljesitve = webSzaz >= 100 && interaktivSzaz >= 100 && halozatTeljesitve
+        // Háló bónusz, nem kötelező → automatikus jeles feltételéből kivéve
+        bool mindenKvotaTeljesitve = webSzaz >= 100 && interaktivSzaz >= 100
             && (webOnly || pythonSzaz >= 100);
         if (mindenKvotaTeljesitve) jegy = 5;
 
