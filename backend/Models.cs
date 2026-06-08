@@ -481,6 +481,7 @@ public class HaladasItem
     public string? PythonLastDate     { get; set; }
     // WEB practice
     public int     WebSessions        { get; set; }
+    public int     WebDistinctDb      { get; set; }
     public double  WebAvgPct          { get; set; }
     public double  WebBestPct         { get; set; }
     public string? WebLastDate        { get; set; }

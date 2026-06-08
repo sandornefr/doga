@@ -858,6 +858,11 @@ function renderLeft(students) {
             </div>
             <div class="group-grid" id="group-grid">${groupHtml}</div>
         </div>
+        <div style="padding:8px 12px 0;">
+            <input type="text" id="student-search" placeholder="&#xf002; Keresés névben / e-mailben…"
+              oninput="filterStudentCards(this.value)"
+              style="width:100%;padding:6px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e0e0e0;font-size:.82rem;outline:none;font-family:'Segoe UI',sans-serif;">
+        </div>
         <div class="cards-area">
             <div class="cards-grid" id="cards-grid">${cardsHtml}</div>
         </div>`;
@@ -892,7 +897,7 @@ function makeCard(s) {
         return `<div style="width:9px;height:9px;border-radius:50%;background:${bg};border:1.5px solid ${border};flex-shrink:0" title="${k.label}${done?'':' – hiányzik'}"></div>`;
     }).join('');
 
-    return `<div class="student-card${cardCls}" data-email="${s.email}">
+    return `<div class="student-card${cardCls}" data-email="${s.email}" data-nev="${(s.nev||'').toLowerCase()}">
         ${badge}
         <div class="card-name" title="${s.nev||s.email}">${s.nev||s.email}</div>
         <div class="card-sub">${evozLabel}${evozLabel&&csLabel?' / ':''}${csLabel}</div>
@@ -905,6 +910,15 @@ function makeCard(s) {
             <span class="act-text">${act.short}</span>
         </div>
     </div>`;
+}
+
+function filterStudentCards(query) {
+    const q = query.trim().toLowerCase();
+    document.querySelectorAll('.student-card').forEach(card => {
+        const nev   = card.dataset.nev  || '';
+        const email = (card.dataset.email || '').toLowerCase();
+        card.style.display = (!q || nev.includes(q) || email.includes(q)) ? '' : 'none';
+    });
 }
 
 function filterByGroup(key) {
@@ -1029,6 +1043,7 @@ function renderDetail(s) {
         checkRow('fab fa-css3-alt',        '#264de4', 'CSS tananyag',              !!s.tananyagCss,         formatDate(s.tananyagCss)||'') +
         checkRow('fab fa-bootstrap',       '#a371f7', 'Bootstrap tananyag',        !!s.tananyagBootstrap,   formatDate(s.tananyagBootstrap)||'') +
         checkRow('fas fa-graduation-cap',  '#f472b6', 'Ágazati WEB feladatok',     (s.webAgazatiSessions||0)>0, (s.webAgazatiSessions||0)>0 ? `${s.webAgazatiSessions} alkalom · ${Math.round(s.webAvgPct)}% átl.` : '') +
+        checkRow('fas fa-globe',           '#22c55e', 'WEB feladatok összesen',     (s.webDistinctDb||0)>0, (s.webDistinctDb||0)>0 ? `${s.webDistinctDb} egyedi feladat · ${s.webSessions||0} alkalom` : 'még nem oldott meg') +
         checkRow('fas fa-question-circle', '#8b5cf6', 'Tudáspróba (kvíz)',         (s.tudasproBestPct||0)>0, (s.tudasproBestPct||0)>0 ? `legjobb: ${Math.round(s.tudasproBestPct)}%` : '');
 
     const kotPyRows =

@@ -1348,6 +1348,7 @@ public class Database
             MAX(CASE WHEN s.state_key='python_pro_algoritmus'  THEN s.state_value END),
             COALESCE(py.sessions,0), COALESCE(py.avg_pct,0), COALESCE(py.best_pct,0), py.last_date,
             COALESCE(wb.sessions,0), COALESCE(wb.avg_pct,0), COALESCE(wb.best_pct,0), wb.last_date,
+            COALESCE(wb.distinct_db,0),
             COALESCE(wag.sessions,0),
             COALESCE(ikt.db,0), COALESCE(ikt.best_pct,0),
             COALESCE(tp.best_pct,0),
@@ -1367,6 +1368,7 @@ public class Database
         ) py ON LOWER(u.email)=LOWER(py.email)
         LEFT JOIN (
             SELECT email, COUNT(*) as sessions,
+                   COUNT(DISTINCT feladat) as distinct_db,
                    ROUND(AVG(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as avg_pct,
                    ROUND(MAX(CAST(pont AS REAL)/NULLIF(max_pont,0)*100),1) as best_pct,
                    MAX(datum) as last_date
@@ -1400,10 +1402,11 @@ public class Database
         // col 11-13: python_kezdo, python_halado, python_pro_algoritmus
         // col 14-17: py sessions/avg/best/last
         // col 18-21: wb sessions/avg/best/last
-        // col 22: wag sessions (web ágazati 9 feladat)
-        // col 23-24: ikt db, ikt best_pct
-        // col 25: tp best_pct
-        // col 26: last_login (sessions tábla)
+        // col 22: wb distinct_db (egyedi WEB feladatok)
+        // col 23: wag sessions (web ágazati 9 feladat)
+        // col 24-25: ikt db, ikt best_pct
+        // col 26: tp best_pct
+        // col 27: last_login (sessions tábla)
         var th = r.IsDBNull(5)  ? null : r.GetString(5);
         var tc = r.IsDBNull(6)  ? null : r.GetString(6);
         var tb = r.IsDBNull(7)  ? null : r.GetString(7);
@@ -1415,7 +1418,7 @@ public class Database
         var pp = r.IsDBNull(13) ? null : r.GetString(13);
         var pyLast    = r.IsDBNull(17) ? null : r.GetString(17);
         var wbLast    = r.IsDBNull(21) ? null : r.GetString(21);
-        var lastLogin = r.IsDBNull(26) ? null : r.GetString(26);
+        var lastLogin = r.IsDBNull(27) ? null : r.GetString(27);
         var dates = new[] { th, tc, tb, te, tj, td, pk, ph, pp, pyLast, wbLast, lastLogin }
                         .Where(d => d != null).ToList();
         string? lastActive = dates.Count > 0 ? dates.Max() : null;
@@ -1442,10 +1445,11 @@ public class Database
             WebAvgPct          = r.GetDouble(19),
             WebBestPct         = r.GetDouble(20),
             WebLastDate        = wbLast,
-            WebAgazatiSessions = r.GetInt32(22),
-            InteraktivDb       = r.GetInt32(23),
-            InteraktivBestPct  = r.GetDouble(24),
-            TudasproBestPct    = r.GetDouble(25),
+            WebDistinctDb      = r.GetInt32(22),
+            WebAgazatiSessions = r.GetInt32(23),
+            InteraktivDb       = r.GetInt32(24),
+            InteraktivBestPct  = r.GetDouble(25),
+            TudasproBestPct    = r.GetDouble(26),
             LastActive         = lastActive
         };
     }
