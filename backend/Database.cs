@@ -1535,8 +1535,14 @@ public class Database
                     TananyagJavascript=base_.TananyagJavascript,
                     PythonSessions=base_.PythonSessions, PythonAvgPct=base_.PythonAvgPct,
                     PythonBestPct=base_.PythonBestPct, PythonLastDate=base_.PythonLastDate,
-                    WebSessions=base_.WebSessions, WebAvgPct=base_.WebAvgPct,
-                    WebBestPct=base_.WebBestPct, WebLastDate=base_.WebLastDate,
+                    WebSessions=base_.WebSessions, WebDistinctDb=base_.WebDistinctDb,
+                    WebAvgPct=base_.WebAvgPct, WebBestPct=base_.WebBestPct,
+                    WebLastDate=base_.WebLastDate,
+                    WebAgazatiSessions=base_.WebAgazatiSessions,
+                    InteraktivDb=base_.InteraktivDb, InteraktivBestPct=base_.InteraktivBestPct,
+                    TudasproBestPct=base_.TudasproBestPct,
+                    PythonProAlgoritmus=base_.PythonProAlgoritmus,
+                    TananyagDevtools=base_.TananyagDevtools,
                     LastActive=base_.LastActive
                 };
             }
