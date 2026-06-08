@@ -622,6 +622,7 @@ public class HaviJegyRow
     public int?    Jegy             { get; set; }
     public double  PythonSzaz       { get; set; }
     public double  WebSzaz          { get; set; }
+    public int     WebDistinctDb    { get; set; }
     public double  QuizSzaz         { get; set; }
     public int     AktivNapok       { get; set; }
     public int     OtletDb          { get; set; }

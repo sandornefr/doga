@@ -3080,6 +3080,7 @@ public class Database
 
         // ── WEB: összes elvégzett egyedi feladat száma (kumulatív) ─────────
         double webSzaz = 0;
+        int webDistinctDb = 0;
         if (honap >= TartalmakHonapTol["web"])
         {
             var cmd = conn.CreateCommand();
@@ -3089,9 +3090,9 @@ public class Database
                   AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
             cmd.Parameters.AddWithValue("$e", e);
             cmd.Parameters.AddWithValue("$y", ev);
-            int db  = Convert.ToInt32(cmd.ExecuteScalar());
+            webDistinctDb = Convert.ToInt32(cmd.ExecuteScalar());
             int kvt = WebKvota(honap);
-            webSzaz = kvt > 0 ? Math.Min(db / (double)kvt * 100, 100) : 100;
+            webSzaz = kvt > 0 ? Math.Min(webDistinctDb / (double)kvt * 100, 100) : 100;
         }
 
         // ── Interaktív teszt: elvégzett tesztek száma (kumulatív) ──────────
@@ -3217,6 +3218,7 @@ public class Database
             Jegy             = jegy,
             PythonSzaz       = Math.Round(pythonSzaz,    1),
             WebSzaz          = Math.Round(webSzaz,       1),
+            WebDistinctDb    = webDistinctDb,
             QuizSzaz         = Math.Round(interaktivSzaz,1),
             HalozatSzaz      = Math.Round(halozatSzaz,   1),
             AktivNapok       = aktivNapok,

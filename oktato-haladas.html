@@ -1644,7 +1644,7 @@ function ozSorHtml(d, honap) {
     return `<tr id="oz-row-${d.id}" style="border-bottom:1px solid #1e293b;">
       <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev||d.email)}</td>
       <td style="padding:6px 8px;text-align:right;">${ozCount(d.pythonSzaz, pyKvt)}</td>
-      <td style="padding:6px 8px;text-align:right;">${ozCount(d.webSzaz, webKvt)}</td>
+      <td style="padding:6px 8px;text-align:right;">${ozCountWeb(d.webSzaz, webKvt, d.webDistinctDb)}</td>
       <td style="padding:6px 8px;text-align:right;">${ozCount(d.quizSzaz, quizKvt)}</td>
       ${halTd}
       <td style="padding:6px 8px;text-align:right;color:#94a3b8;">${d.aktivNapok} nap</td>
@@ -1714,6 +1714,18 @@ function ozCount(szaz, kvt) {
   if (!kvt) return '<span style="color:#374151">–</span>';
   const done = Math.round(szaz / 100 * kvt);
   const ok = done >= kvt;
+  return `<span style="color:${ok?'#4ade80':'#f87171'};font-weight:${ok?'700':'400'}">${done}</span><span style="color:#374151">/${kvt}</span>`;
+}
+
+function ozCountWeb(szaz, kvt, actual) {
+  if (!kvt) return '<span style="color:#374151">–</span>';
+  const done = Math.round(szaz / 100 * kvt);
+  const ok = done >= kvt;
+  const realCount = actual || done;
+  if (realCount > kvt) {
+    return `<span style="color:#4ade80;font-weight:700">${realCount}</span>`
+         + `<span style="color:#374151;font-size:.75em"> (kvóta: ${kvt} ✓)</span>`;
+  }
   return `<span style="color:${ok?'#4ade80':'#f87171'};font-weight:${ok?'700':'400'}">${done}</span><span style="color:#374151">/${kvt}</span>`;
 }
 
