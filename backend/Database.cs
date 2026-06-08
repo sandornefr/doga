@@ -3183,6 +3183,13 @@ public class Database
 
         int jegy = CalcJegy(osszSzaz);
 
+        // ── Ha minden kötelező kvóta 100%, automatikusan jeles ─────────────
+        // (az aktív napok nem akadályozhatják a jelest ha minden feladatot elvégzett)
+        bool halozatTeljesitve = honap < TartalmakHonapTol["halozat"] || halozatSzaz >= 100;
+        bool mindenKvotaTeljesitve = webSzaz >= 100 && interaktivSzaz >= 100 && halozatTeljesitve
+            && (webOnly || pythonSzaz >= 100);
+        if (mindenKvotaTeljesitve) jegy = 5;
+
         // ── Szorgalmi: Ötletláda most már CSAK ide számít ──────────────────
         bool szorgJelolt = osszSzaz >= 90
             || aktivNapok >= 15
