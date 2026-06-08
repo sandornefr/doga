@@ -3155,31 +3155,31 @@ public class Database
         }
 
         // ── Súlyozott összpont (csoport alapján) ───────────────────────────
-        double aktivSzaz  = Math.Min(aktivNapok / 8.0 * 100, 100);
+        // Feladatok 100%-ra normálva; aktív napok és tananyag csak bónusz (+max 5-5 pont)
         double tananyagBo = Math.Round(tananyagDb / 5.0 * 5, 1);
+        double aktivBonus = Math.Round(Math.Min(aktivNapok / 8.0 * 5, 5), 1);
 
         bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
         double osszSzaz;
 
         if (honap >= TartalmakHonapTol["halozat"])
         {
-            // Május: Python 28% + WEB 22% + Interaktív 20% + Háló 20% + Aktív 10%
+            // Május: Python 31% + WEB 25% + Interaktív 22% + Háló 22% = 100%
             if (webOnly)
-                osszSzaz = webSzaz * 0.35 + interaktivSzaz * 0.30 + halozatSzaz * 0.25 + aktivSzaz * 0.10;
+                osszSzaz = webSzaz * 0.39 + interaktivSzaz * 0.33 + halozatSzaz * 0.28;
             else
-                osszSzaz = pythonSzaz * 0.28 + webSzaz * 0.22 + interaktivSzaz * 0.20
-                         + halozatSzaz * 0.20 + aktivSzaz * 0.10;
+                osszSzaz = pythonSzaz * 0.31 + webSzaz * 0.25 + interaktivSzaz * 0.22
+                         + halozatSzaz * 0.22;
         }
         else
         {
-            // Március–Április: Python 35% + WEB 30% + Interaktív 25% + Aktív 10%
+            // Március–Április: Python 39% + WEB 33% + Interaktív 28% = 100%
             if (webOnly)
-                osszSzaz = webSzaz * 0.55 + interaktivSzaz * 0.35 + aktivSzaz * 0.10;
+                osszSzaz = webSzaz * 0.61 + interaktivSzaz * 0.39;
             else
-                osszSzaz = pythonSzaz * 0.35 + webSzaz * 0.30 + interaktivSzaz * 0.25
-                         + aktivSzaz * 0.10;
+                osszSzaz = pythonSzaz * 0.39 + webSzaz * 0.33 + interaktivSzaz * 0.28;
         }
-        osszSzaz = Math.Min(osszSzaz + tananyagBo, 105);
+        osszSzaz = Math.Min(osszSzaz + tananyagBo + aktivBonus, 105);
 
         int jegy = CalcJegy(osszSzaz);
 
