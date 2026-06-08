@@ -3024,7 +3024,7 @@ public class Database
     };
 
     private static int CalcJegy(double ossz) =>
-        ossz >= 80 ? 5 : ossz >= 60 ? 4 : ossz >= 40 ? 3 : ossz >= 21 ? 2 : 1;
+        ossz >= 80 ? 5 : ossz >= 60 ? 4 : ossz >= 40 ? 3 : ossz >= 20 ? 2 : 1;
 
     // WEB-only csoport: Python-t más tanár értékeli (10.B/1, 10.B/2, 10.K/infó)
     private static bool IsWebOnlyCsoport(string? evfolyam, string? osztaly, string? csoport)
