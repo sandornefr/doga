@@ -1739,9 +1739,8 @@ app.MapPost("/api/havijegy/calculate", (HttpContext ctx, Database db) =>
         sor.Csoport  = d.Csoport;
         sor.Evfolyam = d.Evfolyam;
         db.UpsertHaviJegy(sor);
-        eredmenyek.Add(sor);
     }
-    return Results.Ok(eredmenyek);
+    return Results.Ok(db.GetHaviJegyek(ev, honap));
 });
 
 // Tanári lista lekérése — GET /api/havijegy?ev=2026&honap=3
