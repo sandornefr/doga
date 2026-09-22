@@ -421,7 +421,9 @@ app.MapPost("/api/auth/user-login", (UserLoginRequest req, Database db) =>
         evfolyam            = user.Evfolyam,
         osztaly             = user.Osztaly,
         csoport             = user.Csoport,
-        mustChangePassword  = user.MustChangePassword
+        szakma              = user.Szakma,
+        mustChangePassword  = user.MustChangePassword,
+        needsClassConfirm   = user.NeedsClassConfirm
     });
 })
 .RequireRateLimiting("auth");
@@ -449,6 +451,25 @@ app.MapPost("/api/users/{email}/update", (HttpContext ctx, string email, UpdateU
     if (string.IsNullOrWhiteSpace(req.Keresztnev)) return Results.BadRequest(new { error = "A keresztnév nem lehet üres!" });
     var ok = db.UpdateUserBasic(Uri.UnescapeDataString(email), req.Vezeteknev.Trim(), req.Keresztnev.Trim(), req.Csoport?.Trim(), req.Evfolyam?.Trim(), req.Osztaly?.Trim());
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
+});
+
+// ── Tanévváltás (évfolyam-léptetés) ─────────────────────────────────────────
+
+// Előnézet: minden tanuló a jelenlegi és a rá vonatkozó következő évfolyammal.
+// A tanár itt jelöli ki (pipálja ki), kik NE léptessenek (pl. évismétlők).
+app.MapGet("/api/admin/evfolyam-leptetes/preview", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetEvfolyamLeptetesPreview());
+});
+
+// Végrehajtás: csak a beküldött email-listában szereplő tanulók évfolyama nő eggyel.
+app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLeptetesApplyRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var (_, tokenIdentity, _) = InspectAuthContext(ctx);
+    var updated = db.ApplyEvfolyamLeptetes(req.Emails ?? new(), tokenIdentity);
+    return Results.Ok(new { success = true, updated });
 });
 
 // Felhasználó jelszavának visszaállítása admin/oktató által
@@ -723,6 +744,25 @@ app.MapPost("/api/auth/change-own-password", (HttpContext ctx, ChangeOwnPassword
     return Results.Ok(new { success = true });
 })
 .RequireRateLimiting("auth");
+
+// Saját osztály/csoport/szakma megerősítése (tanuló – tanévváltás után, ha ágazati
+// vizsga alapján új osztályba/szakmára került, needsClassConfirm=true a bejelentkezéskor)
+app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassRequest req, Database db) =>
+{
+    var email = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(email))
+        return Results.BadRequest(new { error = "Érvénytelen email cím" });
+
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, email)) return Results.Forbid();
+
+    if (string.IsNullOrWhiteSpace(req.Osztaly) || string.IsNullOrWhiteSpace(req.Csoport))
+        return Results.BadRequest(new { error = "Az osztály és a csoport megadása kötelező!" });
+
+    var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), req.Csoport.Trim(), req.Szakma?.Trim());
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
+});
 
 // ── Feedback / Task Ratings ────────────────────────────────────────────────
 

@@ -81,7 +81,9 @@ public record UserListItem(
     string? Csoport,
     string? CreatedAt,
     string? Vezeteknev = null,
-    string? Keresztnev = null
+    string? Keresztnev = null,
+    bool NeedsClassConfirm = false,
+    string? Szakma = null
 );
 
 public record UserRecord(
@@ -94,8 +96,26 @@ public record UserRecord(
     string? Evfolyam,
     string? Osztaly,
     string? Csoport,
-    bool MustChangePassword
+    bool MustChangePassword,
+    bool NeedsClassConfirm = false,
+    string? Szakma = null
 );
+
+// ── Tanévváltás (évfolyam-léptetés) ─────────────────────────────────────────
+public record EvfolyamLeptetesPreviewItem(
+    string Nev,
+    string Email,
+    string? Evfolyam,
+    string? UjEvfolyam,
+    string? Osztaly,
+    string? Csoport,
+    bool NeedsClassConfirm,   // ágazati vizsga utáni szakma/osztály-váltás (10→11)
+    bool Terminal             // nincs következő évfolyam (végzős, pl. 13. / 2/14.) – kihagyva
+);
+
+public record EvfolyamLeptetesApplyRequest(List<string> Emails);
+
+public record UpdateOwnClassRequest(string Email, string Osztaly, string Csoport, string? Szakma);
 
 public record ChangeOwnPasswordRequest(string Email, string OldPassword, string NewPassword);
 

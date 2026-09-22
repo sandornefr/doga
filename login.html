@@ -707,7 +707,9 @@
                     evfolyam:           data.evfolyam,
                     osztaly:            data.osztaly,
                     csoport:            data.csoport,
-                    mustChangePassword: data.mustChangePassword ?? false
+                    szakma:             data.szakma,
+                    mustChangePassword: data.mustChangePassword ?? false,
+                    needsClassConfirm:  data.needsClassConfirm ?? false
                 });
                 localStorage.setItem('kandoLastEmail', document.getElementById('login-email').value.trim());
                 sessionStorage.setItem('kandoUser', kandoUserData);

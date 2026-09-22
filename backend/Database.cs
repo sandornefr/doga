@@ -248,6 +248,17 @@ public class Database
         ");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
         try { Exec(conn, "ALTER TABLE havijegyek ADD COLUMN halozat_szaz REAL NOT NULL DEFAULT 0"); } catch { }
+        try { Exec(conn, "ALTER TABLE users ADD COLUMN needs_class_confirm INTEGER NOT NULL DEFAULT 0"); } catch { }
+        try { Exec(conn, "ALTER TABLE users ADD COLUMN szakma TEXT"); } catch { }
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS evfolyam_leptetes_log (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                email          TEXT NOT NULL,
+                regi_evfolyam  TEXT,
+                uj_evfolyam    TEXT,
+                vegrehajto     TEXT,
+                vegrehajtva_at TEXT DEFAULT (datetime('now', 'localtime'))
+            );");
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS quiz_results (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -795,7 +806,8 @@ public class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             SELECT id, vezeteknev, keresztnev, email, password_hash,
-                   szerep, evfolyam, osztaly, csoport, must_change_password
+                   szerep, evfolyam, osztaly, csoport, must_change_password,
+                   needs_class_confirm, szakma
             FROM users WHERE email = $e";
         cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
         using var r = cmd.ExecuteReader();
@@ -807,7 +819,9 @@ public class Database
             r.IsDBNull(6) ? null : r.GetString(6),
             r.IsDBNull(7) ? null : r.GetString(7),
             r.IsDBNull(8) ? null : r.GetString(8),
-            r.IsDBNull(9) ? false : r.GetInt32(9) == 1
+            r.IsDBNull(9) ? false : r.GetInt32(9) == 1,
+            r.IsDBNull(10) ? false : r.GetInt32(10) == 1,
+            r.IsDBNull(11) ? null : r.GetString(11)
         );
     }
 
@@ -834,6 +848,105 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
+    public bool UpdateOwnClass(string email, string osztaly, string csoport, string? szakma)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE users SET osztaly = $o, csoport = $c, szakma = $sz, needs_class_confirm = 0 WHERE email = $e";
+        cmd.Parameters.AddWithValue("$o",  osztaly);
+        cmd.Parameters.AddWithValue("$c",  csoport);
+        cmd.Parameters.AddWithValue("$sz", (object?)szakma ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$e",  email.ToLower().Trim());
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // Évfolyam-léptetés: melyik évfolyamból melyikbe lép a tanuló tanévváltáskor.
+    // "13" és "1/13"→"2/14" utáni évfolyam nincs megadva -> végzős, a léptetés kihagyja.
+    private static readonly Dictionary<string, string> EvfolyamLeptetesTerkep = new()
+    {
+        ["9"]    = "10",
+        ["10"]   = "11",
+        ["11"]   = "12",
+        ["12"]   = "13",
+        ["1/13"] = "2/14",
+    };
+
+    public List<EvfolyamLeptetesPreviewItem> GetEvfolyamLeptetesPreview()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT vezeteknev, keresztnev, email, evfolyam, osztaly, csoport
+            FROM users
+            WHERE szerep = 'tanulo'
+              AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
+            ORDER BY evfolyam, osztaly, csoport, vezeteknev, keresztnev";
+        using var r = cmd.ExecuteReader();
+        var list = new List<EvfolyamLeptetesPreviewItem>();
+        while (r.Read())
+        {
+            var evfolyam   = r.IsDBNull(3) ? null : r.GetString(3);
+            var ujEvfolyam = evfolyam != null && EvfolyamLeptetesTerkep.TryGetValue(evfolyam, out var uj) ? uj : null;
+            list.Add(new EvfolyamLeptetesPreviewItem(
+                $"{r.GetString(0)} {r.GetString(1)}",
+                r.GetString(2),
+                evfolyam,
+                ujEvfolyam,
+                r.IsDBNull(4) ? null : r.GetString(4),
+                r.IsDBNull(5) ? null : r.GetString(5),
+                evfolyam == "10",
+                evfolyam != null && ujEvfolyam == null
+            ));
+        }
+        return list;
+    }
+
+    // emails: az adott tanévben ténylegesen léptetendő diákok (az évismétlők egyszerűen
+    // kimaradnak ebből a listából). Minden email a saját jelenlegi évfolyamának megfelelő
+    // következő évfolyamra kerül a EvfolyamLeptetesTerkep alapján.
+    public int ApplyEvfolyamLeptetes(List<string> emails, string vegrehajto)
+    {
+        if (emails == null || emails.Count == 0) return 0;
+        using var conn = Open();
+        var count = 0;
+        foreach (var raw in emails)
+        {
+            var email = raw?.ToLower().Trim() ?? "";
+            if (email == "") continue;
+
+            using var getCmd = conn.CreateCommand();
+            getCmd.CommandText = "SELECT evfolyam FROM users WHERE email = $e AND szerep = 'tanulo'";
+            getCmd.Parameters.AddWithValue("$e", email);
+            var current = getCmd.ExecuteScalar() as string;
+            if (current == null || !EvfolyamLeptetesTerkep.TryGetValue(current, out var uj)) continue;
+
+            // 10. évfolyam után ágazatonként/szakmánként új osztályba/csoportba kerülhetnek a
+            // tanulók -> a régi osztály/csoport csak ideiglenes placeholder marad, amíg a
+            // tanuló saját maga meg nem erősíti az újat (needs_class_confirm).
+            var needsConfirm = current == "10";
+
+            using var updCmd = conn.CreateCommand();
+            updCmd.CommandText = "UPDATE users SET evfolyam = $uj, needs_class_confirm = $ncc WHERE email = $e";
+            updCmd.Parameters.AddWithValue("$uj",  uj);
+            updCmd.Parameters.AddWithValue("$ncc", needsConfirm ? 1 : 0);
+            updCmd.Parameters.AddWithValue("$e",   email);
+            updCmd.ExecuteNonQuery();
+
+            using var logCmd = conn.CreateCommand();
+            logCmd.CommandText = @"
+                INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto)
+                VALUES ($e, $r, $u, $v)";
+            logCmd.Parameters.AddWithValue("$e", email);
+            logCmd.Parameters.AddWithValue("$r", current);
+            logCmd.Parameters.AddWithValue("$u", uj);
+            logCmd.Parameters.AddWithValue("$v", vegrehajto);
+            logCmd.ExecuteNonQuery();
+
+            count++;
+        }
+        return count;
+    }
+
     public bool ResetUserPassword(string email, string newHash)
     {
         using var conn = Open();
@@ -849,7 +962,8 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT vezeteknev, keresztnev, email, szerep, evfolyam, osztaly, csoport, created_at
+            SELECT vezeteknev, keresztnev, email, szerep, evfolyam, osztaly, csoport, created_at,
+                   needs_class_confirm, szakma
             FROM users ORDER BY osztaly, csoport, vezeteknev, keresztnev";
         using var r = cmd.ExecuteReader();
         var list = new List<UserListItem>();
@@ -863,7 +977,9 @@ public class Database
                 r.IsDBNull(6) ? null : r.GetString(6),
                 r.IsDBNull(7) ? null : r.GetString(7),
                 r.GetString(0),
-                r.GetString(1)
+                r.GetString(1),
+                r.IsDBNull(8) ? false : r.GetInt32(8) == 1,
+                r.IsDBNull(9) ? null : r.GetString(9)
             ));
         return list;
     }

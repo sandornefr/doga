@@ -1037,6 +1037,36 @@
         }
         .pw-change-btn:hover { background: #c73652; }
         .pw-change-btn:disabled { background: #555; cursor: not-allowed; }
+
+        /* Kötelező osztály/szakma megerősítés modal (tanévváltás után) */
+        .class-confirm-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92); z-index: 500;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .class-confirm-overlay.open { display: flex; }
+        .class-confirm-box {
+            background: #16213e; border: 2px solid #6366f1;
+            border-radius: 16px; padding: 2rem 1.8rem;
+            max-width: 420px; width: 100%;
+        }
+        .class-confirm-box h3 { color: #818cf8; margin-bottom: 0.4rem; font-size: 1.15rem; }
+        .class-confirm-box p { color: #aaa; font-size: 0.85rem; margin-bottom: 1.2rem; line-height: 1.5; }
+        .class-confirm-box .form-group { margin-bottom: 12px; }
+        .class-confirm-box label { color: #aaa; font-size: 0.82rem; display: block; margin-bottom: 4px; }
+        .class-confirm-box input, .class-confirm-box select {
+            width: 100%; padding: 9px 12px;
+            background: #0f3460; border: 1px solid #536dfe;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.95rem;
+        }
+        .class-confirm-btn {
+            width: 100%; padding: 0.7rem; margin-top: 6px;
+            background: #6366f1; border: none; border-radius: 10px;
+            color: white; font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .class-confirm-btn:hover { background: #4f46e5; }
+        .class-confirm-btn:disabled { background: #555; cursor: not-allowed; }
         @keyframes jegyPulse {
             0%,100% { box-shadow: 0 0 6px 2px rgba(99,102,241,.6), 0 0 0 0 rgba(99,102,241,.5); }
             50%      { box-shadow: 0 0 14px 4px rgba(139,92,246,.9), 0 0 0 8px rgba(99,102,241,0); }
@@ -1769,6 +1799,37 @@
     </div>
 </div>
 
+<div class="class-confirm-overlay" id="class-confirm-overlay">
+    <div class="class-confirm-box">
+        <h3><i class="fas fa-people-arrows"></i> Új osztály / szakma megerősítése</h3>
+        <p>Tanévváltás történt, és a 10. évfolyam után szakmánként/ágazatonként új osztályokba kerültetek. A folytatáshoz add meg, melyik osztályba és csoportba kerültél, és milyen szakmán tanulsz.</p>
+        <div id="class-confirm-error" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
+        <div class="form-group">
+            <label>Osztály</label>
+            <select id="cc-osztaly">
+                <option value="">– válassz –</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="T">T</option>
+                <option value="F">F</option>
+                <option value="K">K</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Csoport</label>
+            <input type="text" id="cc-csoport" placeholder="pl. 1, 2, info">
+        </div>
+        <div class="form-group">
+            <label>Szakma</label>
+            <input type="text" id="cc-szakma" placeholder="pl. szoftverfejlesztő">
+        </div>
+        <button class="class-confirm-btn" id="class-confirm-btn" onclick="submitClassConfirm()">
+            <i class="fas fa-check"></i> Mentés
+        </button>
+    </div>
+</div>
+
 <script>
     const API      = 'https://agazati.up.railway.app';
     const API_BASE = 'https://agazati.up.railway.app';
@@ -1838,6 +1899,7 @@
             // avatar rejtve — nem jelenítjük meg a topbarban
         }
         checkMustChangePassword();
+        checkNeedsClassConfirm();
         const nevReszek = (user.nev || '').trim().split(' ');
         const keresztnev = nevReszek[nevReszek.length - 1] || 'felhasználó';
         document.getElementById('portal-title').textContent = `Üdvözöllek, ${keresztnev}!`;
@@ -2480,6 +2542,46 @@
         const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
         if (user.mustChangePassword) {
             document.getElementById('pw-change-overlay').classList.add('open');
+        }
+    }
+
+    function checkNeedsClassConfirm() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        if (user.needsClassConfirm) {
+            document.getElementById('class-confirm-overlay').classList.add('open');
+        }
+    }
+
+    async function submitClassConfirm() {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const osztaly = document.getElementById('cc-osztaly').value;
+        const csoport = document.getElementById('cc-csoport').value.trim();
+        const szakma  = document.getElementById('cc-szakma').value.trim();
+        const errEl   = document.getElementById('class-confirm-error');
+        errEl.style.display = 'none';
+        if (!osztaly || !csoport) { errEl.textContent = 'Az osztály és a csoport kitöltése kötelező!'; errEl.style.display = 'block'; return; }
+        const btn = document.getElementById('class-confirm-btn');
+        btn.disabled = true; btn.textContent = 'Mentés...';
+        try {
+            const res = await fetch(`${API}/api/auth/update-own-class`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token },
+                body: JSON.stringify({ email: user.email, osztaly, csoport, szakma })
+            });
+            if (res.ok) {
+                const updated = { ...user, osztaly, csoport, szakma, needsClassConfirm: false };
+                sessionStorage.setItem('kandoUser', JSON.stringify(updated));
+                document.getElementById('class-confirm-overlay').classList.remove('open');
+            } else {
+                const d = await res.json().catch(() => ({}));
+                errEl.textContent = d.error || 'Hiba történt.';
+                errEl.style.display = 'block';
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mentés';
+            }
+        } catch (e) {
+            errEl.textContent = 'Hálózati hiba történt.';
+            errEl.style.display = 'block';
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mentés';
         }
     }
 
