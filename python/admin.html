@@ -1833,34 +1833,49 @@
                 const items = groups[key];
                 const terminal = items.every(it => it.terminal);
                 const target = items[0].ujEvfolyam;
-                const needsConfirm = key === '10';
+                const ccDefault = key === '10'; // ágazati vizsga utáni szakma-szétosztás
 
                 const headerRight = terminal
                     ? `<span style="color:#f59e0b;font-size:0.8rem;"><i class="fas fa-flag-checkered"></i> végzős – nincs következő évfolyam, kihagyva</span>`
                     : `<span style="color:#4ade80;font-size:0.8rem;">→ ${target}. évfolyam</span>`;
 
-                const toggleBtn = terminal ? '' : `
-                    <button onclick="toggleLeptetesGroup('${key}', true)" style="padding:2px 8px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.75rem;cursor:pointer;">mind</button>
-                    <button onclick="toggleLeptetesGroup('${key}', false)" style="padding:2px 8px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.75rem;cursor:pointer;">egyik sem</button>`;
+                const toggleBtns = terminal ? '' : `
+                    <span style="color:#475569;font-size:0.72rem;">lépt.:</span>
+                    <button onclick="toggleLeptetesGroup('${key}','lep',true)" style="padding:2px 7px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup('${key}','lep',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>
+                    <span style="color:#475569;font-size:0.72rem;margin-left:6px;">oszt.meg.:</span>
+                    <button onclick="toggleLeptetesGroup('${key}','cc',true)" style="padding:2px 7px;background:transparent;border:1px solid #fcd34d;border-radius:6px;color:#fcd34d;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup('${key}','cc',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>`;
 
                 const rows = items.map(it => `
-                    <label style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:${terminal ? 'default' : 'pointer'};${terminal ? 'opacity:0.55;' : ''}" onmouseover="this.style.background='#0f1e35'" onmouseout="this.style.background='transparent'">
-                        <input type="checkbox" class="lep-chk" data-email="${it.email}" data-evfolyam="${key}"
-                            ${terminal ? 'disabled' : 'checked'} onchange="updateLeptetesSummary()">
+                    <div style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;${terminal ? 'opacity:0.55;' : ''}" onmouseover="this.style.background='#0f1e35'" onmouseout="this.style.background='transparent'">
+                        <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Léptetés eggyel feljebb">
+                            <input type="checkbox" class="lep-chk" data-email="${it.email}" data-evfolyam="${key}"
+                                ${terminal ? 'disabled' : 'checked'} onchange="updateLeptetesSummary()">
+                            <span style="font-size:0.68rem;color:#4ade80;">lépt.</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Osztály/csoport/szakma megerősítés kérése a diáktól – akkor is bepipálható, ha nem lép évfolyamot (pl. évismétlő, de más osztályba kerül)">
+                            <input type="checkbox" class="cc-chk" data-email="${it.email}" data-evfolyam="${key}"
+                                ${terminal ? 'disabled' : ''} ${ccDefault && !terminal ? 'checked' : ''} onchange="updateLeptetesSummary()">
+                            <span style="font-size:0.68rem;color:#fcd34d;">oszt.meg.</span>
+                        </label>
                         <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${it.nev}</span>
                         <span style="font-size:0.78rem;color:#64748b;">${it.osztaly || '–'}${it.csoport ? '/' + it.csoport : ''}</span>
                         <span style="font-size:0.78rem;color:#475569;">${it.email}</span>
-                    </label>`).join('');
+                    </div>`).join('');
 
                 return `
                     <div style="margin-bottom:14px;background:#0f1e35;border:1px solid #1f3460;border-radius:10px;padding:10px 12px;">
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
                             <b style="color:#7dd3fc;">${key}. évfolyam</b>
                             <span style="color:#64748b;font-size:0.8rem;">(${items.length} fő)</span>
                             ${headerRight}
-                            <div style="margin-left:auto;display:flex;gap:6px;">${toggleBtn}</div>
+                            <div style="margin-left:auto;display:flex;gap:5px;align-items:center;">${toggleBtns}</div>
                         </div>
-                        ${needsConfirm ? `<div style="color:#fcd34d;font-size:0.78rem;margin-bottom:6px;"><i class="fas fa-triangle-exclamation"></i> Ágazati vizsga utáni szakmaválasztás – ők a következő belépéskor kötelezően megerősítik az új osztályukat/szakmájukat.</div>` : ''}
+                        <div style="color:#64748b;font-size:0.76rem;margin-bottom:6px;">
+                            <b>lépt.</b> = évfolyama eggyel nő &nbsp;•&nbsp; <b>oszt.meg.</b> = a következő belépéskor kötelezően meg kell erősítenie az osztályát/csoportját/szakmáját
+                            (pipáld be azoknál is, akiknél <b>nem</b> biztos, hogy a régi osztályban maradnak – ez évismétlőkre és a szakma szerint szétosztott tanulókra is vonatkozhat).
+                        </div>
                         <div>${rows}</div>
                     </div>`;
             }).join('');
@@ -1868,24 +1883,27 @@
             updateLeptetesSummary();
         }
 
-        function toggleLeptetesGroup(evfolyam, checked) {
-            document.querySelectorAll(`.lep-chk[data-evfolyam="${evfolyam}"]`).forEach(chk => {
+        function toggleLeptetesGroup(evfolyam, type, checked) {
+            const cls = type === 'cc' ? '.cc-chk' : '.lep-chk';
+            document.querySelectorAll(`${cls}[data-evfolyam="${evfolyam}"]`).forEach(chk => {
                 if (!chk.disabled) chk.checked = checked;
             });
             updateLeptetesSummary();
         }
 
         function updateLeptetesSummary() {
-            const total = document.querySelectorAll('.lep-chk').length;
-            const checked = document.querySelectorAll('.lep-chk:checked').length;
+            const totalLep = document.querySelectorAll('.lep-chk').length;
+            const lep = document.querySelectorAll('.lep-chk:checked').length;
+            const cc = document.querySelectorAll('.cc-chk:checked').length;
             document.getElementById('leptetes-summary').textContent =
-                `${checked} / ${total} tanuló lesz léptetve` + (total - checked > 0 ? ` (${total - checked} kihagyva – évismétlő vagy végzős)` : '');
+                `${lep} / ${totalLep} tanuló lép évfolyamot • ${cc} tanulónak kell megerősítenie az osztályát/szakmáját`;
         }
 
         async function applyLeptetes() {
-            const emails = Array.from(document.querySelectorAll('.lep-chk:checked')).map(chk => chk.dataset.email);
-            if (emails.length === 0) { alert('Nincs kijelölt tanuló.'); return; }
-            if (!confirm(`Biztosan léptetsz ${emails.length} tanulót eggyel magasabb évfolyamra?\n\nEz a művelet nem vonható vissza egy kattintással!`)) return;
+            const promoteEmails = Array.from(document.querySelectorAll('.lep-chk:checked')).map(chk => chk.dataset.email);
+            const classConfirmEmails = Array.from(document.querySelectorAll('.cc-chk:checked')).map(chk => chk.dataset.email);
+            if (promoteEmails.length === 0 && classConfirmEmails.length === 0) { alert('Nincs kijelölt tanuló.'); return; }
+            if (!confirm(`Biztosan végrehajtod?\n\n${promoteEmails.length} tanuló lép évfolyamot.\n${classConfirmEmails.length} tanulónak kell megerősítenie az osztályát/szakmáját belépéskor.\n\nEz a művelet nem vonható vissza egy kattintással!`)) return;
 
             const btn = document.getElementById('leptetes-apply-btn');
             btn.disabled = true; btn.textContent = 'Végrehajtás...';
@@ -1893,11 +1911,11 @@
                 const res = await authFetch(`${RAILWAY_URL}/api/admin/evfolyam-leptetes/apply`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ emails })
+                    body: JSON.stringify({ promoteEmails, classConfirmEmails })
                 });
                 if (!res.ok) throw new Error('Hiba történt a léptetés során.');
                 const d = await res.json();
-                alert(`Sikeres léptetés: ${d.updated} tanuló.`);
+                alert(`Sikeres léptetés: ${d.updated} tanuló évfolyamot lépett.`);
                 document.getElementById('leptetes-modal').style.display = 'none';
                 loadUsers();
             } catch (e) {

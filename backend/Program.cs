@@ -463,12 +463,14 @@ app.MapGet("/api/admin/evfolyam-leptetes/preview", (HttpContext ctx, Database db
     return Results.Ok(db.GetEvfolyamLeptetesPreview());
 });
 
-// Végrehajtás: csak a beküldött email-listában szereplő tanulók évfolyama nő eggyel.
+// Végrehajtás: a PromoteEmails listában szereplők évfolyama nő eggyel, a ClassConfirmEmails
+// listában szereplőknek (léptetve vagy sem – pl. évismétlők is) a következő belépéskor
+// meg kell erősíteniük az új osztályukat/csoportjukat/szakmájukat.
 app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLeptetesApplyRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var (_, tokenIdentity, _) = InspectAuthContext(ctx);
-    var updated = db.ApplyEvfolyamLeptetes(req.Emails ?? new(), tokenIdentity);
+    var updated = db.ApplyEvfolyamLeptetes(req.PromoteEmails ?? new(), req.ClassConfirmEmails ?? new(), tokenIdentity);
     return Results.Ok(new { success = true, updated });
 });
 

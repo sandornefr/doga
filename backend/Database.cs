@@ -901,15 +901,18 @@ public class Database
         return list;
     }
 
-    // emails: az adott tanévben ténylegesen léptetendő diákok (az évismétlők egyszerűen
-    // kimaradnak ebből a listából). Minden email a saját jelenlegi évfolyamának megfelelő
-    // következő évfolyamra kerül a EvfolyamLeptetesTerkep alapján.
-    public int ApplyEvfolyamLeptetes(List<string> emails, string vegrehajto)
+    // promoteEmails: ténylegesen léptetendő diákok (évismétlők kimaradnak) – mindegyik a
+    // jelenlegi évfolyamnak megfelelő következő évfolyamra kerül (EvfolyamLeptetesTerkep).
+    // classConfirmEmails: kiknek kell a következő belépéskor megerősítenie az új
+    // osztályát/csoportját/szakmáját – ez FÜGGETLEN a léptetéstől: évismétlőknél is
+    // előfordulhat, hogy másik osztályba/csoportba kerülnek, náluk az évfolyam nem változik,
+    // csak az osztálybesorolásukat kell újra megkérdezni.
+    public int ApplyEvfolyamLeptetes(List<string> promoteEmails, List<string> classConfirmEmails, string vegrehajto)
     {
-        if (emails == null || emails.Count == 0) return 0;
         using var conn = Open();
         var count = 0;
-        foreach (var raw in emails)
+
+        foreach (var raw in promoteEmails ?? new())
         {
             var email = raw?.ToLower().Trim() ?? "";
             if (email == "") continue;
@@ -920,16 +923,10 @@ public class Database
             var current = getCmd.ExecuteScalar() as string;
             if (current == null || !EvfolyamLeptetesTerkep.TryGetValue(current, out var uj)) continue;
 
-            // 10. évfolyam után ágazatonként/szakmánként új osztályba/csoportba kerülhetnek a
-            // tanulók -> a régi osztály/csoport csak ideiglenes placeholder marad, amíg a
-            // tanuló saját maga meg nem erősíti az újat (needs_class_confirm).
-            var needsConfirm = current == "10";
-
             using var updCmd = conn.CreateCommand();
-            updCmd.CommandText = "UPDATE users SET evfolyam = $uj, needs_class_confirm = $ncc WHERE email = $e";
-            updCmd.Parameters.AddWithValue("$uj",  uj);
-            updCmd.Parameters.AddWithValue("$ncc", needsConfirm ? 1 : 0);
-            updCmd.Parameters.AddWithValue("$e",   email);
+            updCmd.CommandText = "UPDATE users SET evfolyam = $uj WHERE email = $e";
+            updCmd.Parameters.AddWithValue("$uj", uj);
+            updCmd.Parameters.AddWithValue("$e",  email);
             updCmd.ExecuteNonQuery();
 
             using var logCmd = conn.CreateCommand();
@@ -944,6 +941,20 @@ public class Database
 
             count++;
         }
+
+        // Osztály/csoport/szakma placeholderré nyilvánítása – a régi érték megmarad, amíg
+        // a tanuló saját maga meg nem erősíti az újat (needs_class_confirm=1 -> kötelező modal).
+        foreach (var raw in classConfirmEmails ?? new())
+        {
+            var email = raw?.ToLower().Trim() ?? "";
+            if (email == "") continue;
+
+            using var ccCmd = conn.CreateCommand();
+            ccCmd.CommandText = "UPDATE users SET needs_class_confirm = 1 WHERE email = $e AND szerep = 'tanulo'";
+            ccCmd.Parameters.AddWithValue("$e", email);
+            ccCmd.ExecuteNonQuery();
+        }
+
         return count;
     }
 

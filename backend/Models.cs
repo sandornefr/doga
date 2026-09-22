@@ -113,7 +113,10 @@ public record EvfolyamLeptetesPreviewItem(
     bool Terminal             // nincs következő évfolyam (végzős, pl. 13. / 2/14.) – kihagyva
 );
 
-public record EvfolyamLeptetesApplyRequest(List<string> Emails);
+// PromoteEmails: kiknek nő az évfolyama eggyel. ClassConfirmEmails: kiknek kell a következő
+// bejelentkezéskor megerősítenie az új osztályát/csoportját/szakmáját – ez FÜGGETLEN a
+// léptetéstől, mert évismétlőknél is előfordulhat, hogy másik osztályba kerülnek.
+public record EvfolyamLeptetesApplyRequest(List<string> PromoteEmails, List<string> ClassConfirmEmails);
 
 public record UpdateOwnClassRequest(string Email, string Osztaly, string Csoport, string? Szakma);
 
