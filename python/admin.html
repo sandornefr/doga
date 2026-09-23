@@ -1332,11 +1332,11 @@
                 const evfolyamok = [...new Set(kovData.map(r=>r.evfolyam||'–'))].sort();
                 const sel = document.getElementById('kov-evfolyam');
                 sel.innerHTML = '<option value="">Minden évfolyam</option>' +
-                    evfolyamok.map(e=>`<option value="${e}">${e}. évfolyam</option>`).join('');
+                    evfolyamok.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}. évfolyam</option>`).join('');
 
                 renderKovetelmenyek(kovData);
             } catch(e) {
-                document.getElementById('kov-tbody').innerHTML = `<tr><td colspan="11" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
+                document.getElementById('kov-tbody').innerHTML = `<tr><td colspan="11" style="color:#e94560;">Hiba: ${escapeHtml(e.message)}</td></tr>`;
             } finally {
                 document.getElementById('kov-loading').style.display = 'none';
             }
@@ -1354,7 +1354,7 @@
         }
 
         function renderKovetelmenyek(rows) {
-            const ok  = v => v ? `<span title="${v}" style="color:#22c55e;font-size:1.1rem;">✅</span>` : `<span style="color:#475569;font-size:1rem;">–</span>`;
+            const ok  = v => v ? `<span title="${escapeHtml(v)}" style="color:#22c55e;font-size:1.1rem;">✅</span>` : `<span style="color:#475569;font-size:1rem;">–</span>`;
             const tbody = document.getElementById('kov-tbody');
             if (!rows.length) { tbody.innerHTML = '<tr><td colspan="11" class="loading">Nincs találat</td></tr>'; return; }
 
@@ -1367,8 +1367,8 @@
                 const pct  = Math.round(done / KOV_KEYS.length * 100);
                 const barColor = pct === 100 ? '#22c55e' : pct >= 50 ? '#fbbf24' : '#ef4444';
                 return `<tr>
-                    <td style="font-weight:600;">${r.nev||'–'}</td>
-                    <td style="text-align:center;font-size:0.85rem;">${[r.evfolyam,r.osztaly,r.csoport].filter(Boolean).join('/')}</td>
+                    <td style="font-weight:600;">${escapeHtml(r.nev||'–')}</td>
+                    <td style="text-align:center;font-size:0.85rem;">${escapeHtml([r.evfolyam,r.osztaly,r.csoport].filter(Boolean).join('/'))}</td>
                     <td style="text-align:center;">${ok(r.tananyagHtml)}</td>
                     <td style="text-align:center;">${ok(r.tananyagCss)}</td>
                     <td style="text-align:center;">${ok(r.tananyagBootstrap)}</td>
@@ -1430,10 +1430,10 @@
                       const osztalyok = evfolyamMap[ef];
                       const total = Object.values(osztalyok).reduce((a,b)=>a+b,0);
                       const reszlet = Object.keys(osztalyok).sort().map(o =>
-                        `<span style="color:#94a3b8;">${o}:</span> <strong>${osztalyok[o]}</strong>`
+                        `<span style="color:#94a3b8;">${escapeHtml(o)}:</span> <strong>${escapeHtml(osztalyok[o])}</strong>`
                       ).join(' &nbsp;·&nbsp; ');
                       return `<div style="background:#0f1e35;border:1px solid #1f3460;border-radius:10px;padding:10px 16px;min-width:160px;">
-                        <div style="font-size:1.15rem;font-weight:800;color:#7dd3fc;">${ef}. évfolyam &nbsp;<span style="font-size:0.95rem;color:#38bdf8;">${total} fő</span></div>
+                        <div style="font-size:1.15rem;font-weight:800;color:#7dd3fc;">${escapeHtml(ef)}. évfolyam &nbsp;<span style="font-size:0.95rem;color:#38bdf8;">${total} fő</span></div>
                         <div style="font-size:0.8rem;margin-top:4px;color:#cbd5e1;">${reszlet}</div>
                       </div>`;
                     }).join('')}
@@ -1441,7 +1441,7 @@
 
                 renderUsersTable();
             } catch (e) {
-                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${e.message}</td></tr>`;
+                document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7" style="color:#e94560;">Hiba: ${escapeHtml(e.message)}</td></tr>`;
             } finally {
                 document.getElementById('users-loading').style.display = 'none';
                 await loadNevsors();
@@ -1472,17 +1472,17 @@
                 const isOktato = u.szerep === 'oktato';
                 return `
                 <tr>
-                    <td style="font-weight:600;">${u.nev || ''}</td>
-                    <td style="font-size:0.85rem;">${u.email}</td>
+                    <td style="font-weight:600;">${escapeHtml(u.nev || '')}</td>
+                    <td style="font-size:0.85rem;">${escapeHtml(u.email)}</td>
                     <td><span style="color:${isOktato ? '#536dfe' : '#2ed573'};font-weight:700;">${isOktato ? 'Oktató' : 'Tanuló'}</span></td>
-                    <td style="text-align:center;">${osztalyTeljes}${u.szakma ? `<div style="font-size:0.7rem;color:#7dd3fc;white-space:nowrap;" title="${u.szakma}">${u.szakma.replace(' technikus', '')}</div>` : ''}${u.needsClassConfirm ? '<div style="font-size:0.68rem;color:#fcd34d;white-space:nowrap;" title="A következő belépéskor meg kell erősítenie az osztályát/szakmáját"><i class="fas fa-hourglass-half"></i> megerősítésre vár</div>' : ''}</td>
-                    <td style="text-align:center;">${u.csoport || '-'}</td>
+                    <td style="text-align:center;">${escapeHtml(osztalyTeljes)}${u.szakma ? `<div style="font-size:0.7rem;color:#7dd3fc;white-space:nowrap;" title="${escapeHtml(u.szakma)}">${escapeHtml(u.szakma.replace(' technikus', ''))}</div>` : ''}${u.needsClassConfirm ? '<div style="font-size:0.68rem;color:#fcd34d;white-space:nowrap;" title="A következő belépéskor meg kell erősítenie az osztályát/szakmáját"><i class="fas fa-hourglass-half"></i> megerősítésre vár</div>' : ''}</td>
+                    <td style="text-align:center;">${escapeHtml(u.csoport || '-')}</td>
                     <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
                     <td>
                         <div style="display:flex;gap:5px;flex-wrap:nowrap;">
                             <button onclick="openEditUser(${i})" title="Szerkesztés" style="padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.85rem;"><i class="fas fa-pen"></i></button>
-                            <button onclick="openResetPassword('${u.email}')" title="Jelszó visszaállítása" style="padding:4px 10px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.85rem;"><i class="fas fa-key"></i></button>
-                            <button onclick="deleteUser('${u.email}')" title="Törlés" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.85rem;"><i class="fas fa-trash"></i></button>
+                            <button onclick="openResetPassword(${jsArg(u.email)})" title="Jelszó visszaállítása" style="padding:4px 10px;background:transparent;border:1px solid #ffc107;border-radius:6px;color:#ffc107;cursor:pointer;font-size:0.85rem;"><i class="fas fa-key"></i></button>
+                            <button onclick="deleteUser(${jsArg(u.email)})" title="Törlés" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.85rem;"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>`;
@@ -1610,7 +1610,7 @@
                     ? `<div style="margin-top:10px;">
                         <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:6px;"><i class="fas fa-circle-xmark" style="color:#e94560;"></i> Még nem regisztrált:</div>
                         <div style="display:flex;flex-wrap:wrap;gap:5px;">
-                          ${hianyzok.map(n=>`<span style="background:rgba(248,113,113,0.12);border:1px solid #e94560;border-radius:20px;padding:2px 10px;color:#fca5a5;font-size:0.82rem;">${n}</span>`).join('')}
+                          ${hianyzok.map(n=>`<span style="background:rgba(248,113,113,0.12);border:1px solid #e94560;border-radius:20px;padding:2px 10px;color:#fca5a5;font-size:0.82rem;">${escapeHtml(n)}</span>`).join('')}
                         </div>
                        </div>`
                     : vanNevsor && hianyzok.length === 0
@@ -1621,7 +1621,7 @@
                 return `<details data-key="${g.key}" ${isOpen} style="background:#0a1628;border:1px solid #1f3460;border-radius:8px;overflow:hidden;">
                     <summary style="display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;list-style:none;user-select:none;">
                         <i class="fas fa-chevron-right" style="font-size:0.7rem;color:#475569;transition:transform .2s;"></i>
-                        <span style="flex:1;font-weight:600;color:#e0e0e0;font-size:0.9rem;">${g.label}</span>
+                        <span style="flex:1;font-weight:600;color:#e0e0e0;font-size:0.9rem;">${escapeHtml(g.label)}</span>
                         <span style="color:#7dd3fc;font-size:0.88rem;white-space:nowrap;">
                             <i class="fas fa-user-check" style="color:#4ade80;font-size:0.78rem;"></i> ${reg}${elvart ? ' / '+elvart : ''} fő
                         </span>
@@ -1633,8 +1633,8 @@
                             <div style="font-size:0.78rem;color:#64748b;margin-bottom:4px;">Névsor (soronként egy név):</div>
                             <textarea id="nevsor-ta-${g.key}" rows="6"
                                 style="width:100%;box-sizing:border-box;background:#0f1e35;border:1px solid #1f3460;border-radius:6px;color:#e0e0e0;padding:7px 10px;font-size:0.82rem;font-family:inherit;resize:vertical;"
-                                placeholder="Pl.:\nKovács Péter\nNagy Anna">${savedNevsor}</textarea>
-                            <button onclick="saveCsoportNevsor('${g.key}')"
+                                placeholder="Pl.:\nKovács Péter\nNagy Anna">${escapeHtml(savedNevsor)}</textarea>
+                            <button onclick="saveCsoportNevsor(${jsArg(g.key)})"
                                 style="margin-top:6px;padding:5px 16px;background:#536dfe;border:none;border-radius:6px;color:white;font-weight:700;font-size:0.82rem;cursor:pointer;">
                                 <i class="fas fa-floppy-disk"></i> Mentés
                             </button>
@@ -1682,11 +1682,11 @@
             badge.textContent = data.length + ' db';
             list.innerHTML = data.map(r => `
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #2a1500;">
-                    <span style="color:#e0e0e0;font-weight:600;min-width:140px;">${r.nev}</span>
-                    <span style="color:#94a3b8;font-size:0.85rem;min-width:180px;">${r.email}</span>
-                    <span style="color:#94a3b8;font-size:0.85rem;">${r.osztaly || ''}${r.csoport ? ' / ' + r.csoport + '. cs.' : ''}</span>
-                    <span style="color:#6b7280;font-size:0.78rem;margin-left:auto;">${r.createdAt}</span>
-                    <button onclick="openResetPassword('${r.email}', ${r.id})" style="padding:4px 12px;background:transparent;border:1px solid #f59e0b;border-radius:6px;color:#fcd34d;cursor:pointer;font-size:0.85rem;font-weight:600;">Visszaállítás</button>
+                    <span style="color:#e0e0e0;font-weight:600;min-width:140px;">${escapeHtml(r.nev)}</span>
+                    <span style="color:#94a3b8;font-size:0.85rem;min-width:180px;">${escapeHtml(r.email)}</span>
+                    <span style="color:#94a3b8;font-size:0.85rem;">${escapeHtml(r.osztaly || '')}${r.csoport ? ' / ' + escapeHtml(r.csoport) + '. cs.' : ''}</span>
+                    <span style="color:#6b7280;font-size:0.78rem;margin-left:auto;">${escapeHtml(r.createdAt)}</span>
+                    <button onclick="openResetPassword(${jsArg(r.email)}, ${Number(r.id)})" style="padding:4px 12px;background:transparent;border:1px solid #f59e0b;border-radius:6px;color:#fcd34d;cursor:pointer;font-size:0.85rem;font-weight:600;">Visszaállítás</button>
                     <button onclick="dismissPwResetRequest(${r.id})" style="padding:4px 10px;background:transparent;border:1px solid #374151;border-radius:6px;color:#6b7280;cursor:pointer;font-size:0.82rem;">Elvetve</button>
                 </div>`).join('');
         }
@@ -1854,43 +1854,43 @@
 
                 const toggleBtns = terminal ? `
                     <span style="color:#475569;font-size:0.72rem;">törlés:</span>
-                    <button onclick="toggleLeptetesGroup('${key}','del',true)" style="padding:2px 7px;background:transparent;border:1px solid #f87171;border-radius:6px;color:#f87171;font-size:0.72rem;cursor:pointer;">mind</button>
-                    <button onclick="toggleLeptetesGroup('${key}','del',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>` : `
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'del',true)" style="padding:2px 7px;background:transparent;border:1px solid #f87171;border-radius:6px;color:#f87171;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'del',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>` : `
                     <span style="color:#475569;font-size:0.72rem;">lépt.:</span>
-                    <button onclick="toggleLeptetesGroup('${key}','lep',true)" style="padding:2px 7px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.72rem;cursor:pointer;">mind</button>
-                    <button onclick="toggleLeptetesGroup('${key}','lep',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'lep',true)" style="padding:2px 7px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'lep',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>
                     <span style="color:#475569;font-size:0.72rem;margin-left:6px;">oszt.meg.:</span>
-                    <button onclick="toggleLeptetesGroup('${key}','cc',true)" style="padding:2px 7px;background:transparent;border:1px solid #fcd34d;border-radius:6px;color:#fcd34d;font-size:0.72rem;cursor:pointer;">mind</button>
-                    <button onclick="toggleLeptetesGroup('${key}','cc',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>`;
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'cc',true)" style="padding:2px 7px;background:transparent;border:1px solid #fcd34d;border-radius:6px;color:#fcd34d;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup(${jsArg(key)},'cc',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>`;
 
                 const rows = items.map(it => `
                     <div style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;" onmouseover="this.style.background='#0f1e35'" onmouseout="this.style.background='transparent'">
                         ${terminal ? `
                         <label style="display:flex;align-items:center;gap:4px;cursor:pointer;" title="${it.frissenLeptetett ? 'Idén léptetve lett erre az évfolyamra – még jár, nem végzett!' : 'Fiók és minden adat törlése (végzett)'}">
-                            <input type="checkbox" class="del-chk" data-email="${it.email}" data-evfolyam="${key}"
+                            <input type="checkbox" class="del-chk" data-email="${escapeHtml(it.email)}" data-evfolyam="${escapeHtml(key)}"
                                 ${it.frissenLeptetett ? '' : 'checked'} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#f87171;">törlés</span>
                         </label>
                         ${it.frissenLeptetett ? '<span style="font-size:0.68rem;color:#4ade80;" title="Idén léptetve – jelenlegi tanuló"><i class="fas fa-circle-info"></i> idén léptetve</span>' : ''}` : `
                         <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Léptetés eggyel feljebb">
-                            <input type="checkbox" class="lep-chk" data-email="${it.email}" data-evfolyam="${key}"
+                            <input type="checkbox" class="lep-chk" data-email="${escapeHtml(it.email)}" data-evfolyam="${escapeHtml(key)}"
                                 ${it.frissenLeptetett ? '' : 'checked'} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#4ade80;">lépt.</span>
                         </label>
                         <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Osztály/csoport/szakma megerősítés kérése a diáktól – akkor is bepipálható, ha nem lép évfolyamot (pl. évismétlő, de más osztályba kerül)">
-                            <input type="checkbox" class="cc-chk" data-email="${it.email}" data-evfolyam="${key}"
+                            <input type="checkbox" class="cc-chk" data-email="${escapeHtml(it.email)}" data-evfolyam="${escapeHtml(key)}"
                                 ${terminal ? 'disabled' : ''} ${ccDefault && !terminal ? 'checked' : ''} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#fcd34d;">oszt.meg.</span>
                         </label>`}
-                        <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${it.nev}${!terminal && it.frissenLeptetett ? ' <span style="font-size:0.68rem;color:#fcd34d;" title="Idén már lépett évfolyamot – a szerver nem lépteti újra"><i class="fas fa-lock"></i> idén már lépett</span>' : ''}</span>
-                        <span style="font-size:0.78rem;color:#64748b;">${it.osztaly || '–'}${it.csoport ? '/' + it.csoport : ''}</span>
-                        <span style="font-size:0.78rem;color:#475569;">${it.email}</span>
+                        <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${escapeHtml(it.nev)}${!terminal && it.frissenLeptetett ? ' <span style="font-size:0.68rem;color:#fcd34d;" title="Idén már lépett évfolyamot – a szerver nem lépteti újra"><i class="fas fa-lock"></i> idén már lépett</span>' : ''}</span>
+                        <span style="font-size:0.78rem;color:#64748b;">${escapeHtml(it.osztaly || '–')}${it.csoport ? '/' + escapeHtml(it.csoport) : ''}</span>
+                        <span style="font-size:0.78rem;color:#475569;">${escapeHtml(it.email)}</span>
                     </div>`).join('');
 
                 return `
                     <div style="margin-bottom:14px;background:#0f1e35;border:1px solid #1f3460;border-radius:10px;padding:10px 12px;">
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-                            <b style="color:#7dd3fc;">${key}. évfolyam</b>
+                            <b style="color:#7dd3fc;">${escapeHtml(key)}. évfolyam</b>
                             <span style="color:#64748b;font-size:0.8rem;">(${items.length} fő)</span>
                             ${headerRight}
                             <div style="margin-left:auto;display:flex;gap:5px;align-items:center;">${toggleBtns}</div>
@@ -1910,7 +1910,7 @@
 
         function toggleLeptetesGroup(evfolyam, type, checked) {
             const cls = type === 'cc' ? '.cc-chk' : type === 'del' ? '.del-chk' : '.lep-chk';
-            document.querySelectorAll(`${cls}[data-evfolyam="${evfolyam}"]`).forEach(chk => {
+            document.querySelectorAll(`${cls}[data-evfolyam="${CSS.escape(evfolyam)}"]`).forEach(chk => {
                 if (!chk.disabled) chk.checked = checked;
             });
             updateLeptetesSummary();
@@ -2237,7 +2237,7 @@
                     html += `<tr class="quiz-detail-row" style="display:none">
                         <td style="padding-left:28px;color:#64748b">${ri+1}. próba</td>
                         <td colspan="3" style="color:#94a3b8">${r.submittedAt?.substring(0,16)||'–'}</td>
-                        <td style="text-align:center"><span style="background:#0f3460;border-radius:4px;padding:2px 8px;font-size:0.75rem">${tipusNev[r.tipus]||r.tipus}</span></td>
+                        <td style="text-align:center"><span style="background:#0f3460;border-radius:4px;padding:2px 8px;font-size:0.75rem">${escapeHtml(tipusNev[r.tipus]||r.tipus)}</span></td>
                         <td style="text-align:center">${r.pont} / ${r.maxPont}</td>
                         <td style="text-align:center">${r.szazalek}%</td>
                         <td style="text-align:center;font-weight:700;color:${gc2}">${r.jegy ? r.jegy+' – '+GRADE_NAMES[r.jegy] : '–'}</td>
@@ -2448,7 +2448,7 @@
             const current = sel.value;
             const classes = [...new Set(submissionsRaw.map(s => s.osztaly).filter(Boolean))].sort();
             sel.innerHTML = '<option value="">Minden osztály</option>' +
-                classes.map(c => `<option value="${c}"${c===current?' selected':''}>${c}</option>`).join('');
+                classes.map(c => `<option value="${escapeHtml(c)}"${c===current?' selected':''}>${escapeHtml(c)}</option>`).join('');
         }
 
         function applySubmissionFilters() {
@@ -2501,11 +2501,11 @@
                 const scoreColor = pct >= 80 ? '#4ade80' : pct >= 60 ? '#fbbf24' : pct >= 40 ? '#fb923c' : '#f87171';
                 row.innerHTML = `
                     <td>${formatDate(sub.submittedAt)}</td>
-                    <td>${sub.name}</td>
-                    <td style="text-align:center;">${sub.osztaly || '–'}</td>
-                    <td style="text-align:center;">${sub.csoport ? sub.csoport + '. cs.' : '–'}</td>
+                    <td>${escapeHtml(sub.name)}</td>
+                    <td style="text-align:center;">${escapeHtml(sub.osztaly || '–')}</td>
+                    <td style="text-align:center;">${sub.csoport ? escapeHtml(sub.csoport) + '. cs.' : '–'}</td>
                     <td style="text-align:center;">${subjectBadge(sub)}</td>
-                    <td style="font-size:0.82rem;color:#94a3b8;">${sub.taskIds || '–'}</td>
+                    <td style="font-size:0.82rem;color:#94a3b8;">${escapeHtml(sub.taskIds || '–')}</td>
                     <td style="text-align:center;color:${scoreColor};font-weight:700;">${sub.totalScore}/${sub.maxTotal} <span style="color:#64748b;font-weight:400;font-size:0.8rem;">(${pct}%)</span></td>
                     <td style="text-align:center;">${duration} perc</td>
                     <td style="text-align:center;font-size:1.1rem;font-weight:700;color:${gradeColor(calcGrade(sub.totalScore, sub.maxTotal))};">${calcGrade(sub.totalScore, sub.maxTotal)}</td>
@@ -2773,7 +2773,7 @@
                         </button>
                     </td>
                     <td style="text-align:center">
-                        ${taskCode ? `<button onclick="openCodeViewer(${JSON.stringify(escapeHtml(s.name||''))}, ${JSON.stringify(escapeHtml(taskCode))})" style="padding:3px 10px;border-radius:6px;border:1px solid #536dfe;background:transparent;color:#536dfe;cursor:pointer;font-size:0.8rem;"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#555;font-size:0.8rem;"><i class="fas fa-minus"></i></span>'}
+                        ${taskCode ? `<button onclick="openCodeViewer(${jsArg(s.name||'')}, ${jsArg(taskCode)})" style="padding:3px 10px;border-radius:6px;border:1px solid #536dfe;background:transparent;color:#536dfe;cursor:pointer;font-size:0.8rem;"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#555;font-size:0.8rem;"><i class="fas fa-minus"></i></span>'}
                     </td>
                 </tr>`;
             }).join('');
@@ -2788,8 +2788,8 @@
 
         function openCodeViewer(name, code) {
             const content = document.getElementById('submission-details-content');
-            content.innerHTML = `<div style="font-weight:700;margin-bottom:8px">${name}</div>
-                <textarea readonly style="width:100%;min-height:340px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;">${code}</textarea>`;
+            content.innerHTML = `<div style="font-weight:700;margin-bottom:8px">${escapeHtml(name)}</div>
+                <textarea readonly style="width:100%;min-height:340px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;">${escapeHtml(code)}</textarea>`;
             openSubmissionModal();
         }
 
@@ -2830,7 +2830,7 @@
 
                 const scoresAreaHtml = taskIds.map((tid, i) => `
                     <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:7px 10px;background:#0d0d1a;border-radius:8px;border:1px solid #222;flex-wrap:wrap">
-                        <span style="flex:1;font-size:0.9rem;min-width:100px"><strong>${i+1}. feladat</strong> <span style="color:#555;font-size:0.8rem">#${tid}</span></span>
+                        <span style="flex:1;font-size:0.9rem;min-width:100px"><strong>${i+1}. feladat</strong> <span style="color:#555;font-size:0.8rem">#${escapeHtml(tid)}</span></span>
                         <div id="crit-dots-${i}" style="display:flex;gap:3px;flex-wrap:wrap;align-items:center"></div>
                         <div style="display:flex;align-items:center;gap:4px">
                             <input type="number" id="score-input-${i}" value="${scores[i] || 0}" min="0" max="${maxScores[i] || 14}"
@@ -2842,7 +2842,7 @@
 
                 const codeHtml = (() => {
                     if (!codeTasks.length) return `<textarea readonly style="width:100%;min-height:200px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;margin-top:6px">${escapeHtml(data.codeSnapshot || '')}</textarea>`;
-                    return codeTasks.map(t => `<div style="margin-top:8px;font-size:0.85rem;color:#aaa">Feladat ${t.task}:</div>
+                    return codeTasks.map(t => `<div style="margin-top:8px;font-size:0.85rem;color:#aaa">Feladat ${escapeHtml(t.task)}:</div>
                         <textarea readonly style="width:100%;min-height:120px;font-family:monospace;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#e0e0e0;white-space:pre;margin-top:4px">${escapeHtml(t.code || '')}</textarea>`).join('');
                 })();
 
@@ -2929,8 +2929,9 @@
             }
         });
 
+        // HTML-escape: minden diáktól/adatbázisból jövő szöveg így kerüljön innerHTML-be.
         function escapeHtml(value) {
-            return value
+            return String(value ?? '')
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
@@ -3121,7 +3122,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         ${!ts.aktiv ? `<button onclick="activateTaskSet(${ts.id})"
                             style="padding:4px 10px;background:#1a3a1a;border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.8rem;">
                             <i class="fas fa-check"></i> Aktívvá</button>` : ''}
-                        <button onclick="deleteTaskSet(${ts.id}, '${escHtml(ts.nev)}')"
+                        <button onclick="deleteTaskSet(${Number(ts.id)}, ${jsArg(ts.nev)})"
                             style="padding:4px 10px;background:#3a1a1a;border:1px solid #e94560;border-radius:6px;color:#e94560;cursor:pointer;font-size:0.8rem;">
                             <i class="fas fa-trash"></i> Törlés</button>
                     </td>
@@ -3221,7 +3222,13 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
         }
 
         function escHtml(s) {
-            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            return escapeHtml(s);
+        }
+
+        // Inline eseménykezelő (onclick="f(...)") paramétere: előbb JS-string (JSON), aztán HTML-escape.
+        // Csak HTML-escape NEM elég: a böngésző a kód futtatása előtt visszaalakítja az entitásokat.
+        function jsArg(value) {
+            return escapeHtml(JSON.stringify(String(value ?? '')));
         }
 
         function formatDate(val) {
@@ -3347,7 +3354,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         <div style="font-size:0.75rem;color:#888;">${escHtml(p.email)}</div>
                     </td>
                     <td style="text-align:center;color:#aaa;">${escHtml(p.osztaly || '–')}</td>
-                    <td style="text-align:center;color:#aaa;">${p.csoport ? p.csoport + '. cs.' : '–'}</td>
+                    <td style="text-align:center;color:#aaa;">${p.csoport ? escapeHtml(p.csoport) + '. cs.' : '–'}</td>
                     <td style="text-align:center;">
                         ${w.sessions > 0 ? `<span style="color:#64b5f6;font-weight:600;">${Math.round(w.avgPercent || 0)}%</span><br><span style="color:#555;font-size:0.75rem;">${w.sessions} alk.</span>` : '<span style="color:#333;">–</span>'}
                     </td>
@@ -3837,8 +3844,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                                 <span style="color:#475569;font-size:0.72rem;margin-left:6px;">${escHtml(k.createdAt)}</span>
                             </div>
                             <div style="display:flex;gap:6px;">
-                                <button onclick="approveTeszteloKervenyt('${escHtml(k.email)}')" style="padding:4px 12px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.8rem;cursor:pointer;font-weight:600;">✓ Jóváhagy</button>
-                                <button onclick="rejectTeszteloKervenyt('${escHtml(k.email)}')" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.8rem;cursor:pointer;">✕</button>
+                                <button onclick="approveTeszteloKervenyt(${jsArg(k.email)})" style="padding:4px 12px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.8rem;cursor:pointer;font-weight:600;">✓ Jóváhagy</button>
+                                <button onclick="rejectTeszteloKervenyt(${jsArg(k.email)})" style="padding:4px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.8rem;cursor:pointer;">✕</button>
                             </div>
                         </div>`).join('');
                 } else if (wrap) {
@@ -3865,7 +3872,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         const info = u?.osztaly ? ` <span style="color:#6366f1;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
                         return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#c7d2fe;">
                             🔬 ${nev}${info}
-                            <button onclick="removeTesztelő('${escHtml(email)}')" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
+                            <button onclick="removeTesztelő(${jsArg(email)})" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
                         </span>`;
                     }).join('');
                 }
@@ -3920,8 +3927,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         <span style="color:#475569;font-size:0.72rem;margin-left:6px;">${escHtml(u.email)}</span>
                     </div>
                     ${isTesztelő
-                        ? `<button onclick="removeTesztelő('${escHtml(u.email)}')" style="padding:3px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.78rem;cursor:pointer;white-space:nowrap;">✕ Eltávolítás</button>`
-                        : `<button onclick="addTesztelőEmail('${escHtml(u.email)}')" style="padding:3px 10px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.78rem;cursor:pointer;font-weight:600;white-space:nowrap;">+ Tesztelő</button>`
+                        ? `<button onclick="removeTesztelő(${jsArg(u.email)})" style="padding:3px 10px;background:transparent;border:1px solid #e94560;border-radius:6px;color:#e94560;font-size:0.78rem;cursor:pointer;white-space:nowrap;">✕ Eltávolítás</button>`
+                        : `<button onclick="addTesztelőEmail(${jsArg(u.email)})" style="padding:3px 10px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-size:0.78rem;cursor:pointer;font-weight:600;white-space:nowrap;">+ Tesztelő</button>`
                     }
                 </div>`;
             }).join('');
@@ -4065,7 +4072,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 const info = u?.osztaly ? ` <span style="color:#0d9488;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
                 return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#2dd4bf;">
                     ✏️ ${nev}${info}
-                    <button onclick="removeFeladatkeszito('${escHtml(email)}')" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
+                    <button onclick="removeFeladatkeszito(${jsArg(email)})" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
                 </span>`;
             }).join('');
         }
@@ -4083,7 +4090,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             const stats = await res.json();
             if (!stats.length) { el.innerHTML = '<span style="color:#555;font-size:0.83rem;font-style:italic;">Még nincs beküldött feladat.</span>'; return; }
             el.innerHTML = stats.map(s => {
-                const tipusok = Object.entries(s.typusDb||{}).map(([k,v])=>`${k}: ${v}`).join(', ');
+                const tipusok = Object.entries(s.typusDb||{}).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ');
                 return `<div style="background:#0a1628;border:1px solid #1a3a5c;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:0.83rem;">
                     <span style="color:#2dd4bf;font-weight:700;">✏️ ${escHtml(s.nev||s.email)}</span>
                     ${s.osztaly ? `<span style="color:#0d9488;margin-left:6px;font-size:0.75rem;">${escHtml(s.osztaly)}</span>` : ''}

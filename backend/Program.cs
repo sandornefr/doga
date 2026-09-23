@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using KandoTest;
 
@@ -142,6 +143,17 @@ static string NormalizeSchoolEmail(string? raw)
 }
 
 static bool IsPrivilegedRole(string role) => role is "oktato" or "admin";
+
+// ── Bemenet-ellenőrzés (felhasználói adatok, amik más felületeken megjelennek) ──
+// Név: betűk (ékezettel), szóköz, kötőjel, pont – HTML/JS-ben értelmezhető karakter nem lehet benne.
+static bool ErvenyesNev(string? s) =>
+    !string.IsNullOrWhiteSpace(s) && s.Trim().Length <= 50 &&
+    Regex.IsMatch(s.Trim(), @"^[\p{L}\p{M}][\p{L}\p{M} .\-]*$");
+// Email helyi része: kisbetű, szám, pont, aláhúzás, kötőjel, plusz (csak új regisztrációnál kötelező).
+static bool ErvenyesIskolaiEmail(string email) => Regex.IsMatch(email, @"^[a-z0-9._+\-]+@kkszki\.hu$");
+static bool ErvenyesEvfolyam(string? e) => string.IsNullOrEmpty(e) || Database.Evfolyamok.Contains(e);
+static bool ErvenyesOsztaly(string? o) => string.IsNullOrEmpty(o) || Regex.IsMatch(o, "^[A-Z]$");
+static bool ErvenyesCsoport(string? c) => string.IsNullOrEmpty(c) || Regex.IsMatch(c, "^[a-z0-9]{1,10}$");
 
 (bool Valid, string Identity, string Role) InspectAuthContext(HttpContext ctx)
 {
@@ -372,6 +384,12 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
 
     if (string.IsNullOrWhiteSpace(req.Vezeteknev) || string.IsNullOrWhiteSpace(req.Keresztnev))
         return Results.BadRequest(new { error = "Kérlek add meg a nevedet!" });
+    if (!ErvenyesNev(req.Vezeteknev) || !ErvenyesNev(req.Keresztnev))
+        return Results.BadRequest(new { error = "A név csak betűket, szóközt, kötőjelet és pontot tartalmazhat (max. 50 karakter)." });
+    if (!ErvenyesIskolaiEmail(email))
+        return Results.BadRequest(new { error = "Az email cím csak kisbetűt, számot, pontot, kötőjelet és aláhúzást tartalmazhat." });
+    if (requestedRole == "tanulo" && (!ErvenyesEvfolyam(req.Evfolyam?.Trim()) || !ErvenyesOsztaly(req.Osztaly?.Trim()) || !ErvenyesCsoport(req.Csoport?.Trim())))
+        return Results.BadRequest(new { error = "Érvénytelen évfolyam, osztály vagy csoport." });
 
     if (req.Jelszo.Length < 6)
         return Results.BadRequest(new { error = "A jelszó legalább 6 karakter legyen!" });
@@ -414,6 +432,7 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
 
     var hash = BCrypt.Net.BCrypt.HashPassword(req.Jelszo);
     var normalizedReq = req with { Email = email, Szerep = requestedRole, Szakma = regSzakma,
+                                   Vezeteknev = req.Vezeteknev.Trim(), Keresztnev = req.Keresztnev.Trim(),
                                    Csoport = Database.NincsCsoportEvfolyam(req.Evfolyam) ? null : req.Csoport };
     var success = db.RegisterUser(normalizedReq, hash);
 
@@ -474,6 +493,10 @@ app.MapPost("/api/users/{email}/update", (HttpContext ctx, string email, UpdateU
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     if (string.IsNullOrWhiteSpace(req.Vezeteknev)) return Results.BadRequest(new { error = "A vezetéknév nem lehet üres!" });
     if (string.IsNullOrWhiteSpace(req.Keresztnev)) return Results.BadRequest(new { error = "A keresztnév nem lehet üres!" });
+    if (!ErvenyesNev(req.Vezeteknev) || !ErvenyesNev(req.Keresztnev))
+        return Results.BadRequest(new { error = "A név csak betűket, szóközt, kötőjelet és pontot tartalmazhat (max. 50 karakter)." });
+    if (!ErvenyesEvfolyam(req.Evfolyam?.Trim()) || !ErvenyesOsztaly(req.Osztaly?.Trim()) || !ErvenyesCsoport(req.Csoport?.Trim()))
+        return Results.BadRequest(new { error = "Érvénytelen évfolyam, osztály vagy csoport." });
     var ok = db.UpdateUserBasic(Uri.UnescapeDataString(email), req.Vezeteknev.Trim(), req.Keresztnev.Trim(), req.Csoport?.Trim(), req.Evfolyam?.Trim(), req.Osztaly?.Trim());
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
 });
@@ -888,6 +911,8 @@ app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassReques
 
     var csoport = req.Csoport.Trim();
     if (csoport == "nincs" || Database.NincsCsoportEvfolyam(sajatEvfolyam)) csoport = null;
+    if (!ErvenyesOsztaly(req.Osztaly.Trim()) || !ErvenyesCsoport(csoport))
+        return Results.BadRequest(new { error = "Érvénytelen osztály vagy csoport." });
     var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), csoport, szakma);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
 });
