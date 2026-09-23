@@ -2369,7 +2369,7 @@
             .filter(({ r }) => r && r.rank > 0)
             .map(({ r, icon }) => `<div class="ered-rank-row">
                     <i class="fas ${icon}" style="margin-right:5px;"></i>
-                    A <strong>${r.groupLabel}</strong>ban <strong>${r.rank}. helyen</strong> állsz (${r.groupSize} főből)
+                    A <strong>${escHtml(r.groupLabel)}</strong>ban <strong>${r.rank}. helyen</strong> állsz (${r.groupSize} főből)
                 </div>`).join('');
         const titleColor = targy === 'python' ? '#3b82f6' : '#fb923c';
         const titleIcon  = targy === 'python' ? 'fab fa-python' : 'fas fa-globe';
@@ -3567,7 +3567,7 @@ if (location.hash === '#web-tanulas') {
             if (cntBadge) cntBadge.textContent = humans.length > 0 ? `${humans.length} fő online` : '0 fő online';
             if (modalCnt) modalCnt.textContent = humans.length > 0 ? `${humans.length} online` : '';
             const humanHtml = humans.map(m => `
-                <button class="duel-member-btn" onclick="document.getElementById('duel-online-modal').classList.remove('open'); sendDuelInvite('${m.email}','${escJs(m.nev)}')">
+                <button class="duel-member-btn" onclick="document.getElementById('duel-online-modal').classList.remove('open'); sendDuelInvite(${attrJs(m.email)},${attrJs(m.nev)})">
                     <i class="fas fa-circle" style="font-size:.45rem;color:#22c55e;flex-shrink:0;"></i>
                     <span style="flex:1;">${escHtml(m.nev)}</span>
                     <span style="color:#f59e0b;font-size:0.78rem;font-weight:700;"><i class="fas fa-code-compare" style="margin-right:4px;"></i>Kihívom</span>
@@ -3714,6 +3714,8 @@ if (location.hash === '#web-tanulas') {
 
     function escHtml(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function escJs(t)   { return String(t).replace(/'/g,"\\'"); }
+    // Inline onclick paraméter: JS-string (JSON) + HTML-attribútum escape.
+    function attrJs(t)  { return JSON.stringify(String(t ?? '')).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     initDuel();
 })();

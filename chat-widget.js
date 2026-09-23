@@ -166,12 +166,12 @@
 
     function fmtLabel(msg) {
         return msg.senderSzerep === 'oktato'
-            ? `<i class="fas fa-chalkboard-teacher" style="font-size:.65rem;margin-right:3px;color:#a371f7"></i>${msg.senderNev || msg.senderEmail}`
-            : `<i class="fas fa-flask" style="font-size:.65rem;margin-right:3px;color:#eab308"></i>${msg.senderNev || msg.senderEmail}`;
+            ? `<i class="fas fa-chalkboard-teacher" style="font-size:.65rem;margin-right:3px;color:#a371f7"></i>${escHtml(msg.senderNev || msg.senderEmail)}`
+            : `<i class="fas fa-flask" style="font-size:.65rem;margin-right:3px;color:#eab308"></i>${escHtml(msg.senderNev || msg.senderEmail)}`;
     }
 
     function escHtml(t) {
-        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
 
     function renderMessages(msgs) {

@@ -776,7 +776,7 @@ function showResult(d) {
             <div class="result-score-val">${myScore ?? 0}/${myMax ?? 8}p</div>
         </div>
         <div class="result-score-card ${!iWon&&!isDraw?'winner-card':''}">
-            <div class="result-score-name">${oppLabel}</div>
+            <div class="result-score-name">${escHtml(oppLabel)}</div>
             <div class="result-score-val">${oppScore ?? 0}/${oppMax ?? 8}p</div>
         </div>`;
     // Megoldás gomb – csak ha van megoldás a feladathoz
@@ -935,7 +935,7 @@ function toggleChat() {
 }
 
 function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 </body>

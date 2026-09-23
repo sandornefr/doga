@@ -897,10 +897,10 @@ function makeCard(s) {
         return `<div style="width:9px;height:9px;border-radius:50%;background:${bg};border:1.5px solid ${border};flex-shrink:0" title="${k.label}${done?'':' – hiányzik'}"></div>`;
     }).join('');
 
-    return `<div class="student-card${cardCls}" data-email="${s.email}" data-nev="${(s.nev||'').toLowerCase()}">
+    return `<div class="student-card${cardCls}" data-email="${escHtml(s.email)}" data-nev="${escHtml((s.nev||'').toLowerCase())}">
         ${badge}
-        <div class="card-name" title="${s.nev||s.email}">${s.nev||s.email}</div>
-        <div class="card-sub">${evozLabel}${evozLabel&&csLabel?' / ':''}${csLabel}</div>
+        <div class="card-name" title="${escHtml(s.nev||s.email)}">${escHtml(s.nev||s.email)}</div>
+        <div class="card-sub">${escHtml(evozLabel)}${evozLabel&&csLabel?' / ':''}${escHtml(csLabel)}</div>
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
             ${kDots}
             <span style="font-size:0.65rem;color:${stColor.color};font-weight:700;margin-left:3px">${doneCnt}/${total}</span>
@@ -1138,7 +1138,7 @@ function renderDetail(s) {
                 ${s._isFeladatkeszito ? `<span class="feladatkeszito-badge"><i class="fas fa-pen-nib"></i> Feladatkészítő</span>` : ''}
             </div>
             <div class="detail-meta">
-                <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${evozLabel} · ${csLabel}</span>
+                <span><i class="fas fa-school" style="margin-right:4px;color:#8b949e"></i>${escHtml(evozLabel)} · ${escHtml(csLabel)}</span>
                 <span><i class="fas fa-circle" style="font-size:.55rem;color:${actClr};margin-right:4px"></i>${act.long}</span>
                 <span style="font-weight:700;color:${stColor.color}">Kötelező: ${doneCnt}/${total}</span>
             </div>
@@ -1189,7 +1189,7 @@ function openCsoportModal() {
         return `<label class="csoport-check-item${checked?' checked':''}" onclick="toggleCsCheck(this, '${k}')">
             <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();toggleCsCheck(this.closest('label'),'${k}')">
             <div>
-                <div class="csoport-check-label">${groupLabel(g.ef,g.oz,g.cs)}</div>
+                <div class="csoport-check-label">${escHtml(groupLabel(g.ef,g.oz,g.cs))}</div>
                 <div class="csoport-check-sub">${g.count} tanuló</div>
             </div>
         </label>`;
@@ -1318,7 +1318,7 @@ function renderCompareView() {
     const efLabel = ef ? ef+'. évfolyam' : 'Összes évfolyam';
     panel.innerHTML = `
         <div class="compare-view">
-            <div class="compare-title"><i class="fas fa-chart-bar"></i> Csoportok összehasonlítása – ${efLabel}</div>
+            <div class="compare-title"><i class="fas fa-chart-bar"></i> Csoportok összehasonlítása – ${escHtml(efLabel)}</div>
             ${rows || '<div style="color:#8b949e;font-size:.85rem;padding:20px 0">Nincs adat a kiválasztott szűrőre.</div>'}
         </div>`;
 }
@@ -1338,7 +1338,7 @@ function switchDetailTab(tab) {
     if (tab === 'profil') {
         const el = document.getElementById('detail-content');
         const email = encodeURIComponent(currentDetailData.email);
-        el.innerHTML = `<iframe src="profil.html?email=${email}&embed=true"
+        el.innerHTML = `<iframe src="profil.html?email=${encodeURIComponent(email)}&embed=true"
             style="width:100%;height:calc(100vh - 200px);border:none;border-radius:0 0 8px 8px;background:#0d1117;"
             loading="lazy"></iframe>`;
         return;
