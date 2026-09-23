@@ -110,8 +110,12 @@ public record EvfolyamLeptetesPreviewItem(
     string? Osztaly,
     string? Csoport,
     bool NeedsClassConfirm,   // ágazati vizsga utáni szakma/osztály-váltás (10→11)
-    bool Terminal             // nincs következő évfolyam (végzős, pl. 13. / 2/14.) – kihagyva
+    bool Terminal,            // nincs következő évfolyam (végzős, pl. 13. / 2/14.) – kihagyva
+    bool FrissenLeptetett     // az elmúlt ~10 hónapban léptetés hozta a mostani évfolyamára -> még jár, NEM végzett
 );
+
+// Végzősök (13. / 2/14.) törlése minden kapcsolódó adatukkal együtt.
+public record VegzosokTorleseRequest(List<string> Emails);
 
 // PromoteEmails: kiknek nő az évfolyama eggyel. ClassConfirmEmails: kiknek kell a következő
 // bejelentkezéskor megerősítenie az új osztályát/csoportját/szakmáját – ez FÜGGETLEN a

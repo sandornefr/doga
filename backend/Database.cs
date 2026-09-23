@@ -876,8 +876,12 @@ public class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT vezeteknev, keresztnev, email, evfolyam, osztaly, csoport
-            FROM users
+            SELECT u.vezeteknev, u.keresztnev, u.email, u.evfolyam, u.osztaly, u.csoport,
+                   EXISTS (SELECT 1 FROM evfolyam_leptetes_log l
+                           WHERE LOWER(l.email) = LOWER(u.email)
+                             AND l.uj_evfolyam = u.evfolyam
+                             AND l.vegrehajtva_at >= datetime('now', 'localtime', '-300 days')) AS friss
+            FROM users u
             WHERE szerep = 'tanulo'
               AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
             ORDER BY evfolyam, osztaly, csoport, vezeteknev, keresztnev";
@@ -895,10 +899,91 @@ public class Database
                 r.IsDBNull(4) ? null : r.GetString(4),
                 r.IsDBNull(5) ? null : r.GetString(5),
                 evfolyam == "10",
-                evfolyam != null && ujEvfolyam == null
+                evfolyam != null && ujEvfolyam == null,
+                r.GetInt64(6) == 1
             ));
         }
         return list;
+    }
+
+    // Végzős évfolyamok: ezekről nincs továbblépés, a tanév végén kimennek az iskolából.
+    private static readonly HashSet<string> VegzosEvfolyamok = new() { "13", "2/14" };
+
+    // Tanuló-azonosítóhoz (email) kötött adatok táblánként – végzős törlésekor mind törlődik.
+    // (tavolkozles_results csak nevet tárol, emailt nem, ezért nem törölhető biztonságosan.)
+    private static readonly (string Tabla, string Oszlop)[] TanuloAdatTablak =
+    {
+        ("submissions",               "email"),
+        ("progress",                  "email"),
+        ("task_ratings",              "email"),
+        ("user_state",                "email"),
+        ("otlet_lada",                "email"),
+        ("tesztelok",                 "email"),
+        ("feladatkeszitok",           "email"),
+        ("feladat_javaslatok",        "email"),
+        ("teszteloi_uzenet_olvasott", "email"),
+        ("teszteloi_uzenetek",        "recipient_email"),
+        ("teszteloi_kervenyok",       "email"),
+        ("sessions",                  "user_email"),
+        ("duels",                     "challenger_email"),
+        ("duels",                     "opponent_email"),
+        ("chat_messages",             "sender_email"),
+        ("password_reset_requests",   "email"),
+        ("password_reset_codes",      "email"),
+        ("havijegyek",                "email"),
+        ("quiz_results",              "email"),
+        ("szamonkeres_beadas",        "tanulo_email"),
+    };
+
+    // Csak tényleg végzős évfolyamú tanulót töröl (13. / 2/14.) – egy rossz email-lista így
+    // sem törölhet aktív diákot. Tanulónként egy tranzakció: vagy minden adata törlődik, vagy semmi.
+    public int DeleteVegzosok(List<string> emails, string vegrehajto)
+    {
+        using var conn = Open();
+        var count = 0;
+
+        foreach (var raw in emails ?? new())
+        {
+            var email = raw?.ToLower().Trim() ?? "";
+            if (email == "") continue;
+
+            using var getCmd = conn.CreateCommand();
+            getCmd.CommandText = "SELECT evfolyam FROM users WHERE LOWER(email) = $e AND szerep = 'tanulo'";
+            getCmd.Parameters.AddWithValue("$e", email);
+            var evfolyam = getCmd.ExecuteScalar() as string;
+            if (evfolyam == null || !VegzosEvfolyamok.Contains(evfolyam)) continue;
+
+            using var tx = conn.BeginTransaction();
+            foreach (var (tabla, oszlop) in TanuloAdatTablak)
+            {
+                using var del = conn.CreateCommand();
+                del.Transaction = tx;
+                del.CommandText = $"DELETE FROM {tabla} WHERE LOWER({oszlop}) = $e";
+                del.Parameters.AddWithValue("$e", email);
+                del.ExecuteNonQuery();
+            }
+
+            using var delUser = conn.CreateCommand();
+            delUser.Transaction = tx;
+            delUser.CommandText = "DELETE FROM users WHERE LOWER(email) = $e";
+            delUser.Parameters.AddWithValue("$e", email);
+            delUser.ExecuteNonQuery();
+
+            using var logCmd = conn.CreateCommand();
+            logCmd.Transaction = tx;
+            logCmd.CommandText = @"
+                INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto)
+                VALUES ($e, $r, 'torolve', $v)";
+            logCmd.Parameters.AddWithValue("$e", email);
+            logCmd.Parameters.AddWithValue("$r", evfolyam);
+            logCmd.Parameters.AddWithValue("$v", vegrehajto);
+            logCmd.ExecuteNonQuery();
+
+            tx.Commit();
+            count++;
+        }
+
+        return count;
     }
 
     // promoteEmails: ténylegesen léptetendő diákok (évismétlők kimaradnak) – mindegyik a

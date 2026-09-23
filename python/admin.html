@@ -1103,6 +1103,8 @@
                     ők a jelenlegi évfolyamukon maradnak. A <b>10. évfolyamról lépő</b> tanulóknak a következő bejelentkezéskor
                     meg kell erősíteniük az új osztályukat/csoportjukat/szakmájukat (ágazati vizsga utáni szétosztás miatt) –
                     az osztály/csoport addig a régi értéken marad placeholderként.
+                    A <b>végzősök</b> (13. és 2/14. évfolyam) fiókja minden adatukkal együtt törölhető – ha felnőttképzésre
+                    visszajönnek, újra regisztrálnak 1/13-ként. <b>Előbb a végzősöket töröld, utána léptess!</b>
                 </p>
                 <div id="leptetes-loading" style="color:#94a3b8;font-style:italic;">Betöltés...</div>
                 <div id="leptetes-error" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
@@ -1111,6 +1113,7 @@
                     <span id="leptetes-summary" style="color:#94a3b8;font-size:0.85rem;"></span>
                     <div style="margin-left:auto;display:flex;gap:10px;">
                         <button class="btn-refresh" onclick="document.getElementById('leptetes-modal').style.display='none'">Mégse</button>
+                        <button id="vegzos-torles-btn" onclick="deleteVegzosok()" style="padding:0.6rem 1.2rem;background:#b91c1c;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;"><i class="fas fa-user-graduate"></i> Végzősök törlése</button>
                         <button id="leptetes-apply-btn" onclick="applyLeptetes()" style="padding:0.6rem 1.2rem;background:#4f46e5;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;"><i class="fas fa-check"></i> Léptetés végrehajtása</button>
                     </div>
                 </div>
@@ -1836,10 +1839,13 @@
                 const ccDefault = key === '10'; // ágazati vizsga utáni szakma-szétosztás
 
                 const headerRight = terminal
-                    ? `<span style="color:#f59e0b;font-size:0.8rem;"><i class="fas fa-flag-checkered"></i> végzős – nincs következő évfolyam, kihagyva</span>`
+                    ? `<span style="color:#f59e0b;font-size:0.8rem;"><i class="fas fa-flag-checkered"></i> végzős – nem léptethető, törölhető</span>`
                     : `<span style="color:#4ade80;font-size:0.8rem;">→ ${target}. évfolyam</span>`;
 
-                const toggleBtns = terminal ? '' : `
+                const toggleBtns = terminal ? `
+                    <span style="color:#475569;font-size:0.72rem;">törlés:</span>
+                    <button onclick="toggleLeptetesGroup('${key}','del',true)" style="padding:2px 7px;background:transparent;border:1px solid #f87171;border-radius:6px;color:#f87171;font-size:0.72rem;cursor:pointer;">mind</button>
+                    <button onclick="toggleLeptetesGroup('${key}','del',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>` : `
                     <span style="color:#475569;font-size:0.72rem;">lépt.:</span>
                     <button onclick="toggleLeptetesGroup('${key}','lep',true)" style="padding:2px 7px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.72rem;cursor:pointer;">mind</button>
                     <button onclick="toggleLeptetesGroup('${key}','lep',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>
@@ -1848,7 +1854,14 @@
                     <button onclick="toggleLeptetesGroup('${key}','cc',false)" style="padding:2px 7px;background:transparent;border:1px solid #555;border-radius:6px;color:#aaa;font-size:0.72rem;cursor:pointer;">senki</button>`;
 
                 const rows = items.map(it => `
-                    <div style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;${terminal ? 'opacity:0.55;' : ''}" onmouseover="this.style.background='#0f1e35'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;" onmouseover="this.style.background='#0f1e35'" onmouseout="this.style.background='transparent'">
+                        ${terminal ? `
+                        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;" title="${it.frissenLeptetett ? 'Idén léptetve lett erre az évfolyamra – még jár, nem végzett!' : 'Fiók és minden adat törlése (végzett)'}">
+                            <input type="checkbox" class="del-chk" data-email="${it.email}" data-evfolyam="${key}"
+                                ${it.frissenLeptetett ? '' : 'checked'} onchange="updateLeptetesSummary()">
+                            <span style="font-size:0.68rem;color:#f87171;">törlés</span>
+                        </label>
+                        ${it.frissenLeptetett ? '<span style="font-size:0.68rem;color:#4ade80;" title="Idén léptetve – jelenlegi tanuló"><i class="fas fa-circle-info"></i> idén léptetve</span>' : ''}` : `
                         <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Léptetés eggyel feljebb">
                             <input type="checkbox" class="lep-chk" data-email="${it.email}" data-evfolyam="${key}"
                                 ${terminal ? 'disabled' : 'checked'} onchange="updateLeptetesSummary()">
@@ -1858,7 +1871,7 @@
                             <input type="checkbox" class="cc-chk" data-email="${it.email}" data-evfolyam="${key}"
                                 ${terminal ? 'disabled' : ''} ${ccDefault && !terminal ? 'checked' : ''} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#fcd34d;">oszt.meg.</span>
-                        </label>
+                        </label>`}
                         <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${it.nev}</span>
                         <span style="font-size:0.78rem;color:#64748b;">${it.osztaly || '–'}${it.csoport ? '/' + it.csoport : ''}</span>
                         <span style="font-size:0.78rem;color:#475569;">${it.email}</span>
@@ -1872,10 +1885,12 @@
                             ${headerRight}
                             <div style="margin-left:auto;display:flex;gap:5px;align-items:center;">${toggleBtns}</div>
                         </div>
-                        <div style="color:#64748b;font-size:0.76rem;margin-bottom:6px;">
+                        ${terminal ? `<div style="color:#64748b;font-size:0.76rem;margin-bottom:6px;">
+                            <b>törlés</b> = a fiók és <b>minden</b> adata (beadások, haladás, jegyek, párbajok, üzenetek…) véglegesen törlődik. Az „idén léptetve” jelölésűek jelenlegi tanulók, alapból nincsenek kijelölve.
+                        </div>` : `<div style="color:#64748b;font-size:0.76rem;margin-bottom:6px;">
                             <b>lépt.</b> = évfolyama eggyel nő &nbsp;•&nbsp; <b>oszt.meg.</b> = a következő belépéskor kötelezően meg kell erősítenie az osztályát/csoportját/szakmáját
                             (pipáld be azoknál is, akiknél <b>nem</b> biztos, hogy a régi osztályban maradnak – ez évismétlőkre és a szakma szerint szétosztott tanulókra is vonatkozhat).
-                        </div>
+                        </div>`}
                         <div>${rows}</div>
                     </div>`;
             }).join('');
@@ -1884,7 +1899,7 @@
         }
 
         function toggleLeptetesGroup(evfolyam, type, checked) {
-            const cls = type === 'cc' ? '.cc-chk' : '.lep-chk';
+            const cls = type === 'cc' ? '.cc-chk' : type === 'del' ? '.del-chk' : '.lep-chk';
             document.querySelectorAll(`${cls}[data-evfolyam="${evfolyam}"]`).forEach(chk => {
                 if (!chk.disabled) chk.checked = checked;
             });
@@ -1895,8 +1910,9 @@
             const totalLep = document.querySelectorAll('.lep-chk').length;
             const lep = document.querySelectorAll('.lep-chk:checked').length;
             const cc = document.querySelectorAll('.cc-chk:checked').length;
+            const del = document.querySelectorAll('.del-chk:checked').length;
             document.getElementById('leptetes-summary').textContent =
-                `${lep} / ${totalLep} tanuló lép évfolyamot • ${cc} tanulónak kell megerősítenie az osztályát/szakmáját`;
+                `${lep} / ${totalLep} tanuló lép évfolyamot • ${cc} tanulónak kell megerősítenie az osztályát/szakmáját • ${del} végzős törlésre kijelölve`;
         }
 
         async function applyLeptetes() {
@@ -1922,6 +1938,33 @@
                 alert(e.message);
             } finally {
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Léptetés végrehajtása';
+            }
+        }
+
+        async function deleteVegzosok() {
+            const emails = Array.from(document.querySelectorAll('.del-chk:checked')).map(chk => chk.dataset.email);
+            if (emails.length === 0) { alert('Nincs törlésre kijelölt végzős.'); return; }
+            if (!confirm(`VÉGLEGES TÖRLÉS\n\n${emails.length} végzős tanuló fiókja és MINDEN adata (beadások, haladás, jegyek, párbajok, üzenetek) törlődik.\n\nEz NEM vonható vissza!`)) return;
+            const ellenorzes = prompt(`Megerősítésként írd be a törlendő tanulók számát (${emails.length}):`);
+            if (ellenorzes === null || ellenorzes.trim() !== String(emails.length)) { alert('A szám nem egyezik – a törlés elmaradt.'); return; }
+
+            const btn = document.getElementById('vegzos-torles-btn');
+            btn.disabled = true; btn.textContent = 'Törlés...';
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/vegzosok-torlese`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emails })
+                });
+                if (!res.ok) throw new Error('Hiba történt a törlés során.');
+                const d = await res.json();
+                alert(`${d.deleted} végzős tanuló törölve.`);
+                await loadLeptetesPreview();
+                loadUsers();
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-user-graduate"></i> Végzősök törlése';
             }
         }
 

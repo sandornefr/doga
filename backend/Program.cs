@@ -474,6 +474,16 @@ app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLept
     return Results.Ok(new { success = true, updated });
 });
 
+// Végzősök törlése: a kijelölt 13. / 2/14. évfolyamos tanulók fiókja és minden adata törlődik.
+// Ha felnőttképzésre visszajönnek, újra regisztrálnak (1/13).
+app.MapPost("/api/admin/vegzosok-torlese", (HttpContext ctx, VegzosokTorleseRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var (_, tokenIdentity, _) = InspectAuthContext(ctx);
+    var deleted = db.DeleteVegzosok(req.Emails ?? new(), tokenIdentity);
+    return Results.Ok(new { success = true, deleted });
+});
+
 // Felhasználó jelszavának visszaállítása admin/oktató által
 app.MapPost("/api/users/reset-password", (HttpContext ctx, ResetPasswordRequest req, Database db) =>
 {
