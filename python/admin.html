@@ -1474,7 +1474,7 @@
                     <td style="font-weight:600;">${u.nev || ''}</td>
                     <td style="font-size:0.85rem;">${u.email}</td>
                     <td><span style="color:${isOktato ? '#536dfe' : '#2ed573'};font-weight:700;">${isOktato ? 'Oktató' : 'Tanuló'}</span></td>
-                    <td style="text-align:center;">${osztalyTeljes}</td>
+                    <td style="text-align:center;">${osztalyTeljes}${u.szakma ? `<div style="font-size:0.7rem;color:#7dd3fc;white-space:nowrap;" title="${u.szakma}">${u.szakma.replace(' technikus', '')}</div>` : ''}${u.needsClassConfirm ? '<div style="font-size:0.68rem;color:#fcd34d;white-space:nowrap;" title="A következő belépéskor meg kell erősítenie az osztályát/szakmáját"><i class="fas fa-hourglass-half"></i> megerősítésre vár</div>' : ''}</td>
                     <td style="text-align:center;">${u.csoport || '-'}</td>
                     <td style="font-size:0.8rem;color:#888;">${u.createdAt ? u.createdAt.substring(0,10) : '-'}</td>
                     <td>

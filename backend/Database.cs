@@ -964,6 +964,20 @@ public class Database
         return file;
     }
 
+    // ── Szakmák (Informatika és távközlés ágazat, ikk.hu) ─────────────────────
+    // 10. évfolyam (ágazati alapvizsga) után ezek közül választ a tanuló.
+    public static readonly string[] Szakmak =
+    {
+        "Szoftverfejlesztő és -tesztelő",
+        "Informatikai rendszer- és alkalmazás-üzemeltető technikus",
+        "Infokommunikációs hálózatépítő és -üzemeltető technikus",
+        "Távközlési technikus",
+    };
+
+    // 11. évfolyamtól (és a felnőttképzés 1/13., 2/14. évfolyamán) már szakmán tanul.
+    public static bool SzakmasEvfolyam(string? evfolyam) =>
+        evfolyam is "11" or "12" or "13" or "1/13" or "2/14";
+
     // ── Teszt Elek (tanári tesztfiók) ─────────────────────────────────────────
     public static readonly string[] Evfolyamok = { "9", "10", "11", "12", "13", "1/13", "2/14" };
 
