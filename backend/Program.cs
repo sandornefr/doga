@@ -57,6 +57,21 @@ db.MigrateDuelTime();
 db.UpsertUser("Piton", "Professzor", "bot@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("KandoBotNemBelephet!2024"), "tanulo");
 // Teszt tanulói fiók (tanári teszteléshez – diák nézet, számonkérés, stb.)
 db.UpsertUser("Teszt", "Elek", "tesztelek@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("Teszt2026!"), "tanulo");
+// Egyszeri adatjavítás: 11. évfolyamtól nincs csoportbontás -> régi csoportértékek törlése.
+// Előtte ellenőrzött mentés; a "kesz" jelzés miatt csak egyszer fut le. Hiba esetén a szerver
+// ettől még elindul (és a következő induláskor újra próbálkozik).
+if (!(db.GetConfig("migracio_csoport_11_tol") ?? "").StartsWith("kesz"))
+{
+    try
+    {
+        var mentes = db.CreateBackup("csoport_migracio");
+        var erintett = db.CsoportTorles11Tol();
+        db.SetConfig("migracio_csoport_11_tol", $"kesz: {erintett} tanulo, {DateTime.Now:yyyy-MM-dd HH:mm}, mentes: {Path.GetFileName(mentes)}");
+        Console.WriteLine($"[migracio] 11. evfolyamtol csoport torolve: {erintett} tanulo (mentes: {mentes})");
+    }
+    catch (Exception ex) { Console.WriteLine($"[migracio] csoport_11_tol HIBA: {ex.Message}"); }
+}
+
 // Alapértelmezés csak akkor, ha még nincs évfolyama – a tanár által választott évfolyam
 // (portál → Teszt Elek) újraindításkor is megmarad.
 db.EnsureTesztElekAlapertek();

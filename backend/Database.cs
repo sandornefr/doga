@@ -1000,6 +1000,21 @@ public class Database
     public static bool NincsCsoportEvfolyam(string? evfolyam) =>
         evfolyam is "11" or "12" or "13" or "1/13" or "2/14";
 
+    // Egyszeri adatjavítás (2026-09-23): a 11. évfolyamtól nincs csoportbontás, a régi
+    // (pl. 10.-es) csoportértékek törlése. A tesztfiókok kimaradnak. Visszaadja az érintett számot.
+    public int CsoportTorles11Tol()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE users SET csoport = NULL
+            WHERE szerep = 'tanulo'
+              AND evfolyam IN ('11', '12', '13', '1/13', '2/14')
+              AND csoport IS NOT NULL
+              AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')";
+        return cmd.ExecuteNonQuery();
+    }
+
     // Osztály-megerősítéskor kötelező-e a szakma (1/13.-nál ekkor már az alapvizsga után vagyunk).
     public static bool SzakmaKotelezoMegerositesnel(string? evfolyam) =>
         SzakmakEvfolyamra(evfolyam).Length > 0;
