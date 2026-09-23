@@ -856,13 +856,13 @@ public class Database
         return cmd.ExecuteNonQuery() > 0;
     }
 
-    public bool UpdateOwnClass(string email, string osztaly, string csoport, string? szakma)
+    public bool UpdateOwnClass(string email, string osztaly, string? csoport, string? szakma)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "UPDATE users SET osztaly = $o, csoport = $c, szakma = $sz, needs_class_confirm = 0 WHERE email = $e";
         cmd.Parameters.AddWithValue("$o",  osztaly);
-        cmd.Parameters.AddWithValue("$c",  csoport);
+        cmd.Parameters.AddWithValue("$c",  (object?)csoport ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$sz", (object?)szakma ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$e",  email.ToLower().Trim());
         return cmd.ExecuteNonQuery() > 0;

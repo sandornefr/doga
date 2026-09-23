@@ -870,7 +870,8 @@ app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassReques
     if (szakma == null && Database.SzakmaKotelezoMegerositesnel(sajatEvfolyam))
         return Results.BadRequest(new { error = "A szakma kiválasztása kötelező!" });
 
-    var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), req.Csoport.Trim(), szakma);
+    var csoport = req.Csoport.Trim();
+    var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), csoport == "nincs" ? null : csoport, szakma);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
 });
 
