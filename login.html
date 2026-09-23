@@ -410,14 +410,12 @@
     <div style="color:#4b5563;font-size:0.75rem;margin-top:6px;">Regisztráció nélkül – csak a gyakorló szintek érhetők el, vizsgát nem lehet beadni</div>
 </div>
 
-<!-- Elfelejtett jelszó modal – önkiszolgáló kódos reset -->
+<!-- Elfelejtett jelszó modal – kérés a tanárnak (az önkiszolgáló kódos reset biztonsági okból szünetel) -->
 <div id="forgot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center;">
     <div style="background:#16213e;border:2px solid #536dfe;border-radius:14px;padding:2rem;max-width:440px;width:90%;">
-        <h3 style="color:#e0e0e0;margin-bottom:0.4rem;"><i class="fas fa-key"></i> Jelszó visszaállítása</h3>
-
-        <!-- 1. lépés: email -->
+        <h3 style="color:#e0e0e0;margin-bottom:0.4rem;"><i class="fas fa-key"></i> Elfelejtett jelszó</h3>
         <div id="forgot-step1">
-            <p style="color:#aaa;font-size:0.85rem;margin-bottom:1.2rem;">Küldünk egy 6 jegyű kódot az email címedre. Add meg az email-ed:</p>
+            <p style="color:#aaa;font-size:0.85rem;margin-bottom:1.2rem;">Add meg az email címed, és kérést küldünk a tanárodnak. Ő ad neked egy ideiglenes jelszót, amit az első belépéskor meg kell változtatnod.</p>
             <div id="forgot-error1" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
             <div style="margin-bottom:1rem;">
                 <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Email cím</label>
@@ -429,34 +427,14 @@
             </div>
             <div style="display:flex;gap:10px;">
                 <button onclick="closeForgotModal()" style="flex:1;padding:0.6rem;background:transparent;border:1px solid #555;border-radius:8px;color:#aaa;cursor:pointer;font-family:inherit;">Mégsem</button>
-                <button id="forgot-btn1" onclick="sendResetCode()" style="flex:2;padding:0.6rem;background:#536dfe;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fas fa-paper-plane"></i> Kód küldése</button>
+                <button id="forgot-btn1" onclick="sendResetRequest()" style="flex:2;padding:0.6rem;background:#536dfe;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fas fa-paper-plane"></i> Kérés küldése</button>
             </div>
         </div>
-
-        <!-- 2. lépés: kód + új jelszó -->
         <div id="forgot-step2" style="display:none;">
-            <p style="color:#aaa;font-size:0.85rem;margin-bottom:1.2rem;">Elküldtük a kódot a <strong id="forgot-email-display" style="color:#93c5fd;"></strong> címre. Add meg a kódot és az új jelszót:</p>
-            <div id="forgot-error2" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
-            <div id="forgot-success2" style="display:none;color:#4ade80;background:rgba(74,222,128,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
-            <div style="margin-bottom:10px;">
-                <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">6 jegyű kód</label>
-                <input id="forgot-code" type="text" placeholder="123456" maxlength="6" inputmode="numeric"
-                    style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:1.2rem;letter-spacing:0.3em;text-align:center;outline:none;font-family:monospace;">
+            <div style="color:#4ade80;background:rgba(74,222,128,0.1);border-radius:8px;padding:10px 12px;margin-bottom:1rem;font-size:0.88rem;line-height:1.5;">
+                <i class="fas fa-check"></i> A kérésedet elküldtük a tanárodnak. Hamarosan kapsz tőle egy ideiglenes jelszót – azzal lépj be, és utána állíts be újat.
             </div>
-            <div style="margin-bottom:10px;">
-                <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Új jelszó</label>
-                <input id="forgot-newpw" type="password" placeholder="legalább 6 karakter"
-                    style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.9rem;outline:none;">
-            </div>
-            <div style="margin-bottom:1.2rem;">
-                <label style="color:#aaa;font-size:0.82rem;display:block;margin-bottom:4px;">Új jelszó megerősítése</label>
-                <input id="forgot-newpw2" type="password" placeholder="ugyanaz még egyszer"
-                    style="width:100%;padding:8px 10px;background:#0f3460;border:1px solid #536dfe;border-radius:8px;color:#e0e0e0;font-size:0.9rem;outline:none;">
-            </div>
-            <div style="display:flex;gap:10px;">
-                <button onclick="closeForgotModal()" style="flex:1;padding:0.6rem;background:transparent;border:1px solid #555;border-radius:8px;color:#aaa;cursor:pointer;font-family:inherit;">Mégsem</button>
-                <button id="forgot-btn2" onclick="doResetPassword()" style="flex:2;padding:0.6rem;background:#536dfe;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fas fa-lock"></i> Jelszó megváltoztatása</button>
-            </div>
+            <button onclick="closeForgotModal()" style="width:100%;padding:0.6rem;background:#536dfe;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer;font-family:inherit;">Rendben</button>
         </div>
     </div>
 </div>
@@ -467,16 +445,9 @@
     // EmailJS inicializálás
     emailjs.init('cesxNZpDSC16dOY2u');
 
-    let _resetEmail = '';
-
     function openForgotModal() {
         document.getElementById('forgot-email').value = localStorage.getItem('kandoLastEmail') || '';
-        document.getElementById('forgot-code').value = '';
-        document.getElementById('forgot-newpw').value = '';
-        document.getElementById('forgot-newpw2').value = '';
         document.getElementById('forgot-error1').style.display = 'none';
-        document.getElementById('forgot-error2').style.display = 'none';
-        document.getElementById('forgot-success2').style.display = 'none';
         document.getElementById('forgot-step1').style.display = 'block';
         document.getElementById('forgot-step2').style.display = 'none';
         document.getElementById('forgot-modal').style.display = 'flex';
@@ -486,7 +457,8 @@
         document.getElementById('forgot-modal').style.display = 'none';
     }
 
-    async function sendResetCode() {
+    // Kérés a tanárnak: az admin Felhasználók fülén a "Jelszó visszaállítási kérelmek" panelen jelenik meg.
+    async function sendResetRequest() {
         const raw = document.getElementById('forgot-email').value.trim();
         const errEl = document.getElementById('forgot-error1');
         errEl.style.display = 'none';
@@ -496,105 +468,25 @@
         const btn = document.getElementById('forgot-btn1');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés...';
-
         try {
-            const res = await fetch(`${RAILWAY_URL}/api/auth/generate-reset-code`, {
+            const res = await fetch(`${RAILWAY_URL}/api/password-reset-request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email, nev: '' })
             });
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.error || 'Hiba');
-            if (!data.found) {
-                errEl.textContent = 'Nem találtunk fiókot ezzel az email címmel.';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kód küldése';
-                return;
-            }
-
-            // EmailJS: kód küldése a felhasználónak
-            // FONTOS: az EmailJS dashboardon létre kell hozni a "template_jelszo_kod" sablont
-            // Változók: {{to_email}}, {{user_nev}}, {{reset_code}}
-            try {
-                await emailjs.send('service_zxskntr', 'template_jelszo_kod', {
-                    to_email: email,
-                    user_nev: data.nev,
-                    reset_code: data.code
-                });
-            } catch(emailErr) {
-                console.warn('EmailJS hiba:', emailErr);
-                errEl.textContent = 'Az email küldése nem sikerült. Kérlek próbáld újra, vagy fordulj a tanárodhoz!';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kód küldése';
-                return;
-            }
-
-            _resetEmail = email;
-            document.getElementById('forgot-email-display').textContent = email;
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || (res.status === 429 ? 'Túl sok próbálkozás, várj egy kicsit!' : 'Hiba történt.'));
             document.getElementById('forgot-step1').style.display = 'none';
             document.getElementById('forgot-step2').style.display = 'block';
-            setTimeout(() => document.getElementById('forgot-code').focus(), 100);
-
-        } catch(e) {
-            errEl.textContent = 'Kapcsolati hiba. Kérlek próbáld újra!';
+        } catch (e) {
+            errEl.textContent = e.message;
             errEl.style.display = 'block';
+        } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kód küldése';
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Kérés küldése';
         }
     }
 
-    async function doResetPassword() {
-        const code = document.getElementById('forgot-code').value.trim();
-        const pw1  = document.getElementById('forgot-newpw').value;
-        const pw2  = document.getElementById('forgot-newpw2').value;
-        const errEl  = document.getElementById('forgot-error2');
-        const succEl = document.getElementById('forgot-success2');
-        errEl.style.display = 'none';
-        succEl.style.display = 'none';
-
-        if (!code || code.length !== 6) { errEl.textContent = 'Add meg a 6 jegyű kódot!'; errEl.style.display = 'block'; return; }
-        if (pw1.length < 6) { errEl.textContent = 'A jelszó legalább 6 karakter legyen!'; errEl.style.display = 'block'; return; }
-        if (pw1 !== pw2) { errEl.textContent = 'A két jelszó nem egyezik!'; errEl.style.display = 'block'; return; }
-
-        const btn = document.getElementById('forgot-btn2');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Feldolgozás...';
-
-        try {
-            const res = await fetch(`${RAILWAY_URL}/api/auth/reset-password-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: _resetEmail, code, newPassword: pw1 })
-            });
-            const data = await res.json();
-
-            if (!res.ok) {
-                errEl.textContent = data.error || 'Érvénytelen vagy lejárt kód.';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock"></i> Jelszó megváltoztatása';
-                return;
-            }
-
-            succEl.textContent = 'Jelszavad sikeresen megváltozott! Most már bejelentkezhetsz az új jelszóddal.';
-            succEl.style.display = 'block';
-            btn.innerHTML = '✓ Kész';
-            setTimeout(() => closeForgotModal(), 3000);
-
-        } catch(e) {
-            errEl.textContent = 'Kapcsolati hiba. Kérlek próbáld újra!';
-            errEl.style.display = 'block';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-lock"></i> Jelszó megváltoztatása';
-        }
-    }
-
-    let selectedRole = 'tanulo';
-
-    // Tab váltás
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach((b, i) => {
             b.classList.toggle('active', (i === 0) === (tab === 'login'));

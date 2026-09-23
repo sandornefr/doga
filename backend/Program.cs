@@ -1317,11 +1317,17 @@ app.MapGet("/api/session/all", (HttpContext ctx, Database db) =>
 });
 
 // Jelszó visszaállítási kérelem beküldése (nyilvános – tanuló küldi)
+// A név/osztály a névjegyzékből jön, nem a kérésből (a beküldött szöveg az admin felületen
+// jelenik meg). Nem létező fióknál is sikert adunk vissza, hogy ne lehessen fiókokat kipuhatolni.
 app.MapPost("/api/password-reset-request", (PasswordResetRequestInput req, Database db) =>
 {
-    if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Nev))
-        return Results.BadRequest(new { error = "Hiányzó adatok" });
-    db.SavePasswordResetRequest(req.Email, req.Nev, req.Osztaly, req.Csoport);
+    var email = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(email))
+        return Results.BadRequest(new { error = "Érvénytelen email cím" });
+    var user = db.GetUserByEmail(email);
+    if (user != null)
+        db.SavePasswordResetRequest(email, $"{user.Vezeteknev} {user.Keresztnev}",
+            string.Join(".", new[] { user.Evfolyam, user.Osztaly }.Where(x => !string.IsNullOrEmpty(x))), user.Csoport);
     return Results.Ok(new { success = true });
 }).RequireRateLimiting("auth");
 
@@ -1340,35 +1346,15 @@ app.MapDelete("/api/password-reset-request/{id}", (HttpContext ctx, int id, Data
     return Results.Ok(new { success = true });
 });
 
-// Önkiszolgáló reset: kód generálása (nyilvános)
-app.MapPost("/api/auth/generate-reset-code", (GenerateResetCodeRequest req, Database db) =>
-{
-    var email = NormalizeSchoolEmail(req.Email);
-    if (string.IsNullOrEmpty(email))
-        return Results.BadRequest(new { error = "Érvénytelen email cím" });
+// Önkiszolgáló (kódos) jelszó-visszaállítás: LEÁLLÍTVA (2026-09-23, biztonsági hiba).
+// A kódot a szerver a böngészőnek adta vissza (az EmailJS onnan küldte), így bárki átállíthatta
+// bármely fiók jelszavát. Újraindítás csak szerveroldali email-küldéssel, ahol a kód soha nem
+// kerül a válaszba. Addig: "kérés a tanárnak" (/api/password-reset-request) + admin visszaállítás.
+app.MapPost("/api/auth/generate-reset-code", () =>
+    Results.Json(new { success = false, error = "Az önkiszolgáló jelszó-visszaállítás szünetel. Küldj kérést a tanárodnak!" }, statusCode: 410));
 
-    var code = new Random().Next(100000, 999999).ToString();
-    var (found, nev) = db.SaveResetCode(email, code);
-
-    // Mindig 200-t adunk vissza; ha nem találtuk a felhasználót, a found=false
-    return Results.Ok(new { success = true, found, nev, code = found ? code : "" });
-}).RequireRateLimiting("auth");
-
-// Önkiszolgáló reset: kód + új jelszó beküldése (nyilvános)
-app.MapPost("/api/auth/reset-password-code", (ResetWithCodeRequest req, Database db) =>
-{
-    var email = NormalizeSchoolEmail(req.Email);
-    if (string.IsNullOrEmpty(email) || string.IsNullOrWhiteSpace(req.Code) || string.IsNullOrWhiteSpace(req.NewPassword))
-        return Results.BadRequest(new { error = "Hiányzó adatok" });
-    if (req.NewPassword.Length < 6)
-        return Results.BadRequest(new { error = "A jelszó legalább 6 karakter legyen!" });
-
-    var hash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
-    var ok = db.VerifyAndConsumeResetCode(email, req.Code.Trim(), hash);
-    return ok
-        ? Results.Ok(new { success = true })
-        : Results.BadRequest(new { error = "Érvénytelen vagy lejárt kód." });
-}).RequireRateLimiting("auth");
+app.MapPost("/api/auth/reset-password-code", () =>
+    Results.Json(new { success = false, error = "Az önkiszolgáló jelszó-visszaállítás szünetel. Küldj kérést a tanárodnak!" }, statusCode: 410));
 
 // ── Quiz eredmények ────────────────────────────────────────────────────────
 
