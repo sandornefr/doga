@@ -793,8 +793,8 @@ public class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT OR IGNORE INTO users
-                (vezeteknev, keresztnev, email, password_hash, szerep, evfolyam, osztaly, csoport)
-            VALUES ($v, $k, $e, $ph, $s, $ev, $o, $cs);
+                (vezeteknev, keresztnev, email, password_hash, szerep, evfolyam, osztaly, csoport, szakma)
+            VALUES ($v, $k, $e, $ph, $s, $ev, $o, $cs, $sz);
             SELECT changes();";
         cmd.Parameters.AddWithValue("$v",  r.Vezeteknev);
         cmd.Parameters.AddWithValue("$k",  r.Keresztnev);
@@ -804,6 +804,7 @@ public class Database
         cmd.Parameters.AddWithValue("$ev", (object?)r.Evfolyam ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$o",  (object?)r.Osztaly  ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$cs", (object?)r.Csoport  ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$sz", (object?)r.Szakma   ?? DBNull.Value);
         return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
     }
 

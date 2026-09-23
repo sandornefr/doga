@@ -364,6 +364,13 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     if (req.Jelszo != req.JelszoMegerosites)
         return Results.BadRequest(new { error = "A két jelszó nem egyezik!" });
 
+    // Szakma: tanulónál 11. évfolyamtól kötelező, és csak a listából választható.
+    var regSzakma = requestedRole == "tanulo" && !string.IsNullOrWhiteSpace(req.Szakma) ? req.Szakma.Trim() : null;
+    if (regSzakma != null && !Database.Szakmak.Contains(regSzakma))
+        return Results.BadRequest(new { error = "Ismeretlen szakma – válassz a listából!" });
+    if (requestedRole == "tanulo" && regSzakma == null && Database.SzakmasEvfolyam(req.Evfolyam))
+        return Results.BadRequest(new { error = "Kérlek válaszd ki, melyik szakmát tanulod!" });
+
     // Cloudflare Turnstile ellenőrzés
     if (string.IsNullOrEmpty(req.CaptchaToken))
         return Results.BadRequest(new { error = "Kérlek igazold vissza, hogy nem vagy robot!" });
@@ -391,7 +398,7 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     }
 
     var hash = BCrypt.Net.BCrypt.HashPassword(req.Jelszo);
-    var normalizedReq = req with { Email = email, Szerep = requestedRole };
+    var normalizedReq = req with { Email = email, Szerep = requestedRole, Szakma = regSzakma };
     var success = db.RegisterUser(normalizedReq, hash);
 
     if (!success)

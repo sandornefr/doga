@@ -67,7 +67,8 @@ public record RegisterRequest(
     string? Evfolyam,
     string? Osztaly,
     string? Csoport,
-    string? CaptchaToken
+    string? CaptchaToken,
+    string? Szakma = null   // 11. évfolyamtól kötelező (Database.Szakmak)
 );
 
 public record UserLoginRequest(string Email, string Jelszo);
