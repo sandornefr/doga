@@ -122,6 +122,8 @@ public record EvfolyamLeptetesBatchInfo(string BatchId, string VegrehajtvaAt, st
 public record EvfolyamVisszavonasEredmeny(int Visszaallitva, int Kihagyva);
 public record EvfolyamVisszavonasRequest(string BatchId);
 
+public record TesztElekEvfolyamRequest(string Evfolyam);
+
 // PromoteEmails: kiknek nő az évfolyama eggyel. ClassConfirmEmails: kiknek kell a következő
 // bejelentkezéskor megerősítenie az új osztályát/csoportját/szakmáját – ez FÜGGETLEN a
 // léptetéstől, mert évismétlőknél is előfordulhat, hogy másik osztályba kerülnek.

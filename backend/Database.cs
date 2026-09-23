@@ -964,6 +964,30 @@ public class Database
         return file;
     }
 
+    // ── Teszt Elek (tanári tesztfiók) ─────────────────────────────────────────
+    public static readonly string[] Evfolyamok = { "9", "10", "11", "12", "13", "1/13", "2/14" };
+
+    public void EnsureTesztElekAlapertek()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE users SET evfolyam = '10', osztaly = COALESCE(NULLIF(osztaly, ''), 'T'),
+                             csoport = COALESCE(NULLIF(csoport, ''), 'teszt')
+            WHERE email = 'tesztelek@kkszki.hu' AND (evfolyam IS NULL OR evfolyam = '')";
+        cmd.ExecuteNonQuery();
+    }
+
+    public bool SetTesztElekEvfolyam(string? evfolyam)
+    {
+        if (evfolyam == null || !Evfolyamok.Contains(evfolyam)) return false;
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE users SET evfolyam = $ev WHERE email = 'tesztelek@kkszki.hu'";
+        cmd.Parameters.AddWithValue("$ev", evfolyam);
+        return cmd.ExecuteNonQuery() == 1;
+    }
+
     // Végzős évfolyamok: ezekről nincs továbblépés, a tanév végén kimennek az iskolából.
     private static readonly HashSet<string> VegzosEvfolyamok = new() { "13", "2/14" };
 

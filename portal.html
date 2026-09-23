@@ -1319,7 +1319,7 @@
             <button class="teacher-main-card tmc-teszt" onclick="enterStudentTestMode()">
                 <i class="fas fa-user-graduate tmc-icon"></i>
                 <span class="tmc-label">Teszt Elek</span>
-                <span class="tmc-desc">Belépés a diáknézetbe – logóra kattintva visszatérhetsz</span>
+                <span class="tmc-desc">Belépés a diáknézetbe választott évfolyammal – logóra kattintva visszatérhetsz</span>
             </button>
         </div>
 
@@ -1992,14 +1992,60 @@
     }
 
     // ── Diák teszt mód ────────────────────────────────────────────────────────
+    // A tanár kiválasztja, melyik évfolyam diákjaként nézze a rendszert (9–13., 1/13., 2/14.).
+    // A választás megmarad (localStorage), és a valódi tesztelek@kkszki.hu fiók is erre áll át.
+    const TESZT_EVFOLYAMOK = ['9', '10', '11', '12', '13', '1/13', '2/14'];
+
     function enterStudentTestMode() {
+        if (!sessionStorage.getItem('kandoUser')) return;
+        let utolso = '10';
+        try { utolso = localStorage.getItem('tesztElekEvfolyam') || '10'; } catch {}
+        document.getElementById('teszt-evf-modal')?.remove();
+        const m = document.createElement('div');
+        m.id = 'teszt-evf-modal';
+        m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:10000;padding:16px;';
+        m.innerHTML = `
+            <div style="background:#16213e;border:1px solid #1f3460;border-radius:14px;padding:22px 24px;max-width:420px;width:100%;color:#e0e0e0;">
+                <h3 style="margin:0 0 6px;color:#7dd3fc;"><i class="fas fa-user-graduate"></i> Teszt Elek – melyik évfolyam?</h3>
+                <p style="margin:0 0 14px;font-size:0.85rem;color:#94a3b8;">Az adott évfolyam diákjának nézetében lépsz be.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+                    ${TESZT_EVFOLYAMOK.map(ev => `
+                        <button onclick="startStudentTestMode('${ev}')" style="padding:10px 0;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.95rem;
+                            border:1px solid ${ev === utolso ? '#4ade80' : '#1f3460'};background:${ev === utolso ? 'rgba(74,222,128,0.12)' : '#0f1e35'};color:${ev === utolso ? '#4ade80' : '#e0e0e0'};">
+                            ${ev}.
+                        </button>`).join('')}
+                </div>
+                <div style="text-align:right;margin-top:16px;">
+                    <button onclick="document.getElementById('teszt-evf-modal').remove()" style="padding:6px 14px;background:transparent;border:1px solid #555;border-radius:8px;color:#aaa;cursor:pointer;">Mégse</button>
+                </div>
+            </div>`;
+        m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+        document.body.appendChild(m);
+    }
+
+    async function startStudentTestMode(evfolyam) {
         const teacherSession = sessionStorage.getItem('kandoUser');
         if (!teacherSession) return;
-        localStorage.setItem('kandoTeacherBackup', teacherSession);
         const teacher = JSON.parse(teacherSession);
+        try { localStorage.setItem('tesztElekEvfolyam', evfolyam); } catch {}
+
+        // A valódi Teszt Elek fiók évfolyamának szinkronizálása (nem kritikus – hiba esetén is belépünk).
+        try {
+            const ctrl = new AbortController();
+            setTimeout(() => ctrl.abort(), 5000);
+            await fetch(`${API_BASE}/api/admin/teszt-elek/evfolyam`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${teacher.token || ''}` },
+                body: JSON.stringify({ evfolyam }),
+                signal: ctrl.signal
+            });
+        } catch {}
+
+        localStorage.setItem('kandoTeacherBackup', teacherSession);
         const fakeStudent = {
             nev:    'Teszt Elek',
             email:  teacher.email,
+            evfolyam,
             osztaly: null,
             szerep: 'tanulo',
             token:  '',

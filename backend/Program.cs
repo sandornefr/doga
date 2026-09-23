@@ -53,11 +53,13 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 db.Initialize();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
-// Kandó Bot – gép elleni meccshez (mindig létezik)
+// Piton Professzor (bot) – gép elleni meccshez (mindig létezik)
 db.UpsertUser("Piton", "Professzor", "bot@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("KandoBotNemBelephet!2024"), "tanulo");
 // Teszt tanulói fiók (tanári teszteléshez – diák nézet, számonkérés, stb.)
 db.UpsertUser("Teszt", "Elek", "tesztelek@kkszki.hu", BCrypt.Net.BCrypt.HashPassword("Teszt2026!"), "tanulo");
-db.UpdateUserBasic("tesztelek@kkszki.hu", "Teszt", "Elek", "teszt", "10", "T");
+// Alapértelmezés csak akkor, ha még nincs évfolyama – a tanár által választott évfolyam
+// (portál → Teszt Elek) újraindításkor is megmarad.
+db.EnsureTesztElekAlapertek();
 
 // Környezeti változók
 var secretKey    = app.Configuration["SECRET_KEY"]    ?? "kando-secret-change-in-production!";
@@ -546,6 +548,15 @@ app.MapGet("/api/admin/mentes-letoltes", (HttpContext ctx, Database db) =>
     string mentes;
     lock (tanevvaltasLock) { mentes = db.CreateBackup("letoltes"); }
     return Results.File(File.ReadAllBytes(mentes), "application/octet-stream", Path.GetFileName(mentes));
+});
+
+// Teszt Elek évfolyamának beállítása – a tanár bármelyik évfolyam diáknézetét kipróbálhatja.
+app.MapPost("/api/admin/teszt-elek/evfolyam", (HttpContext ctx, TesztElekEvfolyamRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.SetTesztElekEvfolyam(req.Evfolyam)
+        ? Results.Ok(new { success = true, evfolyam = req.Evfolyam })
+        : Results.BadRequest(new { success = false, error = "Ismeretlen évfolyam." });
 });
 
 // Felhasználó jelszavának visszaállítása admin/oktató által
