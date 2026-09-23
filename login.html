@@ -646,6 +646,9 @@
         document.getElementById('reg-szakma-group').style.display = szakmas ? 'block' : 'none';
     }
 
+    // 11. évfolyamtól nincs csoportbontás: ott a szakma a lényeg, a rendszer tanulásra/gyakorlásra szolgál.
+    const NINCS_CSOPORT_EVFOLYAMOK = ['11', '12', '13', '1/13', '2/14'];
+
     // Csoport opciók frissítése osztály és évfolyam alapján
     function updateCsoportOptions() {
         const osztaly = document.getElementById('reg-osztaly').value;
@@ -658,7 +661,8 @@
             csoportSel.innerHTML = `
                 <option value="info" selected>infó</option>
             `;
-        } else if (osztaly === 'F' || evfolyam === '1/13.') {
+        } else if (osztaly === 'F' || NINCS_CSOPORT_EVFOLYAMOK.includes(evfolyam)) {
+            // 11. évfolyamtól (és felnőttképzésben) nincs csoportbontás.
             csoportGroup.style.display = 'none';
             csoportSel.innerHTML = `<option value="nincs" selected>nincs csoport</option>`;
         } else if (osztaly === 'T') {
@@ -670,7 +674,6 @@
                 <option value="">– válassz –</option>
                 <option value="1">1. csoport</option>
                 <option value="2">2. csoport</option>
-                <option value="3">3. csoport</option>
             `;
         } else {
             csoportGroup.style.display = 'block';
@@ -678,7 +681,6 @@
                 <option value="">– válassz –</option>
                 <option value="1">1. csoport</option>
                 <option value="2">2. csoport</option>
-                <option value="3">3. csoport</option>
                 <option value="nincs">nincs csoport</option>
             `;
         }

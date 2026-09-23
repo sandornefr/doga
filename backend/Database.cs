@@ -996,6 +996,10 @@ public class Database
     public static bool SzakmaKotelezoRegisztracional(string? evfolyam) =>
         evfolyam is "11" or "12" or "13" or "2/14";
 
+    // 11. évfolyamtól (és felnőttképzésben) nincs csoportbontás – ott a csoport mindig NULL.
+    public static bool NincsCsoportEvfolyam(string? evfolyam) =>
+        evfolyam is "11" or "12" or "13" or "1/13" or "2/14";
+
     // Osztály-megerősítéskor kötelező-e a szakma (1/13.-nál ekkor már az alapvizsga után vagyunk).
     public static bool SzakmaKotelezoMegerositesnel(string? evfolyam) =>
         SzakmakEvfolyamra(evfolyam).Length > 0;

@@ -398,7 +398,8 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     }
 
     var hash = BCrypt.Net.BCrypt.HashPassword(req.Jelszo);
-    var normalizedReq = req with { Email = email, Szerep = requestedRole, Szakma = regSzakma };
+    var normalizedReq = req with { Email = email, Szerep = requestedRole, Szakma = regSzakma,
+                                   Csoport = Database.NincsCsoportEvfolyam(req.Evfolyam) ? null : req.Csoport };
     var success = db.RegisterUser(normalizedReq, hash);
 
     if (!success)
@@ -871,7 +872,8 @@ app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassReques
         return Results.BadRequest(new { error = "A szakma kiválasztása kötelező!" });
 
     var csoport = req.Csoport.Trim();
-    var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), csoport == "nincs" ? null : csoport, szakma);
+    if (csoport == "nincs" || Database.NincsCsoportEvfolyam(sajatEvfolyam)) csoport = null;
+    var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), csoport, szakma);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Felhasználó nem található" });
 });
 
