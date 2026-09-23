@@ -385,16 +385,10 @@
                     <option value="nincs">nincs csoport</option>
                 </select>
             </div>
-            <!-- Szakmák: Informatika és távközlés ágazat (ikk.hu) – a backend Database.Szakmak listájával egyezzen! -->
+            <!-- Szakma: 11–13. és 2/14. évfolyamon (lista: szakmakEvfolyamra()) -->
             <div class="form-group" id="reg-szakma-group" style="display:none;">
                 <label>Szakma</label>
-                <select id="reg-szakma">
-                    <option value="">– válassz –</option>
-                    <option value="Szoftverfejlesztő és -tesztelő">Szoftverfejlesztő és -tesztelő</option>
-                    <option value="Informatikai rendszer- és alkalmazás-üzemeltető technikus">Informatikai rendszer- és alkalmazás-üzemeltető technikus</option>
-                    <option value="Infokommunikációs hálózatépítő és -üzemeltető technikus">Infokommunikációs hálózatépítő és -üzemeltető technikus</option>
-                    <option value="Távközlési technikus">Távközlési technikus</option>
-                </select>
+                <select id="reg-szakma"></select>
             </div>
         </div>
 
@@ -617,15 +611,39 @@
         document.getElementById('student-fields').classList.toggle('show', role === 'tanulo');
     }
 
-    // Szakma mező: 11. évfolyamtól (és felnőttképzésben) jelenik meg – 9–10. évfolyamon ágazati alapozás van.
-    const SZAKMAS_EVFOLYAMOK = ['11', '12', '13', '1/13', '2/14'];
+    // Szakmák (Informatika és távközlés ágazat, ikk.hu) – a backend Database.Szakmak /
+    // FelnottSzakmak listájával egyezzen! 1/13.: az első félév végi ágazati alapvizsga után választ.
+    const SZAKMAK_NAPPALI = [
+        'Szoftverfejlesztő és -tesztelő',
+        'Informatikai rendszer- és alkalmazás-üzemeltető technikus',
+        'Infokommunikációs hálózatépítő és -üzemeltető technikus',
+        'Távközlési technikus'
+    ];
+    const SZAKMAK_FELNOTT = SZAKMAK_NAPPALI.slice(0, 2);
+    function szakmakEvfolyamra(ev) {
+        if (['11', '12', '13'].includes(ev)) return SZAKMAK_NAPPALI;
+        if (['1/13', '2/14'].includes(ev))  return SZAKMAK_FELNOTT;
+        return [];
+    }
+    function fillSzakmaSelect(sel, ev) {
+        const elozo = sel.value;
+        sel.innerHTML = '<option value="">– válassz –</option>' +
+            szakmakEvfolyamra(ev).map(sz => `<option value="${sz}">${sz}</option>`).join('');
+        if (szakmakEvfolyamra(ev).includes(elozo)) sel.value = elozo;
+    }
+
+    // Regisztrációkor szakma: 11–13. és 2/14. évfolyamon kötelező. 9–10.: ágazati alapozás;
+    // 1/13.: a félév végi ágazati alapvizsga után választ (a tanár indítja az adminból).
+    const REG_SZAKMAS_EVFOLYAMOK = ['11', '12', '13', '2/14'];
     function isSzakmasEvfolyam() {
-        return SZAKMAS_EVFOLYAMOK.includes(document.getElementById('reg-evfolyam').value);
+        return REG_SZAKMAS_EVFOLYAMOK.includes(document.getElementById('reg-evfolyam').value);
     }
     function updateSzakmaField() {
+        const ev = document.getElementById('reg-evfolyam').value;
         const szakmas = isSzakmasEvfolyam();
+        const sel = document.getElementById('reg-szakma');
+        fillSzakmaSelect(sel, szakmas ? ev : '');
         document.getElementById('reg-szakma-group').style.display = szakmas ? 'block' : 'none';
-        if (!szakmas) document.getElementById('reg-szakma').value = '';
     }
 
     // Csoport opciók frissítése osztály és évfolyam alapján

@@ -366,9 +366,9 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
 
     // Szakma: tanulónál 11. évfolyamtól kötelező, és csak a listából választható.
     var regSzakma = requestedRole == "tanulo" && !string.IsNullOrWhiteSpace(req.Szakma) ? req.Szakma.Trim() : null;
-    if (regSzakma != null && !Database.Szakmak.Contains(regSzakma))
-        return Results.BadRequest(new { error = "Ismeretlen szakma – válassz a listából!" });
-    if (requestedRole == "tanulo" && regSzakma == null && Database.SzakmasEvfolyam(req.Evfolyam))
+    if (regSzakma != null && !Database.SzakmakEvfolyamra(req.Evfolyam).Contains(regSzakma))
+        return Results.BadRequest(new { error = "Ezen az évfolyamon ez a szakma nem választható!" });
+    if (requestedRole == "tanulo" && regSzakma == null && Database.SzakmaKotelezoRegisztracional(req.Evfolyam))
         return Results.BadRequest(new { error = "Kérlek válaszd ki, melyik szakmát tanulod!" });
 
     // Cloudflare Turnstile ellenőrzés
@@ -555,6 +555,15 @@ app.MapGet("/api/admin/mentes-letoltes", (HttpContext ctx, Database db) =>
     string mentes;
     lock (tanevvaltasLock) { mentes = db.CreateBackup("letoltes"); }
     return Results.File(File.ReadAllBytes(mentes), "application/octet-stream", Path.GetFileName(mentes));
+});
+
+// Félévi szakmaválasztás indítása (1/13.: az első félév végi ágazati alapvizsga után).
+app.MapPost("/api/admin/szakmavalasztas-inditas", (HttpContext ctx, SzakmavalasztasInditasRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (req.Evfolyam != "1/13")
+        return Results.BadRequest(new { success = false, error = "Csak az 1/13. évfolyamra indítható." });
+    return Results.Ok(new { success = true, erintett = db.SzakmavalasztasInditas(req.Evfolyam) });
 });
 
 // Teszt Elek évfolyamának beállítása – a tanár bármelyik évfolyam diáknézetét kipróbálhatja.
@@ -855,9 +864,10 @@ app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassReques
         return Results.BadRequest(new { error = "Az osztály és a csoport megadása kötelező!" });
 
     var szakma = string.IsNullOrWhiteSpace(req.Szakma) ? null : req.Szakma.Trim();
-    if (szakma != null && !Database.Szakmak.Contains(szakma))
-        return Results.BadRequest(new { error = "Ismeretlen szakma – válassz a listából!" });
-    if (szakma == null && Database.SzakmasEvfolyam(db.GetUserByEmail(email)?.Evfolyam))
+    var sajatEvfolyam = db.GetUserByEmail(email)?.Evfolyam;
+    if (szakma != null && !Database.SzakmakEvfolyamra(sajatEvfolyam).Contains(szakma))
+        return Results.BadRequest(new { error = "Ezen az évfolyamon ez a szakma nem választható!" });
+    if (szakma == null && Database.SzakmaKotelezoMegerositesnel(sajatEvfolyam))
         return Results.BadRequest(new { error = "A szakma kiválasztása kötelező!" });
 
     var ok = db.UpdateOwnClass(email, req.Osztaly.Trim(), req.Csoport.Trim(), szakma);

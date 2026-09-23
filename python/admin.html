@@ -857,6 +857,7 @@
             <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
                 <button class="btn-refresh" onclick="loadUsers()"><i class="fas fa-rotate"></i> Frissítés</button>
                 <button class="btn-refresh" onclick="openLeptetesModal()" style="background:#4f46e5;border-color:#6366f1;color:#fff;"><i class="fas fa-forward"></i> Tanévváltás</button>
+                <button class="btn-refresh" id="szakmavalasztas-btn" onclick="startSzakmavalasztas113()" title="Az 1/13. évfolyam (felnőttképzés) a félév végi ágazati alapvizsga után választ szakmát" style="background:#0e7490;border-color:#0891b2;color:#fff;"><i class="fas fa-code-branch"></i> 1/13. szakmaválasztás indítása</button>
             </div>
 
             <!-- Jelszó visszaállítási kérelmek -->
@@ -2015,6 +2016,34 @@
                 alert(e.message);
             } finally {
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Mentés letöltése a gépemre';
+            }
+        }
+
+        // 1/13. (felnőttképzés): az első félév végi ágazati alapvizsga után a még szakma nélküli
+        // tanulóknak a következő belépéskor ki kell választaniuk a szakmájukat (2 szakma közül).
+        async function startSzakmavalasztas113() {
+            if (!_cachedUsers.length) await loadUsers();
+            const kizart = ['tesztelek@kkszki.hu', 'bot@kkszki.hu'];
+            const erintett = _cachedUsers.filter(u => u.szerep === 'tanulo' && u.evfolyam === '1/13' && !u.szakma && !kizart.includes((u.email || '').toLowerCase()));
+            if (!erintett.length) { alert('Nincs olyan 1/13. évfolyamos tanuló, akinek még nincs szakmája.'); return; }
+            const nevek = erintett.slice(0, 15).map(u => `• ${u.nev} (${[u.evfolyam, u.osztaly].filter(Boolean).join('.')})`).join('\n') + (erintett.length > 15 ? `\n… és még ${erintett.length - 15} fő` : '');
+            if (!confirm(`1/13. szakmaválasztás indítása\n\n${erintett.length} tanulónak a következő belépéskor ki kell választania a szakmáját (Szoftverfejlesztő és -tesztelő / Informatikai rendszer- és alkalmazás-üzemeltető technikus), és meg kell erősítenie az osztályát/csoportját:\n\n${nevek}\n\nCsak az ágazati alapvizsga után indítsd!`)) return;
+            const btn = document.getElementById('szakmavalasztas-btn');
+            btn.disabled = true;
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/szakmavalasztas-inditas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ evfolyam: '1/13' })
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || !d.success) throw new Error(d.error || 'Hiba történt.');
+                alert(`Elindítva: ${d.erintett} tanulónak kell szakmát választania a következő belépéskor.`);
+                loadUsers();
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false;
             }
         }
 

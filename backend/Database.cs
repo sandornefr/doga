@@ -966,7 +966,7 @@ public class Database
     }
 
     // ── Szakmák (Informatika és távközlés ágazat, ikk.hu) ─────────────────────
-    // 10. évfolyam (ágazati alapvizsga) után ezek közül választ a tanuló.
+    // Nappali technikum: 10. évfolyam (ágazati alapvizsga) után 4 szakma közül választ.
     public static readonly string[] Szakmak =
     {
         "Szoftverfejlesztő és -tesztelő",
@@ -975,9 +975,45 @@ public class Database
         "Távközlési technikus",
     };
 
-    // 11. évfolyamtól (és a felnőttképzés 1/13., 2/14. évfolyamán) már szakmán tanul.
-    public static bool SzakmasEvfolyam(string? evfolyam) =>
-        evfolyam is "11" or "12" or "13" or "1/13" or "2/14";
+    // Felnőttképzés (1/13., 2/14. – esti: F, nappali: C osztály): az ágazati alapvizsga az 1/13.
+    // első félévének végén van, utána csak ebből a 2 szakmából választhat.
+    public static readonly string[] FelnottSzakmak =
+    {
+        "Szoftverfejlesztő és -tesztelő",
+        "Informatikai rendszer- és alkalmazás-üzemeltető technikus",
+    };
+
+    public static bool FelnottEvfolyam(string? evfolyam) => evfolyam is "1/13" or "2/14";
+
+    // Az évfolyamon választható szakmák (üres: még ágazati alapozás, nincs szakma).
+    public static string[] SzakmakEvfolyamra(string? evfolyam) =>
+        evfolyam is "11" or "12" or "13" ? Szakmak
+        : FelnottEvfolyam(evfolyam) ? FelnottSzakmak
+        : Array.Empty<string>();
+
+    // Regisztrációkor kötelező-e a szakma. 1/13.-ban NEM: ők az első félév végi ágazati
+    // alapvizsga után választanak (tanár indítja: /api/admin/szakmavalasztas-inditas).
+    public static bool SzakmaKotelezoRegisztracional(string? evfolyam) =>
+        evfolyam is "11" or "12" or "13" or "2/14";
+
+    // Osztály-megerősítéskor kötelező-e a szakma (1/13.-nál ekkor már az alapvizsga után vagyunk).
+    public static bool SzakmaKotelezoMegerositesnel(string? evfolyam) =>
+        SzakmakEvfolyamra(evfolyam).Length > 0;
+
+    // Félévi szakmaválasztás indítása: az adott évfolyam még szakma nélküli tanulóinak
+    // a következő belépéskor ki kell választaniuk a szakmájukat (+ osztály/csoport megerősítés).
+    public int SzakmavalasztasInditas(string evfolyam)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE users SET needs_class_confirm = 1
+            WHERE szerep = 'tanulo' AND evfolyam = $ev
+              AND (szakma IS NULL OR szakma = '')
+              AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')";
+        cmd.Parameters.AddWithValue("$ev", evfolyam);
+        return cmd.ExecuteNonQuery();
+    }
 
     // ── Teszt Elek (tanári tesztfiók) ─────────────────────────────────────────
     public static readonly string[] Evfolyamok = { "9", "10", "11", "12", "13", "1/13", "2/14" };
