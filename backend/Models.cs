@@ -117,6 +117,11 @@ public record EvfolyamLeptetesPreviewItem(
 // Végzősök (13. / 2/14.) törlése minden kapcsolódó adatukkal együtt.
 public record VegzosokTorleseRequest(List<string> Emails);
 
+public record EvfolyamLeptetesEredmeny(int Leptetve, int Kihagyva, int Megerositendo, string BatchId);
+public record EvfolyamLeptetesBatchInfo(string BatchId, string VegrehajtvaAt, string Vegrehajto, int Leptetve, int Megerositendo);
+public record EvfolyamVisszavonasEredmeny(int Visszaallitva, int Kihagyva);
+public record EvfolyamVisszavonasRequest(string BatchId);
+
 // PromoteEmails: kiknek nő az évfolyama eggyel. ClassConfirmEmails: kiknek kell a következő
 // bejelentkezéskor megerősítenie az új osztályát/csoportját/szakmáját – ez FÜGGETLEN a
 // léptetéstől, mert évismétlőknél is előfordulhat, hogy másik osztályba kerülnek.

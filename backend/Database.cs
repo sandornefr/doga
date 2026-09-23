@@ -5,9 +5,11 @@ namespace KandoTest;
 public class Database
 {
     private readonly string _connStr;
+    private readonly string _dbPath;
 
     public Database(string dbPath)
     {
+        _dbPath  = dbPath;
         _connStr = $"Data Source={dbPath}";
     }
 
@@ -259,6 +261,11 @@ public class Database
                 vegrehajto     TEXT,
                 vegrehajtva_at TEXT DEFAULT (datetime('now', 'localtime'))
             );");
+        // tipus: 'leptetes' | 'osztaly_megerosites' | 'torles' (régi sorok: NULL = leptetes vagy
+        // uj_evfolyam='torolve'). batch_id: egy "Léptetés végrehajtása" kattintás – visszavonáshoz.
+        try { Exec(conn, "ALTER TABLE evfolyam_leptetes_log ADD COLUMN tipus TEXT"); } catch { }
+        try { Exec(conn, "ALTER TABLE evfolyam_leptetes_log ADD COLUMN batch_id TEXT"); } catch { }
+        try { Exec(conn, "ALTER TABLE evfolyam_leptetes_log ADD COLUMN visszavonva INTEGER NOT NULL DEFAULT 0"); } catch { }
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS quiz_results (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -871,16 +878,23 @@ public class Database
         ["1/13"] = "2/14",
     };
 
+    // Friss léptetés: a tanulót az elmúlt ~10 hónapban (vissza nem vont) léptetés hozta a mostani
+    // évfolyamára -> idén már lépett, még egyszer NEM szabad léptetni, és nem végzett (ha 13.-os).
+    private const string FrissLeptetesFeltetel = @"
+        EXISTS (SELECT 1 FROM evfolyam_leptetes_log l
+                WHERE LOWER(l.email) = LOWER(u.email)
+                  AND l.uj_evfolyam = u.evfolyam
+                  AND COALESCE(l.tipus, 'leptetes') = 'leptetes'
+                  AND l.visszavonva = 0
+                  AND l.vegrehajtva_at >= datetime('now', 'localtime', '-300 days'))";
+
     public List<EvfolyamLeptetesPreviewItem> GetEvfolyamLeptetesPreview()
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
+        cmd.CommandText = $@"
             SELECT u.vezeteknev, u.keresztnev, u.email, u.evfolyam, u.osztaly, u.csoport,
-                   EXISTS (SELECT 1 FROM evfolyam_leptetes_log l
-                           WHERE LOWER(l.email) = LOWER(u.email)
-                             AND l.uj_evfolyam = u.evfolyam
-                             AND l.vegrehajtva_at >= datetime('now', 'localtime', '-300 days')) AS friss
+                   {FrissLeptetesFeltetel} AS friss
             FROM users u
             WHERE szerep = 'tanulo'
               AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
@@ -904,6 +918,50 @@ public class Database
             ));
         }
         return list;
+    }
+
+    // ── Biztonsági mentés ────────────────────────────────────────────────────
+    // Teljes adatbázis-másolat a DB mellé (backups/ mappa) minden tömeges művelet előtt.
+    // SQLite online backup API: futó rendszer mellett is konzisztens pillanatkép.
+    private const int MegtartottMentesek = 10;
+
+    public string CreateBackup(string ok)
+    {
+        var dbDir = Path.GetDirectoryName(Path.GetFullPath(_dbPath)) ?? ".";
+        var dir   = Path.Combine(dbDir, "backups");
+        Directory.CreateDirectory(dir);
+        var file  = Path.Combine(dir, $"kando_{DateTime.Now:yyyyMMdd_HHmmss}_{ok}.db");
+
+        using (var src = Open())
+        using (var dst = new SqliteConnection($"Data Source={file};Pooling=False"))
+        {
+            dst.Open();
+            src.BackupDatabase(dst);
+        }
+
+        // Ellenőrzés: a mentés olvasható és ugyanannyi felhasználót tartalmaz.
+        using (var chk = new SqliteConnection($"Data Source={file};Mode=ReadOnly;Pooling=False"))
+        {
+            chk.Open();
+            using var c1 = chk.CreateCommand();
+            c1.CommandText = "PRAGMA integrity_check";
+            if ((c1.ExecuteScalar() as string) != "ok")
+                throw new InvalidOperationException("A biztonsági mentés sérült.");
+            using var c2 = chk.CreateCommand();
+            c2.CommandText = "SELECT COUNT(*) FROM users";
+            var mentett = (long)(c2.ExecuteScalar() ?? 0L);
+            using var orig = Open();
+            using var c3 = orig.CreateCommand();
+            c3.CommandText = "SELECT COUNT(*) FROM users";
+            if (mentett != (long)(c3.ExecuteScalar() ?? 0L))
+                throw new InvalidOperationException("A biztonsági mentés hiányos.");
+        }
+
+        // Régi mentések takarítása (a legújabb MegtartottMentesek darab marad).
+        foreach (var old in Directory.GetFiles(dir, "kando_*.db").OrderByDescending(f => f).Skip(MegtartottMentesek))
+            try { File.Delete(old); } catch { }
+
+        return file;
     }
 
     // Végzős évfolyamok: ezekről nincs továbblépés, a tanév végén kimennek az iskolából.
@@ -935,8 +993,8 @@ public class Database
         ("szamonkeres_beadas",        "tanulo_email"),
     };
 
-    // Csak tényleg végzős évfolyamú tanulót töröl (13. / 2/14.) – egy rossz email-lista így
-    // sem törölhet aktív diákot. Tanulónként egy tranzakció: vagy minden adata törlődik, vagy semmi.
+    // Csak tényleg végzős, idén NEM léptetett tanulót töröl (13. / 2/14.) – egy rossz email-lista
+    // így sem törölhet aktív diákot. Tanulónként egy tranzakció: vagy minden adata törlődik, vagy semmi.
     public int DeleteVegzosok(List<string> emails, string vegrehajto)
     {
         using var conn = Open();
@@ -947,13 +1005,19 @@ public class Database
             var email = raw?.ToLower().Trim() ?? "";
             if (email == "") continue;
 
-            using var getCmd = conn.CreateCommand();
-            getCmd.CommandText = "SELECT evfolyam FROM users WHERE LOWER(email) = $e AND szerep = 'tanulo'";
-            getCmd.Parameters.AddWithValue("$e", email);
-            var evfolyam = getCmd.ExecuteScalar() as string;
-            if (evfolyam == null || !VegzosEvfolyamok.Contains(evfolyam)) continue;
-
             using var tx = conn.BeginTransaction();
+
+            using var getCmd = conn.CreateCommand();
+            getCmd.Transaction = tx;
+            getCmd.CommandText = $@"
+                SELECT u.evfolyam, {FrissLeptetesFeltetel}
+                FROM users u WHERE LOWER(u.email) = $e AND u.szerep = 'tanulo'";
+            getCmd.Parameters.AddWithValue("$e", email);
+            string? evfolyam = null; var friss = false;
+            using (var r = getCmd.ExecuteReader())
+                if (r.Read()) { evfolyam = r.IsDBNull(0) ? null : r.GetString(0); friss = r.GetInt64(1) == 1; }
+            if (evfolyam == null || !VegzosEvfolyamok.Contains(evfolyam) || friss) { tx.Rollback(); continue; }
+
             foreach (var (tabla, oszlop) in TanuloAdatTablak)
             {
                 using var del = conn.CreateCommand();
@@ -972,8 +1036,8 @@ public class Database
             using var logCmd = conn.CreateCommand();
             logCmd.Transaction = tx;
             logCmd.CommandText = @"
-                INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto)
-                VALUES ($e, $r, 'torolve', $v)";
+                INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto, tipus)
+                VALUES ($e, $r, 'torolve', $v, 'torles')";
             logCmd.Parameters.AddWithValue("$e", email);
             logCmd.Parameters.AddWithValue("$r", evfolyam);
             logCmd.Parameters.AddWithValue("$v", vegrehajto);
@@ -992,55 +1056,152 @@ public class Database
     // osztályát/csoportját/szakmáját – ez FÜGGETLEN a léptetéstől: évismétlőknél is
     // előfordulhat, hogy másik osztályba/csoportba kerülnek, náluk az évfolyam nem változik,
     // csak az osztálybesorolásukat kell újra megkérdezni.
-    public int ApplyEvfolyamLeptetes(List<string> promoteEmails, List<string> classConfirmEmails, string vegrehajto)
+    //
+    // Biztonság: egyetlen tranzakció (vagy minden változás megtörténik, vagy semmi), és aki idén
+    // már lépett (FrissLeptetesFeltetel), azt a szerver akkor sem lépteti újra, ha a lista kéri.
+    // Minden változás egy batch_id alatt naplózódik, így a teljes kattintás visszavonható.
+    public EvfolyamLeptetesEredmeny ApplyEvfolyamLeptetes(List<string> promoteEmails, List<string> classConfirmEmails, string vegrehajto)
     {
         using var conn = Open();
-        var count = 0;
+        using var tx = conn.BeginTransaction();
+        var batchId = Guid.NewGuid().ToString("N");
+        int leptetve = 0, kihagyva = 0, megerositendo = 0;
 
-        foreach (var raw in promoteEmails ?? new())
+        foreach (var email in (promoteEmails ?? new()).Select(e => e?.ToLower().Trim() ?? "").Where(e => e != "").Distinct())
         {
-            var email = raw?.ToLower().Trim() ?? "";
-            if (email == "") continue;
-
             using var getCmd = conn.CreateCommand();
-            getCmd.CommandText = "SELECT evfolyam FROM users WHERE email = $e AND szerep = 'tanulo'";
+            getCmd.Transaction = tx;
+            getCmd.CommandText = $@"
+                SELECT u.evfolyam, {FrissLeptetesFeltetel}
+                FROM users u WHERE LOWER(u.email) = $e AND u.szerep = 'tanulo'";
             getCmd.Parameters.AddWithValue("$e", email);
-            var current = getCmd.ExecuteScalar() as string;
-            if (current == null || !EvfolyamLeptetesTerkep.TryGetValue(current, out var uj)) continue;
+            string? current = null; var friss = false;
+            using (var r = getCmd.ExecuteReader())
+                if (r.Read()) { current = r.IsDBNull(0) ? null : r.GetString(0); friss = r.GetInt64(1) == 1; }
+
+            if (current == null || friss || !EvfolyamLeptetesTerkep.TryGetValue(current, out var uj)) { kihagyva++; continue; }
 
             using var updCmd = conn.CreateCommand();
-            updCmd.CommandText = "UPDATE users SET evfolyam = $uj WHERE email = $e";
+            updCmd.Transaction = tx;
+            updCmd.CommandText = "UPDATE users SET evfolyam = $uj WHERE LOWER(email) = $e AND evfolyam = $r";
             updCmd.Parameters.AddWithValue("$uj", uj);
             updCmd.Parameters.AddWithValue("$e",  email);
-            updCmd.ExecuteNonQuery();
+            updCmd.Parameters.AddWithValue("$r",  current);
+            if (updCmd.ExecuteNonQuery() != 1) { kihagyva++; continue; }
 
-            using var logCmd = conn.CreateCommand();
-            logCmd.CommandText = @"
-                INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto)
-                VALUES ($e, $r, $u, $v)";
-            logCmd.Parameters.AddWithValue("$e", email);
-            logCmd.Parameters.AddWithValue("$r", current);
-            logCmd.Parameters.AddWithValue("$u", uj);
-            logCmd.Parameters.AddWithValue("$v", vegrehajto);
-            logCmd.ExecuteNonQuery();
-
-            count++;
+            Naplo(conn, tx, email, current, uj, vegrehajto, "leptetes", batchId);
+            leptetve++;
         }
 
         // Osztály/csoport/szakma placeholderré nyilvánítása – a régi érték megmarad, amíg
         // a tanuló saját maga meg nem erősíti az újat (needs_class_confirm=1 -> kötelező modal).
-        foreach (var raw in classConfirmEmails ?? new())
+        // Csak a ténylegesen 0 -> 1 váltásokat naplózzuk, így a visszavonás pontosan ezeket állítja vissza.
+        foreach (var email in (classConfirmEmails ?? new()).Select(e => e?.ToLower().Trim() ?? "").Where(e => e != "").Distinct())
         {
-            var email = raw?.ToLower().Trim() ?? "";
-            if (email == "") continue;
-
             using var ccCmd = conn.CreateCommand();
-            ccCmd.CommandText = "UPDATE users SET needs_class_confirm = 1 WHERE email = $e AND szerep = 'tanulo'";
+            ccCmd.Transaction = tx;
+            ccCmd.CommandText = @"
+                UPDATE users SET needs_class_confirm = 1
+                WHERE LOWER(email) = $e AND szerep = 'tanulo' AND needs_class_confirm = 0
+                RETURNING evfolyam";
             ccCmd.Parameters.AddWithValue("$e", email);
-            ccCmd.ExecuteNonQuery();
+            using var r = ccCmd.ExecuteReader();
+            if (!r.Read()) continue;
+            var evf = r.IsDBNull(0) ? null : r.GetString(0);
+            r.Close();
+            Naplo(conn, tx, email, evf, evf, vegrehajto, "osztaly_megerosites", batchId);
+            megerositendo++;
         }
 
-        return count;
+        tx.Commit();
+        return new EvfolyamLeptetesEredmeny(leptetve, kihagyva, megerositendo, batchId);
+    }
+
+    private static void Naplo(SqliteConnection conn, SqliteTransaction tx, string email, string? regi, string? uj,
+                              string vegrehajto, string tipus, string batchId)
+    {
+        using var logCmd = conn.CreateCommand();
+        logCmd.Transaction = tx;
+        logCmd.CommandText = @"
+            INSERT INTO evfolyam_leptetes_log (email, regi_evfolyam, uj_evfolyam, vegrehajto, tipus, batch_id)
+            VALUES ($e, $r, $u, $v, $t, $b)";
+        logCmd.Parameters.AddWithValue("$e", email);
+        logCmd.Parameters.AddWithValue("$r", (object?)regi ?? DBNull.Value);
+        logCmd.Parameters.AddWithValue("$u", (object?)uj ?? DBNull.Value);
+        logCmd.Parameters.AddWithValue("$v", vegrehajto);
+        logCmd.Parameters.AddWithValue("$t", tipus);
+        logCmd.Parameters.AddWithValue("$b", batchId);
+        logCmd.ExecuteNonQuery();
+    }
+
+    // A legutóbbi, még vissza nem vont léptetés-kattintás összesítője (null, ha nincs).
+    public EvfolyamLeptetesBatchInfo? GetUtolsoLeptetes()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT batch_id, MIN(vegrehajtva_at), MIN(vegrehajto),
+                   SUM(tipus = 'leptetes'), SUM(tipus = 'osztaly_megerosites')
+            FROM evfolyam_leptetes_log
+            WHERE batch_id IS NOT NULL AND visszavonva = 0
+              AND tipus IN ('leptetes', 'osztaly_megerosites')
+            GROUP BY batch_id
+            ORDER BY MAX(id) DESC
+            LIMIT 1";
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return new EvfolyamLeptetesBatchInfo(r.GetString(0), r.GetString(1), r.GetString(2), r.GetInt32(3), r.GetInt32(4));
+    }
+
+    // A legutóbbi léptetés visszavonása: évfolyam vissza a régire (csak ha azóta nem változott),
+    // az osztály-megerősítés kérés törlése (csak ha a diák még nem erősítette meg). Egy tranzakció.
+    public EvfolyamVisszavonasEredmeny? UndoUtolsoLeptetes(string batchId)
+    {
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+
+        var sorok = new List<(long Id, string Email, string? Regi, string? Uj, string Tipus)>();
+        using (var sel = conn.CreateCommand())
+        {
+            sel.Transaction = tx;
+            sel.CommandText = @"
+                SELECT id, email, regi_evfolyam, uj_evfolyam, tipus FROM evfolyam_leptetes_log
+                WHERE batch_id = $b AND visszavonva = 0 AND tipus IN ('leptetes', 'osztaly_megerosites')";
+            sel.Parameters.AddWithValue("$b", batchId);
+            using var r = sel.ExecuteReader();
+            while (r.Read())
+                sorok.Add((r.GetInt64(0), r.GetString(1), r.IsDBNull(2) ? null : r.GetString(2),
+                           r.IsDBNull(3) ? null : r.GetString(3), r.GetString(4)));
+        }
+        if (sorok.Count == 0) { tx.Rollback(); return null; }
+
+        int visszaallitva = 0, kihagyva = 0;
+        foreach (var s in sorok)
+        {
+            using var upd = conn.CreateCommand();
+            upd.Transaction = tx;
+            if (s.Tipus == "leptetes")
+            {
+                upd.CommandText = "UPDATE users SET evfolyam = $r WHERE LOWER(email) = $e AND evfolyam = $u";
+                upd.Parameters.AddWithValue("$r", (object?)s.Regi ?? DBNull.Value);
+                upd.Parameters.AddWithValue("$u", (object?)s.Uj ?? DBNull.Value);
+            }
+            else
+            {
+                upd.CommandText = "UPDATE users SET needs_class_confirm = 0 WHERE LOWER(email) = $e AND needs_class_confirm = 1";
+            }
+            upd.Parameters.AddWithValue("$e", s.Email);
+            if (upd.ExecuteNonQuery() == 1) visszaallitva++; else kihagyva++;
+
+            using var mark = conn.CreateCommand();
+            mark.Transaction = tx;
+            mark.CommandText = "UPDATE evfolyam_leptetes_log SET visszavonva = 1 WHERE id = $id";
+            mark.Parameters.AddWithValue("$id", s.Id);
+            mark.ExecuteNonQuery();
+        }
+
+        tx.Commit();
+        return new EvfolyamVisszavonasEredmeny(visszaallitva, kihagyva);
     }
 
     public bool ResetUserPassword(string email, string newHash)

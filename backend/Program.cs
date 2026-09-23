@@ -463,6 +463,30 @@ app.MapGet("/api/admin/evfolyam-leptetes/preview", (HttpContext ctx, Database db
     return Results.Ok(db.GetEvfolyamLeptetesPreview());
 });
 
+// Tanévváltás műveletei egyszerre csak egyszer futhatnak (dupla kattintás / két nyitott fül ellen),
+// és mindegyik előtt ellenőrzött teljes biztonsági mentés készül – ha a mentés nem sikerül,
+// a művelet el sem indul.
+var tanevvaltasLock = new object();
+
+IResult Mentessel(Database db, string ok, Func<string, IResult> muvelet)
+{
+    lock (tanevvaltasLock)
+    {
+        string mentes;
+        try { mentes = db.CreateBackup(ok); }
+        catch (Exception ex)
+        {
+            return Results.Json(new { success = false, error = $"Nem sikerült biztonsági mentést készíteni, a művelet NEM indult el. ({ex.Message})" }, statusCode: 500);
+        }
+        try { return muvelet(Path.GetFileName(mentes)); }
+        catch (Exception ex)
+        {
+            // A tranzakció miatt ilyenkor semmi nem változott; a mentés ettől függetlenül megvan.
+            return Results.Json(new { success = false, error = $"Hiba történt, semmi nem módosult. Mentés: {Path.GetFileName(mentes)} ({ex.Message})" }, statusCode: 500);
+        }
+    }
+}
+
 // Végrehajtás: a PromoteEmails listában szereplők évfolyama nő eggyel, a ClassConfirmEmails
 // listában szereplőknek (léptetve vagy sem – pl. évismétlők is) a következő belépéskor
 // meg kell erősíteniük az új osztályukat/csoportjukat/szakmájukat.
@@ -470,8 +494,36 @@ app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLept
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var (_, tokenIdentity, _) = InspectAuthContext(ctx);
-    var updated = db.ApplyEvfolyamLeptetes(req.PromoteEmails ?? new(), req.ClassConfirmEmails ?? new(), tokenIdentity);
-    return Results.Ok(new { success = true, updated });
+    return Mentessel(db, "leptetes", mentes =>
+    {
+        var e = db.ApplyEvfolyamLeptetes(req.PromoteEmails ?? new(), req.ClassConfirmEmails ?? new(), tokenIdentity);
+        return Results.Ok(new { success = true, updated = e.Leptetve, kihagyva = e.Kihagyva, megerositendo = e.Megerositendo, batchId = e.BatchId, mentes });
+    });
+});
+
+// A legutóbbi, még vissza nem vont léptetés adatai (a visszavonás gombhoz).
+app.MapGet("/api/admin/evfolyam-leptetes/utolso", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var info = db.GetUtolsoLeptetes();
+    return info == null ? Results.NoContent() : Results.Ok(info);
+});
+
+// A legutóbbi léptetés visszavonása (a BatchId-nek egyeznie kell a legutóbbival – véletlen
+// régebbi visszavonás ellen).
+app.MapPost("/api/admin/evfolyam-leptetes/visszavonas", (HttpContext ctx, EvfolyamVisszavonasRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var utolso = db.GetUtolsoLeptetes();
+    if (utolso == null || utolso.BatchId != req.BatchId)
+        return Results.Json(new { success = false, error = "Ez már nem a legutóbbi léptetés, vagy már vissza lett vonva. Töltsd újra az ablakot." }, statusCode: 409);
+    return Mentessel(db, "visszavonas", mentes =>
+    {
+        var e = db.UndoUtolsoLeptetes(req.BatchId);
+        return e == null
+            ? Results.Json(new { success = false, error = "Nincs visszavonható léptetés." }, statusCode: 409)
+            : Results.Ok(new { success = true, visszaallitva = e.Visszaallitva, kihagyva = e.Kihagyva, mentes });
+    });
 });
 
 // Végzősök törlése: a kijelölt 13. / 2/14. évfolyamos tanulók fiókja és minden adata törlődik.
@@ -480,8 +532,20 @@ app.MapPost("/api/admin/vegzosok-torlese", (HttpContext ctx, VegzosokTorleseRequ
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var (_, tokenIdentity, _) = InspectAuthContext(ctx);
-    var deleted = db.DeleteVegzosok(req.Emails ?? new(), tokenIdentity);
-    return Results.Ok(new { success = true, deleted });
+    return Mentessel(db, "vegzos_torles", mentes =>
+    {
+        var deleted = db.DeleteVegzosok(req.Emails ?? new(), tokenIdentity);
+        return Results.Ok(new { success = true, deleted, mentes });
+    });
+});
+
+// Teljes adatbázis-mentés letöltése (offline másolat a tanár gépére, tanévváltás előtt ajánlott).
+app.MapGet("/api/admin/mentes-letoltes", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    string mentes;
+    lock (tanevvaltasLock) { mentes = db.CreateBackup("letoltes"); }
+    return Results.File(File.ReadAllBytes(mentes), "application/octet-stream", Path.GetFileName(mentes));
 });
 
 // Felhasználó jelszavának visszaállítása admin/oktató által

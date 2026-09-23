@@ -1106,6 +1106,14 @@
                     A <b>végzősök</b> (13. és 2/14. évfolyam) fiókja minden adatukkal együtt törölhető – ha felnőttképzésre
                     visszajönnek, újra regisztrálnak 1/13-ként. <b>Előbb a végzősöket töröld, utána léptess!</b>
                 </p>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(74,222,128,0.07);border:1px solid #166534;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:0.8rem;color:#94a3b8;">
+                    <span><i class="fas fa-shield-halved" style="color:#4ade80;"></i> Minden művelet előtt a szerver automatikusan ellenőrzött biztonsági mentést készít. Aki idén már lépett, azt a rendszer nem lépteti újra.</span>
+                    <button id="mentes-letoltes-btn" onclick="downloadMentes()" style="margin-left:auto;padding:4px 10px;background:transparent;border:1px solid #4ade80;border-radius:6px;color:#4ade80;font-size:0.78rem;cursor:pointer;"><i class="fas fa-download"></i> Mentés letöltése a gépemre</button>
+                </div>
+                <div id="leptetes-undo-box" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(251,191,36,0.07);border:1px solid #92400e;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:0.8rem;color:#fcd34d;">
+                    <span id="leptetes-undo-text"></span>
+                    <button id="leptetes-undo-btn" onclick="undoLeptetes()" style="margin-left:auto;padding:4px 10px;background:transparent;border:1px solid #fcd34d;border-radius:6px;color:#fcd34d;font-size:0.78rem;cursor:pointer;"><i class="fas fa-rotate-left"></i> Visszavonás</button>
+                </div>
                 <div id="leptetes-loading" style="color:#94a3b8;font-style:italic;">Betöltés...</div>
                 <div id="leptetes-error" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
                 <div id="leptetes-body" style="overflow-y:auto;flex:1;"></div>
@@ -1806,6 +1814,7 @@
                 if (!res.ok) throw new Error('Nem sikerült betölteni az előnézetet.');
                 _leptetesPreview = await res.json();
                 renderLeptetesBody();
+                loadUtolsoLeptetes();
             } catch (e) {
                 errEl.textContent = e.message;
                 errEl.style.display = 'block';
@@ -1864,7 +1873,7 @@
                         ${it.frissenLeptetett ? '<span style="font-size:0.68rem;color:#4ade80;" title="Idén léptetve – jelenlegi tanuló"><i class="fas fa-circle-info"></i> idén léptetve</span>' : ''}` : `
                         <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Léptetés eggyel feljebb">
                             <input type="checkbox" class="lep-chk" data-email="${it.email}" data-evfolyam="${key}"
-                                ${terminal ? 'disabled' : 'checked'} onchange="updateLeptetesSummary()">
+                                ${it.frissenLeptetett ? '' : 'checked'} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#4ade80;">lépt.</span>
                         </label>
                         <label style="display:flex;align-items:center;gap:4px;cursor:${terminal ? 'default' : 'pointer'};" title="Osztály/csoport/szakma megerősítés kérése a diáktól – akkor is bepipálható, ha nem lép évfolyamot (pl. évismétlő, de más osztályba kerül)">
@@ -1872,7 +1881,7 @@
                                 ${terminal ? 'disabled' : ''} ${ccDefault && !terminal ? 'checked' : ''} onchange="updateLeptetesSummary()">
                             <span style="font-size:0.68rem;color:#fcd34d;">oszt.meg.</span>
                         </label>`}
-                        <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${it.nev}</span>
+                        <span style="flex:1;font-size:0.87rem;color:#e0e0e0;">${it.nev}${!terminal && it.frissenLeptetett ? ' <span style="font-size:0.68rem;color:#fcd34d;" title="Idén már lépett évfolyamot – a szerver nem lépteti újra"><i class="fas fa-lock"></i> idén már lépett</span>' : ''}</span>
                         <span style="font-size:0.78rem;color:#64748b;">${it.osztaly || '–'}${it.csoport ? '/' + it.csoport : ''}</span>
                         <span style="font-size:0.78rem;color:#475569;">${it.email}</span>
                     </div>`).join('');
@@ -1919,7 +1928,9 @@
             const promoteEmails = Array.from(document.querySelectorAll('.lep-chk:checked')).map(chk => chk.dataset.email);
             const classConfirmEmails = Array.from(document.querySelectorAll('.cc-chk:checked')).map(chk => chk.dataset.email);
             if (promoteEmails.length === 0 && classConfirmEmails.length === 0) { alert('Nincs kijelölt tanuló.'); return; }
-            if (!confirm(`Biztosan végrehajtod?\n\n${promoteEmails.length} tanuló lép évfolyamot.\n${classConfirmEmails.length} tanulónak kell megerősítenie az osztályát/szakmáját belépéskor.\n\nEz a művelet nem vonható vissza egy kattintással!`)) return;
+            if (!confirm(`Biztosan végrehajtod?\n\n${promoteEmails.length} tanuló lép évfolyamot.\n${classConfirmEmails.length} tanulónak kell megerősítenie az osztályát/szakmáját belépéskor.\n\nElőtte automatikus biztonsági mentés készül, és a léptetés utólag visszavonható.`)) return;
+            const ellenorzes = prompt(`Megerősítésként írd be, hány tanuló lép évfolyamot (${promoteEmails.length}):`);
+            if (ellenorzes === null || ellenorzes.trim() !== String(promoteEmails.length)) { alert('A szám nem egyezik – a léptetés elmaradt.'); return; }
 
             const btn = document.getElementById('leptetes-apply-btn');
             btn.disabled = true; btn.textContent = 'Végrehajtás...';
@@ -1929,15 +1940,81 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ promoteEmails, classConfirmEmails })
                 });
-                if (!res.ok) throw new Error('Hiba történt a léptetés során.');
-                const d = await res.json();
-                alert(`Sikeres léptetés: ${d.updated} tanuló évfolyamot lépett.`);
-                document.getElementById('leptetes-modal').style.display = 'none';
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || !d.success) throw new Error(d.error || 'Hiba történt a léptetés során – semmi nem módosult.');
+                alert(`Sikeres léptetés.\n\n${d.updated} tanuló évfolyamot lépett.` +
+                      (d.kihagyva ? `\n${d.kihagyva} tanuló kimaradt (idén már lépett, vagy közben módosult).` : '') +
+                      `\n${d.megerositendo} tanulónak kell megerősítenie az osztályát.\n\nBiztonsági mentés: ${d.mentes}`);
+                await loadLeptetesPreview();
                 loadUsers();
             } catch (e) {
                 alert(e.message);
             } finally {
                 btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Léptetés végrehajtása';
+            }
+        }
+
+        let _utolsoLeptetes = null;
+
+        async function loadUtolsoLeptetes() {
+            const box = document.getElementById('leptetes-undo-box');
+            box.style.display = 'none';
+            _utolsoLeptetes = null;
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/evfolyam-leptetes/utolso`);
+                if (res.status !== 200) return;
+                _utolsoLeptetes = await res.json();
+                document.getElementById('leptetes-undo-text').innerHTML =
+                    `<i class="fas fa-clock-rotate-left"></i> Legutóbbi léptetés: <b>${_utolsoLeptetes.vegrehajtvaAt}</b> ` +
+                    `(${_utolsoLeptetes.leptetve} tanuló lépett, ${_utolsoLeptetes.megerositendo} osztály-megerősítés)`;
+                box.style.display = 'flex';
+            } catch (e) { /* nem kritikus */ }
+        }
+
+        async function undoLeptetes() {
+            if (!_utolsoLeptetes) return;
+            if (!confirm(`Visszavonod a ${_utolsoLeptetes.vegrehajtvaAt}-kor végrehajtott léptetést?\n\n${_utolsoLeptetes.leptetve} tanuló visszakerül a korábbi évfolyamára, és törlődik ${_utolsoLeptetes.megerositendo} osztály-megerősítés kérés (aki már megerősítette, annál marad az új osztály).\n\nElőtte automatikus biztonsági mentés készül.`)) return;
+            const btn = document.getElementById('leptetes-undo-btn');
+            btn.disabled = true; btn.textContent = 'Visszavonás...';
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/evfolyam-leptetes/visszavonas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ batchId: _utolsoLeptetes.batchId })
+                });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || !d.success) throw new Error(d.error || 'Hiba történt a visszavonás során – semmi nem módosult.');
+                alert(`Visszavonva: ${d.visszaallitva} módosítás visszaállítva.` +
+                      (d.kihagyva ? `\n${d.kihagyva} tétel kimaradt (azóta módosult, pl. a diák már megerősítette az osztályát).` : '') +
+                      `\n\nBiztonsági mentés: ${d.mentes}`);
+                await loadLeptetesPreview();
+                loadUsers();
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate-left"></i> Visszavonás';
+            }
+        }
+
+        async function downloadMentes() {
+            const btn = document.getElementById('mentes-letoltes-btn');
+            btn.disabled = true; btn.textContent = 'Mentés készül...';
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/mentes-letoltes`);
+                if (!res.ok) throw new Error('Nem sikerült a mentés letöltése.');
+                const cd = res.headers.get('Content-Disposition') || '';
+                const m = cd.match(/filename="?([^";]+)"?/);
+                const nev = m ? m[1] : `kando_mentes_${new Date().toISOString().slice(0, 10)}.db`;
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = nev;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Mentés letöltése a gépemre';
             }
         }
 
@@ -1956,9 +2033,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ emails })
                 });
-                if (!res.ok) throw new Error('Hiba történt a törlés során.');
-                const d = await res.json();
-                alert(`${d.deleted} végzős tanuló törölve.`);
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok || !d.success) throw new Error(d.error || 'Hiba történt a törlés során.');
+                alert(`${d.deleted} végzős tanuló törölve.\n\nBiztonsági mentés: ${d.mentes}`);
                 await loadLeptetesPreview();
                 loadUsers();
             } catch (e) {
