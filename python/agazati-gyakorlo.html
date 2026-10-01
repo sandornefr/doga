@@ -414,7 +414,7 @@ function parseTasks(text) {
 
     const id = parseInt(numMatch[1]);
     let pont = 8, cim = '', tipus = '', nehezseg = 'kozepes';
-    let uj = false, feladatkeszito = false;
+    let uj = false, feladatkeszito = false, modulNev = '';
     let i = 1;
 
     while (i < lines.length) {
@@ -425,13 +425,13 @@ function parseTasks(text) {
       else if (l.startsWith('Nehezseg: '))     { nehezseg      = l.slice(10).trim();                 i++; }
       else if (l.startsWith('Uj: '))           { uj            = l.slice(4).trim() === 'igen';       i++; }
       else if (l.startsWith('Feladatkeszito: ')){ feladatkeszito= l.slice(17).trim() === 'igen';     i++; }
-      else if (l.startsWith('ModulNev: '))     { /* skip */                                           i++; }
+      else if (l.startsWith('ModulNev: '))     { modulNev      = l.slice(10).trim();                 i++; }
       else if (l === 'ModulTartalom:')         { break; } // modul szekció, for loop kezeli
       else if (l === '')                       { i++; break; }
       else i++; // ismeretlen mező átugrása
     }
 
-    let szovegLines = [], criteriaLines = [], tippekLines = [], megoldasLines = [];
+    let szovegLines = [], criteriaLines = [], tippekLines = [], megoldasLines = [], modulLines = [];
     let section = 'szoveg';
 
     for (; i < lines.length; i++) {
@@ -447,11 +447,13 @@ function parseTasks(text) {
       else if (section === 'pontozas' && lt)    criteriaLines.push(lt);
       else if (section === 'tippek'   && lt)    tippekLines.push(lt);
       else if (section === 'megoldas')          megoldasLines.push(l);
-      // 'modul' szekció kihagyva
+      else if (section === 'modul')             modulLines.push(l);
     }
 
     tasks.push({
       id, pont, cim, tipus, nehezseg, uj, feladatkeszito,
+      // Segédfájl (pl. allat.py, forgalom.py, nevek .txt) – futtatás előtt a Python fájlrendszerébe kerül
+      modulNev, modulTartalom: modulNev ? modulLines.join('\n').trim() : '',
       szoveg:   szovegLines.join('\n').trim(),
       criteria: criteriaLines,
       tippek:   tippekLines.join('\n').trim(),
@@ -558,7 +560,11 @@ function selectTask(task) {
     </button>
   </div>` : '';
 
-  document.getElementById('desc-content').innerHTML = voteHtml + formatDesc(task.szoveg);
+  // Segédfájl tartalma a leírás alatt (a program futáskor eléri: import / open)
+  const modulHtml = task.modulNev && task.modulTartalom
+    ? '<div class="minta-label"><i class="fas fa-file-code"></i> Segédfájl: ' + esc(task.modulNev) + '</div><pre>' + esc(task.modulTartalom) + '</pre>'
+    : '';
+  document.getElementById('desc-content').innerHTML = voteHtml + formatDesc(task.szoveg) + modulHtml;
 
   document.getElementById('terminal').className = 'empty';
   document.getElementById('terminal').textContent = 'A kód futtatásának eredménye itt jelenik meg.';
@@ -741,7 +747,7 @@ async function runCode() {
     flashInputHint();
   }
 
-  const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+  const setup = `import builtins,sys${modulElotag()}\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
   const res = await runPyCode(setup + '\n' + code);
 
   let outText = res.output;
@@ -755,6 +761,22 @@ async function runCode() {
   term.className = res.hasError ? 'has-error' : '';
   btn.disabled = false; btnStop.style.display = 'none'; spinner.style.display = 'none';
 }
+
+// Az aktuális feladat segédfájlját (pl. allat.py) a futtatás előtt a Python munkakönyvtárába írja,
+// mint az éles dolgozat. Ugyanabba a sorba kerül, mint az "import builtins,sys", így a diák
+// hibaüzeneteiben a sorszámok nem csúsznak el.
+// Előtte az előző futásokból maradt .txt fájlokat törli, hogy azok ne okozzanak téves találatot.
+function modulElotag() {
+  const takaritas = `;[__import__('os').remove(_f) for _f in __import__('os').listdir('.') if _f.endswith('.txt')]`;
+  if (!currentTask || !currentTask.modulNev || !currentTask.modulTartalom) return takaritas;
+  return takaritas +
+         `;open(${JSON.stringify(currentTask.modulNev)},'w',encoding='utf-8').write(${JSON.stringify(currentTask.modulTartalom + '\n')})` +
+         `;sys.path.insert(0,'') if '' not in sys.path else None;__import__('importlib').invalidate_caches()`;
+}
+
+// Ellenőrzéskor a program által írt .txt fájlok tartalma is a vizsgált kimenetbe kerül (mint a
+// dolgozatban) – így a "fájlba írja" típusú tesztek is ellenőrizhetők.
+const TXT_FAJLOK_KIIRASA = `\nimport os as _kando_os\nfor _kando_f in sorted(_kando_os.listdir('.')):\n    if _kando_f.endswith('.txt'):\n        print('\\n[' + _kando_f + ']\\n' + open(_kando_f, encoding='utf-8').read())\n`;
 
 function flashInputHint() {
   const wrap = document.getElementById('input-values');
@@ -869,8 +891,8 @@ async function runWithMockInputs(code, inputs, expected) {
   try {
     // Mint az éles dolgozatban: a bekérő szöveg és a beírt érték NEM kerül a kimenetbe,
     // különben a bemenetként megadott szám a kimenetben "megtalálhatónak" számítana.
-    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n return str(next(_mi,'')).strip()\nbuiltins.input=_inp\n`;
-    const result = await runPyCode(setup + '\n' + code, 5000);
+    const setup = `import builtins,sys${modulElotag()}\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n return str(next(_mi,'')).strip()\nbuiltins.input=_inp\n`;
+    const result = await runPyCode(setup + '\n' + code + '\n' + TXT_FAJLOK_KIIRASA, 5000);
     return !result.hasError && kimenetTartalmazza(result.output, expected);
   } catch { return false; }
 }
