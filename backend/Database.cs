@@ -249,6 +249,14 @@ public class Database
             );
         ");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
+        // Tesztelői jog tanévenként: melyik tanévre erősítette meg (kezdő év, pl. "2026" = 2026/27).
+        // Meglévő tesztelőknél a csatlakozás tanéve – a korábbi tanévből maradtakat a portál megkérdezi.
+        try { Exec(conn, "ALTER TABLE tesztelok ADD COLUMN megerositett_tanev TEXT"); } catch { }
+        Exec(conn, @"
+            UPDATE tesztelok SET megerositett_tanev = CAST(
+                CAST(substr(COALESCE(added_at, '2000-01-01'), 1, 4) AS INTEGER)
+                - (CAST(substr(COALESCE(added_at, '2000-01-01'), 6, 2) AS INTEGER) < 9) AS TEXT)
+            WHERE megerositett_tanev IS NULL");
         try { Exec(conn, "ALTER TABLE havijegyek ADD COLUMN halozat_szaz REAL NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN needs_class_confirm INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN szakma TEXT"); } catch { }
@@ -2438,13 +2446,57 @@ public class Database
 
     // ── Tesztelők ─────────────────────────────────────────────────────────────
 
+    // Tanév kezdő éve (szeptember 1-jétől új tanév): 2026. 10. -> "2026" (2026/27).
+    public static string AktualisTanev()
+    {
+        var most = DateTime.Now;
+        return (most.Month >= 9 ? most.Year : most.Year - 1).ToString();
+    }
+    private static string TanevKezdet() => $"{AktualisTanev()}-09-01";
+
     public void AddTesztelő(string email)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT OR IGNORE INTO tesztelok (email) VALUES ($email)";
+        cmd.CommandText = @"
+            INSERT INTO tesztelok (email, megerositett_tanev) VALUES ($email, $tanev)
+            ON CONFLICT(email) DO UPDATE SET megerositett_tanev = excluded.megerositett_tanev";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$tanev", AktualisTanev());
         cmd.ExecuteNonQuery();
+    }
+
+    // Korábbi tanévben lett tesztelő, és erre a tanévre még nem nyilatkozott, hogy marad-e.
+    public bool TesztelőMegerositendo(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM tesztelok WHERE email = $email AND COALESCE(megerositett_tanev, '') < $tanev";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$tanev", AktualisTanev());
+        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+    }
+
+    public void MegerositTesztelő(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE tesztelok SET megerositett_tanev = $tanev WHERE email = $email";
+        cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$tanev", AktualisTanev());
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<string> GetMegerositendoTesztelők()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT email FROM tesztelok WHERE COALESCE(megerositett_tanev, '') < $tanev";
+        cmd.Parameters.AddWithValue("$tanev", AktualisTanev());
+        var list = new List<string>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(r.GetString(0));
+        return list;
     }
 
     public void RemoveTesztelő(string email)
@@ -2529,12 +2581,14 @@ public class Database
                    (SELECT COUNT(*) FROM teszteloi_uzenet_olvasott o
                     WHERE o.uzenet_id = u.id AND o.email = $email) as olvasott
             FROM teszteloi_uzenetek u
-            WHERE u.recipient_email = $email
+            WHERE u.created_at >= $kezdet   -- csak az aktuális tanév üzenetei
+              AND (u.recipient_email = $email
                OR (u.recipient_email IS NULL
                    -- közös üzenetből csak a csatlakozás utániakat látja (régi tesztelőknek szólót nem)
-                   AND u.created_at >= COALESCE((SELECT t.added_at FROM tesztelok t WHERE t.email = $email), u.created_at))
+                   AND u.created_at >= COALESCE((SELECT t.added_at FROM tesztelok t WHERE t.email = $email), u.created_at)))
             ORDER BY u.created_at DESC";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$kezdet", TanevKezdet());
         var list = new List<TeszteloiUzenetItem>();
         using var r = cmd.ExecuteReader();
         while (r.Read())
@@ -2556,7 +2610,9 @@ public class Database
                    u.recipient_email
             FROM teszteloi_uzenetek u
             LEFT JOIN teszteloi_uzenet_olvasott o ON o.uzenet_id = u.id
+            WHERE u.created_at >= $kezdet   -- csak az aktuális tanév üzenetei
             GROUP BY u.id ORDER BY u.created_at DESC";
+        cmd.Parameters.AddWithValue("$kezdet", TanevKezdet());
         var dict = new Dictionary<int, AdminUzenetItem>();
         using (var r = cmd.ExecuteReader())
             while (r.Read())

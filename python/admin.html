@@ -3823,11 +3823,14 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
 
         async function loadTesztelők() {
             // Párhuzamosan tölti be a tanulókat, tesztelőket és kérvényeket
-            const [tRes, uRes, kRes] = await Promise.all([
+            const [tRes, uRes, kRes, mRes] = await Promise.all([
                 authFetch(`${RAILWAY_URL}/api/tesztelok`),
                 authFetch(`${RAILWAY_URL}/api/users`),
-                authFetch(`${RAILWAY_URL}/api/tesztelok/kervenyok`)
+                authFetch(`${RAILWAY_URL}/api/tesztelok/kervenyok`),
+                authFetch(`${RAILWAY_URL}/api/tesztelok/megerositendok`)
             ]);
+            // Korábbi tanévből maradt tesztelők, akik az új tanévre még nem nyilatkoztak
+            const megerositendok = new Set(mRes.ok ? (await mRes.json()).map(e => e.toLowerCase()) : []);
             // Kérvények megjelenítése
             if (kRes.ok) {
                 const kervenyok = await kRes.json();
@@ -3869,7 +3872,8 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     el.innerHTML = [..._tesztelokSet].map(email => {
                         const u = _allTanulok.find(x => x.email.toLowerCase() === email);
                         const nev = u ? escHtml(u.nev) : escHtml(email);
-                        const info = u?.osztaly ? ` <span style="color:#6366f1;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
+                        const info = (u?.osztaly ? ` <span style="color:#6366f1;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '')
+                            + (megerositendok.has(email) ? ` <span style="color:#fbbf24;font-size:0.72rem;" title="Korábbi tanévből maradt – a portálon megkérdezzük, marad-e tesztelő"><i class="fas fa-hourglass-half"></i> még nem nyilatkozott</span>` : '');
                         return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#c7d2fe;">
                             🔬 ${nev}${info}
                             <button onclick="removeTesztelő(${jsArg(email)})" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>

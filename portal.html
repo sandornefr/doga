@@ -1799,6 +1799,21 @@
     </div>
 </div>
 
+<!-- Tanévenkénti kérdés a korábbi tanévből maradt tesztelőknek (loadTeszteloInfo) -->
+<div class="class-confirm-overlay" id="tesztelo-marad-overlay" style="z-index:490;">
+    <div class="class-confirm-box">
+        <h3><i class="fas fa-flask"></i> Maradsz tesztelő?</h3>
+        <p>Új tanév kezdődött. Tavaly tesztelőként segítetted a rendszer fejlesztését – köszönjük! Szeretnél ebben a tanévben is tesztelő maradni, vagy lemondasz erről?</p>
+        <div id="tesztelo-marad-error" style="display:none;color:#e94560;background:rgba(233,69,96,0.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.85rem;"></div>
+        <button class="class-confirm-btn" id="tesztelo-marad-igen" onclick="teszteloNyilatkozat(true)">
+            <i class="fas fa-check"></i> Igen, maradok tesztelő
+        </button>
+        <button class="class-confirm-btn" id="tesztelo-marad-nem" onclick="teszteloNyilatkozat(false)" style="background:transparent;border:1px solid #e94560;color:#e94560;">
+            <i class="fas fa-door-open"></i> Lemondok róla
+        </button>
+    </div>
+</div>
+
 <div class="class-confirm-overlay" id="class-confirm-overlay">
     <div class="class-confirm-box">
         <h3><i class="fas fa-people-arrows"></i> Új osztály / szakma megerősítése</h3>
@@ -3228,6 +3243,11 @@
             if (!res.ok) return;
             const data = await res.json();
             if (!data.isTesztelő) return;
+            // Korábbi tanévből maradt tesztelő: előbb nyilatkozzon, marad-e (a válasz után töltjük újra)
+            if (data.megerositendo) {
+                document.getElementById('tesztelo-marad-overlay').classList.add('open');
+                return;
+            }
             // Tesztelő badge a névnél
             const nameEl = document.getElementById('user-name');
             if (nameEl && !nameEl.querySelector('.tesztelő-badge')) {
@@ -3251,6 +3271,29 @@
                 </div>`).join('');
             box.style.display = 'block';
         } catch {}
+    }
+
+    async function teszteloNyilatkozat(marad) {
+        const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+        const errEl = document.getElementById('tesztelo-marad-error');
+        const gombok = ['tesztelo-marad-igen', 'tesztelo-marad-nem'].map(id => document.getElementById(id));
+        errEl.style.display = 'none';
+        gombok.forEach(b => b.disabled = true);
+        try {
+            const res = await fetch(`${API_BASE}/api/tesztelok/megerosites`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                body: JSON.stringify({ marad })
+            });
+            if (!res.ok) throw new Error();
+            document.getElementById('tesztelo-marad-overlay').classList.remove('open');
+            if (marad) loadTeszteloInfo(user);
+            else sessionStorage.removeItem('kandoIsTesztelő');
+        } catch {
+            errEl.textContent = 'Nem sikerült menteni, próbáld újra.';
+            errEl.style.display = 'block';
+            gombok.forEach(b => b.disabled = false);
+        }
     }
 
     async function markUzenetOlvasott(id, el, token) {

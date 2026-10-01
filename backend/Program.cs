@@ -1063,7 +1063,32 @@ app.MapGet("/api/tesztelok/check", (HttpContext ctx, string email, Database db) 
     }
     if (string.IsNullOrEmpty(target)) return Results.BadRequest(new { error = "email kötelező" });
 
-    return Results.Ok(new { isTesztelő = db.IsTesztelő(target) });
+    var isT = db.IsTesztelő(target);
+    // A tanévenkénti "maradsz-e tesztelő?" kérdés csak a saját fiókra derül ki
+    var (tv, tid, _) = InspectAuthContext(ctx);
+    var sajat = tv && NormalizeSchoolEmail(tid) == target;
+    return Results.Ok(new { isTesztelő = isT, megerositendo = isT && sajat && db.TesztelőMegerositendo(target) });
+});
+
+// Tanévenkénti nyilatkozat: marad tesztelő az új tanévben, vagy lemond róla (tesztelő, token kell)
+app.MapPost("/api/tesztelok/megerosites", async (HttpContext ctx, Database db) =>
+{
+    var (valid, tokenIdentity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(tokenIdentity);
+    if (string.IsNullOrEmpty(email) || !db.IsTesztelő(email)) return Results.BadRequest(new { error = "Nem vagy tesztelő." });
+    using var reader = new System.IO.StreamReader(ctx.Request.Body);
+    var json = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(await reader.ReadToEndAsync());
+    var marad = json.TryGetProperty("marad", out var m) && m.ValueKind == System.Text.Json.JsonValueKind.True;
+    if (marad) db.MegerositTesztelő(email); else db.RemoveTesztelő(email);
+    return Results.Ok(new { success = true, marad });
+});
+
+// Az új tanévre még nem nyilatkozott tesztelők (csak oktató)
+app.MapGet("/api/tesztelok/megerositendok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetMegerositendoTesztelők());
 });
 
 // Tesztelő jelentkezés (tanuló, token kell)
