@@ -306,7 +306,7 @@ async function autoScoreUnscoredTasks() {
                 results[j] = {
                     criterion,
                     passed: !res.pyodideFailed && res.success &&
-                            res.output.toLowerCase().includes(expected.toLowerCase())
+                            kimenetTartalmazza(res.output, expected)
                 };
             } catch (e) {
                 results[j] = { criterion, passed: false };
@@ -1118,6 +1118,20 @@ function parseCriteria(lines) {
     }).filter(c => c !== null);
 }
 
+// Teszt-kritérium: szerepel-e a várt szöveg a program kimenetében (kis-nagybetű nem számít).
+// Rövid várt szöveg (1–2 betű/szám, pl. méretek: S, M, L, XL) csak önálló szóként egyezik –
+// különben az "L" teszt átmenne "XL" vagy "hello" kiírásra is.
+function kimenetTartalmazza(output, expected) {
+    const out = String(output).toLowerCase();
+    const exp = String(expected).toLowerCase();
+    const rovid = exp.trim();
+    if (/^[\p{L}\p{N}]{1,2}$/u.test(rovid)) {
+        const esc = rovid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(^|[^\\p{L}\\p{N}])${esc}($|[^\\p{L}\\p{N}])`, 'u').test(out);
+    }
+    return out.includes(exp);
+}
+
 // Szinkron kritérium-ellenőrzés (nem teszt típusú)
 function evaluateCriterion(code, criterion) {
     const { type, args } = criterion;
@@ -1320,7 +1334,7 @@ async function checkScoring() {
             results[i] = { criterion, passed: null, pyodideFailed: true, pending: false };
         } else {
             const passed = result.success
-                ? result.output.toLowerCase().includes(expected.toLowerCase())
+                ? kimenetTartalmazza(result.output, expected)
                 : false;
             results[i] = { criterion, passed, pending: false };
         }
