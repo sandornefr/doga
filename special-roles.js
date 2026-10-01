@@ -92,7 +92,7 @@
         const fab = document.createElement('div');
         fab.id = 'sr-fab-wrap';
         fab.innerHTML = `
-            <button class="sr-fab" id="sr-feladat-fab" onclick="window._srFeladatOpen()" style="display:none;">✏️ Feladat küldése</button>
+            <button class="sr-fab" id="sr-feladat-fab" onclick="window._srFeladatOpen()" style="display:none;"><i class="fas fa-pen-nib"></i> Feladat küldése</button>
         `;
         document.body.appendChild(fab);
 
@@ -125,7 +125,7 @@
         fm.id = 'sr-feladat-modal'; fm.className = 'sr-overlay';
         fm.innerHTML = `
             <div class="sr-box" style="border:1.5px solid #0d9488;">
-                <h3 style="color:#2dd4bf;">✏️ Feladat beküldése</h3>
+                <h3 style="color:#2dd4bf;"><i class="fas fa-pen-nib"></i> Feladat beküldése</h3>
                 <p>Töltsd ki az alábbi mezőket. A beküldött feladatot a tanár ellenőrzi, és ha bekerül, a neved megjelenik a Megvalósult ötletek között!</p>
                 <div class="sr-fg">
                     <label>Feladat címe *</label>
@@ -208,7 +208,7 @@
         if (!wrap || wrap.dataset.bugActive) return;
         wrap.dataset.bugActive = '1';
         wrap.classList.add('bug-aktiv');
-        wrap.title = '🐛 Hibajelentés';
+        wrap.title = 'Hibajelentés';
         // Belső <a> link navigáció tiltása
         const link = wrap.querySelector('a');
         if (link) link.style.pointerEvents = 'none';
@@ -393,7 +393,10 @@
                 activateBugLogo();
             }
             if (isFeladatkeszito && isPortal()) {
-                document.getElementById('sr-feladat-fab').style.display = 'flex';
+                // A portálon a fejléc gombja (ötletláda mellett); ha nincs ilyen, a lebegő gomb
+                const tb = document.getElementById('topbar-feladat-btn');
+                if (tb) tb.style.display = 'inline-flex';
+                else document.getElementById('sr-feladat-fab').style.display = 'flex';
             }
         } catch {}
     }

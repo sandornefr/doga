@@ -776,16 +776,36 @@ function skipQuestion() {
   showCurrentQuestion();
 }
 
+let feedbackPending = false;
+
 function nextQuestion() {
-  if (selectedOpt === null) return;
+  if (selectedOpt === null || feedbackPending) return;
   const idx = remaining.shift(); // megválaszolt kérdés
   answers[idx] = selectedOpt;
-  if (remaining.length === 0) {
-    stopTimer();
-    showResults();
-  } else {
-    showCurrentQuestion();
-  }
+
+  // Rövid visszajelzés: a kiválasztott válasz zöld (jó) vagy piros (rossz), rossznál a helyes is zöld
+  const opts = shuffledOpts[idx];
+  document.querySelectorAll('.mc-option').forEach((el, i) => {
+    el.classList.remove('selected');
+    if (opts[i] === questions[idx].ans) el.classList.add('correct');
+    else if (i === selectedOpt) el.classList.add('wrong');
+    el.style.pointerEvents = 'none';
+  });
+  feedbackPending = true;
+  document.getElementById('btn-next').disabled = true;
+  document.getElementById('btn-skip').disabled = true;
+
+  setTimeout(() => {
+    feedbackPending = false;
+    // Közben lejárhatott az idő – akkor már az eredmény látszik
+    if (document.getElementById('result-screen').style.display === 'block') return;
+    if (remaining.length === 0) {
+      stopTimer();
+      showResults();
+    } else {
+      showCurrentQuestion();
+    }
+  }, 1000);
 }
 
 // ════════════════════════════════════════════════════════════════════════════

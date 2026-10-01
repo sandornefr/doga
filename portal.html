@@ -1090,7 +1090,7 @@
     <div class="topbar-left">
         <span id="kando-logo-wrap" title="">
             <img src="kandologo2.png" alt="Kandó">
-            <span id="kando-bug-badge">🐛</span>
+            <span id="kando-bug-badge"><i class="fas fa-bug"></i></span>
         </span>
         <div class="topbar-title">
             <span>Miskolci SZC Kandó Kálmán Informatikai Technikum</span>
@@ -1110,6 +1110,7 @@
         <button class="btn-rangsor" id="btn-rangsor" onclick="openRangsor()" title="Rangsor"><i class="fas fa-trophy"></i> Rangsor</button>
         <button class="topbar-icon-btn" id="topbar-csatl-btn" title="Csatlakozás a fejlesztői csapathoz" onclick="openCsatlakozasModal()"><i class="fas fa-users"></i></button>
         <button class="topbar-icon-btn" id="topbar-otlet-btn" title="Ötletláda" onclick="openOtletModal()"><i class="fa-regular fa-lightbulb"></i></button>
+        <button class="topbar-icon-btn" id="topbar-feladat-btn" title="Feladat beküldése" onclick="window._srFeladatOpen && window._srFeladatOpen()" style="display:none"><i class="fas fa-pen-nib"></i></button>
         <button class="topbar-icon-btn" id="topbar-szamonkeres-btn" title="Számonkérés" onclick="openSzamonkeresModal()" style="display:none"><i class="fas fa-file-pen"></i><span id="topbar-szamonkeres-badge"></span></button>
         <button class="topbar-icon-btn" id="topbar-chat-btn" title="Chat" onclick="window.chatOpenFromTopbar && window.chatOpenFromTopbar()"><i class="fas fa-comments"></i><span id="topbar-chat-badge"></span></button>
         <button class="logout-btn" onclick="logout()">Kilépés</button>
@@ -1250,7 +1251,7 @@
 
         <!-- Tesztelői üzenetek (csak tesztelőknek) -->
         <div id="teszteloi-uzenetek-box" class="teszteloi-uzenet-box" style="display:none">
-            <div class="teszteloi-uzenet-title">🔬 Tesztelői üzenetek</div>
+            <div class="teszteloi-uzenet-title"><i class="fas fa-flask"></i> Tesztelői üzenetek</div>
             <div id="teszteloi-uzenetek-lista"></div>
         </div>
 
@@ -1500,7 +1501,7 @@
 <!-- Hibajelentés modal (csak tesztelőknek, képpel) -->
 <div class="otlet-modal-overlay" id="hiba-modal">
     <div class="otlet-modal-box" style="border-color:#e94560;">
-        <h3>🐛 Hibajelentés</h3>
+        <h3><i class="fas fa-bug"></i> Hibajelentés</h3>
         <p>Írj le egy tesztelés közben talált anomáliát. Csatolhatsz képernyőképet fájlból vagy vágólapról (Ctrl+V).</p>
         <textarea id="hiba-szoveg" placeholder="Írd le a hibát, mit csináltál, mi történt..."></textarea>
         <label class="otlet-file-label" for="hiba-kep-input">
@@ -1520,7 +1521,7 @@
 <!-- Feladat beküldő modal (feladatkészítőknek) -->
 <div class="fk-modal-overlay" id="feladat-modal">
     <div class="fk-modal-box">
-        <h3>✏️ Feladat beküldése</h3>
+        <h3><i class="fas fa-pen-nib"></i> Feladat beküldése</h3>
         <p>Töltsd ki az alábbi mezőket. A beküldött feladatot a tanár ellenőrzi, és ha bekerül a rendszerbe, a neved megjelenik a megvalósult ötletek között!</p>
         <div class="fk-form-group">
             <label>Feladat címe *</label>
@@ -1581,10 +1582,10 @@
         <!-- Tesztelő kártya -->
         <div id="csatl-tesztelő-card" style="background:#0f1e3c; border:1.5px solid #1f3460; border-radius:12px; padding:16px; margin-bottom:12px;">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                <span style="font-size:1.4rem;">🔬</span>
+                <span style="font-size:1.4rem;color:#a5b4fc;"><i class="fas fa-flask"></i></span>
                 <strong style="color:#e0e0e0; font-size:0.95rem;">Tesztelő</strong>
             </div>
-            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Segítesz megtalálni a hibákat! Ha valahol nem úgy működik a rendszer ahogy kellene, beküldöd nekem és én kijavítom. Egy 🐛 gomb jelenik meg az oldalakon.</p>
+            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Segítesz megtalálni a hibákat! Ha valahol nem úgy működik a rendszer ahogy kellene, beküldöd nekem és én kijavítom. A Kandó logóra kattintva bármelyik oldalon jelenthetsz hibát.</p>
             <div id="csatl-tesztelő-msg" style="font-size:0.8rem; min-height:16px; margin-bottom:8px;"></div>
             <button onclick="csatlakozasTesztelő()" id="csatl-tesztelő-btn" style="padding:8px 18px; background:#1e40af; border:none; border-radius:8px; color:#fff; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit;">Jelentkezem Tesztelőnek</button>
         </div>
@@ -1592,10 +1593,10 @@
         <!-- Feladatkészítő kártya -->
         <div id="csatl-feladatkeszito-card" style="background:#0f1e3c; border:1.5px solid #1f3460; border-radius:12px; padding:16px; margin-bottom:16px;">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                <span style="font-size:1.4rem;">✏️</span>
+                <span style="font-size:1.4rem;color:#2dd4bf;"><i class="fas fa-pen-nib"></i></span>
                 <strong style="color:#e0e0e0; font-size:0.95rem;">Feladatkészítő</strong>
             </div>
-            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Feladatötleteket küldesz be a dolgozathoz! Ha megvalósul az ötleted, a neved megjelenik a Megvalósult ötletek között. Egy ✏️ gomb jelenik meg az oldalakon.</p>
+            <p style="color:#94a3b8; font-size:0.82rem; line-height:1.5; margin-bottom:12px;">Feladatötleteket küldesz be a dolgozathoz! Ha megvalósul az ötleted, a neved megjelenik a Megvalósult ötletek között. A fejlécben megjelenik egy feladat-beküldő gomb.</p>
             <div id="csatl-fk-msg" style="font-size:0.8rem; min-height:16px; margin-bottom:8px;"></div>
             <button onclick="csatlakozasFeladatkeszito()" id="csatl-fk-btn" style="padding:8px 18px; background:#0f766e; border:none; border-radius:8px; color:#fff; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit;">Feladatkészítő leszek</button>
         </div>
@@ -2854,7 +2855,7 @@
         if (!wrap || wrap.dataset.bugActive) return;
         wrap.dataset.bugActive = '1';
         wrap.classList.add('bug-aktiv');
-        wrap.title = '🐛 Hibajelentés';
+        wrap.title = 'Hibajelentés';
         wrap.addEventListener('click', openHibaModal);
     }
 
@@ -3013,7 +3014,7 @@
             if (data.isFeladatkeszito) {
                 const nameEl = document.getElementById('user-name');
                 if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
-                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
+                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge"><i class="fas fa-pen-nib"></i> Feladatkészítő</span>');
             }
             // Csatlakozás gomb: csak ha még egyik szerepkörben sincs
             updateCsatlakozasBtn(user);
@@ -3096,7 +3097,7 @@
             if (res.ok) {
                 const nameEl = document.getElementById('user-name');
                 if (nameEl && !nameEl.querySelector('.feladatkeszito-badge'))
-                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge">✏️ Feladatkészítő</span>');
+                    nameEl.insertAdjacentHTML('beforeend', '<span class="feladatkeszito-badge"><i class="fas fa-pen-nib"></i> Feladatkészítő</span>');
                 msgEl.style.color = '#86efac';
                 msgEl.textContent = '✅ Mostantól Feladatkészítő vagy! Az oldal újratöltődik...';
                 btn.style.display = 'none';
@@ -3251,7 +3252,7 @@
             // Tesztelő badge a névnél
             const nameEl = document.getElementById('user-name');
             if (nameEl && !nameEl.querySelector('.tesztelő-badge')) {
-                nameEl.insertAdjacentHTML('beforeend', '<span class="tesztelő-badge">🔬 Tesztelő</span>');
+                nameEl.insertAdjacentHTML('beforeend', '<span class="tesztelő-badge"><i class="fas fa-flask"></i> Tesztelő</span>');
             }
             // Hibajelentés a logón keresztül
             activateBugLogo();

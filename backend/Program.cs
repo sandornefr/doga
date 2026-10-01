@@ -1040,7 +1040,7 @@ app.MapPost("/api/tesztelok", (HttpContext ctx, Database db) =>
         .GetProperty("email").GetString() ?? "";
     if (string.IsNullOrWhiteSpace(email)) return Results.BadRequest(new { error = "email kötelező" });
     db.AddTesztelő(email);
-    db.SaveTeszteloiUzenet("🔬 Üdvözlünk a tesztelők között! Felkértek, hogy segíts a rendszer fejlesztésében. Köszönjük a részvételt! Ha hibát találsz, használd a 🐛 Hibajelentés gombot a portálon.", email);
+    db.SaveTeszteloiUzenet("Üdvözlünk a tesztelők között! Köszönjük, hogy segítesz a rendszer fejlesztésében. Ha hibát találsz, kattints a Kandó logóra (bármelyik oldalon), és küldd be a hibajelentést.", email);
     return Results.Ok(new { success = true });
 });
 

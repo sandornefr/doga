@@ -482,7 +482,7 @@
             <button class="tab-btn" onclick="switchTab('kovetelmenyek', this)"><i class="fas fa-check-double"></i> Követelmények</button>
             <button class="tab-btn" id="feladatok-tab-btn" onclick="switchTab('feladatok', this)"><i class="fas fa-pencil"></i> Feladatkészítők</button>
             <button class="tab-btn" onclick="switchTab('tudasproba', this)"><i class="fas fa-graduation-cap"></i> Tudáspróba</button>
-            <button class="tab-btn" onclick="switchTab('interaktiv', this)"><i class="fas fa-brain"></i> Interaktív Teszt</button>
+            <button class="tab-btn" onclick="switchTab('interaktiv', this)"><i class="fas fa-brain"></i> Interaktív teszt</button>
         </div>
 
         <!-- Config Panel -->
@@ -624,7 +624,7 @@
             <!-- Tesztelők kezelése -->
             <div style="background:#0f1e35;border:1px solid #1a3a5c;border-radius:10px;padding:16px 18px;margin-bottom:22px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div style="font-weight:700;color:#a5b4fc;font-size:0.92rem;"><i class="fas fa-flask"></i> 🔬 Tesztelők kezelése</div>
+                    <div style="font-weight:700;color:#a5b4fc;font-size:0.92rem;"><i class="fas fa-flask"></i> Tesztelők kezelése</div>
                     <button onclick="loadTesztelők()" style="padding:4px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.8rem;"><i class="fas fa-rotate"></i> Frissítés</button>
                 </div>
 
@@ -674,7 +674,7 @@
             <!-- Szekció váltó: Ötletek / Hibajelentések -->
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
                 <button id="otlet-filter-otlet" onclick="setOtletFilter('otlet')" style="padding:6px 18px;background:#4f46e5;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer;font-size:0.85rem;">💡 Ötletek</button>
-                <button id="otlet-filter-hiba" onclick="setOtletFilter('hiba')" style="padding:6px 18px;background:#1e3a5f;border:1px solid #e94560;border-radius:20px;color:#fca5a5;font-weight:600;cursor:pointer;font-size:0.85rem;">🐛 Hibajelentések</button>
+                <button id="otlet-filter-hiba" onclick="setOtletFilter('hiba')" style="padding:6px 18px;background:#1e3a5f;border:1px solid #e94560;border-radius:20px;color:#fca5a5;font-weight:600;cursor:pointer;font-size:0.85rem;"><i class="fas fa-bug"></i> Hibajelentések</button>
                 <button class="btn-refresh" onclick="loadOtletek()"><i class="fas fa-rotate"></i> Frissítés</button>
                 <span id="otlet-count-badge" style="background:#1e3a5f;border:1px solid #2a4a7f;border-radius:20px;padding:2px 12px;font-size:0.8rem;color:#94a3b8;"></span>
             </div>
@@ -766,9 +766,9 @@
             </div>
         </div>
 
-        <!-- Interaktív Teszt eredmények panel -->
+        <!-- Interaktív teszt eredmények panel -->
         <div class="panel" data-tab="interaktiv" style="display:none;">
-            <h2><i class="fas fa-brain"></i> Interaktív Teszt – Eredmények</h2>
+            <h2><i class="fas fa-brain"></i> Interaktív teszt – Eredmények</h2>
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
                 <button class="btn-refresh" onclick="loadInteraktivResults(true)"><i class="fas fa-rotate"></i> Frissítés</button>
                 <select id="interaktiv-osztaly-filter" onchange="renderInteraktivTable()" style="padding:6px 10px;background:#0f3460;border:1px solid #1a4a8a;border-radius:8px;color:#e0e0e0;font-size:0.85rem;">
@@ -805,7 +805,7 @@
             <!-- Aktív feladatkészítők -->
             <div style="margin-bottom:20px;">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;">✏️ Regisztrált feladatkészítők</div>
+                    <div style="font-weight:600;color:#94a3b8;font-size:0.85rem;"><i class="fas fa-pen-nib"></i> Regisztrált feladatkészítők</div>
                     <button onclick="loadFeladatkeszitok()" style="padding:3px 10px;background:#1e3a5f;border:1px solid #2a4a7f;border-radius:6px;color:#94a3b8;cursor:pointer;font-size:0.78rem;"><i class="fas fa-rotate"></i></button>
                 </div>
                 <div id="feladatkeszitok-lista" style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -3736,7 +3736,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                     <div id="otlet-card-${o.id}" style="background:#0f1e35;border:1px solid ${isHiba ? '#7f1d1d' : '#1a3a5c'};border-radius:10px;padding:14px 16px;margin-bottom:12px;">
                         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
                             <div>
-                                ${isHiba ? '<span style="font-size:0.75rem;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:1px 8px;color:#fca5a5;margin-right:6px;">🐛 Hibajelentés</span>' : ''}
+                                ${isHiba ? '<span style="font-size:0.75rem;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:1px 8px;color:#fca5a5;margin-right:6px;"><i class="fas fa-bug"></i> Hibajelentés</span>' : ''}
                                 <span style="font-weight:700;color:#e0e0e0;">${escHtml(o.nev)}</span>
                                 ${o.osztaly ? `<span style="color:#94a3b8;font-size:0.8rem;margin-left:6px;">${escHtml(o.osztaly)}</span>` : ''}
                                 <span style="color:#475569;font-size:0.75rem;margin-left:8px;">${fmtOtletTime(o.createdAt)}</span>
@@ -3875,7 +3875,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         const info = (u?.osztaly ? ` <span style="color:#6366f1;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '')
                             + (megerositendok.has(email) ? ` <span style="color:#fbbf24;font-size:0.72rem;" title="Korábbi tanévből maradt – a portálon megkérdezzük, marad-e tesztelő"><i class="fas fa-hourglass-half"></i> még nem nyilatkozott</span>` : '');
                         return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#c7d2fe;">
-                            🔬 ${nev}${info}
+                            <i class="fas fa-flask"></i> ${nev}${info}
                             <button onclick="removeTesztelő(${jsArg(email)})" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
                         </span>`;
                     }).join('');
@@ -4076,7 +4076,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                 const nev = u ? escHtml(u.nev) : escHtml(email);
                 const info = u?.osztaly ? ` <span style="color:#0d9488;font-size:0.75rem;">${escHtml(u.osztaly)}</span>` : '';
                 return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.3);border-radius:20px;padding:3px 12px;font-size:0.82rem;color:#2dd4bf;">
-                    ✏️ ${nev}${info}
+                    <i class="fas fa-pen-nib"></i> ${nev}${info}
                     <button onclick="removeFeladatkeszito(${jsArg(email)})" style="background:none;border:none;color:#e94560;cursor:pointer;font-size:0.9rem;padding:0;line-height:1;" title="Eltávolítás">✕</button>
                 </span>`;
             }).join('');
@@ -4097,7 +4097,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
             el.innerHTML = stats.map(s => {
                 const tipusok = Object.entries(s.typusDb||{}).map(([k,v])=>`${escapeHtml(k)}: ${escapeHtml(v)}`).join(', ');
                 return `<div style="background:#0a1628;border:1px solid #1a3a5c;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:0.83rem;">
-                    <span style="color:#2dd4bf;font-weight:700;">✏️ ${escHtml(s.nev||s.email)}</span>
+                    <span style="color:#2dd4bf;font-weight:700;"><i class="fas fa-pen-nib"></i> ${escHtml(s.nev||s.email)}</span>
                     ${s.osztaly ? `<span style="color:#0d9488;margin-left:6px;font-size:0.75rem;">${escHtml(s.osztaly)}</span>` : ''}
                     <span style="float:right;color:#94a3b8;">Összes: <strong style="color:#e0e0e0;">${s.osszes}</strong> &nbsp;|&nbsp; Elfogadva: <strong style="color:#4ade80;">${s.elfogadva}</strong> &nbsp;|&nbsp; Megvalósítva: <strong style="color:#fbbf24;">${s.megvalositva}</strong></span>
                     ${tipusok ? `<div style="color:#64748b;margin-top:4px;">${tipusok}</div>` : ''}
