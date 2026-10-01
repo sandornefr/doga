@@ -740,6 +740,16 @@ function normText(s) {
         .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
+// Szerepel-e a minta a szövegben (normalizálva). Rövid minta (1–2 karakter, pl. méretek: S, M, L, XL)
+// csak önálló szóként egyezik – "L" nem egyezik a "hello", "XL" vagy "Méret" szóval. Hosszabb minta
+// bárhol lehet (szórészlet is: "emelkedés" ↔ "Hőemelkedésed"), mint a vizsgapontozásban.
+function tartalmazzaSzokent(szoveg, minta) {
+    const m = normText(minta);
+    if (!m) return false;
+    const t = normText(szoveg);
+    return m.length <= 2 ? (' ' + t + ' ').includes(' ' + m + ' ') : t.includes(m);
+}
+
 // "tipus:args|leírás|tipp|siker" → objektum (az args-ot nem trimmeljük – a bekérő szövegben számít a szóköz)
 function parseCrit(line) {
     const parts = line.split('|');
@@ -813,7 +823,7 @@ async function checkCrit(c, code, bekeresSorszam) {
     }
     if (type === 'tartalmaz' || type === 'vagy') {
         const minta = type === 'vagy' ? args.split('~~') : [args];
-        const ok = minta.some(m => code.includes(m) || (normText(m) && normText(code).includes(normText(m))));
+        const ok = minta.some(m => code.includes(m) || tartalmazzaSzokent(code, m));
         return { passed: ok, detail: ok ? '' : `A kódodban nem szerepel: ${minta.map(m => `"${m}"`).join(' vagy ')}` };
     }
     if (type === 'input_format') {
@@ -827,7 +837,7 @@ async function checkCrit(c, code, bekeresSorszam) {
         const vart   = args.slice(k + 1).trim();
         const r = await runWithInputs(code, inputs);
         const kimenet = r.out.trim();
-        const ok = r.ok && (normText(vart) ? normText(kimenet).includes(normText(vart)) : kimenet.includes(vart));
+        const ok = r.ok && (normText(vart) ? tartalmazzaSzokent(kimenet, vart) : kimenet.includes(vart));
         if (ok) return { passed: true };
         const bemenet = inputs.filter(x => x !== '').join(', ') || '(nincs)';
         return { passed: false, detail:
