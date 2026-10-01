@@ -487,6 +487,10 @@
         }
     }
 
+    // Regisztrációs szerepkör – alapból tanuló (a Tanuló gomb is így van kijelölve).
+    let selectedRole = 'tanulo';
+
+    // Tab váltás
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach((b, i) => {
             b.classList.toggle('active', (i === 0) === (tab === 'login'));
