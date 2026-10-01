@@ -1,29 +1,29 @@
 /**
  * learn-sync.js – WEB tananyag előrehaladás mentése a fiókhoz kötve
  *
- * - Bejelentkezett tanulónál a kész feladatok listája a szerveren is tárolódik
- *   (/api/user-state/{email}/haladas_<tananyag>), így nem vész el sütitörléskor,
- *   és másik gépen is megvan.
- * - A böngészőben tanulónként külön kulcs (<SKEY>_done_<email>), hogy közös iskolai
- *   gépen ne lássák egymás haladását. Vendég / Teszt Elek: a régi közös kulcs marad.
- * - A szerver és a helyi állapot összefésülése: ami bárhol kész, az kész.
+ * - Bejelentkezett tanulónál a haladás KIZÁRÓLAG a szerveren tárolódik
+ *   (/api/user-state/{email}/haladas_<tananyag>), a böngészőben semmi. Így mindenki csak a
+ *   saját munkájával halad, sütitörléskor sem vész el, és bármelyik gépen ott folytatja,
+ *   ahol abbahagyta. A korábbi böngészős (bárki által elért) haladást nem vesszük át, törlődik.
+ * - Ha a szerveren még nincs feladatonkénti haladás, de a tanuló korábban saját fiókkal
+ *   befejezte a tananyagot (tananyag_<név> dátum), az egész kész.
+ * - Vendég / Teszt Elek (nincs saját tanulói token): böngészős mentés, mint eddig.
  */
 (function () {
     const API = 'https://agazati.up.railway.app';
 
-    function user() {
-        try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); } catch { return {}; }
-    }
+    // A tananyag befejezésének régi, fiókhoz kötött jelzője (saveCompletion a learn-*.html-ben)
+    const BEFEJEZES_KULCS = { lhtml: 'tananyag_html', lcss: 'tananyag_css', lbs: 'tananyag_bootstrap',
+                              lemmet: 'tananyag_emmet', ljs: 'tananyag_javascript' };
+
     function tanulo() {
-        const u = user();
-        return (u.token && u.email && !u._tesztMod) ? u : null;
+        try {
+            const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            return (u.token && u.email && !u._tesztMod) ? u : null;
+        } catch { return null; }
     }
-    function localKey(skey) {
-        const u = tanulo();
-        return skey + '_done' + (u ? '_' + u.email.toLowerCase() : '');
-    }
-    // A szerveren verziófüggetlen kulcs (lhtml_v7 -> haladas_lhtml): verzióváltáskor is megmarad
-    function serverKey(skey) { return 'haladas_' + skey.replace(/_v\d+$/, ''); }
+    const alap = skey => skey.replace(/_v\d+$/, '');          // lhtml_v7 -> lhtml
+    const serverKey = skey => 'haladas_' + alap(skey);        // verzióváltáskor is megmarad
 
     function parse(s) {
         try { const v = JSON.parse(s || 'null'); return Array.isArray(v) ? v : null; } catch { return null; }
@@ -36,69 +36,81 @@
     function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
     function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
     function lsDel(k) { try { localStorage.removeItem(k); } catch {} }
+    function lsKeys() { try { return Object.keys(localStorage); } catch { return []; } }
 
-    function put(skey, done) {
-        const u = tanulo();
-        if (!u) return Promise.resolve();
-        return fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/${serverKey(skey)}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
-            body: JSON.stringify({ value: JSON.stringify(done.map(Boolean)) })
-        }).catch(() => {});
+    async function getState(u, key) {
+        const res = await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/${key}`,
+            { headers: { 'Authorization': 'Bearer ' + u.token } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return (await res.json()).value;
+    }
+    // A szerveren tárolt haladás (null, ha nincs); befejezett tananyagnál csupa true
+    async function szerverHaladas(u, skey, n) {
+        const v = parse(await getState(u, serverKey(skey)));
+        if (v) return v;
+        const bk = BEFEJEZES_KULCS[alap(skey)];
+        if (bk && await getState(u, bk)) return Array(n).fill(true);
+        return null;
+    }
+    async function put(u, skey, done, probalkozas = 0) {
+        try {
+            const res = await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/${serverKey(skey)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+                body: JSON.stringify({ value: JSON.stringify(done.map(Boolean)) })
+            });
+            if (!res.ok) throw new Error();
+        } catch {
+            if (probalkozas < 2) setTimeout(() => put(u, skey, done, probalkozas + 1), 3000);
+        }
     }
 
+    // Amíg a szerverről nem töltöttük be a haladást, nem írunk rá (különben felülírnánk a régit)
+    const betoltve = {};
+
     window.LearnSync = {
-        // Helyi állapot betöltése (szinkron, az oldal indulásakor)
+        // Indulási állapot (szinkron): tanulónál üres – a szerverről jön (sync); vendégnél a böngészőből
         load(skey, n) {
-            const key = localKey(skey);
-            let v = parse(lsGet(key));
-            if (!v && key !== skey + '_done') {
-                // Régi, közös kulcs átvétele az első bejelentkezett tanulónak, utána törlés,
-                // hogy a gépet használó következő tanuló ne örökölje
-                v = parse(lsGet(skey + '_done'));
-                if (v) { lsSet(key, JSON.stringify(v)); lsDel(skey + '_done'); }
+            if (tanulo()) {
+                // Régi böngészős haladás (közös és tanulónkénti kulcs) törlése – nem vesszük át
+                lsDel(skey + '_done');
+                lsKeys().filter(k => k.startsWith(skey + '_done_')).forEach(lsDel);
+                return Array(n).fill(false);
             }
-            return fit(v, n);
+            return fit(parse(lsGet(skey + '_done')), n);
         },
 
-        // Mentés helyben és (bejelentkezve) a szerveren
+        // Mentés: tanulónál csak a szerverre, vendégnél a böngészőbe
         save(skey, done) {
-            lsSet(localKey(skey), JSON.stringify(done));
-            put(skey, done);
-        },
-
-        // Kész-e az egész tananyag (a tananyag-kvíz előfeltétele): helyben vagy a szerveren
-        async allDone(skey) {
-            const kesz = a => !!a && a.length > 0 && a.every(Boolean);
-            if (kesz(parse(lsGet(localKey(skey)))) || kesz(parse(lsGet(skey + '_done')))) return true;
             const u = tanulo();
-            if (!u) return false;
-            try {
-                const res = await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/${serverKey(skey)}`,
-                    { headers: { 'Authorization': 'Bearer ' + u.token } });
-                return res.ok && kesz(parse((await res.json()).value));
-            } catch { return false; }
+            if (!u) { lsSet(skey + '_done', JSON.stringify(done)); return; }
+            if (betoltve[skey]) put(u, skey, done);
+            else this.sync(skey, done);   // még nincs betöltve: előbb összefésül, utána ment
         },
 
-        // Szerverrel összefésülés; ha a helyi állapot bővült, a done tömb helyben frissül és onChange fut
+        // Szerverről betöltés + összefésülés; ha bővült a tömb (a szerveren több kész), onChange fut
         async sync(skey, done, onChange) {
             const u = tanulo();
             if (!u) return;
-            let server = null;
-            try {
-                const res = await fetch(`${API}/api/user-state/${encodeURIComponent(u.email)}/${serverKey(skey)}`,
-                    { headers: { 'Authorization': 'Bearer ' + u.token } });
-                if (!res.ok) return;
-                server = parse((await res.json()).value);
-            } catch { return; }
+            let server;
+            try { server = await szerverHaladas(u, skey, done.length); } catch { return; }
+            betoltve[skey] = true;
             const srv = fit(server, done.length);
-            let helyiValtozott = false, szerverreKell = false;
+            let bovult = false, szerverreKell = false;
             done.forEach((d, i) => {
-                if (srv[i] && !d) { done[i] = true; helyiValtozott = true; }
+                if (srv[i] && !d) { done[i] = true; bovult = true; }
                 if (d && !srv[i]) szerverreKell = true;
             });
-            if (helyiValtozott) { lsSet(localKey(skey), JSON.stringify(done)); if (onChange) onChange(); }
-            if (szerverreKell) put(skey, done);
+            if (szerverreKell) put(u, skey, done);
+            if (bovult && onChange) onChange();
+        },
+
+        // Kész-e az egész tananyag (a tananyag-kvíz előfeltétele)
+        async allDone(skey) {
+            const kesz = a => !!a && a.length > 0 && a.every(Boolean);
+            const u = tanulo();
+            if (!u) return kesz(parse(lsGet(skey + '_done')));
+            try { return kesz(await szerverHaladas(u, skey, 1)); } catch { return false; }
         }
     };
 })();

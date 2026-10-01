@@ -1107,8 +1107,11 @@ function registerBootstrapCompletions(){
 document.getElementById('prog-total').textContent = tasks.length;
 buildLeft();
 loadTask(0);
-// Fiókhoz kötött haladás: a szerveren tárolt kész feladatok összefésülése a helyivel
-LearnSync.sync(SKEY, state.done, () => { buildLeft(); loadTask(state.cur); });
+// Fiókhoz kötött haladás (csak szerveren): betöltés után ott folytatja, ahol abbahagyta
+LearnSync.sync(SKEY, state.done, () => {
+  const kov = state.done.indexOf(false);
+  buildLeft(); loadTask(kov < 0 ? 0 : kov);
+});
 
 // ══════════════════════════════════════════════════════════════════════
 // LEFT PANEL
