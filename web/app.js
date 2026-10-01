@@ -3028,6 +3028,104 @@ function getStorageKey(taskId, type) {
   return `vizsga_${studentKey}_${taskId}_${type}`;
 }
 
+// ── Fiókhoz kötött vázlat (bejelentkezett tanuló) ──────────────────────────
+// A tanuló munkája (HTML, CSS, validálás képek) és a "Kész" állapot csak a szerveren tárolódik,
+// a böngészőben semmi – bármelyik gépen ott folytatja, ahol abbahagyta, és senki nem kapja
+// meg más (ugyanazon a gépen dolgozó) tanuló munkáját. Vendég / oktató: böngészős mentés marad.
+const WEB_API = 'https://agazati.up.railway.app';
+let draftLoading = false;          // feladatváltás közben nem mentünk (rossz feladathoz kerülne)
+let draftPutTimer = null;
+let draftLastPut = {};             // taskId -> utoljára elküldött tartalom (fölösleges PUT ellen)
+let validLastPut = {};
+const _webBeadva = new Set();      // szerver szerint "Kész"-re nyomott feladatok (taskId)
+
+function portalTanulo() {
+  try {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    return (u.token && u.email && u.szerep === 'tanulo' && !u._tesztMod) ? u : null;
+  } catch { return null; }
+}
+function userStateUrl(u, key) {
+  return `${WEB_API}/api/user-state/${encodeURIComponent(u.email)}/${key}`;
+}
+function userStatePut(u, key, value) {
+  return fetch(userStateUrl(u, key), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+    body: JSON.stringify({ value })
+  }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); });
+}
+async function userStateGet(u, key) {
+  const r = await fetch(userStateUrl(u, key), { headers: { 'Authorization': 'Bearer ' + u.token } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return (await r.json()).value;
+}
+
+function serverDraftSave(u, taskId) {
+  const tartalom = JSON.stringify({ html: htmlEditor.getValue(), css: cssEditor.getValue() });
+  if (draftLastPut[taskId] !== tartalom) {
+    clearTimeout(draftPutTimer);
+    draftPutTimer = setTimeout(() => {
+      const ertek = JSON.stringify({ ...JSON.parse(tartalom), lastSaved: new Date().toISOString() });
+      userStatePut(u, 'webvazlat_' + taskId, ertek)
+        .then(() => { draftLastPut[taskId] = tartalom; })
+        .catch(() => { statusEl.textContent = 'A mentés a szerverre nem sikerült – a következő módosításnál újrapróbálom'; });
+    }, 1500);
+  }
+  // Validálás képek külön kulcson, csak ha változtak (nagyok lehetnek)
+  const kepek = JSON.stringify({ html: validationImages.html || '', css: validationImages.css || '' });
+  if (validLastPut[taskId] !== kepek) {
+    validLastPut[taskId] = kepek;
+    userStatePut(u, 'webvalid_' + taskId, kepek).catch(() => { delete validLastPut[taskId]; });
+  }
+}
+
+async function serverDraftLoad(u, taskId) {
+  const [vazlat, kepek] = await Promise.all([
+    userStateGet(u, 'webvazlat_' + taskId).catch(() => null),
+    userStateGet(u, 'webvalid_' + taskId).catch(() => null)
+  ]);
+  let d = null, k = null;
+  try { d = vazlat ? JSON.parse(vazlat) : null; } catch {}
+  try { k = kepek ? JSON.parse(kepek) : null; } catch {}
+  validLastPut[taskId] = JSON.stringify({ html: (k && k.html) || '', css: (k && k.css) || '' });
+  if (k && k.html) validationImages.html = k.html;
+  if (k && k.css)  validationImages.css  = k.css;
+  if (!d || (!d.html && !d.css)) return null;
+  draftLastPut[taskId] = JSON.stringify({ html: d.html || '', css: d.css || '' });
+  return { html: d.html, css: d.css, lastSaved: d.lastSaved };
+}
+
+function serverDraftClear(u, taskId) {
+  clearTimeout(draftPutTimer);
+  draftLastPut[taskId] = JSON.stringify({ html: '', css: '' });
+  validLastPut[taskId] = JSON.stringify({ html: '', css: '' });
+  userStatePut(u, 'webvazlat_' + taskId, '').catch(() => {});
+  userStatePut(u, 'webvalid_' + taskId, '').catch(() => {});
+}
+
+// Régi böngészős munkák törlése tanulónál (nem vesszük át – bárkié lehetett ezen a gépen)
+function regiHelyiMunkakTorlese() {
+  try {
+    Object.keys(localStorage)
+      .filter(k => (k.startsWith('vizsga_') && /_(html|css|lastSaved|validHtml|validCss)$/.test(k))
+                || k.startsWith('webDone_'))
+      .forEach(k => localStorage.removeItem(k));
+  } catch {}
+}
+if (portalTanulo()) regiHelyiMunkakTorlese();
+
+// "Kész" állapot a szerverről (progress tábla)
+async function loadWebBeadva(u) {
+  try {
+    const r = await fetch(`${WEB_API}/api/progress/${encodeURIComponent(u.email)}/items`,
+      { headers: { 'Authorization': 'Bearer ' + u.token } });
+    if (!r.ok) return;
+    (await r.json()).filter(x => x.targy === 'web' && x.feladat).forEach(x => _webBeadva.add(x.feladat));
+    updateKeszBtnState();
+  } catch {}
+}
+
 // ── Progress tracking ─────────────────────────────────────────────────────
 const _progressPosted = new Set(); // "email:web:taskId" – session per post
 
@@ -3042,11 +3140,12 @@ function maybePostProgress() {
   const email = u.email;
   if (!email) return;
   const key = `${email}:web:${currentTask.id}`;
-  // localStorage-ban is tároljuk – oldalfrissítés után sem postol újra
+  const tanuloE = !!portalTanulo();
+  // Tanulónál a szerver tudja (progress), máshol localStorage – oldalfrissítés után sem postol újra
   const lsKey = 'webDone_' + key;
-  if (_progressPosted.has(key) || localStorage.getItem(lsKey)) return;
+  if (_progressPosted.has(key) || (tanuloE ? _webBeadva.has(currentTask.id) : localStorage.getItem(lsKey))) return;
   _progressPosted.add(key);
-  localStorage.setItem(lsKey, '1');
+  if (tanuloE) _webBeadva.add(currentTask.id); else localStorage.setItem(lsKey, '1');
   fetch('https://agazati.up.railway.app/api/progress', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -3075,7 +3174,8 @@ function updateKeszBtnState() {
   let u;
   try { u = JSON.parse(kandoRaw); } catch { return; }
   const key = `${u.email}:web:${currentTask.id}`;
-  const done = _progressPosted.has(key) || !!localStorage.getItem('webDone_' + key);
+  const done = _progressPosted.has(key) || _webBeadva.has(currentTask.id)
+    || (!portalTanulo() && !!localStorage.getItem('webDone_' + key));
   if (done) {
     btn.textContent = '✔ Beadva';
     btn.disabled = true;
@@ -3103,10 +3203,21 @@ function initKeszBtn() {
   if (!btn) return;
   btn.style.display = 'inline-block';
   updateKeszBtnState();
+  const tanulo = portalTanulo();
+  if (tanulo) loadWebBeadva(tanulo);
 }
 
 function saveToLocalStorage() {
   if (!currentTask || !htmlEditor || !cssEditor) return;
+
+  // Bejelentkezett tanuló: semmi a böngészőbe – éles módban a beadás, gyakorlóban a szerveres vázlat
+  const tanulo = portalTanulo();
+  if (tanulo) {
+    if (typeof acLive !== 'undefined' && acLive) { submitWebToBackend(); return; }
+    if (draftLoading || liveModeDetected) return;
+    serverDraftSave(tanulo, currentTask.id);
+    return;
+  }
 
   const htmlKey = getStorageKey(currentTask.id, 'html');
   const cssKey = getStorageKey(currentTask.id, 'css');
@@ -3160,6 +3271,9 @@ function loadFromLocalStorage(taskId) {
 }
 
 function clearLocalStorage(taskId) {
+  // Tanulónál a szerveres vázlat törlődik (kiindulási fájlok visszaállítása); éles módban nincs vázlat
+  const tanulo = portalTanulo();
+  if (tanulo) { if (!liveModeDetected) serverDraftClear(tanulo, taskId); return; }
   const htmlKey = getStorageKey(taskId, 'html');
   const cssKey = getStorageKey(taskId, 'css');
   const lastSavedKey = getStorageKey(taskId, 'lastSaved');
@@ -3218,6 +3332,10 @@ async function selectTask(taskId) {
   currentTask = task;
   lastParsedHtml = null;
   cachedStudentDoc = null;
+  clearTimeout(debounceTimer);       // az előző feladat függő mentése ne az újhoz kerüljön
+  // Az előző feladat validálás képei ne maradjanak meg (és ne mentődjenek az új feladathoz)
+  validationImages.html = null; validationImages.htmlFileName = null;
+  validationImages.css = null;  validationImages.cssFileName = null;
   updateKeszBtnState();
   if (btnStarter) btnStarter.disabled = false;
   if (btnSampleImg) btnSampleImg.disabled = !task.sampleImage;
@@ -3234,7 +3352,19 @@ async function selectTask(taskId) {
   }
 
   // Éles módban mindig friss kiindulást töltünk (korábbi gyakorló munka nem töltődik be)
-  const saved = (acLive || liveModeDetected) ? null : loadFromLocalStorage(taskId);
+  // Tanulónál a vázlat a szerverről jön (ott folytatja, ahol abbahagyta)
+  const tanulo = portalTanulo();
+  let saved = null;
+  if (!(acLive || liveModeDetected)) {
+    if (tanulo) {
+      draftLoading = true;
+      statusEl.textContent = 'Mentett munka betöltése a szerverről…';
+      try { saved = await serverDraftLoad(tanulo, taskId); } catch { saved = null; }
+      if (currentTask !== task) return;   // közben másik feladatot választott
+    } else {
+      saved = loadFromLocalStorage(taskId);
+    }
+  }
 
   if (saved && (saved.html || saved.css)) {
     // Van mentett munka - betöltjük azt
@@ -3254,6 +3384,8 @@ async function selectTask(taskId) {
       statusEl.textContent = 'Kiindulási fájlok betöltve';
     }
   }
+  if (currentTask !== task) return;   // közben másik feladatot választott
+  draftLoading = false;
 
   renderTaskChecks();
   updatePreview();
