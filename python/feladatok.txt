@@ -611,7 +611,6 @@ Kiváló! Mindenkinek ajánlom!
 Pontozas:
 bekeres:Add meg az értékelést (1-5): |Bekérés szövege: "Add meg az értékelést (1-5): "|Pontosan kell a szöveg a zárójelekkel együtt! 🍽️|✅ A bekérés szövege tökéletesen egyezik!
 int_float:1|Számmá alakítja|Az értékelés szövegként érkezik – mivel alakítod számmá? 🔢|🔢 Az értékelés számként vizsgálható – az ítélet elkezdődhet!
-if|Elágazást használ|Öt kategória van – melyik kulcsszóval indítod az elágazást? 🍽️|🍽️ Az elágazás megvan – a kritikus megszólalt!
 elif|Több kategóriát kezel (elif)|Az if után mi jön a következő értékeléshez? 🔀|🔀 Minden csillagnak saját ága van!
 teszt:1:Szörnyű|1 csillagnál Szörnyű értékelést ad|1 csillag – a legrosszabb. Mit ír ki a programod? 😱|😱 Szörnyű! A program nem kíméli az éttermet!
 teszt:2:Gyenge|2 csillagnál Gyenge értékelést ad|2 csillag – nem sok. Melyik ágon fut? 😕|😕 Gyenge! Volt jobb is!
@@ -1025,14 +1024,11 @@ return|Függvény visszatérési értéket ad (return)|A függvény visszaadja a
 tartalmaz:Ar|Ar névvel írja a függvényt|A függvénynek pontosan "Ar" a neve – az A nagybetű! 🔤|🔤 A függvény neve tökéletesen egyezik!
 bekeres:Válasszon (kód): |Bekérés szövege: "Válasszon (kód): "|Pontosan kell a szöveg a zárójelekkel együtt! 🥤|✅ A termékválasztás bekérése tökéletesen egyezik!
 int_float:1|A kódot számmá alakítja|A kód szövegként érkezik – mivel alakítod számmá? 🔢|🔢 A kód számként vizsgálható – az automata tud dönteni!
-tartalmaz:Nincs ilyen termék|Érvénytelen kódra "Nincs ilyen termék!" üzenetet ír|Mit ír ki az automata, ha nem létező kódot nyomnak? Pontosan kell a szöveg! ❌|❌ Érvénytelen kód felismerve – nincs ilyen termék!
 bekeres:Dobja be a pénzt: |Bekérés szövege: "Dobja be a pénzt: "|Pontosan kell a szöveg kettősponttal és szóközzel! 💰|✅ A pénzbekérés szövege tökéletesen egyezik!
 while|While ciklust alkalmaz a pénzbekéréshez|A pénzbedobást addig kell ismételni, amíg nincs elég pénz. Melyik ciklus alkalmas erre? 🔄|🔄 A while ciklus forog – az automata türelmesen vár a pénzre!
 tartalmaz:elfogadott|Elfogadott címletek listáját tárolja|Az automata csak bizonyos érméket fogad el. Hogyan tárolod ezeket a számokat? 📋|📋 Az elfogadott címletek listája megvan!
-tartalmaz:Ezt a címletet|Érvénytelen érmére "Ezt a címletet nem fogadom el!" üzenetet ír|Mi történik ha valaki 5000 Ft-ost próbál bedobni? Van erre külön ágad? 🚫|🚫 Érvénytelen érmét nem fogad el – az automata határozott!
 tartalmaz:Még hiányzik|Elégtelen befizetés után "Még hiányzik: X Ft" kiírja|Ha kevés pénzt dobtak be, mit írjon ki az automata? A "Még hiányzik" szó benne van? 💸|💸 Hiányzó összeget is kiírja – a vásárló tudja mennyit kell még!
 tartalmaz:Sikeres vásárlás|Sikeres vásárláskor megfelelő üzenetet ír|Ha összegyűlt a pénz, mit ír ki az automata első sorként? 🎉|🎉 Sikeres vásárlás! Az automata elégedett!
-tartalmaz:Visszajáró|A visszajárót kiszámolja és kiírja|A bedobott összeg mínusz a termék ára – ez a visszajáró. Kiírja a programod? 🪙|🪙 A visszajáró is megjelenik – pontos az elszámolás!
 teszt:1,2000:1500 Ft|Cola vásárlásnál 2000-ből 1500 a visszajáró|1: Cola 500 Ft, 2000-et dobtak be. Mennyi a visszajáró? 🧮|🧮 2000 - 500 = 1500 Ft visszajáró – helyes!
 teszt:0:Nincs ilyen termék|Érvénytelen kódnál helyes hibaüzenet|0-s kód nem létezik – felismeri a programod? ❌|❌ 0-s kódra "Nincs ilyen termék!" – tökéletes!
 teszt:2,5000,1000:Ezt a címletet|5000 Ft-ost nem fogad el|5000 Ft-ost dobnak be – mit ír ki az automata? 🚫|🚫 5000 Ft-os visszautasítva – az automata tartja magát a szabályhoz!
@@ -1169,11 +1165,8 @@ for|For ciklust használ a vásárláshoz|A ciklus pontosan annyiszor fusson le,
 tartalmaz:kosar|Kosár listát hoz létre|Az árakat egy listában kell gyűjteni. Mi a lista neve a leírás szerint? 🛒|🛒 A kosár lista megvan – a vásárlás folyhat!
 tartalmaz:append|Az árakat hozzáfűzi a listához|Ha létező a termék, az árát hozzá kell adni a listához. Melyik lista metódust használod? ➕|➕ append() – az ár bekerült a kosárba!
 tartalmaz:vegosszeg|A végösszeget változóban gyűjti|A lista elemeit össze kell adni és tárolni. Milyen nevű változóba gyűjtöd az összeget? 🧮|🧮 A végösszeg változó megvan – a számítás folyhat!
-tartalmaz:Hibás kód|Érvénytelen kódra "Hibás kód!" üzenetet ír|Ha valaki nem létező kódot ad meg, mit kell kiírni? ❌|❌ Hibás kód felismerve – a kassza nem engedi át!
 bekeres:Hány terméket veszel? |Bekérés szövege: "Hány terméket veszel? "|Pontosan kell a szöveg kérdőjellel és szóközzel! 🛍️|✅ A darabszám bekérése tökéletesen egyezik!
 tartalmaz:termék kódja: |A bekérés szövege tartalmazza: "termék kódja: "|A termékkód bekérésekor a szöveg tartalmazza a "termék kódja: " részt? 🔢|✅ A termékkód bekérése megvan!
-tartalmaz:kedvezmény|2500 Ft felett kedvezmény üzenetet ír|Ha elég nagy a végösszeg, mit ír ki a program? A "kedvezmény" szó benne van? 🎉|🎉 Kedvezmény jár – a büfés boldog!
-if|Elágazást használ a kedvezmény feltételéhez|Mikor jár kedvezmény? Melyik kulcsszóval vizsgálod a végösszeget? 💰|💰 Az elágazás megvan – a kedvezmény feltétele kezelt!
 teszt:2,1,5:750 Ft|Két termék végösszege helyes (350+400=750)|Szendvics (350) + Kóla (400) = ? 🧮|🧮 750 Ft – a végösszeg tökéletes!
 teszt:1,9:Hibás kód|Érvénytelen kódra helyes hibaüzenet|9-es kód nem létezik – felismeri a programod? ❌|❌ Hibás kód – a kassza visszautasítja!
 teszt:3,3,3,3:kedvezmény|2500 Ft felett kedvezményt ad|3×1000=3000 Ft – ez eléri a 2500-at? Jár kedvezmény? 🎉|🎉 Nagy bevásárlás – 10% kedvezmény jár!
@@ -3316,11 +3309,9 @@ ROBBANÁS! Takarodj innen, jön a kerti kapa!
 Pontozas:
 bekeres:Add meg az idegállapotod szintjét (1-100): |Bekérés szövege: "Add meg az idegállapotod szintjét (1-100): "|Pontosan kell a szöveg zárójelekkel és kettősponttal! 🔍|✅ A bekérés szövege tökéletesen egyezik!
 int_float:1|A szintet egész számmá alakítja|Az input() szöveget ad vissza – egész számmá kell alakítani! 🔢|🔢 A szám készen áll a vizsgálatra!
-if|Elágazást használ|Több eset van – melyik kulcsszóval döntöd el az első feltételt? 🌿|✅ Az elágazás elindul!
 tartalmaz:or|Összetett feltételt (or) alkalmaz|Hogyan ellenőrzöd egyszerre, hogy 1-100 között van-e a szám? 🔗|🔗 Az or operátor megvan – összetett feltétel kezelve!
 elif|elif ágat alkalmaz|Ha if után még más szintek is vannak, az elif a barátod! 🔀|🔀 Az elif megvan – minden szint külön ágra kerül!
 tartalmaz:Hiba: Ilyen idegállapot nincs|Érvénytelen értéknél hibát jelez|0 vagy 101 esetén mi a hibaüzenet? 😤|😤 Az érvénytelen érték hibát dob!
-tartalmaz:Még nyugalom van|1-30 között a nyugodt üzenet|20-as szintnél mi a helyzet? 😌|😌 Még béke van, Zoltán nyugodt!
 tartalmaz:Vigyázz, a türelmedet|31-80 között a figyelmeztetés|55-ös szintnél mit mond a program? ⚠️|⚠️ Figyelmeztetés – a türelem fogyóban!
 teszt:20:Még nyugalom van|20-nál a nyugodt üzenet jelenik meg|20 egészséges idegszint? 😌|😌 20-nál minden rendben!
 teszt:95:ROBBANÁS|95-nél a robbanásos üzenet|95-nél jön a kerti kapa? 🌿|💥 ROBBANÁS – kapa a kézben!
