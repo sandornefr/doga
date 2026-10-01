@@ -4008,6 +4008,7 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         <div style="font-size:0.85rem;color:#e0e0e0;margin-bottom:6px;">${escHtml(u.szoveg)}</div>
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                             <span style="font-size:0.75rem;color:#475569;">${u.createdAt}</span>
+                            ${u.recipientEmail ? `<span style="font-size:0.75rem;color:#93c5fd;"><i class="fas fa-user"></i> Személyes: ${(() => { const t = _allTanulok.find(x => x.email.toLowerCase() === u.recipientEmail.toLowerCase()); return escHtml(t ? t.nev : u.recipientEmail); })()}</span>` : ''}
                             <span style="font-size:0.78rem;font-weight:700;color:${barColor};">
                                 ${olv}/${ossz} olvasta
                             </span>

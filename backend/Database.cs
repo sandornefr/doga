@@ -2529,7 +2529,10 @@ public class Database
                    (SELECT COUNT(*) FROM teszteloi_uzenet_olvasott o
                     WHERE o.uzenet_id = u.id AND o.email = $email) as olvasott
             FROM teszteloi_uzenetek u
-            WHERE u.recipient_email IS NULL OR u.recipient_email = $email
+            WHERE u.recipient_email = $email
+               OR (u.recipient_email IS NULL
+                   -- közös üzenetből csak a csatlakozás utániakat látja (régi tesztelőknek szólót nem)
+                   AND u.created_at >= COALESCE((SELECT t.added_at FROM tesztelok t WHERE t.email = $email), u.created_at))
             ORDER BY u.created_at DESC";
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         var list = new List<TeszteloiUzenetItem>();
@@ -2549,7 +2552,8 @@ public class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             SELECT u.id, u.szoveg, u.created_at,
-                   GROUP_CONCAT(o.email) as olvaso_emailek
+                   GROUP_CONCAT(o.email) as olvaso_emailek,
+                   u.recipient_email
             FROM teszteloi_uzenetek u
             LEFT JOIN teszteloi_uzenet_olvasott o ON o.uzenet_id = u.id
             GROUP BY u.id ORDER BY u.created_at DESC";
@@ -2558,7 +2562,8 @@ public class Database
             while (r.Read())
             {
                 var item = new AdminUzenetItem {
-                    Id = r.GetInt32(0), Szoveg = r.GetString(1), CreatedAt = r.GetString(2)
+                    Id = r.GetInt32(0), Szoveg = r.GetString(1), CreatedAt = r.GetString(2),
+                    RecipientEmail = r.IsDBNull(4) ? null : r.GetString(4)
                 };
                 var olvEmail = r.IsDBNull(3) ? "" : r.GetString(3);
                 item.Olvastak = olvEmail.Length > 0
@@ -2566,16 +2571,21 @@ public class Database
                     : new List<string>();
                 dict[item.Id] = item;
             }
-        // Jelenlegi tesztelők
+        // Jelenlegi tesztelők (csatlakozás idejével)
         using var t = conn.CreateCommand();
-        t.CommandText = "SELECT email FROM tesztelok";
-        var tesztelok = new List<string>();
+        t.CommandText = "SELECT email, COALESCE(added_at, '') FROM tesztelok";
+        var tesztelok = new List<(string Email, string AddedAt)>();
         using (var r = t.ExecuteReader())
-            while (r.Read()) tesztelok.Add(r.GetString(0));
+            while (r.Read()) tesztelok.Add((r.GetString(0), r.GetString(1)));
         foreach (var item in dict.Values)
         {
-            item.OsszTesztelő = tesztelok.Count;
-            item.NemOlvastak  = tesztelok.Where(e => !item.Olvastak.Contains(e)).ToList();
+            // Személyes üzenet: csak a címzett; közös: aki a küldéskor már tesztelő volt
+            var cel = item.RecipientEmail != null
+                ? tesztelok.Where(x => x.Email == item.RecipientEmail).Select(x => x.Email).ToList()
+                : tesztelok.Where(x => string.CompareOrdinal(x.AddedAt, item.CreatedAt) <= 0).Select(x => x.Email).ToList();
+            item.Olvastak     = item.Olvastak.Where(cel.Contains).ToList();
+            item.OsszTesztelő = cel.Count;
+            item.NemOlvastak  = cel.Where(e => !item.Olvastak.Contains(e)).ToList();
         }
         return dict.Values.ToList();
     }

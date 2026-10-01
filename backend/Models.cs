@@ -319,6 +319,7 @@ public class AdminUzenetItem {
     public int Id { get; set; }
     public string Szoveg { get; set; } = "";
     public string CreatedAt { get; set; } = "";
+    public string? RecipientEmail { get; set; }  // null = minden tesztelőnek
     public int OsszTesztelő { get; set; }
     public List<string> Olvastak { get; set; } = new List<string>();
     public List<string> NemOlvastak { get; set; } = new List<string>();
