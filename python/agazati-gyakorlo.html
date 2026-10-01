@@ -832,14 +832,22 @@ async function checkCode() {
     }
     else if (spec === 'if')             { pass = /\bif\b/.test(code); }
     else if (spec === 'elif')           { pass = /\belif\b/.test(code); }
+    else if (spec === 'else')           { pass = /\belse\b/.test(code); }
+    else if (spec.startsWith('input:')) {
+      const n = parseInt(spec.slice(6)) || 1;
+      pass = (code.match(/\binput\s*\(/g) || []).length >= n;
+    }
     else if (spec.startsWith('tartalmaz:')) { pass = code.includes(spec.slice(10)); }
-    else if (spec === 'def')            { pass = /\bdef\b/.test(code); }
+    else if (spec.startsWith('vagy:'))  { pass = spec.slice(5).split('~~').some(a => code.includes(a)); }
+    else if (spec === 'def' || spec.startsWith('def:')) { pass = /\bdef\b/.test(code); } // def:Név – mint az éles dolgozatban
     else if (spec === 'return')         { pass = /\breturn\b/.test(code); }
     else if (spec === 'while')          { pass = /\bwhile\b/.test(code); }
     else if (spec === 'for')            { pass = /\bfor\b/.test(code); }
     else if (spec.startsWith('teszt:')) {
       const rest = spec.slice(6);
-      const sep  = rest.lastIndexOf(':');
+      // Az ELSŐ kettőspont választja el a bemenetet a várt kimenettől (a várt kimenetben is
+      // lehet kettőspont, pl. "teszt:5,3:A nagyobb szám: 5") – mint az éles dolgozatban.
+      const sep  = rest.indexOf(':');
       if (sep > 0) {
         const inputs   = rest.slice(0, sep) ? rest.slice(0, sep).split(',') : [];
         const expected = rest.slice(sep + 1).trim();
@@ -859,10 +867,25 @@ async function checkCode() {
 async function runWithMockInputs(code, inputs, expected) {
   if (!pyWorker || !pyWorkerReady) return false;
   try {
-    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n val=str(next(_mi,''))\n sys.stdout.write(str(p));sys.stdout.write(val+'\\n');return val\nbuiltins.input=_inp\n`;
+    // Mint az éles dolgozatban: a bekérő szöveg és a beírt érték NEM kerül a kimenetbe,
+    // különben a bemenetként megadott szám a kimenetben "megtalálhatónak" számítana.
+    const setup = `import builtins,sys\n_mi=iter(${JSON.stringify(inputs)})\ndef _inp(p=''):\n return str(next(_mi,'')).strip()\nbuiltins.input=_inp\n`;
     const result = await runPyCode(setup + '\n' + code, 5000);
-    return !result.hasError && result.output.includes(expected);
+    return !result.hasError && kimenetTartalmazza(result.output, expected);
   } catch { return false; }
+}
+
+// Ugyanaz, mint az éles dolgozatban (python_teszt.js): kis-nagybetű nem számít; rövid várt
+// szöveg (1–2 betű/szám, pl. S, M, L, XL) csak önálló szóként egyezik ("L" ≠ "XL", "3" ≠ "13").
+function kimenetTartalmazza(output, expected) {
+  const out = String(output).toLowerCase();
+  const exp = String(expected).toLowerCase();
+  const rovid = exp.trim();
+  if (/^[\p{L}\p{N}]{1,2}$/u.test(rovid)) {
+    const esc = rovid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^\\p{L}\\p{N}])${esc}($|[^\\p{L}\\p{N}])`, 'u').test(out);
+  }
+  return out.includes(exp);
 }
 
 function renderCheckResults(results, allPass) {
