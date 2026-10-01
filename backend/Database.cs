@@ -3129,6 +3129,8 @@ public class Database
         try { using var c = Open(); Exec(c, "ALTER TABLE duels ADD COLUMN opponent_time INTEGER");   } catch {}
     }
 
+    private const int DuelMaxPont = 8;
+
     public (bool ok, string? winner) SubmitDuelScore(int id, string email, int score, int maxScore, int elapsedSeconds)
     {
         using var conn = Open();
@@ -3138,6 +3140,11 @@ public class Database
         bool isChallenger = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
         bool isOpponent   = d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
         if (!isChallenger && !isOpponent) return (false, null);
+
+        // Párbajban csak 8 pontos feladat van: a kliens által küldött pontszám nem lehet
+        // több a maximumnál (pl. 9 szempontos feladatnál 9/8 → 112% legyőzte a hibátlan 8/8-at).
+        maxScore = DuelMaxPont;
+        score    = Math.Clamp(score, 0, maxScore);
 
         using var upd = conn.CreateCommand();
         if (isChallenger)

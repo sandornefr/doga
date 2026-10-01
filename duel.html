@@ -54,7 +54,19 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 /* Result overlay */
 .result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;}
 .result-overlay.show{display:flex;}
-.result-box{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:36px 40px;text-align:center;max-width:440px;width:90%;}
+.result-box{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:36px 40px;text-align:center;max-width:560px;width:90%;max-height:90vh;overflow-y:auto;}
+@media (max-width:600px){.result-box{padding:24px 16px;}}
+.result-review{margin-top:16px;text-align:left;}
+.result-review-head{font-size:0.8rem;font-weight:700;color:#8b949e;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.review-item{display:flex;gap:10px;padding:8px 10px;border:1px solid #21262d;border-radius:8px;margin-bottom:6px;background:#0d1117;}
+.review-item .ri-icon{flex-shrink:0;width:16px;text-align:center;margin-top:2px;}
+.review-item.ok .ri-icon{color:#22c55e;}
+.review-item.bad{border-color:#5a1d1d;}
+.review-item.bad .ri-icon{color:#ef4444;}
+.review-item.warn .ri-icon{color:#f59e0b;}
+.ri-label{font-size:0.84rem;color:#e0e0e0;font-weight:600;}
+.ri-hint{font-size:0.78rem;color:#8b949e;margin-top:3px;line-height:1.45;}
+.ri-detail{font-size:0.76rem;color:#c9d1d9;margin-top:4px;font-family:'Cascadia Code','Fira Mono',monospace;white-space:pre-wrap;word-break:break-word;background:#161b22;border-radius:6px;padding:5px 8px;}
 .result-icon{font-size:3.5rem;margin-bottom:16px;}
 .result-title{font-size:1.5rem;font-weight:800;margin-bottom:8px;}
 .result-sub{color:#8b949e;font-size:0.9rem;margin-bottom:24px;line-height:1.6;}
@@ -199,6 +211,17 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
     <div class="result-title" id="result-title">Eredmény</div>
     <div class="result-sub" id="result-sub"></div>
     <div class="result-scores" id="result-scores"></div>
+    <div class="result-review" id="result-review" style="display:none;">
+      <div class="result-review-head"><i class="fas fa-magnifying-glass"></i> <span id="result-review-title">Mit rontottál el?</span></div>
+      <div id="result-review-list"></div>
+    </div>
+    <button class="result-sol-btn" id="result-mycode-btn" onclick="toggleMyCode()" style="display:none;">
+      <i class="fas fa-code"></i> Saját kódom megtekintése
+    </button>
+    <div class="result-sol-panel" id="result-mycode-panel">
+      <div class="result-sol-label">A te megoldásod</div>
+      <div class="result-sol-code" id="result-mycode-code"></div>
+    </div>
     <button class="result-sol-btn" id="result-sol-btn" onclick="toggleSolution()" style="display:none;">
       <i class="fas fa-eye"></i> Megoldás megtekintése
     </button>
@@ -672,6 +695,7 @@ async function submitResult() {
 
     const code           = editor.getValue();
     const result         = await scoreCode(code);
+    saveScoring(result, code);
     const score          = result.score;
     const max            = result.max;
     const elapsedSeconds = DUEL_MINS * 60 - timerSec;
@@ -694,6 +718,7 @@ async function autoSubmit() {
     document.getElementById('tab-warning').classList.remove('show');
     const code           = editor.getValue();
     const result         = await scoreCode(code);
+    saveScoring(result, code);
     const elapsedSeconds = DUEL_MINS * 60 - timerSec;
     await fetch(`${API}/api/duel/${duelId}/submit`, {
         method: 'POST',
@@ -703,51 +728,125 @@ async function autoSubmit() {
 }
 
 // ── Pontozás ──────────────────────────────────────────────────────────────────
-async function scoreCode(code) {
-    if (!task || !task.criteria || !pyodide) return { score: 0, max: task?.pont || 8 };
-    let score = 0;
-    const max = task.pont || 8;
-    try {
-        for (const crit of task.criteria) {
-            if (await checkCrit(crit, code)) score++;
-        }
-    } catch {}
-    return { score, max };
+// A párbaj gyakorló játék, ezért engedékenyebb a vizsgapontozásnál:
+//  - bekérés: elég, ha van input() – az eltérő bekérő szöveg csak figyelmeztetés (pontlevonás nélkül)
+//  - kimenet/szöveg: kis-nagybetű, ékezet, írásjel és szóköz nem számít
+//  - változónevek soha nem számítanak (csak a viselkedést és a szerkezetet nézzük)
+// A pontszám sosem lehet több a feladat pontjánál: ha több a szempont, arányosan számolunk.
+
+// Összehasonlításhoz normalizált szöveg: kisbetű, ékezet nélkül, csak betű/szám, egy szóköz.
+function normText(s) {
+    return String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
-async function checkCrit(crit, code) {
+// "tipus:args|leírás|tipp|siker" → objektum (az args-ot nem trimmeljük – a bekérő szövegben számít a szóköz)
+function parseCrit(line) {
+    const parts = line.split('|');
+    const spec = parts[0];
+    const i = spec.indexOf(':');
+    return {
+        type:  (i < 0 ? spec : spec.slice(0, i)).trim(),
+        args:  i < 0 ? '' : spec.slice(i + 1),
+        label: (parts[1] || spec).trim(),
+        hint:  (parts[2] || '').trim()
+    };
+}
+
+// Program futtatása megadott bemenetekkel; a Python-hiba utolsó sora a hibalistába kerül.
+async function runWithInputs(code, inputs) {
+    let out = '';
+    pyodide.setStdout({ batched: s => out += s + '\n' });
+    let idx = 0;
+    pyodide.globals.set('input', () => inputs[idx++] ?? '');
     try {
-        // A feltétel sora: "type:arg1:arg2|leírás|tipp|siker" – a | utáni rész csak display
-        const core = crit.split('|')[0];
-        const [type, ...args] = core.split(':');
-        switch (type) {
-            case 'bekeres': {
-                // args.join(':') visszaállítja a prompt szövegét (lehet benne ':')
-                const prompt = args.join(':');
-                return code.includes(`input("${prompt}"`) || code.includes(`input('${prompt}'`);
-            }
-            case 'int_float':  return /\bint\s*\(|\bfloat\s*\(/.test(code);
-            case 'import':     return new RegExp(`\\bimport\\s+${args[0]}`).test(code);
-            case 'if':         return /\bif\b/.test(code);
-            case 'elif':       return /\belif\b/.test(code);
-            case 'def':        return /\bdef\b/.test(code);
-            case 'return':     return /\breturn\b/.test(code);
-            case 'while':      return /\bwhile\b/.test(code);
-            case 'for':        return /\bfor\b/.test(code);
-            case 'tartalmaz':  return code.includes(args.join(':'));
-            case 'teszt': {
-                const inp   = args[0].split(',');
-                const exp   = args.slice(1).join(':').trim();
-                let out = '';
-                pyodide.setStdout({ batched: s => out += s + '\n' });
-                let idx = 0;
-                pyodide.globals.set('input', () => inp[idx++] || '');
-                await pyodide.runPythonAsync(code);
-                return out.trim().includes(exp.trim());
-            }
-            default: return false;
-        }
-    } catch { return false; }
+        await pyodide.runPythonAsync(code);
+        return { ok: true, out };
+    } catch (e) {
+        const lines = String(e.message || e).trim().split('\n');
+        return { ok: false, out, err: lines[lines.length - 1] };
+    }
+}
+
+async function scoreCode(code) {
+    const max = task?.pont || 8;
+    if (!task || !task.criteria || !task.criteria.length || !pyodide) return { score: 0, max, items: [], passed: 0, total: 0 };
+    const crits = task.criteria.map(parseCrit);
+    const items = [];
+    let bekeresSorszam = 0;
+    for (const c of crits) {
+        let r;
+        try { r = await checkCrit(c, code, c.type === 'bekeres' ? ++bekeresSorszam : 0); }
+        catch { r = { passed: false }; }
+        items.push({ label: c.label, hint: c.hint, passed: !!r.passed, detail: r.detail || '', warn: !!r.warn });
+    }
+    const passed = items.filter(i => i.passed).length;
+    const score  = Math.min(max, Math.round(passed * max / crits.length));
+    return { score, max, items, passed, total: crits.length };
+}
+
+// Visszaad: { passed, detail?, warn? } – a detail a hibalistában jelenik meg.
+async function checkCrit(c, code, bekeresSorszam) {
+    const { type, args } = c;
+    if (['if', 'elif', 'else', 'for', 'while', 'def', 'return'].includes(type)) {
+        const ok = new RegExp(`\\b${type}\\b`).test(code);
+        return { passed: ok, detail: ok ? '' : `Nem találtam a kódodban: ${type}` };
+    }
+    if (type === 'int_float' || type === 'input') {
+        const n = parseInt(args) || 1;
+        const re = type === 'input' ? /\binput\s*\(/g : /\b(int|float)\s*\(/g;
+        const db = (code.match(re) || []).length;
+        return { passed: db >= n, detail: db >= n ? '' : `Legalább ${n} db ${type === 'input' ? 'input()' : 'int()/float()'} kellene, a kódodban ${db} van.` };
+    }
+    if (type === 'bekeres') {
+        const calls = [...code.matchAll(/\binput\s*\(\s*(?:f?(["'])(.*?)\1)?/g)];
+        if (calls.length < bekeresSorszam)
+            return { passed: false, detail: `Hiányzik egy bekérés (input), pl.: input("${args}")` };
+        const sajat = calls[bekeresSorszam - 1][2] ?? '';
+        if (normText(sajat) !== normText(args))
+            return { passed: true, warn: true, detail: `Elfogadva. A mintában ez a bekérő szöveg szerepel: "${args}" – a vizsgán betűre pontosan kell!` };
+        return { passed: true };
+    }
+    if (type === 'import') {
+        const ok = new RegExp(`(^|\\n)\\s*import\\s+${args}\\b|(^|\\n)\\s*from\\s+${args}\\s+import`, 'i').test(code);
+        return { passed: ok, detail: ok ? '' : `Hiányzik: import ${args}` };
+    }
+    if (type === 'tartalmaz' || type === 'vagy') {
+        const minta = type === 'vagy' ? args.split('~~') : [args];
+        const ok = minta.some(m => code.includes(m) || (normText(m) && normText(code).includes(normText(m))));
+        return { passed: ok, detail: ok ? '' : `A kódodban nem szerepel: ${minta.map(m => `"${m}"`).join(' vagy ')}` };
+    }
+    if (type === 'input_format') {
+        const calls = [...code.matchAll(/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];
+        return { passed: calls.length > 0 && calls.every(m => m[1].endsWith(' ')) };
+    }
+    if (type === 'teszt') {
+        const k = args.indexOf(':');
+        if (k < 0) return { passed: false };
+        const inputs = args.slice(0, k).split(',');
+        const vart   = args.slice(k + 1).trim();
+        const r = await runWithInputs(code, inputs);
+        const kimenet = r.out.trim();
+        const ok = r.ok && (normText(vart) ? normText(kimenet).includes(normText(vart)) : kimenet.includes(vart));
+        if (ok) return { passed: true };
+        const bemenet = inputs.filter(x => x !== '').join(', ') || '(nincs)';
+        return { passed: false, detail:
+            `Bemenet: ${bemenet}\nElvárt a kimenetben: ${vart}\n` +
+            (r.ok ? `A programod kiírta: ${kimenet || '(semmit)'}` : `A program hibával leállt: ${r.err}`) };
+    }
+    return { passed: false };
+}
+
+// A részletes eredmény megőrzése a párbaj végéig (oldal-újratöltés után is).
+let lastScoring = null;
+function saveScoring(result, code) {
+    lastScoring = { ...result, code };
+    try { sessionStorage.setItem(`duelScoring_${duelId}`, JSON.stringify(lastScoring)); } catch {}
+}
+function loadScoring() {
+    if (lastScoring) return lastScoring;
+    try { lastScoring = JSON.parse(sessionStorage.getItem(`duelScoring_${duelId}`) || 'null'); } catch {}
+    return lastScoring;
 }
 
 // ── Eredmény ──────────────────────────────────────────────────────────────────
@@ -790,9 +889,48 @@ function showResult(d) {
         solBtn.style.display = 'none';
     }
 
+    renderReview();
+
     stopChatPoll();
     document.getElementById('duel-chat').classList.remove('show');
     document.getElementById('result-overlay').classList.add('show');
+}
+
+// "Mit rontottál el?" – szempontonként: teljesült / figyelmeztetés / hiba + tipp + részletek
+function renderReview() {
+    const sc = loadScoring();
+    const box = document.getElementById('result-review');
+    if (!sc || !sc.items || !sc.items.length) { box.style.display = 'none'; return; }
+    const hibak = sc.items.filter(i => !i.passed).length;
+    document.getElementById('result-review-title').textContent = hibak
+        ? `Mit rontottál el? (${sc.passed}/${sc.total} szempont teljesült)`
+        : `Minden szempont teljesült (${sc.total}/${sc.total})`;
+    // Előbb a hibák, aztán a figyelmeztetések, végül a teljesültek
+    const rend = i => !i.passed ? 0 : i.warn ? 1 : 2;
+    document.getElementById('result-review-list').innerHTML = [...sc.items].sort((a, b) => rend(a) - rend(b)).map(i => {
+        const cls  = !i.passed ? 'bad' : i.warn ? 'warn' : 'ok';
+        const icon = !i.passed ? 'fa-xmark' : i.warn ? 'fa-triangle-exclamation' : 'fa-check';
+        return `<div class="review-item ${cls}">
+            <i class="fas ${icon} ri-icon"></i>
+            <div style="flex:1;min-width:0;">
+                <div class="ri-label">${escHtml(i.label)}</div>
+                ${!i.passed && i.hint ? `<div class="ri-hint"><i class="fas fa-lightbulb" style="color:#f59e0b;margin-right:4px;"></i>${escHtml(i.hint)}</div>` : ''}
+                ${i.detail ? `<div class="ri-detail">${escHtml(i.detail)}</div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+    box.style.display = 'block';
+    if (sc.code) {
+        document.getElementById('result-mycode-code').textContent = sc.code;
+        document.getElementById('result-mycode-btn').style.display = 'flex';
+    }
+}
+
+function toggleMyCode() {
+    const open = document.getElementById('result-mycode-panel').classList.toggle('open');
+    document.getElementById('result-mycode-btn').innerHTML = open
+        ? '<i class="fas fa-eye-slash"></i> Saját kódom elrejtése'
+        : '<i class="fas fa-code"></i> Saját kódom megtekintése';
 }
 
 function toggleSolution() {
