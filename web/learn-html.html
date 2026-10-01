@@ -216,6 +216,7 @@
   </button>
 </div>
 
+<script src="learn-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
 <script src="emmet-monaco.min.js"></script>
 <script>
@@ -1353,7 +1354,7 @@ const SKEY = 'lhtml_v7';
 })();
 const state = {
   cur: 0,
-  done:     JSON.parse(localStorage.getItem(SKEY+'_done')||'null') || Array(tasks.length).fill(false),
+  done:     LearnSync.load(SKEY, tasks.length),
   qSel:     Array(tasks.length).fill(null),   // quiz: kiválasztott opció indexe
   qAnswered:Array(tasks.length).fill(false),  // quiz: már ellenőrzött-e
   monacoEd: null,
@@ -1383,6 +1384,8 @@ const whenMonaco = cb => monacoOk ? cb() : monacoQ.push(cb);
 document.getElementById('prog-total').textContent = tasks.length;
 buildLeft();
 loadTask(0);
+// Fiókhoz kötött haladás: a szerveren tárolt kész feladatok összefésülése a helyivel
+LearnSync.sync(SKEY, state.done, () => { buildLeft(); loadTask(state.cur); });
 
 // ══════════════════════════════════════════════════════════════════════
 // LEFT PANEL
@@ -1820,7 +1823,7 @@ function checkMonaco(task,idx){
 
 function markDone(idx){
   state.done[idx]=true;
-  localStorage.setItem(SKEY+'_done',JSON.stringify(state.done));
+  LearnSync.save(SKEY, state.done);
   document.getElementById('btn-next').disabled=false;
   document.getElementById('btn-check').disabled=true;
   const b=document.getElementById('suc-banner'); if(b) b.classList.add('show');

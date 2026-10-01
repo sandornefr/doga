@@ -187,13 +187,14 @@
 
 </div>
 
+<script src="learn-sync.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
 <script src="emmet-monaco.min.js"></script>
 <script src="quiz-html.js"></script>
 <script>
 
 const RAILWAY = 'https://agazati.up.railway.app';
-const LEARN_SKEY = 'lhtml_v7_done';
+const LEARN_SKEY = 'lhtml_v7';  // learn-*.html SKEY-je
 const MC_COUNT  = 10;
 const FI_COUNT  = 5;
 const FI_BIG_MIN = 2; // minimum nagy pontos (3+) fill-in
@@ -233,9 +234,9 @@ require(['vs/editor/editor.main'], ()=>{
 const whenMonaco = cb => monacoReady ? cb() : monacoQ.push(cb);
 
 // ── BOOT ─────────────────────────────────────────────────────────────
-(function(){
-  const done = JSON.parse(localStorage.getItem(LEARN_SKEY)||'null');
-  const allDone = done && done.every(Boolean);
+(async function(){
+  // Fiókhoz kötött haladás (learn-sync.js): helyben vagy a szerveren kész-e a tananyag
+  const allDone = await LearnSync.allDone(LEARN_SKEY);
   if (!allDone) {
     document.getElementById('warn-modal').classList.remove('hidden');
   } else {
