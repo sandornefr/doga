@@ -4,3 +4,7 @@ doga.sln
 # Titkos vizsgalapok – ne kerüljenek fel GitHubra
 vizsgalap_*.md
 vizsgafeladatok_2026.md
+
+# Privát, csak helyi fájlok (a tanárra és Claude-ra vonatkoznak) – nyilvános repóba nem kerülnek
+CLAUDE.md
+.claude/
