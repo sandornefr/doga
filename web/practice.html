@@ -643,6 +643,7 @@
 
 <!-- MONACO LOADER -->
 <script src="practice_tasks.js"></script>
+<script src="../kando-store.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
 <script src="emmet-monaco.min.js"></script>
 
@@ -692,13 +693,15 @@
 })();
 // ──────────────────────────────────────────────────────────────────────────
 
+// Mentés a tanuló fiókjához kötve (szerveren); vendégnél localStorage – kando-store.js
+const kStore = KandoStore.create('practice');
 const state = {
   currentTask: 0,
-  taskStatus: JSON.parse(localStorage.getItem('practice_taskStatus') || 'null') || Array(25).fill('idle'),
+  taskStatus: JSON.parse(kStore.getItem('practice_taskStatus') || 'null') || Array(25).fill('idle'),
   taskResults: Array(25).fill(null),
   editors: { html: null, css: null },
   previewTimeout: null,
-  completedOnce: JSON.parse(localStorage.getItem('practice_completedOnce') || 'null') || Array(25).fill(false),
+  completedOnce: JSON.parse(kStore.getItem('practice_completedOnce') || 'null') || Array(25).fill(false),
   hintShown: Array(25).fill(null).map(() => new Set()),
   failedAttempts: Array(25).fill(0),
 };
@@ -754,7 +757,7 @@ require(['vs/editor/editor.main'], function() {
     state.editors.css.onDidChangeModelContent(() => schedulePreview());
 
     buildPills();
-    const lastTask = parseInt(localStorage.getItem('practice_lastTask') || '0');
+    const lastTask = parseInt(kStore.getItem('practice_lastTask') || '0');
     loadTask(Math.min(lastTask, tasks.length - 1));
   });
 });
@@ -804,10 +807,10 @@ function updatePills() {
 function saveCurrentEditors() {
   const i = state.currentTask;
   if (!state.editors.html) return;
-  localStorage.setItem('practice_task_' + i + '_html', state.editors.html.getValue());
-  localStorage.setItem('practice_task_' + i + '_css', state.editors.css.getValue());
-  localStorage.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
-  localStorage.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
+  kStore.setItem('practice_task_' + i + '_html', state.editors.html.getValue());
+  kStore.setItem('practice_task_' + i + '_css', state.editors.css.getValue());
+  kStore.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
+  kStore.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
 }
 
 function loadTask(index) {
@@ -818,11 +821,11 @@ function loadTask(index) {
 
   saveCurrentEditors();
   state.currentTask = index;
-  localStorage.setItem('practice_lastTask', index);
+  kStore.setItem('practice_lastTask', index);
   const task = tasks[index];
 
-  const savedHtml = localStorage.getItem('practice_task_' + index + '_html');
-  const savedCss  = localStorage.getItem('practice_task_' + index + '_css');
+  const savedHtml = kStore.getItem('practice_task_' + index + '_html');
+  const savedCss  = kStore.getItem('practice_task_' + index + '_css');
 
   const htmlVal = (savedHtml !== null && savedHtml !== '') ? savedHtml
                 : (state.taskStatus[index] === 'done' && task.solution) ? task.solution
@@ -864,12 +867,12 @@ function goNext() {
 
 function resetTask() {
   const i = state.currentTask;
-  localStorage.removeItem('practice_task_' + i + '_html');
-  localStorage.removeItem('practice_task_' + i + '_css');
+  kStore.removeItem('practice_task_' + i + '_html');
+  kStore.removeItem('practice_task_' + i + '_css');
   state.taskStatus[i] = 'idle';
   state.completedOnce[i] = false;
-  localStorage.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
-  localStorage.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
+  kStore.setItem('practice_taskStatus', JSON.stringify(state.taskStatus));
+  kStore.setItem('practice_completedOnce', JSON.stringify(state.completedOnce));
   const task = tasks[i];
   state.editors.html.setValue(task.starterHtml);
   state.editors.css.setValue(task.starterCss);
@@ -1267,12 +1270,12 @@ function setupWelcomePreview() {
 }
 
 function startPractice() {
-  localStorage.setItem('practice_welcomeShown', '1');
+  kStore.setItem('practice_welcomeShown', '1');
   document.getElementById('welcome-modal').classList.remove('visible');
 }
 
 // Show welcome modal if not shown yet (or after restart)
-if (!localStorage.getItem('practice_welcomeShown')) {
+if (!kStore.getItem('practice_welcomeShown')) {
   document.getElementById('welcome-modal').classList.add('visible');
   // Setup preview after practice_tasks.js is available (already loaded)
   setupWelcomePreview();
@@ -1284,9 +1287,8 @@ if (!localStorage.getItem('practice_welcomeShown')) {
 
 function restartPractice() {
   if (!confirm('Biztosan újrakezded? Az összes eddigi haladásod törlődik!')) return;
-  // Clear all practice localStorage keys
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('practice_'));
-  keys.forEach(k => localStorage.removeItem(k));
+  // Az összes gyakorló adat törlése (tanulónál a szerveren), utána újratöltés
+  kStore.clear();
   location.reload();
 }
 
@@ -1295,8 +1297,8 @@ function sendPracticeProgress(targy, feladat, pont, maxPont){
   const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
   if(!u.token||!u.email) return;
   const lsKey=`pp_${targy}_${feladat}_${u.email}`;
-  if(localStorage.getItem(lsKey)) return;
-  localStorage.setItem(lsKey,'1');
+  if(kStore.getItem(lsKey)) return;
+  kStore.setItem(lsKey,'1');
   fetch('https://agazati.up.railway.app/api/progress',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},

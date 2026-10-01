@@ -272,6 +272,7 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   </style>
+<script src="../kando-store.js"></script>
 </head>
 <body>
 
@@ -1786,9 +1787,11 @@ print(fib(8))  # [0, 1, 1, 2, 3, 5, 8, 13]` },
 // ═══════════════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════
+// Mentés a tanuló fiókjához kötve (szerveren); vendégnél localStorage – kando-store.js
+const kStore = KandoStore.create('py_pro');
 const TASK_COUNT = tasks.length;
 function _loadArr(key, def, len){
-  const raw=JSON.parse(localStorage.getItem(key)||'null');
+  const raw=JSON.parse(kStore.getItem(key)||'null');
   const arr=(raw&&Array.isArray(raw))?raw:def.slice();
   while(arr.length<len) arr.push(def[0]);
   return arr;
@@ -1982,7 +1985,7 @@ function sendPracticeProgress(targy, feladat, pont, maxPont){
   const u=JSON.parse(sessionStorage.getItem('kandoUser')||'{}');
   if(!u.token||!u.email) return;
   const lsKey=`pp_${targy}_${feladat}_${u.email}`;
-  if(localStorage.getItem(lsKey)) return;
+  if(kStore.getItem(lsKey)) return;
   fetch('https://agazati.up.railway.app/api/progress',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+u.token},
@@ -1991,14 +1994,14 @@ function sendPracticeProgress(targy, feladat, pont, maxPont){
       osztaly:u.osztaly?`${u.evfolyam||''}.${u.osztaly}`:'',
       targy, feladat, pont, maxPont, mode:'practice'
     })
-  }).then(r=>{ if(r.ok) localStorage.setItem(lsKey,'1'); }).catch(()=>{});
+  }).then(r=>{ if(r.ok) kStore.setItem(lsKey,'1'); }).catch(()=>{});
 }
 
 // LOAD / SAVE
 // ═══════════════════════════════════════════════════════════════════════════
 function saveState() {
-  localStorage.setItem('py_pro_status', JSON.stringify(st.status));
-  localStorage.setItem('py_pro_done', JSON.stringify(st.completedOnce));
+  kStore.setItem('py_pro_status', JSON.stringify(st.status));
+  kStore.setItem('py_pro_done', JSON.stringify(st.completedOnce));
   saveStateToBackend();
 }
 
@@ -2036,8 +2039,8 @@ async function syncStateFromBackend() {
       }
     });
     if (changed) {
-      localStorage.setItem('py_pro_status', JSON.stringify(st.status));
-      localStorage.setItem('py_pro_done', JSON.stringify(st.completedOnce));
+      kStore.setItem('py_pro_status', JSON.stringify(st.status));
+      kStore.setItem('py_pro_done', JSON.stringify(st.completedOnce));
       updatePills();
     }
   } catch(e) {}
@@ -2045,16 +2048,16 @@ async function syncStateFromBackend() {
 
 function saveCurrentCode() {
   if (!st.editor) return;
-  localStorage.setItem('py_pro_code_' + st.cur, st.editor.getValue());
+  kStore.setItem('py_pro_code_' + st.cur, st.editor.getValue());
   saveState();
 }
 
 function loadTask(index) {
   saveCurrentCode();
   st.cur = index;
-  localStorage.setItem('py_pro_last', index);
+  kStore.setItem('py_pro_last', index);
   const task = tasks[index];
-  const saved = localStorage.getItem('py_pro_code_' + index);
+  const saved = kStore.getItem('py_pro_code_' + index);
   const code = (saved !== null && saved !== '') ? saved : task.starterCode;
 
   if (st.editor) st.editor.setValue(code);
@@ -2097,7 +2100,7 @@ function goNext() {
 
 function resetTask() {
   const i = st.cur;
-  localStorage.removeItem('py_pro_code_' + i);
+  kStore.removeItem('py_pro_code_' + i);
   st.status[i] = 'idle';
   st.completedOnce[i] = false;
   st.failedAttempts[i] = 0;
@@ -2117,7 +2120,7 @@ function resetTask() {
 function restartPractice() {
   if (!confirm('Biztosan törlöd az összes előrehaladást?')) return;
   for (let i = 0; i < TASK_COUNT; i++) {
-    localStorage.removeItem('py_pro_code_' + i);
+    kStore.removeItem('py_pro_code_' + i);
   }
   st.status = Array(TASK_COUNT).fill('idle');
   st.completedOnce = Array(TASK_COUNT).fill(false);
@@ -2287,7 +2290,7 @@ function triggerConfetti() {
 // ═══════════════════════════════════════════════════════════════════════════
 // Azonnali UI betöltés – nem várja meg Monaco-t
 buildPills();
-loadTask(Math.min(parseInt(localStorage.getItem('py_pro_last') || '0'), TASK_COUNT - 1));
+loadTask(Math.min(parseInt(kStore.getItem('py_pro_last') || '0'), TASK_COUNT - 1));
 
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
 
@@ -2314,7 +2317,7 @@ require(['vs/editor/editor.main'], function() {
   );
 
   // Editor értékének beállítása az aktuális feladathoz
-  const saved = localStorage.getItem('py_pro_code_' + st.cur);
+  const saved = kStore.getItem('py_pro_code_' + st.cur);
   st.editor.setValue((saved !== null && saved !== '') ? saved : tasks[st.cur].starterCode);
   const loading = document.getElementById('editor-loading');
   if (loading) loading.style.display = 'none';

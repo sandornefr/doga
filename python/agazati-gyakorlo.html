@@ -195,6 +195,7 @@
     .no-tasks { padding:16px 10px; font-size:0.8rem; color:var(--muted); text-align:center;
       font-style:italic; line-height:1.5; }
   </style>
+<script src="../kando-store.js"></script>
 </head>
 <body>
 
@@ -929,12 +930,14 @@ function renderCheckResults(results, allPass) {
   }
 }
 
+// Mentés a tanuló fiókjához kötve (szerveren); vendégnél localStorage – kando-store.js
+const kStore = KandoStore.create('agazati');
 function saveAgazatiProgress(task) {
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   if (!u.token || !u.email) return; // vendég nem ment
 
   const lsKey = `agazati_done_${task.id}_${u.email}`;
-  if (localStorage.getItem(lsKey)) return; // már mentve
+  if (kStore.getItem(lsKey)) return; // már mentve
 
   const osztaly = u.osztaly ? `${u.evfolyam || ''}.${u.osztaly}` : '';
   fetch('https://agazati.up.railway.app/api/progress', {
@@ -945,7 +948,7 @@ function saveAgazatiProgress(task) {
       targy: 'python', feladat: task.cim,
       pont: task.pont, maxPont: task.pont, mode: 'practice'
     })
-  }).then(r => { if (r.ok) localStorage.setItem(lsKey, '1'); }).catch(() => {});
+  }).then(r => { if (r.ok) kStore.setItem(lsKey, '1'); }).catch(() => {});
 }
 
 // ═══════════════════════════════════════════════════════════════════
