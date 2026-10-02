@@ -1,0 +1,4 @@
+# Időzóna-adatok a konténerbe: enélkül a Railway TZ=Europe/Budapest változója hatástalan
+# (a .NET DateTime.Now és az SQLite 'localtime' is UTC-n maradna).
+[phases.setup]
+aptPkgs = ["...", "tzdata"]
