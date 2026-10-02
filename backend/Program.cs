@@ -1864,6 +1864,24 @@ app.MapGet("/api/duel/online", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetOnlineGroupMembers(ef, oz, cs, email));
 });
 
+// Időzóna-diagnosztika (csak oktató): mit lát a szerver – TZ változó, tzdata, .NET és SQLite helyi idő
+app.MapGet("/api/admin/ido", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(new
+    {
+        tz = Environment.GetEnvironmentVariable("TZ"),
+        zoneinfoBudapest = File.Exists("/usr/share/zoneinfo/Europe/Budapest"),
+        zoneinfoMappa = Directory.Exists("/usr/share/zoneinfo"),
+        tzdir = Environment.GetEnvironmentVariable("TZDIR"),
+        dotnetHelyi = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+        dotnetUtc = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+        dotnetZona = TimeZoneInfo.Local.Id,
+        sqliteHelyi = db.SqliteIdo("datetime('now','localtime')"),
+        sqliteUtc = db.SqliteIdo("datetime('now')")
+    });
+});
+
 // ── Csoportjaim (oktatói munkaeszköz) ────────────────────────────────────────
 // Az órarend és az óranapló az oktató azonosítójához kötött (több oktató is használhatja).
 

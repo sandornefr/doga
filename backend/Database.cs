@@ -2473,6 +2473,15 @@ public class Database
         return list;
     }
 
+    // Diagnosztika: SQLite idő-kifejezés kiértékelése (csak fix kifejezésekkel hívjuk)
+    public string? SqliteIdo(string kifejezes)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT " + kifejezes;
+        return cmd.ExecuteScalar()?.ToString();
+    }
+
     // ── Csoportjaim: órarend, óranapló, online tanulók ───────────────────────
 
     public List<OrarendOra> GetOrarend(string oktato, string tanev)
