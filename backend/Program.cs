@@ -1864,6 +1864,73 @@ app.MapGet("/api/duel/online", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetOnlineGroupMembers(ef, oz, cs, email));
 });
 
+// ── Csoportjaim (oktatói munkaeszköz) ────────────────────────────────────────
+// Az órarend és az óranapló az oktató azonosítójához kötött (több oktató is használhatja).
+
+string OktatoAzonosito(HttpContext ctx)
+{
+    var (_, identity, _) = InspectAuthContext(ctx);
+    return (identity ?? "").Trim().ToLowerInvariant();
+}
+
+app.MapGet("/api/csoportjaim/orarend", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var tanev = ctx.Request.Query["tanev"].FirstOrDefault() ?? Database.AktualisTanev();
+    return Results.Ok(db.GetOrarend(OktatoAzonosito(ctx), tanev));
+});
+
+app.MapPut("/api/csoportjaim/orarend", (HttpContext ctx, OrarendMentes req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (req.Felev is not (1 or 2)) return Results.BadRequest(new { error = "A félév 1 vagy 2 lehet." });
+    var orak = req.Orak ?? new();
+    if (orak.Count > 100 || orak.Any(o => o.Nap is < 1 or > 5 || o.Ora is < 0 or > 10
+            || string.IsNullOrWhiteSpace(o.Evfolyam) || string.IsNullOrWhiteSpace(o.Osztaly)
+            || o.Evfolyam.Length > 5 || o.Osztaly.Length > 3 || (o.Csoport?.Length ?? 0) > 10 || (o.Terem?.Length ?? 0) > 30))
+        return Results.BadRequest(new { error = "Érvénytelen órarend-adat." });
+    var tanev = string.IsNullOrWhiteSpace(req.Tanev) ? Database.AktualisTanev() : req.Tanev.Trim();
+    var db_ = db.SetOrarend(OktatoAzonosito(ctx), tanev, req.Felev, orak);
+    return Results.Ok(new { success = true, orak = db_ });
+});
+
+app.MapGet("/api/csoportjaim/naplo", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var csoport = ctx.Request.Query["csoport"].FirstOrDefault();
+    return string.IsNullOrWhiteSpace(csoport)
+        ? Results.Ok(db.GetNaploUtolsok(OktatoAzonosito(ctx)))
+        : Results.Ok(db.GetNaplo(OktatoAzonosito(ctx), csoport.Trim()));
+});
+
+IResult NaploMentesKezelo(HttpContext ctx, int id, NaploMentes req, Database db)
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    static bool Hosszu(string? s, int max) => (s?.Length ?? 0) > max;
+    if (string.IsNullOrWhiteSpace(req.Csoport) || req.Csoport.Length > 30
+        || !System.Text.RegularExpressions.Regex.IsMatch(req.Datum ?? "", @"^\d{4}-\d{2}-\d{2}$")
+        || Hosszu(req.MitVettunk, 4000) || Hosszu(req.Kovetkezo, 2000) || Hosszu(req.Hazi, 2000)
+        || Hosszu(req.Megjegyzes, 4000) || Hosszu(req.Temak, 2000))
+        return Results.BadRequest(new { error = "Érvénytelen napló-adat." });
+    var ujId = db.SaveNaplo(OktatoAzonosito(ctx), id, req with { Csoport = req.Csoport.Trim() });
+    return ujId == 0 ? Results.NotFound() : Results.Ok(new { success = true, id = ujId });
+}
+app.MapPost("/api/csoportjaim/naplo", (HttpContext ctx, NaploMentes req, Database db) => NaploMentesKezelo(ctx, 0, req, db));
+app.MapPut("/api/csoportjaim/naplo/{id:int}", (int id, HttpContext ctx, NaploMentes req, Database db) => NaploMentesKezelo(ctx, id, req, db));
+
+app.MapDelete("/api/csoportjaim/naplo/{id:int}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.DeleteNaplo(OktatoAzonosito(ctx), id) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Kik dolgoznak most a rendszerben, és melyik oldalon (utóbbi 2 perc)
+app.MapGet("/api/csoportjaim/online", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.GetOnlineTanulok());
+});
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 // Üzenetek lekérése (tesztelő vagy oktató) – channel: 'tesztelok' | 'oktatok'

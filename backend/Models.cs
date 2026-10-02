@@ -702,3 +702,12 @@ public record VizsgaBecslésRow(
     string? Onbecsles,
     string? Tenyleges
 );
+
+// ── Csoportjaim ─────────────────────────────────────────────────────────────
+public record OrarendOra(int Felev, int Nap, int Ora, string Evfolyam, string Osztaly, string? Csoport, string? Terem);
+public record OrarendMentes(string? Tanev, int Felev, List<OrarendOra> Orak);
+public record NaploBejegyzes(int Id, string Csoport, string Datum, string? MitVettunk, string? Kovetkezo,
+                             string? Hazi, string? Megjegyzes, string? Temak);
+public record NaploMentes(string Csoport, string Datum, string? MitVettunk, string? Kovetkezo,
+                          string? Hazi, string? Megjegyzes, string? Temak);
+public record OnlineTanulo(string Email, string Page, string LastHeartbeat, string LoginAt);

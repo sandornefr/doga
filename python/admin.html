@@ -131,6 +131,54 @@
             margin-bottom: 20px;
         }
 
+        /* ── Csoportjaim ── */
+        .csj-fejlec { display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; margin-bottom:14px; }
+        .csj-most { font-size:1.05rem; color:#e0e0e0; }
+        .csj-most-cimke, .csj-kov-cimke { font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; margin-right:6px; letter-spacing:.5px; }
+        .csj-most-cimke { background:#16a34a; color:#fff; }
+        .csj-kov-cimke { background:#1e3a8a; color:#bfdbfe; }
+        .csj-halvany { color:#8892a6; font-size:0.85rem; }
+        .csj-csoportok { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+        .csj-chip { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:7px 12px; background:#0f1e3c; border:1.5px solid #1f3460; border-radius:10px; color:#c7d2fe; cursor:pointer; font-family:inherit; }
+        .csj-chip:hover { border-color:#536dfe; }
+        .csj-chip.aktualis { border-color:#16a34a; }
+        .csj-chip.kivalasztott { background:#1e3a8a; border-color:#818cf8; color:#fff; }
+        .csj-chip-nev { font-weight:700; font-size:0.9rem; }
+        .csj-chip-info { font-size:0.72rem; color:#94a3b8; }
+        .csj-chip.kivalasztott .csj-chip-info { color:#c7d2fe; }
+        .csj-csoport-fej h3 { color:#e0e0e0; font-size:1.25rem; margin-bottom:4px; }
+        .csj-szekcio { margin-top:20px; border-top:1px solid #0f3460; padding-top:14px; }
+        .csj-szekcio-fej { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+        .csj-szekcio-fej h4 { color:#a5b4fc; font-size:1rem; }
+        .csj-bejegyzes { background:#0f1e3c; border:1px solid #1f3460; border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+        .csj-bejegyzes.kiemelt { border-color:#536dfe; }
+        .csj-bejegyzes-fej { display:flex; justify-content:space-between; align-items:center; color:#c7d2fe; margin-bottom:6px; }
+        .csj-ikonok button { background:none; border:none; color:#64748b; cursor:pointer; padding:2px 6px; font-size:0.85rem; }
+        .csj-ikonok button:hover { color:#e0e0e0; }
+        .csj-folytatjuk { background:rgba(83,109,254,.15); border-left:3px solid #818cf8; padding:8px 10px; border-radius:6px; color:#e0e7ff; margin-bottom:8px; font-size:1rem; }
+        .csj-sor { display:flex; gap:10px; font-size:0.88rem; color:#d1d5db; margin-top:3px; }
+        .csj-sor > span { color:#8892a6; min-width:86px; }
+        .csj-megjegyzes div { color:#fcd34d; }
+        .csj-regiek summary { cursor:pointer; color:#94a3b8; font-size:0.88rem; margin:6px 0; }
+        .csj-urlap { background:#0f1e3c; border:1.5px solid #818cf8; border-radius:10px; padding:12px 14px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; }
+        .csj-urlap label { display:flex; flex-direction:column; gap:3px; color:#94a3b8; font-size:0.82rem; }
+        .csj-urlap input, .csj-urlap textarea, .csj-modal textarea, .csj-modal select { background:#0a1628; border:1px solid #2a3a5c; border-radius:8px; color:#e0e0e0; padding:7px 10px; font-family:inherit; font-size:0.92rem; resize:vertical; }
+        .csj-urlap input[type=date] { max-width:180px; }
+        .csj-urlap-gombok { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px; }
+        .csj-gomb-halvany { background:transparent; border:1px solid #2a3a5c; color:#94a3b8; border-radius:8px; padding:6px 12px; cursor:pointer; font-family:inherit; font-size:0.85rem; }
+        .csj-gomb-halvany:hover { color:#e0e0e0; border-color:#536dfe; }
+        .csj-hiba { color:#f87171; font-size:0.85rem; }
+        .csj-ures { color:#8892a6; font-style:italic; padding:10px 0; font-size:0.9rem; }
+        .csj-tag { display:inline-block; font-size:0.7rem; padding:1px 6px; margin:1px; border-radius:6px; background:#1e293b; color:#64748b; }
+        .csj-tag.kesz { background:rgba(34,197,94,.18); color:#4ade80; }
+        .csj-zold { color:#4ade80; font-size:0.85rem; }
+        .csj-zold .fa-circle { font-size:0.55rem; vertical-align:middle; }
+        .csj-sarga { color:#fbbf24; } .csj-piros { color:#f87171; }
+        .csj-tabla td, .csj-tabla th { white-space:nowrap; }
+        .csj-modal-hatter { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+        .csj-modal { background:#16213e; border:1px solid #536dfe; border-radius:12px; padding:20px; width:min(720px,100%); max-height:90vh; overflow:auto; }
+        .csj-modal h3 { color:#e0e0e0; margin-bottom:10px; }
+
         .panel h2 {
             color: #e0e0e0;
             margin-bottom: 18px;
@@ -472,6 +520,7 @@
 
         <!-- Tab navigáció -->
         <div class="tab-nav">
+            <button class="tab-btn" onclick="switchTab('csoportjaim', this)"><i class="fas fa-people-group"></i> Csoportjaim</button>
             <button class="tab-btn active" onclick="switchTab('vezerlot', this)"><i class="fas fa-gauge-high"></i> Vezérlőpult</button>
             <button class="tab-btn" onclick="switchTab('beadasok', this)"><i class="fas fa-clipboard-list"></i> Beadások</button>
             <button class="tab-btn" onclick="switchTab('felhasznalok', this)"><i class="fas fa-users"></i> Felhasználók</button>
@@ -941,6 +990,17 @@
         </div>
 
         <!-- Haladás panel -->
+        <!-- Csoportjaim: órarend szerinti aktuális csoport, óranapló, tanulók (csoportjaim.js) -->
+        <div class="panel" id="csoportjaim-panel" data-tab="csoportjaim" style="display:none;">
+            <div class="csj-fejlec">
+                <div id="csj-most" class="csj-most">Betöltés...</div>
+                <button class="csj-gomb-halvany" onclick="csjBeallitas()" title="Órarend"><i class="fas fa-gear"></i> Beállítások</button>
+            </div>
+            <div id="csj-csoportok" class="csj-csoportok"></div>
+            <div id="csj-tartalom"></div>
+            <div id="csj-beallitas" class="csj-modal-hatter" style="display:none;"></div>
+        </div>
+
         <div class="panel" id="haladas-panel" data-tab="haladas" style="display:none;">
             <h2><i class="fas fa-chart-line"></i> Tanulói haladás</h2>
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
@@ -1189,6 +1249,7 @@
     </div>
     </div>
 
+    <script src="csoportjaim.js"></script>
     <script>
         const RAILWAY_URL = 'https://agazati.up.railway.app';
         let authToken = localStorage.getItem('admin_token') || '';
@@ -1275,7 +1336,7 @@
             if (isAuthenticated && authToken) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
-                const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
+                const savedTab = (window.csjTanitasiIdo && csjTanitasiIdo()) ? 'csoportjaim' : (localStorage.getItem('admin_tab') || 'vezerlot');
                 switchTab(savedTab);
                 loadConfig();
                 loadSubmissions();
@@ -1300,7 +1361,7 @@
                         localStorage.setItem('admin_username', data.username);
                         document.getElementById('login-screen').style.display = 'none';
                         document.getElementById('admin-content').style.display = 'block';
-                        const savedTab = localStorage.getItem('admin_tab') || 'vezerlot';
+                        const savedTab = (window.csjTanitasiIdo && csjTanitasiIdo()) ? 'csoportjaim' : (localStorage.getItem('admin_tab') || 'vezerlot');
                         switchTab(savedTab);
                         loadConfig();
                         loadSubmissions();
@@ -2091,6 +2152,7 @@
                 if (activeBtn) activeBtn.classList.add('active');
             }
             localStorage.setItem('admin_tab', name);
+            if (name === 'csoportjaim' && window.csjMegnyit) csjMegnyit();
             if (name === 'haladas' && haladásData.length === 0) loadProgress();
             if (name === 'rangsor' && leaderboardData.length === 0) loadLeaderboard();
             if (name === 'visszajelzesek') loadFeedbackStats();

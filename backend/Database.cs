@@ -260,6 +260,35 @@ public class Database
         try { Exec(conn, "ALTER TABLE havijegyek ADD COLUMN halozat_szaz REAL NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN needs_class_confirm INTEGER NOT NULL DEFAULT 0"); } catch { }
         try { Exec(conn, "ALTER TABLE users ADD COLUMN szakma TEXT"); } catch { }
+        // Csoportjaim (oktatói munkaeszköz): órarend félévenként + csoportonkénti óranapló
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS orarend (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                oktato    TEXT NOT NULL,
+                tanev     TEXT NOT NULL,          -- kezdő év, pl. '2026'
+                felev     INTEGER NOT NULL,       -- 1 vagy 2
+                nap       INTEGER NOT NULL,       -- 1 = hétfő … 5 = péntek
+                ora       INTEGER NOT NULL,       -- 0–10 (csengetési rend)
+                evfolyam  TEXT NOT NULL,
+                osztaly   TEXT NOT NULL,
+                csoport   TEXT,                   -- '1', '2', 'info' …
+                terem     TEXT
+            );
+            CREATE TABLE IF NOT EXISTS csoport_naplo (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                oktato      TEXT NOT NULL,
+                csoport     TEXT NOT NULL,        -- kulcs: '9.A.2', '9.K.info'
+                datum       TEXT NOT NULL,        -- 'YYYY-MM-DD' (a böngésző helyi dátuma)
+                mit_vettunk TEXT,
+                kovetkezo   TEXT,
+                hazi        TEXT,
+                megjegyzes  TEXT,
+                temak       TEXT,                 -- JSON (2. lépés: érintett óratémák)
+                created_at  TEXT DEFAULT (datetime('now','localtime')),
+                updated_at  TEXT
+            );
+            CREATE INDEX IF NOT EXISTS ix_csoport_naplo ON csoport_naplo(oktato, csoport, datum);
+        ");
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS evfolyam_leptetes_log (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2444,6 +2473,145 @@ public class Database
         return list;
     }
 
+    // ── Csoportjaim: órarend, óranapló, online tanulók ───────────────────────
+
+    public List<OrarendOra> GetOrarend(string oktato, string tanev)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT felev, nap, ora, evfolyam, osztaly, csoport, terem FROM orarend
+                            WHERE oktato = $o AND tanev = $t ORDER BY felev, nap, ora";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$t", tanev);
+        var list = new List<OrarendOra>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new OrarendOra(r.GetInt32(0), r.GetInt32(1), r.GetInt32(2), r.GetString(3), r.GetString(4),
+                                    r.IsDBNull(5) ? null : r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6)));
+        return list;
+    }
+
+    // Egy félév órarendjének cseréje (tranzakcióban)
+    public int SetOrarend(string oktato, string tanev, int felev, List<OrarendOra> orak)
+    {
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+        using (var del = conn.CreateCommand())
+        {
+            del.Transaction = tx;
+            del.CommandText = "DELETE FROM orarend WHERE oktato = $o AND tanev = $t AND felev = $f";
+            del.Parameters.AddWithValue("$o", oktato);
+            del.Parameters.AddWithValue("$t", tanev);
+            del.Parameters.AddWithValue("$f", felev);
+            del.ExecuteNonQuery();
+        }
+        foreach (var o in orak)
+        {
+            using var ins = conn.CreateCommand();
+            ins.Transaction = tx;
+            ins.CommandText = @"INSERT INTO orarend (oktato, tanev, felev, nap, ora, evfolyam, osztaly, csoport, terem)
+                                VALUES ($o, $t, $f, $n, $h, $e, $oszt, $cs, $te)";
+            ins.Parameters.AddWithValue("$o", oktato);
+            ins.Parameters.AddWithValue("$t", tanev);
+            ins.Parameters.AddWithValue("$f", felev);
+            ins.Parameters.AddWithValue("$n", o.Nap);
+            ins.Parameters.AddWithValue("$h", o.Ora);
+            ins.Parameters.AddWithValue("$e", o.Evfolyam.Trim());
+            ins.Parameters.AddWithValue("$oszt", o.Osztaly.Trim().ToUpperInvariant());
+            ins.Parameters.AddWithValue("$cs", (object?)o.Csoport?.Trim() ?? DBNull.Value);
+            ins.Parameters.AddWithValue("$te", (object?)o.Terem?.Trim() ?? DBNull.Value);
+            ins.ExecuteNonQuery();
+        }
+        tx.Commit();
+        return orak.Count;
+    }
+
+    static NaploBejegyzes ReadNaplo(SqliteDataReader r) => new(
+        r.GetInt32(0), r.GetString(1), r.GetString(2),
+        r.IsDBNull(3) ? null : r.GetString(3), r.IsDBNull(4) ? null : r.GetString(4),
+        r.IsDBNull(5) ? null : r.GetString(5), r.IsDBNull(6) ? null : r.GetString(6),
+        r.IsDBNull(7) ? null : r.GetString(7));
+    const string NaploMezok = "id, csoport, datum, mit_vettunk, kovetkezo, hazi, megjegyzes, temak";
+
+    public List<NaploBejegyzes> GetNaplo(string oktato, string csoport)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT {NaploMezok} FROM csoport_naplo WHERE oktato = $o AND csoport = $c ORDER BY datum DESC, id DESC";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$c", csoport);
+        var list = new List<NaploBejegyzes>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadNaplo(r));
+        return list;
+    }
+
+    // Csoportonként a legutóbbi bejegyzés (a csoportválasztó gombokhoz)
+    public List<NaploBejegyzes> GetNaploUtolsok(string oktato)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $@"SELECT {NaploMezok} FROM csoport_naplo n
+            WHERE oktato = $o AND id = (SELECT id FROM csoport_naplo m WHERE m.oktato = n.oktato AND m.csoport = n.csoport
+                                        ORDER BY datum DESC, id DESC LIMIT 1)";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        var list = new List<NaploBejegyzes>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadNaplo(r));
+        return list;
+    }
+
+    // Új (id = 0) vagy meglévő bejegyzés mentése; visszaadja az id-t (0, ha nem található)
+    public int SaveNaplo(string oktato, int id, NaploMentes b)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = id == 0
+            ? @"INSERT INTO csoport_naplo (oktato, csoport, datum, mit_vettunk, kovetkezo, hazi, megjegyzes, temak)
+                VALUES ($o, $c, $d, $mv, $k, $h, $m, $t) RETURNING id"
+            : @"UPDATE csoport_naplo SET datum = $d, mit_vettunk = $mv, kovetkezo = $k, hazi = $h, megjegyzes = $m,
+                       temak = $t, updated_at = datetime('now','localtime')
+                WHERE id = $id AND oktato = $o RETURNING id";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$c", b.Csoport);
+        cmd.Parameters.AddWithValue("$d", b.Datum);
+        cmd.Parameters.AddWithValue("$mv", (object?)b.MitVettunk ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$k", (object?)b.Kovetkezo ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$h", (object?)b.Hazi ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$m", (object?)b.Megjegyzes ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$t", (object?)b.Temak ?? DBNull.Value);
+        var res = cmd.ExecuteScalar();
+        return res == null ? 0 : Convert.ToInt32(res);
+    }
+
+    public bool DeleteNaplo(string oktato, int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM csoport_naplo WHERE id = $id AND oktato = $o";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$o", oktato);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // Az utóbbi 2 percben jelt adó tanulói munkamenetek (melyik oldalon dolgozik most)
+    public List<OnlineTanulo> GetOnlineTanulok()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT LOWER(user_email), page, MAX(last_heartbeat), MIN(login_at)
+            FROM sessions
+            WHERE logout_at IS NULL
+              AND (julianday('now','localtime') - julianday(last_heartbeat)) * 86400 < 120
+            GROUP BY LOWER(user_email), page";
+        var list = new List<OnlineTanulo>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(new OnlineTanulo(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3)));
+        return list;
+    }
+
     // ── Tesztelők ─────────────────────────────────────────────────────────────
 
     // Tanév kezdő éve (szeptember 1-jétől új tanév): 2026. 10. -> "2026" (2026/27).
@@ -2831,7 +2999,7 @@ public class Database
             SELECT id FROM sessions
             WHERE LOWER(user_email) = LOWER($email) AND page = $page
               AND logout_at IS NULL
-              AND (julianday('now') - julianday(last_heartbeat)) * 86400 < 120
+              AND (julianday('now','localtime') - julianday(last_heartbeat)) * 86400 < 120
             ORDER BY id DESC LIMIT 1";
         checkCmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
         checkCmd.Parameters.AddWithValue("$page",  page);
@@ -2856,7 +3024,7 @@ public class Database
         cmd.CommandText = @"
             UPDATE sessions
             SET last_heartbeat = datetime('now','localtime'),
-                duration_sec   = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                duration_sec   = CAST((julianday('now','localtime') - julianday(login_at)) * 86400 AS INTEGER)
             WHERE id = $id AND LOWER(user_email) = LOWER($email) AND logout_at IS NULL";
         cmd.Parameters.AddWithValue("$id", sessionId);
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
@@ -2870,7 +3038,7 @@ public class Database
         cmd.CommandText = @"
             UPDATE sessions
             SET last_heartbeat = datetime('now','localtime'),
-                duration_sec   = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                duration_sec   = CAST((julianday('now','localtime') - julianday(login_at)) * 86400 AS INTEGER)
             WHERE id = $id AND logout_at IS NULL";
         cmd.Parameters.AddWithValue("$id", sessionId);
         cmd.ExecuteNonQuery();
@@ -2883,7 +3051,7 @@ public class Database
         cmd.CommandText = @"
             UPDATE sessions
             SET logout_at    = datetime('now','localtime'),
-                duration_sec = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                duration_sec = CAST((julianday('now','localtime') - julianday(login_at)) * 86400 AS INTEGER)
             WHERE id = $id AND LOWER(user_email) = LOWER($email) AND logout_at IS NULL";
         cmd.Parameters.AddWithValue("$id", sessionId);
         cmd.Parameters.AddWithValue("$email", email.ToLower().Trim());
@@ -2897,7 +3065,7 @@ public class Database
         cmd.CommandText = @"
             UPDATE sessions
             SET logout_at    = datetime('now','localtime'),
-                duration_sec = CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                duration_sec = CAST((julianday('now','localtime') - julianday(login_at)) * 86400 AS INTEGER)
             WHERE id = $id AND logout_at IS NULL";
         cmd.Parameters.AddWithValue("$id", sessionId);
         cmd.ExecuteNonQuery();
@@ -2912,8 +3080,8 @@ public class Database
             SELECT page,
                    SUM(CASE
                        WHEN logout_at IS NOT NULL THEN duration_sec
-                       WHEN (julianday('now') - julianday(last_heartbeat)) * 86400 < 120
-                            THEN CAST((julianday('now') - julianday(login_at)) * 86400 AS INTEGER)
+                       WHEN (julianday('now','localtime') - julianday(last_heartbeat)) * 86400 < 120
+                            THEN CAST((julianday('now','localtime') - julianday(login_at)) * 86400 AS INTEGER)
                        ELSE duration_sec
                    END) as total_sec,
                    COUNT(*) as session_count
@@ -2941,8 +3109,8 @@ public class Database
             SELECT s.user_email, u.vezeteknev || ' ' || u.keresztnev as nev, u.osztaly, s.page,
                    SUM(CASE
                        WHEN s.logout_at IS NOT NULL THEN s.duration_sec
-                       WHEN (julianday('now') - julianday(s.last_heartbeat)) * 86400 < 120
-                            THEN CAST((julianday('now') - julianday(s.login_at)) * 86400 AS INTEGER)
+                       WHEN (julianday('now','localtime') - julianday(s.last_heartbeat)) * 86400 < 120
+                            THEN CAST((julianday('now','localtime') - julianday(s.login_at)) * 86400 AS INTEGER)
                        ELSE s.duration_sec
                    END) as total_sec,
                    COUNT(*) as session_count
@@ -3166,7 +3334,7 @@ public class Database
         using var cmd = conn.CreateCommand();
         // Lejárt (>2 perc) pending meghívók automatikusan expired-dé válnak
         using var expCmd = conn.CreateCommand();
-        expCmd.CommandText = "UPDATE duels SET status='expired' WHERE status='pending' AND (julianday('now') - julianday(created_at))*1440 > 2";
+        expCmd.CommandText = "UPDATE duels SET status='expired' WHERE status='pending' AND (julianday('now','localtime') - julianday(created_at))*1440 > 2";
         expCmd.ExecuteNonQuery();
 
         cmd.CommandText = "SELECT id,challenger_email,challenger_nev,opponent_email,opponent_nev,task_number,task_title,status,challenger_score,challenger_max,challenger_time,opponent_score,opponent_max,opponent_time,winner_email,created_at,accepted_at,finished_at FROM duels WHERE LOWER(opponent_email)=LOWER($e) AND status='pending' ORDER BY id DESC";
@@ -3292,7 +3460,7 @@ public class Database
               AND u.evfolyam=$ef AND u.osztaly=$oz AND u.csoport=$cs
               AND LOWER(u.email) != LOWER($ex)
               AND s.logout_at IS NULL
-              AND (julianday('now') - julianday(s.last_heartbeat))*86400 < 300";
+              AND (julianday('now','localtime') - julianday(s.last_heartbeat))*86400 < 300";
         cmd.Parameters.AddWithValue("$ef", evfolyam);
         cmd.Parameters.AddWithValue("$oz", osztaly);
         cmd.Parameters.AddWithValue("$cs", csoport);
