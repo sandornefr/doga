@@ -3875,12 +3875,17 @@ function parseTagAbbr(abbr) {
   return { tag, id, className };
 }
 
-// Tag nyitó/záró generálás
-function buildTag(parsed, content, indent = '') {
+// Nyitó címke (id és class attribútummal)
+function buildOpenTag(parsed) {
   let openTag = `<${parsed.tag}`;
   if (parsed.id) openTag += ` id="${parsed.id}"`;
   if (parsed.className) openTag += ` class="${parsed.className}"`;
-  openTag += '>';
+  return openTag + '>';
+}
+
+// Tag nyitó/záró generálás
+function buildTag(parsed, content, indent = '') {
+  const openTag = buildOpenTag(parsed);
 
   const closeTag = `</${parsed.tag}>`;
 
@@ -3964,6 +3969,8 @@ function showWrapWidget(editor, onConfirm) {
 }
 
 // Wrap with Abbreviation funkció
+// Többsoros kijelölésnél (vagy ul>li* / p* mintánál) teljes sorokon dolgozik: a sor eredeti behúzását megtartja,
+// a tartalmat eggyel beljebb húzza, a záró címke külön sorba kerül. Egysoros kijelölésnél beillesztve (inline) csomagol.
 function wrapWithAbbreviation(editor, monaco, abbreviation) {
   const selection = editor.getSelection();
   const model = editor.getModel();
@@ -3979,53 +3986,77 @@ function wrapWithAbbreviation(editor, monaco, abbreviation) {
     showWrapWidget(editor, (abbr) => wrapWithAbbreviation(editor, monaco, abbr));
     return;
   }
-  const lines = selectedText.split('\n').filter(line => line.trim() !== '');
 
-  let wrappedText;
-
+  const TAG = '[a-zA-Z][\\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\\.[a-zA-Z0-9_-]+)*';
   // ul>li* vagy ol>li* minta: minden sor külön elembe (külső wrapper-rel)
-  const wrapEachMatch = abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)>([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
-
+  const wrapEachMatch = abbreviation.match(new RegExp('^(' + TAG + ')>(' + TAG + ')\\*$'));
   // p* vagy div* minta: minden sor külön elembe (wrapper NÉLKÜL)
-  const wrapEachSimpleMatch = abbreviation.match(/^([a-zA-Z][\w.-]*(?:#[a-zA-Z0-9_-]+)?(?:\.[a-zA-Z0-9_-]+)*)\*$/);
+  const wrapEachSimpleMatch = abbreviation.match(new RegExp('^(' + TAG + ')\\*$'));
 
-  if (wrapEachMatch) {
-    // pl. ul>li* vagy ol.list>li.item*
-    const outerParsed = parseTagAbbr(wrapEachMatch[1]);
-    const innerParsed = parseTagAbbr(wrapEachMatch[2]);
+  // Érintett sorok: ha a kijelölés a következő sor elején ér véget, az a sor már nem tartozik bele
+  const startLine = selection.startLineNumber;
+  let endLine = selection.endLineNumber;
+  if (endLine > startLine && selection.endColumn === 1) endLine--;
 
-    const innerItems = lines.map(line => {
-      return `  ${buildTag(innerParsed, line.trim())}`;
-    }).join('\n');
+  // Sor-módban dolgozunk, ha több sor van kijelölve, vagy "minden sor külön" minta, vagy az egész sort kijelölte
+  const firstNonWs = model.getLineFirstNonWhitespaceColumn(startLine) || 1;
+  const lastNonWs = model.getLineLastNonWhitespaceColumn(endLine) || 1;
+  const endAdjusted = endLine < selection.endLineNumber;   // a kijelölés a következő sor elején ért véget
+  const coversWholeLine = endLine === startLine
+    && selection.startColumn <= firstNonWs && (endAdjusted || selection.endColumn >= lastNonWs);
+  const lineMode = endLine > startLine || wrapEachMatch || wrapEachSimpleMatch || coversWholeLine;
 
-    wrappedText = buildTag(outerParsed, '\n' + innerItems + '\n', '');
+  if (lineMode) {
+    // Teljes sorok, a sor eredeti behúzásával
+    const rawLines = [];
+    for (let n = startLine; n <= endLine; n++) rawLines.push(model.getLineContent(n));
+    const nonEmpty = rawLines.filter(l => l.trim() !== '');
+    if (!nonEmpty.length) return;
+    const base = nonEmpty[0].match(/^[ \t]*/)[0];
+    // a közös (első sor szerinti) behúzás levétele; a belső, relatív behúzás megmarad
+    const rel = rawLines.map(l => (l.trim() === '' ? '' : (l.startsWith(base) ? l.slice(base.length) : l.replace(/^[ \t]+/, ''))));
+    const indentUnit = '  ';
+    const ind = (arr) => arr.map(l => (l === '' ? '' : indentUnit + l));
+    const block = (parsed, inner) => [buildOpenTag(parsed), ...ind(inner), `</${parsed.tag}>`];
 
-  } else if (wrapEachSimpleMatch) {
-    // pl. p* vagy div.item* - minden sor külön elembe, wrapper NÉLKÜL
-    const parsed = parseTagAbbr(wrapEachSimpleMatch[1]);
-
-    wrappedText = lines.map(line => {
-      return buildTag(parsed, line.trim());
-    }).join('\n');
-
-  } else if (abbreviation.includes('>')) {
-    // Egyszerű beágyazás: div>p - a teljes szöveg a belső elembe kerül
-    const parts = abbreviation.split('>');
-    let content = selectedText;
-
-    // Belülről kifelé építjük
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const parsed = parseTagAbbr(parts[i]);
-      content = buildTag(parsed, content, '');
+    let out;
+    if (wrapEachMatch) {
+      // pl. ul>li* vagy ol.list>li.item*
+      const outer = parseTagAbbr(wrapEachMatch[1]);
+      const inner = parseTagAbbr(wrapEachMatch[2]);
+      const items = rel.filter(l => l.trim() !== '').map(l => buildTag(inner, l.trim()));
+      out = block(outer, items);
+    } else if (wrapEachSimpleMatch) {
+      // pl. p* vagy div.item* - minden sor külön elembe, wrapper NÉLKÜL
+      const parsed = parseTagAbbr(wrapEachSimpleMatch[1]);
+      out = rel.filter(l => l.trim() !== '').map(l => buildTag(parsed, l.trim()));
+    } else {
+      // div, div>p, .container … – a tartalom blokként, belülről kifelé építve
+      const parts = abbreviation.split('>');
+      out = rel;
+      for (let i = parts.length - 1; i >= 0; i--) out = block(parseTagAbbr(parts[i]), out);
     }
-    wrappedText = content;
 
-  } else {
-    // Egyszerű wrap: div, .container, stb.
-    const parsed = parseTagAbbr(abbreviation);
-    wrappedText = buildTag(parsed, selectedText, '');
+    const text = out.map(l => (l === '' ? '' : base + l)).join('\n');
+    editor.executeEdits('wrap-with-abbreviation', [{
+      range: new monaco.Range(startLine, 1, endLine, model.getLineMaxColumn(endLine)),
+      text,
+      forceMoveMarkers: true
+    }]);
+    return;
   }
 
+  // Egysoros, részleges kijelölés: beillesztve (inline) csomagolás a kijelölés helyén
+  let wrappedText;
+  if (abbreviation.includes('>')) {
+    // Egyszerű beágyazás: div>p – a szöveg a belső elembe kerül
+    const parts = abbreviation.split('>');
+    let content = selectedText;
+    for (let i = parts.length - 1; i >= 0; i--) content = buildTag(parseTagAbbr(parts[i]), content, '');
+    wrappedText = content;
+  } else {
+    wrappedText = buildTag(parseTagAbbr(abbreviation), selectedText, '');
+  }
   editor.executeEdits('wrap-with-abbreviation', [{
     range: selection,
     text: wrappedText,
