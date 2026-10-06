@@ -75,6 +75,8 @@ const _ch = {
     const i = html.toLowerCase().indexOf('</head>');
     return i >= 0 ? re.test(html.substring(0, i)) : false;
   },
+  // A <head>-ben van <link> elem, amelynek href-je PONTOSAN css/style.css (a sima style.css nem jó)
+  styleLink: (html) => _ch.inHead(html, /<link\b[^>]*\bhref\s*=\s*["']css\/style\.css["']/i),
 };
 
 // Feladatok konfigurációja
@@ -113,7 +115,7 @@ const availableTasks = {
         id: "style-link",
         label: "3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
         check: (doc, html) => {
-          return _ch.inHead(html, /href=["'][^"']*style\.css["']/i);
+          return _ch.styleLink(html);
         },
       },
       {
@@ -467,7 +469,7 @@ humanoid: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -764,7 +766,7 @@ baglyok: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -1062,7 +1064,7 @@ egijelensegek: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -1347,7 +1349,7 @@ evmadarai: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -1641,7 +1643,7 @@ gombak: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -1934,7 +1936,7 @@ hobbiallatok: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -2239,7 +2241,7 @@ hullok: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -2534,7 +2536,7 @@ tropusi_gyumolcsok: {
     {
       id: "style-link",
       label: "2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
-      check: (doc, html) => _ch.inHead(html, /href=["'][^"']*style\.css["']/i),
+      check: (doc, html) => _ch.styleLink(html),
     },
     {
       id: "title",
@@ -3508,7 +3510,7 @@ function buildDoc(html, css, withGuides) {
     : `<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>`;
 
   // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
-  const cssLinkPattern = /<link[^>]+href=["'][^"']*css\/style\.css["'][^>]*\/?>/i;
+  const cssLinkPattern = /<link[^>]+href=["']css\/style\.css["'][^>]*\/?>/i;
   const htmlWithCss = cssLinkPattern.test(html)
     ? html.replace(cssLinkPattern, `<style>${css}</style>`)
     : html;
@@ -4739,7 +4741,7 @@ function openPreviewInNewTab() {
     : `<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"><\/script>`;
 
   // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
-  const cssLinkPatternTab = /<link[^>]+href=["'][^"']*css\/style\.css["'][^>]*\/?>/i;
+  const cssLinkPatternTab = /<link[^>]+href=["']css\/style\.css["'][^>]*\/?>/i;
   const htmlWithCssTab = cssLinkPatternTab.test(html)
     ? html.replace(cssLinkPatternTab, `<style>${css}</style>`)
     : html;
