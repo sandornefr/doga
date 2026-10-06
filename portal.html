@@ -3447,6 +3447,7 @@
         document.getElementById('szamonkeres-modal-overlay').classList.remove('open');
     }
 </script>
+<script src="havi-kartya.js"></script>
 <script src="special-roles.js"></script>
 <script src="chat-widget.js"></script>
 <script>
@@ -4034,7 +4035,7 @@ function _renderAktualisModal() {
         return;
     }
 
-    const nyitott = _aktualisAdatok.filter(a => new Date(JEGY_POTL_ISO[a.alap.honap] + 'T23:59:59') >= now);
+    const nyitott = _aktualisAdatok.filter(a => a.alap.ujRendszer || new Date(JEGY_POTL_ISO[a.alap.honap] + 'T23:59:59') >= now);
 
     if (!nyitott.length) {
         tabsEl.innerHTML = '';
@@ -4047,18 +4048,21 @@ function _renderAktualisModal() {
     // Tab-ok
     tabsEl.innerHTML = nyitott.map((a, i) => {
         const j = a.alap.jegy || 1;
+        const ujHonap = a.alap.ujRendszer;
         const aktiv = i === _aktualisTab;
         return `<button onclick="_aktualisTabValaszt(${i})"
             style="padding:6px 14px;border-radius:8px;border:1.5px solid ${aktiv?'#4f46e5':'#21262d'};
                    background:${aktiv?'rgba(79,70,229,.2)':'transparent'};
                    color:${aktiv?'#a5b4fc':'#6b7280'};font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;">
-            2026. ${HONAP_NEV[a.alap.honap]}
-            <span style="margin-left:6px;font-weight:800;color:${JEGY_SZIN[j]||'#94a3b8'}">${j}-es</span>
+            ${ujHonap ? HaviKartya.honapNev(a.alap.ev, a.alap.honap) : '2026. ' + HONAP_NEV[a.alap.honap]}
+            ${ujHonap && a.alap.kiadva === false ? '' : `<span style="margin-left:6px;font-weight:800;color:${JEGY_SZIN[j]||'#94a3b8'}">${j}-es</span>`}
         </button>`;
     }).join('');
 
-    tartEl.innerHTML = _renderHonapReszlet(nyitott[_aktualisTab], now)
-                     + _renderVizsgaBecslésHtml(now);
+    const kivalasztott = nyitott[_aktualisTab];
+    tartEl.innerHTML = kivalasztott.alap.ujRendszer
+        ? '<div style="display:flex;">' + HaviKartya.html(kivalasztott.alap) + '</div>'
+        : _renderHonapReszlet(kivalasztott, now) + _renderVizsgaBecslésHtml(now);
 }
 
 function _renderVizsgaBecslésHtml(now) {

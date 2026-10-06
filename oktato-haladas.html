@@ -393,6 +393,9 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <button class="fbar-btn" id="btn-compare" onclick="toggleCompareView()">
             <i class="fas fa-chart-bar"></i> Összehasonlítás
         </button>
+        <button class="fbar-btn" onclick="openTudasszintModal()" style="background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;font-weight:700;">
+            <i class="fas fa-layer-group"></i> Tudásszint
+        </button>
         <button class="fbar-btn" id="btn-osztályozas" onclick="openOsztalyozasModal()" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;font-weight:700;">
             <i class="fas fa-graduation-cap"></i> Osztályozás
         </button>
@@ -449,6 +452,39 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
     </div>
 </div>
 
+<!-- Tudásszint modal -->
+<div class="modal-overlay" id="tudasszint-modal" style="display:none;z-index:2000;overflow-y:auto;">
+  <div class="modal-box" style="max-width:1000px;width:96vw;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header">
+      <i class="fas fa-layer-group" style="color:#22d3ee;font-size:1.1rem"></i>
+      <h3>Mit tudnak már? (tudásszint)</h3>
+      <button class="modal-close" onclick="closeTudasszintModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:12px 16px;">
+      <div style="color:#94a3b8;font-size:.82rem;margin-bottom:10px;line-height:1.5;">
+        A Python-szint határozza meg a havi követelményt: <b>0</b> = még az alapoknál tart (bármilyen feladat számít),
+        <b>8 / 14 / 18</b> = ilyen pontos feladatokat old meg. A Bootstrap „nem” jelzésnél a Bootstrap tananyag elvégzése egy WEB-egységnek számít.
+        Alapértelmezés: Python 8 pontos, Bootstrap tudja.
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="color:#94a3b8;font-size:.85rem;">Csoport:</label>
+        <select id="tsz-csoport" onchange="renderTudasszint()" style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:6px;padding:5px 10px;font-size:.85rem;"></select>
+        <span style="color:#475569;">|</span>
+        <label style="color:#94a3b8;font-size:.85rem;">Mindenkinek a listában:</label>
+        <select id="tsz-mind-py" style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:6px;padding:5px 8px;font-size:.85rem;">
+          <option value="">Python: nem változik</option><option value="0">Python: 0 (alapok)</option><option value="8">Python: 8</option><option value="14">Python: 14</option><option value="18">Python: 18</option>
+        </select>
+        <select id="tsz-mind-bs" style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:6px;padding:5px 8px;font-size:.85rem;">
+          <option value="">Bootstrap: nem változik</option><option value="igen">Bootstrap: tudja</option><option value="nem">Bootstrap: nem tudja</option>
+        </select>
+        <button onclick="tszMindenkinek()" style="padding:6px 14px;background:#0891b2;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;">Beállít</button>
+        <span id="tsz-info" style="color:#6b7280;font-size:.8rem;font-style:italic;"></span>
+      </div>
+      <div id="tsz-wrap" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Osztályozás modal -->
 <div class="modal-overlay" id="osztalyozas-modal" style="display:none;z-index:2000;overflow-y:auto;">
   <div class="modal-box" style="max-width:1100px;width:96vw;max-height:90vh;overflow-y:auto;">
@@ -463,7 +499,8 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <select id="oz-honap" onchange="calcOsztalyozas()" style="background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:6px;padding:5px 10px;font-size:.85rem;">
           <option value="3">2026. március</option>
           <option value="4">2026. április</option>
-          <option value="5" selected>2026. május</option>
+          <option value="5">2026. május</option>
+          <option value="10" selected>2026. október</option>
         </select>
         <button onclick="calcOsztalyozas()" style="padding:6px 16px;background:#4f46e5;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;">
           <i class="fas fa-calculator" style="margin-right:5px"></i>Számítás / Frissítés
@@ -1582,9 +1619,93 @@ function updatePills(students) {
     document.getElementById('cnt-gyenge').textContent = piros;
 }
 
+// ── Tudásszint (mit tudnak már) ─────────────────────────────────────────────
+let _tszAdat = [];
+
+function openTudasszintModal() {
+    document.getElementById('tudasszint-modal').style.display = 'flex';
+    loadTudasszint();
+}
+function closeTudasszintModal() {
+    document.getElementById('tudasszint-modal').style.display = 'none';
+}
+
+async function loadTudasszint() {
+    const info = document.getElementById('tsz-info');
+    info.textContent = 'Betöltés...';
+    try {
+        const res = await authFetch(`${API}/api/oktato/tudasszint`);
+        if (!res.ok) throw new Error(res.status);
+        _tszAdat = await res.json();
+        const csoportok = [...new Set(_tszAdat.map(d => tszCsoportNev(d)))];
+        const sel = document.getElementById('tsz-csoport');
+        const regi = sel.value;
+        sel.innerHTML = '<option value="">Minden csoport</option>' + csoportok.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+        if (csoportok.includes(regi)) sel.value = regi;
+        info.textContent = `${_tszAdat.length} tanuló`;
+        renderTudasszint();
+    } catch (e) { info.textContent = 'Betöltési hiba: ' + e.message; }
+}
+
+function tszCsoportNev(d) { return `10.${d.osztaly || '?'}${d.csoport ? ' / ' + d.csoport : ''}`; }
+
+function tszLatszo() {
+    const cs = document.getElementById('tsz-csoport').value;
+    return _tszAdat.filter(d => !cs || tszCsoportNev(d) === cs);
+}
+
+function renderTudasszint() {
+    const lista = tszLatszo();
+    const opt = (v, cur) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${v === 0 ? '0 (alapok)' : v}</option>`;
+    const selStyle = 'background:#0d1117;border:1px solid #21262d;color:#e0e0e0;border-radius:4px;padding:2px 6px;';
+    const sor = d => `<tr style="border-bottom:1px solid #1e293b;">
+      <td style="padding:6px 8px;white-space:nowrap;">${escHtml(d.nev || d.email)}</td>
+      <td style="padding:6px 8px;color:#94a3b8;">${escHtml(tszCsoportNev(d))}</td>
+      <td style="padding:6px 8px;"><select onchange="tszEgy('${escHtml(d.email)}','pythonSzint',this.value)" style="${selStyle}">${[0, 8, 14, 18].map(v => opt(v, d.pythonSzint)).join('')}</select></td>
+      <td style="padding:6px 8px;"><select onchange="tszEgy('${escHtml(d.email)}','bootstrap',this.value)" style="${selStyle}"><option value="igen" ${d.bootstrapTudja ? 'selected' : ''}>tudja</option><option value="nem" ${!d.bootstrapTudja ? 'selected' : ''}>nem tudja</option></select></td>
+      <td style="padding:6px 8px;text-align:center;">${d.pythonKesz ?? '–'}/${d.pythonKell ?? '–'}</td>
+      <td style="padding:6px 8px;text-align:center;">${d.webKesz ?? '–'}/${d.webKell ?? '–'}</td>
+      <td style="padding:6px 8px;text-align:center;">${d.pluszPont ?? '–'}/${d.pluszKell ?? '–'}</td>
+      <td style="padding:6px 8px;text-align:center;font-weight:700;">${d.jegy ?? '–'}</td>
+      <td style="padding:6px 8px;">${d.szorgalmiJelolt ? '<span style="color:#fbbf24;"><i class="fas fa-star"></i> jelölt</span>' : ''}</td>
+    </tr>`;
+    document.getElementById('tsz-wrap').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+      <thead><tr style="color:#6b7280;text-align:left;border-bottom:1px solid #1e293b;">
+        <th style="padding:6px 8px;">Név</th><th style="padding:6px 8px;">Csoport</th><th style="padding:6px 8px;">Python szint</th><th style="padding:6px 8px;">Bootstrap</th>
+        <th style="padding:6px 8px;text-align:center;">Python</th><th style="padding:6px 8px;text-align:center;">WEB</th><th style="padding:6px 8px;text-align:center;">Plusz</th><th style="padding:6px 8px;text-align:center;">Jegy</th><th></th>
+      </tr></thead><tbody>${lista.map(sor).join('')}</tbody></table>`;
+}
+
+async function tszMent(emails, body) {
+    const info = document.getElementById('tsz-info');
+    try {
+        const res = await authFetch(`${API}/api/oktato/tudasszint`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emails, ...body })
+        });
+        if (!res.ok) throw new Error(res.status);
+        await loadTudasszint();
+        info.textContent = 'Mentve';
+    } catch (e) { info.textContent = 'Mentési hiba: ' + e.message; }
+}
+function tszEgy(email, mezo, ertek) {
+    tszMent([email], mezo === 'pythonSzint' ? { pythonSzint: parseInt(ertek) } : { bootstrap: ertek });
+}
+function tszMindenkinek() {
+    const py = document.getElementById('tsz-mind-py').value, bs = document.getElementById('tsz-mind-bs').value;
+    if (!py && !bs) { document.getElementById('tsz-info').textContent = 'Válassz beállítást.'; return; }
+    const lista = tszLatszo();
+    if (!lista.length) return;
+    const body = {};
+    if (py) body.pythonSzint = parseInt(py);
+    if (bs) body.bootstrap = bs;
+    if (!confirm(`Beállítod ${lista.length} tanulónak?`)) return;
+    tszMent(lista.map(d => d.email), body);
+}
+
 // ── Osztályozás ───────────────────────────────────────────────────────────────
 
-const HONAP_NEV = ['','Január','Február','Március','Április','Május','Június'];
+const HONAP_NEV = ['','Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
 const POTLASI_HATARIDOK = { 3:'máj. 20.', 4:'máj. 25.', 5:'máj. 31.' };
 
 function openOsztalyozasModal() {
@@ -1636,7 +1757,7 @@ function ozSorHtml(d, honap) {
     const pyKvt   = OZ_PY_KVOTA[honap]   || 9;
     const webKvt  = OZ_WEB_KVOTA[honap]  || 3;
     const quizKvt = OZ_QUIZ_KVOTA[honap] || 2;
-    const halTd = honap >= 5
+    const halTd = honap === 5
         ? `<td style="padding:6px 8px;text-align:center;">${(d.halozatSzaz||0) > 0
             ? '<span style="color:#4ade80;font-weight:700;">✓</span>'
             : '<span style="color:#ef4444;">✗</span>'}</td>`
@@ -1690,12 +1811,12 @@ function ozSorHtml(d, honap) {
     </tr>`;
 }
 
-const OZ_PY_KVOTA  = { 3:3, 4:6, 5:9 };
-const OZ_WEB_KVOTA = { 3:1, 4:2, 5:3 };
-const OZ_QUIZ_KVOTA= { 3:0, 4:1, 5:2 };
+const OZ_PY_KVOTA  = { 3:3, 4:6, 5:9, 10:3 };
+const OZ_WEB_KVOTA = { 3:1, 4:2, 5:3, 10:2 };
+const OZ_QUIZ_KVOTA= { 3:0, 4:1, 5:2, 10:0 };
 
 function ozFejlec(honap) {
-  const halTh = honap >= 5 ? `<th style="padding:6px 8px;text-align:center;" title="Hálózat szimulátor (máj. 20%)">Hálózat</th>` : '';
+  const halTh = honap === 5 ? `<th style="padding:6px 8px;text-align:center;" title="Hálózat szimulátor (máj. 20%)">Hálózat</th>` : '';
   return `<thead>
   <tr style="color:#6b7280;border-bottom:1px solid #1e293b;text-align:left;">
     <th style="padding:6px 8px;">Név</th>

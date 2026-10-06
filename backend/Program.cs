@@ -2015,7 +2015,8 @@ app.MapPost("/api/havijegy/calculate", (HttpContext ctx, Database db) =>
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     if (!int.TryParse(ctx.Request.Query["ev"],    out var ev))    return Results.BadRequest(new { error = "ev hiányzik" });
     if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
-    if (honap < 3 || honap > 5) return Results.BadRequest(new { error = "honap 3-5 között lehet" });
+    if (!Database.UjTanevHonap(ev, honap) && (honap < 3 || honap > 5)) return Results.BadRequest(new { error = "ismeretlen hónap" });
+    if (Database.UjTanevHonap(ev, honap) && !Database.UjHonapokEddig(new DateTime(ev, honap, 28)).Contains((ev, honap))) return Results.BadRequest(new { error = "ez a hónap még nincs kiadva" });
 
     var KIZART = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu", "bot@kkszki.hu" };
     var diakok = db.GetAllUsers().Where(u => u.Szerep == "tanulo" && u.Evfolyam == "10" && !KIZART.Contains(u.Email)).ToList();
@@ -2065,8 +2066,8 @@ app.MapGet("/api/havijegy/aktualis", (HttpContext ctx, Database db) =>
 {
     var (valid, email, _) = InspectAuthContext(ctx);
     if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
-    var eredmenyek = new[] { 3, 4, 5 }
-        .Select(h => db.CalcAktualisReszlet(email, 2026, h))
+    var eredmenyek = Database.UjHonapokEddig(DateTime.Now)
+        .Select(m => db.CalcAktualisReszlet(email, m.Ev, m.Honap))
         .ToList();
     return Results.Ok(eredmenyek);
 });
@@ -2080,13 +2081,60 @@ app.MapPost("/api/havijegy/refresh-own", (HttpContext ctx, Database db) =>
     if (role == "vendeg") return Results.Ok(new { skipped = true });
 
     var results = new List<HaviJegyRow>();
-    foreach (var honap in new[] { 3, 4, 5 })
+    foreach (var m in Database.UjHonapokEddig(DateTime.Now))
     {
-        var sor = db.CalcHaviJegy(email, 2026, honap);
+        var sor = db.CalcHaviJegy(email, m.Ev, m.Honap);
         db.UpsertHaviJegy(sor);   // csak ha veglegesitve=0
         results.Add(sor);
     }
     return Results.Ok(results);
+});
+
+// Tanári "mit tud már" jelzés — GET /api/oktato/tudasszint  (10. évfolyam, aktuális havi állással)
+app.MapGet("/api/oktato/tudasszint", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var KIZART = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu", "bot@kkszki.hu" };
+    var most = DateTime.Now;
+    var hon = Database.UjHonapokEddig(most).LastOrDefault();
+    var lista = db.GetAllUsers()
+        .Where(u => u.Szerep == "tanulo" && u.Evfolyam == "10" && !KIZART.Contains(u.Email))
+        .OrderBy(u => u.Osztaly).ThenBy(u => u.Csoport).ThenBy(u => u.Nev)
+        .Select(u =>
+        {
+            var h = hon.Ev > 0 ? db.CalcHaviJegy(u.Email, hon.Ev, hon.Honap) : null;
+            return new
+            {
+                email = u.Email, nev = u.Nev, osztaly = u.Osztaly, csoport = u.Csoport,
+                pythonSzint = db.GetTudasPython(u.Email),
+                bootstrapTudja = db.GetTudasBootstrap(u.Email),
+                honap = h == null ? (int?)null : h.Honap,
+                jegy = h?.Jegy, pythonKesz = h?.PythonKesz, pythonKell = h?.PythonKell,
+                webKesz = h?.WebKesz, webKell = h?.WebKell, pluszPont = h?.PluszPont, pluszKell = h?.PluszKell,
+                szorgalmiJelolt = h?.SzorgalmiJelolt
+            };
+        }).ToList();
+    return Results.Ok(lista);
+});
+
+// Tudásszint beállítása egy vagy több tanulónak — POST /api/oktato/tudasszint
+app.MapPost("/api/oktato/tudasszint", (HttpContext ctx, TudasszintRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (req.Emails == null || req.Emails.Count == 0 || req.Emails.Count > 500)
+        return Results.BadRequest(new { error = "emails hiányzik" });
+    if (req.PythonSzint is not null && req.PythonSzint is not (0 or 8 or 14 or 18))
+        return Results.BadRequest(new { error = "pythonSzint: 0, 8, 14 vagy 18" });
+    if (req.Bootstrap is not null && req.Bootstrap is not ("igen" or "nem"))
+        return Results.BadRequest(new { error = "bootstrap: igen vagy nem" });
+    foreach (var raw in req.Emails)
+    {
+        var em = NormalizeSchoolEmail(raw);
+        if (string.IsNullOrEmpty(em)) continue;
+        if (req.PythonSzint is int ps) db.SetUserState(em, "tudas_python", ps.ToString());
+        if (req.Bootstrap is string bs) db.SetUserState(em, "tudas_bootstrap", bs);
+    }
+    return Results.Ok(new { success = true, db = req.Emails.Count });
 });
 
 // Tanár módosít / véglegesít — PATCH /api/havijegy/{id}

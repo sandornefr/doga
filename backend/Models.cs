@@ -670,6 +670,20 @@ public class HaviJegyRow
     public bool    SzorgalmiJelolt  { get; set; }
     public int     SzorgalmiJegyDb  { get; set; }
     public bool    DicseretJavasolt { get; set; }
+    // Új tanév (2026/27) részletei – csak számolva, nem tárolva
+    public bool    UjRendszer       { get; set; }
+    public bool    Kiadva           { get; set; } = true;
+    public int     PythonSzint      { get; set; }
+    public int     PythonKell       { get; set; }
+    public int     PythonKesz       { get; set; }
+    public int     WebKell          { get; set; }
+    public int     WebKesz          { get; set; }
+    public bool    BootstrapKell    { get; set; }
+    public bool    BootstrapKesz    { get; set; }
+    public int     PluszPont        { get; set; }
+    public int     PluszKell        { get; set; }
+    public int     SzorgalmiSzintPont { get; set; }
+    public bool    SzorgalmiSzintKesz { get; set; }
     public bool    Veglegesitve     { get; set; }
     public string? TanariMegjegyzes { get; set; }
     // Tanári nézethez (JOIN users)
@@ -678,6 +692,8 @@ public class HaviJegyRow
     public string? Csoport  { get; set; }
     public string? Evfolyam { get; set; }
 }
+
+public record TudasszintRequest(List<string> Emails, int? PythonSzint, string? Bootstrap);
 
 public record HaviJegyPatchRequest(
     int?    Jegy,

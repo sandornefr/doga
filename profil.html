@@ -385,7 +385,7 @@ function examCountdownHtml() {
 
 // ── Havi jegyek render ────────────────────────────────────────────────────
 
-const HONAP_NEV_PROFIL = ['','Január','Február','Március','Április','Május','Június'];
+const HONAP_NEV_PROFIL = ['','Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
 const POTLASI_HATARIDOK_PROFIL = { 3:'május 20.', 4:'május 25.', 5:'május 31.' };
 const JEGY_NOEL = ['–','Elégtelen','Elégséges','Közepes','Jó','Jeles'];
 const JEGY_BG   = { 1:'#2d0e0e', 2:'#2d1a0e', 3:'#2d2a10', 4:'#1a3a1a', 5:'#0e4429' };
@@ -409,6 +409,7 @@ function buildAktualisSection(data) {
         </div>`;
 
     const cards = data.map(r => {
+        if (r.alap && r.alap.ujRendszer) return HaviKartya.html(r.alap);
         const h = r.alap.honap;
         const jegy = r.alap.jegy ?? 1;
         const cl = JEGY_CL[jegy] || '#94a3b8';
@@ -501,7 +502,7 @@ function buildHaviJegyekHtml(jegyek, u) {
             ? `<div style="margin-top:4px;color:#a78bfa;font-size:.78rem;">🏅 Szaktanári dicséret</div>` : '';
         return `
         <div style="background:${bg};border:1px solid ${cl}44;border-radius:10px;padding:14px 16px;flex:1;min-width:180px;">
-            <div style="font-size:.78rem;color:#6b7280;margin-bottom:6px;">2026. ${HONAP_NEV_PROFIL[j.honap]}</div>
+            <div style="font-size:.78rem;color:#6b7280;margin-bottom:6px;">${j.ev}. ${HONAP_NEV_PROFIL[j.honap]}</div>
             <div style="font-size:2rem;font-weight:900;color:${cl};line-height:1;">${j.jegy}</div>
             <div style="font-size:.8rem;color:${cl};opacity:.8;">${JEGY_NOEL[j.jegy]||''}</div>
             ${szorgHtml}${dicsHtml}
@@ -1366,6 +1367,7 @@ function avatarDataUri(seed) {
 
 loadProfile();
 </script>
+<script src="havi-kartya.js"></script>
 <script src="chat-widget.js"></script>
 </body>
 </html>

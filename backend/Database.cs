@@ -3773,8 +3773,128 @@ public class Database
     private static int WebKvota(int honap)        => honap - 2;                 // 1,2,3
     private static int InteraktivKvota(int honap) => Math.Max(0, honap - 3);   // 0,1,2
 
+    // ── Új tanév (2026/27) havi követelményei ────────────────────────────────
+    // Az ev a naptári év, a honap a naptári hónap (2026/27: 2026-09…12, 2027-01…06).
+    // Kumulatív: minden valaha megoldott feladat számít (korábbi tanévi is).
+    public static bool UjTanevHonap(int ev, int honap) => ev * 100 + honap >= 202609;
+
+    public record HaviKovetelmeny(int PythonDb, int WebDb, int SzorgalmiPluszKell);
+    // Hónap → követelmény. Ami nincs itt, az a hónap még nincs kiadva (nincs jegy).
+    private static readonly Dictionary<int, HaviKovetelmeny> HaviKovetelmenyek = new()
+    {
+        { 202610, new HaviKovetelmeny(PythonDb: 3, WebDb: 2, SzorgalmiPluszKell: 6) },
+    };
+
+    // A kiadott hónapok a tanév kezdetétől a mai napig (naptári ev, honap)
+    public static List<(int Ev, int Honap)> UjHonapokEddig(DateTime most)
+    {
+        var lista = new List<(int, int)>();
+        for (int ev = 2026; ev <= most.Year; ev++)
+            for (int h = 1; h <= 12; h++)
+            {
+                int kulcs = ev * 100 + h;
+                if (kulcs < 202609 || kulcs > most.Year * 100 + most.Month) continue;
+                if (HaviKovetelmenyek.ContainsKey(kulcs)) lista.Add((ev, h));
+            }
+        return lista;
+    }
+
+    // Tanári "mit tud már" jelzés (user_state): tudas_python = 0|8|14|18, tudas_bootstrap = igen|nem
+    public int GetTudasPython(string email)
+    {
+        var v = GetUserState(email, "tudas_python");
+        return int.TryParse(v, out var n) && (n == 0 || n == 8 || n == 14 || n == 18) ? n : 8;
+    }
+    public bool GetTudasBootstrap(string email) => GetUserState(email, "tudas_bootstrap") != "nem";
+
+    // Plusz pont súlya a feladat pontértéke szerint (szorgalmihoz): 8→1, 14→2, 18→3
+    private static int PluszSuly(int maxPont) => maxPont >= 18 ? 3 : maxPont >= 14 ? 2 : 1;
+
+    private HaviJegyRow CalcHaviJegyUj(string email, int ev, int honap)
+    {
+        using var conn = Open();
+        var user = GetUserByEmail(email);
+        var e    = email.ToLower().Trim();
+        var sor = new HaviJegyRow { Email = e, Ev = ev, Honap = honap, UjRendszer = true };
+
+        // aktív napok az adott hónapban
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT COUNT(DISTINCT DATE(datum)) FROM progress
+                WHERE LOWER(email)=$e AND CAST(strftime('%m',datum) AS INTEGER)=$h AND CAST(strftime('%Y',datum) AS INTEGER)=$y";
+            cmd.Parameters.AddWithValue("$e", e); cmd.Parameters.AddWithValue("$h", honap); cmd.Parameters.AddWithValue("$y", ev);
+            sor.AktivNapok = Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
+        if (!HaviKovetelmenyek.TryGetValue(ev * 100 + honap, out var kov))
+        {
+            sor.Jegy = null;           // ez a hónap még nincs kiadva
+            sor.Kiadva = false;
+            return sor;
+        }
+        sor.Kiadva = true;
+
+        int szint = GetTudasPython(email);
+        bool bootstrapTudja = GetTudasBootstrap(email);
+        sor.PythonSzint = szint;
+        sor.SzorgalmiSzintPont = szint >= 14 ? 18 : 14;
+
+        // Python: valaha megoldott egyedi feladatok (legnagyobb pontértékükkel)
+        var py = new List<int>();
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT MAX(max_pont) FROM progress
+                WHERE LOWER(email)=$e AND LOWER(targy) IN ('python','agazati') GROUP BY feladat";
+            cmd.Parameters.AddWithValue("$e", e);
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) py.Add(r.GetInt32(0));
+        }
+        int pyKell = szint >= 18 ? 2 : kov.PythonDb;
+        var pyMeg = py.Where(m => szint == 0 || m >= szint).OrderBy(m => m).ToList();
+        sor.PythonKell = pyKell;
+        sor.PythonKesz = pyMeg.Count;
+
+        // WEB: egyedi feladatok + (ha nem tud Bootstrapet) a Bootstrap tananyag mint 1 egység
+        int webDb;
+        {
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT COUNT(DISTINCT feladat) FROM progress WHERE LOWER(email)=$e AND LOWER(targy)='web'";
+            cmd.Parameters.AddWithValue("$e", e);
+            webDb = Convert.ToInt32(cmd.ExecuteScalar());
+        }
+        bool tananyagBs = !string.IsNullOrEmpty(GetUserState(email, "tananyagBootstrap"))
+            && GetUserState(email, "tananyagBootstrap") is not ("false" or "0");
+        sor.BootstrapKell = !bootstrapTudja;
+        sor.BootstrapKesz = tananyagBs;
+        sor.WebKell = kov.WebDb;
+        sor.WebKesz = webDb + (sor.BootstrapKell && tananyagBs ? 1 : 0);
+        sor.WebDistinctDb = webDb;
+
+        sor.PythonSzaz = pyKell > 0 ? Math.Min(sor.PythonKesz / (double)pyKell * 100, 100) : 100;
+        sor.WebSzaz    = sor.WebKell > 0 ? Math.Min(sor.WebKesz / (double)sor.WebKell * 100, 100) : 100;
+        sor.QuizSzaz = 100; sor.HalozatSzaz = 100;   // ebben a hónapban még nem követelmény
+
+        bool webOnly = IsWebOnlyCsoport(user?.Evfolyam, user?.Osztaly, user?.Csoport);
+        double ossz = webOnly ? sor.WebSzaz : (sor.PythonSzaz + sor.WebSzaz) / 2.0;
+        sor.OsszSzaz = Math.Round(ossz, 1);
+        sor.Jegy = CalcJegy(ossz);
+        if (sor.WebSzaz >= 100 && (webOnly || sor.PythonSzaz >= 100)) sor.Jegy = 5;
+
+        // Plusz pontok (szorgalmi): a követelményen felüli feladatok súlyozva (a nehezebbek számítanak extrának)
+        int pluszPy = pyMeg.Skip(pyKell).Sum(PluszSuly);
+        int pluszWeb = Math.Max(0, webDb - kov.WebDb) * 2;
+        sor.PluszPont = (webOnly ? 0 : pluszPy) + pluszWeb;
+        sor.PluszKell = kov.SzorgalmiPluszKell;
+        sor.SzorgalmiSzintKesz = py.Any(m => m >= sor.SzorgalmiSzintPont);
+        bool kotelezoKesz = sor.WebSzaz >= 100 && (webOnly || sor.PythonSzaz >= 100);
+        sor.SzorgalmiJelolt = kotelezoKesz && sor.PluszPont >= kov.SzorgalmiPluszKell && (webOnly || sor.SzorgalmiSzintKesz);
+        sor.DicseretJavasolt = sor.SzorgalmiJelolt && sor.PluszPont >= kov.SzorgalmiPluszKell * 2;
+        return sor;
+    }
+
     public HaviJegyRow CalcHaviJegy(string email, int ev, int honap)
     {
+        if (UjTanevHonap(ev, honap)) return CalcHaviJegyUj(email, ev, honap);
         using var conn = Open();
         var user = GetUserByEmail(email);
         var e    = email.ToLower().Trim();
