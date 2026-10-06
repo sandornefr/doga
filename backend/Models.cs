@@ -681,6 +681,7 @@ public class HaviJegyRow
     public bool    BootstrapKell    { get; set; }
     public bool    BootstrapKesz    { get; set; }
     public int     PluszPont        { get; set; }
+    public int     TanariPlusz      { get; set; }
     public int     PluszKell        { get; set; }
     public int     SzorgalmiSzintPont { get; set; }
     public bool    SzorgalmiSzintKesz { get; set; }
@@ -691,6 +692,36 @@ public class HaviJegyRow
     public string? Osztaly  { get; set; }
     public string? Csoport  { get; set; }
     public string? Evfolyam { get; set; }
+}
+
+public record MegoldasRequest(string Email, string? Nev, string? Osztaly, string Targy, string Feladat, string Kod, int Pont, int MaxPont);
+public record PluszRequest(string Email, int Pont, string? Indok, int? MegoldasId);
+
+public class MegoldasRow
+{
+    public int     Id         { get; set; }
+    public string  Email      { get; set; } = "";
+    public string? Nev        { get; set; }
+    public string  Targy      { get; set; } = "";
+    public string  Feladat    { get; set; } = "";
+    public string? Kod        { get; set; }
+    public int     Pont       { get; set; }
+    public int     MaxPont    { get; set; }
+    public int     Probalkozas { get; set; }
+    public bool    Elfogadva  { get; set; }
+    public string  Frissitve  { get; set; } = "";
+}
+
+public class TanariPluszRow
+{
+    public int     Id      { get; set; }
+    public string  Email   { get; set; } = "";
+    public int     Ev      { get; set; }
+    public int     Honap   { get; set; }
+    public int     Pont    { get; set; }
+    public string? Indok   { get; set; }
+    public int?    MegoldasId { get; set; }
+    public string  Datum   { get; set; } = "";
 }
 
 public record TudasszintRequest(List<string> Emails, int? PythonSzint, string? Bootstrap);

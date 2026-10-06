@@ -1618,6 +1618,7 @@ function runChecks(){
   const passed=results.filter(Boolean).length;
   const total=results.length;
   const allPass=passed===total;
+  if (window.KandoMegoldas) KandoMegoldas.kuld('python', `kezdo_${st.cur+1}`, code, passed, total);
   if(!allPass){
     st.failedAttempts[st.cur]=(st.failedAttempts[st.cur]||0)+1;
   }

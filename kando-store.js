@@ -102,5 +102,29 @@
         };
     }
 
+    // A tanuló kódjának elküldése az oktatónak (próbálkozás vagy megoldás) – csak bejelentkezett tanuló.
+    // Ugyanazt a kódot/pontot nem küldi újra. A hiba nem zavarja a gyakorlást.
+    const kuldve = {};
+    function megoldasKuld(targy, feladat, kod, pont, maxPont) {
+        try {
+            const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+            if (!u.token || !u.email || u.szerep === 'vendeg' || u._tesztMod) return;
+            if (!kod || !String(kod).trim() || !(maxPont > 0)) return;
+            const kulcs = targy + '|' + feladat;
+            const lenyomat = pont + '/' + maxPont + '|' + kod;
+            if (kuldve[kulcs] === lenyomat) return;
+            kuldve[kulcs] = lenyomat;
+            fetch('https://agazati.up.railway.app/api/megoldas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + u.token },
+                body: JSON.stringify({
+                    email: u.email, nev: u.nev || '', osztaly: u.osztaly ? (u.evfolyam || '') + '.' + u.osztaly : '',
+                    targy, feladat: String(feladat), kod: String(kod), pont, maxPont
+                })
+            }).catch(() => { delete kuldve[kulcs]; });
+        } catch (e) { /* nem kritikus */ }
+    }
+
     window.KandoStore = { create };
+    window.KandoMegoldas = { kuld: megoldasKuld };
 })();

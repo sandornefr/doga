@@ -2090,6 +2090,65 @@ app.MapPost("/api/havijegy/refresh-own", (HttpContext ctx, Database db) =>
     return Results.Ok(results);
 });
 
+// A tanuló kódjának mentése (próbálkozás vagy megoldás) — POST /api/megoldas  (csak saját fiók)
+app.MapPost("/api/megoldas", (HttpContext ctx, MegoldasRequest req, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var em = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(em)) return Results.BadRequest(new { error = "Érvénytelen email cím" });
+    if (!IsSelfOrPrivileged(identity, role, em)) return Results.Forbid();
+    if (role == "vendeg") return Results.Ok(new { skipped = true });
+    var targy = (req.Targy ?? "").Trim().ToLowerInvariant();
+    if (targy is not ("python" or "web")) return Results.BadRequest(new { error = "Érvénytelen tantárgy" });
+    if (string.IsNullOrWhiteSpace(req.Feladat) || req.Feladat.Length > 200) return Results.BadRequest(new { error = "Érvénytelen feladat" });
+    if (string.IsNullOrWhiteSpace(req.Kod)) return Results.Ok(new { skipped = true });
+    if (req.MaxPont <= 0 || req.Pont < 0 || req.Pont > req.MaxPont) return Results.BadRequest(new { error = "Érvénytelen adat" });
+    db.SaveMegoldas(req with { Email = em, Targy = targy });
+    return Results.Ok(new { success = true });
+});
+
+// Tanuló megoldásai (kód nélkül) — GET /api/oktato/megoldasok/{email}
+app.MapGet("/api/oktato/megoldasok/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var em = NormalizeSchoolEmail(Uri.UnescapeDataString(email));
+    if (string.IsNullOrEmpty(em)) return Results.BadRequest(new { error = "Érvénytelen email cím" });
+    return Results.Ok(new { megoldasok = db.GetMegoldasok(em), plusz = db.GetTanariPlusz(em) });
+});
+
+// Egy megoldás kódja — GET /api/oktato/megoldas/{id}
+app.MapGet("/api/oktato/megoldas/{id:int}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var m = db.GetMegoldas(id);
+    return m == null ? Results.NotFound() : Results.Ok(m);
+});
+
+// Megoldás elfogadása teljes pontosnak — POST /api/oktato/megoldas/{id}/elfogad
+app.MapPost("/api/oktato/megoldas/{id:int}/elfogad", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.ElfogadMegoldas(id) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Tanári plusz pont — POST /api/oktato/plusz, törlés: DELETE /api/oktato/plusz/{id}
+app.MapPost("/api/oktato/plusz", (HttpContext ctx, PluszRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var em = NormalizeSchoolEmail(req.Email);
+    if (string.IsNullOrEmpty(em)) return Results.BadRequest(new { error = "Érvénytelen email cím" });
+    if (req.Pont < 1 || req.Pont > 20) return Results.BadRequest(new { error = "A pont 1 és 20 között lehet" });
+    var most = DateTime.Now;
+    var id = db.AddTanariPlusz(em, most.Year, most.Month, req.Pont, req.Indok?.Trim(), req.MegoldasId, GetOktatoEmail(ctx));
+    return Results.Ok(new { success = true, id });
+});
+app.MapDelete("/api/oktato/plusz/{id:int}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.DeleteTanariPlusz(id) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
 // Tanári "mit tud már" jelzés — GET /api/oktato/tudasszint  (10. évfolyam, aktuális havi állással)
 app.MapGet("/api/oktato/tudasszint", (HttpContext ctx, Database db) =>
 {

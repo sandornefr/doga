@@ -56,7 +56,7 @@
     // Szorgalmi
     let szorg = '<div style="margin-top:12px;border-top:1px solid #ffffff14;padding-top:9px;">' +
       '<div style="font-size:.7rem;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.05em;"><i class="fas fa-star"></i> Szorgalmi</div>';
-    szorg += sor('fas fa-plus', 'Plusz pont', a.pluszPont, a.pluszKell, 'a kötelezőn felüli feladatokból (nehezebb = több pont)');
+    szorg += sor('fas fa-plus', 'Plusz pont', a.pluszPont, a.pluszKell, 'a kötelezőn felüli feladatokból (nehezebb = több pont)' + (a.tanariPlusz > 0 ? ' · ebből tanári plusz: +' + a.tanariPlusz : ''));
     szorg += '<div style="margin-top:6px;font-size:.74rem;color:' + (a.szorgalmiSzintKesz ? '#22c55e' : '#94a3b8') + ';">' +
       '<i class="fas ' + (a.szorgalmiSzintKesz ? 'fa-circle-check' : 'fa-circle') + '" style="width:14px;"></i> ' +
       'Szint: legalább egy ' + a.szorgalmiSzintPont + ' pontos Python feladat</div>';

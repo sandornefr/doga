@@ -884,6 +884,8 @@ async function checkCode() {
   btn.disabled = false;
   const passed = results.filter(r => r.pass).length;
   renderCheckResults(results, passed === results.length);
+  if (window.KandoMegoldas && currentTask.pont > 0 && results.length)
+    KandoMegoldas.kuld('python', currentTask.cim, code, Math.round(passed / results.length * currentTask.pont), currentTask.pont);
   if (passed === results.length) saveAgazatiProgress(currentTask);
 }
 

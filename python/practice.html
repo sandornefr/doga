@@ -2281,6 +2281,7 @@ function runChecks() {
   const passed = results.filter(Boolean).length;
   const total  = results.length;
   const allPass = passed === total;
+  if (window.KandoMegoldas) KandoMegoldas.kuld('python', `halado_${st.cur+1}`, code, passed, total);
 
   if (allPass && st.status[st.cur] !== 'done') {
     st.status[st.cur] = 'done';

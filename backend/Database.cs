@@ -248,6 +248,33 @@ public class Database
                 UNIQUE(email, ev, honap)
             );
         ");
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS megoldasok (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                email       TEXT NOT NULL,
+                nev         TEXT,
+                osztaly     TEXT,
+                targy       TEXT NOT NULL,
+                feladat     TEXT NOT NULL,
+                kod         TEXT,
+                pont        INTEGER NOT NULL DEFAULT 0,
+                max_pont    INTEGER NOT NULL DEFAULT 0,
+                probalkozas INTEGER NOT NULL DEFAULT 1,
+                elfogadva   INTEGER NOT NULL DEFAULT 0,
+                frissitve   TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE(email, targy, feladat)
+            );
+            CREATE TABLE IF NOT EXISTS tanari_plusz (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                email       TEXT NOT NULL,
+                ev          INTEGER NOT NULL,
+                honap       INTEGER NOT NULL,
+                pont        INTEGER NOT NULL,
+                indok       TEXT,
+                megoldas_id INTEGER,
+                oktato      TEXT,
+                datum       TEXT DEFAULT (datetime('now','localtime'))
+            );");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
         // Tesztelői jog tanévenként: melyik tanévre erősítette meg (kezdő év, pl. "2026" = 2026/27).
         // Meglévő tesztelőknél a csatlakozás tanéve – a korábbi tanévből maradtakat a portál megkérdezi.
@@ -3773,6 +3800,136 @@ public class Database
     private static int WebKvota(int honap)        => honap - 2;                 // 1,2,3
     private static int InteraktivKvota(int honap) => Math.Max(0, honap - 3);   // 0,1,2
 
+    // ── Megoldások (a tanulók kódja) és tanári plusz pontok ──────────────────
+    private const int KodMaxHossz = 20000;
+
+    // Egy tanuló egy feladathoz: az utolsó próbálkozás kódja; a teljes pontos megoldást nem írja felül gyengébb.
+    public void SaveMegoldas(MegoldasRequest r)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        var kod = r.Kod.Length > KodMaxHossz ? r.Kod[..KodMaxHossz] : r.Kod;
+        cmd.CommandText = @"
+            INSERT INTO megoldasok (email, nev, osztaly, targy, feladat, kod, pont, max_pont, probalkozas, frissitve)
+            VALUES ($e,$n,$o,$t,$f,$k,$p,$m,1,datetime('now','localtime'))
+            ON CONFLICT(email,targy,feladat) DO UPDATE SET
+                probalkozas = probalkozas + 1,
+                nev = COALESCE($n, nev), osztaly = COALESCE($o, osztaly),
+                kod      = CASE WHEN pont >= max_pont AND max_pont > 0 AND $p < $m THEN kod ELSE $k END,
+                pont     = CASE WHEN pont >= max_pont AND max_pont > 0 AND $p < $m THEN pont ELSE $p END,
+                max_pont = CASE WHEN pont >= max_pont AND max_pont > 0 AND $p < $m THEN max_pont ELSE $m END,
+                frissitve = CASE WHEN pont >= max_pont AND max_pont > 0 AND $p < $m THEN frissitve ELSE datetime('now','localtime') END";
+        cmd.Parameters.AddWithValue("$e", r.Email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$n", (object?)r.Nev ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$o", (object?)r.Osztaly ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$t", r.Targy.ToLower());
+        cmd.Parameters.AddWithValue("$f", r.Feladat);
+        cmd.Parameters.AddWithValue("$k", kod);
+        cmd.Parameters.AddWithValue("$p", r.Pont);
+        cmd.Parameters.AddWithValue("$m", r.MaxPont);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static MegoldasRow ReadMegoldas(Microsoft.Data.Sqlite.SqliteDataReader r, bool kodIs) => new MegoldasRow
+    {
+        Id = r.GetInt32(0), Email = r.GetString(1), Nev = r.IsDBNull(2) ? null : r.GetString(2),
+        Targy = r.GetString(3), Feladat = r.GetString(4), Pont = r.GetInt32(5), MaxPont = r.GetInt32(6),
+        Probalkozas = r.GetInt32(7), Elfogadva = r.GetInt32(8) == 1, Frissitve = r.IsDBNull(9) ? "" : r.GetString(9),
+        Kod = kodIs && !r.IsDBNull(10) ? r.GetString(10) : null,
+    };
+
+    public List<MegoldasRow> GetMegoldasok(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT id,email,nev,targy,feladat,pont,max_pont,probalkozas,elfogadva,frissitve
+            FROM megoldasok WHERE LOWER(email)=LOWER($e) ORDER BY frissitve DESC";
+        cmd.Parameters.AddWithValue("$e", email.Trim());
+        var list = new List<MegoldasRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(ReadMegoldas(r, false));
+        return list;
+    }
+
+    public MegoldasRow? GetMegoldas(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT id,email,nev,targy,feladat,pont,max_pont,probalkozas,elfogadva,frissitve,kod
+            FROM megoldasok WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? ReadMegoldas(r, true) : null;
+    }
+
+    // A tanár elfogadja a megoldást: teljes pontos haladás-bejegyzés készül (ha még nincs), így beleszámít a havi követelménybe.
+    public bool ElfogadMegoldas(int id)
+    {
+        var m = GetMegoldas(id);
+        if (m == null) return false;
+        using var conn = Open();
+        using (var up = conn.CreateCommand())
+        {
+            up.CommandText = "UPDATE megoldasok SET elfogadva=1 WHERE id=$id";
+            up.Parameters.AddWithValue("$id", id);
+            up.ExecuteNonQuery();
+        }
+        using var chk = conn.CreateCommand();
+        chk.CommandText = "SELECT COUNT(*) FROM progress WHERE LOWER(email)=LOWER($e) AND LOWER(targy)=LOWER($t) AND feladat=$f";
+        chk.Parameters.AddWithValue("$e", m.Email); chk.Parameters.AddWithValue("$t", m.Targy); chk.Parameters.AddWithValue("$f", m.Feladat);
+        if (Convert.ToInt32(chk.ExecuteScalar()) == 0)
+        {
+            SaveProgress(new ProgressRequest(m.Email, m.Nev, null, m.Targy, m.Feladat, m.MaxPont, m.MaxPont, "oktato"));
+        }
+        return true;
+    }
+
+    public int AddTanariPlusz(string email, int ev, int honap, int pont, string? indok, int? megoldasId, string oktato)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO tanari_plusz (email, ev, honap, pont, indok, megoldas_id, oktato)
+            VALUES ($e,$ev,$h,$p,$i,$m,$o); SELECT last_insert_rowid();";
+        cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$ev", ev); cmd.Parameters.AddWithValue("$h", honap); cmd.Parameters.AddWithValue("$p", pont);
+        cmd.Parameters.AddWithValue("$i", (object?)indok ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$m", (object?)megoldasId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$o", oktato);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public List<TanariPluszRow> GetTanariPlusz(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id,email,ev,honap,pont,indok,megoldas_id,datum FROM tanari_plusz WHERE LOWER(email)=LOWER($e) ORDER BY id DESC";
+        cmd.Parameters.AddWithValue("$e", email.Trim());
+        var list = new List<TanariPluszRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            list.Add(new TanariPluszRow { Id = r.GetInt32(0), Email = r.GetString(1), Ev = r.GetInt32(2), Honap = r.GetInt32(3), Pont = r.GetInt32(4),
+                Indok = r.IsDBNull(5) ? null : r.GetString(5), MegoldasId = r.IsDBNull(6) ? null : r.GetInt32(6), Datum = r.IsDBNull(7) ? "" : r.GetString(7) });
+        return list;
+    }
+
+    public bool DeleteTanariPlusz(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM tanari_plusz WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    private int TanariPluszOsszeg(string email, int ev, int honap)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COALESCE(SUM(pont),0) FROM tanari_plusz WHERE LOWER(email)=LOWER($e) AND ev=$ev AND honap=$h";
+        cmd.Parameters.AddWithValue("$e", email.Trim()); cmd.Parameters.AddWithValue("$ev", ev); cmd.Parameters.AddWithValue("$h", honap);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
     // ── Új tanév (2026/27) havi követelményei ────────────────────────────────
     // Az ev a naptári év, a honap a naptári hónap (2026/27: 2026-09…12, 2027-01…06).
     // Kumulatív: minden valaha megoldott feladat számít (korábbi tanévi is).
@@ -3883,7 +4040,8 @@ public class Database
         // Plusz pontok (szorgalmi): a követelményen felüli feladatok súlyozva (a nehezebbek számítanak extrának)
         int pluszPy = pyMeg.Skip(pyKell).Sum(PluszSuly);
         int pluszWeb = Math.Max(0, webDb - kov.WebDb) * 2;
-        sor.PluszPont = (webOnly ? 0 : pluszPy) + pluszWeb;
+        sor.TanariPlusz = TanariPluszOsszeg(email, ev, honap);
+        sor.PluszPont = (webOnly ? 0 : pluszPy) + pluszWeb + sor.TanariPlusz;
         sor.PluszKell = kov.SzorgalmiPluszKell;
         sor.SzorgalmiSzintKesz = py.Any(m => m >= sor.SzorgalmiSzintPont);
         bool kotelezoKesz = sor.WebSzaz >= 100 && (webOnly || sor.PythonSzaz >= 100);
