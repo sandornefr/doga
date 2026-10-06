@@ -4031,15 +4031,15 @@ public class Database
     }
 
     // ── Sprint 5-ös: nyertesek meghatározása és kiosztása ──────────────────────
-    public static string TanevKezdet(DateTime d) => (d.Month >= 9 ? d.Year : d.Year - 1) + "-09-01";
+    public static string HonapKezdet(DateTime d) => $"{d.Year}-{d.Month:00}-01";
 
-    // Akik a tanévben már kaptak sprint ötöst
-    public HashSet<string> SprintOtosKorabbi(string tanevKezdet)
+    // Akik a hónapban már kaptak sprint ötöst
+    public HashSet<string> SprintOtosKorabbi(string honapKezdet)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT DISTINCT LOWER(email) FROM sprint_otosok WHERE datum >= $t";
-        cmd.Parameters.AddWithValue("$t", tanevKezdet);
+        cmd.Parameters.AddWithValue("$t", honapKezdet);
         var h = new HashSet<string>();
         using var r = cmd.ExecuteReader();
         while (r.Read()) h.Add(r.GetString(0));
@@ -4049,7 +4049,7 @@ public class Database
     // A jogosult (helyes/elfogadott, nem kizárt) megoldók; gyors módban idő szerint, sorsolásnál véletlen sorrendben
     public List<SprintBeadasRow> SprintJogosultak(SprintRow s, bool veletlen)
     {
-        var korabbi = s.Kizar ? SprintOtosKorabbi(TanevKezdet(DateTime.Now)) : new HashSet<string>();
+        var korabbi = s.Kizar ? SprintOtosKorabbi(HonapKezdet(DateTime.Now)) : new HashSet<string>();
         var jo = GetSprintBeadasok(s.Id, false).Where(b => b.Allapot is "helyes" or "elfogadva" && !korabbi.Contains(b.Email)).ToList();
         return veletlen ? jo.OrderBy(_ => Random.Shared.Next()).ToList() : jo.OrderBy(b => b.IdoMs).ToList();
     }

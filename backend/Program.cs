@@ -2233,7 +2233,7 @@ app.MapPost("/api/oktato/sprint/{id:int}/plusz", (int id, HttpContext ctx, Datab
 object AllasDiaknak(Database db, SprintRow s, List<SprintBeadasRow> beadasok, string email)
 {
     var en = email.ToLower().Trim();
-    var korabbi = s.Otos && s.Kizar ? db.SprintOtosKorabbi(Database.TanevKezdet(DateTime.Now)) : new HashSet<string>();
+    var korabbi = s.Otos && s.Kizar ? db.SprintOtosKorabbi(Database.HonapKezdet(DateTime.Now)) : new HashSet<string>();
     int otosHely = 0;
     var lista = new List<object>();
     foreach (var b in beadasok.Where(b => b.Allapot != "elutasitva").OrderBy(b => b.Rang == 0 ? int.MaxValue : b.Rang))

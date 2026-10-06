@@ -166,7 +166,7 @@ async function teacherForm() {
       <div><label>Nyertesek kiválasztása</label><select id="f-mod"><option value="gyors">Leggyorsabbak (befutási sorrend)</option><option value="sorsolas">Sorsolás az időn belül helyesen megoldók között</option></select></div>
     </div>
     <label style="display:flex;gap:8px;align-items:flex-start;color:#c9d1d9;font-size:.84rem;font-weight:400"><input type="checkbox" id="f-kizar" checked style="width:auto;margin-top:3px">
-      <span>Aki már kapott sprint ötöst ebben a tanévben, kimarad az 5-ösből (versenyezhet, de az 5-ös a következő megoldóra száll). <b>Ajánlott</b>, hogy ne mindig ugyanazok nyerjenek.</span></label>
+      <span>Aki már kapott sprint ötöst ebben a hónapban, kimarad az 5-ösből (versenyezhet, de az 5-ös a következő megoldóra száll). <b>Ajánlott</b>, hogy ne mindig ugyanazok nyerjenek.</span></label>
     <label>Cím</label><input type="text" id="f-cim" maxlength="200" placeholder="pl. Páros vagy páratlan">
     <label>Feladatleírás (ezt kapják a diákok a rajt pillanatában)</label><textarea id="f-leiras" style="min-height:130px;font-family:inherit"></textarea>
     <label>Automatikus ellenőrzés – soronként egy teszt: <code>bemenet1,bemenet2:várt kimenet</code></label>
@@ -278,7 +278,7 @@ function otosKartya(s) {
     tartalom = `<div class="muted">Jelenlegi nyertesek:</div><div class="chips">${n.map((x, i) => `<span class="chip"><i class="fas fa-award medal-${Math.min(i + 1, 3)}"></i> ${i + 1}. ${esc(x)}</span>`).join('') || '<span class="muted">még senki</span>'}</div>`;
   }
   return `<div class="card"><h2><i class="fas fa-award"></i>5-ösért megy – ${s.helyek} hely, ${s.mod === 'sorsolas' ? 'sorsolással' : 'befutási sorrendben'}</h2>
-    <div class="muted" style="margin-bottom:8px">${s.kizar ? 'Aki már kapott sprint ötöst a tanévben, kimarad (az 5-ös a következő jogosultra száll).' : 'Mindenki jogosult, korábbi nyertesek is.'} A kiosztás a havi osztályozásban szorgalmi 5-ösként jelenik meg.</div>
+    <div class="muted" style="margin-bottom:8px">${s.kizar ? 'Aki már kapott sprint ötöst a hónapban, kimarad (az 5-ös a következő jogosultra száll).' : 'Mindenki jogosult, korábbi nyertesek is.'} A kiosztás a havi osztályozásban szorgalmi 5-ösként jelenik meg.</div>
     ${tartalom}</div>`;
 }
 async function otosKioszt() {
@@ -420,7 +420,7 @@ function buildStudent(key, s) {
 function otosSzoveg(s) {
   if (!s.otos) return '';
   const hogyan = s.mod === 'sorsolas' ? 'Az idő alatt helyesen megoldók közül sorsolják ki a nyerteseket.' : `Az első ${s.helyek} helyes megoldás kap ötöst.`;
-  return `<div class="card" style="border-color:#78350f;background:#1c1507"><i class="fas fa-award medal-1"></i> <b>5-ösért megy!</b> ${hogyan}${s.kizar ? ' Aki már kapott sprint ötöst a tanévben, versenyezhet, de az 5-ös a következő megoldóra száll.' : ''}</div>`;
+  return `<div class="card" style="border-color:#78350f;background:#1c1507"><i class="fas fa-award medal-1"></i> <b>5-ösért megy!</b> ${hogyan}${s.kizar ? ' Aki már kapott sprint ötöst a hónapban, versenyezhet, de az 5-ös a következő megoldóra száll.' : ''}</div>`;
 }
 
 function allasHtml(d) {
