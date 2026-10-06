@@ -1218,3 +1218,33 @@ iframe {
 }
 .lamp-red   { background: #e74c3c; box-shadow: 0 0 3px #e74c3c88; }
 .lamp-green { background: #27ae60; box-shadow: 0 0 3px #27ae6088; }
+
+/* ── Fájlkezelő oldalsáv (filetree.js) ── */
+.editor-body { flex: 1; display: flex; min-height: 0; }
+.editor-body .editor-container { flex: 1; min-width: 0; }
+.file-tree {
+  width: 225px; flex: none; overflow: auto; background: #0f172a;
+  border: 1px solid var(--border); border-right: none; margin-top: -1px;
+  font-size: 0.8rem; padding: 4px 0; user-select: none;
+}
+.tree-collapsed .file-tree { display: none; }
+.ft-row { display: flex; align-items: center; gap: 6px; padding: 3px 8px; color: #cbd5e1; cursor: default; white-space: nowrap; }
+.ft-row i { width: 14px; text-align: center; color: #94a3b8; flex: none; }
+.ft-row span { overflow: hidden; text-overflow: ellipsis; }
+.ft-root { font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: .4px; color: #e2e8f0; }
+.ft-dir, .ft-file { cursor: pointer; }
+.ft-dir:hover, .ft-file:hover { background: #1e293b; }
+.ft-file.active { background: #1e3a5f; color: #fff; }
+.ft-row .fa-html5 { color: #e8743b; }
+.ft-row .fa-css3-alt { color: #4aa3ff; }
+.ft-row .fa-image { color: #5ec27a; }
+.ft-row .ft-chev { font-size: 0.6rem; width: 10px; }
+.tree-toggle { padding: 4px 8px; }
+.img-preview-pane { background: #0b1220; }
+.img-preview-bar { padding: 6px 12px; color: #cbd5e1; font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+.img-preview-info { color: #64748b; margin-left: 8px; }
+.img-preview-body { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 12px;
+  background-image: linear-gradient(45deg,#111a2c 25%,transparent 25%,transparent 75%,#111a2c 75%),linear-gradient(45deg,#111a2c 25%,transparent 25%,transparent 75%,#111a2c 75%);
+  background-size: 20px 20px; background-position: 0 0, 10px 10px; }
+.img-preview-body img { max-width: 100%; max-height: 100%; object-fit: contain; }
+@media (max-width: 900px) { .file-tree { width: 140px; } }

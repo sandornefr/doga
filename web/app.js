@@ -3316,6 +3316,7 @@ async function loadTaskFiles(task) {
 async function selectTask(taskId) {
   if (!taskId) {
     currentTask = null;
+    if (window.FileTree) FileTree.setTask(null);
     if (btnStarter) btnStarter.disabled = true;
     if (btnSampleImg) btnSampleImg.disabled = true;
     if (btnSources) btnSources.disabled = true;
@@ -3332,6 +3333,7 @@ async function selectTask(taskId) {
   if (!task) return;
 
   currentTask = task;
+  if (window.FileTree) FileTree.setTask(task);
   lastParsedHtml = null;
   cachedStudentDoc = null;
   clearTimeout(debounceTimer);       // az előző feladat függő mentése ne az újhoz kerüljön

@@ -1062,7 +1062,7 @@ const WEB_TASK_CHECKS = {
   bogyos: [
     { id:"lang-charset",          label:"1. Weboldal nyelve magyar, karakterkódolása UTF-8",                                              check:(doc)=>{ const m=doc.querySelector('meta[charset]'); return doc.documentElement.lang==="hu"&&m&&m.getAttribute('charset').toLowerCase()==='utf-8'; } },
     { id:"title",                 label:"2. Böngésző címsorában megjelenő cím \"Bogyós gyümölcsök\"",                                    check:(doc)=>doc.title==="Bogyós gyümölcsök" },
-    { id:"style-link",            label:"3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",                     check:(doc,html)=>/href=["'][^"']*style\.css["']/i.test(html) },
+    { id:"style-link",            label:"3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",                     check:(doc,html)=>/<link\b[^>]*\bhref\s*=\s*["']css\/style\.css["']/i.test(html.substring(0,(html.toLowerCase().indexOf('</head>')+1||1)-1)) },
     { id:"fejlec-img",            label:"4. Az img mappában található fejlec.jpg képet elhelyezte",                                       check:(doc)=>doc.querySelector('img[src*="fejlec"]')!==null },
     { id:"fejlec-alt",            label:"5. Ha nem jeleníthető meg a kép vagy ha az egeret felé visszük a \"Bogyós gyümölcsök\" szöveg jelenik meg", check:(doc)=>{ const i=doc.querySelector('img[src*="fejlec"]'); return i&&i.alt&&i.title==="Bogyós gyümölcsök"; } },
     { id:"fejlec-id",             label:"6. Fejléc képre egyedi azonosítót állított fejlec néven",                                        check:(doc)=>doc.querySelector('img#fejlec')!==null },
@@ -1103,7 +1103,7 @@ const WEB_TASK_CHECKS = {
   ],
   humanoid: [
     { id:"lang-charset",          label:"1. Weboldal nyelve magyar, karakterkódolása UTF-8",                                              check:(doc)=>{ const m=doc.querySelector('meta[charset]'); return doc.documentElement.lang==="hu"&&m&&m.getAttribute('charset').toLowerCase()==='utf-8'; } },
-    { id:"style-link",            label:"2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",                     check:(doc,html)=>/href=["'][^"']*style\.css["']/i.test(html) },
+    { id:"style-link",            label:"2. Hivatkozást helyezett el a css mappában található style.css stíluslapra",                     check:(doc,html)=>/<link\b[^>]*\bhref\s*=\s*["']css\/style\.css["']/i.test(html.substring(0,(html.toLowerCase().indexOf('</head>')+1||1)-1)) },
     { id:"title",                 label:"3. Böngésző címsorában megjelenő cím \"Humanoid robotok\"",                                     check:(doc)=>doc.title==="Humanoid robotok" },
     { id:"h1-felirat",            label:"4. A \"Humanoid robotok\" bekezdés 1-es szintű címsor",                                         check:(doc)=>{ const h=doc.querySelector('h1'); return h&&h.textContent.includes('Humanoid'); } },
     { id:"fejlec-img",            label:"5. A fejlec.jpg képet a megfelelő helyre helyezte",                                             check:(doc)=>doc.querySelector('img[src*="fejlec"]')!==null },
