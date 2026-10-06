@@ -17,8 +17,8 @@
   let task = null;
   let manifest = null;
   let manifestPromise = null;
-  let collapsed = false;
-  try { collapsed = localStorage.getItem('webFileTreeCollapsed') === '1'; } catch (e) {}
+  let collapsed = true;   // alapból rejtett, a gombbal nyitható
+  try { collapsed = localStorage.getItem('webFileTreeOpen') !== '1'; } catch (e) {}
 
   function loadManifest() {
     if (!manifestPromise) {
@@ -119,7 +119,7 @@
   }
   if (btnToggle) btnToggle.addEventListener('click', function () {
     collapsed = !collapsed;
-    try { localStorage.setItem('webFileTreeCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('webFileTreeOpen', collapsed ? '0' : '1'); } catch (e) {}
     applyCollapsed();
   });
   applyCollapsed();
