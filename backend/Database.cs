@@ -275,6 +275,54 @@ public class Database
                 oktato      TEXT,
                 datum       TEXT DEFAULT (datetime('now','localtime'))
             );");
+        Exec(conn, @"
+            CREATE TABLE IF NOT EXISTS sprintek (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                oktato        TEXT NOT NULL,
+                cim           TEXT NOT NULL,
+                leiras        TEXT NOT NULL,
+                tesztek       TEXT NOT NULL DEFAULT '[]',
+                evfolyam      TEXT,
+                osztaly       TEXT,
+                csoport       TEXT,
+                idoperc       INTEGER NOT NULL DEFAULT 10,
+                status        TEXT NOT NULL DEFAULT 'varakozik',
+                start_ms      INTEGER NOT NULL DEFAULT 0,
+                vege_ms       INTEGER NOT NULL DEFAULT 0,
+                letrehozva_ms INTEGER NOT NULL,
+                otos          INTEGER NOT NULL DEFAULT 0,
+                helyek        INTEGER NOT NULL DEFAULT 3,
+                kizar         INTEGER NOT NULL DEFAULT 1,
+                mod           TEXT NOT NULL DEFAULT 'gyors',
+                otos_kiosztva INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS sprint_otosok (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                sprint_id INTEGER NOT NULL,
+                email     TEXT NOT NULL,
+                nev       TEXT,
+                hely      INTEGER NOT NULL,
+                datum     TEXT DEFAULT (date('now','localtime'))
+            );
+            CREATE TABLE IF NOT EXISTS sprint_beadasok (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                sprint_id INTEGER NOT NULL,
+                email     TEXT NOT NULL,
+                nev       TEXT,
+                kod       TEXT,
+                pont      INTEGER NOT NULL DEFAULT 0,
+                max_pont  INTEGER NOT NULL DEFAULT 0,
+                ido_ms    INTEGER NOT NULL DEFAULT 0,
+                allapot   TEXT NOT NULL DEFAULT 'kerelem',
+                UNIQUE(sprint_id, email)
+            );
+            CREATE TABLE IF NOT EXISTS sprint_jelen (
+                sprint_id INTEGER NOT NULL,
+                email     TEXT NOT NULL,
+                nev       TEXT,
+                last_ms   INTEGER NOT NULL,
+                PRIMARY KEY (sprint_id, email)
+            );");
         try { Exec(conn, "ALTER TABLE teszteloi_uzenetek ADD COLUMN recipient_email TEXT"); } catch { }
         // Tesztelői jog tanévenként: melyik tanévre erősítette meg (kezdő év, pl. "2026" = 2026/27).
         // Meglévő tesztelőknél a csatlakozás tanéve – a korábbi tanévből maradtakat a portál megkérdezi.
@@ -3799,6 +3847,275 @@ public class Database
     private static int PythonKvota(int honap)    => 3 * (honap - 2);           // 3,6,9
     private static int WebKvota(int honap)        => honap - 2;                 // 1,2,3
     private static int InteraktivKvota(int honap) => Math.Max(0, honap - 3);   // 0,1,2
+
+    // ── Órai sprint ───────────────────────────────────────────────────────────
+    public static long NowMs() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private static SprintRow ReadSprint(Microsoft.Data.Sqlite.SqliteDataReader r)
+    {
+        var s = new SprintRow
+        {
+            Id = r.GetInt32(0), Oktato = r.GetString(1), Cim = r.GetString(2), Leiras = r.GetString(3),
+            Evfolyam = r.IsDBNull(5) ? null : r.GetString(5), Osztaly = r.IsDBNull(6) ? null : r.GetString(6),
+            Csoport = r.IsDBNull(7) ? null : r.GetString(7), Idoperc = r.GetInt32(8), Status = r.GetString(9),
+            StartMs = r.GetInt64(10), VegeMs = r.GetInt64(11), LetrehozvaMs = r.GetInt64(12),
+            Otos = r.GetInt32(13) == 1, Helyek = r.GetInt32(14), Kizar = r.GetInt32(15) == 1, Mod = r.GetString(16), OtosKiosztva = r.GetInt32(17) == 1,
+        };
+        try { s.Tesztek = System.Text.Json.JsonSerializer.Deserialize<List<string>>(r.GetString(4)) ?? new(); } catch { }
+        return s;
+    }
+    private const string SprintCols = "id,oktato,cim,leiras,tesztek,evfolyam,osztaly,csoport,idoperc,status,start_ms,vege_ms,letrehozva_ms,otos,helyek,kizar,mod,otos_kiosztva";
+
+    // A lejárt futó sprintet lezárja
+    private void SprintLejar(long now)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE sprintek SET status='vege', vege_ms=$n
+            WHERE status='fut' AND start_ms + idoperc*60000 + 2000 < $n";
+        cmd.Parameters.AddWithValue("$n", now);
+        cmd.ExecuteNonQuery();
+    }
+
+    public int CreateSprint(SprintCreateRequest q, string oktato)
+    {
+        var now = NowMs();
+        using var conn = Open();
+        using (var close = conn.CreateCommand())
+        {   // egyszerre egy aktív sprint van: a korábbit lezárjuk
+            close.CommandText = "UPDATE sprintek SET status='vege', vege_ms=$n WHERE status IN ('varakozik','fut')";
+            close.Parameters.AddWithValue("$n", now);
+            close.ExecuteNonQuery();
+        }
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO sprintek (oktato,cim,leiras,tesztek,evfolyam,osztaly,csoport,idoperc,letrehozva_ms,otos,helyek,kizar,mod)
+            VALUES ($o,$c,$l,$t,$ev,$os,$cs,$i,$n,$ot,$he,$ki,$mo); SELECT last_insert_rowid();";
+        cmd.Parameters.AddWithValue("$ot", q.Otos ? 1 : 0);
+        cmd.Parameters.AddWithValue("$he", Math.Clamp(q.Helyek, 1, 10));
+        cmd.Parameters.AddWithValue("$ki", q.Kizar ? 1 : 0);
+        cmd.Parameters.AddWithValue("$mo", q.Mod == "sorsolas" ? "sorsolas" : "gyors");
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$c", q.Cim.Trim());
+        cmd.Parameters.AddWithValue("$l", q.Leiras.Trim());
+        cmd.Parameters.AddWithValue("$t", System.Text.Json.JsonSerializer.Serialize(q.Tesztek ?? new List<string>()));
+        cmd.Parameters.AddWithValue("$ev", string.IsNullOrWhiteSpace(q.Evfolyam) ? DBNull.Value : q.Evfolyam.Trim());
+        cmd.Parameters.AddWithValue("$os", string.IsNullOrWhiteSpace(q.Osztaly) ? DBNull.Value : q.Osztaly.Trim());
+        cmd.Parameters.AddWithValue("$cs", string.IsNullOrWhiteSpace(q.Csoport) ? DBNull.Value : q.Csoport.Trim());
+        cmd.Parameters.AddWithValue("$i", Math.Clamp(q.Idoperc, 1, 90));
+        cmd.Parameters.AddWithValue("$n", now);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    public SprintRow? GetSprint(int id)
+    {
+        SprintLejar(NowMs());
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT {SprintCols} FROM sprintek WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? ReadSprint(r) : null;
+    }
+
+    // A tanulónak szóló legfrissebb sprint (aktív, vagy az elmúlt 5 percben lezárult)
+    public SprintRow? GetSprintDiaknak(string? evfolyam, string? osztaly, string? csoport)
+    {
+        var now = NowMs();
+        SprintLejar(now);
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $@"SELECT {SprintCols} FROM sprintek
+            WHERE (status IN ('varakozik','fut') OR (status='vege' AND vege_ms > $n - 300000))
+              AND (evfolyam IS NULL OR evfolyam=$ev) AND (osztaly IS NULL OR osztaly=$os) AND (csoport IS NULL OR csoport=$cs)
+            ORDER BY id DESC LIMIT 1";
+        cmd.Parameters.AddWithValue("$n", now);
+        cmd.Parameters.AddWithValue("$ev", evfolyam ?? "");
+        cmd.Parameters.AddWithValue("$os", osztaly ?? "");
+        cmd.Parameters.AddWithValue("$cs", csoport ?? "");
+        using var r = cmd.ExecuteReader();
+        return r.Read() ? ReadSprint(r) : null;
+    }
+
+    public bool SprintRajt(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE sprintek SET status='fut', start_ms=$s WHERE id=$id AND status='varakozik'";
+        cmd.Parameters.AddWithValue("$s", NowMs() + 4000);   // 4 mp visszaszámlálás
+        cmd.Parameters.AddWithValue("$id", id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool SprintVege(int id)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE sprintek SET status='vege', vege_ms=$n WHERE id=$id AND status IN ('varakozik','fut')";
+        cmd.Parameters.AddWithValue("$n", NowMs());
+        cmd.Parameters.AddWithValue("$id", id);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public void SprintJelen(int id, string email, string nev)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO sprint_jelen (sprint_id,email,nev,last_ms) VALUES ($i,$e,$n,$t)
+            ON CONFLICT(sprint_id,email) DO UPDATE SET last_ms=$t, nev=$n";
+        cmd.Parameters.AddWithValue("$i", id); cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$n", nev); cmd.Parameters.AddWithValue("$t", NowMs());
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<(string Nev, string Email)> SprintJelenLista(int id, long within = 8000)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT nev,email FROM sprint_jelen WHERE sprint_id=$i AND last_ms > $t ORDER BY nev";
+        cmd.Parameters.AddWithValue("$i", id); cmd.Parameters.AddWithValue("$t", NowMs() - within);
+        var l = new List<(string, string)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) l.Add((r.IsDBNull(0) ? "" : r.GetString(0), r.GetString(1)));
+        return l;
+    }
+
+    // Leadás: csak a futó, elindult sprintre; a már helyes/elfogadott leadást nem írja felül
+    public (bool Ok, string? Hiba, SprintBeadasRow? Sor) SprintBead(int id, string email, string nev, SprintBeadasRequest q)
+    {
+        var s = GetSprint(id);
+        var now = NowMs();
+        if (s == null || s.Status != "fut" || now < s.StartMs) return (false, "A sprint nem fut.", null);
+        if (now > s.StartMs + s.Idoperc * 60000L + 2000) return (false, "Lejárt az idő.", null);
+        if (q.Max <= 0 || q.Pont < 0 || q.Pont > q.Max) return (false, "Érvénytelen adat.", null);
+        var kod = q.Kod.Length > KodMaxHossz ? q.Kod[..KodMaxHossz] : q.Kod;
+        var allapot = q.Pont >= q.Max ? "helyes" : "kerelem";
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO sprint_beadasok (sprint_id,email,nev,kod,pont,max_pont,ido_ms,allapot)
+            VALUES ($s,$e,$n,$k,$p,$m,$t,$a)
+            ON CONFLICT(sprint_id,email) DO UPDATE SET kod=$k, pont=$p, max_pont=$m, ido_ms=$t, allapot=$a, nev=$n
+            WHERE allapot NOT IN ('helyes','elfogadva')";
+        cmd.Parameters.AddWithValue("$s", id); cmd.Parameters.AddWithValue("$e", email.ToLower().Trim());
+        cmd.Parameters.AddWithValue("$n", nev); cmd.Parameters.AddWithValue("$k", kod);
+        cmd.Parameters.AddWithValue("$p", q.Pont); cmd.Parameters.AddWithValue("$m", q.Max);
+        cmd.Parameters.AddWithValue("$t", now - s.StartMs); cmd.Parameters.AddWithValue("$a", allapot);
+        cmd.ExecuteNonQuery();
+        var sorok = GetSprintBeadasok(id, true);
+        return (true, null, sorok.FirstOrDefault(x => x.Email == email.ToLower().Trim()));
+    }
+
+    // Beadások rangsorral: a helyes/elfogadott leadások idő szerint, utána az elbírálásra várók
+    public List<SprintBeadasRow> GetSprintBeadasok(int id, bool kodIs)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id,sprint_id,email,nev,kod,pont,max_pont,ido_ms,allapot FROM sprint_beadasok WHERE sprint_id=$i ORDER BY ido_ms";
+        cmd.Parameters.AddWithValue("$i", id);
+        var l = new List<SprintBeadasRow>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+            l.Add(new SprintBeadasRow { Id = r.GetInt32(0), SprintId = r.GetInt32(1), Email = r.GetString(2), Nev = r.IsDBNull(3) ? "" : r.GetString(3),
+                Kod = kodIs && !r.IsDBNull(4) ? r.GetString(4) : null, Pont = r.GetInt32(5), MaxPont = r.GetInt32(6), IdoMs = r.GetInt64(7), Allapot = r.GetString(8) });
+        int rang = 0;
+        foreach (var x in l.Where(x => x.Allapot is "helyes" or "elfogadva").OrderBy(x => x.IdoMs)) x.Rang = ++rang;
+        return l;
+    }
+
+    public bool SetSprintBeadasAllapot(int beadasId, string allapot)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE sprint_beadasok SET allapot=$a WHERE id=$id";
+        cmd.Parameters.AddWithValue("$a", allapot); cmd.Parameters.AddWithValue("$id", beadasId);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // ── Sprint 5-ös: nyertesek meghatározása és kiosztása ──────────────────────
+    public static string TanevKezdet(DateTime d) => (d.Month >= 9 ? d.Year : d.Year - 1) + "-09-01";
+
+    // Akik a tanévben már kaptak sprint ötöst
+    public HashSet<string> SprintOtosKorabbi(string tanevKezdet)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT DISTINCT LOWER(email) FROM sprint_otosok WHERE datum >= $t";
+        cmd.Parameters.AddWithValue("$t", tanevKezdet);
+        var h = new HashSet<string>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) h.Add(r.GetString(0));
+        return h;
+    }
+
+    // A jogosult (helyes/elfogadott, nem kizárt) megoldók; gyors módban idő szerint, sorsolásnál véletlen sorrendben
+    public List<SprintBeadasRow> SprintJogosultak(SprintRow s, bool veletlen)
+    {
+        var korabbi = s.Kizar ? SprintOtosKorabbi(TanevKezdet(DateTime.Now)) : new HashSet<string>();
+        var jo = GetSprintBeadasok(s.Id, false).Where(b => b.Allapot is "helyes" or "elfogadva" && !korabbi.Contains(b.Email)).ToList();
+        return veletlen ? jo.OrderBy(_ => Random.Shared.Next()).ToList() : jo.OrderBy(b => b.IdoMs).ToList();
+    }
+
+    public List<(string Nev, string Email, int Hely)> SprintOtosKioszt(SprintRow s)
+    {
+        var jogosult = SprintJogosultak(s, s.Mod == "sorsolas");
+        var nyertesek = jogosult.Take(s.Helyek).Select((b, i) => (b.Nev, b.Email, i + 1)).ToList();
+        var most = DateTime.Now;
+        using var conn = Open();
+        foreach (var n in nyertesek)
+        {
+            using (var ins = conn.CreateCommand())
+            {
+                ins.CommandText = "INSERT INTO sprint_otosok (sprint_id,email,nev,hely) VALUES ($s,$e,$n,$h)";
+                ins.Parameters.AddWithValue("$s", s.Id); ins.Parameters.AddWithValue("$e", n.Email);
+                ins.Parameters.AddWithValue("$n", n.Nev); ins.Parameters.AddWithValue("$h", n.Item3);
+                ins.ExecuteNonQuery();
+            }
+            // havi szorgalmi 5-ös: a sor létrehozása (ha még nincs), majd +1
+            using (var row = conn.CreateCommand())
+            {
+                row.CommandText = "INSERT OR IGNORE INTO havijegyek (email,ev,honap) VALUES ($e,$ev,$h)";
+                row.Parameters.AddWithValue("$e", n.Email); row.Parameters.AddWithValue("$ev", most.Year); row.Parameters.AddWithValue("$h", most.Month);
+                row.ExecuteNonQuery();
+            }
+            using (var up = conn.CreateCommand())
+            {
+                up.CommandText = "UPDATE havijegyek SET szorgalmi_jegy_db = szorgalmi_jegy_db + 1 WHERE LOWER(email)=LOWER($e) AND ev=$ev AND honap=$h";
+                up.Parameters.AddWithValue("$e", n.Email); up.Parameters.AddWithValue("$ev", most.Year); up.Parameters.AddWithValue("$h", most.Month);
+                up.ExecuteNonQuery();
+            }
+        }
+        using (var fin = conn.CreateCommand())
+        {
+            fin.CommandText = "UPDATE sprintek SET otos_kiosztva=1 WHERE id=$id";
+            fin.Parameters.AddWithValue("$id", s.Id);
+            fin.ExecuteNonQuery();
+        }
+        return nyertesek;
+    }
+
+    public List<(string Nev, int Hely)> GetSprintOtosok(int sprintId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COALESCE(nev,email), hely FROM sprint_otosok WHERE sprint_id=$s ORDER BY hely";
+        cmd.Parameters.AddWithValue("$s", sprintId);
+        var l = new List<(string, int)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) l.Add((r.GetString(0), r.GetInt32(1)));
+        return l;
+    }
+
+    public List<(string Evfolyam, string Osztaly, string Csoport)> SprintCsoportok()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT DISTINCT COALESCE(evfolyam,''), COALESCE(osztaly,''), COALESCE(csoport,'') FROM users
+            WHERE szerep='tanulo' AND LOWER(email) NOT IN ('tesztelek@kkszki.hu','bot@kkszki.hu')
+            ORDER BY 1,2,3";
+        var l = new List<(string, string, string)>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) l.Add((r.GetString(0), r.GetString(1), r.GetString(2)));
+        return l;
+    }
 
     // ── Megoldások (a tanulók kódja) és tanári plusz pontok ──────────────────
     private const int KodMaxHossz = 20000;

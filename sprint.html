@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sprint – Digitális Tanulási és Számonkérési Rendszer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+*{scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#161b22;border-bottom:1px solid #21262d;}
+.topbar-title{font-weight:700;font-size:.95rem;flex:1;}
+.topbar-title i{color:#f97316;margin-right:8px;}
+.btn{background:#21262d;border:1px solid #30363d;color:#c9d1d9;padding:7px 16px;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:inherit;}
+.btn:hover{border-color:#58a6ff;color:#58a6ff;}
+.btn.primary{background:#4f46e5;border-color:#4f46e5;color:#fff;}
+.btn.primary:hover{background:#4338ca;color:#fff;}
+.btn.go{background:#16a34a;border-color:#16a34a;color:#fff;font-size:1.1rem;padding:12px 28px;}
+.btn.go:hover{background:#15803d;color:#fff;}
+.btn.danger{border-color:#7f1d1d;color:#f87171;}
+.btn.amber{background:#b45309;border-color:#b45309;color:#fff;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.wrap{flex:1;padding:18px 20px;max-width:1200px;width:100%;margin:0 auto;}
+.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px 18px;margin-bottom:14px;}
+.card h2{font-size:1rem;margin-bottom:12px;}
+.card h2 i{margin-right:8px;color:#58a6ff;}
+label{display:block;font-size:.78rem;color:#8b949e;margin:10px 0 4px;font-weight:600;}
+input[type=text],input[type=number],select,textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#e0e0e0;border-radius:7px;padding:8px 10px;font-size:.9rem;font-family:inherit;}
+textarea{min-height:90px;resize:vertical;font-family:Consolas,monospace;}
+.row{display:flex;gap:12px;flex-wrap:wrap;}
+.row>*{flex:1;min-width:160px;}
+.muted{color:#8b949e;font-size:.82rem;}
+.center{text-align:center;}
+.big{font-size:1.5rem;font-weight:800;}
+.countdown{font-size:7rem;font-weight:900;color:#f97316;text-align:center;line-height:1.1;font-variant-numeric:tabular-nums;}
+.timer{font-size:2rem;font-weight:800;color:#f97316;font-variant-numeric:tabular-nums;}
+.timer.urgent{color:#ef4444;animation:pulse .8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{background:#21262d;border:1px solid #30363d;border-radius:14px;padding:3px 11px;font-size:.78rem;}
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+th{color:#8b949e;font-size:.72rem;text-align:left;padding:6px 8px;border-bottom:1px solid #21262d;text-transform:uppercase;letter-spacing:.04em;}
+td{padding:7px 8px;border-bottom:1px solid #1b222c;vertical-align:top;}
+tr.me td{background:rgba(79,70,229,.14);}
+.rank{font-weight:800;width:56px;white-space:nowrap;}
+.medal-1{color:#fbbf24}.medal-2{color:#cbd5e1}.medal-3{color:#d97706}
+.tag{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+.tag.ok{background:#14532d;color:#86efac}.tag.wait{background:#78350f;color:#fcd34d}.tag.no{background:#7f1d1d;color:#fca5a5}.tag.acc{background:#1e3a5f;color:#93c5fd}
+.task-text{line-height:1.55;font-size:.95rem;}
+.main{display:grid;grid-template-columns:minmax(260px,36%) 1fr;gap:14px;}
+@media(max-width:900px){.main{grid-template-columns:1fr;}}
+#editor{height:340px;border:1px solid #30363d;border-radius:8px;}
+.out{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px;font-family:Consolas,monospace;font-size:.85rem;white-space:pre-wrap;min-height:70px;max-height:170px;overflow:auto;}
+.out.err{color:#f87171;}
+pre.kod{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px;font-size:.82rem;overflow:auto;max-height:260px;white-space:pre;margin-top:6px;}
+.fail{background:#2d1111;border:1px solid #7f1d1d;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.84rem;white-space:pre-wrap;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-title"><i class="fas fa-bolt"></i>Sprint</div>
+  <span id="who" class="muted"></span>
+  <a class="btn" id="back" href="portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="card center muted">Betöltés…</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script>
+const API = 'https://agazati.up.railway.app';
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+const TOKEN = u ? u.token : '';
+const IS_TEACHER = !!u && u.szerep === 'oktato';
+const H = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+const app = document.getElementById('app');
+let offset = 0;   // szerveridő - helyi idő
+const nowSrv = () => Date.now() + offset;
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtMs = ms => { const s = Math.max(0, ms) / 1000; const m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
+const fmtTimer = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+async function api(method, path, body) {
+  const r = await fetch(API + path, { method, headers: H, body: body ? JSON.stringify(body) : undefined });
+  let data = null;
+  try { data = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((data && data.error) || ('Hiba ' + r.status));
+  return data;
+}
+
+// (az indítás a script végén van, hogy minden let változó már deklarálva legyen)
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Közös: kimenet-összevetés (a vizsgapontozás szabályai szerint, engedékeny)
+// ══════════════════════════════════════════════════════════════════════════
+function normText(s) {
+  return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+// 1–2 karakteres minta csak önálló szóként egyezik, hosszabb bárhol (szórészlet is)
+function tartalmazza(szoveg, minta) {
+  const m = normText(minta);
+  if (!m) return false;
+  const t = normText(szoveg);
+  return m.length <= 2 ? (' ' + t + ' ').includes(' ' + m + ' ') : t.includes(m);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  TANÁR
+// ══════════════════════════════════════════════════════════════════════════
+let feladatok = [];
+let tSprintId = parseInt(sessionStorage.getItem('sprintId') || '0');
+let tPoll = null;
+
+function parseTasks(txt) {
+  const tasks = []; let cur = null, sec = null; const textL = [], critL = [];
+  const flush = () => {
+    if (!cur) return;
+    cur.leiras = textL.join('\n').trim();
+    cur.tesztek = critL.filter(c => c.startsWith('teszt:')).map(c => c.split('|')[0].slice(6));
+    tasks.push(cur); textL.length = critL.length = 0;
+  };
+  for (const raw of txt.split('\n')) {
+    const line = raw.replace(/\r$/, ''); const lt = line.trim();
+    const tm = lt.match(/^(\d+)\.\s*feladat/i);
+    if (tm) { flush(); cur = { number: +tm[1], cim: '', pont: 8, keszito: false, modul: false }; sec = 'text'; continue; }
+    if (!cur) continue;
+    if (lt.startsWith('Cim:')) { cur.cim = lt.slice(4).trim(); continue; }
+    if (lt.startsWith('Pont:')) { cur.pont = +lt.slice(5).trim(); continue; }
+    if (lt.startsWith('Feladatkeszito:')) { cur.keszito = lt.slice(15).trim().toLowerCase() === 'igen'; continue; }
+    if (lt.startsWith('ModulNev:')) { cur.modul = true; continue; }
+    if (/^(Tipus|Nehezseg|Uj):/.test(lt)) continue;
+    if (lt === 'Pontozas:') { sec = 'crit'; continue; }
+    if (lt === 'Tippek:' || lt === 'Megoldas:') { sec = 'skip'; continue; }
+    if (sec === 'text') textL.push(line); else if (sec === 'crit' && lt) critL.push(lt);
+  }
+  flush();
+  return tasks.filter(t => !t.keszito && !t.modul && t.leiras);
+}
+
+async function teacherInit() {
+  try {
+    const t = await fetch('python/feladatok.txt').then(r => r.text());
+    feladatok = parseTasks(t);
+  } catch (e) { feladatok = []; }
+  if (tSprintId) { try { await tPollOnce(); teacherLive(); return; } catch (e) { sessionStorage.removeItem('sprintId'); tSprintId = 0; } }
+  teacherForm();
+}
+
+async function teacherForm() {
+  clearInterval(tPoll);
+  let csoportok = [];
+  try { csoportok = await api('GET', '/api/oktato/sprint/csoportok'); } catch (e) {}
+  const csOpt = csoportok.map(c => `<option value='${esc(JSON.stringify(c))}'>${esc(c.evfolyam)}.${esc(c.osztaly)}${c.csoport ? ' / ' + esc(c.csoport) + '. csoport' : ''}</option>`).join('');
+  const fOpt = feladatok.map(f => `<option value="${f.number}">${f.number}. ${esc(f.cim)} (${f.pont} p${f.tesztek.length ? '' : ', kézi elbírálás'})</option>`).join('');
+  app.innerHTML = `
+  <div class="card">
+    <h2><i class="fas fa-bolt"></i>Új sprint kiírása</h2>
+    <div class="row">
+      <div><label>Feladat a feladatbankból</label><select id="f-bank"><option value="">– saját feladat –</option>${fOpt}</select></div>
+      <div><label>Kinek?</label><select id="f-cs"><option value="">Mindenkinek</option>${csOpt}</select></div>
+      <div style="max-width:140px"><label>Időkeret (perc)</label><input type="number" id="f-ido" min="1" max="90" value="10"></div>
+    </div>
+    <div class="row">
+      <div style="max-width:280px"><label>Jutalom</label><select id="f-otos"><option value="1">5-ös az első helyezetteknek</option><option value="0">Nincs jegy (csak verseny / plusz pont)</option></select></div>
+      <div style="max-width:130px"><label>Hány hely?</label><input type="number" id="f-helyek" min="1" max="10" value="3"></div>
+      <div><label>Nyertesek kiválasztása</label><select id="f-mod"><option value="gyors">Leggyorsabbak (befutási sorrend)</option><option value="sorsolas">Sorsolás az időn belül helyesen megoldók között</option></select></div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:flex-start;color:#c9d1d9;font-size:.84rem;font-weight:400"><input type="checkbox" id="f-kizar" checked style="width:auto;margin-top:3px">
+      <span>Aki már kapott sprint ötöst ebben a tanévben, kimarad az 5-ösből (versenyezhet, de az 5-ös a következő megoldóra száll). <b>Ajánlott</b>, hogy ne mindig ugyanazok nyerjenek.</span></label>
+    <label>Cím</label><input type="text" id="f-cim" maxlength="200" placeholder="pl. Páros vagy páratlan">
+    <label>Feladatleírás (ezt kapják a diákok a rajt pillanatában)</label><textarea id="f-leiras" style="min-height:130px;font-family:inherit"></textarea>
+    <label>Automatikus ellenőrzés – soronként egy teszt: <code>bemenet1,bemenet2:várt kimenet</code></label>
+    <textarea id="f-tesztek" placeholder="4:páros&#10;7:páratlan"></textarea>
+    <div class="muted" style="margin-top:6px">Csak a program <b>kimenetét</b> vizsgálja (kis-nagybetű, ékezet nem számít), a megoldás módját nem – így az egyedi megoldás is átmegy.
+      Ha nincs teszt, vagy a diák másképp oldotta meg, te bírálod el a leadást.</div>
+    <div style="margin-top:14px"><button class="btn primary" onclick="teacherCreate()"><i class="fas fa-flag-checkered"></i> Sprint kiírása (lobby)</button>
+      <span id="f-msg" class="muted" style="margin-left:10px"></span></div>
+  </div>`;
+  document.getElementById('f-bank').onchange = e => {
+    const f = feladatok.find(x => x.number == e.target.value);
+    if (!f) return;
+    document.getElementById('f-cim').value = f.cim;
+    document.getElementById('f-leiras').value = f.leiras;
+    document.getElementById('f-tesztek').value = f.tesztek.join('\n');
+  };
+}
+
+async function teacherCreate() {
+  const msg = document.getElementById('f-msg');
+  const cs = document.getElementById('f-cs').value ? JSON.parse(document.getElementById('f-cs').value) : {};
+  const body = {
+    cim: document.getElementById('f-cim').value.trim(),
+    leiras: document.getElementById('f-leiras').value.trim(),
+    tesztek: document.getElementById('f-tesztek').value.split('\n').map(s => s.trim()).filter(Boolean),
+    evfolyam: cs.evfolyam || null, osztaly: cs.osztaly || null, csoport: cs.csoport || null,
+    idoperc: parseInt(document.getElementById('f-ido').value) || 10,
+    otos: document.getElementById('f-otos').value === '1',
+    helyek: parseInt(document.getElementById('f-helyek').value) || 3,
+    kizar: document.getElementById('f-kizar').checked,
+    mod: document.getElementById('f-mod').value
+  };
+  if (!body.cim || !body.leiras) { msg.textContent = 'A cím és a leírás kötelező.'; return; }
+  try {
+    const r = await api('POST', '/api/oktato/sprint', body);
+    tSprintId = r.id; sessionStorage.setItem('sprintId', String(tSprintId));
+    await tPollOnce(); teacherLive();
+  } catch (e) { msg.textContent = e.message; }
+}
+
+let tState = null;
+async function tPollOnce() {
+  tState = await api('GET', '/api/oktato/sprint/' + tSprintId);
+  offset = tState.serverNow - Date.now();
+}
+
+function teacherLive() {
+  clearInterval(tPoll);
+  tRender();
+  tPoll = setInterval(async () => { try { await tPollOnce(); tRender(); } catch (e) {} }, 1500);
+}
+
+let openKod = new Set();
+function tRender() {
+  const { sprint: s, jelen, beadasok } = tState;
+  const now = nowSrv();
+  const fut = s.status === 'fut';
+  const kezdodott = fut && now >= s.startMs;
+  const hatravan = s.startMs + s.idoperc * 60000 - now;
+  let statusHtml;
+  if (s.status === 'varakozik') statusHtml = `<span class="tag wait">Lobby – várakozás a rajtra</span>`;
+  else if (fut && !kezdodott) statusHtml = `<span class="tag acc">Visszaszámlálás…</span>`;
+  else if (fut) statusHtml = `<span class="tag ok">Fut</span>`;
+  else statusHtml = `<span class="tag no">Lezárult</span>`;
+  const mind = (a) => a.length ? a.map(x => `<span class="chip">${esc(x.nev || x.email)}</span>`).join('') : '<span class="muted">még senki</span>';
+  const rows = beadasok.map(b => {
+    const tag = { helyes: '<span class="tag ok">helyes</span>', elfogadva: '<span class="tag acc">elfogadva</span>', kerelem: '<span class="tag wait">elbírálásra vár</span>', elutasitva: '<span class="tag no">elutasítva</span>' }[b.allapot];
+    const medal = b.rang && b.rang <= 3 ? `<i class="fas fa-medal medal-${b.rang}"></i> ` : '';
+    const nyitva = openKod.has(b.id);
+    return `<tr><td class="rank">${b.rang ? medal + b.rang + '.' : '–'}</td>
+      <td>${esc(b.nev || b.email)}</td><td>${fmtMs(b.idoMs)}</td><td>${tag} <span class="muted">${b.pont}/${b.maxPont} teszt</span></td>
+      <td><button class="btn" onclick="toggleKod(${b.id})"><i class="fas fa-code"></i> Kód</button>
+        <button class="btn" onclick="dontes(${b.id},true)"><i class="fas fa-check"></i></button>
+        <button class="btn danger" onclick="dontes(${b.id},false)"><i class="fas fa-xmark"></i></button>
+        ${nyitva ? `<pre class="kod">${esc(b.kod || '')}</pre>` : ''}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">Még nincs leadás.</td></tr>';
+  app.innerHTML = `
+  <div class="card">
+    <div class="row" style="align-items:center">
+      <div><div class="big">${esc(s.cim)}</div><div class="muted">${s.evfolyam ? esc(s.evfolyam) + '.' + esc(s.osztaly || '') + (s.csoport ? ' / ' + esc(s.csoport) + '. csoport' : '') : 'Mindenki'} · ${s.idoperc} perc · ${tState.sprint.tesztek.length} automatikus teszt</div></div>
+      <div style="flex:0 0 auto">${statusHtml}</div>
+      <div style="flex:0 0 auto" class="timer ${fut && kezdodott && hatravan < 30000 ? 'urgent' : ''}">${kezdodott ? fmtTimer(hatravan) : (s.status === 'varakozik' ? fmtTimer(s.idoperc * 60000) : '')}</div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      ${s.status === 'varakozik' ? `<button class="btn go" onclick="rajt()"><i class="fas fa-flag-checkered"></i> RAJT!</button>` : ''}
+      ${s.status !== 'vege' ? `<button class="btn danger" onclick="vege()"><i class="fas fa-stop"></i> Sprint lezárása</button>` : ''}
+      ${s.status === 'vege' && s.otos && !s.otosKiosztva ? `<button class="btn go" onclick="otosKioszt()"><i class="fas fa-award"></i> 5-ös kiosztása</button>` : ''}
+      ${s.status === 'vege' && !s.otos ? `<button class="btn amber" onclick="plusz()"><i class="fas fa-star"></i> Plusz pont a dobogósoknak (3 / 2 / 1)</button>` : ''}
+      <button class="btn" onclick="ujSprint()"><i class="fas fa-plus"></i> Új sprint</button>
+    </div>
+  </div>
+  ${s.otos ? otosKartya(s) : ''}
+  <div class="card"><h2><i class="fas fa-users"></i>Csatlakozott diákok (${jelen.length})</h2><div class="chips">${mind(jelen)}</div></div>
+  <div class="card"><h2><i class="fas fa-trophy"></i>Befutók</h2>
+    <table><thead><tr><th>Hely</th><th>Név</th><th>Idő</th><th>Állapot</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="muted" style="margin-top:8px">Az automatikus ellenőrzésen átment megoldás azonnal befutónak számít. Az „elbírálásra vár” leadást a Kód gomb után a pipával fogadhatod el (az idő a leadás pillanata marad), vagy elutasíthatod.</div>
+  </div>`;
+}
+
+function otosKartya(s) {
+  const t = tState;
+  let tartalom;
+  if (s.otosKiosztva) {
+    tartalom = `<div><b>Kiosztva:</b> ${(t.otosok || []).map(o => `<span class="chip"><i class="fas fa-award medal-1"></i> ${o.hely}. ${esc(o.nev)}</span>`).join('') || '<span class="muted">senki (nem volt jogosult megoldó)</span>'}</div>`;
+  } else if (s.mod === 'sorsolas') {
+    tartalom = `<div class="muted">Sorsolás: jelenleg <b>${t.jogosultak.length}</b> jogosult megoldó van. A nyertesek a „5-ös kiosztása” gombnál sorsolódnak, a sprint lezárása után.</div>`;
+  } else {
+    const n = t.jogosultak.slice(0, s.helyek);
+    tartalom = `<div class="muted">Jelenlegi nyertesek:</div><div class="chips">${n.map((x, i) => `<span class="chip"><i class="fas fa-award medal-${Math.min(i + 1, 3)}"></i> ${i + 1}. ${esc(x)}</span>`).join('') || '<span class="muted">még senki</span>'}</div>`;
+  }
+  return `<div class="card"><h2><i class="fas fa-award"></i>5-ösért megy – ${s.helyek} hely, ${s.mod === 'sorsolas' ? 'sorsolással' : 'befutási sorrendben'}</h2>
+    <div class="muted" style="margin-bottom:8px">${s.kizar ? 'Aki már kapott sprint ötöst a tanévben, kimarad (az 5-ös a következő jogosultra száll).' : 'Mindenki jogosult, korábbi nyertesek is.'} A kiosztás a havi osztályozásban szorgalmi 5-ösként jelenik meg.</div>
+    ${tartalom}</div>`;
+}
+async function otosKioszt() {
+  const t = tState, s = t.sprint;
+  const elo = s.mod === 'sorsolas' ? `${t.jogosultak.length} jogosult megoldó közül ${s.helyek} nyertes sorsolódik` : 'nyertesek: ' + (t.jogosultak.slice(0, s.helyek).join(', ') || '(senki)');
+  if (!confirm(`5-ös kiosztása – ${elo}.\n\nEz egyszer végezhető el, és a havi szorgalmi 5-ösökhöz adódik. Mehet?`)) return;
+  try { const r = await api('POST', `/api/oktato/sprint/${tSprintId}/otos`); await tPollOnce(); tRender(); alert('5-ös kiosztva:\n' + r.nyertesek.map(n => n.hely + '. ' + n.nev).join('\n')); } catch (e) { alert(e.message); }
+}
+
+function toggleKod(id) { openKod.has(id) ? openKod.delete(id) : openKod.add(id); tRender(); }
+async function rajt() { try { await api('POST', `/api/oktato/sprint/${tSprintId}/rajt`); await tPollOnce(); tRender(); } catch (e) { alert(e.message); } }
+async function vege() { if (!confirm('Lezárod a sprintet?')) return; try { await api('POST', `/api/oktato/sprint/${tSprintId}/vege`); await tPollOnce(); tRender(); } catch (e) { alert(e.message); } }
+async function dontes(id, elfogad) { try { await api('POST', `/api/oktato/sprint/beadas/${id}/dontes`, { elfogad }); await tPollOnce(); tRender(); } catch (e) { alert(e.message); } }
+async function plusz() {
+  if (!confirm('A dobogósok plusz pontot kapnak (1. hely 3, 2. hely 2, 3. hely 1 pont). Mehet?')) return;
+  try { const r = await api('POST', `/api/oktato/sprint/${tSprintId}/plusz`); alert(r.db + ' tanuló kapott plusz pontot.'); } catch (e) { alert(e.message); }
+}
+function ujSprint() { clearInterval(tPoll); sessionStorage.removeItem('sprintId'); tSprintId = 0; teacherForm(); }
+
+// ══════════════════════════════════════════════════════════════════════════
+//  DIÁK
+// ══════════════════════════════════════════════════════════════════════════
+let pyodide = null, pyLoading = null, editor = null, editorReady = false;
+let sData = null, sPoll = null, curSprintId = 0, submittedOk = false, felkesz = false;
+
+function loadPy() {
+  if (pyodide || pyLoading) return pyLoading;
+  pyLoading = (async () => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js';
+    document.head.appendChild(sc);
+    await new Promise(r => sc.onload = r);
+    pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/' });
+  })();
+  return pyLoading;
+}
+
+function studentInit() {
+  if (u._tesztMod) { app.innerHTML = '<div class="card center"><h2>Teszt Elek módban nem lehet sprintezni</h2><div class="muted">Lépj be valódi diákfiókkal.</div></div>'; return; }
+  loadPy();
+  sTick();
+  sPoll = setInterval(sTick, 1500);
+  setInterval(sRenderTimers, 250);
+}
+
+async function sTick() {
+  try {
+    const d = await api('GET', '/api/sprint/aktiv');
+    offset = d.serverNow - Date.now();
+    sData = d;
+    sRender();
+  } catch (e) { /* hálózati hiba: a következő kör újrapróbálja */ }
+}
+
+let lastKey = '';
+function sRender() {
+  const d = sData;
+  if (!d.sprint) {
+    lastKey = 'none';
+    if (!app.querySelector('[data-s=none]')) app.innerHTML = `<div class="card center" data-s="none"><h2><i class="fas fa-bolt"></i>Nincs kiírt sprint</h2><div class="muted">Ez az oldal magától jelzi, ha a tanár elindít egyet. Hagyd nyitva!</div></div>`;
+    return;
+  }
+  const s = d.sprint;
+  if (s.id !== curSprintId) { curSprintId = s.id; submittedOk = false; felkesz = false; editorReady = false; editor = null; lastKey = ''; }
+  const now = nowSrv();
+  let key;
+  if (s.status === 'varakozik') key = 'lobby';
+  else if (s.status === 'fut' && now < s.startMs) key = 'count';
+  else if (s.status === 'fut') key = 'run';
+  else key = 'end' + (s.otosKiosztva ? '+' : '');
+  if (key === 'run' && !s.leiras) return;   // a leírás a következő körben érkezik
+  if (key !== lastKey) { lastKey = key; buildStudent(key, s); }
+  else if (key === 'lobby') { const j = document.getElementById('jelen'); if (j) j.textContent = s.jelen; }
+  if (key.startsWith('end')) { const a = document.getElementById('allas'); if (a) a.innerHTML = allasHtml(d); }
+  if (key === 'run') { const a = document.getElementById('allas'); if (a) a.innerHTML = allasHtml(d); updateMine(d); }
+}
+
+function sRenderTimers() {
+  if (!sData || !sData.sprint) return;
+  const s = sData.sprint, now = nowSrv();
+  const c = document.getElementById('cd');
+  if (c && s.status === 'fut' && now < s.startMs) c.textContent = Math.max(1, Math.ceil((s.startMs - now) / 1000));
+  const t = document.getElementById('timer');
+  if (t && s.status === 'fut' && now >= s.startMs) {
+    const left = s.startMs + s.idoperc * 60000 - now;
+    t.textContent = fmtTimer(left); t.classList.toggle('urgent', left < 30000);
+  }
+}
+
+function buildStudent(key, s) {
+  if (key === 'lobby') {
+    app.innerHTML = `<div class="card center"><h2><i class="fas fa-bolt"></i>${esc(s.cim)}</h2>
+      <div class="big" style="margin:14px 0">Készülj!</div>
+      <div class="muted">A tanár hamarosan elindítja a sprintet (${s.idoperc} perc). A feladatot a rajt pillanatában kapod meg.</div>
+      ${s.otos ? `<div style="margin-top:12px;color:#fcd34d"><i class="fas fa-award"></i> 5-ösért megy – ${s.mod === 'sorsolas' ? 'sorsolás a helyes megoldók között' : 'az első ' + s.helyek + ' helyes megoldás kap ötöst'}</div>` : ''}
+      <div style="margin-top:16px"><i class="fas fa-users"></i> Csatlakozott: <b id="jelen">${s.jelen}</b></div>
+      <div class="muted" style="margin-top:10px" id="pystat"><i class="fas fa-circle-notch fa-spin"></i> Python betöltése…</div></div>`;
+    loadPy().then(() => { const p = document.getElementById('pystat'); if (p) p.innerHTML = '<i class="fas fa-circle-check" style="color:#22c55e"></i> A Python készen áll.'; });
+  } else if (key === 'count') {
+    app.innerHTML = `<div class="card center"><div class="muted">Rajt…</div><div class="countdown" id="cd">3</div></div>`;
+  } else if (key === 'run') {
+    app.innerHTML = otosSzoveg(s) + `
+    <div class="card row" style="align-items:center">
+      <div><div class="big">${esc(s.cim)}</div></div>
+      <div style="flex:0 0 auto" class="timer" id="timer">--:--</div>
+      <div style="flex:0 0 auto"><span id="mine" class="muted"></span></div>
+    </div>
+    <div class="main">
+      <div>
+        <div class="card"><h2><i class="fas fa-list-check"></i>Feladat</h2><div class="task-text">${esc(s.leiras).replace(/\n/g, '<br>')}</div></div>
+        <div class="card"><h2><i class="fas fa-trophy"></i>Befutók</h2><div id="allas"></div></div>
+      </div>
+      <div>
+        <div class="card">
+          <div id="editor"></div>
+          <label>Bemenet a futtatáshoz (soronként egy input() érték)</label>
+          <textarea id="stdin" style="min-height:48px" placeholder="pl. 5"></textarea>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" id="btn-run" onclick="runCode()"><i class="fas fa-play"></i> Futtatás</button>
+            <button class="btn go" id="btn-kesz" onclick="keszGomb()"><i class="fas fa-flag-checkered"></i> Kész!</button>
+          </div>
+          <div class="out" id="out" style="margin-top:10px">(a kimenet itt jelenik meg)</div>
+          <div id="failbox"></div>
+        </div>
+      </div>
+    </div>`;
+    initEditor(s);
+  } else {   // end
+    const nyertesek = s.otos
+      ? (s.otosKiosztva
+          ? `<div class="card" style="border-color:#78350f;background:#1c1507"><h2><i class="fas fa-award medal-1"></i>5-ös nyertesek</h2><div class="chips">${(s.otosok || []).map(o => `<span class="chip">${o.hely}. ${esc(o.nev)}</span>`).join('') || '<span class="muted">senki</span>'}</div></div>`
+          : `<div class="card center muted"><i class="fas fa-hourglass-half"></i> A tanár hamarosan kiosztja az 5-ösöket.</div>`)
+      : '';
+    app.innerHTML = nyertesek + `<div class="card"><h2><i class="fas fa-flag-checkered"></i>${esc(s.cim)} – vége</h2><div id="allas"></div></div>
+      <div class="card center muted">A sprint lezárult. Ha új indul, ez az oldal magától jelzi.</div>`;
+  }
+}
+
+function otosSzoveg(s) {
+  if (!s.otos) return '';
+  const hogyan = s.mod === 'sorsolas' ? 'Az idő alatt helyesen megoldók közül sorsolják ki a nyerteseket.' : `Az első ${s.helyek} helyes megoldás kap ötöst.`;
+  return `<div class="card" style="border-color:#78350f;background:#1c1507"><i class="fas fa-award medal-1"></i> <b>5-ösért megy!</b> ${hogyan}${s.kizar ? ' Aki már kapott sprint ötöst a tanévben, versenyezhet, de az 5-ös a következő megoldóra száll.' : ''}</div>`;
+}
+
+function allasHtml(d) {
+  const l = (d.allas || []);
+  if (!l.length) return '<div class="muted">Még senki nem adott le megoldást.</div>';
+  return `<table><thead><tr><th>Hely</th><th>Név</th><th>Idő</th></tr></thead><tbody>` + l.map(x => {
+    const medal = x.rang && x.rang <= 3 ? `<i class="fas fa-medal medal-${x.rang}"></i> ` : '';
+    const o = d.sprint;
+    const csillag = o && o.otos && x.otosHely && x.otosHely <= o.helyek ? ' <span class="tag acc"><i class="fas fa-award"></i> 5-ös</span>' : '';
+    const kiz = o && o.otos && x.kizart ? ' <span class="muted">(már kapott sprint 5-öst)</span>' : '';
+    return `<tr class="${x.en ? 'me' : ''}"><td class="rank">${x.rang ? medal + x.rang + '.' : '–'}</td><td>${esc(x.nev)}${csillag}${kiz}${x.allapot === 'kerelem' ? ' <span class="tag wait">elbírálásra vár</span>' : ''}</td><td>${fmtMs(x.idoMs)}</td></tr>`;
+  }).join('') + '</tbody></table>';
+}
+
+function updateMine(d) {
+  const m = document.getElementById('mine'); if (!m) return;
+  const e = d.enyem;
+  if (!e) { m.textContent = ''; return; }
+  if (e.allapot === 'helyes' || e.allapot === 'elfogadva') { m.innerHTML = `<span class="tag ok">${e.rang}. helyezett · ${fmtMs(e.idoMs)}</span>`; submittedOk = true; }
+  else if (e.allapot === 'kerelem') m.innerHTML = '<span class="tag wait">elbírálásra vár</span>';
+  else if (e.allapot === 'elutasitva') m.innerHTML = '<span class="tag no">a tanár elutasította – javíthatsz és újra leadhatod</span>';
+}
+
+function initEditor(s) {
+  require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+  require(['vs/editor/editor.main'], () => {
+    const saved = sessionStorage.getItem('sprintKod_' + s.id) || '# ide írd a megoldásod\n';
+    editor = monaco.editor.create(document.getElementById('editor'), {
+      value: saved, language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 16, tabSize: 4, wordWrap: 'on',
+    });
+    editor.onDidChangeModelContent(() => sessionStorage.setItem('sprintKod_' + s.id, editor.getValue()));
+    editorReady = true;
+  });
+}
+
+// Program futtatása megadott bemenetekkel
+async function runWith(code, inputs) {
+  await loadPy();
+  let out = '';
+  pyodide.setStdout({ batched: s => out += s + '\n' });
+  pyodide.setStderr({ batched: s => out += s + '\n' });
+  let idx = 0;
+  pyodide.globals.set('input', () => inputs[idx++] ?? '');
+  try { await pyodide.runPythonAsync(code); return { ok: true, out }; }
+  catch (e) { const ls = String(e.message || e).trim().split('\n'); return { ok: false, out, err: ls[ls.length - 1] }; }
+}
+
+async function runCode() {
+  if (!editorReady) return;
+  const o = document.getElementById('out'); o.className = 'out'; o.textContent = 'Futtatás…';
+  const inputs = document.getElementById('stdin').value.split('\n');
+  const r = await runWith(editor.getValue(), inputs);
+  o.textContent = (r.out || '') + (r.ok ? '' : '\n' + r.err) || '(nincs kimenet)';
+  if (!r.ok) o.classList.add('err');
+}
+
+// Az automatikus ellenőrzés: csak a kimenetet vizsgálja (a megoldás módját nem)
+async function keszGomb() {
+  if (!editorReady || !sData || !sData.sprint) return;
+  const s = sData.sprint, code = editor.getValue();
+  const btn = document.getElementById('btn-kesz'); btn.disabled = true;
+  const box = document.getElementById('failbox'); box.innerHTML = '<div class="muted" style="margin-top:8px"><i class="fas fa-circle-notch fa-spin"></i> Ellenőrzés…</div>';
+  try {
+    const tesztek = s.tesztek || [];
+    let passed = 0; const hibak = [];
+    for (const t of tesztek) {
+      const k = t.indexOf(':'); if (k < 0) continue;
+      const inputs = t.slice(0, k) ? t.slice(0, k).split(',') : [];
+      const vart = t.slice(k + 1).trim();
+      const r = await runWith(code, inputs);
+      const kim = r.out.trim();
+      const ok = r.ok && (normText(vart) ? tartalmazza(kim, vart) : kim.includes(vart));
+      if (ok) passed++; else hibak.push(`Bemenet: ${inputs.join(', ') || '(nincs)'}\nElvárt a kimenetben: ${vart}\n` + (r.ok ? `A programod kiírta: ${kim || '(semmit)'}` : `Hiba: ${r.err}`));
+    }
+    const max = tesztek.length;
+    if (max > 0 && passed === max) { await bead(code, passed, max); box.innerHTML = ''; return; }
+    if (max === 0) {
+      box.innerHTML = `<div class="fail" style="border-color:#78350f;background:#2a1d08">Ennél a feladatnál a tanár bírálja el a megoldást.<br><button class="btn amber" style="margin-top:8px" onclick="beadElbiralasra()">Leadom a tanárnak</button></div>`;
+      return;
+    }
+    box.innerHTML = `<div class="fail"><b>${passed}/${max} teszt ment át.</b>\n\n${esc(hibak.slice(0, 3).join('\n\n'))}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="document.getElementById('failbox').innerHTML=''">Javítom</button>
+      <button class="btn amber" onclick="beadElbiralasra(${passed},${max})">Másképp oldottam meg – a tanár bírálja el</button></div></div>`;
+  } finally { btn.disabled = false; }
+}
+function beadElbiralasra(p, m) { bead(editor.getValue(), p ?? 0, m ?? 1); }
+
+async function bead(code, pont, max) {
+  const box = document.getElementById('failbox');
+  try {
+    const r = await api('POST', `/api/sprint/${curSprintId}/beadas`, { kod: code, pont, max });
+    if (r.allapot === 'helyes') box.innerHTML = `<div class="card" style="border-color:#14532d;margin-top:10px"><i class="fas fa-circle-check" style="color:#22c55e"></i> Helyes! <b>${r.rang}. helyezett</b> · ${fmtMs(r.idoMs)}</div>`;
+    else box.innerHTML = `<div class="card" style="border-color:#78350f;margin-top:10px"><i class="fas fa-hourglass-half" style="color:#f59e0b"></i> Leadva – a tanár elbírálja.</div>`;
+    sTick();
+  } catch (e) { box.innerHTML = `<div class="fail">${esc(e.message)}</div>`; }
+}
+// ── Indítás (a deklarációk után) ──
+if (!u || !TOKEN) {
+  app.innerHTML = '<div class="card center"><h2>Be kell jelentkezned</h2><a class="btn primary" href="login.html">Bejelentkezés</a></div>';
+} else {
+  document.getElementById('who').textContent = u.nev || '';
+  if (IS_TEACHER) { document.getElementById('back').href = 'oktato-portal.html'; teacherInit(); }
+  else studentInit();
+}
+</script>
+</body>
+</html>

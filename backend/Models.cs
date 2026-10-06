@@ -724,6 +724,48 @@ public class TanariPluszRow
     public string  Datum   { get; set; } = "";
 }
 
+// ── Órai sprint ─────────────────────────────────────────────────────────────
+public record SprintCreateRequest(string Cim, string Leiras, List<string>? Tesztek, string? Evfolyam, string? Osztaly, string? Csoport, int Idoperc,
+                                  bool Otos = false, int Helyek = 3, bool Kizar = true, string? Mod = null);
+public record SprintBeadasRequest(string Kod, int Pont, int Max);
+public record SprintDontesRequest(bool Elfogad);
+
+public class SprintRow
+{
+    public int     Id        { get; set; }
+    public string  Oktato    { get; set; } = "";
+    public string  Cim       { get; set; } = "";
+    public string  Leiras    { get; set; } = "";
+    public List<string> Tesztek { get; set; } = new();
+    public string? Evfolyam  { get; set; }
+    public string? Osztaly   { get; set; }
+    public string? Csoport   { get; set; }
+    public int     Idoperc   { get; set; }
+    public string  Status    { get; set; } = "varakozik";   // varakozik | fut | vege
+    public long    StartMs   { get; set; }
+    public long    VegeMs    { get; set; }
+    public long    LetrehozvaMs { get; set; }
+    public bool    Otos      { get; set; }      // 5-ösért megy
+    public int     Helyek    { get; set; } = 3; // hányan kapnak ötöst
+    public bool    Kizar     { get; set; } = true; // aki már kapott sprint ötöst a tanévben, kimarad
+    public string  Mod       { get; set; } = "gyors"; // gyors | sorsolas
+    public bool    OtosKiosztva { get; set; }
+}
+
+public class SprintBeadasRow
+{
+    public int     Id      { get; set; }
+    public int     SprintId { get; set; }
+    public string  Email   { get; set; } = "";
+    public string  Nev     { get; set; } = "";
+    public string? Kod     { get; set; }
+    public int     Pont    { get; set; }
+    public int     MaxPont { get; set; }
+    public long    IdoMs   { get; set; }
+    public string  Allapot { get; set; } = "kerelem";   // helyes | kerelem | elfogadva | elutasitva
+    public int     Rang    { get; set; }
+}
+
 public record TudasszintRequest(List<string> Emails, int? PythonSzint, string? Bootstrap);
 
 public record HaviJegyPatchRequest(

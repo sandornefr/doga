@@ -2149,6 +2149,145 @@ app.MapDelete("/api/oktato/plusz/{id:int}", (int id, HttpContext ctx, Database d
     return db.DeleteTanariPlusz(id) ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
+// ── Órai sprint ─────────────────────────────────────────────────────────────
+// Tanár: létrehozás
+app.MapPost("/api/oktato/sprint", (HttpContext ctx, SprintCreateRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(req.Cim) || string.IsNullOrWhiteSpace(req.Leiras))
+        return Results.BadRequest(new { error = "Cím és feladatleírás kötelező" });
+    if (req.Cim.Length > 200 || req.Leiras.Length > 8000) return Results.BadRequest(new { error = "Túl hosszú szöveg" });
+    var tesztek = (req.Tesztek ?? new List<string>()).Where(t => !string.IsNullOrWhiteSpace(t) && t.Contains(':')).Take(30).ToList();
+    var id = db.CreateSprint(req with { Tesztek = tesztek }, GetOktatoEmail(ctx));
+    return Results.Ok(new { success = true, id });
+});
+
+// Tanár: csoportok listája a célzáshoz
+app.MapGet("/api/oktato/sprint/csoportok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.SprintCsoportok().Select(c => new { evfolyam = c.Evfolyam, osztaly = c.Osztaly, csoport = c.Csoport }));
+});
+
+// Tanár: élő állapot (csatlakozottak, leadások kóddal)
+app.MapGet("/api/oktato/sprint/{id:int}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var s = db.GetSprint(id);
+    if (s == null) return Results.NotFound();
+    return Results.Ok(new
+    {
+        sprint = s, serverNow = Database.NowMs(),
+        jelen = db.SprintJelenLista(id).Select(j => new { nev = j.Nev, email = j.Email }),
+        beadasok = db.GetSprintBeadasok(id, true),
+        jogosultak = s.Otos && !s.OtosKiosztva ? db.SprintJogosultak(s, false).Select(b => b.Nev).ToList() : new List<string>(),
+        otosok = s.OtosKiosztva ? db.GetSprintOtosok(id).Select(o => new { nev = o.Nev, hely = o.Hely }) : null
+    });
+});
+
+// Tanár: a legutóbbi sprint azonosítója (az oldal újratöltése után folytatáshoz)
+app.MapPost("/api/oktato/sprint/{id:int}/rajt", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.SprintRajt(id) ? Results.Ok(new { success = true }) : Results.BadRequest(new { error = "A sprint már elindult vagy lezárult." });
+});
+app.MapPost("/api/oktato/sprint/{id:int}/vege", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.SprintVege(id) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+app.MapPost("/api/oktato/sprint/beadas/{bid:int}/dontes", (int bid, HttpContext ctx, SprintDontesRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.SetSprintBeadasAllapot(bid, req.Elfogad ? "elfogadva" : "elutasitva") ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+// Tanár: 5-ös kiosztása a nyerteseknek (egyszer, a lezárt sprintnél)
+app.MapPost("/api/oktato/sprint/{id:int}/otos", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var s = db.GetSprint(id);
+    if (s == null) return Results.NotFound();
+    if (!s.Otos) return Results.BadRequest(new { error = "Ez a sprint nem 5-ösért ment." });
+    if (s.Status != "vege") return Results.BadRequest(new { error = "Előbb zárd le a sprintet." });
+    if (s.OtosKiosztva) return Results.BadRequest(new { error = "Az 5-ös már ki lett osztva." });
+    var nyertesek = db.SprintOtosKioszt(s);
+    return Results.Ok(new { success = true, nyertesek = nyertesek.Select(n => new { nev = n.Nev, hely = n.Hely }) });
+});
+
+// Tanár: plusz pont a dobogósoknak (1. hely 3 pont, 2. hely 2 pont, 3. hely 1 pont)
+app.MapPost("/api/oktato/sprint/{id:int}/plusz", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var s = db.GetSprint(id);
+    if (s == null) return Results.NotFound();
+    var most = DateTime.Now;
+    var oktato = GetOktatoEmail(ctx);
+    var dobogo = db.GetSprintBeadasok(id, false).Where(b => b.Rang is >= 1 and <= 3).OrderBy(b => b.Rang).ToList();
+    foreach (var b in dobogo)
+        db.AddTanariPlusz(b.Email, most.Year, most.Month, 4 - b.Rang, $"Sprint: {s.Cim} – {b.Rang}. hely", null, oktato);
+    return Results.Ok(new { success = true, db = dobogo.Count });
+});
+
+// Diák: a számára kiírt aktív sprint (és jelenlét jelzése)
+// A diák által látott állás: rang + (5-ösnél) kizártak jelölése és az 5-ösre jogosító hely
+object AllasDiaknak(Database db, SprintRow s, List<SprintBeadasRow> beadasok, string email)
+{
+    var en = email.ToLower().Trim();
+    var korabbi = s.Otos && s.Kizar ? db.SprintOtosKorabbi(Database.TanevKezdet(DateTime.Now)) : new HashSet<string>();
+    int otosHely = 0;
+    var lista = new List<object>();
+    foreach (var b in beadasok.Where(b => b.Allapot != "elutasitva").OrderBy(b => b.Rang == 0 ? int.MaxValue : b.Rang))
+    {
+        bool kizart = korabbi.Contains(b.Email);
+        int? oh = null;
+        if (s.Otos && s.Mod == "gyors" && b.Rang > 0 && !kizart) oh = ++otosHely;
+        lista.Add(new { nev = b.Nev, idoMs = b.IdoMs, allapot = b.Allapot, rang = b.Rang, en = b.Email == en, kizart, otosHely = oh });
+    }
+    return lista;
+}
+
+app.MapGet("/api/sprint/aktiv", (HttpContext ctx, Database db) =>
+{
+    var (valid, email, role) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    if (role == "vendeg") return Results.Ok(new { sprint = (object?)null });
+    var u = db.GetUserByEmail(email);
+    var s = db.GetSprintDiaknak(u?.Evfolyam, u?.Osztaly, u?.Csoport);
+    var now = Database.NowMs();
+    if (s == null) return Results.Ok(new { sprint = (object?)null, serverNow = now });
+    if (s.Status != "vege") db.SprintJelen(s.Id, email, (u == null ? email : (u.Vezeteknev + " " + u.Keresztnev).Trim()));
+    var elindult = s.Status != "varakozik" && now >= s.StartMs;
+    var beadasok = db.GetSprintBeadasok(s.Id, false);
+    var enyem = beadasok.FirstOrDefault(b => b.Email == email.ToLower().Trim());
+    return Results.Ok(new
+    {
+        serverNow = now,
+        sprint = new
+        {
+            id = s.Id, cim = s.Cim, status = s.Status, startMs = s.StartMs, idoperc = s.Idoperc,
+            leiras = elindult ? s.Leiras : null,
+            tesztek = elindult ? s.Tesztek : null,
+            jelen = db.SprintJelenLista(s.Id).Count,
+            otos = s.Otos, helyek = s.Helyek, kizar = s.Kizar, mod = s.Mod, otosKiosztva = s.OtosKiosztva,
+            otosok = s.OtosKiosztva ? db.GetSprintOtosok(s.Id).Select(o => new { nev = o.Nev, hely = o.Hely }) : null,
+        },
+        enyem = enyem == null ? null : new { allapot = enyem.Allapot, idoMs = enyem.IdoMs, rang = enyem.Rang },
+        allas = AllasDiaknak(db, s, beadasok, email)
+    });
+});
+
+// Diák: leadás
+app.MapPost("/api/sprint/{id:int}/beadas", (int id, HttpContext ctx, SprintBeadasRequest req, Database db) =>
+{
+    var (valid, email, role) = InspectAuthContext(ctx);
+    if (!valid || string.IsNullOrEmpty(email) || role == "vendeg") return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(req.Kod)) return Results.BadRequest(new { error = "Üres kód" });
+    var u = db.GetUserByEmail(email);
+    var (ok, hiba, sor) = db.SprintBead(id, email, (u == null ? email : (u.Vezeteknev + " " + u.Keresztnev).Trim()), req);
+    if (!ok) return Results.BadRequest(new { error = hiba });
+    return Results.Ok(new { success = true, allapot = sor?.Allapot, idoMs = sor?.IdoMs, rang = sor?.Rang });
+});
+
 // Tanári "mit tud már" jelzés — GET /api/oktato/tudasszint  (10. évfolyam, aktuális havi állással)
 app.MapGet("/api/oktato/tudasszint", (HttpContext ctx, Database db) =>
 {
