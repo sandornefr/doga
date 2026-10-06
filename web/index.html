@@ -97,7 +97,6 @@
       <section class="panel editor-panel">
         <div class="panel-header">
           <div class="editor-tabs">
-            <button id="btn-toggle-tree" type="button" class="editor-tab ref-tab tree-toggle" title="Fájlok megjelenítése / elrejtése" aria-pressed="false"><i class="fas fa-folder-tree"></i></button>
             <button id="tab-html" type="button" class="editor-tab active">HTML</button>
             <button id="tab-css" type="button" class="editor-tab">CSS</button>
             <span class="tab-sep">│</span>
@@ -118,19 +117,12 @@
             <span class="status" id="status">Válassz feladatot…</span>
           </div>
         </div>
-        <div class="editor-body">
-          <aside id="file-tree" class="file-tree" aria-label="Fájlok"></aside>
-          <div class="editor-container">
-            <div id="html-editor-wrapper" class="editor-pane active">
-              <div id="html-editor" class="editor" aria-label="HTML editor"></div>
-            </div>
-            <div id="css-editor-wrapper" class="editor-pane">
-              <div id="css-editor" class="editor" aria-label="CSS editor"></div>
-            </div>
-            <div id="img-preview-wrapper" class="editor-pane img-preview-pane">
-              <div class="img-preview-bar"><i class="far fa-image"></i> <span id="img-preview-path"></span> <span id="img-preview-info" class="img-preview-info"></span></div>
-              <div class="img-preview-body"><img id="img-preview-img" alt="Kép előnézete"></div>
-            </div>
+        <div class="editor-container">
+          <div id="html-editor-wrapper" class="editor-pane active">
+            <div id="html-editor" class="editor" aria-label="HTML editor"></div>
+          </div>
+          <div id="css-editor-wrapper" class="editor-pane">
+            <div id="css-editor" class="editor" aria-label="CSS editor"></div>
           </div>
         </div>
       </section>
@@ -208,8 +200,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
-    <script src="app.js?v=21"></script>
-    <script src="filetree.js?v=2"></script>
+    <script src="app.js?v=20"></script>
 
 <!-- Minta kép modal -->
 <div id="sample-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9000;overflow:hidden;">

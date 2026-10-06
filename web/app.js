@@ -3316,7 +3316,6 @@ async function loadTaskFiles(task) {
 async function selectTask(taskId) {
   if (!taskId) {
     currentTask = null;
-    if (window.FileTree) FileTree.setTask(null);
     if (btnStarter) btnStarter.disabled = true;
     if (btnSampleImg) btnSampleImg.disabled = true;
     if (btnSources) btnSources.disabled = true;
@@ -3333,7 +3332,6 @@ async function selectTask(taskId) {
   if (!task) return;
 
   currentTask = task;
-  if (window.FileTree) FileTree.setTask(task);
   lastParsedHtml = null;
   cachedStudentDoc = null;
   clearTimeout(debounceTimer);       // az előző feladat függő mentése ne az újhoz kerüljön
@@ -3497,6 +3495,20 @@ function annotateHtmlWithSourceLines(html) {
   return annotated.join("\n");
 }
 
+// A CSS a vizsgán a css/ mappában van, ezért a benne lévő url(...) útvonalak a css/ mappához képest
+// oldódnak fel (pl. url(../img/ikon.png) jó, url(img/ikon.png) nem). Az előnézet a CSS-t a HTML-be
+// ágyazza, ezért itt átírjuk az útvonalakat úgy, mintha a fájl valóban a css/ mappában lenne.
+function cssForPreview(css) {
+  const cssDir = (currentTask && currentTask.cssFile ? currentTask.cssFile : 'css/style.css').replace(/[^\/]*$/, '');
+  return String(css).replace(/url\(\s*(['"]?)([^'")]+?)\1\s*\)/gi, (m, q, u) => {
+    if (/^(data:|https?:|blob:|about:|\/|#)/i.test(u)) return m;
+    try {
+      const r = new URL(u, 'http://x/' + cssDir);
+      return 'url(' + q + r.pathname.replace(/^\//, '') + r.search + r.hash + q + ')';
+    } catch (e) { return m; }
+  });
+}
+
 function buildDoc(html, css, withGuides) {
   const extra = withGuides ? guideScript : "";
   const interactionLock = lockPreviewInteractions ? `${previewLockStyle}\n${previewLockScript}` : "";
@@ -3514,7 +3526,7 @@ function buildDoc(html, css, withGuides) {
   // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
   const cssLinkPattern = /<link[^>]+href=["']css\/style\.css["'][^>]*\/?>/i;
   const htmlWithCss = cssLinkPattern.test(html)
-    ? html.replace(cssLinkPattern, `<style>${css}</style>`)
+    ? html.replace(cssLinkPattern, () => `<style>${cssForPreview(css)}</style>`)
     : html;
 
   const htmlForPreview = annotateHtmlWithSourceLines(htmlWithCss);
@@ -4745,7 +4757,7 @@ function openPreviewInNewTab() {
   // CSS csak akkor alkalmazódik, ha a tanuló beírta: <link rel="stylesheet" href="css/style.css">
   const cssLinkPatternTab = /<link[^>]+href=["']css\/style\.css["'][^>]*\/?>/i;
   const htmlWithCssTab = cssLinkPatternTab.test(html)
-    ? html.replace(cssLinkPatternTab, `<style>${css}</style>`)
+    ? html.replace(cssLinkPatternTab, () => `<style>${cssForPreview(css)}</style>`)
     : html;
 
   const fullHtml = `<!doctype html>
