@@ -3316,6 +3316,7 @@ async function loadTaskFiles(task) {
 async function selectTask(taskId) {
   if (!taskId) {
     currentTask = null;
+    if (window.PathComplete) PathComplete.setTask(null);
     if (btnStarter) btnStarter.disabled = true;
     if (btnSampleImg) btnSampleImg.disabled = true;
     if (btnSources) btnSources.disabled = true;
@@ -3332,6 +3333,7 @@ async function selectTask(taskId) {
   if (!task) return;
 
   currentTask = task;
+  if (window.PathComplete) PathComplete.setTask(task);
   lastParsedHtml = null;
   cachedStudentDoc = null;
   clearTimeout(debounceTimer);       // az előző feladat függő mentése ne az újhoz kerüljön
@@ -3741,7 +3743,7 @@ function createEditor(monaco, elementId, language, value) {
     cursorBlinking: "blink",
     cursorWidth: 2,
     suggest: {
-      showWords: true,
+      showWords: false,   // a szószavaslatok (https, img, src…) zavarnák az útvonal-kiegészítést
       showSnippets: true,
       selectionMode: "whenQuickSuggestion",
     },
@@ -3813,6 +3815,7 @@ function loadMonaco() {
 }
 
 function activateEmmet(monaco) {
+  if (window.PathComplete) PathComplete.register(monaco);   // útvonal-kiegészítés (href/src/url)
   if (!window.emmetMonaco) {
     statusEl.textContent = "Monaco kesz. Emmet plugin nem toltheto.";
     return;
