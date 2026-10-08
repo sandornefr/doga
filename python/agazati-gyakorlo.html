@@ -71,7 +71,7 @@
     .task-item:hover { background:rgba(255,255,255,.05); color:var(--text); }
     .task-item.active { background:rgba(79,70,229,.15); color:#c7d2fe; }
     .task-item.done { color:#4ade80; }
-    .task-item .done-icon { color:#22c55e; font-size:0.75rem; flex-shrink:0; margin-left:auto; }
+    .task-item .done-icon { color:#22c55e; font-size:0.66rem; font-weight:700; flex-shrink:0; margin-left:auto; white-space:nowrap; }
     .task-item .task-num { font-size:0.68rem; font-weight:700; opacity:.5; flex-shrink:0; width:18px; }
 
     /* MIDDLE: task description */
@@ -514,7 +514,7 @@ function renderTaskList() {
          onclick="selectTask(allTasks.find(x=>x.id===${t.id}))" title="${doneSet.has(t.id) ? 'Ezt már megoldottad' : ''}">
       <span class="task-num">${t.id}.</span>
       <span>${esc(t.cim)}${t.uj ? ' <span style="font-size:.58rem;font-weight:800;color:#22c55e;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:3px;padding:0 4px;vertical-align:middle">ÚJ</span>' : ''}</span>
-      ${doneSet.has(t.id) ? '<i class="fas fa-check done-icon"></i>' : ''}
+      ${doneSet.has(t.id) ? '<span class="done-icon"><i class="fas fa-check"></i> megvolt</span>' : ''}
     </div>`).join('');
 }
 
