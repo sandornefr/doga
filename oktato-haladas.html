@@ -1501,6 +1501,24 @@ function renderNapiCalendar(activeDays, selDate, year, month) {
     <hr class="napi-cal-divider">`;
 }
 
+// A tanuló WEB ágazati feladatainak szerveren mentett munkája (webvazlat_<feladat>: html, css, lastSaved)
+async function betoltWebVazlatok(email) {
+    const ki = {};
+    await Promise.all(Object.keys(AGAZATI_LABELS).map(async id => {
+        try {
+            const r = await authFetch(`${API}/api/user-state/${encodeURIComponent(email)}/webvazlat_${id}`);
+            if (!r.ok) return;
+            const v = (await r.json()).value;
+            if (!v) return;
+            const d = JSON.parse(v);
+            if (!(d.html || d.css) || !d.lastSaved) return;
+            // a lastSaved UTC (ISO) → budapesti idő "YYYY-MM-DD HH:MM:SS"
+            ki[id] = { id, html: d.html || '', css: d.css || '', dt: new Date(d.lastSaved).toLocaleString('sv-SE', { timeZone: 'Europe/Budapest' }) };
+        } catch (e) { /* nincs mentés / hiba: kihagyjuk */ }
+    }));
+    return ki;
+}
+
 function pyNev(f) {
     return PYTHON_FELADAT_LABELS[f]
         || (f.startsWith('kezdo_')  ? `Kezdő – ${f.replace('kezdo_','')}. feladat`
@@ -1541,9 +1559,21 @@ function buildActsForDate(s, progressItems, quizItems, effectiveDate) {
         const isKavezos = p.feladat && p.feladat.startsWith('kavezos_');
         const webNev = AGAZATI_LABELS[p.feladat]
             || (isKavezos ? `Kávézós – ${p.feladat.replace('kavezos_','')}. feladat` : p.feladat);
+        const van = !!(_napiCache?.webvazlatok || {})[p.feladat];
         acts.push({ ts:p.datum, icon:'fas fa-code', color: isKavezos ? '#22c55e' : '#f472b6', ido:fmtIdo(p.datum),
             title:`${isKavezos ? 'WEB kávézó' : 'WEB ágazati'}: ${webNev}`,
-            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)` });
+            sub:`${p.pont}/${p.maxPont} pont (${Math.round(p.pont/p.maxPont*100)}%)`,
+            btn: van ? `<button class="kod-btn" onclick="openWebKodModal('${p.feladat}')"><i class="fas fa-eye"></i> Kód</button>` : '' });
+    });
+
+    // Folyamatban lévő (nem „Kész”-re nyomott) WEB munkák, azon a napon, amikor utoljára módosította
+    Object.values(_napiCache?.webvazlatok || {}).filter(v => v.dt.slice(0, 10) === effectiveDate).forEach(v => {
+        const keszAznap = progressItems.some(p => p.targy === 'web' && p.feladat === v.id && utcDate(p.datum) === effectiveDate);
+        if (keszAznap) return;   // a kész sorhoz már van Kód gomb
+        acts.push({ ts:v.dt, icon:'fas fa-code', color:'#d29922', ido:v.dt.slice(11, 16),
+            title:`WEB ágazati (folyamatban): ${AGAZATI_LABELS[v.id] || v.id}`,
+            sub:'utoljára módosítva – nem nyomott Kész-t',
+            btn:`<button class="kod-btn" onclick="openWebKodModal('${v.id}')"><i class="fas fa-eye"></i> Kód</button>` });
     });
 
     progressItems.filter(p => p.targy==='python' && utcDate(p.datum)===effectiveDate).forEach(p => {
@@ -1657,8 +1687,10 @@ async function renderNapiContent(s, dateStr) {
         authFetch(`${API}/api/oktato/megoldasok/${encodeURIComponent(s.email)}`).then(r=>r.ok?r.json():{megoldasok:[],plusz:[]}).catch(()=>({megoldasok:[],plusz:[]}))
     ]);
 
-    _napiCache = { email: s.email, progressItems, quizItems, megoldasok: mg.megoldasok || [], plusz: mg.plusz || [],
+    const webvazlatok = await betoltWebVazlatok(s.email);
+    _napiCache = { email: s.email, progressItems, quizItems, megoldasok: mg.megoldasok || [], plusz: mg.plusz || [], webvazlatok,
                    activeDays: buildActiveDays(s, progressItems, quizItems) };
+    Object.values(webvazlatok).forEach(v => { if (v.dt) _napiCache.activeDays.add(v.dt.slice(0, 10)); });
     (_napiCache.megoldasok).forEach(m => { if (m.frissitve) _napiCache.activeDays.add(utcDate(m.frissitve)); });
 
     if (document.getElementById('detail-content')) renderNapiView();
@@ -1693,6 +1725,16 @@ async function openKodModal(id) {
     } catch (e) { document.getElementById('kod-cim').textContent = 'Betöltési hiba: ' + e.message; }
 }
 
+function openWebKodModal(feladat) {
+    const v = (_napiCache?.webvazlatok || {})[feladat];
+    if (!v) return;
+    document.getElementById('kod-modal').style.display = 'flex';
+    document.getElementById('kod-info').textContent = '';
+    _kodAktualis = { id: null, web: true, email: _napiCache.email, nev: currentDetailData?.nev || _napiCache.email,
+                     feladat, kod: v.html, css: v.css, frissitve: v.dt };
+    renderKodModal();
+}
+
 function closeKodModal() {
     document.getElementById('kod-modal').style.display = 'none';
     _kodAktualis = null;
@@ -1701,6 +1743,14 @@ function closeKodModal() {
 function renderKodModal() {
     const m = _kodAktualis;
     if (!m) return;
+    if (m.web) {
+        document.getElementById('kod-cim').textContent = `${m.nev || m.email} – WEB: ${AGAZATI_LABELS[m.feladat] || m.feladat}`;
+        document.getElementById('kod-meta').textContent = `Utoljára mentve: ${m.frissitve}`;
+        document.getElementById('kod-szoveg').textContent = `<!-- ===== HTML ===== -->\n${m.kod || '(üres)'}\n\n/* ===== CSS ===== */\n${m.css || '(üres)'}`;
+        document.getElementById('kod-elfogad-sor').innerHTML = '';
+        renderKodPluszLista();
+        return;
+    }
     const teljes = m.maxPont > 0 && m.pont >= m.maxPont;
     document.getElementById('kod-cim').textContent = `${m.nev || m.email} – ${pyNev(m.feladat)}`;
     document.getElementById('kod-meta').innerHTML =
