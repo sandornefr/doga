@@ -70,6 +70,8 @@
       cursor:pointer; transition:background .15s; font-size:0.82rem; color:var(--muted); line-height:1.3; }
     .task-item:hover { background:rgba(255,255,255,.05); color:var(--text); }
     .task-item.active { background:rgba(79,70,229,.15); color:#c7d2fe; }
+    .task-item.done { color:#4ade80; }
+    .task-item .done-icon { color:#22c55e; font-size:0.75rem; flex-shrink:0; margin-left:auto; }
     .task-item .task-num { font-size:0.68rem; font-weight:700; opacity:.5; flex-shrink:0; width:18px; }
 
     /* MIDDLE: task description */
@@ -399,6 +401,7 @@ async function loadTasks() {
     allTasks = parseTasks(text);
     renderCounts();
     setTab('konnyu');
+    loadDone();
   } catch(e) {
     console.error('feladatok.txt betöltési hiba:', e);
   }
@@ -507,10 +510,11 @@ function renderTaskList() {
     return;
   }
   el.innerHTML = filteredTasks.map(t => `
-    <div class="task-item${currentTask && currentTask.id === t.id ? ' active' : ''}"
-         onclick="selectTask(allTasks.find(x=>x.id===${t.id}))">
+    <div class="task-item${currentTask && currentTask.id === t.id ? ' active' : ''}${doneSet.has(t.id) ? ' done' : ''}"
+         onclick="selectTask(allTasks.find(x=>x.id===${t.id}))" title="${doneSet.has(t.id) ? 'Ezt már megoldottad' : ''}">
       <span class="task-num">${t.id}.</span>
       <span>${esc(t.cim)}${t.uj ? ' <span style="font-size:.58rem;font-weight:800;color:#22c55e;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:3px;padding:0 4px;vertical-align:middle">ÚJ</span>' : ''}</span>
+      ${doneSet.has(t.id) ? '<i class="fas fa-check done-icon"></i>' : ''}
     </div>`).join('');
 }
 
@@ -886,7 +890,7 @@ async function checkCode() {
   renderCheckResults(results, passed === results.length);
   if (window.KandoMegoldas && currentTask.pont > 0 && results.length)
     KandoMegoldas.kuld('python', currentTask.cim, code, Math.round(passed / results.length * currentTask.pont), currentTask.pont);
-  if (passed === results.length) saveAgazatiProgress(currentTask);
+  if (passed === results.length) { saveAgazatiProgress(currentTask); markDone(currentTask); }
 }
 
 async function runWithMockInputs(code, inputs, expected) {
@@ -934,6 +938,26 @@ function renderCheckResults(results, allPass) {
 
 // Mentés a tanuló fiókjához kötve (szerveren); vendégnél localStorage – kando-store.js
 const kStore = KandoStore.create('agazati');
+
+// Megoldott feladatok jelölése a listában: a szerver haladás-táblájából (bármelyik gépen látszik) + a mentett jelzők
+const doneSet = new Set();
+async function loadDone() {
+  try {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    if (!u.token || !u.email) return;   // vendég: csak a mostani munkamenetben jelöl
+    const r = await fetch('https://agazati.up.railway.app/api/progress/' + encodeURIComponent(u.email) + '/items',
+      { headers: { 'Authorization': 'Bearer ' + u.token } });
+    if (r.ok) {
+      const items = (await r.json()).filter(x => x.targy === 'python' && x.feladat);
+      allTasks.forEach(t => {
+        if (items.some(x => x.feladat === t.cim || String(x.feladat) === String(t.id))) doneSet.add(t.id);
+      });
+    }
+    allTasks.forEach(t => { if (kStore.getItem(`agazati_done_${t.id}_${u.email}`)) doneSet.add(t.id); });
+    renderTaskList();
+  } catch (e) { /* a jelölés nem kritikus */ }
+}
+function markDone(task) { doneSet.add(task.id); renderTaskList(); }
 function saveAgazatiProgress(task) {
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   if (!u.token || !u.email) return; // vendég nem ment
