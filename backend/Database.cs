@@ -3891,7 +3891,7 @@ public class Database
         cmd.CommandText = @"INSERT INTO sprintek (oktato,cim,leiras,tesztek,evfolyam,osztaly,csoport,idoperc,letrehozva_ms,otos,helyek,kizar,mod)
             VALUES ($o,$c,$l,$t,$ev,$os,$cs,$i,$n,$ot,$he,$ki,$mo); SELECT last_insert_rowid();";
         cmd.Parameters.AddWithValue("$ot", q.Otos ? 1 : 0);
-        cmd.Parameters.AddWithValue("$he", Math.Clamp(q.Helyek, 1, 10));
+        cmd.Parameters.AddWithValue("$he", Math.Clamp(q.Helyek, 1, 100));
         cmd.Parameters.AddWithValue("$ki", q.Kizar ? 1 : 0);
         cmd.Parameters.AddWithValue("$mo", q.Mod == "sorsolas" ? "sorsolas" : "gyors");
         cmd.Parameters.AddWithValue("$o", oktato);

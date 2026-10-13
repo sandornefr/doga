@@ -162,7 +162,7 @@ async function teacherForm() {
     </div>
     <div class="row">
       <div style="max-width:280px"><label>Jutalom</label><select id="f-otos"><option value="1">5-ös az első helyezetteknek</option><option value="0">Nincs jegy (csak verseny / plusz pont)</option></select></div>
-      <div style="max-width:130px"><label>Hány hely?</label><input type="number" id="f-helyek" min="1" max="10" value="3"></div>
+      <div style="max-width:170px"><label>Hány hely? (100 = mindenki)</label><input type="number" id="f-helyek" min="1" max="100" value="3" list="f-helyek-lista"><datalist id="f-helyek-lista"><option value="3"><option value="5"><option value="10"><option value="100"></datalist></div>
       <div><label>Nyertesek kiválasztása</label><select id="f-mod"><option value="gyors">Leggyorsabbak (befutási sorrend)</option><option value="sorsolas">Sorsolás az időn belül helyesen megoldók között</option></select></div>
     </div>
     <label style="display:flex;gap:8px;align-items:flex-start;color:#c9d1d9;font-size:.84rem;font-weight:400"><input type="checkbox" id="f-kizar" checked style="width:auto;margin-top:3px">
@@ -195,7 +195,7 @@ async function teacherCreate() {
     evfolyam: cs.evfolyam || null, osztaly: cs.osztaly || null, csoport: cs.csoport || null,
     idoperc: parseInt(document.getElementById('f-ido').value) || 10,
     otos: document.getElementById('f-otos').value === '1',
-    helyek: parseInt(document.getElementById('f-helyek').value) || 3,
+    helyek: Math.min(100, Math.max(1, parseInt(document.getElementById('f-helyek').value) || 3)),
     kizar: document.getElementById('f-kizar').checked,
     mod: document.getElementById('f-mod').value
   };
@@ -266,6 +266,7 @@ function tRender() {
   </div>`;
 }
 
+function helyekSzoveg(s) { return s.helyek >= 100 ? 'mindenki, aki megoldja' : s.helyek + ' hely'; }
 function otosKartya(s) {
   const t = tState;
   let tartalom;
@@ -277,13 +278,13 @@ function otosKartya(s) {
     const n = t.jogosultak.slice(0, s.helyek);
     tartalom = `<div class="muted">Jelenlegi nyertesek:</div><div class="chips">${n.map((x, i) => `<span class="chip"><i class="fas fa-award medal-${Math.min(i + 1, 3)}"></i> ${i + 1}. ${esc(x)}</span>`).join('') || '<span class="muted">még senki</span>'}</div>`;
   }
-  return `<div class="card"><h2><i class="fas fa-award"></i>5-ösért megy – ${s.helyek} hely, ${s.mod === 'sorsolas' ? 'sorsolással' : 'befutási sorrendben'}</h2>
+  return `<div class="card"><h2><i class="fas fa-award"></i>5-ösért megy – ${helyekSzoveg(s)}, ${s.mod === 'sorsolas' ? 'sorsolással' : 'befutási sorrendben'}</h2>
     <div class="muted" style="margin-bottom:8px">${s.kizar ? 'Aki már kapott sprint ötöst a hónapban, kimarad (az 5-ös a következő jogosultra száll).' : 'Mindenki jogosult, korábbi nyertesek is.'} A kiosztás a havi osztályozásban szorgalmi 5-ösként jelenik meg.</div>
     ${tartalom}</div>`;
 }
 async function otosKioszt() {
   const t = tState, s = t.sprint;
-  const elo = s.mod === 'sorsolas' ? `${t.jogosultak.length} jogosult megoldó közül ${s.helyek} nyertes sorsolódik` : 'nyertesek: ' + (t.jogosultak.slice(0, s.helyek).join(', ') || '(senki)');
+  const elo = s.mod === 'sorsolas' ? `${t.jogosultak.length} jogosult megoldó közül ${s.helyek >= 100 ? 'mindenki' : s.helyek + ' nyertes'} kap ötöst` : 'nyertesek: ' + (t.jogosultak.slice(0, s.helyek).join(', ') || '(senki)');
   if (!confirm(`5-ös kiosztása – ${elo}.\n\nEz egyszer végezhető el, és a havi szorgalmi 5-ösökhöz adódik. Mehet?`)) return;
   try { const r = await api('POST', `/api/oktato/sprint/${tSprintId}/otos`); await tPollOnce(); tRender(); alert('5-ös kiosztva:\n' + r.nyertesek.map(n => n.hely + '. ' + n.nev).join('\n')); } catch (e) { alert(e.message); }
 }
@@ -373,7 +374,7 @@ function buildStudent(key, s) {
     app.innerHTML = `<div class="card center"><h2><i class="fas fa-bolt"></i>${esc(s.cim)}</h2>
       <div class="big" style="margin:14px 0">Készülj!</div>
       <div class="muted">A tanár hamarosan elindítja a sprintet (${s.idoperc} perc). A feladatot a rajt pillanatában kapod meg.</div>
-      ${s.otos ? `<div style="margin-top:12px;color:#fcd34d"><i class="fas fa-award"></i> 5-ösért megy – ${s.mod === 'sorsolas' ? 'sorsolás a helyes megoldók között' : 'az első ' + s.helyek + ' helyes megoldás kap ötöst'}</div>` : ''}
+      ${s.otos ? `<div style="margin-top:12px;color:#fcd34d"><i class="fas fa-award"></i> 5-ösért megy – ${s.mod === 'sorsolas' ? 'sorsolás a helyes megoldók között' : (s.helyek >= 100 ? 'minden helyes megoldás ötöst kap' : 'az első ' + s.helyek + ' helyes megoldás kap ötöst')}</div>` : ''}
       <div style="margin-top:16px"><i class="fas fa-users"></i> Csatlakozott: <b id="jelen">${s.jelen}</b></div>
       <div class="muted" style="margin-top:10px" id="pystat"><i class="fas fa-circle-notch fa-spin"></i> Python betöltése…</div></div>`;
     loadPy().then(() => { const p = document.getElementById('pystat'); if (p) p.innerHTML = '<i class="fas fa-circle-check" style="color:#22c55e"></i> A Python készen áll.'; });
@@ -419,7 +420,7 @@ function buildStudent(key, s) {
 
 function otosSzoveg(s) {
   if (!s.otos) return '';
-  const hogyan = s.mod === 'sorsolas' ? 'Az idő alatt helyesen megoldók közül sorsolják ki a nyerteseket.' : `Az első ${s.helyek} helyes megoldás kap ötöst.`;
+  const hogyan = s.mod === 'sorsolas' ? 'Az idő alatt helyesen megoldók közül sorsolják ki a nyerteseket.' : (s.helyek >= 100 ? 'Minden helyes megoldás ötöst kap.' : `Az első ${s.helyek} helyes megoldás kap ötöst.`);
   return `<div class="card" style="border-color:#78350f;background:#1c1507"><i class="fas fa-award medal-1"></i> <b>5-ösért megy!</b> ${hogyan}${s.kizar ? ' Aki már kapott sprint ötöst a hónapban, versenyezhet, de az 5-ös a következő megoldóra száll.' : ''}</div>`;
 }
 
