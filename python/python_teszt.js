@@ -204,6 +204,8 @@ async function initializeApp() {
         const backBtn = document.getElementById('back-to-menu-btn');
         if (backBtn) backBtn.classList.remove('hidden');
         updateStartSection();
+        const startGomb = document.getElementById('start-btn');
+        if (startGomb) startGomb.disabled = false;
     }
 
     // Pyodide előbetöltése a háttérben
@@ -2820,6 +2822,8 @@ function updateTestModeBadge() {
     if (frissBox) frissBox.style.display = isLive ? 'none' : 'block';
 
     // Gomb szöveg éles módban
+    // Cím: gyakorlónál gyakorló feladatok, éles/vizsga módban dolgozat
+    document.querySelectorAll('.py-cim').forEach(el => { el.textContent = isLive ? 'Python ágazati dolgozat' : 'Python ágazati gyakorló feladatok'; });
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.textContent = isLive

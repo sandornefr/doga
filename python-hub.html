@@ -91,7 +91,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;padding:16px}
-.modal-box{background:var(--surface);border:1px solid rgba(0,230,118,.28);border-radius:12px;padding:2rem 2rem 1.5rem;max-width:400px;width:100%}
+.modal-box{background:var(--surface);border:1px solid rgba(0,230,118,.28);border-radius:12px;padding:2rem 2rem 1.5rem;max-width:460px;width:100%}
 .modal-icon{font-size:2rem;text-align:center;margin-bottom:.5rem;color:var(--neon)}
 .modal-title{color:var(--text);font-size:1rem;font-weight:700;text-align:center;margin-bottom:.4rem;letter-spacing:.06em;text-transform:uppercase}
 .modal-sub{color:var(--dim);font-size:.82rem;text-align:center;margin-bottom:1.4rem}
@@ -205,9 +205,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     <div class="modal-title">ELMÉLET – Python szintek</div>
     <div class="modal-sub">Válaszd ki a szintedet:</div>
     <div class="modal-btns">
-      <a href="python/basics.html" class="modal-btn" style="background:#041a0c;border:1px solid #00e676;color:#00e676;" onmouseover="this.style.background='#073d1a'" onmouseout="this.style.background='#041a0c'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint</a>
-      <a href="python/practice.html" class="modal-btn" style="background:#071a04;border:1px solid #69ff47;color:#69ff47;" onmouseover="this.style.background='#113d06'" onmouseout="this.style.background='#071a04'"><i class="fas fa-dumbbell" style="margin-right:6px;"></i>Haladó szint</a>
-      <a href="python/pro.html" class="modal-btn" style="background:#04141a;border:1px solid #00bcd4;color:#00bcd4;" onmouseover="this.style.background='#063040'" onmouseout="this.style.background='#04141a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint</a>
+      <a href="python/basics.html" class="modal-btn" style="background:#041a0c;border:1px solid #00e676;color:#00e676;" onmouseover="this.style.background='#073d1a'" onmouseout="this.style.background='#041a0c'"><i class="fas fa-seedling" style="margin-right:6px;"></i>Kezdő szint<span style="display:block;font-size:.76rem;font-weight:400;opacity:.8;margin-top:4px;">print, if, def, for, while – az abszolút alapoktól, lépésről lépésre</span></a>
+      <a href="python/practice.html" class="modal-btn" style="background:#071a04;border:1px solid #69ff47;color:#69ff47;" onmouseover="this.style.background='#113d06'" onmouseout="this.style.background='#071a04'"><i class="fas fa-dumbbell" style="margin-right:6px;"></i>Haladó szint<span style="display:block;font-size:.76rem;font-weight:400;opacity:.8;margin-top:4px;">dict szótár, class, fájlkezelés, hibakezelés – 20 mini feladat</span></a>
+      <a href="python/pro.html" class="modal-btn" style="background:#04141a;border:1px solid #00bcd4;color:#00bcd4;" onmouseover="this.style.background='#063040'" onmouseout="this.style.background='#04141a'"><i class="fas fa-star" style="margin-right:6px;"></i>Profi szint<span style="display:block;font-size:.76rem;font-weight:400;opacity:.8;margin-top:4px;">algoritmusok, lista-lerövidítés, lambda – 11 feladat</span></a>
     </div>
     <button class="modal-cancel" onclick="document.getElementById('elmelet-modal').style.display='none'">Mégse</button>
   </div>

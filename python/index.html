@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Programozási Teszt</title>
+    <title>Python ágazati gyakorló feladatok</title>
     <link rel="icon" href="../kando_favion_dark.png"  type="image/png" media="(prefers-color-scheme: light)">
     <link rel="icon" href="../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
 
@@ -1228,9 +1228,9 @@
         <a href="../portal.html" title="Főmenü"><img src="kandologo2.png" alt="Kandó KSZKI"></a>
         <div class="page-topbar-title">
             <h1>Miskolci SZC Kandó Kálmán Informatikai Technikum</h1>
-            <p>Python Programozási Teszt</p>
+            <p id="page-subtitle" class="py-cim">Python ágazati gyakorló feladatok</p>
         </div>
-        <a id="btn-switch-web" href="../web/index.html" style="display:none;margin-left:auto;padding:6px 14px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:8px;color:#3b82f6;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#1d4ed8';this.style.color='#dbeafe'" onmouseout="this.style.background='#1e3a5f';this.style.color='#3b82f6'"><i class="fas fa-globe"></i> WEB</a>
+        <a id="btn-switch-web" href="../web-hub.html" style="display:none;margin-left:auto;padding:6px 14px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:8px;color:#3b82f6;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#1d4ed8';this.style.color='#dbeafe'" onmouseout="this.style.background='#1e3a5f';this.style.color='#3b82f6'"><i class="fas fa-globe"></i> WEB</a>
         <a href="basics.html" style="margin-left:auto;padding:6px 14px;background:#1c1200;border:1px solid #f59e0b;border-radius:8px;color:#fcd34d;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#451a00';this.style.color='#fff'" onmouseout="this.style.background='#1c1200';this.style.color='#fcd34d'" title="Python alapok – print, if, def, for, while"><i class="fas fa-book-open"></i> Alapok</a>
         <a href="practice.html" style="margin-left:8px;padding:6px 14px;background:#14532d;border:1px solid #22c55e;border-radius:8px;color:#86efac;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#16a34a';this.style.color='#fff'" onmouseout="this.style.background='#14532d';this.style.color='#86efac'" title="Dict, class, fájlkezelés – lépésről lépésre"><i class="fas fa-dumbbell"></i> Haladó</a>
         <a href="pro.html" style="margin-left:8px;padding:6px 14px;background:#2a0a2a;border:1px solid #f472b6;border-radius:8px;color:#f9a8d4;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#9d174d';this.style.color='#fff'" onmouseout="this.style.background='#2a0a2a';this.style.color='#f9a8d4'" title="Algoritmusok, lambda, lista-lerövidítés"><i class="fas fa-rocket"></i> Profi</a>
@@ -1238,17 +1238,17 @@
         <a id="btn-portal-back" href="../portal.html" style="display:none;margin-left:8px;padding:6px 14px;background:transparent;border:1px solid #7986cb;border-radius:8px;color:#7986cb;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#7986cb';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#7986cb'">← Főmenü</a>
     </header>
     <div class="container">
-        <h1><i class="fab fa-python"></i> Python Programozási Teszt</h1>
+        <h1><i class="fab fa-python"></i> <span class="py-cim">Python ágazati gyakorló feladatok</span></h1>
 
         <!-- Vissza gomb: fixed, csak start-section alatt látszik, JS mutatja meg -->
-        <button id="back-to-menu-btn" onclick="window.location.href='../portal.html';" class="hidden" style="position:fixed;top:10px;left:12px;z-index:600;background:none;border:none;color:#888;font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:2px 6px;"><i class="fas fa-arrow-left"></i> Vissza a főmenübe</button>
+        <button id="back-to-menu-btn" onclick="window.location.href='../portal.html';" style="position:fixed;top:10px;left:12px;z-index:600;background:none;border:none;color:#888;font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:2px 6px;"><i class="fas fa-arrow-left"></i> Vissza a főmenübe</button>
 
         <!-- Start overlay (kezdetben rejtett – JS mutatja meg éles/vizsga módban, vagy azonnal rejti el gyakorló módban) -->
-        <div id="start-section" class="hidden">
+        <div id="start-section">
             <div class="start-box">
                 <!-- Scrollozható felső rész -->
                 <div class="start-box-scroll">
-                    <h2><i class="fab fa-python"></i> Python Programozási Teszt</h2>
+                    <h2><i class="fab fa-python"></i> <span class="py-cim">Python ágazati gyakorló feladatok</span></h2>
 
                     <!-- Test Mode Badge -->
                     <div id="test-mode-badge" style="padding: 0.5rem 1rem; border-radius: 8px; text-align: center; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.9rem; display: none;">
@@ -1314,7 +1314,7 @@
                     <button id="btn-open-custom-modal" type="button" onclick="openCustomModal()" style="display:none;width:100%;margin-top:0.4rem;padding:0.75rem;background:#0f3460;border:1px solid #536dfe;border-radius:10px;color:#a5b4fc;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
                         <i class="fa-solid fa-filter" style="color: #2ed573;"></i> Egyéni összeállítás
                     </button>
-                    <button class="btn btn-primary" id="start-btn" style="width:100%; margin-top:0.5rem; background: linear-gradient(135deg, #e94560, #c0392b); border:none; border-radius:10px; padding:0.75rem; font-size:1rem; letter-spacing:0.5px;">
+                    <button class="btn btn-primary" id="start-btn" disabled style="width:100%; margin-top:0.5rem; background: linear-gradient(135deg, #e94560, #c0392b); border:none; border-radius:10px; padding:0.75rem; font-size:1rem; letter-spacing:0.5px;">
                         Elfogadom a szabályokat – Teszt indítása
                     </button>
 
@@ -1336,7 +1336,7 @@
                     <img src="kandologo2.png" alt="Kandó KSZKI" style="height:26px;width:auto;flex-shrink:0;opacity:0.85;">
                     <span id="quiz-user-info" style="font-size:0.95rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;flex-shrink:1;"></span>
                     <a id="btn-quiz-portal-back" href="../portal.html" style="display:none;margin-left:0.75rem;padding:4px 12px;background:transparent;border:1px solid #6b7280;border-radius:8px;color:#6b7280;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#6b7280';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#6b7280'">← Főmenü</a>
-                    <a id="btn-quiz-switch-web" href="../web/index.html" style="display:none;padding:4px 12px;background:transparent;border:1px solid #e94560;border-radius:8px;color:#e94560;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#e94560';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e94560'"><i class="fas fa-globe"></i> WEB</a>
+                    <a id="btn-quiz-switch-web" href="../web-hub.html" style="display:none;padding:4px 12px;background:transparent;border:1px solid #e94560;border-radius:8px;color:#e94560;font-size:0.8rem;font-weight:600;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#e94560';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e94560'"><i class="fas fa-globe"></i> WEB</a>
                     <div id="quiz-mode-pill" style="display:none;"></div>
                 </div>
                 <!-- Közép: feladat gombok -->
@@ -1608,6 +1608,7 @@
             try {
                 const u = JSON.parse(saved);
                 const isBemutato = new URLSearchParams(window.location.search).has('bemutato');
+                if (isBemutato) { document.getElementById('start-section').classList.add('hidden'); document.getElementById('back-to-menu-btn').classList.add('hidden'); }
 
                 // Teszt mód banner
                 if (u._tesztMod) {
