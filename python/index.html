@@ -1256,7 +1256,7 @@
                     </div>
 
                     <!-- Feladattípus választó (csak gyakorló módban látszik) -->
-                    <div id="practice-task-type" style="display:none; margin-bottom:0.8rem;">
+                    <div id="practice-task-type" style="display:block; margin-bottom:0.8rem;">
                         <p style="color:#c8dff5; font-size:0.92rem; font-weight:600; margin-bottom:0.6rem; padding-top:0.5rem; border-top:1px solid #1e3254; letter-spacing:0.2px;">Milyen feladatokat szeretnél gyakorolni?</p>
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                             <button class="task-type-btn active" data-type="agazati" onclick="setTaskType('agazati', this)"><i class="fa-solid fa-graduation-cap"></i> Ágazati mód</button>
@@ -1288,7 +1288,7 @@
                     <div id="friss-feladatok-box" style="background:#eff6ff;border:1px solid #bfdbfe;border-left:4px solid #3b82f6;border-radius:8px;padding:0.7rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#1e3a8a;display:none;"></div>
 
                     <!-- Practice time picker (csak gyakorló módban látszik) -->
-                    <div id="practice-time-picker" style="display:none; background:#0a1a0a; border:1px solid #2ed573; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1rem;">
+                    <div id="practice-time-picker" style="display:block; background:#0a1a0a; border:1px solid #2ed573; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1rem;">
                         <label style="font-weight:600; color:#2ed573; margin-right:12px;"><i class="fa-solid fa-clock"></i> Saját időkorlát:</label>
                         <input type="number" id="custom-time-input" value="60" min="5" max="120" style="width:72px; padding:5px 8px; background:#16213e; border:1px solid #2ed573; border-radius:6px; color:#e0e0e0; font-size:1rem;">
                         <span style="color:#888; margin-left:8px; font-size:0.85rem;">perc</span>
@@ -1311,7 +1311,7 @@
 
                 <!-- Mindig látható alsó rész: user kártya + indítás gomb -->
                 <div class="start-box-footer">
-                    <button id="btn-open-custom-modal" type="button" onclick="openCustomModal()" style="display:none;width:100%;margin-top:0.4rem;padding:0.75rem;background:#0f3460;border:1px solid #536dfe;border-radius:10px;color:#a5b4fc;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
+                    <button id="btn-open-custom-modal" type="button" onclick="openCustomModal()" style="display:block;width:100%;margin-top:0.4rem;padding:0.75rem;background:#0f3460;border:1px solid #536dfe;border-radius:10px;color:#a5b4fc;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
                         <i class="fa-solid fa-filter" style="color: #2ed573;"></i> Egyéni összeállítás
                     </button>
                     <button class="btn btn-primary" id="start-btn" disabled style="width:100%; margin-top:0.5rem; background: linear-gradient(135deg, #e94560, #c0392b); border:none; border-radius:10px; padding:0.75rem; font-size:1rem; letter-spacing:0.5px;">
