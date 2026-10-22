@@ -596,7 +596,7 @@ function parseTasks(text) {
         if (nehezMatch && currentTask) { currentTask.nehezseg = nehezMatch[1].trim(); continue; }
 
         const ujMatch = line.match(/^Uj:\s*(.+)/i);
-        if (ujMatch && currentTask) { currentTask.uj = ujMatch[1].trim().toLowerCase() === 'igen'; continue; }
+        if (ujMatch && currentTask) { currentTask.uj = ujAktiv(ujMatch[1]); continue; }
 
         const feladatkesziteMatch = line.match(/^Feladatkeszito:\s*(.+)/i);
         if (feladatkesziteMatch && currentTask) { currentTask.feladatkeszito = feladatkesziteMatch[1].trim().toLowerCase() === 'igen'; continue; }
@@ -1004,7 +1004,9 @@ function renderCustomTaskList() {
             const past = allPastNums.has(t.number);
             const ptsCls = t.points ? ` pts-${t.points}` : '';
             const voteBtn = isTanulo
-                ? `<button class="tanulo-vote-btn" title="Szerintem kerüljön a practice feladatok közé!" onclick="voteForPractice(${t.number}, event)"><i class="fa-solid fa-thumbs-up"></i></button>`
+                ? (_votedTasks.has(t.number)
+                    ? `<button class="tanulo-vote-btn" style="color:#22c55e" title="Szavazat visszavonásához kattints újra" onclick="voteForPractice(${t.number}, event)"><i class="fa-solid fa-check"></i></button>`
+                    : `<button class="tanulo-vote-btn" title="Szerintem kerüljön a practice feladatok közé!" onclick="voteForPractice(${t.number}, event)"><i class="fa-solid fa-thumbs-up"></i></button>`)
                 : '';
             return `<label class="custom-task-card${past ? ' past' : ''}${ptsCls}">
                 <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
@@ -2926,8 +2928,27 @@ function updateFrissFeladatokBox() {
     `;
 }
 
+// Uj: igen | nem | ÉÉÉÉ-HH-NN – dátumnál eddig a napig (azt is beleértve) számít újnak, utána magától lekerül a jelölés
+function ujAktiv(ertek) {
+    const v = String(ertek || '').trim().toLowerCase();
+    if (v === 'igen') return true;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+    const d = new Date();
+    const ma = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    return ma <= v;
+}
+
 // ── Feladatkészítő szavazás ──────────────────────────────────────────────────
-const _votedTasks = new Set(JSON.parse(localStorage.getItem('_practiceVotes') || '[]'));
+// A szavazatok helyben: a feladatok sorszámainak listája (közös az ágazati gyakorlóval). Régen a gyakorló ugyanezen a
+// kulcson objektumot tárolt – azt is átvesszük, és hibás értéknél üresen indulunk (különben a Set() hibára futott és a lap befagyott).
+function _readPracticeVotes() {
+    try {
+        const v = JSON.parse(localStorage.getItem('_practiceVotes') || '[]');
+        const nums = Array.isArray(v) ? v : Object.keys(v || {}).filter(k => v[k]);
+        return nums.map(Number).filter(Number.isInteger);
+    } catch (e) { return []; }
+}
+const _votedTasks = new Set(_readPracticeVotes());
 
 function voteForPractice(taskNum, e) {
     e.preventDefault(); e.stopPropagation();
@@ -2936,32 +2957,25 @@ function voteForPractice(taskNum, e) {
     const feedbackHeaders = {'Content-Type': 'application/json'};
     if (user.token) feedbackHeaders['Authorization'] = 'Bearer ' + user.token;
     const task = tasks.find(t => t.number === taskNum);
-    if (!task) return;
-    if (_votedTasks.has(taskNum)) {
-        // Visszavonás
-        _votedTasks.delete(taskNum);
+    if (!task || btn.disabled) return;
+    const visszavonas = _votedTasks.has(taskNum);
+    const allapot = szavazott => {
+        if (szavazott) _votedTasks.add(taskNum); else _votedTasks.delete(taskNum);
         localStorage.setItem('_practiceVotes', JSON.stringify([..._votedTasks]));
-        btn.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
-        btn.style.color = '';
-        btn.title = 'Szerintem kerüljön a practice feladatok közé!';
-        fetch(`${RAILWAY_URL}/api/feedback`, {
-            method: 'POST',
-            headers: feedbackHeaders,
-            body: JSON.stringify({ email: user.email || 'vendeg', feladatNev: task.cim, tipus: 'practice_vote', ertek: -1 })
-        }).catch(() => {});
-    } else {
-        // Szavazás
-        _votedTasks.add(taskNum);
-        localStorage.setItem('_practiceVotes', JSON.stringify([..._votedTasks]));
-        btn.innerHTML = '<i class="fa-solid fa-check"></i>';
-        btn.style.color = '#22c55e';
-        btn.title = 'Szavazat visszavonásához kattints újra';
-        fetch(`${RAILWAY_URL}/api/feedback`, {
-            method: 'POST',
-            headers: feedbackHeaders,
-            body: JSON.stringify({ email: user.email || 'vendeg', feladatNev: task.cim, tipus: 'practice_vote', ertek: 1 })
-        }).catch(() => {});
-    }
+        btn.innerHTML = szavazott ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-thumbs-up"></i>';
+        btn.style.color = szavazott ? '#22c55e' : '';
+        btn.title = szavazott ? 'Szavazat visszavonásához kattints újra' : 'Szerintem kerüljön a practice feladatok közé!';
+    };
+    allapot(!visszavonas);
+    btn.disabled = true;
+    // visszavonás: 0 (a szerver 0-ra törli a szavazatot; negatív értéket elutasít)
+    fetch(`${RAILWAY_URL}/api/feedback`, {
+        method: 'POST',
+        headers: feedbackHeaders,
+        body: JSON.stringify({ email: user.email || 'vendeg', feladatNev: task.cim, tipus: 'practice_vote', ertek: visszavonas ? 0 : 1 })
+    }).then(r => { if (!r.ok) throw new Error(r.status); })
+      .catch(() => { allapot(visszavonas); btn.title = 'Nem sikerült elküldeni – próbáld újra!'; btn.style.color = '#f87171'; })
+      .finally(() => { btn.disabled = false; });
 }
 
 function updateTaskBreakdown() {

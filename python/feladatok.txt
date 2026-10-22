@@ -2185,7 +2185,7 @@ Pont: 8
 Cim: Jurassic Park – Biztonsági Rendszer
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A kerítés feszültsége dönti el, bent maradnak-e a dinoszauruszok!
@@ -2240,7 +2240,7 @@ Pont: 8
 Cim: Wall Street farkasa – Bróker-indikátor
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Jordan Belfort módszerével mérd fel a nap sikerét a jutalék alapján!
@@ -2295,7 +2295,7 @@ Pont: 8
 Cim: Forrest Gump – Bonbonos doboz kalkulátor
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 "Az élet olyan, mint egy doboz bonbon – sosem tudhatod, mit kapsz!"
@@ -2350,7 +2350,7 @@ Pont: 8
 Cim: John Wick – Hány ceruzád van?
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Mindenki tudja, hogy John Wick mire képes egy egyszerű írószerrel. Mérd fel a tűzerőt ceruzában!
@@ -2411,7 +2411,7 @@ Pont: 8
 Cim: Pénzfeldobás
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A program szimuláljon egy pénzfeldobást: a gép véletlenszerűen dob fejet (0) vagy írást (1).
@@ -2457,7 +2457,7 @@ Pont: 8
 Cim: MÁV Utas-tájékoztató
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A MÁV tájékoztatja az utasokat a vonat késéséről. Kérj be egy egész számot (késés percekben), majd döntsd el:
@@ -2511,7 +2511,7 @@ Pont: 8
 Cim: Digitális Margaréta
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A régi játék: letéped a szirmokat, és az utolsó megmondja – szeret vagy nem szeret?
@@ -2566,7 +2566,7 @@ Pont: 8
 Cim: Pulzus mérő
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A program a szívverés (pulzus) alapján ad egészségügyi visszajelzést.
@@ -2615,7 +2615,7 @@ Pont: 8
 Cim: Ösztöndíj kalkulátor
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Az iskola ösztöndíjrendszere az átlag alapján határozza meg a havi támogatást.
@@ -2676,7 +2676,7 @@ Pont: 8
 Cim: Diákmunka fizetés
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Egy diák nyári munkát vállal. Kérj be két számot (ledolgozott órák és órabér forintban), majd számítsd ki a fizetést!
@@ -2726,7 +2726,7 @@ Pont: 8
 Cim: Bevásárlólista végösszeg
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A program kéri be három termék árát, és számolja ki a végösszeget!
@@ -2778,7 +2778,7 @@ Pont: 8
 Cim: Mozi popcorn menüválasztó
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A mozi különleges ajánlattal várja a vendégeket! Kérj be egy választást (kicsi, közepes vagy nagy), majd írd ki az árat és az ajándékot!
@@ -2832,7 +2832,7 @@ Pont: 8
 Cim: Sötét mód kapcsoló
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A program a jelenlegi óra alapján automatikusan dönti el, melyik képernyőmód aktív.
@@ -2884,7 +2884,7 @@ Pont: 8
 Cim: Kávé koffein tartalom
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Egy csésze kávéban 80 mg koffein van. A napi biztonságos limit 400 mg.
@@ -2928,7 +2928,7 @@ Pont: 8
 Cim: Képernyőidő korlát
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A program a napi mobilozás percei alapján ad visszajelzést.
@@ -2983,7 +2983,7 @@ Pont: 8
 Cim: Rákburger-sütő mérő
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Spongyabob a Rák úr kisztiknél dolgozik. Kérj be egy egész számot (1-100 között, hány rákburgert sütött), majd döntsd el:
@@ -3037,7 +3037,7 @@ Pont: 14
 Cim: Gondoltam egy számra
 Tipus: while,random,if
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 A gép titkosan gondol egy számra 1 és 10 között. A felhasználónak addig kell tippelnie, amíg el nem találja!
@@ -3099,7 +3099,7 @@ Pont: 14
 Cim: Agraelnek szótanítás
 Tipus: függvény,while,for
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Készítettél egy AI modellt Agrael néven, és szavakat szeretnél megtanítani neki!
@@ -3172,7 +3172,7 @@ Pont: 18
 Cim: Nevek
 Tipus: fájl,lista,for
 Nehezseg: nehez
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 ModulNev: legnepszerubb_nevek.txt
 ModulTartalom:
@@ -3279,7 +3279,7 @@ Pont: 8
 Cim: Mucsi Zoltán idegállapot-mérő
 Tipus: if
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 Feladatkeszito: igen
 
 Ez a program a beállított feszültségszint alapján lövi be, hogy mikor fog Zoltán kerti kapával hadonászni.
@@ -3335,7 +3335,7 @@ Pont: 14
 Cim: BKV Jegyautomata
 Tipus: függvény,while
 Nehezseg: kozepes
-Uj: igen
+Uj: nem
 
 Készíts programot egy érintőképernyős jegyautomatához! A vásárló addig adhatja a kosarához a jegyeket, amíg a fizetést nem választja.
 
@@ -3434,7 +3434,7 @@ Pont: 8
 Cim: Szállodaértékelés
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: 2026-11-05
 
 Írj programot, amely bekéri a szálloda értékelését 1-től 5 csillagig, majd kiírja a véleményt!
 1 csillag: Szörnyű! Soha többé.
@@ -3488,7 +3488,7 @@ Pont: 14
 Cim: Önkiszolgáló kassza
 Tipus: def,for,if
 Nehezseg: kozepes
-Uj: igen
+Uj: 2026-11-05
 
 Az önkiszolgáló kasszán gyümölcsöket lehet vásárolni. A program 4 terméket dolgoz fel egymás után.
 
@@ -3571,7 +3571,7 @@ Pont: 18
 Cim: Okostelefonok
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: 2026-11-05
 ModulNev: mobil.py
 ModulTartalom:
 class Telefon:
@@ -3656,7 +3656,7 @@ Pont: 8
 Cim: Sportverseny eredményhirdetés
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: 2026-11-05
 
 Írj programot egy iskolai sportverseny eredményhirdetőjéhez! A program bekéri a helyezést (egész szám), majd kiírja az eredményt:
 1. hely: Gratulálok! Aranyérem!
@@ -3706,7 +3706,7 @@ Pont: 14
 Cim: Kávéfogyasztás egy héten át
 Tipus: def,for,if
 Nehezseg: kozepes
-Uj: igen
+Uj: 2026-11-05
 
 Egy héten át figyeljük a napi kávéfogyasztást. Az egészséges határ: legfeljebb 2 csésze naponta.
 
@@ -3785,7 +3785,7 @@ Pont: 18
 Cim: Kedvenc sorozatok
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: 2026-11-05
 ModulNev: sorozat.py
 ModulTartalom:
 class Sorozat:
@@ -3870,7 +3870,7 @@ Pont: 8
 Cim: Időjárás-tanácsadó
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: 2026-11-05
 
 Írj programot, amely bekéri a kinti hőmérsékletet (egész szám, °C-ban), majd tanácsot ad, mit érdemes felvenni!
 5 fok alatt: Kabát kötelező!
@@ -3920,7 +3920,7 @@ Pont: 14
 Cim: Havi megtakarítás
 Tipus: def,for,if
 Nehezseg: kozepes
-Uj: igen
+Uj: 2026-11-05
 
 Egy fiatal 6 hónapon át próbál megtakarítani. A cél: havi 20 000 Ft.
 
@@ -3997,7 +3997,7 @@ Pont: 18
 Cim: Pizzafutárok
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: 2026-11-05
 ModulNev: futar.py
 ModulTartalom:
 class Futar:
@@ -4082,7 +4082,7 @@ Pont: 8
 Cim: Csomagküldés díja
 Tipus: if
 Nehezseg: konnyu
-Uj: igen
+Uj: 2026-11-05
 
 Írj programot, amely bekéri a csomag súlyát kilogrammban (egész szám), majd kiírja a szállítási díjat!
 2 kg-ig: Kis csomag: 500 Ft
@@ -4132,7 +4132,7 @@ Pont: 14
 Cim: RePont visszaváltás
 Tipus: def,for,if
 Nehezseg: kozepes
-Uj: igen
+Uj: 2026-11-05
 
 A RePont automatánál háromféle italcsomagolást lehet visszaváltani: PET palackot (pet), fém dobozt (fem) és üveget (uveg). A program 5 csomagolás visszaváltását kezeli.
 
@@ -4217,7 +4217,7 @@ Pont: 18
 Cim: Zenei előadók
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
-Uj: igen
+Uj: 2026-11-05
 ModulNev: eloado.py
 ModulTartalom:
 class Eloado:

@@ -430,8 +430,8 @@ function parseTasks(text) {
       else if (l.startsWith('Cim: '))          { cim           = l.slice(5).trim();                  i++; }
       else if (l.startsWith('Tipus: '))        { tipus          = l.slice(7).trim();                  i++; }
       else if (l.startsWith('Nehezseg: '))     { nehezseg      = l.slice(10).trim();                 i++; }
-      else if (l.startsWith('Uj: '))           { uj            = l.slice(4).trim() === 'igen';       i++; }
-      else if (l.startsWith('Feladatkeszito: ')){ feladatkeszito= l.slice(17).trim() === 'igen';     i++; }
+      else if (l.startsWith('Uj: '))           { uj            = ujAktiv(l.slice(4));                 i++; }
+      else if (l.startsWith('Feladatkeszito:')){ feladatkeszito= l.slice('Feladatkeszito:'.length).trim() === 'igen'; i++; }
       else if (l.startsWith('ModulNev: '))     { modulNev      = l.slice(10).trim();                 i++; }
       else if (l === 'ModulTartalom:')         { break; } // modul szekció, for loop kezeli
       else if (l === '')                       { i++; break; }
@@ -552,8 +552,7 @@ function selectTask(task) {
   }
 
   // Feladatkészítő szavazógomb
-  const voteKey = '_practiceVotes';
-  const voted = JSON.parse(localStorage.getItem(voteKey) || '{}');
+  const voted = {}; readPracticeVotes().forEach(n => { voted[n] = true; });
   const voteHtml = task.feladatkeszito ? `<div id="fk-vote-box" style="margin-bottom:10px;padding:8px 12px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3);border-radius:8px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#c084fc;">
     <i class="fas fa-pencil" style="color:#a855f7"></i>
     <span style="flex:1">Ez egy <strong>Feladatkészítő</strong> feladat — szavazd meg, hogy bekerüljön a dolgozati feladatok közé!</span>
@@ -586,30 +585,49 @@ function pickRandom() {
   selectTask(t);
 }
 
-function voteFeladatkeszito(taskId) {
-  const voteKey = '_practiceVotes';
-  const voted = JSON.parse(localStorage.getItem(voteKey) || '{}');
-  if (voted[taskId]) return;
-  voted[taskId] = true;
-  localStorage.setItem(voteKey, JSON.stringify(voted));
+// Uj: igen | nem | ÉÉÉÉ-HH-NN – dátumnál eddig a napig (azt is beleértve) számít újnak, utána magától lekerül a jelölés
+function ujAktiv(ertek) {
+  const v = String(ertek || '').trim().toLowerCase();
+  if (v === 'igen') return true;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d = new Date();
+  const ma = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return ma <= v;
+}
 
+// A szavazatok helyben: a feladatok sorszámainak listája – közös formátum a dolgozat egyéni összeállításával
+// (régen itt objektum volt ugyanezen a kulcson, és a dolgozat lapja ettől befagyott).
+function readPracticeVotes() {
+  try {
+    const v = JSON.parse(localStorage.getItem('_practiceVotes') || '[]');
+    const nums = Array.isArray(v) ? v : Object.keys(v || {}).filter(k => v[k]);
+    return nums.map(Number).filter(Number.isInteger);
+  } catch (e) { return []; }
+}
+
+function voteFeladatkeszito(taskId) {
+  const btn = document.getElementById('fk-vote-btn');
+  const lista = readPracticeVotes();
+  if (lista.includes(taskId) || (btn && btn.disabled)) return;
   const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
   const task = allTasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Küldés…'; }
+  // a szerver feladatNev + ertek mezőt vár (korábban task_id/task_cim ment, ezért a szavazat sosem rögzült)
   fetch('https://agazati.up.railway.app/api/feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(u.token ? { Authorization: 'Bearer ' + u.token } : {}) },
-    body: JSON.stringify({ email: u.email || 'vendeg', task_id: taskId, task_cim: task?.cim || '', tipus: 'practice_vote' })
-  }).catch(() => {});
-
-  // Gomb frissítése
-  const btn = document.getElementById('fk-vote-btn');
-  if (btn) {
-    btn.innerHTML = '<i class="fas fa-check"></i> Szavaztam';
-    btn.style.borderColor = '#22c55e';
-    btn.style.background = 'rgba(34,197,94,.15)';
-    btn.style.color = '#22c55e';
-    btn.style.cursor = 'default';
-  }
+    body: JSON.stringify({ email: u.email || 'vendeg', feladatNev: task.cim, tipus: 'practice_vote', ertek: 1 })
+  }).then(r => {
+    if (!r.ok) throw new Error(r.status);
+    localStorage.setItem('_practiceVotes', JSON.stringify([...new Set([...readPracticeVotes(), taskId])]));
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-check"></i> Szavaztam';
+      btn.style.borderColor = '#22c55e'; btn.style.background = 'rgba(34,197,94,.15)'; btn.style.color = '#22c55e'; btn.style.cursor = 'default';
+    }
+  }).catch(() => {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate-right"></i> Nem sikerült – próbáld újra'; btn.style.color = '#f87171'; }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
