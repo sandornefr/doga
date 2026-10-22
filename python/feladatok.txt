@@ -3437,7 +3437,7 @@ else:
 
 55. feladat
 Pont: 8
-Cim: Szállodaértékelés
+Cim: Szálloda értékelés
 Tipus: if
 Nehezseg: konnyu
 Uj: 2026-11-05
@@ -3659,7 +3659,7 @@ f.close()
 
 58. feladat
 Pont: 8
-Cim: Sportverseny eredményhirdetés
+Cim: Sportverseny
 Tipus: if
 Nehezseg: konnyu
 Uj: 2026-11-05
@@ -3709,7 +3709,7 @@ else:
 
 59. feladat
 Pont: 14
-Cim: Kávéfogyasztás egy héten át
+Cim: Kávéfogyasztás
 Tipus: def,for,if
 Nehezseg: kozepes
 Uj: 2026-11-05
@@ -3788,7 +3788,7 @@ print(f"{tulzas} napon fogyasztott túl sok kávét.")
 
 60. feladat
 Pont: 18
-Cim: Kedvenc sorozatok
+Cim: Filmsorozatok
 Tipus: class,import,for,fájlkezelés
 Nehezseg: nehez
 Uj: 2026-11-05
@@ -3873,7 +3873,7 @@ f.close()
 
 61. feladat
 Pont: 8
-Cim: Időjárás-tanácsadó
+Cim: Öltözködés
 Tipus: if
 Nehezseg: konnyu
 Uj: 2026-11-05
@@ -3923,7 +3923,7 @@ else:
 
 62. feladat
 Pont: 14
-Cim: Havi megtakarítás
+Cim: Megtakarítás
 Tipus: def,for,if
 Nehezseg: kozepes
 Uj: 2026-11-05
@@ -4085,7 +4085,7 @@ cel.close()
 
 64. feladat
 Pont: 8
-Cim: Csomagküldés díja
+Cim: Csomagszállítás
 Tipus: if
 Nehezseg: konnyu
 Uj: 2026-11-05
@@ -4135,7 +4135,7 @@ else:
 
 65. feladat
 Pont: 14
-Cim: RePont visszaváltás
+Cim: RePont automata
 Tipus: def,for,if
 Nehezseg: kozepes
 Uj: 2026-11-05
