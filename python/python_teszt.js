@@ -1009,8 +1009,7 @@ function renderCustomTaskList() {
             return `<label class="custom-task-card${past ? ' past' : ''}${ptsCls}">
                 <input type="checkbox" class="custom-cb" value="${t.number}" data-points="${t.points}">
                 <div class="card-check-icon"><i class="fa-solid fa-check"></i></div>
-                ${t.uj ? '<span class="custom-new-tag">ÚJ!</span>' : ''}
-                <div class="card-title">${t.cim}</div>
+                <div class="card-title">${t.uj ? '<i class="fa-solid fa-star custom-new-star" title="Új feladat" aria-label="Új feladat"></i>' : ''}${t.cim}</div>
                 <div class="card-tags">
                     ${diffBadge(t.nehezseg)}
                     ${past ? '<span class="custom-past-tag"><i class="fa-solid fa-rotate-left"></i> volt már</span>' : ''}
@@ -2913,7 +2912,7 @@ function updateFrissFeladatokBox() {
     const hasTanulo = tanuloNums.size > 0;
     if (!ujTasks.length && !hasTanulo) { box.style.display = 'none'; return; }
 
-    const ujBadge = `<span style="display:inline-block;background:#3b82f6;color:#fff;border-radius:4px;padding:1px 6px;font-size:0.7rem;font-weight:700;letter-spacing:.05em;vertical-align:middle;margin-left:4px;">ÚJ</span>`;
+    const ujBadge = `<i class="fa-solid fa-star" style="color:#f59e0b;margin:0 3px;" aria-hidden="true"></i>`;
 
     box.style.display = '';
     box.innerHTML = `
@@ -2921,7 +2920,7 @@ function updateFrissFeladatokBox() {
             <i class="fa-solid fa-arrows-rotate" style="color:#3b82f6;"></i> Új feladatok érkeztek
         </div>
         ${ujTasks.length ? `<div style="margin-bottom:${hasTanulo?'0.5':'0'}rem;">
-            Az <strong>Egyéni összeállításban</strong> találod őket ${ujBadge}-ként megjelölve.
+            Az <strong>Egyéni összeállításban</strong> találod őket, a nevük előtt ${ujBadge} csillaggal megjelölve.
         </div>` : ''}
         ${hasTanulo ? `<div><i class="fa-solid fa-graduation-cap" style="color:#3b82f6;"></i> <strong>Feladatkészítők feladatai</strong> csak Egyéni összeállításban érhetők el — próbáld ki őket, szavazz rájuk, hogy bekerülhessenek a gyakorló feladatok közé!</div>` : ''}
     `;

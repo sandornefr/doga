@@ -1592,7 +1592,7 @@
         </div>
     </div>
 
-    <script src="python_teszt.js"></script>
+    <script src="python_teszt.js?v=2"></script>
     <script>
         // Előtöltés sessionStorage.kandoUser-ből
         (function () {
@@ -2075,11 +2075,11 @@
     border:1px solid rgba(192,132,252,0.28);border-radius:8px;padding:1px 7px;font-weight:600;
 }
 .custom-new-tag {
-    position:absolute;bottom:5px;right:26px;
     font-size:0.62rem;color:#fbbf24;background:rgba(251,191,36,0.12);
     border:1px solid rgba(251,191,36,0.4);border-radius:6px;padding:1px 6px;font-weight:700;
-    pointer-events:none;
 }
+/* Új feladat: kis csillag a név előtt, a szöveg sorában (nem takarja el a nevet) */
+.custom-new-star { color:#fbbf24;font-size:0.68rem;margin-right:5px;filter:drop-shadow(0 0 3px rgba(251,191,36,.55)); }
 .tanulo-vote-btn {
     position:absolute;top:4px;right:24px;
     background:none;border:none;cursor:pointer;
