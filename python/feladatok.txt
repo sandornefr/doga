@@ -4297,3 +4297,158 @@ cel = open("nepszeru.txt", "w")
 cel.write(f"{legnepszerubb.nev} a legnépszerűbb előadó.")
 cel.close()
 
+67. feladat
+Pont: 8
+Cim: Távolugrás
+Tipus: if
+Nehezseg: konnyu
+Uj: 2026-11-05
+
+Készíts egy programot, amely egy távolugró versenyző eredményét értékeli! A program kérje be az ugrás eredményét méterben (tizedes törttel, ponttal: például 5.3).
+Ha az eredmény 5.3 méter vagy annál nagyobb, írja ki: Gratulálok! Mehetsz versenyre!
+Ha 5.3 méternél kisebb, írja ki: Sajnos még nem mehetsz versenyre, gyakorolj tovább!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (Feladatkészítő tanuló ötlete alapján)
+
+Minta kód:
+
+```
+Add meg a távolugrás eredményét méterben: 5.6
+Gratulálok! Mehetsz versenyre!
+
+Add meg a távolugrás eredményét méterben: 4.9
+Sajnos még nem mehetsz versenyre, gyakorolj tovább!
+```
+
+Pontozas:
+bekeres:Add meg a távolugrás eredményét méterben: |Bekéri az eredményt a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Tizedes törtté alakítja a bevitelt|Az eredmény lehet tört is (5.3) – melyik átalakítás kell: int() vagy float()?|A float() megvan!
+if|Elágazást alkalmaz|Két lehetőség van – ehhez if és else kell.|Az if megvan!
+else|Van „különben” ága|Ha nem érte el a szintet – ez az else ág.|Az else ág megvan!
+teszt:6.1:Gratulálok! Mehetsz versenyre!|Jó eredményre a gratuláció|Mit ír ki 6.1 méterre?|A gratuláció rendben!
+teszt:5.3:Gratulálok! Mehetsz versenyre!|Pont 5.3 méterre is mehet|Az 5.3 is elég („vagy annál nagyobb”) – >= kell, nem >!|A határ jó!
+teszt:5.29:Sajnos még nem mehetsz versenyre|Kicsivel rövidebb ugrásra a biztatás|5.29 méter még kevés – mit ír ki?|A határ alatti eset rendben!
+teszt:3:Sajnos még nem mehetsz versenyre, gyakorolj tovább!|Rövid ugrásra a pontos szöveg|Mit ír ki 3 méterre? Figyelj a vesszőre és a felkiáltójelre!|A szöveg pontos!
+
+Tippek:
+A bekérés: tavolsag = float(input("Add meg a távolugrás eredményét méterben: "))
+A feltétel: if tavolsag >= 5.3: ... else: ...
+Tizedes törthöz float() kell, nem int()!
+
+Megoldas:
+tavolsag = float(input("Add meg a távolugrás eredményét méterben: "))
+
+if tavolsag >= 5.3:
+    print("Gratulálok! Mehetsz versenyre!")
+else:
+    print("Sajnos még nem mehetsz versenyre, gyakorolj tovább!")
+
+68. feladat
+Pont: 8
+Cim: Vidámpark
+Tipus: if
+Nehezseg: konnyu
+Uj: 2026-11-05
+
+Készíts egy programot, amely megkérdezi a felhasználó életkorát és magasságát centiméterben (egész számok), majd eldönti, hogy használhatja-e a vidámpark egyik játékát!
+
+A szabályok:
+- Ha az életkor 0-nál kisebb, vagy a magasság 0-nál kisebb vagy 220 cm-nél nagyobb: Érvénytelen adat!
+- Ha legalább 18 éves és legalább 180 cm magas: Használhatod a játékot, ráadásul VIP-belépőt is kapsz!
+- Ha 12 évesnél fiatalabb, vagy 140 cm-nél alacsonyabb: Sajnos nem használhatod a játékot!
+- Minden más esetben: Használhatod a játékot!
+
+A program kimenete pontosan egyezzen a mintával! (Feladatkészítő tanuló ötlete alapján)
+
+Minta kód:
+
+```
+Hány éves vagy? 15
+Hány cm magas vagy? 150
+Használhatod a játékot!
+
+Hány éves vagy? 20
+Hány cm magas vagy? 185
+Használhatod a játékot, ráadásul VIP-belépőt is kapsz!
+```
+
+Pontozas:
+bekeres:Hány éves vagy? |Bekéri az életkort a megadott szöveggel|A bekérő szöveg pontosan: "Hány éves vagy? " – a végén szóközzel.|Az életkor bekérése pontos!
+bekeres:Hány cm magas vagy? |Bekéri a magasságot a megadott szöveggel|A bekérő szöveg pontosan: "Hány cm magas vagy? "|A magasság bekérése pontos!
+int_float:2|Mindkét adatot számmá alakítja|Két bekért adat – mindkettőt int()-tel kell számmá alakítani.|Mindkét adat szám lett!
+teszt:-1,150:Érvénytelen adat!|Érvénytelen adatra figyelmeztet|Negatív életkor nem lehet – mit ír ki a program?|Az érvénytelen adat felismerve!
+teszt:20,185:Használhatod a játékot, ráadásul VIP-belépőt is kapsz!|Felnőtt, magas látogató VIP-belépőt kap|Legalább 18 év ÉS legalább 180 cm – mindkettő kell (and)!|A VIP rendben!
+teszt:10,130:Sajnos nem használhatod a játékot!|Kicsi gyerek nem használhatja|Ha túl fiatal VAGY túl alacsony – elég az egyik (or)!|A tiltás rendben!
+teszt:15,150:Használhatod a játékot!|Egyébként használhatja|Aki nem érvénytelen, nem VIP és nem tiltott – az használhatja.|A normál eset rendben!
+teszt:12,140:Használhatod a játékot!|A határon (12 év, 140 cm) már használhatja|A 12 év és a 140 cm már elég – < kell, nem <=!|A határ jó!
+
+Tippek:
+Két bekérés: kor = int(input("Hány éves vagy? ")) és magassag = int(input("Hány cm magas vagy? "))
+Előbb az érvénytelen adatot nézd meg, utána a VIP-et, aztán a tiltást, végül else: használhatja.
+Két feltétel együtt: and (mindkettő igaz), or (elég az egyik)
+
+Megoldas:
+kor = int(input("Hány éves vagy? "))
+magassag = int(input("Hány cm magas vagy? "))
+
+if kor < 0 or magassag < 0 or magassag > 220:
+    print("Érvénytelen adat!")
+elif kor >= 18 and magassag >= 180:
+    print("Használhatod a játékot, ráadásul VIP-belépőt is kapsz!")
+elif kor < 12 or magassag < 140:
+    print("Sajnos nem használhatod a játékot!")
+else:
+    print("Használhatod a játékot!")
+
+69. feladat
+Pont: 8
+Cim: Ásó szimulátor
+Tipus: if
+Nehezseg: konnyu
+Uj: 2026-11-05
+
+Kérd be a felhasználótól, milyen mély gödröt ásott (méterben, tizedes törttel, ponttal: például 1.2), majd írd ki, mi fér bele!
+0.8 méternél kisebb: Ebbe belefér egy póni, de már necces!
+0.8 és 1.5 méter között (az 1.5 már nem): Ebbe belefér egy létra!
+1.5 és 2.0 méter között (a 2.0 még igen): Ebbe már belefér egy ember, de nem ajánlom – inkább temesd vissza!
+2.0 méternél több: Miért pazarlod az idődet?
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (Feladatkészítő tanuló ötlete alapján)
+
+Minta kód:
+
+```
+Milyen mély gödröt ástál (méterben)? 0.5
+Ebbe belefér egy póni, de már necces!
+
+Milyen mély gödröt ástál (méterben)? 2.5
+Miért pazarlod az idődet?
+```
+
+Pontozas:
+bekeres:Milyen mély gödröt ástál (méterben)? |Bekéri a mélységet a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Tizedes törtté alakítja a bevitelt|A mélység lehet tört is (1.2) – float() kell!|A float() megvan!
+elif|Elágazást alkalmaz (if/elif/else)|Négy lehetőség van – ehhez if, elif és else kell.|Az elágazás megvan!
+teszt:0.5:Ebbe belefér egy póni, de már necces!|Sekély gödörre a póni|Mit ír ki 0.5 méterre?|A póni rendben!
+teszt:0.8:Ebbe belefér egy létra!|0.8 méter már létra|A 0.8 már nem „kisebb, mint 0.8” – mit ír ki?|A határ jó!
+teszt:1.2:Ebbe belefér egy létra!|Közepes gödörre a létra|Mit ír ki 1.2 méterre?|A létra rendben!
+teszt:1.7:Ebbe már belefér egy ember, de nem ajánlom – inkább temesd vissza!|Mély gödörre az ember|Mit ír ki 1.7 méterre? Figyelj a gondolatjelre!|Az ember rendben!
+teszt:2.5:Miért pazarlod az idődet?|Nagyon mély gödörre a kérdés|Mit ír ki 2.5 méterre?|A végtelen gödör rendben!
+
+Tippek:
+A bekérés: melyseg = float(input("Milyen mély gödröt ástál (méterben)? "))
+Kisebbtől a nagyobb felé haladj: if melyseg < 0.8: ... elif melyseg < 1.5: ... elif melyseg <= 2.0: ... else:
+A sorrend számít: ha a nagyobb feltétel van elöl (>= 0.8), az minden mély gödröt elkap!
+
+Megoldas:
+melyseg = float(input("Milyen mély gödröt ástál (méterben)? "))
+
+if melyseg < 0.8:
+    print("Ebbe belefér egy póni, de már necces!")
+elif melyseg < 1.5:
+    print("Ebbe belefér egy létra!")
+elif melyseg <= 2.0:
+    print("Ebbe már belefér egy ember, de nem ajánlom – inkább temesd vissza!")
+else:
+    print("Miért pazarlod az idődet?")
+
