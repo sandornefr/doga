@@ -3037,8 +3037,7 @@ Pont: 14
 Cim: Gondoltam egy számra
 Tipus: while,random,if
 Nehezseg: nehez
-Uj: nem
-Feladatkeszito: igen
+Uj: 2026-11-05
 
 A gép titkosan gondol egy számra 1 és 10 között. A felhasználónak addig kell tippelnie, amíg el nem találja!
 
@@ -3047,6 +3046,8 @@ Ha a tipp kisebb a gondolt számnál: "Túl kicsi!"
 Ha a tipp nagyobb a gondolt számnál: "Túl nagy!"
 Minden sikertelen próba után kérd be újra: "Próbáld újra: "
 Ha eltalálta: "Eltaláltad!"
+
+(Feladatkészítő tanuló ötlete alapján)
 
 Minta kód:
 ```
@@ -3062,7 +3063,7 @@ Eltaláltad!
 Pontozas:
 import:random|Random modult importálja|Számokat véletlenszerűen sorsol a gép – melyik modult kell importálni? 🎲|🎲 A random modul importálva!
 tartalmaz:randint|random.randint()-et használja|Pontosan 1-10 között kell sorsolni – melyik függvénnyel? 🎯|🎯 A randint megvan – a gép gondolt egy számra!
-tartalmaz:1, 10|Az 1-10 tartomány megadva|Mi a sorsolt szám minimuma és maximuma? 🔢|🔢 Az 1-10 tartomány beállítva!
+vagy:1, 10~~1,10|Az 1-10 tartomány megadva|Mi a sorsolt szám minimuma és maximuma? 🔢|🔢 Az 1-10 tartomány beállítva!
 bekeres:Adj meg egy számot 1 és 10 között: |Bekérés szövege: "Adj meg egy számot 1 és 10 között: "|A bekérés szövegét pontosan add meg! 💬|💬 A bekérés szövege tökéletesen egyezik!
 int_float:1|Az első tippet egész számmá alakítja|Az input() szöveget ad vissza – mivel alakítod egész számmá? 🔢|🔢 A tipp számként vizsgálható!
 while|While ciklust alkalmaz|A tippelés addig tart, amíg el nem találja – melyik ciklus alkalmas erre? 🔄|🔄 A while ciklus forog – a tippelés folytatódik!
@@ -3073,9 +3074,14 @@ tartalmaz:Túl kicsi!|"Túl kicsi!" üzenetet tartalmaz|Ha a tipp kisebb a gép 
 tartalmaz:Túl nagy!|"Túl nagy!" üzenetet tartalmaz|Ha a tipp nagyobb, mit ír ki? 📈|📈 "Túl nagy!" – lefelé kell próbálni!
 bekeres:Próbáld újra: |Ismételt bekérés szövege: "Próbáld újra: "|A cikluson belüli újra-bekérés szövege pontos legyen! 🔁|🔁 Az ismételt bekérés szövege tökéletesen egyezik!
 int_float:2|A cikluson belüli tippet is egész számmá alakítja|A "Próbáld újra: " bekérés után is int()-re van szükség! 🔢|🔢 Mindkét bekérés számra konvertálva!
-tartalmaz:Eltaláltad!|"Eltaláltad!" üzenetet tartalmaz a ciklus után|Ha egyezik a tipp és a gép száma, mit kell kiírni a ciklus UTÁN? 🏆|🏆 "Eltaláltad!" – gratulálunk!
+teszt:1,2,3,4,5,6,7,8,9,10:Eltaláltad!|A ciklus addig kérdez, amíg el nem találja, utána „Eltaláltad!”|Ha sorban 1-től 10-ig tippel, valamelyik biztosan talál – akkor kiírja a program, hogy Eltaláltad!? A ciklus újra bekér minden rossz tipp után?|"Eltaláltad!" – gratulálunk!
 
 Tippek:
+A sorsolás: import random, majd gep_szama = random.randint(1, 10)
+Az első tipp a ciklus előtt: tipp = int(input("Adj meg egy számot 1 és 10 között: "))
+A ciklus: while tipp != gep_szama: – addig fut, amíg nem találja el
+A cikluson belül: if tipp < gep_szama: Túl kicsi!, else: Túl nagy!, majd új tipp: tipp = int(input("Próbáld újra: "))
+A ciklus UTÁN: print("Eltaláltad!")
 
 Megoldas:
 import random
