@@ -3182,7 +3182,7 @@ Dominik; Olivér; Levente; Marcell; Milán; Máté; Bence; Noel; Dániel; Benett
 Luca; Hanna; Zoé; Anna; Emma; Léna; Olívia; Laura; Alíz; Kamilla; Sára; Szofia; Lili; Flóra; Mira; Boglárka; Lilien; Zsófia; Lara; Adél; Linett; Nóra; Janka; Izabella; Liza; Jázmin; Lilla; Abigél; Maja; Bella; Gréta; Emília; Zselyke; Panna; Blanka; Milla; Csenge; Rebeka; Dorka; Nazira; Fanni; Elena; Nara; Elizabet; Liliána; Róza; Eliza; Elina; Bianka; Amira
 ModulVege
 
-A `legnepszerubb_nevek.txt` fájl a 2023-ban és 2024-ben születtek legnépszerűbb neveit tartalmazza pontosvesszővel elválasztva.
+A legnepszerubb_nevek.txt fájl a 2023-ban és 2024-ben születtek legnépszerűbb neveit tartalmazza pontosvesszővel elválasztva.
 Az 1. sor: 2023 fiúnevek, a 2. sor: 2023 lánynevek, a 3. sor: 2024 fiúnevek, a 4. sor: 2024 lánynevek (mindkét évben 50-50 név).
 
 a) Olvasd be a fájlt, és bontsd szét a négy névlistát!
@@ -3428,4 +3428,872 @@ if vegosszeg >= 10000:
     print("Ajándék BKK hálózati térkép nyomtatva!")
 else:
     print("Köszönjük a vásárlást!")
+
+55. feladat
+Pont: 8
+Cim: Szállodaértékelés
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+
+Írj programot, amely bekéri a szálloda értékelését 1-től 5 csillagig, majd kiírja a véleményt!
+1 csillag: Szörnyű! Soha többé.
+2 csillag: Gyenge. Nem ajánlom.
+3 csillag: Közepes. Volt jobb is, volt rosszabb is.
+4 csillag: Jó! Visszajövök.
+5 csillag: Kiváló! Mindenkinek ajánlom!
+
+A program kimenete pontosan egyezzen a mintával – a betűk, ékezetek, szóközök és írásjelek is számítanak! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, A változat)
+
+Minta kód:
+
+```
+Értékeld a szállodát (1-5 csillag): 1
+Szörnyű! Soha többé.
+
+Értékeld a szállodát (1-5 csillag): 5
+Kiváló! Mindenkinek ajánlom!
+```
+
+Pontozas:
+bekeres:Értékeld a szállodát (1-5 csillag): |Bekéri az értékelést a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Egész számmá alakítja a bevitelt|Az input() szöveget ad. Mivel teszed számmá?|Az értékelés szám lett!
+elif|Elágazást alkalmaz (if/elif/else)|Öt lehetőség van – ehhez if, több elif és else kell.|Az elágazás megvan!
+teszt:1:Szörnyű! Soha többé.|1 csillagra a megfelelő szöveg|Mit ír ki 1 csillagra? Pontosan egyezik a szöveg?|1 csillag rendben!
+teszt:2:Gyenge. Nem ajánlom.|2 csillagra a megfelelő szöveg|Mit ír ki 2 csillagra?|2 csillag rendben!
+teszt:3:Közepes. Volt jobb is, volt rosszabb is.|3 csillagra a megfelelő szöveg|Mit ír ki 3 csillagra? Figyelj a vesszőkre és a pontokra!|3 csillag rendben!
+teszt:4:Jó! Visszajövök.|4 csillagra a megfelelő szöveg|Mit ír ki 4 csillagra?|4 csillag rendben!
+teszt:5:Kiváló! Mindenkinek ajánlom!|5 csillagra a megfelelő szöveg|Mit ír ki 5 csillagra?|5 csillag rendben!
+
+Tippek:
+A bekérés: ertekeles = int(input("Értékeld a szállodát (1-5 csillag): "))
+Öt ág kell: if ertekeles == 1: ... elif ertekeles == 2: ... else:
+A kiírt szövegeket másold ki pontosan a feladatból!
+
+Megoldas:
+ertekeles = int(input("Értékeld a szállodát (1-5 csillag): "))
+if ertekeles == 1:
+    print("Szörnyű! Soha többé.")
+elif ertekeles == 2:
+    print("Gyenge. Nem ajánlom.")
+elif ertekeles == 3:
+    print("Közepes. Volt jobb is, volt rosszabb is.")
+elif ertekeles == 4:
+    print("Jó! Visszajövök.")
+else:
+    print("Kiváló! Mindenkinek ajánlom!")
+
+56. feladat
+Pont: 14
+Cim: Önkiszolgáló kassza
+Tipus: def,for,if
+Nehezseg: kozepes
+Uj: igen
+
+Az önkiszolgáló kasszán gyümölcsöket lehet vásárolni. A program 4 terméket dolgoz fel egymás után.
+
+Írjon egy Ar nevű függvényt! A függvény kapja meg a termék kódját, és visszatérési értéke a termék ára:
+1 → alma: 400 Ft
+2 → banán: 600 Ft
+3 → körte: 350 Ft
+bármi más → 0 Ft (hibás kód)
+
+A főprogramban:
+- Hozzon létre egy összegző változót (kezdőértéke 0)!
+- Készítsen egy ciklust, amely pontosan 4-szer fut le!
+- A cikluson belül kérje be a termék kódját az "{i}. termék kódja: " szövegekkel!
+- Hívja meg az Ar függvényt, és ha az ár nagyobb mint 0, írja ki az árat (például: "Tétel ára: 400 Ft"), és adja hozzá az összeghez!
+- Ha az ár 0, írja ki: "Hibás kód!"
+- A ciklus után írja ki a végösszeget (például: "Fizetendő összeg: 1350 Ft")
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, A változat)
+
+```
+1. termék kódja: 1
+Tétel ára: 400 Ft
+2. termék kódja: 2
+Tétel ára: 600 Ft
+3. termék kódja: 3
+Tétel ára: 350 Ft
+4. termék kódja: 0
+Hibás kód!
+Fizetendő összeg: 1350 Ft
+```
+
+Pontozas:
+def:Ar|Készült Ar nevű függvény|A függvényt a def kulcsszóval kell létrehozni: def Ar(kod):|Az Ar függvény megvan!
+return|A függvény visszaadja az árat|A függvény ne kiírja, hanem adja vissza az árat – melyik kulcsszóval?|A return megvan!
+teszt:1,2,3,1:Tétel ára: 400 Ft|Az 1-es kódra 400 Ft-ot ad|Mennyi az 1-es kód ára? Jó szöveggel írod ki?|Az alma ára rendben!
+teszt:2,2,2,2:Tétel ára: 600 Ft|A 2-es kódra 600 Ft-ot ad|Mennyi a 2-es kód ára?|A banán ára rendben!
+teszt:3,3,3,3:Tétel ára: 350 Ft|A 3-as kódra 350 Ft-ot ad|Mennyi a 3-as kód ára?|A körte ára rendben!
+teszt:0,0,0,0:Hibás kód!|Hibás kódra „Hibás kód!” üzenetet ír ki|Mit ír ki a program, ha a függvény 0-t ad vissza?|A hibás kód kezelése rendben!
+tartalmaz:= 0|Összeg változót hoz létre 0 kezdőértékkel|A ciklus előtt kell egy változó, ami 0-ról indul.|Az összegző változó megvan!
+for|for ciklust alkalmaz|Pontosan 4 terméket kell feldolgozni – melyik ciklus jó erre?|A for ciklus megvan!
+tartalmaz:. termék kódja: |A bekérések sorszámozottan érkeznek|A bekérő szöveg: f"{i}. termék kódja: " – a sorszám a ciklusváltozóból jön.|A sorszámozott bekérés megvan!
+int_float:1|A kódot számmá alakítja|A kód számként kell a függvénynek – int()!|A kód szám lett!
+if|Megvizsgálja a függvény eredményét|Ha az ár nagyobb, mint 0, akkor kiírás és összegzés – ehhez if kell.|A vizsgálat megvan!
+teszt:1,2,3,0:Fizetendő összeg: 1350 Ft|A ciklus után kiírja a végösszeget (minta szerint)|A ciklus után írd ki: Fizetendő összeg: ... Ft|A végösszeg rendben!
+teszt:0,0,0,1:Fizetendő összeg: 400 Ft|A ciklus pontosan 4-szer fut le|A 4. termék is beleszámít? Pontosan 4-szer fut a ciklus?|Pontosan 4 kör!
+teszt:0,0,0,0:Fizetendő összeg: 0 Ft|Hibás kódnál nem növeli az összeget|Hibás kódnál nem szabad hozzáadni semmit az összeghez.|Az összegzés pontos!
+
+Tippek:
+A függvény: def Ar(kod): – benne if/elif/else, és mindig return-nel ad vissza egy számot.
+A ciklus: for i in range(1, 5):
+A bekérés: kod = int(input(f"{i}. termék kódja: "))
+Hozzáadás az összeghez: osszeg += ar
+
+Megoldas:
+def Ar(kod):
+    if kod == 1:
+        return 400
+    elif kod == 2:
+        return 600
+    elif kod == 3:
+        return 350
+    else:
+        return 0
+
+osszeg = 0
+
+for i in range(1, 5):
+    kod = int(input(f"{i}. termék kódja: "))
+    ar = Ar(kod)
+    if ar > 0:
+        print(f"Tétel ára: {ar} Ft")
+        osszeg += ar
+    else:
+        print("Hibás kód!")
+
+print(f"Fizetendő összeg: {osszeg} Ft")
+
+57. feladat
+Pont: 18
+Cim: Okostelefonok
+Tipus: class,import,for,fájlkezelés
+Nehezseg: nehez
+Uj: igen
+ModulNev: mobil.py
+ModulTartalom:
+class Telefon:
+    def __init__(self, modell, ar):
+        self.modell = modell
+        self.ar = ar
+ModulVege
+
+A program három okostelefon adatait tárolja objektumokban.
+
+a) A mobil.py fájl rendelkezésre áll. Töltse be a modult és használja a benne lévő osztályt, vagy másolja be a fájl tartalmát a saját megoldásába!
+b) Kérje be három telefon modelljét és árát (Ft)! Hozzon létre Telefon osztályú objektumokat, és tárolja őket egy listában!
+c) Jelenítse meg az összes telefon adatait (például: A(z) Samsung Galaxy S24 ára: 280000 Ft)!
+d) Határozza meg a legolcsóbb telefont, és a modelljét írja be a legolcsobb.txt fájlba (például: A(z) Xiaomi 14 a legolcsóbb telefon.)!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, A változat)
+
+```
+Add meg a telefon modelljét! Samsung Galaxy S24
+Mi az ára (Ft)? 280000
+Add meg a telefon modelljét! iPhone 15
+Mi az ára (Ft)? 390000
+Add meg a telefon modelljét! Xiaomi 14
+Mi az ára (Ft)? 210000
+A(z) Samsung Galaxy S24 ára: 280000 Ft
+A(z) iPhone 15 ára: 390000 Ft
+A(z) Xiaomi 14 ára: 210000 Ft
+```
+(A legolcsobb.txt tartalma: A(z) Xiaomi 14 a legolcsóbb telefon.)
+
+Pontozas:
+vagy:import mobil~~from mobil import~~class Telefon|Betölti a mobil modult vagy bemásolja az osztályt|import mobil – vagy másold be a Telefon osztályt!|A Telefon osztály elérhető!
+tartalmaz:Telefon(|Létrehoz Telefon objektumot|A Telefon osztályból kell példányt létrehozni: mobil.Telefon(modell, ar)|Telefon objektum létrehozva!
+tartalmaz:[]|Listát hoz létre a telefonoknak|Hová kerül a három telefon? Kell egy üres lista.|A lista megvan!
+tartalmaz:append|A telefonokat eltárolja a listában|Az append() teszi be az objektumot a listába.|A telefonok a listában!
+bekeres:Add meg a telefon modelljét! |Bekéri a modellt a megadott szöveggel|A bekérő szöveg pontosan: "Add meg a telefon modelljét! " – a végén szóközzel.|A modell bekérése pontos!
+bekeres:Mi az ára (Ft)? |Bekéri az árat a megadott szöveggel|A bekérő szöveg pontosan: "Mi az ára (Ft)? "|Az ár bekérése pontos!
+int_float:1|Az árat egész számmá alakítja|Az árakat össze kell hasonlítani – ehhez számmá kell alakítani.|Az ár szám lett!
+for|For ciklust alkalmaz|A bekéréshez és a feldolgozáshoz is ciklus kell.|A for ciklus megvan!
+teszt:Samsung Galaxy S24,280000,iPhone 15,390000,Xiaomi 14,210000:A(z) Samsung Galaxy S24 ára: 280000 Ft|Megjeleníti a telefonok adatait (helyes formátum)|A minta: A(z) Samsung Galaxy S24 ára: 280000 Ft|A kiírás formátuma rendben!
+teszt:Samsung Galaxy S24,280000,iPhone 15,390000,Xiaomi 14,210000:A(z) Xiaomi 14 ára: 210000 Ft|Mind a három telefont megjeleníti|A harmadik telefon is megjelenik?|Mind a három telefon látszik!
+tartalmaz:[0]|A keresést az első listaelemmel indítja|A legolcsóbbnak először tegyük fel az elsőt: legolcsobb = mobilok[0]|A keresés jól indul!
+if|Az árakat összehasonlítja|Ha egy telefon olcsóbb, mint az eddigi legolcsóbb – ehhez if kell.|Az összehasonlítás megvan!
+teszt:Samsung Galaxy S24,280000,iPhone 15,390000,Xiaomi 14,210000:A(z) Xiaomi 14 a legolcsóbb telefon.|A fájlba írt szöveg formátuma helyes|A fájlba: A(z) MODELL a legolcsóbb telefon.|A fájl tartalma rendben!
+teszt:A,300,B,100,C,200:A(z) B a legolcsóbb telefon.|A legolcsóbbat helyesen azonosítja (középen)|Ha a középső a legolcsóbb, azt találja meg?|Jól azonosít!
+teszt:A,100,B,200,C,300:A(z) A a legolcsóbb telefon.|A legolcsóbbat helyesen azonosítja (elöl)|Ha az első a legolcsóbb, azt írja a fájlba?|Az első is jó!
+tartalmaz:open|Megnyitja a fájlt|A fájlt az open() nyitja meg írásra ("w").|A fájl megnyitva!
+tartalmaz:legolcsobb.txt|A legolcsobb.txt fájlt használja|A fájl neve pontosan: legolcsobb.txt|A fájlnév pontos!
+tartalmaz:write(|Beírja a modellt a fájlba|A fájlba a write() metódussal írunk.|A fájlba írás megvan!
+
+Tippek:
+A modul betöltése: import mobil
+Objektum: telefon = mobil.Telefon(modell, ar), majd mobilok.append(telefon)
+A kiírás: print(f"A(z) {telefon.modell} ára: {telefon.ar} Ft")
+A keresés: legolcsobb = mobilok[0], majd ha telefon.ar < legolcsobb.ar: legolcsobb = telefon
+A fájl: f = open("legolcsobb.txt", "w"), f.write(...), f.close()
+
+Megoldas:
+import mobil
+
+mobilok = []
+
+for _ in range(3):
+    modell = input("Add meg a telefon modelljét! ")
+    ar = int(input("Mi az ára (Ft)? "))
+    telefon = mobil.Telefon(modell, ar)
+    mobilok.append(telefon)
+
+legolcsobb = mobilok[0]
+
+for telefon in mobilok:
+    print(f"A(z) {telefon.modell} ára: {telefon.ar} Ft")
+    if telefon.ar < legolcsobb.ar:
+        legolcsobb = telefon
+
+f = open("legolcsobb.txt", "w")
+f.write(f"A(z) {legolcsobb.modell} a legolcsóbb telefon.")
+f.close()
+
+58. feladat
+Pont: 8
+Cim: Sportverseny eredményhirdetés
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+
+Írj programot egy iskolai sportverseny eredményhirdetőjéhez! A program bekéri a helyezést (egész szám), majd kiírja az eredményt:
+1. hely: Gratulálok! Aranyérem!
+2. hely: Brávó! Ezüstérem!
+3. hely: Szép! Bronzérem!
+4. hely vagy rosszabb: Köszönjük a részvételt!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, B változat)
+
+Minta kód:
+
+```
+Hányadik lettél a versenyen? 1
+Gratulálok! Aranyérem!
+
+Hányadik lettél a versenyen? 10
+Köszönjük a részvételt!
+```
+
+Pontozas:
+bekeres:Hányadik lettél a versenyen? |Bekéri a helyezést a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Egész számmá alakítja a bevitelt|Az input() szöveget ad. Mivel teszed számmá?|A helyezés szám lett!
+elif|Elágazást alkalmaz (if/elif/else)|Négy lehetőség van – ehhez if, elif és else kell.|Az elágazás megvan!
+teszt:1:Gratulálok! Aranyérem!|1. helyre a megfelelő szöveg|Mit ír ki az 1. helyre?|Aranyérem rendben!
+teszt:2:Brávó! Ezüstérem!|2. helyre a megfelelő szöveg|Mit ír ki a 2. helyre? Figyelj az ékezetekre!|Ezüstérem rendben!
+teszt:3:Szép! Bronzérem!|3. helyre a megfelelő szöveg|Mit ír ki a 3. helyre?|Bronzérem rendben!
+teszt:4:Köszönjük a részvételt!|4. helyre a megfelelő szöveg|A 4. hely már a „minden más” ág – else!|A 4. hely rendben!
+teszt:10:Köszönjük a részvételt!|Rosszabb helyezésre is a megfelelő szöveg|10. helyre is a köszönő szöveg jön?|Minden helyezés kezelve!
+
+Tippek:
+A bekérés: helyezes = int(input("Hányadik lettél a versenyen? "))
+Négy ág: if helyezes == 1: ... elif helyezes == 2: ... elif helyezes == 3: ... else:
+
+Megoldas:
+helyezes = int(input("Hányadik lettél a versenyen? "))
+if helyezes == 1:
+    print("Gratulálok! Aranyérem!")
+elif helyezes == 2:
+    print("Brávó! Ezüstérem!")
+elif helyezes == 3:
+    print("Szép! Bronzérem!")
+else:
+    print("Köszönjük a részvételt!")
+
+59. feladat
+Pont: 14
+Cim: Kávéfogyasztás egy héten át
+Tipus: def,for,if
+Nehezseg: kozepes
+Uj: igen
+
+Egy héten át figyeljük a napi kávéfogyasztást. Az egészséges határ: legfeljebb 2 csésze naponta.
+
+Írjon egy Egeszseges nevű függvényt! A függvény kapja meg a napi kávéfogyasztást (csésze). Ha a szám legfeljebb 2, adjon vissza "Rendben." szöveget, egyébként "Túl sok kávé!" szöveget!
+
+A főprogramban:
+- Hozzon létre egy számlálót a túlzott napoknak (kezdőértéke 0)!
+- Készítsen egy ciklust, amely pontosan 7-szer fut le (a hét minden napjára)!
+- A cikluson belül kérje be a fogyasztást úgy, hogy a kérések sorszámozottan érkezzenek: "1. nap kávéfogyasztása (csésze): ", "2. nap kávéfogyasztása (csésze): " stb.!
+- Hívja meg az Egeszseges függvényt, és írja ki az eredményét!
+- Ha túl sok volt, növelje a számlálót!
+- A ciklus után írja ki (például: "2 napon fogyasztott túl sok kávét.")
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, B változat)
+
+```
+1. nap kávéfogyasztása (csésze): 1
+Rendben.
+2. nap kávéfogyasztása (csésze): 3
+Túl sok kávé!
+3. nap kávéfogyasztása (csésze): 2
+Rendben.
+4. nap kávéfogyasztása (csésze): 4
+Túl sok kávé!
+5. nap kávéfogyasztása (csésze): 1
+Rendben.
+6. nap kávéfogyasztása (csésze): 2
+Rendben.
+7. nap kávéfogyasztása (csésze): 1
+Rendben.
+2 napon fogyasztott túl sok kávét.
+```
+
+Pontozas:
+def:Egeszseges|Készült Egeszseges nevű függvény|A függvényt a def kulcsszóval kell létrehozni: def Egeszseges(db):|Az Egeszseges függvény megvan!
+return|A függvény visszaadja a szöveget|A függvény ne kiírja, hanem adja vissza a szöveget – melyik kulcsszóval?|A return megvan!
+teszt:2,2,2,2,2,2,2:Rendben.|Legfeljebb 2 csészére „Rendben.”|2 csésze még belefér – „Rendben.” jön?|A határ jó!
+teszt:3,0,0,0,0,0,0:Túl sok kávé!|2-nél többre „Túl sok kávé!”|3 csésze már sok – mit ad vissza a függvény?|A túl sok kávé felismerve!
+tartalmaz:= 0|Számlálót hoz létre 0 kezdőértékkel|A ciklus előtt kell egy számláló, ami 0-ról indul.|A számláló megvan!
+for|for ciklust alkalmaz|A hét minden napjára – melyik ciklus?|A for ciklus megvan!
+tartalmaz:. nap kávéfogyasztása (csésze): |A bekérések sorszámozottan érkeznek|A bekérő szöveg: f"{i}. nap kávéfogyasztása (csésze): "|A sorszámozott bekérés megvan!
+int_float:1|A fogyasztást számmá alakítja|A csészék számát össze kell hasonlítani – int()!|A fogyasztás szám lett!
+tartalmaz:Egeszseges(|Meghívja az Egeszseges függvényt|A főprogramban hívd meg a függvényt: Egeszseges(db)|A függvényhívás megvan!
+if|Túlzott fogyasztásnál vizsgál és növeli a számlálót|Ha az eredmény „Túl sok kávé!”, akkor növeld a számlálót – if kell.|A vizsgálat megvan!
+teszt:1,3,2,4,1,2,1:2 napon fogyasztott túl sok kávét.|Kiírja a túlzott napok számát (minta szerint)|A ciklus után: „2 napon fogyasztott túl sok kávét.”|Az összesítés rendben!
+teszt:5,5,5,5,5,5,5:7 napon fogyasztott túl sok kávét.|A számláló minden túlzott napot számol|Minden túlzott napnál eggyel nő a számláló?|A számlálás pontos!
+teszt:0,0,0,0,0,0,9:1 napon fogyasztott túl sok kávét.|A ciklus pontosan 7-szer fut le|A 7. nap is beleszámít?|Pontosan 7 nap!
+teszt:0,0,0,0,0,0,0:0 napon fogyasztott túl sok kávét.|Ha nincs túlzott nap, 0-t ír ki|Ha egyszer sem volt sok, akkor is kiírja az összesítést?|A nullás eset rendben!
+
+Tippek:
+A függvény: def Egeszseges(db): – ha db <= 2: return "Rendben.", különben return "Túl sok kávé!"
+A ciklus: for i in range(1, 8):
+A bekérés: db = int(input(f"{i}. nap kávéfogyasztása (csésze): "))
+A számláló növelése: tulzas += 1
+
+Megoldas:
+def Egeszseges(db):
+    if db <= 2:
+        return "Rendben."
+    else:
+        return "Túl sok kávé!"
+
+tulzas = 0
+
+for i in range(1, 8):
+    db = int(input(f"{i}. nap kávéfogyasztása (csésze): "))
+    eredmeny = Egeszseges(db)
+    print(eredmeny)
+    if eredmeny == "Túl sok kávé!":
+        tulzas += 1
+
+print(f"{tulzas} napon fogyasztott túl sok kávét.")
+
+60. feladat
+Pont: 18
+Cim: Kedvenc sorozatok
+Tipus: class,import,for,fájlkezelés
+Nehezseg: nehez
+Uj: igen
+ModulNev: sorozat.py
+ModulTartalom:
+class Sorozat:
+    def __init__(self, cim, epizodok):
+        self.cim = cim
+        self.epizodok = epizodok
+ModulVege
+
+A program három sorozat adatait tárolja objektumokban.
+
+a) A sorozat.py fájl rendelkezésre áll. Töltse be a modult és használja a benne lévő osztályt, vagy másolja be a fájl tartalmát a saját megoldásába!
+b) Kérje be három sorozat címét és epizódszámát! Hozzon létre Sorozat osztályú objektumokat, és tárolja őket egy listában!
+c) Jelenítse meg az összes sorozat adatait (például: A(z) Jóbarátok 236 epizódos.)!
+d) Határozza meg a legtöbb epizódos sorozatot, és a címét írja be a leghosszabb.txt fájlba (például: A(z) Jóbarátok a leghosszabb sorozat.)!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, B változat)
+
+```
+Add meg a sorozat címét! Jóbarátok
+Hány epizódos? 236
+Add meg a sorozat címét! Stranger Things
+Hány epizódos? 42
+Add meg a sorozat címét! The Walking Dead
+Hány epizódos? 177
+A(z) Jóbarátok 236 epizódos.
+A(z) Stranger Things 42 epizódos.
+A(z) The Walking Dead 177 epizódos.
+```
+(A leghosszabb.txt tartalma: A(z) Jóbarátok a leghosszabb sorozat.)
+
+Pontozas:
+vagy:import sorozat~~from sorozat import~~class Sorozat|Betölti a sorozat modult vagy bemásolja az osztályt|import sorozat – vagy másold be a Sorozat osztályt!|A Sorozat osztály elérhető!
+tartalmaz:Sorozat(|Létrehoz Sorozat objektumot|A Sorozat osztályból kell példányt létrehozni: sorozat.Sorozat(cim, epizodok)|Sorozat objektum létrehozva!
+tartalmaz:[]|Listát hoz létre a sorozatoknak|Hová kerül a három sorozat? Kell egy üres lista.|A lista megvan!
+tartalmaz:append|A sorozatokat eltárolja a listában|Az append() teszi be az objektumot a listába.|A sorozatok a listában!
+bekeres:Add meg a sorozat címét! |Bekéri a címet a megadott szöveggel|A bekérő szöveg pontosan: "Add meg a sorozat címét! " – a végén szóközzel.|A cím bekérése pontos!
+bekeres:Hány epizódos? |Bekéri az epizódszámot a megadott szöveggel|A bekérő szöveg pontosan: "Hány epizódos? "|Az epizódszám bekérése pontos!
+int_float:1|Az epizódszámot egész számmá alakítja|Az epizódszámokat össze kell hasonlítani – ehhez számmá kell alakítani.|Az epizódszám szám lett!
+for|For ciklust alkalmaz|A bekéréshez és a feldolgozáshoz is ciklus kell.|A for ciklus megvan!
+teszt:Jóbarátok,236,Stranger Things,42,The Walking Dead,177:A(z) Jóbarátok 236 epizódos.|Megjeleníti a sorozatok adatait (helyes formátum)|A minta: A(z) Jóbarátok 236 epizódos.|A kiírás formátuma rendben!
+teszt:Jóbarátok,236,Stranger Things,42,The Walking Dead,177:A(z) The Walking Dead 177 epizódos.|Mind a három sorozatot megjeleníti|A harmadik sorozat is megjelenik?|Mind a három sorozat látszik!
+tartalmaz:[0]|A keresést az első listaelemmel indítja|A leghosszabbnak először tegyük fel az elsőt: leghosszabb = sorozatok[0]|A keresés jól indul!
+if|Az epizódszámokat összehasonlítja|Ha egy sorozat hosszabb, mint az eddigi leghosszabb – ehhez if kell.|Az összehasonlítás megvan!
+teszt:Jóbarátok,236,Stranger Things,42,The Walking Dead,177:A(z) Jóbarátok a leghosszabb sorozat.|A fájlba írt szöveg formátuma helyes|A fájlba: A(z) CÍM a leghosszabb sorozat.|A fájl tartalma rendben!
+teszt:A,10,B,30,C,20:A(z) B a leghosszabb sorozat.|A leghosszabbat helyesen azonosítja (középen)|Ha a középső a leghosszabb, azt találja meg?|Jól azonosít!
+teszt:A,10,B,20,C,30:A(z) C a leghosszabb sorozat.|A leghosszabbat helyesen azonosítja (a végén)|Ha az utolsó a leghosszabb, azt írja a fájlba?|Az utolsó is jó!
+tartalmaz:open|Megnyitja a fájlt|A fájlt az open() nyitja meg írásra ("w").|A fájl megnyitva!
+tartalmaz:leghosszabb.txt|A leghosszabb.txt fájlt használja|A fájl neve pontosan: leghosszabb.txt|A fájlnév pontos!
+tartalmaz:write(|Beírja a címet a fájlba|A fájlba a write() metódussal írunk.|A fájlba írás megvan!
+
+Tippek:
+A modul betöltése: import sorozat
+Objektum: s = sorozat.Sorozat(cim, epizodok), majd sorozatok.append(s)
+A kiírás: print(f"A(z) {s.cim} {s.epizodok} epizódos.")
+A keresés: leghosszabb = sorozatok[0], majd ha s.epizodok > leghosszabb.epizodok: leghosszabb = s
+A fájl: f = open("leghosszabb.txt", "w"), f.write(...), f.close()
+
+Megoldas:
+import sorozat
+
+sorozatok = []
+
+for _ in range(3):
+    cim = input("Add meg a sorozat címét! ")
+    epizodok = int(input("Hány epizódos? "))
+    s = sorozat.Sorozat(cim, epizodok)
+    sorozatok.append(s)
+
+leghosszabb = sorozatok[0]
+
+for s in sorozatok:
+    print(f"A(z) {s.cim} {s.epizodok} epizódos.")
+    if s.epizodok > leghosszabb.epizodok:
+        leghosszabb = s
+
+f = open("leghosszabb.txt", "w")
+f.write(f"A(z) {leghosszabb.cim} a leghosszabb sorozat.")
+f.close()
+
+61. feladat
+Pont: 8
+Cim: Időjárás-tanácsadó
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+
+Írj programot, amely bekéri a kinti hőmérsékletet (egész szám, °C-ban), majd tanácsot ad, mit érdemes felvenni!
+5 fok alatt: Kabát kötelező!
+5–15 fok: Pulóver elég lesz.
+15–25 fok: Elég egy póló.
+25 fok felett: Rövidnadrág és szandál!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, C változat)
+
+Minta kód:
+
+```
+Mennyi a hőmérséklet? (°C): -3
+Kabát kötelező!
+
+Mennyi a hőmérséklet? (°C): 30
+Rövidnadrág és szandál!
+```
+
+Pontozas:
+bekeres:Mennyi a hőmérséklet? (°C): |Bekéri a hőmérsékletet a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a °C jel és a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Egész számmá alakítja a bevitelt|Az input() szöveget ad. Mivel teszed számmá?|A hőmérséklet szám lett!
+elif|Elágazást alkalmaz (if/elif/else)|Négy lehetőség van – ehhez if, elif és else kell.|Az elágazás megvan!
+teszt:-3:Kabát kötelező!|Hidegre a megfelelő szöveg|Mit ír ki -3 fokra?|A hideg rendben!
+teszt:5:Pulóver elég lesz.|5 fokra a megfelelő szöveg|Az 5 fok már nem „5 fok alatt” – mit ír ki?|Az 5 fok rendben!
+teszt:10:Pulóver elég lesz.|Hűvös időre a megfelelő szöveg|Mit ír ki 10 fokra?|A hűvös idő rendben!
+teszt:20:Elég egy póló.|Kellemes időre a megfelelő szöveg|Mit ír ki 20 fokra?|A kellemes idő rendben!
+teszt:30:Rövidnadrág és szandál!|Melegre a megfelelő szöveg|Mit ír ki 30 fokra?|A meleg rendben!
+
+Tippek:
+A bekérés: fok = int(input("Mennyi a hőmérséklet? (°C): "))
+Fentről lefelé: if fok < 5: ... elif fok <= 15: ... elif fok <= 25: ... else:
+
+Megoldas:
+fok = int(input("Mennyi a hőmérséklet? (°C): "))
+if fok < 5:
+    print("Kabát kötelező!")
+elif fok <= 15:
+    print("Pulóver elég lesz.")
+elif fok <= 25:
+    print("Elég egy póló.")
+else:
+    print("Rövidnadrág és szandál!")
+
+62. feladat
+Pont: 14
+Cim: Havi megtakarítás
+Tipus: def,for,if
+Nehezseg: kozepes
+Uj: igen
+
+Egy fiatal 6 hónapon át próbál megtakarítani. A cél: havi 20 000 Ft.
+
+Írjon egy Siker nevű függvényt! A függvény kapja meg a havi megtakarítás összegét. Ha az összeg legalább 20 000 Ft, adjon vissza "Sikerült!" szöveget, egyébként "Nem sikerült." szöveget!
+
+A főprogramban:
+- Hozzon létre egy számlálót a sikeres hónapoknak (kezdőértéke 0)!
+- Készítsen egy ciklust, amely pontosan 6-szor fut le!
+- A cikluson belül kérje be az összeget úgy, hogy a kérések sorszámozottan érkezzenek: "1. hónap megtakarítása (Ft): ", "2. hónap megtakarítása (Ft): " stb.!
+- Hívja meg a Siker függvényt, és írja ki az eredményét!
+- Ha sikerült, növelje a számlálót!
+- A ciklus után írja ki (például: "4 hónapban sikerült a cél!")
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, C változat)
+
+```
+1. hónap megtakarítása (Ft): 25000
+Sikerült!
+2. hónap megtakarítása (Ft): 15000
+Nem sikerült.
+3. hónap megtakarítása (Ft): 20000
+Sikerült!
+4. hónap megtakarítása (Ft): 18000
+Nem sikerült.
+5. hónap megtakarítása (Ft): 22000
+Sikerült!
+6. hónap megtakarítása (Ft): 30000
+Sikerült!
+4 hónapban sikerült a cél!
+```
+
+Pontozas:
+def:Siker|Készült Siker nevű függvény|A függvényt a def kulcsszóval kell létrehozni: def Siker(osszeg):|A Siker függvény megvan!
+return|A függvény visszaadja a szöveget|A függvény ne kiírja, hanem adja vissza a szöveget – melyik kulcsszóval?|A return megvan!
+teszt:20000,0,0,0,0,0:Sikerült!|Legalább 20 000 Ft-ra „Sikerült!”|Pont 20 000 Ft is elég – „Sikerült!” jön?|A határ jó!
+teszt:19999,0,0,0,0,0:Nem sikerült.|20 000 Ft alatt „Nem sikerült.”|Ha kevesebb, mint 20 000 – mit ad vissza a függvény?|A sikertelen hónap felismerve!
+tartalmaz:= 0|Számlálót hoz létre 0 kezdőértékkel|A ciklus előtt kell egy számláló, ami 0-ról indul.|A számláló megvan!
+for|for ciklust alkalmaz|Pontosan 6 hónap – melyik ciklus?|A for ciklus megvan!
+tartalmaz:. hónap megtakarítása (Ft): |A bekérések sorszámozottan érkeznek|A bekérő szöveg: f"{i}. hónap megtakarítása (Ft): "|A sorszámozott bekérés megvan!
+int_float:1|Az összeget számmá alakítja|Az összeget össze kell hasonlítani – int()!|Az összeg szám lett!
+tartalmaz:Siker(|Meghívja a Siker függvényt|A főprogramban hívd meg a függvényt: Siker(osszeg)|A függvényhívás megvan!
+if|Sikeres hónapnál vizsgál és növeli a számlálót|Ha az eredmény „Sikerült!”, akkor növeld a számlálót – if kell.|A vizsgálat megvan!
+teszt:25000,15000,20000,18000,22000,30000:4 hónapban sikerült a cél!|Kiírja a sikeres hónapok számát (minta szerint)|A ciklus után: „4 hónapban sikerült a cél!”|Az összesítés rendben!
+teszt:20000,20000,20000,20000,20000,20000:6 hónapban sikerült a cél!|A számláló minden sikeres hónapot számol|Minden sikeres hónapnál eggyel nő a számláló?|A számlálás pontos!
+teszt:0,0,0,0,0,50000:1 hónapban sikerült a cél!|A ciklus pontosan 6-szor fut le|A 6. hónap is beleszámít?|Pontosan 6 hónap!
+teszt:0,0,0,0,0,0:0 hónapban sikerült a cél!|Ha egyszer sem sikerült, 0-t ír ki|Ha egyszer sem sikerült, akkor is kiírja az összesítést?|A nullás eset rendben!
+
+Tippek:
+A függvény: def Siker(osszeg): – ha osszeg >= 20000: return "Sikerült!", különben return "Nem sikerült."
+A ciklus: for i in range(1, 7):
+A bekérés: osszeg = int(input(f"{i}. hónap megtakarítása (Ft): "))
+A számláló növelése: sikeres_honapok += 1
+
+Megoldas:
+def Siker(osszeg):
+    if osszeg >= 20000:
+        return "Sikerült!"
+    else:
+        return "Nem sikerült."
+
+sikeres_honapok = 0
+
+for i in range(1, 7):
+    osszeg = int(input(f"{i}. hónap megtakarítása (Ft): "))
+    eredmeny = Siker(osszeg)
+    print(eredmeny)
+    if eredmeny == "Sikerült!":
+        sikeres_honapok += 1
+
+print(f"{sikeres_honapok} hónapban sikerült a cél!")
+
+63. feladat
+Pont: 18
+Cim: Pizzafutárok
+Tipus: class,import,for,fájlkezelés
+Nehezseg: nehez
+Uj: igen
+ModulNev: futar.py
+ModulTartalom:
+class Futar:
+    def __init__(self, nev, perc):
+        self.nev = nev
+        self.perc = perc
+ModulVege
+
+A program három pizzafutár szállítási adatait tárolja objektumokban.
+
+a) A futar.py fájl rendelkezésre áll. Töltse be a modult és használja a benne lévő osztályt, vagy másolja be a fájl tartalmát a saját megoldásába!
+b) Kérje be három futár nevét és szállítási idejét (percben)! Hozzon létre Futar osztályú objektumokat, és tárolja őket egy listában!
+c) Jelenítse meg az összes futár adatait (például: Gyors Géza szállítási ideje: 25 perc)!
+d) Határozza meg a leggyorsabb futárt (legkisebb idő!), és a nevét írja be a leggyorsabb.txt fájlba (például: Profi Pisti a leggyorsabb futár.)!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, C változat)
+
+```
+Add meg a futár nevét! Gyors Géza
+Mennyi a szállítási ideje (perc)? 25
+Add meg a futár nevét! Profi Pisti
+Mennyi a szállítási ideje (perc)? 18
+Add meg a futár nevét! Villám Vili
+Mennyi a szállítási ideje (perc)? 22
+Gyors Géza szállítási ideje: 25 perc
+Profi Pisti szállítási ideje: 18 perc
+Villám Vili szállítási ideje: 22 perc
+```
+(A leggyorsabb.txt tartalma: Profi Pisti a leggyorsabb futár.)
+
+Pontozas:
+vagy:import futar~~from futar import~~class Futar|Betölti a futar modult vagy bemásolja az osztályt|import futar – vagy másold be a Futar osztályt!|A Futar osztály elérhető!
+tartalmaz:Futar(|Létrehoz Futar objektumot|A Futar osztályból kell példányt létrehozni: futar.Futar(nev, perc)|Futar objektum létrehozva!
+tartalmaz:[]|Listát hoz létre a futároknak|Hová kerül a három futár? Kell egy üres lista.|A lista megvan!
+tartalmaz:append|A futárokat eltárolja a listában|Az append() teszi be az objektumot a listába.|A futárok a listában!
+bekeres:Add meg a futár nevét! |Bekéri a nevet a megadott szöveggel|A bekérő szöveg pontosan: "Add meg a futár nevét! " – a végén szóközzel.|A név bekérése pontos!
+bekeres:Mennyi a szállítási ideje (perc)? |Bekéri a szállítási időt a megadott szöveggel|A bekérő szöveg pontosan: "Mennyi a szállítási ideje (perc)? "|Az idő bekérése pontos!
+int_float:1|A szállítási időt egész számmá alakítja|Az időket össze kell hasonlítani – ehhez számmá kell alakítani.|Az idő szám lett!
+for|For ciklust alkalmaz|A bekéréshez és a feldolgozáshoz is ciklus kell.|A for ciklus megvan!
+teszt:Gyors Géza,25,Profi Pisti,18,Villám Vili,22:Gyors Géza szállítási ideje: 25 perc|Megjeleníti a futárok adatait (helyes formátum)|A minta: Gyors Géza szállítási ideje: 25 perc|A kiírás formátuma rendben!
+teszt:Gyors Géza,25,Profi Pisti,18,Villám Vili,22:Villám Vili szállítási ideje: 22 perc|Mind a három futárt megjeleníti|A harmadik futár is megjelenik?|Mind a három futár látszik!
+tartalmaz:[0]|A keresést az első listaelemmel indítja|A leggyorsabbnak először tegyük fel az elsőt: leggyorsabb = futarok[0]|A keresés jól indul!
+if|A szállítási időket összehasonlítja|Ha egy futár gyorsabb, mint az eddigi leggyorsabb – ehhez if kell.|Az összehasonlítás megvan!
+teszt:Gyors Géza,25,Profi Pisti,18,Villám Vili,22:Profi Pisti a leggyorsabb futár.|A fájlba írt szöveg formátuma helyes|A fájlba: NÉV a leggyorsabb futár.|A fájl tartalma rendben!
+teszt:Anna,30,Béla,40,Csaba,20:Csaba a leggyorsabb futár.|A leggyorsabbat helyesen azonosítja (a végén)|Ha az utolsó a leggyorsabb, azt találja meg?|Jól azonosít!
+teszt:Anna,10,Béla,40,Csaba,20:Anna a leggyorsabb futár.|A leggyorsabbat helyesen azonosítja (elöl)|Ha az első a leggyorsabb, azt írja a fájlba?|Az első is jó!
+tartalmaz:open|Megnyitja a fájlt|A fájlt az open() nyitja meg írásra ("w").|A fájl megnyitva!
+tartalmaz:leggyorsabb.txt|A leggyorsabb.txt fájlt használja|A fájl neve pontosan: leggyorsabb.txt|A fájlnév pontos!
+tartalmaz:write(|Beírja a nevet a fájlba|A fájlba a write() metódussal írunk.|A fájlba írás megvan!
+
+Tippek:
+A modul betöltése: import futar
+Objektum: f = futar.Futar(nev, perc), majd futarok.append(f)
+A kiírás: print(f"{f.nev} szállítási ideje: {f.perc} perc")
+A keresés: leggyorsabb = futarok[0], majd ha f.perc < leggyorsabb.perc: leggyorsabb = f
+A fájl: cel = open("leggyorsabb.txt", "w"), cel.write(...), cel.close()
+
+Megoldas:
+import futar
+
+futarok = []
+
+for _ in range(3):
+    nev = input("Add meg a futár nevét! ")
+    perc = int(input("Mennyi a szállítási ideje (perc)? "))
+    f = futar.Futar(nev, perc)
+    futarok.append(f)
+
+leggyorsabb = futarok[0]
+
+for f in futarok:
+    print(f"{f.nev} szállítási ideje: {f.perc} perc")
+    if f.perc < leggyorsabb.perc:
+        leggyorsabb = f
+
+cel = open("leggyorsabb.txt", "w")
+cel.write(f"{leggyorsabb.nev} a leggyorsabb futár.")
+cel.close()
+
+64. feladat
+Pont: 8
+Cim: Csomagküldés díja
+Tipus: if
+Nehezseg: konnyu
+Uj: igen
+
+Írj programot, amely bekéri a csomag súlyát kilogrammban (egész szám), majd kiírja a szállítási díjat!
+2 kg-ig: Kis csomag: 500 Ft
+3–5 kg: Közepes csomag: 900 Ft
+6–20 kg: Nagy csomag: 1800 Ft
+20 kg felett: Túlméretezett csomag: 3500 Ft
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, K változat)
+
+Minta kód:
+
+```
+Add meg a csomag súlyát (kg): 1
+Kis csomag: 500 Ft
+
+Add meg a csomag súlyát (kg): 25
+Túlméretezett csomag: 3500 Ft
+```
+
+Pontozas:
+bekeres:Add meg a csomag súlyát (kg): |Bekéri a súlyt a megadott szöveggel|A bekérő szöveget betűre pontosan a mintából másold – a végén a szóköz is számít!|A bekérés pontos!
+int_float:1|Egész számmá alakítja a bevitelt|Az input() szöveget ad. Mivel teszed számmá?|A súly szám lett!
+elif|Elágazást alkalmaz (if/elif/else)|Négy lehetőség van – ehhez if, elif és else kell.|Az elágazás megvan!
+teszt:1:Kis csomag: 500 Ft|Kis csomagra a megfelelő díj|Mit ír ki 1 kg-ra?|A kis csomag rendben!
+teszt:2:Kis csomag: 500 Ft|2 kg-ra még kis csomag|A 2 kg még „2 kg-ig” – kis csomag?|A határ jó!
+teszt:4:Közepes csomag: 900 Ft|Közepes csomagra a megfelelő díj|Mit ír ki 4 kg-ra?|A közepes csomag rendben!
+teszt:10:Nagy csomag: 1800 Ft|Nagy csomagra a megfelelő díj|Mit ír ki 10 kg-ra?|A nagy csomag rendben!
+teszt:25:Túlméretezett csomag: 3500 Ft|Túlméretezett csomagra a megfelelő díj|Mit ír ki 25 kg-ra? Figyelj az ékezetekre!|A túlméretezett csomag rendben!
+
+Tippek:
+A bekérés: suly = int(input("Add meg a csomag súlyát (kg): "))
+Fentről lefelé: if suly <= 2: ... elif suly <= 5: ... elif suly <= 20: ... else:
+
+Megoldas:
+suly = int(input("Add meg a csomag súlyát (kg): "))
+if suly <= 2:
+    print("Kis csomag: 500 Ft")
+elif suly <= 5:
+    print("Közepes csomag: 900 Ft")
+elif suly <= 20:
+    print("Nagy csomag: 1800 Ft")
+else:
+    print("Túlméretezett csomag: 3500 Ft")
+
+65. feladat
+Pont: 14
+Cim: RePont visszaváltás
+Tipus: def,for,if
+Nehezseg: kozepes
+Uj: igen
+
+A RePont automatánál háromféle italcsomagolást lehet visszaváltani: PET palackot (pet), fém dobozt (fem) és üveget (uveg). A program 5 csomagolás visszaváltását kezeli.
+
+Írjon egy Vissza nevű függvényt! A függvény kapja meg a csomagolás típusát (szövegként). A visszaváltási értékek:
+"pet" → 50 Ft
+"fem" → 30 Ft
+"uveg" → 100 Ft
+bármi más → 0 Ft (ismeretlen csomagolás)
+
+A főprogramban:
+- Hozzon létre egy összegző változót (kezdőértéke 0)!
+- Készítsen egy ciklust, amely pontosan 5-ször fut le!
+- A cikluson belül kérje be a csomagolás típusát úgy, hogy a kérések sorszámozottan érkezzenek: "1. csomagolás típusa (pet/fem/uveg): ", "2. csomagolás típusa (pet/fem/uveg): " stb.!
+- Hívja meg a Vissza függvényt, és ha az érték nagyobb mint 0, írja ki a visszaváltott összeget (például: "Visszaváltva: 50 Ft"), és adja hozzá az összeghez!
+- Ha az érték 0, írja ki: "Ismeretlen csomagolás!"
+- A ciklus után írja ki a visszakapott összeget (például: "Visszakapott összeg: 230 Ft")
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, K változat)
+
+```
+1. csomagolás típusa (pet/fem/uveg): pet
+Visszaváltva: 50 Ft
+2. csomagolás típusa (pet/fem/uveg): fem
+Visszaváltva: 30 Ft
+3. csomagolás típusa (pet/fem/uveg): uveg
+Visszaváltva: 100 Ft
+4. csomagolás típusa (pet/fem/uveg): alma
+Ismeretlen csomagolás!
+5. csomagolás típusa (pet/fem/uveg): pet
+Visszaváltva: 50 Ft
+Visszakapott összeg: 230 Ft
+```
+
+Pontozas:
+def:Vissza|Készült Vissza nevű függvény|A függvényt a def kulcsszóval kell létrehozni: def Vissza(csomag):|A Vissza függvény megvan!
+return|A függvény visszaadja az értéket|A függvény ne kiírja, hanem adja vissza az összeget – melyik kulcsszóval?|A return megvan!
+teszt:pet,x,x,x,x:Visszaváltva: 50 Ft|PET palackra 50 Ft|Mennyit ér a pet?|A PET rendben!
+teszt:fem,x,x,x,x:Visszaváltva: 30 Ft|Fém dobozra 30 Ft|Mennyit ér a fem?|A fém doboz rendben!
+teszt:uveg,x,x,x,x:Visszaváltva: 100 Ft|Üvegre 100 Ft|Mennyit ér az uveg?|Az üveg rendben!
+teszt:alma,x,x,x,x:Ismeretlen csomagolás!|Ismeretlen csomagolásra a megfelelő üzenet|Ha a függvény 0-t ad vissza, mit ír ki a program?|Az ismeretlen csomagolás kezelve!
+tartalmaz:= 0|Összeg változót hoz létre 0 kezdőértékkel|A ciklus előtt kell egy változó, ami 0-ról indul.|Az összegző változó megvan!
+for|for ciklust alkalmaz|Pontosan 5 csomagolás – melyik ciklus?|A for ciklus megvan!
+tartalmaz:. csomagolás típusa (pet/fem/uveg): |A bekérések sorszámozottan érkeznek|A bekérő szöveg: f"{i}. csomagolás típusa (pet/fem/uveg): "|A sorszámozott bekérés megvan!
+if|Megvizsgálja a függvény eredményét|Ha az érték nagyobb, mint 0, akkor kiírás és összegzés – ehhez if kell.|A vizsgálat megvan!
+teszt:pet,fem,uveg,alma,pet:Visszakapott összeg: 230 Ft|A ciklus után kiírja a visszakapott összeget (minta szerint)|A ciklus után: „Visszakapott összeg: 230 Ft”|Az összesítés rendben!
+teszt:uveg,uveg,uveg,uveg,uveg:Visszakapott összeg: 500 Ft|Érvényes csomagolásnál növeli az összeget|Minden érvényes csomagolásnál hozzáadod az értéket?|Az összegzés pontos!
+teszt:x,x,x,x,pet:Visszakapott összeg: 50 Ft|A ciklus pontosan 5-ször fut le|Az 5. csomagolás is beleszámít?|Pontosan 5 kör!
+teszt:x,x,x,x,x:Visszakapott összeg: 0 Ft|Ismeretlen csomagolásnál nem növeli az összeget|Ismeretlen csomagolásnál nem szabad hozzáadni semmit.|A nullás eset rendben!
+
+Tippek:
+A függvény: def Vissza(csomag): – if csomag == "pet": return 50 ... else: return 0
+A ciklus: for i in range(1, 6):
+A bekérés (szöveg, nem kell int!): csomagolas = input(f"{i}. csomagolás típusa (pet/fem/uveg): ")
+Hozzáadás az összeghez: osszeg += ertek
+
+Megoldas:
+def Vissza(csomag):
+    if csomag == "pet":
+        return 50
+    elif csomag == "fem":
+        return 30
+    elif csomag == "uveg":
+        return 100
+    else:
+        return 0
+
+osszeg = 0
+
+for i in range(1, 6):
+    csomagolas = input(f"{i}. csomagolás típusa (pet/fem/uveg): ")
+    ertek = Vissza(csomagolas)
+    if ertek > 0:
+        print(f"Visszaváltva: {ertek} Ft")
+        osszeg += ertek
+    else:
+        print("Ismeretlen csomagolás!")
+
+print(f"Visszakapott összeg: {osszeg} Ft")
+
+66. feladat
+Pont: 18
+Cim: Zenei előadók
+Tipus: class,import,for,fájlkezelés
+Nehezseg: nehez
+Uj: igen
+ModulNev: eloado.py
+ModulTartalom:
+class Eloado:
+    def __init__(self, nev, kovetok):
+        self.nev = nev
+        self.kovetok = kovetok
+ModulVege
+
+A program három külföldi zenei előadó adatait tárolja objektumokban. A követők száma millióban értendő.
+
+a) Az eloado.py fájl rendelkezésre áll. Töltse be a modult és használja a benne lévő osztályt (vagy másolja be az osztályt a saját megoldásába)!
+b) Kérje be három előadó nevét és követőinek számát (millió)! Hozzon létre Eloado osztályú objektumokat, és tárolja őket egy listában!
+c) Jelenítse meg az összes előadó adatait (például: A(z) BTS követői: 85 millió)!
+d) Határozza meg a legtöbb követővel rendelkező előadót, és a nevét írja be a nepszeru.txt fájlba (például: BLACKPINK a legnépszerűbb előadó.)!
+
+A program kimenete pontosan egyezzen a mintával! Feltételezzük, hogy a felhasználó mindig érvényes adatot ír be. (2026-os ágazati vizsgafeladat, K változat)
+
+```
+Add meg az előadó nevét! BLACKPINK
+Hány millió követője van? 100
+Add meg az előadó nevét! Taylor Swift
+Hány millió követője van? 92
+Add meg az előadó nevét! BTS
+Hány millió követője van? 85
+A(z) BLACKPINK követői: 100 millió
+A(z) Taylor Swift követői: 92 millió
+A(z) BTS követői: 85 millió
+```
+(A nepszeru.txt tartalma: BLACKPINK a legnépszerűbb előadó.)
+
+Pontozas:
+vagy:import eloado~~from eloado import~~class Eloado|Betölti az eloado modult vagy bemásolja az osztályt|import eloado – vagy másold be az Eloado osztályt!|Az Eloado osztály elérhető!
+tartalmaz:Eloado(|Létrehoz Eloado objektumot|Az Eloado osztályból kell példányt létrehozni: eloado.Eloado(nev, kovetok)|Eloado objektum létrehozva!
+tartalmaz:[]|Listát hoz létre az előadóknak|Hová kerül a három előadó? Kell egy üres lista.|A lista megvan!
+tartalmaz:append|Az előadókat eltárolja a listában|Az append() teszi be az objektumot a listába.|Az előadók a listában!
+bekeres:Add meg az előadó nevét! |Bekéri a nevet a megadott szöveggel|A bekérő szöveg pontosan: "Add meg az előadó nevét! " – a végén szóközzel.|A név bekérése pontos!
+bekeres:Hány millió követője van? |Bekéri a követők számát a megadott szöveggel|A bekérő szöveg pontosan: "Hány millió követője van? "|A követők bekérése pontos!
+int_float:1|A követők számát egész számmá alakítja|A követők számát össze kell hasonlítani – ehhez számmá kell alakítani.|A követők száma szám lett!
+for|For ciklust alkalmaz|A bekéréshez és a feldolgozáshoz is ciklus kell.|A for ciklus megvan!
+teszt:BLACKPINK,100,Taylor Swift,92,BTS,85:A(z) BLACKPINK követői: 100 millió|Megjeleníti az előadók adatait (helyes formátum)|A minta: A(z) BLACKPINK követői: 100 millió|A kiírás formátuma rendben!
+teszt:BLACKPINK,100,Taylor Swift,92,BTS,85:A(z) BTS követői: 85 millió|Mind a három előadót megjeleníti|A harmadik előadó is megjelenik?|Mind a három előadó látszik!
+tartalmaz:[0]|A keresést az első listaelemmel indítja|A legnépszerűbbnek először tegyük fel az elsőt: legnepszerubb = eloadok[0]|A keresés jól indul!
+if|Összehasonlítást végez az előadók között|Ha egy előadónak több követője van, mint az eddigi legjobbnak – ehhez if kell.|Az összehasonlítás megvan!
+teszt:BLACKPINK,100,Taylor Swift,92,BTS,85:BLACKPINK a legnépszerűbb előadó.|A fájlba írt szöveg formátuma helyes|A fájlba: NÉV a legnépszerűbb előadó.|A fájl tartalma rendben!
+teszt:A,10,B,30,C,20:B a legnépszerűbb előadó.|A legnépszerűbbet helyesen azonosítja (középen)|Ha a középső a legnépszerűbb, azt találja meg?|Jól azonosít!
+teszt:A,10,B,20,C,30:C a legnépszerűbb előadó.|A legnépszerűbbet helyesen azonosítja (a végén)|Ha az utolsó a legnépszerűbb, azt írja a fájlba?|Az utolsó is jó!
+tartalmaz:open|Létrehozza/megnyitja a fájlt|A fájlt az open() nyitja meg írásra ("w").|A fájl megnyitva!
+tartalmaz:nepszeru.txt|A nepszeru.txt fájlt használja|A fájl neve pontosan: nepszeru.txt|A fájlnév pontos!
+tartalmaz:write(|Beírja a nevet a fájlba|A fájlba a write() metódussal írunk.|A fájlba írás megvan!
+
+Tippek:
+A modul betöltése: import eloado
+Objektum: e = eloado.Eloado(nev, kovetok), majd eloadok.append(e)
+A kiírás: print(f"A(z) {e.nev} követői: {e.kovetok} millió")
+A keresés: legnepszerubb = eloadok[0], majd ha e.kovetok > legnepszerubb.kovetok: legnepszerubb = e
+A fájl: cel = open("nepszeru.txt", "w"), cel.write(...), cel.close()
+
+Megoldas:
+import eloado
+
+eloadok = []
+
+for _ in range(3):
+    nev = input("Add meg az előadó nevét! ")
+    kovetok = int(input("Hány millió követője van? "))
+    e = eloado.Eloado(nev, kovetok)
+    eloadok.append(e)
+
+legnepszerubb = eloadok[0]
+
+for e in eloadok:
+    print(f"A(z) {e.nev} követői: {e.kovetok} millió")
+    if e.kovetok > legnepszerubb.kovetok:
+        legnepszerubb = e
+
+cel = open("nepszeru.txt", "w")
+cel.write(f"{legnepszerubb.nev} a legnépszerűbb előadó.")
+cel.close()
 

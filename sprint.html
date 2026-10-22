@@ -48,6 +48,9 @@ tr.me td{background:rgba(79,70,229,.14);}
 .tag{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;}
 .tag.ok{background:#14532d;color:#86efac}.tag.wait{background:#78350f;color:#fcd34d}.tag.no{background:#7f1d1d;color:#fca5a5}.tag.acc{background:#1e3a5f;color:#93c5fd}
 .task-text{line-height:1.55;font-size:.95rem;}
+.task-text pre.minta{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:10px;font-size:.85rem;overflow-x:auto;margin:6px 0;white-space:pre}
+.task-text .minta-cim{font-size:.75rem;color:#8b949e;font-weight:600;margin-top:6px}
+.task-text code{background:#0d1117;border-radius:4px;padding:0 4px}
 .main{display:grid;grid-template-columns:minmax(260px,36%) 1fr;gap:14px;}
 @media(max-width:900px){.main{grid-template-columns:1fr;}}
 #editor{height:340px;border:1px solid #30363d;border-radius:8px;}
@@ -77,6 +80,11 @@ const app = document.getElementById('app');
 let offset = 0;   // szerveridő - helyi idő
 const nowSrv = () => Date.now() + offset;
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// feladatleírás: a ```…``` minta szürke dobozba kerül, a „Minta kód:” felirat helyett „Minta:”; a szövegen belüli `…` kódként
+const feladatSzoveg = t => String(t ?? '').split(/(```[\s\S]*?```)/).map(p => p.startsWith('```')
+  ? '<div class="minta-cim">Minta:</div><pre class="minta">' + esc(p.replace(/^```\w*\r?\n?/, '').replace(/```$/, '').replace(/\s+$/, '')) + '</pre>'
+  : esc(p.replace(/^[ \t]*Minta kód:[ \t]*\r?$/gmi, '').replace(/^\s+|\s+$/g, '')).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\r?\n/g, '<br>')
+).join('');
 const fmtMs = ms => { const s = Math.max(0, ms) / 1000; const m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
 const fmtTimer = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
@@ -389,7 +397,7 @@ function buildStudent(key, s) {
     </div>
     <div class="main">
       <div>
-        <div class="card"><h2><i class="fas fa-list-check"></i>Feladat</h2><div class="task-text">${esc(s.leiras).replace(/\n/g, '<br>')}</div></div>
+        <div class="card"><h2><i class="fas fa-list-check"></i>Feladat</h2><div class="task-text">${feladatSzoveg(s.leiras)}</div></div>
         <div class="card"><h2><i class="fas fa-trophy"></i>Befutók</h2><div id="allas"></div></div>
       </div>
       <div>

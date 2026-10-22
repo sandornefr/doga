@@ -1082,9 +1082,9 @@ while bal <= jobb:
         talalat = kozep
         break
     elif szamok[kozep] < keresett:
-        bal = kozep + 1   // jobb felére szűkítünk
+        bal = kozep + 1   # jobb felére szűkítünk
     else:
-        jobb = kozep - 1  // bal felére szűkítünk
+        jobb = kozep - 1  # bal felére szűkítünk
 
 if talalat != -1:
     print(f"Megtalálva: {talalat}. indexen")

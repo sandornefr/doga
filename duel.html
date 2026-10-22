@@ -1003,9 +1003,13 @@ function parseTasks(txt) {
 
 function renderTaskBody(t) {
     if (!t.description) return '<em style="color:#6b7280">Nincs leírás.</em>';
-    return t.description
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\n/g,'<br>');
+    // a ```…``` minta szürke dobozba kerül (mint az ágazati gyakorlóban), a „Minta kód:” felirat helyett „Minta:”;
+    // a szövegen belüli `…` kódként jelenik meg
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return t.description.split(/(```[\s\S]*?```)/).map(p => p.startsWith('```')
+        ? '<div style="font-size:.75rem;color:#8b949e;font-weight:600;margin-top:6px">Minta:</div><pre>' + esc(p.replace(/^```\w*\r?\n?/, '').replace(/```$/, '').replace(/\s+$/, '')) + '</pre>'
+        : esc(p.replace(/^[ \t]*Minta kód:[ \t]*\r?$/gmi, '').replace(/^\s+|\s+$/g, '')).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\r?\n/g, '<br>')
+    ).join('');
 }
 
 // ── Duel chat ──────────────────────────────────────────────────────────────

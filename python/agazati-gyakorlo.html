@@ -89,6 +89,7 @@
       color:#cbd5e1; }
     .desc-scroll::-webkit-scrollbar { width:4px; }
     .desc-scroll::-webkit-scrollbar-thumb { background:#1f2937; border-radius:4px; }
+    .desc-scroll code { background:#0f172a; border:1px solid var(--border); border-radius:4px; padding:0 4px; font-size:.9em; }
     .desc-scroll pre { background:#0f172a; border:1px solid var(--border); border-radius:7px;
       padding:10px 12px; font-size:0.8rem; overflow-x:auto; margin:8px 0; color:#86efac;
       font-family:'Consolas','Courier New',monospace; white-space:pre; }
@@ -400,7 +401,9 @@ async function loadTasks() {
     const text = await res.text();
     allTasks = parseTasks(text);
     renderCounts();
-    setTab('konnyu');
+    // ?szint=konnyu|kozepes|nehez – a Python-tananyag (E1) gombjai így nyitják meg
+    const szint = new URLSearchParams(location.search).get('szint');
+    setTab(['konnyu', 'kozepes', 'nehez'].includes(szint) ? szint : 'konnyu');
     loadDone();
   } catch(e) {
     console.error('feladatok.txt betöltési hiba:', e);
@@ -523,10 +526,7 @@ function selectTask(task) {
   currentTask = task;
   lastOutput = '';
 
-  // Check panel reset
-  document.getElementById('check-panel').style.display = 'none';
-  document.getElementById('check-panel').innerHTML = '';
-  document.getElementById('check-banner').style.display = 'none';
+  // Check panel reset (a panel a leírással együtt újra létrejön – lásd lent)
   document.getElementById('btn-check').disabled = false;
 
   // Update task list highlight
@@ -569,7 +569,9 @@ function selectTask(task) {
   const modulHtml = task.modulNev && task.modulTartalom
     ? '<div class="minta-label"><i class="fas fa-file-code"></i> Segédfájl: ' + esc(task.modulNev) + '</div><pre>' + esc(task.modulTartalom) + '</pre>'
     : '';
-  document.getElementById('desc-content').innerHTML = voteHtml + formatDesc(task.szoveg) + modulHtml;
+  // az ellenőrzés paneljei a leírás dobozában vannak: a felülírásnál újra kellenek (különben az Ellenőrzés elakad)
+  document.getElementById('desc-content').innerHTML = voteHtml + formatDesc(task.szoveg) + modulHtml
+    + '<div id="check-panel"></div><div id="check-banner"></div>';
 
   document.getElementById('terminal').className = 'empty';
   document.getElementById('terminal').textContent = 'A kód futtatásának eredménye itt jelenik meg.';
@@ -623,7 +625,8 @@ function formatDesc(text) {
       html += '<div class="minta-label">Minta I/O:</div><pre>' + esc(code) + '</pre>';
     } else {
       const cleaned = part.replace(/^Minta kód:\s*/m, '').trim();
-      if (cleaned) html += '<p style="white-space:pre-wrap;">' + esc(cleaned) + '</p>';
+      // a szövegen belüli `fájlnév` kódként jelenik meg (ne fordított aposztrófokkal)
+      if (cleaned) html += '<p style="white-space:pre-wrap;">' + esc(cleaned).replace(/`([^`\n]+)`/g, '<code>$1</code>') + '</p>';
     }
   }
   return html;
@@ -844,11 +847,20 @@ async function checkCode() {
   const results = [];
   for (const crit of currentTask.criteria) {
     const parts = crit.split('|');
-    const spec  = parts[0].trim();
+    const raw   = parts[0].trimStart(); // a záró szóköz számít (bekeres, teszt) – mint az éles dolgozatban
+    const spec  = raw.trim();
     const label = (parts[1] || spec).trim();
     let pass = false;
 
-    if (spec.startsWith('bekeres:'))    { pass = code.includes(spec.slice(8)); }
+    if (spec.startsWith('bekeres:')) {
+      // az input() PONTOSAN ezzel a szöveggel hívódik (záró szóköz is) – python_teszt.js evaluateCriterion
+      const minta = raw.slice(8).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      pass = new RegExp(`\\binput\\s*\\(\\s*f?["']${minta}["']\\s*\\)`).test(code);
+    }
+    else if (spec === 'input_format') {
+      const calls = [...code.matchAll(/\binput\s*\(\s*f?["']([^"']*?)["']\s*\)/g)];
+      pass = calls.length > 0 && calls.every(m => m[1].endsWith(' '));
+    }
     else if (spec.startsWith('int_float:')) {
       const n = parseInt(spec.slice(10)) || 1;
       pass = (code.match(/\bint\s*\(|\bfloat\s*\(/g) || []).length >= n;
@@ -864,20 +876,21 @@ async function checkCode() {
       const n = parseInt(spec.slice(6)) || 1;
       pass = (code.match(/\binput\s*\(/g) || []).length >= n;
     }
-    else if (spec.startsWith('tartalmaz:')) { pass = code.includes(spec.slice(10)); }
-    else if (spec.startsWith('vagy:'))  { pass = spec.slice(5).split('~~').some(a => code.includes(a)); }
+    else if (spec.startsWith('tartalmaz:')) { pass = code.includes(raw.slice(10)); }
+    else if (spec.startsWith('vagy:'))  { pass = raw.slice(5).split('~~').some(a => code.includes(a)); }
     else if (spec === 'def' || spec.startsWith('def:')) { pass = /\bdef\b/.test(code); } // def:Név – mint az éles dolgozatban
     else if (spec === 'return')         { pass = /\breturn\b/.test(code); }
     else if (spec === 'while')          { pass = /\bwhile\b/.test(code); }
     else if (spec === 'for')            { pass = /\bfor\b/.test(code); }
     else if (spec.startsWith('teszt:')) {
-      const rest = spec.slice(6);
+      const rest = raw.slice(6);
       // Az ELSŐ kettőspont választja el a bemenetet a várt kimenettől (a várt kimenetben is
-      // lehet kettőspont, pl. "teszt:5,3:A nagyobb szám: 5") – mint az éles dolgozatban.
+      // lehet kettőspont, pl. "teszt:5,3:A nagyobb szám: 5") – mint az éles dolgozatban
+      // (bemenet nélküli teszt is: "teszt::…"; a várt szöveget nem vágjuk le).
       const sep  = rest.indexOf(':');
-      if (sep > 0) {
+      if (sep >= 0) {
         const inputs   = rest.slice(0, sep) ? rest.slice(0, sep).split(',') : [];
-        const expected = rest.slice(sep + 1).trim();
+        const expected = rest.slice(sep + 1);
         pass = await runWithMockInputs(code, inputs, expected);
       }
     }
@@ -893,8 +906,15 @@ async function checkCode() {
   if (passed === results.length) { saveAgazatiProgress(currentTask); markDone(currentTask); }
 }
 
+// Ha az előző futás időtúllépés miatt újraindította a motort, megvárjuk (különben a jó megoldás is elbukna).
+async function waitPyWorker(ms = 30000) {
+  const t0 = Date.now();
+  while (!(pyWorker && pyWorkerReady) && Date.now() - t0 < ms) await new Promise(r => setTimeout(r, 200));
+  return !!(pyWorker && pyWorkerReady);
+}
+
 async function runWithMockInputs(code, inputs, expected) {
-  if (!pyWorker || !pyWorkerReady) return false;
+  if (!(await waitPyWorker())) return false;
   try {
     // Mint az éles dolgozatban: a bekérő szöveg és a beírt érték NEM kerül a kimenetbe,
     // különben a bemenetként megadott szám a kimenetben "megtalálhatónak" számítana.
