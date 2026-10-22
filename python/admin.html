@@ -883,6 +883,7 @@
                         <option value="elutasitva">Elutasítva</option>
                         <option value="megvalositva">Megvalósítva</option>
                     </select>
+                    <button onclick="letoltElfogadottJavaslatok()" title="Az elfogadott javaslatok egy fájlban (a feladatbankba illesztéshez)" style="padding:3px 10px;background:rgba(74,222,128,.12);border:1px solid #4ade80;border-radius:6px;color:#4ade80;cursor:pointer;font-size:0.78rem;"><i class="fas fa-download"></i> Elfogadottak letöltése</button>
                 </div>
                 <div id="feladat-javaslatok-lista"></div>
             </div>
@@ -4204,6 +4205,19 @@ Adj választ CSAK JSON formátumban, SEMMI MÁS szöveget ne írj:
                         <button onclick="openMegvalositModal(${j.id})"           style="padding:5px 12px;background:rgba(251,191,36,.12);border:1px solid #fbbf24;border-radius:6px;color:#fbbf24;font-size:0.8rem;cursor:pointer;">🏆 Megvalósítva</button>
                     </div>
                 </div>`).join('');
+        }
+
+        // Az elfogadott javaslatok letöltése egy JSON-fájlba (a feladatok.txt-be illesztéshez)
+        async function letoltElfogadottJavaslatok() {
+            if (!_feladatJavaslatok || !_feladatJavaslatok.length) await loadFeladatJavaslatok();
+            const lista = (_feladatJavaslatok || []).filter(j => j.statusz === 'elfogadva');
+            if (!lista.length) { alert('Nincs elfogadott javaslat.'); return; }
+            const blob = new Blob([JSON.stringify(lista, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'elfogadott_feladatok_' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
         async function frissitFeladat(id, statusz) {
