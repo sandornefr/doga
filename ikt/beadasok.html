@@ -235,7 +235,7 @@ async function ellenoriz(b) {
     add('„Tudj meg többet!” hivatkozás, új lapon', 2, 'nem', '');
     add('Rendezetlen lista 3 jellemzővel', 1, 'nem', '');
     add('Rendezett lista 3 „leg”-gel', 1, 'nem', '');
-    add('Táblázat: fejléc + 3 sor, a táblázatnak és minden cellájának szegélye', 3, 'nem', '');
+    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, 'nem', '');
   } else {
     const h1 = szoveg(doc.querySelector('h1'));
     const kapott = kapottTema(b);
@@ -289,20 +289,20 @@ async function ellenoriz(b) {
     const thDb = tbl ? tbl.querySelectorAll('th').length : 0;
     const adatSor = tbl ? [...tbl.querySelectorAll('tr')].filter(tr => tr.querySelector('td')).length : 0;
     const css = cssSzoveg.replace(/\/\*[\s\S]*?\*\//g, '');
-    // Szegély: inline stílus minden cellán (így tanulják), vagy th, td szabály a style.css-ben.
+    // Szegély a style.css-ből (így ellenőrizhető, hogy a CSS-csatolás működik); a cellákba írt stílus nem elég.
     const cssSzegely = /(^|[},\s])(th\s*,\s*td|td\s*,\s*th)\s*\{[^}]*border\s*:/i.test(css)
       || (/(^|[},\s])td\s*\{[^}]*border\s*:/i.test(css) && /(^|[},\s])th\s*\{[^}]*border\s*:/i.test(css));
     const cellak = tbl ? [...tbl.querySelectorAll('th, td')] : [];
     const inlineSzegely = cellak.length > 0 && cellak.every(c => /border\s*:/i.test(c.getAttribute('style') || ''));
-    const cellaSzegely = cssSzegely || inlineSzegely;
+    const cellaSzegely = cssSzegely;
     const hibak = [];
     if (!tbl) hibak.push('nincs táblázat');
     else {
       if (thDb < 3) hibak.push('fejléc: ' + thDb + ' th');
       if (adatSor < 3) hibak.push('adatsor: ' + adatSor);
     }
-    if (!cellaSzegely) hibak.push('nincs szegély minden cellán (style="border: …")');
-    add('Táblázat: fejléc + 3 sor, a táblázatnak és minden cellájának szegélye', 3, hibak.length ? 'nem' : 'kezi',
+    if (!cellaSzegely) hibak.push(inlineSzegely ? 'a szegély a cellákban van, nem a style.css-ben' : 'a style.css-ben nincs th, td szegély');
+    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, hibak.length ? 'nem' : 'kezi',
       hibak.length ? hibak.join(', ') : `${thDb} oszlop, ${adatSor} adatsor – a megadott oszlopok?`);
   }
 

@@ -97,11 +97,14 @@ iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;
       <li>Tölts le a pixabay.com oldalról egy, a témáddal kapcsolatos vagy arra jellemző képet, ne a legnagyobb felbontásban! Mentsd az img mappába, és tedd be az oldalra, a Bemutatás bekezdése alá! Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!</li>
       <li>Az Érdekességek bekezdése alá készíts egy hivatkozást „Tudj meg többet!” szöveggel egy olyan oldalra, ahol többet megtudhatunk a témádról! A hivatkozás új lapon nyíljon meg!</li>
       <li>A Jellemzők alá készíts rendezetlen listát 3 dologról, ami jellemző a témádra! (Pl.: a ló: gyors, erős, tanulékony.)</li>
-      <li>Az Adatok alá készíts táblázatot a témádnál megadott 3 oszloppal: egy fejléc sor és 3 sor adat! A táblázatnak és minden cellájának legyen szegélye. Ehhez másold be:
-        <ul class="masold">
-          <li>a <code>&lt;table&gt;</code> nyitó tagjébe: <code>style="border-collapse: collapse;"</code></li>
-          <li>minden <code>&lt;th&gt;</code> és <code>&lt;td&gt;</code> nyitó tagjébe: <code>style="border: 1px solid black; padding: 5px;"</code></li>
-        </ul></li>
+      <li>Az Adatok alá készíts táblázatot a témádnál megadott 3 oszloppal: egy fejléc sor és 3 sor adat! A táblázatnak és minden cellájának legyen szegélye. Ehhez másold be a <code>css/style.css</code> fájlba ezt:
+<pre class="kod">table {
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
+    padding: 5px;
+}</pre></li>
       <li>Nézz utána az interneten, mi a 3 „leg” a témádban! Hogy mit keress, azt a témád alatt látod. Írd be őket a Rangsor alá rendezett listába, a legelsővel kezdve! (Pl.: a 3 legnagyobb lófajta: shire, belga hidegvérű, clydesdale.)</li>
       <li>Mentsd el! Töltsd fel lent, a <b>Beadás</b> részben ezeket a fájlokat: <code>index.html</code>, <code>keplink.html</code>, <code>listak.html</code>, <code>orarend.html</code>, <code>tema.html</code>, <code>style.css</code> és a képeidet! (Vagy add meg a github.io címedet.)</li>
     </ol>
@@ -173,12 +176,13 @@ const PONTOZO = [
   ['„Tudj meg többet!” hivatkozás a témához illő oldalra, új lapon nyílik', 2],
   ['Rendezetlen lista 3 jellemzővel (Jellemzők alatt)', 1],
   ['Rendezett lista a megadott 3 „leg”-gel, helyes sorrendben (Rangsor alatt)', 1],
-  ['Táblázat: fejléc + 3 sor, a megadott oszlopokkal, a táblázatnak és minden cellájának szegélye', 3],
+  ['Táblázat: fejléc + 3 sor, a megadott oszlopokkal, minden cellának szegélye a style.css-ből', 3],
   ['Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1],
 ];
 
 const MINTA = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><title>Weboldalam</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222}nav{margin-bottom:10px}
+table{border-collapse:collapse}th,td{border:1px solid black;padding:5px}
 .kephely{width:240px;height:110px;background:#ddd;color:#555;display:flex;align-items:center;justify-content:center;font-size:13px;text-align:center;margin:6px 0}</style>
 </head><body>
 <nav><a href="#">Főoldal</a> | <a href="#">Képlink</a> | <a href="#">Listák</a> | <a href="#">Órarend</a> | <a href="#">Témám</a></nav>
@@ -192,10 +196,10 @@ const MINTA = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><title
 <h2>Jellemzők</h2>
 <ul><li>gyors</li><li>erős</li><li>tanulékony</li></ul>
 <h2>Adatok</h2>
-<table style="border-collapse: collapse;"><tr><th style="border: 1px solid black; padding: 5px;">fajta</th><th style="border: 1px solid black; padding: 5px;">jellemző szín</th><th style="border: 1px solid black; padding: 5px;">mire használják</th></tr>
-<tr><td style="border: 1px solid black; padding: 5px;">lipicai</td><td style="border: 1px solid black; padding: 5px;">fehér</td><td style="border: 1px solid black; padding: 5px;">díjlovaglás</td></tr>
-<tr><td style="border: 1px solid black; padding: 5px;">póni</td><td style="border: 1px solid black; padding: 5px;">barna</td><td style="border: 1px solid black; padding: 5px;">gyereklovaglás</td></tr>
-<tr><td style="border: 1px solid black; padding: 5px;">arab telivér</td><td style="border: 1px solid black; padding: 5px;">szürke</td><td style="border: 1px solid black; padding: 5px;">versenyzés</td></tr></table>
+<table><tr><th>fajta</th><th>jellemző szín</th><th>mire használják</th></tr>
+<tr><td>lipicai</td><td>fehér</td><td>díjlovaglás</td></tr>
+<tr><td>póni</td><td>barna</td><td>gyereklovaglás</td></tr>
+<tr><td>arab telivér</td><td>szürke</td><td>versenyzés</td></tr></table>
 <h2>Rangsor</h2>
 <ol><li>shire</li><li>belga hidegvérű</li><li>clydesdale</li></ol>
 </body></html>`;
