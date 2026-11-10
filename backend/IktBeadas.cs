@@ -2,7 +2,7 @@ using Microsoft.Data.Sqlite;
 
 namespace KandoTest;
 
-// IKT projektmunka beadások (9. évfolyam, pl. „Témaoldal”): tanulónként és feladatonként egy beadás,
+// IKT projektmunka beadások (9. és 10. évfolyam, pl. „Témaoldal”): tanulónként és feladatonként egy beadás,
 // a feltöltött fájlok (html, css, kép) az adatbázisban, BLOB-ként.
 public record IktFajlInfo(string Fajlnev, string Mime, long Meret);
 public record IktBeadasInfo(
@@ -170,7 +170,8 @@ public partial class Database
     // ── Témasorsolás ──────────────────────────────────────────────────────────
     private static readonly object IktTemaZar = new();
 
-    // A tanuló témája: ha már van, azt adja; ha nincs, a csoportjában (osztály + csoport) még
+    // A tanuló témája: ha már van, azt adja; ha nincs, a csoportjában (osztály + csoport; az osztály az évfolyamot is tartalmazza,
+    // pl. „9A”, „10A” – így a 9. és a 10. évfolyam külön sorsol) még
     // szabad témák közül sorsol egyet; ha mind foglalt, bármelyiket. Zár + IMMEDIATE tranzakció,
     // hogy két egyszerre érkező tanuló ne kapja ugyanazt.
     public IktTemaKiosztas GetOrAssignIktTema(string email, string? nev, string? osztaly, string? csoport,

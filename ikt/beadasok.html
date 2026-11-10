@@ -41,6 +41,10 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 .tema{color:#1d4ed8;font-weight:600;}
 .fej .nincs{color:#b54708;font-size:.9rem;}
 .fej button.ujra{border:1px solid #cbd2d9;background:#fff;border-radius:6px;padding:3px 8px;font:inherit;font-size:.82rem;cursor:pointer;color:#b42318;}
+.evfulek{display:flex;gap:6px;margin-bottom:12px;}
+.evfulek button{font:inherit;font-weight:700;padding:6px 16px;border-radius:99px;border:1.5px solid #cbd2d9;background:#fff;cursor:pointer;color:#334e68;}
+.evfulek button.on{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.evfulek button small{font-weight:400;opacity:.8;}
 details.temalista{margin-top:24px;background:#fff;border:1px solid #d9e2ec;border-radius:10px;padding:10px 16px;}
 details.temalista summary{cursor:pointer;font-weight:700;}
 table.tbl{border-collapse:collapse;width:100%;font-size:.88rem;margin-top:10px;}
@@ -72,6 +76,9 @@ const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
 let beadasok = [];   // tanulónként egy sor: beadás és/vagy kiosztott téma
 let temak = {};      // email → {id, temaSorszam}
 const ellenorzes = {};   // beadás id → eredmény
+// évfolyam az osztályból (a tanulónál „9A”, „10B”) – a 9. és a 10. évfolyam külön fülön
+const evf = b => (String(b.osztaly || '').match(/^\d+/) || [''])[0];
+let aktEvf = '9';
 
 async function betolt() {
   try {
@@ -92,9 +99,10 @@ async function betolt() {
     app.innerHTML = `<div class="kozep hiba">Nem sikerült betölteni: ${esc(e.message)}</div>`;
     return;
   }
-  const csoportok = [...new Set(beadasok.map(csoportNev))].sort();
-  app.innerHTML = `<div class="szuro"><label for="csop">Csoport:</label>
-    <select id="csop"><option value="">mind</option>${csoportok.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+  const evfDb = e => beadasok.filter(b => evf(b) === e).length;
+  app.innerHTML = `<div class="evfulek">${['9', '10'].map(e => `<button data-evf="${e}" class="${e === aktEvf ? 'on' : ''}">${e}. évfolyam <small>(${evfDb(e)})</small></button>`).join('')}</div>
+    <div class="szuro"><label for="csop">Csoport:</label>
+    <select id="csop"></select>
     <span class="db" id="db"></span></div>
     <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
     <div id="lista"></div>
@@ -103,6 +111,12 @@ async function betolt() {
       <tbody>${TEMAK.map((t, i) => `<tr><td>${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('')}</tbody></table>
     </details>`;
   document.getElementById('csop').addEventListener('change', listaRajz);
+  document.querySelectorAll('.evfulek button').forEach(btn => btn.addEventListener('click', () => {
+    aktEvf = btn.dataset.evf;
+    document.querySelectorAll('.evfulek button').forEach(x => x.classList.toggle('on', x === btn));
+    csoportLista(); listaRajz();
+  }));
+  csoportLista();
   listaRajz();
   for (const b of beadasok) { if (!b.nincsBeadas && b.fajlok.length) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); } }
 }
@@ -123,10 +137,15 @@ async function ujrasorsol(email) {
 }
 
 const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
+// a csoportválasztó csak a kiválasztott évfolyam csoportjait kínálja
+function csoportLista() {
+  const csoportok = [...new Set(beadasok.filter(b => evf(b) === aktEvf).map(csoportNev))].sort((a, b) => a.localeCompare(b, 'hu'));
+  document.getElementById('csop').innerHTML = '<option value="">mind</option>' + csoportok.map(c => `<option>${esc(c)}</option>`).join('');
+}
 
 function listaRajz() {
   const sz = document.getElementById('csop').value;
-  const lista = beadasok.filter(b => !sz || csoportNev(b) === sz);
+  const lista = beadasok.filter(b => evf(b) === aktEvf && (!sz || csoportNev(b) === sz));
   document.getElementById('db').textContent = lista.length + ' tanuló, ebből ' + lista.filter(b => !b.nincsBeadas).length + ' beadás';
   document.getElementById('lista').innerHTML = lista.length ? lista.map(b => `
     <div class="tanulo" id="t${b.id}">
