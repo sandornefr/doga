@@ -2600,6 +2600,36 @@ app.MapGet("/api/ikt/beadas/{id:int}/fajl/{fajlnev}", (int id, string fajlnev, H
     return f == null ? Results.NotFound() : IktFajlKuldes(ctx, f.Value);
 });
 
+// Témasorsolás: a feladatonkénti témák száma (Témaoldal: 35 téma).
+var iktTemaDb = new Dictionary<string, int> { ["temaoldal"] = 35 };
+
+// A tanuló témája (ha még nincs, a rendszer kisorsolja; cserélni nem lehet) — GET /api/ikt/tema?feladat=temaoldal
+app.MapGet("/api/ikt/tema", (HttpContext ctx, string? feladat, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    var f = (feladat ?? "").Trim().ToLowerInvariant();
+    if (!iktTemaDb.TryGetValue(f, out var db35)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    var t = db.GetOrAssignIktTema(be.Email, be.Nev, be.Osztaly, be.Csoport, f, db35);
+    return Results.Ok(new { temaSorszam = t.TemaSorszam, t.CreatedAt });
+});
+
+// Kiosztott témák (oktató) — GET /api/ikt/temak?feladat=temaoldal
+app.MapGet("/api/ikt/temak", (HttpContext ctx, string? feladat, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var f = (feladat ?? "").Trim().ToLowerInvariant();
+    if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    return Results.Ok(new { temak = db.GetIktTemak(f) });
+});
+
+// Egy tanuló témájának törlése (a következő megnyitáskor új témát sorsol) — DELETE /api/ikt/tema/{id}
+app.MapDelete("/api/ikt/tema/{id:int}", (int id, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return db.DeleteIktTema(id) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
 // Előnézet aláírt linken: a relatív útvonal (pl. css/style.css, img/x.jpg) a fájlnévre képeződik le.
 // GET /api/ikt/elonezet/{id}/{token}/{**utvonal}
 app.MapGet("/api/ikt/elonezet/{id:int}/{tok}/{**utvonal}", (int id, string tok, string? utvonal, HttpContext ctx, Database db) =>

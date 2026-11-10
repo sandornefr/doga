@@ -38,6 +38,14 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 .megj{color:#52606d;font-size:.85rem;}
 .kozep{text-align:center;padding:60px 20px;}
 .hiba{color:#b42318;}
+.tema{color:#1d4ed8;font-weight:600;}
+.fej .nincs{color:#b54708;font-size:.9rem;}
+.fej button.ujra{border:1px solid #cbd2d9;background:#fff;border-radius:6px;padding:3px 8px;font:inherit;font-size:.82rem;cursor:pointer;color:#b42318;}
+details.temalista{margin-top:24px;background:#fff;border:1px solid #d9e2ec;border-radius:10px;padding:10px 16px;}
+details.temalista summary{cursor:pointer;font-weight:700;}
+table.tbl{border-collapse:collapse;width:100%;font-size:.88rem;margin-top:10px;}
+table.tbl th,table.tbl td{border:1px solid #e4e7eb;padding:4px 8px;text-align:left;}
+table.tbl th{background:#f0f4f8;}
 </style>
 </head>
 <body>
@@ -48,7 +56,9 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
+<script src="temak.js"></script>
 <script>
+const TEMAK = window.IKT_TEMAK;
 const API = 'https://agazati.up.railway.app';
 const FELADAT = 'temaoldal';
 const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
@@ -59,14 +69,25 @@ const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem
 const TOKEN = u && u.szerep === 'oktato' ? u.token : '';
 const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
 
-let beadasok = [];
+let beadasok = [];   // tanulónként egy sor: beadás és/vagy kiosztott téma
+let temak = {};      // email → {id, temaSorszam}
 const ellenorzes = {};   // beadás id → eredmény
 
 async function betolt() {
   try {
-    const r = await fetch(API + '/api/ikt/beadasok?feladat=' + FELADAT, { headers: AUTH });
-    if (!r.ok) throw new Error('Hiba ' + r.status);
-    beadasok = (await r.json()).beadasok || [];
+    const [r, rt] = await Promise.all([
+      fetch(API + '/api/ikt/beadasok?feladat=' + FELADAT, { headers: AUTH }),
+      fetch(API + '/api/ikt/temak?feladat=' + FELADAT, { headers: AUTH })]);
+    if (!r.ok || !rt.ok) throw new Error('Hiba ' + (r.ok ? rt.status : r.status));
+    const bl = (await r.json()).beadasok || [];
+    const tl = (await rt.json()).temak || [];
+    temak = {};
+    tl.forEach(t => temak[t.email] = t);
+    // Aki már kapott témát, de még nem adott be, az is a listán van.
+    beadasok = bl.slice();
+    tl.filter(t => !bl.some(b => b.email === t.email)).forEach(t => beadasok.push(
+      { id: 't' + t.id, email: t.email, nev: t.nev, osztaly: t.osztaly, csoport: t.csoport, fajlok: [], nincsBeadas: true }));
+    beadasok.sort((a, b) => csoportNev(a).localeCompare(csoportNev(b), 'hu') || String(a.nev || '').localeCompare(String(b.nev || ''), 'hu'));
   } catch (e) {
     app.innerHTML = `<div class="kozep hiba">Nem sikerült betölteni: ${esc(e.message)}</div>`;
     return;
@@ -76,10 +97,29 @@ async function betolt() {
     <select id="csop"><option value="">mind</option>${csoportok.map(c => `<option>${esc(c)}</option>`).join('')}</select>
     <span class="db" id="db"></span></div>
     <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
-    <div id="lista"></div>`;
+    <div id="lista"></div>
+    <details class="temalista"><summary>A 35 téma</summary>
+      <table class="tbl"><thead><tr><th>#</th><th>Téma</th><th>A táblázat oszlopai</th><th>Rangsor: keresd meg…</th></tr></thead>
+      <tbody>${TEMAK.map((t, i) => `<tr><td>${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('')}</tbody></table>
+    </details>`;
   document.getElementById('csop').addEventListener('change', listaRajz);
   listaRajz();
-  for (const b of beadasok) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); }
+  for (const b of beadasok) { if (!b.nincsBeadas) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); } }
+}
+
+function temaNev(b) {
+  const t = temak[b.email];
+  return t && TEMAK[t.temaSorszam - 1] ? t.temaSorszam + '. ' + TEMAK[t.temaSorszam - 1][0] : 'nincs téma';
+}
+
+async function ujrasorsol(email) {
+  const t = temak[email];
+  if (!t) return;
+  const b = beadasok.find(x => x.email === email);
+  if (!confirm('Biztosan törlöd ' + (b && b.nev ? b.nev : email) + ' témáját (' + temaNev(b) + ')?\nA következő megnyitáskor a rendszer új témát sorsol neki.')) return;
+  const r = await fetch(API + '/api/ikt/tema/' + t.id, { method: 'DELETE', headers: AUTH });
+  if (!r.ok) { alert('Nem sikerült törölni (' + r.status + ').'); return; }
+  betolt();
 }
 
 const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
@@ -87,18 +127,20 @@ const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + 
 function listaRajz() {
   const sz = document.getElementById('csop').value;
   const lista = beadasok.filter(b => !sz || csoportNev(b) === sz);
-  document.getElementById('db').textContent = lista.length + ' beadás';
+  document.getElementById('db').textContent = lista.length + ' tanuló, ebből ' + lista.filter(b => !b.nincsBeadas).length + ' beadás';
   document.getElementById('lista').innerHTML = lista.length ? lista.map(b => `
     <div class="tanulo" id="t${b.id}">
       <div class="fej" onclick="this.parentElement.classList.toggle('nyitva')">
         <span class="nev">${esc(b.nev || b.email)}</span>
         <span class="oszt">${esc(csoportNev(b))}</span>
-        <span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>
+        <span class="tema">${esc(temaNev(b))}</span>
+        ${temak[b.email] ? `<button class="ujra" title="A tanuló témájának törlése: a következő megnyitáskor új témát kap" onclick="event.stopPropagation(); ujrasorsol(${esc(JSON.stringify(b.email))})"><i class="fas fa-shuffle"></i> Új téma</button>` : ''}
+        ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
         ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
-        <span class="pont" id="p${b.id}">…</span>
+        <span class="pont" id="p${b.id}">${b.nincsBeadas ? '' : '…'}</span>
       </div>
-      <div class="reszletek" id="r${b.id}"><p class="megj">Ellenőrzés…</p></div>
+      <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : 'Ellenőrzés…'}</p></div>
     </div>`).join('') : '<div class="kozep">Még nincs beadás.</div>';
   lista.forEach(b => { if (ellenorzes[b.id]) sorFrissit(b); });
 }
@@ -120,6 +162,15 @@ function sorFrissit(b) {
 }
 
 // ── Előellenőrzés a pontozó szerint ──
+function kapottTema(b) {
+  const t = temak[b.email];
+  return t && TEMAK[t.temaSorszam - 1] ? TEMAK[t.temaSorszam - 1][0] : null;
+}
+// Kis-nagybetű és szóközök nélkül; a zárójeles kiegészítés elhagyható (pl.: „Macskafélék (vadon élő)” = „Macskafélék”).
+function temaEgyezik(h1, tema) {
+  const n = x => String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/[.!]+$/, '').trim();
+  return n(h1) === n(tema) || n(h1) === n(tema.replace(/\s*\(.*?\)\s*/g, ' '));
+}
 async function fajlSzoveg(b, nev) {
   const f = b.fajlok.find(x => x.fajlnev.toLowerCase() === nev.toLowerCase());
   if (!f) return null;
@@ -187,7 +238,10 @@ async function ellenoriz(b) {
     add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, 'nem', '');
   } else {
     const h1 = szoveg(doc.querySelector('h1'));
-    add('h1: a téma neve', 1, h1 ? 'kezi' : 'nem', h1 ? '„' + h1 + '” – egyezik a témájával?' : 'nincs h1');
+    const kapott = kapottTema(b);
+    if (!h1) add('h1: a téma neve', 1, 'nem', 'nincs h1');
+    else if (!kapott) add('h1: a téma neve', 1, 'kezi', '„' + h1 + '” – a tanulónak nincs kiosztott témája');
+    else add('h1: a téma neve', 1, temaEgyezik(h1, kapott) ? 'ok' : 'nem', '„' + h1 + '” · kapott téma: „' + kapott + '”');
     const h2k = [...doc.querySelectorAll('h2')].map(szoveg);
     const jo = h2k.length >= 5 && H2_SORREND.every((c, i) => (h2k[i] || '').toLowerCase() === c.toLowerCase());
     add('Öt alcím (h2) jó sorrendben', 1, jo ? 'ok' : 'nem', jo ? '' : 'van: ' + (h2k.join(', ') || 'nincs h2'));
@@ -250,8 +304,12 @@ async function ellenoriz(b) {
 
   const hianyFajl = [...OLDALAK, 'style.css'].filter(n => !vane(n));
   const kep = b.fajlok.some(f => /\.(jpe?g|png|gif|webp)$/i.test(f.fajlnev));
-  add('Minden fájl beadva (HTML-ek, style.css, képek)', 1, hianyFajl.length || !kep ? 'nem' : 'kezi',
-    hianyFajl.length || !kep ? 'hiányzik: ' + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : 'a téma egyezik a sorszámával?');
+  const kapott = kapottTema(b);
+  const h1Jo = !!(doc && kapott && temaEgyezik(szoveg(doc.querySelector('h1')), kapott));
+  add('Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1,
+    hianyFajl.length || !kep || !h1Jo ? 'nem' : 'ok',
+    [hianyFajl.length || !kep ? 'hiányzik: ' + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : '',
+     !kapott ? 'nincs kiosztott téma' : !h1Jo ? 'a h1 nem a kapott téma' : ''].filter(Boolean).join(' · '));
 
   const auto = sorok.filter(s => s.allapot === 'ok').reduce((a, s) => a + s.max, 0);
   const autoMax = sorok.filter(s => s.allapot !== 'kezi').reduce((a, s) => a + s.max, 0);

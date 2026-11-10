@@ -29,6 +29,9 @@ table.tbl td.sz{width:36px;text-align:right;color:#52606d;}
 .megj{color:#52606d;font-size:.9rem;margin-top:6px;}
 .minta-cim{color:#52606d;margin-bottom:6px;}
 iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;background:#fff;}
+.temam{margin-top:10px;padding:12px 16px;background:#eef6ff;border:1px solid #b6d4fe;border-radius:8px;min-height:84px;}
+.temam .nev{font-size:1.35rem;font-weight:700;color:#1d4ed8;margin:2px 0 6px;}
+.temam .hiba{color:#b42318;}
 .ponthatar{margin-top:8px;font-size:.92rem;}
 /* Beadás */
 .drop{border:2px dashed #9aa5b1;border-radius:10px;padding:22px;text-align:center;color:#52606d;background:#fafbfc;cursor:pointer;}
@@ -72,7 +75,8 @@ iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;
   <div class="alcim">9. évfolyam · az eddig tanultak: HTML oldal, címsorok, bekezdés, kép, link, listák, táblázat, menü</div>
 
   <div class="card">
-    <p>A saját weboldaladra készíts egy új oldalt a témádról. A témád a naplóbeli sorszámod szerint van a listában.</p>
+    <p>A saját weboldaladra készíts egy új oldalt a témádról.</p>
+    <div id="temam" class="temam">A témád betöltése…</div>
   </div>
 
   <h2>Feladatok</h2>
@@ -105,11 +109,13 @@ th, td {
     <div class="sarga"><i class="fas fa-magnifying-glass"></i> Ellenőrizd a böngészőben: minden menüpont működik? A kép látszik?</div>
   </div>
 
+  <div id="temak-resz" hidden>
   <h2>Témák</h2>
   <table class="tbl" id="temak">
     <thead><tr><th>#</th><th>Téma</th><th>A táblázat oszlopai</th><th>Rangsor: keresd meg…</th></tr></thead>
     <tbody></tbody>
   </table>
+  </div>
   <p class="megj">Ha két forrás kicsit eltér, bármelyik elfogadható.</p>
 
   <h2>Minta</h2>
@@ -147,49 +153,13 @@ th, td {
   </div>
 </template>
 
+<script src="temak.js"></script>
 <script>
+const TEMAK = window.IKT_TEMAK;
 const API = 'https://agazati.up.railway.app';
 const FELADAT = 'temaoldal';
 const MAX_FAJL = 12, MAX_MERET = 3 * 1024 * 1024;
 const KITERJ = ['html', 'css', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-const TEMAK = [
-  ['Kutyafajták', 'fajta | méret | származási ország', 'a 3 legnagyobb kutyafajtát'],
-  ['Macskafélék (vadon élő)', 'állat | hol él | mit eszik', 'a 3 legnagyobb macskafélét'],
-  ['A Naprendszer bolygói', 'bolygó | hányadik a Naptól | van-e holdja', 'a 3 legnagyobb bolygót'],
-  ['Hangszerek', 'hangszer | csoport (húros, fúvós, ütős) | milyen zenében hallható', 'a 3 legnagyobb vonós hangszert'],
-  ['Gyors állatok', 'állat | legnagyobb sebessége | hol él', 'a 3 leggyorsabb szárazföldi állatot'],
-  ['A világ folyói', 'folyó | kontinens | hossz', 'a világ 3 leghosszabb folyóját'],
-  ['A világ tavai', 'tó | ország | édes vagy sós', 'a világ 3 legnagyobb tavát'],
-  ['Szigetek', 'sziget | ország | melyik óceánban van', 'a világ 3 legnagyobb szigetét'],
-  ['Hazai erdei állatok', 'állat | mit eszik | mekkora', 'a 3 legnagyobb hazai erdei állatot'],
-  ['Óceánok', 'óceán | terület | egy állat, ami ott él', 'a 3 legnagyobb óceánt'],
-  ['Kontinensek', 'kontinens | egy ország | egy jellemző állat', 'a 3 legnagyobb kontinenst'],
-  ['Magyar városok', 'város | vármegye | egy nevezetesség', 'a 3 legnépesebb magyar várost'],
-  ['Magas épületek', 'épület | város | magasság', 'a világ 3 legmagasabb épületét'],
-  ['A világ hegyei', 'hegy | ország | magasság', 'a világ 3 legmagasabb hegyét'],
-  ['Madarak', 'madár | színe | tud-e repülni', 'a 3 legnagyobb madarat'],
-  ['Sivatagok', 'sivatag | kontinens | forró vagy hideg', 'a világ 3 legnagyobb sivatagát'],
-  ['Vízesések', 'vízesés | ország | magasság', 'a világ 3 legmagasabb vízesését'],
-  ['Magyar hegységek', 'hegység | legmagasabb csúcsa | magasság', 'a 3 legmagasabb magyar hegycsúcsot'],
-  ['Európai országok', 'ország | főváros | pénznem', 'a 3 legnagyobb területű európai országot'],
-  ['A világ országai', 'ország | kontinens | főváros', 'a világ 3 legnépesebb országát'],
-  ['Holdak a Naprendszerben', 'hold | melyik bolygó holdja | átmérő', 'a Naprendszer 3 legnagyobb holdját'],
-  ['Magyar tavak', 'tó | vármegye | jellemző', 'a 3 legnagyobb magyar tavat'],
-  ['Európai fővárosok', 'főváros | ország | folyója', 'a 3 legnépesebb európai fővárost'],
-  ['Nagyvárosok a világon', 'város | ország | kontinens', 'a világ 3 legnépesebb városát'],
-  ['Magyar nemzeti parkok', 'nemzeti park | tájegység | egy védett állat vagy növény', 'a 3 legnagyobb területű magyar nemzeti parkot'],
-  ['Magyar vármegyék', 'vármegye | székhely | egy nevezetesség', 'a 3 legnagyobb területű vármegyét'],
-  ['Az emberi test szervei', 'szerv | hol van a testben | mi a feladata', 'az emberi test 3 legnagyobb szervét'],
-  ['Csillagok', 'csillag | csillagkép | szín', 'a 3 legfényesebb csillagot az éjszakai égen'],
-  ['Az emberi csontváz', 'csont | hol van a testben | mi a feladata', 'az emberi test 3 leghosszabb csontját'],
-  ['Kémiai elemek', 'elem | vegyjel | halmazállapot szobahőmérsékleten', 'a földkéreg 3 leggyakoribb elemét'],
-  ['Nyári olimpiák', 'rendező város | ország | év', 'a 3 legutóbbi nyári olimpia városát'],
-  ['Hidak a világon', 'híd | ország | hossz', 'a világ 3 leghosszabb hídját'],
-  ['Ásványok és drágakövek', 'ásvány | szín | keménység', 'a 3 legkeményebb ásványt'],
-  ['Szárazföldi emlősök', 'emlős | kontinens | mit eszik', 'a 3 legnagyobb szárazföldi emlőst'],
-  ['Nemzeti ünnepeink', 'ünnep | dátum | mire emlékezünk', 'a 3 nemzeti ünnepet naptári sorrendben'],
-];
 
 const PONTOZO = [
   ['A tema.html a saját mappában van', 1],
@@ -205,7 +175,7 @@ const PONTOZO = [
   ['Rendezetlen lista 3 jellemzővel (Jellemzők alatt)', 1],
   ['Rendezett lista a megadott 3 „leg”-gel, helyes sorrendben (Rangsor alatt)', 1],
   ['Táblázat: fejléc + 3 sor, a megadott oszlopokkal, minden cellának szegélye a style.css-ből', 3],
-  ['Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a sorszámával', 1],
+  ['Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1],
 ];
 
 const MINTA = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><title>Weboldalam</title>
@@ -239,6 +209,7 @@ const app = document.getElementById('app');
 const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
 let TOKEN = u ? (u.token || '') : '';
 if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || '');
+const TANAR = !!u && u.szerep === 'oktato' && !u._tesztMod;
 const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
 
 let valasztott = [];   // File objektumok
@@ -251,8 +222,26 @@ function feladatlapRajz() {
   document.querySelector('#pontozo tbody').innerHTML = PONTOZO.map((p, i) =>
     `<tr><td class="sz">${i + 1}</td><td>${esc(p[0])}</td><td>${p[1]}</td></tr>`).join('');
   document.getElementById('minta').srcdoc = MINTA;
+  if (TANAR) { document.getElementById('temak-resz').hidden = false; document.getElementById('temam').textContent = 'Oktatói nézet: a tanulók témáját a rendszer sorsolja (lásd lent a Témák listáját).'; }
+  else temaBetolt();
   beadasInit();
   sajatBetolt();
+}
+
+// ── A sorsolt téma ──
+async function temaBetolt() {
+  const el = document.getElementById('temam');
+  try {
+    const r = await fetch(API + '/api/ikt/tema?feladat=' + FELADAT, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    let d = null;
+    try { d = await r.json(); } catch (e) {}
+    if (!r.ok || !d || !TEMAK[d.temaSorszam - 1]) throw new Error((d && d.error) || 'Nem sikerült betölteni a témádat.');
+    const t = TEMAK[d.temaSorszam - 1];
+    el.innerHTML = `A témádat a rendszer sorsolta. A te témád:<div class="nev">${esc(t[0])}</div>` +
+      `A táblázat oszlopai: <b>${esc(t[1])}</b><br>Rangsor: keresd meg ${esc(t[2])}!`;
+  } catch (e) {
+    el.innerHTML = `<span class="hiba">${esc(e.message)} Frissítsd az oldalt, vagy szólj a tanárodnak.</span>`;
+  }
 }
 
 // ── Beadás ──

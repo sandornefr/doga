@@ -9,6 +9,7 @@ public record IktBeadasInfo(
     int Id, string Email, string? Nev, string? Osztaly, string? Csoport, string Feladat,
     string? GithubUrl, string CreatedAt, string UpdatedAt, List<IktFajlInfo> Fajlok);
 public record IktFajlUj(string Fajlnev, string Mime, byte[] Tartalom);
+public record IktTemaKiosztas(int Id, string Email, string? Nev, string? Osztaly, string? Csoport, string Feladat, int TemaSorszam, string CreatedAt);
 
 public partial class Database
 {
@@ -38,6 +39,17 @@ public partial class Database
                 UNIQUE(beadas_id, fajlnev)
             );
             CREATE INDEX IF NOT EXISTS ix_ikt_beadas_fajl_beadas ON ikt_beadas_fajl(beadas_id);
+            CREATE TABLE IF NOT EXISTS ikt_tema_kiosztas (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                email        TEXT NOT NULL,
+                nev          TEXT,
+                osztaly      TEXT,
+                csoport      TEXT,
+                feladat      TEXT NOT NULL,
+                tema_sorszam INTEGER NOT NULL,
+                created_at   TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE(email, feladat)
+            );
         ");
     }
 
@@ -153,5 +165,92 @@ public partial class Database
         using var r = cmd.ExecuteReader();
         if (!r.Read()) return null;
         return (r.GetString(0), (byte[])r["tartalom"]);
+    }
+
+    // ── Témasorsolás ──────────────────────────────────────────────────────────
+    private static readonly object IktTemaZar = new();
+
+    // A tanuló témája: ha már van, azt adja; ha nincs, a csoportjában (osztály + csoport) még
+    // szabad témák közül sorsol egyet; ha mind foglalt, bármelyiket. Zár + IMMEDIATE tranzakció,
+    // hogy két egyszerre érkező tanuló ne kapja ugyanazt.
+    public IktTemaKiosztas GetOrAssignIktTema(string email, string? nev, string? osztaly, string? csoport,
+        string feladat, int temaDb)
+    {
+        lock (IktTemaZar)
+        {
+            using var conn = Open();
+            using var tx = conn.BeginTransaction(deferred: false);
+            var meglevo = ReadIktTemak(conn, tx, "WHERE email = $p AND feladat = $f", email, feladat).FirstOrDefault();
+            if (meglevo != null) { tx.Commit(); return meglevo; }
+
+            var foglalt = new HashSet<int>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = @"SELECT tema_sorszam FROM ikt_tema_kiosztas
+                    WHERE feladat = $f AND osztaly IS $o AND csoport IS $c";
+                cmd.Parameters.AddWithValue("$f", feladat);
+                cmd.Parameters.AddWithValue("$o", (object?)osztaly ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("$c", (object?)csoport ?? DBNull.Value);
+                using var r = cmd.ExecuteReader();
+                while (r.Read()) foglalt.Add(r.GetInt32(0));
+            }
+            var szabad = Enumerable.Range(1, temaDb).Where(n => !foglalt.Contains(n)).ToList();
+            if (szabad.Count == 0) szabad = Enumerable.Range(1, temaDb).ToList();
+            var sorszam = szabad[Random.Shared.Next(szabad.Count)];
+
+            using (var ins = conn.CreateCommand())
+            {
+                ins.Transaction = tx;
+                ins.CommandText = @"INSERT INTO ikt_tema_kiosztas (email, nev, osztaly, csoport, feladat, tema_sorszam)
+                                    VALUES ($e,$n,$o,$c,$f,$t)";
+                ins.Parameters.AddWithValue("$e", email);
+                ins.Parameters.AddWithValue("$n", (object?)nev ?? DBNull.Value);
+                ins.Parameters.AddWithValue("$o", (object?)osztaly ?? DBNull.Value);
+                ins.Parameters.AddWithValue("$c", (object?)csoport ?? DBNull.Value);
+                ins.Parameters.AddWithValue("$f", feladat);
+                ins.Parameters.AddWithValue("$t", sorszam);
+                ins.ExecuteNonQuery();
+            }
+            var uj = ReadIktTemak(conn, tx, "WHERE email = $p AND feladat = $f", email, feladat).First();
+            tx.Commit();
+            return uj;
+        }
+    }
+
+    public List<IktTemaKiosztas> GetIktTemak(string feladat)
+    {
+        using var conn = Open();
+        return ReadIktTemak(conn, null, "WHERE feladat = $p", feladat, null);
+    }
+
+    public bool DeleteIktTema(int id)
+    {
+        lock (IktTemaZar)
+        {
+            using var conn = Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM ikt_tema_kiosztas WHERE id = $id";
+            cmd.Parameters.AddWithValue("$id", id);
+            return cmd.ExecuteNonQuery() > 0;
+        }
+    }
+
+    private static List<IktTemaKiosztas> ReadIktTemak(SqliteConnection conn, SqliteTransaction? tx, string where, string p, string? f)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = $@"SELECT id, email, nev, osztaly, csoport, feladat, tema_sorszam, created_at
+                             FROM ikt_tema_kiosztas {where} ORDER BY osztaly, csoport, nev";
+        cmd.Parameters.AddWithValue("$p", p);
+        if (f != null) cmd.Parameters.AddWithValue("$f", f);
+        using var r = cmd.ExecuteReader();
+        var lista = new List<IktTemaKiosztas>();
+        while (r.Read())
+            lista.Add(new IktTemaKiosztas(r.GetInt32(0), r.GetString(1),
+                r.IsDBNull(2) ? null : r.GetString(2), r.IsDBNull(3) ? null : r.GetString(3),
+                r.IsDBNull(4) ? null : r.GetString(4), r.GetString(5), r.GetInt32(6),
+                r.IsDBNull(7) ? "" : r.GetString(7)));
+        return lista;
     }
 }
