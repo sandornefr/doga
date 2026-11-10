@@ -332,17 +332,13 @@
         .option-card.interaktiv { border-color: #0d9488; }
         .option-card.interaktiv:hover { border-color: #14b8a6; box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
         .option-card.interaktiv .icon { color: #0d9488; }
-        /* IKT projektmunka beadás (9. évfolyam) */
-        .ikt-beadas-card {
-            display: flex; align-items: center; gap: 16px; margin: 18px 0 0;
-            padding: 16px 20px; border-radius: 14px; text-decoration: none; color: #e0e0e0;
-            background: linear-gradient(160deg, #1a1530 0%, #16213e 70%); border: 2px solid #7c3aed;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .ikt-beadas-card:hover { border-color: #a78bfa; box-shadow: 0 8px 24px rgba(124,58,237,0.25); }
-        .ikt-beadas-card .icon { font-size: 1.8rem; color: #a78bfa; }
-        .ikt-beadas-card .label { font-weight: 700; display: block; }
-        .ikt-beadas-card .desc { color: #9ca3af; font-size: .9rem; }
+        /* IKT Projektmunka I. (csak 9. évfolyam) */
+        .option-card.ikt { border-color: #7c3aed; }
+        .option-card.ikt:hover { border-color: #a78bfa; box-shadow: 0 8px 24px rgba(124,58,237,0.25); }
+        .option-card.ikt .icon { color: #a78bfa; }
+        /* 9. évfolyam: csak WEB + IKT Projektmunka I., két oszlopban */
+        .student-two-col.kilences { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 520px) { .student-two-col.kilences { grid-template-columns: 1fr; } }
 
         .option-card {
             display: flex; flex-direction: column;
@@ -1188,7 +1184,7 @@
         <!-- Sor 1: 4 főkártya -->
         <div class="student-two-col">
             <!-- PYTHON oszlop -->
-            <div class="student-col">
+            <div class="student-col" id="python-section">
                 <a class="option-card python" id="card-python" href="python-hub.html">
                     <span class="icon"><i class="fab fa-python"></i></span>
                     <span class="label">PYTHON</span>
@@ -1218,6 +1214,14 @@
                     <div class="changelog-item">Élő előnézet, tipp rendszer és megoldásmegtekintő ha elakadnál</div>
                 </div>
             </div>
+            <!-- IKT PROJEKTMUNKA I. oszlop – csak 9. évfolyamnak -->
+            <div class="student-col" id="ikt-section" style="display:none">
+                <a class="option-card ikt" href="ikt/index.html">
+                    <span class="icon"><i class="fas fa-diagram-project"></i></span>
+                    <span class="label">IKT PROJEKTMUNKA I.</span>
+                    <span class="desc">Témaoldal · vezetett tanmenet</span>
+                </a>
+            </div>
             <!-- HÁLÓZAT oszlop -->
             <div class="student-col" id="halozat-section">
                 <a class="option-card halozat" href="halozat-hub.html">
@@ -1234,7 +1238,7 @@
                 </div>
             </div>
             <!-- INTERAKTÍV TESZT oszlop -->
-            <div class="student-col">
+            <div class="student-col" id="interaktiv-section">
                 <a class="option-card interaktiv" href="interactive/index.html">
                     <span class="icon"><i class="fas fa-brain"></i></span>
                     <span class="label">INTERAKTÍV TESZT</span>
@@ -1249,13 +1253,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- IKT projektmunka beadás – csak 9. évfolyamnak -->
-        <a class="ikt-beadas-card" id="ikt-beadas-card" href="ikt/temaoldal.html" style="display:none">
-            <span class="icon"><i class="fas fa-file-arrow-up"></i></span>
-            <span><span class="label">IKT: Témaoldal beadás</span>
-            <span class="desc">A feladatlap, a témák és a pontozás – itt töltöd fel a weboldalad fájljait.</span></span>
-        </a>
 
         <!-- Sor 3: Megvalósult ötletek – teljes szélesség -->
         <div id="megvalasult-box" class="megvalasult-box" style="display:none">
@@ -2012,9 +2009,12 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
-            // IKT Témaoldal beadás — csak 9. évfolyamnak (és Teszt Eleknek)
-            if (String(user.evfolyam || '') === '9' || user._tesztMod)
-                document.getElementById('ikt-beadas-card').style.display = 'flex';
+            // 9. évfolyam (Teszt Elek 9.-esként is): csak a WEB és az IKT Projektmunka I. kártya
+            if (String(user.evfolyam || '') === '9') {
+                ['python-section', 'halozat-section', 'interaktiv-section'].forEach(id => document.getElementById(id).style.display = 'none');
+                document.getElementById('ikt-section').style.display = 'flex';
+                document.querySelector('.student-two-col').classList.add('kilences');
+            }
             // Jegybeírás banner — csak 10. évfolyamosoknak jelenik meg
             window.addEventListener('load', () => {
                 if (typeof showJegybeirasBanner === 'function' && parseInt(user.evfolyam) === 10)

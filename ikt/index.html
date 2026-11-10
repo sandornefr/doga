@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT Projektmunka I.</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f4f6f8;color:#1f2933;font-family:'Segoe UI',system-ui,sans-serif;line-height:1.5;}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#1f2933;color:#fff;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;background:#3e4c59;border:0;border-radius:6px;padding:6px 12px;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px;}
+h1{font-size:1.7rem;}
+.alcim{color:#52606d;margin-bottom:22px;}
+.csempek{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
+.csempe{display:flex;flex-direction:column;gap:8px;background:#fff;border:2px solid #d9e2ec;border-radius:14px;padding:22px;text-decoration:none;color:inherit;transition:border-color .2s,box-shadow .2s,transform .2s;}
+a.csempe:hover{border-color:#7c3aed;box-shadow:0 8px 24px rgba(124,58,237,.15);transform:translateY(-2px);}
+.csempe .ikon{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;color:#fff;background:#7c3aed;}
+.csempe b{font-size:1.15rem;}
+.csempe span{color:#52606d;}
+.csempe.hamarosan{opacity:.65;border-style:dashed;}
+.csempe.hamarosan .ikon{background:#9aa5b1;}
+.cimke{align-self:flex-start;font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:99px;background:#eef2f7;color:#52606d;}
+.kozep{text-align:center;padding:60px 0;}
+.btn{display:inline-block;margin-top:14px;padding:8px 16px;border-radius:8px;background:#7c3aed;color:#fff;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fas fa-diagram-project"></i> IKT Projektmunka I.</span>
+  <a href="../portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<script>
+// IKT Projektmunka I. – a 9. évfolyam gyűjtőoldala: Témaoldal (feladat + beadás), később a vezetett tanmenet.
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
+const app = document.getElementById('app');
+if (!u) {
+  app.innerHTML = '<div class="kozep"><h2>Be kell jelentkezned</h2><a class="btn" href="../login.html">Bejelentkezés</a></div>';
+} else if (!JOGOS) {
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
+} else {
+  app.innerHTML = `
+    <h1>IKT Projektmunka I.</h1>
+    <div class="alcim">9. évfolyam</div>
+    <div class="csempek">
+      <a class="csempe" href="temaoldal.html">
+        <span class="ikon"><i class="fas fa-file-arrow-up"></i></span>
+        <b>Témaoldal</b>
+        <span>A feladatlap és a téma – itt töltöd fel a weboldalad fájljait.</span>
+      </a>
+      <div class="csempe hamarosan">
+        <span class="ikon"><i class="fas fa-route"></i></span>
+        <b>Vezetett tanmenet</b>
+        <span>Óráról órára, lépésenként.</span>
+        <span class="cimke">Hamarosan</span>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
