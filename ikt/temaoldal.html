@@ -129,13 +129,6 @@ th, td {
   <p class="minta-cim">A minta témája a Lovak, ez nincs a témák között. Rangsor: a 3 legnagyobb lófajta.</p>
   <iframe class="minta" id="minta" title="Minta: Lovak" sandbox></iframe>
 
-  <h2>Pontozás (20 pont)</h2>
-  <table class="tbl" id="pontozo">
-    <thead><tr><th>#</th><th>Szempont</th><th>Pont</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <p class="ponthatar">Ponthatárok: 18–20 jeles (5), 15–17 jó (4), 12–14 közepes (3), 10–11 elégséges (2), 0–9 elégtelen (1).</p>
-
   <div id="beadas-resz">
     <h2>Beadás</h2>
     <div class="card">
@@ -188,13 +181,13 @@ const PONTOZO = [
 const MINTA = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><title>Weboldalam</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222}nav{margin-bottom:10px}
 table{border-collapse:collapse}th,td{border:1px solid black;padding:5px}
-.kephely{width:240px;height:110px;background:#ddd;color:#555;display:flex;align-items:center;justify-content:center;font-size:13px;text-align:center;margin:6px 0}</style>
+</style>
 </head><body>
 <nav><a href="#">Főoldal</a> | <a href="#">Képlink</a> | <a href="#">Listák</a> | <a href="#">Órarend</a> | <a href="#">Témám</a></nav>
 <h1>Lovak</h1>
 <h2>Bemutatás</h2>
 <p>A ló növényevő háziállat. Az ember régóta használja munkára, közlekedésre és sportra.</p>
-<div class="kephely">[kép: legelésző ló, alt és title]</div>
+<img src="img/lo_minta.png" alt="legelésző ló" title="legelésző ló" width="200">
 <h2>Érdekességek</h2>
 <p>A ló állva is tud aludni. A csikó a születése után néhány órával már fut.</p>
 <a href="#">Tudj meg többet!</a>
@@ -226,8 +219,6 @@ function feladatlapRajz() {
   app.appendChild(document.getElementById('feladatlap').content.cloneNode(true));
   document.querySelector('#temak tbody').innerHTML = TEMAK.map((t, i) =>
     `<tr><td class="sz">${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('');
-  document.querySelector('#pontozo tbody').innerHTML = PONTOZO.map((p, i) =>
-    `<tr><td class="sz">${i + 1}</td><td>${esc(p[0])}</td><td>${p[1]}</td></tr>`).join('');
   document.getElementById('minta').srcdoc = MINTA;
   if (TANAR) { document.getElementById('temak-resz').hidden = false; document.getElementById('temam').textContent = 'Oktatói nézet: a tanulók témáját a rendszer sorsolja (lásd lent a Témák listáját).'; }
   else temaBetolt();
