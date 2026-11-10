@@ -28,7 +28,7 @@ table.tbl th{background:#e4e7eb;}
 table.tbl td.sz{width:36px;text-align:right;color:#52606d;}
 .megj{color:#52606d;font-size:.9rem;margin-top:6px;}
 .minta-cim{color:#52606d;margin-bottom:6px;}
-iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;background:#fff;}
+iframe.minta{width:100%;height:200px;border:1px solid #cbd2d9;border-radius:8px;background:#fff;overflow:hidden;display:block;}
 .temam{margin-top:10px;padding:12px 16px;background:#eef6ff;border:1px solid #b6d4fe;border-radius:8px;min-height:84px;}
 .temam .nev{font-size:1.35rem;font-weight:700;color:#1d4ed8;margin:2px 0 6px;}
 .temam .hiba{color:#b42318;}
@@ -58,7 +58,6 @@ iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;
   .topbar,#beadas-resz,.nyomtat{display:none!important;}
   body{background:#fff;}
   .card{border:0;padding:0;}
-  iframe.minta{height:480px;}
 }
 </style>
 </head>
@@ -127,7 +126,7 @@ th, td {
 
   <h2>Minta</h2>
   <p class="minta-cim">A minta témája a Lovak, ez nincs a témák között. Rangsor: a 3 legnagyobb lófajta.</p>
-  <iframe class="minta" id="minta" title="Minta: Lovak" sandbox></iframe>
+  <iframe class="minta" id="minta" title="Minta: Lovak" sandbox="allow-same-origin" scrolling="no"></iframe>
 
   <div id="beadas-resz">
     <h2>Beadás</h2>
@@ -178,6 +177,22 @@ const PONTOZO = [
   ['Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1],
 ];
 
+// A minta keret mindig akkora, mint a minta oldal: nincs benne külön görgetés (Réka kérése).
+// A sandbox szkriptet nem enged (allow-scripts nincs), csak azt, hogy a magasságát lemérjük.
+function mintaBetolt() {
+  const f = document.getElementById('minta');
+  const igazit = () => {
+    const d = f.contentDocument;
+    if (!d || !d.documentElement) return;
+    f.style.height = Math.ceil(d.documentElement.scrollHeight) + 2 + 'px';
+  };
+  f.addEventListener('load', () => {
+    igazit();
+    f.contentDocument.querySelectorAll('img').forEach(i => { if (!i.complete) i.addEventListener('load', igazit); });
+  });
+  window.addEventListener('resize', igazit);
+  f.srcdoc = MINTA;
+}
 const MINTA = `<!DOCTYPE html><html lang="hu"><head><meta charset="UTF-8"><title>Weboldalam</title>
 <style>body{font-family:Arial,sans-serif;margin:16px;color:#222}nav{margin-bottom:10px}
 table{border-collapse:collapse}th,td{border:1px solid black;padding:5px}
@@ -219,7 +234,7 @@ function feladatlapRajz() {
   app.appendChild(document.getElementById('feladatlap').content.cloneNode(true));
   document.querySelector('#temak tbody').innerHTML = TEMAK.map((t, i) =>
     `<tr><td class="sz">${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('');
-  document.getElementById('minta').srcdoc = MINTA;
+  mintaBetolt();
   if (TANAR) { document.getElementById('temak-resz').hidden = false; document.getElementById('temam').textContent = 'Oktatói nézet: a tanulók témáját a rendszer sorsolja (lásd lent a Témák listáját).'; }
   else temaBetolt();
   beadasInit();
