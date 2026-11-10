@@ -2503,8 +2503,8 @@ bool IktElonezetTokenJo(int id, string tok)
     var user = db.GetUserByEmail(identity);
     if (IsPrivilegedRole(role))
         return (true, null, identity, user != null ? $"{user.Vezeteknev} {user.Keresztnev}" : identity, user?.Osztaly, user?.Csoport);
-    if (role != "tanulo" || user == null || user.Evfolyam is not ("9" or "10"))
-        return (false, Results.Json(new { error = "Ez a beadás a 9. és a 10. évfolyamnak szól." }, statusCode: 403), "", null, null, null);
+    if (role != "tanulo" || user == null || user.Evfolyam != "9")
+        return (false, Results.Json(new { error = "Ez a beadás a 9. évfolyamnak szól." }, statusCode: 403), "", null, null, null);
     return (true, null, user.Email, $"{user.Vezeteknev} {user.Keresztnev}",
         $"{user.Evfolyam}{user.Osztaly}", user.Csoport);
 }

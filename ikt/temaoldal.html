@@ -74,7 +74,7 @@ iframe.minta{width:100%;height:560px;border:1px solid #cbd2d9;border-radius:8px;
 
 <template id="feladatlap">
   <h1>IKT projektmunka – számonkérés: Témaoldal</h1>
-  <div class="alcim">9–10. évfolyam · az eddig tanultak: HTML oldal, címsorok, bekezdés, kép, link, listák, táblázat, menü</div>
+  <div class="alcim">9. évfolyam · az eddig tanultak: HTML oldal, címsorok, bekezdés, kép, link, listák, táblázat, menü</div>
 
   <div class="card">
     <div class="sarga" style="margin-top:0;margin-bottom:12px"><b>Hol dolgozz?</b> Az órán közösen használt IKT mappában nyisd meg a korábban megkezdett weboldaladat VS Code-ban, és azt folytasd! Nem kell új weboldalt kezdened.</div>
@@ -210,7 +210,7 @@ const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
 let TOKEN = u ? (u.token || '') : '';
 if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || '');
 const TANAR = !!u && u.szerep === 'oktato' && !u._tesztMod;
-const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || ['9', '10'].includes(String(u.evfolyam || '')));
+const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
 
 let valasztott = [];   // File objektumok
 
@@ -344,7 +344,7 @@ function sajatRajz(b) {
 if (!u || !TOKEN) {
   app.innerHTML = '<div class="kozep"><h2>Be kell jelentkezned</h2><a class="btn" href="../login.html">Bejelentkezés</a></div>';
 } else if (!JOGOS) {
-  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. és a 10. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
 } else {
   document.getElementById('who').textContent = u.nev || '';
   feladatlapRajz();

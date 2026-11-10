@@ -1250,7 +1250,7 @@
             </div>
         </div>
 
-        <!-- IKT projektmunka beadás – 9. és 10. évfolyamnak -->
+        <!-- IKT projektmunka beadás – csak 9. évfolyamnak -->
         <a class="ikt-beadas-card" id="ikt-beadas-card" href="ikt/temaoldal.html" style="display:none">
             <span class="icon"><i class="fas fa-file-arrow-up"></i></span>
             <span><span class="label">IKT: Témaoldal beadás</span>
@@ -2012,8 +2012,8 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
-            // IKT Témaoldal beadás — 9. és 10. évfolyamnak (és Teszt Eleknek)
-            if (['9', '10'].includes(String(user.evfolyam || '')) || user._tesztMod)
+            // IKT Témaoldal beadás — csak 9. évfolyamnak (és Teszt Eleknek)
+            if (String(user.evfolyam || '') === '9' || user._tesztMod)
                 document.getElementById('ikt-beadas-card').style.display = 'flex';
             // Jegybeírás banner — csak 10. évfolyamosoknak jelenik meg
             window.addEventListener('load', () => {
