@@ -2,7 +2,7 @@ using Microsoft.Data.Sqlite;
 
 namespace KandoTest;
 
-public class Database
+public partial class Database
 {
     private readonly string _connStr;
     private readonly string _dbPath;

@@ -52,6 +52,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 
 // Adatbázis inicializálás
 db.Initialize();
+db.InitIktBeadas();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
 // Piton Professzor (bot) – gép elleni meccshez (mindig létezik)
@@ -2424,6 +2425,190 @@ app.MapPost("/api/ai/pontozas", async (HttpContext ctx) =>
     var respDoc = JsonDocument.Parse(respBody).RootElement;
     var text = respDoc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? "";
     return Results.Ok(new { text });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// IKT projektmunka beadás (9. évfolyam, pl. „Témaoldal”)
+// Tanulónként és feladatonként egy beadás; a fájlok az adatbázisban.
+// A tanulói HTML az API eredetén csak „Content-Security-Policy: sandbox” mögött jelenik meg
+// (szkript nem fut, az oldal eredete átlátszatlan). Az előnézet aláírt, lejáró linken megy,
+// hogy a relatív css/img hivatkozások is betöltsenek (ezek nem küldenek Authorization fejlécet).
+// ══════════════════════════════════════════════════════════════════════════════
+
+const int IktMaxFajl = 12;
+const long IktMaxMeret = 3 * 1024 * 1024;
+var iktMime = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+{
+    [".html"] = "text/html; charset=utf-8", [".css"] = "text/css; charset=utf-8",
+    [".jpg"] = "image/jpeg", [".jpeg"] = "image/jpeg", [".png"] = "image/png",
+    [".gif"] = "image/gif", [".webp"] = "image/webp",
+};
+
+static string? IktTisztaFajlnev(string? raw)
+{
+    if (string.IsNullOrWhiteSpace(raw)) return null;
+    var nev = raw.Replace('\\', '/');
+    nev = nev[(nev.LastIndexOf('/') + 1)..].Trim();
+    if (nev.Length == 0 || nev.Length > 100 || nev.StartsWith('.')) return null;
+    if (!Regex.IsMatch(nev, @"^[\p{L}\p{M}\p{N} ._()\-]+$")) return null;
+    return nev;
+}
+
+// Képeknél a fájl eleje is egyezzen a kiterjesztéssel (ne lehessen pl. HTML-t .png-nek álcázni).
+static bool IktKepRendben(string ext, byte[] b)
+{
+    bool Kezd(params byte[] m) => b.Length >= m.Length && b.AsSpan(0, m.Length).SequenceEqual(m);
+    return ext.ToLowerInvariant() switch
+    {
+        ".jpg" or ".jpeg" => Kezd(0xFF, 0xD8, 0xFF),
+        ".png" => Kezd(0x89, 0x50, 0x4E, 0x47),
+        ".gif" => Kezd(0x47, 0x49, 0x46, 0x38),
+        ".webp" => b.Length >= 12 && Kezd(0x52, 0x49, 0x46, 0x46) && b[8] == 0x57 && b[9] == 0x45 && b[10] == 0x42 && b[11] == 0x50,
+        _ => true,
+    };
+}
+
+static bool IktErvenyesFeladat(string? f) => !string.IsNullOrEmpty(f) && Regex.IsMatch(f, "^[a-z0-9_-]{1,40}$");
+static bool IktErvenyesGithubUrl(string u) =>
+    u.Length <= 300 && Regex.IsMatch(u, @"^https://[a-z0-9-]+\.github\.io(/[A-Za-z0-9._~%/\-]*)?$", RegexOptions.IgnoreCase);
+
+string IktAlairas(int id, long exp)
+{
+    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
+    return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes($"ikt-elonezet|{id}|{exp}")))
+        .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+}
+
+string IktElonezetToken(int id)
+{
+    var exp = DateTimeOffset.UtcNow.AddHours(12).ToUnixTimeSeconds();
+    return $"{exp}-{IktAlairas(id, exp)}";
+}
+
+bool IktElonezetTokenJo(int id, string tok)
+{
+    var kot = tok.IndexOf('-');
+    if (kot <= 0 || !long.TryParse(tok[..kot], out var exp)) return false;
+    if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() > exp) return false;
+    return CryptographicOperations.FixedTimeEquals(
+        Encoding.ASCII.GetBytes(IktAlairas(id, exp)), Encoding.ASCII.GetBytes(tok[(kot + 1)..]));
+}
+
+// Ki adhat be? 9. évfolyamos tanuló, és kipróbálásra oktató (Teszt Elek a tanári tokennel).
+(bool Ok, IResult? Hiba, string Email, string? Nev, string? Osztaly, string? Csoport) IktBeado(HttpContext ctx, Database db)
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return (false, Results.Unauthorized(), "", null, null, null);
+    var user = db.GetUserByEmail(identity);
+    if (IsPrivilegedRole(role))
+        return (true, null, identity, user != null ? $"{user.Vezeteknev} {user.Keresztnev}" : identity, user?.Osztaly, user?.Csoport);
+    if (role != "tanulo" || user == null || user.Evfolyam != "9")
+        return (false, Results.Json(new { error = "Ez a beadás a 9. évfolyamnak szól." }, statusCode: 403), "", null, null, null);
+    return (true, null, user.Email, $"{user.Vezeteknev} {user.Keresztnev}",
+        $"{user.Evfolyam}{user.Osztaly}", user.Csoport);
+}
+
+object IktBeadasValasz(IktBeadasInfo b) => new
+{
+    b.Id, b.Email, b.Nev, b.Osztaly, b.Csoport, b.Feladat, b.GithubUrl, b.CreatedAt, b.UpdatedAt,
+    fajlok = b.Fajlok.Select(f => new { f.Fajlnev, f.Mime, f.Meret }),
+    elonezet = $"/api/ikt/elonezet/{b.Id}/{IktElonezetToken(b.Id)}/",
+};
+
+IResult IktFajlKuldes(HttpContext ctx, (string Mime, byte[] Tartalom) f)
+{
+    ctx.Response.Headers["Content-Security-Policy"] = "sandbox";
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["Cache-Control"] = "private, no-store";
+    return Results.Bytes(f.Tartalom, f.Mime);
+}
+
+// Beadás (multipart): fájlok és/vagy github_url, feladat — POST /api/ikt/beadas
+app.MapPost("/api/ikt/beadas", async (HttpContext ctx, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    var meretFeature = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+    if (meretFeature != null && !meretFeature.IsReadOnly) meretFeature.MaxRequestBodySize = IktMaxFajl * IktMaxMeret + 1024 * 1024;
+    if (!ctx.Request.HasFormContentType) return Results.BadRequest(new { error = "Hibás kérés." });
+    IFormCollection form;
+    try { form = await ctx.Request.ReadFormAsync(); }
+    catch { return Results.BadRequest(new { error = "A feltöltés túl nagy vagy hibás." }); }
+
+    var feladat = (form["feladat"].FirstOrDefault() ?? "").Trim().ToLowerInvariant();
+    if (!IktErvenyesFeladat(feladat)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    var url = (form["github_url"].FirstOrDefault() ?? "").Trim();
+    if (url.Length > 0 && !IktErvenyesGithubUrl(url))
+        return Results.BadRequest(new { error = "A link csak https://….github.io/… cím lehet." });
+
+    if (form.Files.Count > IktMaxFajl) return Results.BadRequest(new { error = $"Legfeljebb {IktMaxFajl} fájlt adhatsz be." });
+    var fajlok = new List<IktFajlUj>();
+    foreach (var file in form.Files)
+    {
+        var nev = IktTisztaFajlnev(file.FileName);
+        if (nev == null) return Results.BadRequest(new { error = "Érvénytelen fájlnév." });
+        var ext = Path.GetExtension(nev);
+        if (!iktMime.TryGetValue(ext, out var mime))
+            return Results.BadRequest(new { error = $"Ez a fájl nem tölthető fel: {nev} (csak .html, .css, .jpg, .jpeg, .png, .gif, .webp)." });
+        if (file.Length == 0) return Results.BadRequest(new { error = $"Üres fájl: {nev}" });
+        if (file.Length > IktMaxMeret) return Results.BadRequest(new { error = $"Túl nagy fájl: {nev} (legfeljebb 3 MB)." });
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+        if (!IktKepRendben(ext, bytes)) return Results.BadRequest(new { error = $"A fájl nem valódi kép: {nev}" });
+        fajlok.RemoveAll(f => f.Fajlnev.Equals(nev, StringComparison.OrdinalIgnoreCase));
+        fajlok.Add(new IktFajlUj(nev, mime, bytes));
+    }
+    if (fajlok.Count == 0 && url.Length == 0)
+        return Results.BadRequest(new { error = "Válassz ki fájlokat, vagy add meg a github.io címedet." });
+
+    var id = db.SaveIktBeadas(be.Email, be.Nev, be.Osztaly, be.Csoport, feladat, url.Length > 0 ? url : null, fajlok);
+    return Results.Ok(IktBeadasValasz(db.GetIktBeadas(id)!));
+}).RequireRateLimiting("auth");
+
+// A tanuló saját beadása — GET /api/ikt/beadas/sajat?feladat=temaoldal
+app.MapGet("/api/ikt/beadas/sajat", (HttpContext ctx, string? feladat, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    var f = (feladat ?? "").Trim().ToLowerInvariant();
+    if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    var b = db.GetIktBeadasSajat(be.Email, f);
+    return Results.Ok(new { beadas = b == null ? null : IktBeadasValasz(b) });
+});
+
+// Oktatói lista — GET /api/ikt/beadasok?feladat=temaoldal
+app.MapGet("/api/ikt/beadasok", (HttpContext ctx, string? feladat, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var f = (feladat ?? "").Trim().ToLowerInvariant();
+    if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    return Results.Ok(new { beadasok = db.GetIktBeadasok(f).Select(IktBeadasValasz) });
+});
+
+// Egy fájl (oktató vagy a tulajdonos, Authorization fejléccel) — GET /api/ikt/beadas/{id}/fajl/{fajlnev}
+app.MapGet("/api/ikt/beadas/{id:int}/fajl/{fajlnev}", (int id, string fajlnev, HttpContext ctx, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var b = db.GetIktBeadas(id);
+    if (b == null) return Results.NotFound();
+    if (!IsSelfOrPrivileged(identity, role, b.Email)) return Results.Json(new { error = "Nincs jogosultság." }, statusCode: 403);
+    var nev = IktTisztaFajlnev(Uri.UnescapeDataString(fajlnev));
+    var f = nev == null ? null : db.GetIktFajl(id, nev);
+    return f == null ? Results.NotFound() : IktFajlKuldes(ctx, f.Value);
+});
+
+// Előnézet aláírt linken: a relatív útvonal (pl. css/style.css, img/x.jpg) a fájlnévre képeződik le.
+// GET /api/ikt/elonezet/{id}/{token}/{**utvonal}
+app.MapGet("/api/ikt/elonezet/{id:int}/{tok}/{**utvonal}", (int id, string tok, string? utvonal, HttpContext ctx, Database db) =>
+{
+    if (!IktElonezetTokenJo(id, tok)) return Results.NotFound();
+    var u = Uri.UnescapeDataString(utvonal ?? "");
+    var nev = string.IsNullOrWhiteSpace(u) || u.EndsWith('/') ? "index.html" : IktTisztaFajlnev(u);
+    var f = nev == null ? null : db.GetIktFajl(id, nev);
+    return f == null ? Results.NotFound() : IktFajlKuldes(ctx, f.Value);
 });
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";

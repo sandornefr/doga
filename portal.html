@@ -332,6 +332,17 @@
         .option-card.interaktiv { border-color: #0d9488; }
         .option-card.interaktiv:hover { border-color: #14b8a6; box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
         .option-card.interaktiv .icon { color: #0d9488; }
+        /* IKT projektmunka beadás (9. évfolyam) */
+        .ikt-beadas-card {
+            display: flex; align-items: center; gap: 16px; margin: 18px 0 0;
+            padding: 16px 20px; border-radius: 14px; text-decoration: none; color: #e0e0e0;
+            background: linear-gradient(160deg, #1a1530 0%, #16213e 70%); border: 2px solid #7c3aed;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .ikt-beadas-card:hover { border-color: #a78bfa; box-shadow: 0 8px 24px rgba(124,58,237,0.25); }
+        .ikt-beadas-card .icon { font-size: 1.8rem; color: #a78bfa; }
+        .ikt-beadas-card .label { font-weight: 700; display: block; }
+        .ikt-beadas-card .desc { color: #9ca3af; font-size: .9rem; }
 
         .option-card {
             display: flex; flex-direction: column;
@@ -1239,6 +1250,13 @@
             </div>
         </div>
 
+        <!-- IKT projektmunka beadás – csak 9. évfolyamnak -->
+        <a class="ikt-beadas-card" id="ikt-beadas-card" href="ikt/temaoldal.html" style="display:none">
+            <span class="icon"><i class="fas fa-file-arrow-up"></i></span>
+            <span><span class="label">IKT: Témaoldal beadás</span>
+            <span class="desc">A feladatlap, a témák és a pontozás – itt töltöd fel a weboldalad fájljait.</span></span>
+        </a>
+
         <!-- Sor 3: Megvalósult ötletek – teljes szélesség -->
         <div id="megvalasult-box" class="megvalasult-box" style="display:none">
             <div class="megvalasult-title">
@@ -1994,6 +2012,9 @@
             if (eredmBtn) eredmBtn.style.display = 'inline-block';
             const rangsorBtn = document.getElementById('btn-rangsor');
             if (rangsorBtn) rangsorBtn.style.display = 'flex';
+            // IKT Témaoldal beadás — csak 9. évfolyamnak (és Teszt Eleknek)
+            if (String(user.evfolyam || '') === '9' || user._tesztMod)
+                document.getElementById('ikt-beadas-card').style.display = 'flex';
             // Jegybeírás banner — csak 10. évfolyamosoknak jelenik meg
             window.addEventListener('load', () => {
                 if (typeof showJegybeirasBanner === 'function' && parseInt(user.evfolyam) === 10)

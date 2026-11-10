@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT beadások – Témaoldal</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f4f6f8;color:#1f2933;font-family:'Segoe UI',system-ui,sans-serif;line-height:1.45;}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#1f2933;color:#fff;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;background:#3e4c59;border-radius:6px;padding:6px 12px;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:1200px;margin:0 auto;padding:20px;}
+.szuro{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.szuro select{padding:6px 10px;border:1px solid #cbd2d9;border-radius:6px;font:inherit;}
+.szuro .db{color:#52606d;}
+.tanulo{background:#fff;border:1px solid #d9e2ec;border-radius:10px;margin-bottom:12px;}
+.fej{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;flex-wrap:wrap;}
+.fej .nev{font-weight:700;min-width:200px;}
+.fej .oszt{color:#52606d;min-width:90px;}
+.fej .ido{color:#52606d;font-size:.9rem;}
+.fej .pont{margin-left:auto;font-weight:700;}
+.fej .pont small{font-weight:400;color:#52606d;}
+.fej a{font-size:.9rem;}
+.reszletek{display:none;padding:0 16px 14px;border-top:1px solid #eef2f7;}
+.tanulo.nyitva .reszletek{display:block;}
+.fajlok{margin:10px 0;font-size:.9rem;display:flex;gap:6px 14px;flex-wrap:wrap;}
+.fajlok span{color:#7b8794;}
+table.ell{border-collapse:collapse;width:100%;font-size:.9rem;}
+table.ell th,table.ell td{border:1px solid #e4e7eb;padding:4px 8px;text-align:left;vertical-align:top;}
+table.ell th{background:#f0f4f8;}
+table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
+.ok{color:#067647;}
+.nem{color:#b42318;}
+.kezi{color:#b54708;}
+.megj{color:#52606d;font-size:.85rem;}
+.kozep{text-align:center;padding:60px 20px;}
+.hiba{color:#b42318;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fas fa-inbox"></i> IKT beadások – Témaoldal</span>
+  <a href="temaoldal.html"><i class="fas fa-file-lines"></i> Feladatlap</a>
+  <a href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<script>
+const API = 'https://agazati.up.railway.app';
+const FELADAT = 'temaoldal';
+const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
+const OLDALAK = ['index.html', 'keplink.html', 'listak.html', 'orarend.html', 'tema.html'];
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const app = document.getElementById('app');
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || 'null');
+const TOKEN = u && u.szerep === 'oktato' ? u.token : '';
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+
+let beadasok = [];
+const ellenorzes = {};   // beadás id → eredmény
+
+async function betolt() {
+  try {
+    const r = await fetch(API + '/api/ikt/beadasok?feladat=' + FELADAT, { headers: AUTH });
+    if (!r.ok) throw new Error('Hiba ' + r.status);
+    beadasok = (await r.json()).beadasok || [];
+  } catch (e) {
+    app.innerHTML = `<div class="kozep hiba">Nem sikerült betölteni: ${esc(e.message)}</div>`;
+    return;
+  }
+  const csoportok = [...new Set(beadasok.map(csoportNev))].sort();
+  app.innerHTML = `<div class="szuro"><label for="csop">Csoport:</label>
+    <select id="csop"><option value="">mind</option>${csoportok.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+    <span class="db" id="db"></span></div>
+    <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
+    <div id="lista"></div>`;
+  document.getElementById('csop').addEventListener('change', listaRajz);
+  listaRajz();
+  for (const b of beadasok) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); }
+}
+
+const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
+
+function listaRajz() {
+  const sz = document.getElementById('csop').value;
+  const lista = beadasok.filter(b => !sz || csoportNev(b) === sz);
+  document.getElementById('db').textContent = lista.length + ' beadás';
+  document.getElementById('lista').innerHTML = lista.length ? lista.map(b => `
+    <div class="tanulo" id="t${b.id}">
+      <div class="fej" onclick="this.parentElement.classList.toggle('nyitva')">
+        <span class="nev">${esc(b.nev || b.email)}</span>
+        <span class="oszt">${esc(csoportNev(b))}</span>
+        <span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>
+        ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
+        ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
+        <span class="pont" id="p${b.id}">…</span>
+      </div>
+      <div class="reszletek" id="r${b.id}"><p class="megj">Ellenőrzés…</p></div>
+    </div>`).join('') : '<div class="kozep">Még nincs beadás.</div>';
+  lista.forEach(b => { if (ellenorzes[b.id]) sorFrissit(b); });
+}
+
+function sorFrissit(b) {
+  const e = ellenorzes[b.id];
+  const p = document.getElementById('p' + b.id), r = document.getElementById('r' + b.id);
+  if (!e || !p || !r) return;
+  p.innerHTML = `${e.auto} <small>/ ${e.autoMax} automatikus · ${e.keziMax} pont kézi</small>`;
+  const fajlok = b.fajlok.map(f => /\.html$/i.test(f.fajlnev)
+    ? `<a href="${esc(API + b.elonezet + encodeURIComponent(f.fajlnev))}" target="_blank" rel="noopener">${esc(f.fajlnev)}</a>`
+    : `${esc(f.fajlnev)} <span>(${Math.max(1, Math.round(f.meret / 1024))} KB)</span>`).join('');
+  r.innerHTML = `<div class="fajlok"><b>Fájlok:</b> ${fajlok || '<span>nincs (csak link)</span>'}</div>
+    <table class="ell"><thead><tr><th>#</th><th>Szempont</th><th>Eredmény</th><th>Pont</th></tr></thead><tbody>
+    ${e.sorok.map((s, i) => `<tr><td class="p">${i + 1}</td><td>${esc(s.cim)}</td>
+      <td>${s.allapot === 'ok' ? '<span class="ok"><i class="fas fa-check"></i></span> ' : s.allapot === 'nem' ? '<span class="nem"><i class="fas fa-xmark"></i></span> ' : '<span class="kezi"><i class="fas fa-user-pen"></i> kézi</span> '}${esc(s.megj || '')}</td>
+      <td class="p">${s.allapot === 'kezi' ? '? / ' + s.max : (s.allapot === 'ok' ? s.max : 0) + ' / ' + s.max}</td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ── Előellenőrzés a pontozó szerint ──
+async function fajlSzoveg(b, nev) {
+  const f = b.fajlok.find(x => x.fajlnev.toLowerCase() === nev.toLowerCase());
+  if (!f) return null;
+  const r = await fetch(API + '/api/ikt/beadas/' + b.id + '/fajl/' + encodeURIComponent(f.fajlnev), { headers: AUTH });
+  return r.ok ? await r.text() : null;
+}
+
+const fajlnev = href => decodeURIComponent(String(href || '').split(/[?#]/)[0]).split('/').pop().toLowerCase();
+const szoveg = el => (el ? el.textContent : '').replace(/\s+/g, ' ').trim();
+const mondatok = t => (t.match(/[^.!?]+[.!?]+/g) || []).length;
+
+// A h2-k közötti elemek (dokumentum-sorrendben), a megadott alcím után a következő h2-ig.
+function szakasz(doc, cim) {
+  const minden = [...doc.body.querySelectorAll('*')];
+  const kezd = minden.findIndex(el => el.tagName === 'H2' && szoveg(el).toLowerCase() === cim.toLowerCase());
+  if (kezd < 0) return [];
+  const ki = [];
+  for (let i = kezd + 1; i < minden.length && minden[i].tagName !== 'H2'; i++) ki.push(minden[i]);
+  return ki;
+}
+
+async function ellenoriz(b) {
+  const sorok = [];
+  const add = (cim, max, allapot, megj) => sorok.push({ cim, max, allapot, megj });
+  const vane = n => b.fajlok.some(f => f.fajlnev.toLowerCase() === n);
+  const temaSzoveg = await fajlSzoveg(b, 'tema.html');
+  const cssSzoveg = (await fajlSzoveg(b, 'style.css')) || '';
+  const doc = temaSzoveg ? new DOMParser().parseFromString(temaSzoveg, 'text/html') : null;
+  const head = doc ? doc.head : null;
+
+  add('A tema.html beadva', 1, temaSzoveg ? 'ok' : 'nem', temaSzoveg ? '' : 'nincs tema.html');
+  if (!doc) {
+    ['Alap szerkezet és lang="hu"', 'title: Weboldalam', 'A css/style.css csatolva'].forEach(c => add(c, 1, 'nem', ''));
+  } else {
+    const szerk = /<!doctype html>/i.test(temaSzoveg) && /<head[\s>]/i.test(temaSzoveg) && /<body[\s>]/i.test(temaSzoveg);
+    const lang = (doc.documentElement.getAttribute('lang') || '').toLowerCase() === 'hu';
+    add('Alap szerkezet és lang="hu"', 1, szerk && lang ? 'ok' : 'nem', [!szerk && 'hiányos váz (doctype/head/body)', !lang && 'nincs lang="hu"'].filter(Boolean).join(', '));
+    const title = szoveg(head.querySelector('title'));
+    add('title: Weboldalam', 1, title === 'Weboldalam' ? 'ok' : 'nem', title ? '„' + title + '”' : 'nincs title');
+    const link = [...head.querySelectorAll('link[rel~="stylesheet"]')].some(l => (l.getAttribute('href') || '').replace(/^\.\//, '') === 'css/style.css');
+    add('A css/style.css csatolva', 1, link ? 'ok' : 'nem', link ? '' : 'nincs <link href="css/style.css"> a head-ben');
+  }
+
+  // Menü: minden beadott oldalon legyen tema.html link, és a menü minden linkje létező fájlra mutasson.
+  const hianyzik = [], rosszLink = [];
+  for (const o of OLDALAK) {
+    const t = o === 'tema.html' ? temaSzoveg : await fajlSzoveg(b, o);
+    if (t == null) { hianyzik.push(o); continue; }
+    const d = new DOMParser().parseFromString(t, 'text/html');
+    const linkek = [...d.querySelectorAll('nav a, a')].map(a => a.getAttribute('href') || '');
+    if (!linkek.some(h => fajlnev(h) === 'tema.html')) hianyzik.push(o);
+    linkek.filter(h => /\.html?$/i.test(h.split(/[?#]/)[0]) && !/^https?:/i.test(h))
+      .forEach(h => { if (!vane(fajlnev(h))) rosszLink.push(o + ' → ' + h); });
+  }
+  add('A menüben ott a Témám, minden oldalon, és működik', 2, hianyzik.length || rosszLink.length ? 'nem' : 'ok',
+    [hianyzik.length && 'nincs tema.html link: ' + hianyzik.join(', '), rosszLink.length && 'nem létező oldal: ' + rosszLink.slice(0, 3).join(', ')].filter(Boolean).join(' · '));
+
+  if (!doc) {
+    ['h1: a téma neve', 'Öt alcím (h2) jó sorrendben'].forEach(c => add(c, 1, 'nem', ''));
+    add('Bemutatás 2 mondat · Érdekességek 2 érdekesség', 2, 'nem', '');
+    add('Kép: img mappából, alt és title', 2, 'nem', '');
+    add('„Tudj meg többet!” hivatkozás, új lapon', 2, 'nem', '');
+    add('Rendezetlen lista 3 jellemzővel', 1, 'nem', '');
+    add('Rendezett lista 3 „leg”-gel', 1, 'nem', '');
+    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, 'nem', '');
+  } else {
+    const h1 = szoveg(doc.querySelector('h1'));
+    add('h1: a téma neve', 1, h1 ? 'kezi' : 'nem', h1 ? '„' + h1 + '” – egyezik a témájával?' : 'nincs h1');
+    const h2k = [...doc.querySelectorAll('h2')].map(szoveg);
+    const jo = h2k.length >= 5 && H2_SORREND.every((c, i) => (h2k[i] || '').toLowerCase() === c.toLowerCase());
+    add('Öt alcím (h2) jó sorrendben', 1, jo ? 'ok' : 'nem', jo ? '' : 'van: ' + (h2k.join(', ') || 'nincs h2'));
+
+    const bemP = szakasz(doc, 'Bemutatás').filter(e => e.tagName === 'P').map(szoveg).join(' ');
+    const erdP = szakasz(doc, 'Érdekességek').filter(e => e.tagName === 'P').map(szoveg).join(' ');
+    const bemOk = mondatok(bemP) >= 2, erdOk = erdP.length > 0;
+    add('Bemutatás 2 mondat · Érdekességek 2 érdekesség', 2, bemOk && erdOk ? 'kezi' : 'nem',
+      [`Bemutatás: ${mondatok(bemP)} mondat`, erdOk ? 'Érdekességek: van bekezdés (saját szavak? 2 érdekesség?)' : 'nincs bekezdés az Érdekességek alatt'].join(' · '));
+
+    const img = szakasz(doc, 'Bemutatás').find(e => e.tagName === 'IMG') || doc.querySelector('img');
+    if (!img) add('Kép: img mappából, alt és title', 2, 'nem', 'nincs kép');
+    else {
+      const src = img.getAttribute('src') || '';
+      const hibak = [];
+      if (!/^(\.\/)?img\//i.test(src)) hibak.push('nem az img mappából: ' + src);
+      else if (!vane(fajlnev(src))) hibak.push('a képfájl nincs beadva: ' + fajlnev(src));
+      if (!(img.getAttribute('alt') || '').trim()) hibak.push('nincs alt');
+      if (!(img.getAttribute('title') || '').trim()) hibak.push('nincs title');
+      const kf = b.fajlok.find(f => f.fajlnev.toLowerCase() === fajlnev(src));
+      add('Kép: img mappából, alt és title', 2, hibak.length ? 'nem' : 'kezi',
+        hibak.length ? hibak.join(', ') : `${fajlnev(src)}${kf ? ' (' + Math.round(kf.meret / 1024) + ' KB)' : ''} – témához illő? nem a legnagyobb felbontás?`);
+    }
+
+    const a = [...doc.querySelectorAll('a')].find(x => szoveg(x).replace(/[!.]+$/, '').toLowerCase() === 'tudj meg többet');
+    if (!a) add('„Tudj meg többet!” hivatkozás, új lapon', 2, 'nem', 'nincs ilyen szövegű link');
+    else {
+      const href = a.getAttribute('href') || '';
+      const ujlap = (a.getAttribute('target') || '').toLowerCase() === '_blank';
+      const kulso = /^https?:\/\//i.test(href);
+      add('„Tudj meg többet!” hivatkozás, új lapon', 2, ujlap && kulso ? 'kezi' : 'nem',
+        [kulso ? href : 'nem weboldal: ' + (href || 'üres'), !ujlap && 'nincs target="_blank"'].filter(Boolean).join(' · ') + (ujlap && kulso ? ' – témához illő?' : ''));
+    }
+
+    const ul = szakasz(doc, 'Jellemzők').find(e => e.tagName === 'UL');
+    const ulDb = ul ? ul.querySelectorAll(':scope > li').length : 0;
+    add('Rendezetlen lista 3 jellemzővel', 1, ulDb >= 3 ? 'ok' : 'nem', ul ? ulDb + ' elem' : 'nincs ul a Jellemzők alatt');
+
+    const ol = szakasz(doc, 'Rangsor').find(e => e.tagName === 'OL');
+    const olDb = ol ? ol.querySelectorAll(':scope > li').length : 0;
+    add('Rendezett lista 3 „leg”-gel', 1, olDb >= 3 ? 'kezi' : 'nem',
+      ol ? olDb + ' elem: ' + [...ol.querySelectorAll(':scope > li')].map(szoveg).join(', ') + ' – helyes sorrend?' : 'nincs ol a Rangsor alatt');
+
+    const tbl = szakasz(doc, 'Adatok').find(e => e.tagName === 'TABLE') || doc.querySelector('table');
+    const thDb = tbl ? tbl.querySelectorAll('th').length : 0;
+    const adatSor = tbl ? [...tbl.querySelectorAll('tr')].filter(tr => tr.querySelector('td')).length : 0;
+    const css = cssSzoveg.replace(/\/\*[\s\S]*?\*\//g, '');
+    const cellaSzegely = /(^|[},\s])(th\s*,\s*td|td\s*,\s*th)\s*\{[^}]*border\s*:/i.test(css)
+      || (/(^|[},\s])td\s*\{[^}]*border\s*:/i.test(css) && /(^|[},\s])th\s*\{[^}]*border\s*:/i.test(css));
+    const hibak = [];
+    if (!tbl) hibak.push('nincs táblázat');
+    else {
+      if (thDb < 3) hibak.push('fejléc: ' + thDb + ' th');
+      if (adatSor < 3) hibak.push('adatsor: ' + adatSor);
+    }
+    if (!cellaSzegely) hibak.push('a style.css-ben nincs th, td szegély');
+    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, hibak.length ? 'nem' : 'kezi',
+      hibak.length ? hibak.join(', ') : `${thDb} oszlop, ${adatSor} adatsor – a megadott oszlopok?`);
+  }
+
+  const hianyFajl = [...OLDALAK, 'style.css'].filter(n => !vane(n));
+  const kep = b.fajlok.some(f => /\.(jpe?g|png|gif|webp)$/i.test(f.fajlnev));
+  add('Minden fájl beadva (HTML-ek, style.css, képek)', 1, hianyFajl.length || !kep ? 'nem' : 'kezi',
+    hianyFajl.length || !kep ? 'hiányzik: ' + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : 'a téma egyezik a sorszámával?');
+
+  const auto = sorok.filter(s => s.allapot === 'ok').reduce((a, s) => a + s.max, 0);
+  const autoMax = sorok.filter(s => s.allapot !== 'kezi').reduce((a, s) => a + s.max, 0);
+  const keziMax = sorok.filter(s => s.allapot === 'kezi').reduce((a, s) => a + s.max, 0);
+  return { sorok, auto, autoMax, keziMax };
+}
+
+if (!TOKEN) {
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal oktatóknak szól.</h2><p style="margin-top:10px"><a href="../login.html">Bejelentkezés</a></p></div>';
+} else {
+  betolt();
+}
+</script>
+</body>
+</html>
