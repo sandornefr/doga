@@ -104,7 +104,7 @@ async function betolt() {
     </details>`;
   document.getElementById('csop').addEventListener('change', listaRajz);
   listaRajz();
-  for (const b of beadasok) { if (!b.nincsBeadas) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); } }
+  for (const b of beadasok) { if (!b.nincsBeadas && b.fajlok.length) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); } }
 }
 
 function temaNev(b) {
@@ -138,9 +138,9 @@ function listaRajz() {
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
         ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
-        <span class="pont" id="p${b.id}">${b.nincsBeadas ? '' : '…'}</span>
+        <span class="pont" id="p${b.id}">${b.nincsBeadas || !b.fajlok.length ? '' : '…'}</span>
       </div>
-      <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : 'Ellenőrzés…'}</p></div>
+      <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : !b.fajlok.length ? 'Csak a github.io-s webcímét adta be: az ellenőrzést a linken, kézzel végezd.' : 'Ellenőrzés…'}</p></div>
     </div>`).join('') : '<div class="kozep">Még nincs beadás.</div>';
   lista.forEach(b => { if (ellenorzes[b.id]) sorFrissit(b); });
 }
