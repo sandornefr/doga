@@ -8,25 +8,37 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#f4f6f8;color:#1f2933;font-family:'Segoe UI',system-ui,sans-serif;line-height:1.5;}
-.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#1f2933;color:#fff;}
+body{line-height:1.5;min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;}
 .topbar .cim{font-weight:700;flex:1;}
-.topbar a{color:#fff;background:#3e4c59;border:0;border-radius:6px;padding:6px 12px;text-decoration:none;font-size:.9rem;}
-.wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px;}
-h1{font-size:1.7rem;}
-.alcim{color:#52606d;margin-bottom:22px;}
-.csempek{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
-.csempe{display:flex;flex-direction:column;gap:8px;background:#fff;border:2px solid #d9e2ec;border-radius:14px;padding:22px;text-decoration:none;color:inherit;transition:border-color .2s,box-shadow .2s,transform .2s;}
-a.csempe:hover{border-color:#7c3aed;box-shadow:0 8px 24px rgba(124,58,237,.15);transform:translateY(-2px);}
-.csempe .ikon{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;color:#fff;background:#7c3aed;}
-.csempe b{font-size:1.15rem;}
-.csempe span{color:#52606d;}
-.csempe.hamarosan{opacity:.65;border-style:dashed;}
-.csempe.hamarosan .ikon{background:#9aa5b1;}
-.cimke{align-self:flex-start;font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:99px;background:#eef2f7;color:#52606d;}
+.topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:1000px;margin:0 auto;padding:28px 20px 60px;}
+/* nyitó sáv */
+.hos{position:relative;overflow:hidden;border-radius:22px;padding:34px 34px 30px;color:#fff;background:var(--ikt-grad);box-shadow:0 18px 40px rgba(76,29,149,.28);margin-bottom:28px;}
+.hos h1{color:#fff;font-size:2.1rem;}
+.hos .evf{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:99px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);font-weight:600;font-size:.92rem;}
+.hos .dekor{position:absolute;right:-10px;top:-14px;font-size:9.5rem;opacity:.12;transform:rotate(-8deg);}
+.hos .pottyok{position:absolute;right:150px;bottom:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08);}
+/* csempék */
+.csempek{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;}
+.csempe{position:relative;display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid var(--ikt-vonal);border-radius:20px;padding:26px;text-decoration:none;color:inherit;
+  box-shadow:0 8px 28px rgba(76,29,149,.08);transition:transform .2s,box-shadow .2s,border-color .2s;}
+a.csempe:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(76,29,149,.16);border-color:#c4b5fd;}
+.csempe .ikon{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:1.6rem;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 8px 18px rgba(79,70,229,.3);}
+.csempe.turkiz .ikon{background:linear-gradient(135deg,#06b6d4,#0e7490);box-shadow:0 8px 18px rgba(8,145,178,.3);}
+.csempe b{font-size:1.25rem;color:var(--ikt-sotet);}
+.csempe span.le{color:var(--ikt-halvany);}
+.csempe .tovabb{margin-top:auto;padding-top:6px;font-weight:700;color:var(--ikt-lila);}
+a.csempe:hover .tovabb i{transform:translateX(4px);}
+.csempe .tovabb i{transition:transform .2s;}
+.csempe.hamarosan{background:rgba(255,255,255,.65);border-style:dashed;box-shadow:none;}
+.csempe.hamarosan .ikon{opacity:.75;}
+.cimke{position:absolute;top:18px;right:18px;font-size:.78rem;font-weight:700;padding:3px 12px;border-radius:99px;background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;}
 .kozep{text-align:center;padding:60px 0;}
-.btn{display:inline-block;margin-top:14px;padding:8px 16px;border-radius:8px;background:#7c3aed;color:#fff;text-decoration:none;}
+.btn{display:inline-block;margin-top:14px;padding:9px 18px;color:#fff;text-decoration:none;}
+@media (max-width:560px){.hos{padding:26px 22px}.hos h1{font-size:1.6rem}.hos .dekor{font-size:6rem}}
 </style>
+<link rel="stylesheet" href="ikt.css?v=1">
 </head>
 <body>
 <div class="topbar">
@@ -46,19 +58,23 @@ if (!u) {
   app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
 } else {
   app.innerHTML = `
-    <h1>IKT Projektmunka I.</h1>
-    <div class="alcim">9. évfolyam</div>
+    <div class="hos">
+      <i class="fas fa-laptop-code dekor"></i><span class="pottyok"></span>
+      <h1>IKT Projektmunka I.</h1>
+      <span class="evf"><i class="fas fa-graduation-cap"></i> 9. évfolyam</span>
+    </div>
     <div class="csempek">
       <a class="csempe" href="temaoldal.html">
         <span class="ikon"><i class="fas fa-file-arrow-up"></i></span>
         <b>Témaoldal</b>
-        <span>A feladatlap és a téma – itt töltöd fel a weboldalad fájljait.</span>
+        <span class="le">A feladatlap és a téma – itt töltöd fel a weboldalad fájljait.</span>
+        <span class="tovabb">Megnyitás <i class="fas fa-arrow-right"></i></span>
       </a>
-      <div class="csempe hamarosan">
+      <div class="csempe turkiz hamarosan">
+        <span class="cimke">Hamarosan</span>
         <span class="ikon"><i class="fas fa-route"></i></span>
         <b>Vezetett tanmenet</b>
-        <span>Óráról órára, lépésenként.</span>
-        <span class="cimke">Hamarosan</span>
+        <span class="le">Óráról órára, lépésenként.</span>
       </div>
     </div>`;
 }

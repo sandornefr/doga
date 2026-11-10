@@ -1,0 +1,54 @@
+/* IKT Projektmunka I. – közös színvilág (lila–indigó–türkiz, a portál IKT-kártyájához illően).
+   Az oldalak saját stílusa után töltődik, csak a megjelenést írja felül. */
+:root{
+  --ikt-lila:#7c3aed; --ikt-indigo:#4f46e5; --ikt-turkiz:#0891b2; --ikt-sotet:#2e1065;
+  --ikt-szoveg:#1f2937; --ikt-halvany:#6b7280; --ikt-vonal:#e6e1fb; --ikt-hatter:#f7f6fc;
+  --ikt-grad:linear-gradient(120deg,#5b21b6 0%,#4f46e5 55%,#0e7490 100%);
+}
+body{
+  color:var(--ikt-szoveg);
+  background:
+    radial-gradient(1100px 480px at -5% -12%,#ede9fe 0,transparent 60%),
+    radial-gradient(900px 420px at 105% -5%,#e0f2fe 0,transparent 55%),
+    var(--ikt-hatter);
+  background-attachment:fixed;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.topbar{background:var(--ikt-grad);padding:12px 22px;box-shadow:0 6px 24px rgba(76,29,149,.25);position:sticky;top:0;z-index:20;}
+.topbar .cim{font-size:1.05rem;letter-spacing:.01em;}
+.topbar .cim i{margin-right:4px;opacity:.9;}
+.topbar a,.topbar button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:99px;padding:6px 14px;transition:background .2s;}
+.topbar a:hover,.topbar button:hover{background:rgba(255,255,255,.28);}
+.topbar #who{opacity:.9;font-size:.92rem;}
+
+h1{font-weight:800;color:var(--ikt-sotet);letter-spacing:-.01em;}
+.alcim{color:var(--ikt-halvany);}
+h2{display:flex;align-items:center;gap:10px;border-bottom:0;color:var(--ikt-sotet);font-weight:800;}
+h2::before{content:'';width:6px;height:1.15em;border-radius:3px;background:linear-gradient(180deg,var(--ikt-lila),var(--ikt-turkiz));flex-shrink:0;}
+
+.card{border:1px solid var(--ikt-vonal);border-radius:16px;box-shadow:0 6px 24px rgba(76,29,149,.07);}
+code{background:#f3f0ff;color:#5b21b6;}
+.sarga{border-radius:12px;}
+table.tbl{border-radius:12px;overflow:hidden;}
+table.tbl th{background:#ede9fe;color:#4c1d95;border-color:#ddd6fe;}
+table.tbl td{border-color:#e5e7eb;}
+table.tbl tr:nth-child(even) td{background:#fbfaff;}
+iframe.minta{border:1px solid var(--ikt-vonal);border-radius:14px;box-shadow:0 6px 24px rgba(76,29,149,.08);}
+
+.temam{background:linear-gradient(135deg,#eef2ff,#ecfeff);border:1px solid #c7d2fe;border-radius:14px;}
+.temam .nev{color:var(--ikt-indigo);}
+
+.drop{border-color:#a78bfa;background:#faf7ff;border-radius:14px;transition:background .2s,border-color .2s;}
+.drop:hover,.drop.over{border-color:var(--ikt-lila);background:#f3efff;}
+.drop i{color:var(--ikt-lila);}
+.btn{background:linear-gradient(135deg,var(--ikt-lila),var(--ikt-indigo));border-radius:12px;box-shadow:0 6px 18px rgba(79,70,229,.25);transition:transform .15s,box-shadow .15s;}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 22px rgba(79,70,229,.32);}
+.btn:disabled{background:#c4c8d0;box-shadow:none;}
+.sor input[type=url]{border-radius:10px;border-color:#d4cdf5;}
+.sor input[type=url]:focus{outline:2px solid #c4b5fd;border-color:var(--ikt-lila);}
+
+@media print{
+  body{background:#fff;}
+  .card,iframe.minta{box-shadow:none;}
+  h2::before{background:#555;}
+}
