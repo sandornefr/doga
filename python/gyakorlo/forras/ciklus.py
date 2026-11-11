@@ -1121,3 +1121,6 @@ while szam > 0:
     szam = szam // 2
 print(f"Kettesben: {eredmeny}")
 """, [(['13'], ['Kettesben: 1101']), (['255'], ['Kettesben: 11111111']), (['8'], ['Kettesben: 1000'])])
+
+
+TEMAK = [dict(id='ciklus', cim='Ciklusok: for és while', leiras='Ismétlés, összegzés, számlálás, szöveg betűnként – def nélkül.', F=F)]

@@ -56,7 +56,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 .leiras-panel { width: 40%; min-width: 300px; overflow-y: auto; padding: 18px 20px; border-right: 1.5px solid var(--border); }
 .leiras-panel h2 { font-size: 1.2rem; margin-bottom: 4px; }
 .cimke { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--accent); color: var(--accent); margin-bottom: 12px; }
-.cimke.while { border-color: var(--blue); color: var(--blue); }
+.cimke.while, .cimke.elif { border-color: var(--blue); color: var(--blue); }
 .leiras { line-height: 1.6; font-size: 1rem; }
 .leiras p { margin-bottom: 8px; }
 .leiras code, .tipp code { font-family: var(--mono); background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: #fde68a; font-size: .92em; }
@@ -127,7 +127,8 @@ pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .88rem; ba
   </main>
 </div>
 
-<script src="feladatok/ciklus.js?v=1"></script>
+<script src="feladatok/alapok.js?v=1"></script>
+<script src="feladatok/ciklus.js?v=2"></script>
 <script>
 'use strict';
 const API = 'https://agazati.up.railway.app';
@@ -167,7 +168,7 @@ const kesz = f => store.getItem('kesz_' + f.id) === '1';
 
 // ── Lista ──────────────────────────────────────────────────────────────────
 function rajzolTemak() {
-  document.getElementById('temak').innerHTML = TEMAK.map(t =>
+  document.getElementById('temak').innerHTML = TEMAK.filter(t => t === st.tema || t.feladatok.some(latszik)).map(t =>
     `<button class="tema-gomb${t === st.tema ? ' aktiv' : ''}" onclick="valasztTema('${t.id}')">${esc(t.cim)}</button>`).join('');
 }
 function rajzolLista() {
@@ -213,7 +214,7 @@ function valasztFeladat(id) {
   document.getElementById('munka').innerHTML = `
     <section class="leiras-panel">
       <h2>${f.sorszam}. ${esc(f.cim)}</h2>
-      <span class="cimke ${f.kell}">${f.kell} ciklussal</span>
+      ${f.kell ? `<span class="cimke ${f.kell}">Ezt gyakorlod: ${esc(f.kell)}</span>` : ''}
       <div class="leiras">${f.leiras}</div>
       <div class="alcim">Így nézzen ki futás közben</div>
       <pre class="minta">${esc(f.pelda)}</pre>
@@ -350,9 +351,9 @@ async function ellenorizGomb() {
   st.fut = true; gombok(true); allapot(futtatoKesz ? 'Ellenőrzés…' : 'Python betöltése…');
   const sorok = [];
   const kodNelkulKomment = kod.replace(/#.*$/gm, '');
-  const vanCiklus = new RegExp('\\b' + f.kell + '\\b').test(kodNelkulKomment);
   const nincsDef = !/\bdef\s+\w+/.test(kodNelkulKomment);
-  sorok.push([vanCiklus, `<code>${f.kell}</code> ciklus van a programban`]);
+  if (f.kell) sorok.push([new RegExp('\\b(' + f.kell.split('/').join('|') + ')\\b').test(kodNelkulKomment),
+    `${f.kell.split('/').map(k => `<code>${esc(k)}</code>`).join(' / ')} szerepel a programban`]);
   if (!nincsDef) sorok.push([false, 'Itt <code>def</code> nélkül dolgozunk']);
   const r = await futtat(kod, f.tesztek.map(t => t.be));
   let elsoKimenet = null;
@@ -397,7 +398,7 @@ function haladasKuld(f, pont, max) {
   await feloldottBetolt();
   document.getElementById('oktato-cimke').hidden = !st.mind;
   const p = new URLSearchParams(location.search);
-  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK[0];
+  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
   st.tema = tema;
   rajzolTemak();
   const kert = tema && tema.feladatok.find(f => f.id === p.get('feladat') && latszik(f));
