@@ -22,7 +22,7 @@
                        ['15:15', '16:00'], ['16:05', '16:50']];
     const NAPNEV = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
     const OLDAL = { portal: 'Portál', practice: 'WEB alapok gyakorló', web: 'WEB feladat', python: 'Python dolgozat',
-                    'py-basics': 'Python kezdő', 'py-practice': 'Python haladó', 'py-pro': 'Python profi' };
+                    'py-basics': 'Python kezdő', 'py-practice': 'Python haladó', 'py-pro': 'Python profi', 'py-gyakorlo': 'Python gyakorló feladatok' };
 
     const st = { orarend: [], naploUtolsok: {}, naplo: [], haladas: null, online: [], kivalasztott: null,
                  szerkesztett: null, onlineTimer: null, betoltve: false };
@@ -195,21 +195,27 @@
                 <div id="csj-naplo"><div class="loading">Betöltés...</div></div>
             </section>
             <section class="csj-szekcio">
+                <div class="csj-szekcio-fej"><h4><i class="fas fa-dumbbell"></i> Gyakorló feladatok kiadása</h4>
+                    <span class="csj-halvany">Amit kipipálsz, azt a csoport otthon is látja a Python → Gyakorló feladatok oldalon.</span></div>
+                <div id="csj-gyakorlo"><div class="loading">Betöltés...</div></div>
+            </section>
+            <section class="csj-szekcio">
                 <div class="csj-szekcio-fej"><h4><i class="fas fa-user-graduate"></i> Tanulók</h4>
                     <span class="csj-halvany" id="csj-online-info"></span></div>
                 <div id="csj-tanulok"><div class="loading">Betöltés...</div></div>
             </section>`;
         rajzolTanulok();
+        gyakorloBetolt(k);
         try { st.naplo = await getJson(`/api/csoportjaim/naplo?csoport=${encodeURIComponent(k)}`); }
         catch { st.naplo = []; }
         if (st.kivalasztott === k) rajzolNaplo();
     }
 
     // ── Óranapló ─────────────────────────────────────────────────────────────────
-    const MEZOK = [['mitVettunk', 'Mit vettünk', 'pl. HTML táblázatok, 3. gyakorló feladat'],
-                   ['kovetkezo', 'Hol folytatjuk', 'pl. táblázat stílusok, a házi megbeszélése'],
+    const MEZOK = [['mitVettunk', 'Mit vettünk', 'pl.: HTML táblázatok, 3. gyakorló feladat'],
+                   ['kovetkezo', 'Hol folytatjuk', 'pl.: táblázat stílusok, a házi megbeszélése'],
                    ['hazi', 'Házi feladat', ''],
-                   ['megjegyzes', 'Megjegyzés a tanulókról (csak te látod)', 'pl. ki hiányzott, ki maradt le, kinek kell segíteni']];
+                   ['megjegyzes', 'Megjegyzés a tanulókról (csak te látod)', 'pl.: ki hiányzott, ki maradt le, kinek kell segíteni']];
 
     function urlapHtml(b) {
         return `<div class="csj-urlap">
@@ -287,6 +293,57 @@
         if (!n || !confirm(`Biztosan törlöd a ${huDatum(n.datum)} bejegyzést?`)) return;
         const r = await authFetch(`${RAILWAY_URL}/api/csoportjaim/naplo/${id}`, { method: 'DELETE' });
         if (r.ok) { st.naplo = st.naplo.filter(x => x.id !== id); rajzolNaplo(); }
+    };
+
+    // ── Gyakorló feladatok kiadása (feloldás csoportonként) ──────────────────────
+    const gy = { csoport: null, feloldva: new Map(), nyitott: new Set() };
+    async function gyakorloBetolt(k) {
+        gy.csoport = k; gy.feloldva = new Map();
+        try { (await getJson(`/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(k)}`)).forEach(x => gy.feloldva.set(x.feladat, x.datum)); }
+        catch { const el = document.getElementById('csj-gyakorlo'); if (el) el.innerHTML = '<div class="error">A kiadott feladatok betöltése nem sikerült.</div>'; return; }
+        if (st.kivalasztott === k) rajzolGyakorlo();
+    }
+    function rajzolGyakorlo() {
+        const el = document.getElementById('csj-gyakorlo');
+        if (!el) return;
+        const temak = window.GYAKORLO_TEMAK || [];
+        if (!temak.length) { el.innerHTML = '<div class="csj-ures">Nincs betöltve feladatbank.</div>'; return; }
+        el.innerHTML = temak.map(t => {
+            const db = t.feladatok.filter(f => gy.feloldva.has(f.id)).length;
+            let csop = null, lista = '';
+            for (const f of t.feladatok) {
+                if (f.csop !== csop) { csop = f.csop; lista += `<div class="csj-gy-csop">${esc(csop)}</div>`; }
+                const d = gy.feloldva.get(f.id);
+                lista += `<label class="csj-gy-elem${d ? ' kiadva' : ''}"><input type="checkbox" ${d ? 'checked' : ''} onchange="csjGyPipa('${f.id}', this.checked)">
+                    <span>${f.sorszam}. ${esc(f.cim)} <span class="csj-halvany">(${esc(f.kell)})</span></span>
+                    ${d ? `<span class="csj-halvany csj-gy-datum">${esc(huDatum(d))}</span>` : ''}</label>`;
+            }
+            return `<details class="csj-gy-tema" ${gy.nyitott.has(t.id) ? 'open' : ''} ontoggle="csjGyNyit('${t.id}', this.open)">
+                <summary><b>${esc(t.cim)}</b> · kiadva: <b>${db}</b> / ${t.feladatok.length}</summary>
+                <div class="csj-gy-gombok">
+                    <button class="btn-refresh" onclick="csjGyTema('${t.id}', true)"><i class="fas fa-lock-open"></i> Az egész téma tanult</button>
+                    <button class="btn-refresh" onclick="csjGyTema('${t.id}', false)"><i class="fas fa-lock"></i> Mindet visszazárom</button>
+                </div>
+                <div class="csj-gy-lista">${lista}</div></details>`;
+        }).join('');
+    }
+    async function gyMent(feladatok, feloldva) {
+        const k = gy.csoport;
+        const r = await authFetch(`${RAILWAY_URL}/api/oktato/gyakorlo/feloldas`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csoport: k, feladatok, feloldva, datum: iso(new Date()) })
+        });
+        if (!r.ok) { alert('A mentés nem sikerült. Próbáld újra!'); }
+        await gyakorloBetolt(k);
+    }
+    window.csjGyNyit = (id, nyitva) => { if (nyitva) gy.nyitott.add(id); else gy.nyitott.delete(id); };
+    window.csjGyPipa = (id, be) => gyMent([id], be);
+    window.csjGyTema = (temaId, be) => {
+        const t = (window.GYAKORLO_TEMAK || []).find(x => x.id === temaId);
+        if (!t) return;
+        if (!be && !confirm(`Biztosan visszazárod a(z) „${t.cim}” összes feladatát ennél a csoportnál?`)) return;
+        const ids = t.feladatok.map(f => f.id).filter(id => be ? !gy.feloldva.has(id) : gy.feloldva.has(id));
+        if (ids.length) gyMent(ids, be);
     };
 
     // ── Tanulók ──────────────────────────────────────────────────────────────────

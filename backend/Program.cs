@@ -1950,6 +1950,40 @@ app.MapGet("/api/csoportjaim/online", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetOnlineTanulok());
 });
 
+// ── Gyakorló feladatok: csoportonkénti feloldás ─────────────────────────────
+
+// Tanuló: a csoportjának feloldott feladatai. Oktató: mindent lát (mind = true).
+app.MapGet("/api/gyakorlo/feloldott", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    if (IsPrivilegedRole(role)) return Results.Ok(new { mind = true, feladatok = Array.Empty<string>() });
+    var email = NormalizeSchoolEmail(identity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(new { mind = false, feladatok = db.GetGyakorloFeloldottTanulonak(email) });
+});
+
+app.MapGet("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var csoport = ctx.Request.Query["csoport"].FirstOrDefault()?.Trim();
+    if (string.IsNullOrEmpty(csoport) || csoport.Length > 30) return Results.BadRequest(new { error = "Hiányzó csoport." });
+    return Results.Ok(db.GetGyakorloFeloldas(OktatoAzonosito(ctx), csoport));
+});
+
+app.MapPut("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, GyakorloFeloldasMentes req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var feladatok = req.Feladatok ?? new();
+    var datum = string.IsNullOrWhiteSpace(req.Datum) ? DateTime.Now.ToString("yyyy-MM-dd") : req.Datum.Trim();
+    if (string.IsNullOrWhiteSpace(req.Csoport) || req.Csoport.Length > 30 || feladatok.Count is 0 or > 200
+        || feladatok.Any(f => !System.Text.RegularExpressions.Regex.IsMatch(f ?? "", @"^[a-z0-9_]{1,40}$"))
+        || !System.Text.RegularExpressions.Regex.IsMatch(datum, @"^\d{4}-\d{2}-\d{2}$"))
+        return Results.BadRequest(new { error = "Érvénytelen feloldási adat." });
+    db.SetGyakorloFeloldas(OktatoAzonosito(ctx), req.Csoport.Trim(), feladatok, req.Feloldva, datum);
+    return Results.Ok(new { success = true });
+});
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 // Üzenetek lekérése (tesztelő vagy oktató) – channel: 'tesztelok' | 'oktatok'

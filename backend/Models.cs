@@ -799,4 +799,6 @@ public record NaploBejegyzes(int Id, string Csoport, string Datum, string? MitVe
                              string? Hazi, string? Megjegyzes, string? Temak);
 public record NaploMentes(string Csoport, string Datum, string? MitVettunk, string? Kovetkezo,
                           string? Hazi, string? Megjegyzes, string? Temak);
+public record GyakorloFeloldas(string Feladat, string Datum);
+public record GyakorloFeloldasMentes(string Csoport, List<string> Feladatok, bool Feloldva, string? Datum);
 public record OnlineTanulo(string Email, string Page, string LastHeartbeat, string LoginAt);

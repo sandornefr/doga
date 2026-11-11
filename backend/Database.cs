@@ -363,6 +363,17 @@ public partial class Database
                 updated_at  TEXT
             );
             CREATE INDEX IF NOT EXISTS ix_csoport_naplo ON csoport_naplo(oktato, csoport, datum);
+            -- Gyakorló feladatok: a tanár csoportonként oldja fel (órán megoldott feladatok)
+            CREATE TABLE IF NOT EXISTS gyakorlo_feloldas (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                oktato     TEXT NOT NULL,
+                csoport    TEXT NOT NULL,         -- kulcs: '9.A.2', '9.K.info', '10.B.' (egész osztály)
+                feladat    TEXT NOT NULL,         -- pl. 'ciklus_12'
+                datum      TEXT NOT NULL,         -- 'YYYY-MM-DD' (a böngésző helyi dátuma)
+                created_at TEXT DEFAULT (datetime('now','localtime')),
+                UNIQUE (oktato, csoport, feladat)
+            );
+            CREATE INDEX IF NOT EXISTS ix_gyakorlo_feloldas ON gyakorlo_feloldas(csoport);
         ");
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS evfolyam_leptetes_log (
@@ -2677,6 +2688,62 @@ public partial class Database
         cmd.Parameters.AddWithValue("$id", id);
         cmd.Parameters.AddWithValue("$o", oktato);
         return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // ── Gyakorló feladatok feloldása ──────────────────────────────────────────
+
+    // Egy csoport feloldott feladatai (az adott oktatótól)
+    public List<GyakorloFeloldas> GetGyakorloFeloldas(string oktato, string csoport)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT feladat, datum FROM gyakorlo_feloldas WHERE oktato = $o AND csoport = $c ORDER BY datum, id";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$c", csoport);
+        var list = new List<GyakorloFeloldas>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(new GyakorloFeloldas(r.GetString(0), r.GetString(1)));
+        return list;
+    }
+
+    // Feloldás (feloldva = true) vagy visszavonás; több feladat egyszerre
+    public void SetGyakorloFeloldas(string oktato, string csoport, IEnumerable<string> feladatok, bool feloldva, string datum)
+    {
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+        foreach (var f in feladatok)
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.Transaction = tx;
+            cmd.CommandText = feloldva
+                ? "INSERT OR IGNORE INTO gyakorlo_feloldas (oktato, csoport, feladat, datum) VALUES ($o, $c, $f, $d)"
+                : "DELETE FROM gyakorlo_feloldas WHERE oktato = $o AND csoport = $c AND feladat = $f";
+            cmd.Parameters.AddWithValue("$o", oktato);
+            cmd.Parameters.AddWithValue("$c", csoport);
+            cmd.Parameters.AddWithValue("$f", f);
+            cmd.Parameters.AddWithValue("$d", datum);
+            cmd.ExecuteNonQuery();
+        }
+        tx.Commit();
+    }
+
+    // Egy tanuló számára feloldott feladatok: a saját csoportja ('9.A.2') és az egész osztály ('9.A.') kulcsán,
+    // bármelyik oktatótól
+    public List<string> GetGyakorloFeloldottTanulonak(string email)
+    {
+        var u = GetUserByEmail(email);
+        if (u is null || string.IsNullOrWhiteSpace(u.Evfolyam) || string.IsNullOrWhiteSpace(u.Osztaly)) return new();
+        var alap = $"{u.Evfolyam.Trim()}.{u.Osztaly.Trim().ToUpperInvariant()}.";
+        var sajat = alap + (u.Csoport?.Trim() ?? "");
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT DISTINCT feladat FROM gyakorlo_feloldas WHERE csoport = $a OR csoport = $s";
+        cmd.Parameters.AddWithValue("$a", alap);
+        cmd.Parameters.AddWithValue("$s", sajat);
+        var list = new List<string>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(r.GetString(0));
+        return list;
     }
 
     // Az utóbbi 2 percben jelt adó tanulói munkamenetek (melyik oldalon dolgozik most)

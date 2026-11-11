@@ -171,6 +171,14 @@
         .csj-ures { color:#8892a6; font-style:italic; padding:10px 0; font-size:0.9rem; }
         .csj-tag { display:inline-block; font-size:0.7rem; padding:1px 6px; margin:1px; border-radius:6px; background:#1e293b; color:#64748b; }
         .csj-tag.kesz { background:rgba(34,197,94,.18); color:#4ade80; }
+        .csj-gy-tema { border:1px solid #1f2937; border-radius:10px; padding:8px 12px; margin-bottom:8px; }
+        .csj-gy-tema summary { cursor:pointer; padding:4px 0; }
+        .csj-gy-gombok { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+        .csj-gy-lista { columns:2 320px; column-gap:24px; }
+        .csj-gy-csop { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; margin:10px 0 4px; break-after:avoid; }
+        .csj-gy-elem { display:flex; align-items:center; gap:8px; padding:3px 0; cursor:pointer; break-inside:avoid; }
+        .csj-gy-elem.kiadva > span:first-of-type { color:#4ade80; }
+        .csj-gy-datum { margin-left:auto; font-size:0.75rem; }
         .csj-zold { color:#4ade80; font-size:0.85rem; }
         .csj-zold .fa-circle { font-size:0.55rem; vertical-align:middle; }
         .csj-sarga { color:#fbbf24; } .csj-piros { color:#f87171; }
@@ -1250,6 +1258,7 @@
     </div>
     </div>
 
+    <script src="gyakorlo/feladatok/ciklus.js?v=1"></script>
     <script src="csoportjaim.js"></script>
     <script>
         const RAILWAY_URL = 'https://agazati.up.railway.app';
