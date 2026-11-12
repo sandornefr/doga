@@ -58,6 +58,17 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
 .tk .sor b { color: var(--text); }
 .nz { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--bg3); border: 1px solid var(--border); margin: 1px; vertical-align: middle; }
 .nz.kesz { background: var(--accent); border-color: var(--accent); } .nz.probal { background: var(--yellow); border-color: var(--yellow); }
+.tk.segit { border-left-color: var(--red); border-color: rgba(248,81,73,.6); box-shadow: 0 0 0 1px rgba(248,81,73,.35); }
+.kerek { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ker { border: 1.5px solid rgba(248,81,73,.6); background: rgba(248,81,73,.07); border-radius: 10px; padding: 10px 12px; }
+.ker.kesz { border-color: var(--border); background: var(--bg); opacity: .8; }
+.ker .fejsor { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ker .fejsor b { font-size: .98rem; }
+.ker .mikor { margin-left: auto; color: var(--muted); font-size: .8rem; }
+.ker .uz { margin-top: 4px; font-size: .9rem; }
+.ker pre { margin-top: 6px; font-family: Consolas, monospace; font-size: .82rem; background: #020617; border: 1px solid var(--border); border-radius: 6px; padding: 8px; max-height: 220px; overflow: auto; white-space: pre; }
+.ker .valaszsor { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.ker input { flex: 1; min-width: 160px; font: inherit; font-size: .88rem; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
 .uzenet { padding: 12px 14px; border-radius: 10px; border: 1px dashed var(--border); color: var(--muted); }
 .hiba { border-color: var(--red); color: #ffa198; }
 </style>
@@ -96,9 +107,11 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
       <button class="gomb" onclick="kovetes()"><i class="fas fa-rotate"></i> Frissítés</button>
     </div>
     <div class="magyar" style="margin-bottom:10px">
+      Piros: segítséget kér (felül látod, mit küldött).
       <span class="nz kesz"></span> kész &nbsp; <span class="nz probal"></span> próbálkozik &nbsp; <span class="nz"></span> még nem.
       Zöld szél: 10 percen belül dolgozott. Sárga szél: bent van, de 10 perce nem mozdult. Az egérrel a négyzetre mutatva látod a feladat nevét.
     </div>
+    <div class="kerek" id="kerek"></div>
     <div id="kovetes"><div class="uzenet">Válassz csoportot.</div></div>
   </section>
 </main>
@@ -137,7 +150,7 @@ const csoportNev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}
 const tanitasiNap = d => { const s = iso(d), w = d.getDay(); return w > 0 && w < 6 && s >= TANEV.elsoNap && s <= TANEV.utolsoNap && !TANEV.unnepek.includes(s) && !TANEV.szunetek.some(([a, b]) => s >= a && s <= b); };
 const percOta = ts => { if (!ts) return null; const d = new Date(String(ts).replace(' ', 'T')); return isNaN(d) ? null : Math.round((Date.now() - d) / 60000); };
 
-const st = { orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null, leckeVan: true };
+const st = { kerek: [], kodNyitva: new Set(), irasban: false, orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null, leckeVan: true };
 // Az új leckék (python/kezdo-uj.html) még nem biztos, hogy élesben vannak: ha nincs, a gomb helyett szöveg jelenik meg
 fetch('python/kezdo-uj.html', { method: 'HEAD' }).then(r => { st.leckeVan = r.ok; rajzolReszlet(); }).catch(() => {});
 
@@ -177,7 +190,7 @@ async function indul() {
   let utolso = null; try { utolso = localStorage.getItem('ora_mod_csoport'); } catch {}
   csoportValaszt(st.mostani ? st.mostani.kulcs : st.csoportok.includes(utolso) ? utolso : st.csoportok[0]);
   rajzolTemak();
-  st.idozito = setInterval(() => { if (!document.hidden) kovetes(true); }, 30000);   // óra közben félpercenként frissül
+  st.idozito = setInterval(() => { if (!document.hidden) kovetes(true); }, 20000);   // óra közben 20 mp-enként frissül (segítségkérés miatt)
 }
 
 function csoportValaszt(k) {
@@ -235,6 +248,39 @@ function temaKiad() {
   if (ids.length) pipa(ids, true);
 }
 
+// ── Tanári segítség: a csoport mai kérései; a nyitottak felül, pirosan ─────────
+function rajzolKerek() {
+  if (st.irasban) return;   // ne írja felül, amíg a tanár épp választ gépel
+  const el = document.getElementById('kerek');
+  const nyitott = st.kerek.filter(x => x.allapot === 'nyitott');
+  const tobbi = st.kerek.filter(x => x.allapot === 'valasz' || x.allapot === 'odamegy').slice(0, 5);
+  document.title = nyitott.length ? `(${nyitott.length}) Segítséget kérnek – Óra mód` : 'Óra mód';
+  if (!nyitott.length && !tobbi.length) { el.innerHTML = ''; return; }
+  const ido = s => String(s || '').slice(11, 16);
+  el.innerHTML = [...nyitott, ...tobbi].map(x => `<div class="ker${x.allapot === 'nyitott' ? '' : ' kesz'}">
+    <div class="fejsor"><i class="fas fa-hand" style="color:${x.allapot === 'nyitott' ? 'var(--red)' : 'var(--muted)'}"></i><b>${esc(x.nev || x.email)}</b>
+      <span class="magyar">${esc(x.feladatNev || x.feladat)}</span>
+      <span class="mikor">${x.allapot === 'nyitott' ? 'kér: ' + ido(x.letrehozva) : x.allapot === 'odamegy' ? 'odamész' : 'válaszoltál'}</span></div>
+    ${x.uzenet ? `<div class="uz">„${esc(x.uzenet)}”</div>` : ''}
+    ${x.allapot !== 'nyitott' && x.valasz ? `<div class="uz magyar">Válaszod: ${esc(x.valasz)}</div>` : ''}
+    ${x.allapot === 'nyitott' ? `<div class="valaszsor">
+      <button class="gomb" onclick="kodValt(${x.id})"><i class="fas fa-code"></i> ${st.kodNyitva.has(x.id) ? 'Kód elrejtése' : 'Kód'}</button>
+      <input id="v-${x.id}" placeholder="Rövid válasz, pl.: a print a cikluson belül legyen" maxlength="1000" onfocus="st.irasban=true" onblur="st.irasban=false" onkeydown="if(event.key==='Enter')valaszol(${x.id},false)">
+      <button class="gomb fo" onclick="valaszol(${x.id},false)"><i class="fas fa-paper-plane"></i> Küld</button>
+      <button class="gomb" onclick="valaszol(${x.id},true)"><i class="fas fa-person-walking"></i> Odamegyek</button></div>
+      ${st.kodNyitva.has(x.id) ? `<pre>${esc(x.kod || '(üres)')}</pre>` : ''}` : ''}</div>`).join('');
+}
+function kodValt(id) { if (st.kodNyitva.has(id)) st.kodNyitva.delete(id); else st.kodNyitva.add(id); rajzolKerek(); }
+async function valaszol(id, odamegy) {
+  const inp = document.getElementById('v-' + id), valasz = inp ? inp.value.trim() : '';
+  if (!odamegy && !valasz) { if (inp) inp.focus(); return; }
+  st.irasban = false;
+  try {
+    await kerd(`/api/oktato/segitseg/${id}/valasz`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valasz, odamegy }) });
+  } catch { alert('A válasz küldése nem sikerült. Próbáld újra!'); return; }
+  kovetes(true);
+}
+
 // ── Élő követés ───────────────────────────────────────────────────────────────
 async function kovetes(csendes) {
   const k = st.csoport, el = document.getElementById('kovetes');
@@ -246,6 +292,7 @@ async function kovetes(csendes) {
     const tanulok = st.tanulok.filter(t => String(t.evfolyam || '') === e && String(t.osztaly || '').toUpperCase() === o.toUpperCase() && (!c || String(t.csoport || '') === c))
       .sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
     let online = []; try { online = await kerd('/api/csoportjaim/online'); } catch {}
+    try { st.kerek = await kerd(`/api/oktato/segitseg?csoport=${encodeURIComponent(k)}`); } catch { st.kerek = []; }
     const adat = new Map();
     for (let i = 0; i < tanulok.length; i += 5) {
       await Promise.all(tanulok.slice(i, i + 5).map(async t => {
@@ -258,6 +305,7 @@ async function kovetes(csendes) {
     }
     if (k !== st.csoport) return;
     rajzolKovetes(tanulok, adat, online);
+    rajzolKerek();
   } catch {
     el.innerHTML = '<div class="uzenet hiba">Az adatok betöltése nem sikerült. Próbáld újra a Frissítés gombbal!</div>';
   }
@@ -283,7 +331,8 @@ function rajzolKovetes(tanulok, adat, online) {
     const probal = maiM.filter(x => !keszE(x)).length;
     const idok = [...maiM.map(x => x.frissitve), ...maiP.map(x => x.datum)].filter(Boolean).sort();
     const utolso = idok.length ? idok[idok.length - 1] : null, ota = percOta(utolso);
-    const allapot = ota !== null && ota <= 10 ? 'halad' : bentE ? 'all' : 'nincs';
+    const keres = st.kerek.find(x => x.email.toLowerCase() === em && x.allapot === 'nyitott');
+    const allapot = keres ? 'segit' : ota !== null && ota <= 10 ? 'halad' : bentE ? 'all' : 'nincs';
     if (allapot === 'halad') haladDb++; else if (allapot === 'all') allDb++;
     const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
@@ -293,10 +342,12 @@ function rajzolKovetes(tanulok, adat, online) {
     return `<div class="tk ${allapot}">
       <div class="nev"><span class="${bentE ? 'bent' : 'kint'}"></span>${esc(t.nev || t.email)}</div>
       <div class="sor">${bentE ? esc(OLDAL[lap] || lap || 'bent van') : 'nincs bent'}${ota !== null ? ` · utoljára <b>${ota < 1 ? 'most' : ota + ' perce'}</b>` : ''}</div>
+      ${keres ? '<div class="sor" style="color:#ffa198"><i class="fas fa-hand"></i> <b style="color:#ffa198">Segítséget kér</b></div>' : ''}
       <div class="sor">Ma kész: <b>${kesz}</b>${probal ? ` · próbálkozik: <b>${probal}</b>` : ''}</div>
       ${kiadott.length ? `<div class="sor">${nz}</div>` : ''}</div>`;
   }).join('');
   document.getElementById('szamlalo').innerHTML = `<span class="pill">Bent: <b>${bentDb}</b> / ${tanulok.length}</span>
+    ${st.kerek.some(x => x.allapot === 'nyitott') ? `<span class="pill" style="border-color:var(--red)">Segítséget kér: <b style="color:#ffa198">${st.kerek.filter(x => x.allapot === 'nyitott').length}</b></span>` : ''}
     <span class="pill">Dolgozik: <b style="color:var(--accent)">${haladDb}</b></span><span class="pill">Áll: <b style="color:var(--yellow)">${allDb}</b></span>`;
   el.innerHTML = `<div class="kartyak">${kartyak}</div>`;
 }

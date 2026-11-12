@@ -801,4 +801,8 @@ public record NaploMentes(string Csoport, string Datum, string? MitVettunk, stri
                           string? Hazi, string? Megjegyzes, string? Temak);
 public record GyakorloFeloldas(string Feladat, string Datum);
 public record GyakorloFeloldasMentes(string Csoport, List<string> Feladatok, bool Feloldva, string? Datum);
+public record SegitsegKeres(string Targy, string Feladat, string? FeladatNev, string? Kod, string? Uzenet);
+public record SegitsegValasz(string? Valasz, bool Odamegy);
+public record SegitsegSor(int Id, string Email, string? Nev, string Csoport, string Targy, string Feladat, string? FeladatNev,
+    string? Kod, string? Uzenet, string Allapot, string? Valasz, string Letrehozva, string? ValaszIdo);
 public record OnlineTanulo(string Email, string Page, string LastHeartbeat, string LoginAt);

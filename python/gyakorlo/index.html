@@ -68,6 +68,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 pre.minta { font-family: var(--mono); font-size: .9rem; background: #020617; border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.45; }
 .tipp { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.35); line-height: 1.5; font-size: .95rem; }
 .tipp i { color: var(--yellow); margin-right: 6px; }
+.gomb.segit { border-color: rgba(239,68,68,.6); color: #fca5a5; }
+.gomb.segit:hover { border-color: var(--red); background: rgba(239,68,68,.12); }
+.segitseg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.4); line-height: 1.5; font-size: .95rem; }
+.segitseg textarea { width: 100%; margin: 6px 0; font: inherit; font-size: .9rem; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2); color: var(--text); resize: vertical; }
+.segitseg .valasz { margin-top: 6px; padding: 8px 10px; border-radius: 6px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.45); }
 pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .88rem; background: #020617; border: 1px solid var(--yellow); border-radius: 8px; padding: 10px 12px; white-space: pre; overflow-x: auto; }
 
 .kod-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 12px 14px; gap: 10px; }
@@ -284,9 +289,11 @@ function valasztFeladat(id) {
       <pre class="minta">${esc(f.pelda)}</pre>
       <div class="sor" style="margin-top:14px">
         <button class="gomb" onclick="mutatTipp()"><i class="fas fa-lightbulb"></i> Tipp</button>
+        <button class="gomb segit" onclick="segitsegNyit()" title="Elküldi a tanárnak, hol tartasz (a feladatot és a kódodat)"><i class="fas fa-hand"></i> Tanári segítség</button>
         ${st.mind ? '<button class="gomb" onclick="mutatMegoldas()"><i class="fas fa-key"></i> Megoldás (oktató)</button>' : ''}
       </div>
       <div id="tipp-hely"></div>
+      <div id="segitseg-hely"></div>
     </section>
     <section class="kod-panel">
       <div class="szerkeszto"><div class="sorszamok" id="sorszamok">1</div>
@@ -307,6 +314,7 @@ function valasztFeladat(id) {
   ta.value = mentett != null ? mentett : `# ${f.sorszam}. feladat: ${f.cim}\n`;
   szerkesztoBekot(ta, f);
   if (window.PyKieg) PyKieg.textarea(ta);   // Python kódkiegészítés
+  segitsegRajzol();
   history.replaceState(null, '', `?${st.oktatoNezet ? 'nezet=oktato&' : ''}tema=${st.tema.id}&feladat=${f.id}`);
 }
 
@@ -452,6 +460,52 @@ async function ellenorizGomb() {
   allapot('Python: kész ✓'); st.fut = false; gombok(false);
 }
 
+// ── Tanári segítség: a tanuló elküldi a feladatot és a kódját; a tanár válaszol vagy odamegy ──
+const seg = { lista: [], idozito: null };
+const segTanulo = () => USER.token && USER.email && USER.szerep === 'tanulo' && !USER._tesztMod;
+function segitsegNyit() {
+  const hely = document.getElementById('segitseg-hely');
+  if (!segTanulo()) { hely.innerHTML = '<div class="segitseg">Ezt a gombot a tanulók használják: elküldik a tanárnak, hol akadtak el.</div>'; return; }
+  hely.innerHTML = `<div class="segitseg"><b><i class="fas fa-hand"></i> Hol akadtál el?</b> Nem kötelező írni, a kódodat így is látja a tanár.
+    <textarea id="seg-uzenet" rows="2" maxlength="500" placeholder="pl.: nem értem, miért ír ki kétszer"></textarea>
+    <button class="gomb fo-gomb" onclick="segitsegKuld()"><i class="fas fa-paper-plane"></i> Küldés a tanárnak</button>
+    <button class="gomb" onclick="document.getElementById('segitseg-hely').innerHTML=''; segitsegRajzol()">Mégse</button></div>`;
+  document.getElementById('seg-uzenet').focus();
+}
+async function segitsegKuld() {
+  const f = st.feladat; if (!f) return;
+  const uzenet = (document.getElementById('seg-uzenet') || {}).value || '';
+  try {
+    const r = await fetch(`${API}/api/segitseg`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + USER.token },
+      body: JSON.stringify({ targy: 'python', feladat: 'gyak_' + f.id, feladatNev: `${st.tema.cim} – ${f.sorszam}. ${f.cim}`, kod: document.getElementById('kod').value, uzenet }) });
+    if (!r.ok) throw new Error(r.status);
+  } catch { document.getElementById('segitseg-hely').innerHTML = '<div class="segitseg">A küldés nem sikerült. Próbáld újra, vagy jelentkezz!</div>'; return; }
+  document.getElementById('segitseg-hely').innerHTML = '';
+  await segitsegFrissit();
+}
+async function segitsegFrissit() {
+  if (!segTanulo()) return;
+  try { const r = await fetch(`${API}/api/segitseg/sajat`, { headers: { Authorization: 'Bearer ' + USER.token } }); if (r.ok) seg.lista = await r.json(); } catch {}
+  segitsegRajzol();
+  clearTimeout(seg.idozito);
+  if (seg.lista.some(x => x.allapot === 'nyitott' || x.allapot === 'odamegy')) seg.idozito = setTimeout(() => { if (!document.hidden) segitsegFrissit(); else seg.idozito = setTimeout(segitsegFrissit, 20000); }, 20000);
+}
+function segitsegRajzol() {
+  const hely = document.getElementById('segitseg-hely'), f = st.feladat;
+  if (!hely || !f || document.getElementById('seg-uzenet')) return;
+  const k = seg.lista.find(x => x.feladat === 'gyak_' + f.id && x.allapot !== 'lezart');
+  if (!k) { hely.innerHTML = ''; return; }
+  const valasz = k.allapot === 'nyitott' ? '<div style="margin-top:4px"><i class="fas fa-hourglass-half"></i> Elküldve. A tanár látja, hamarosan válaszol.</div>'
+    : k.allapot === 'odamegy' ? '<div class="valasz"><i class="fas fa-person-walking"></i> A tanár odamegy hozzád.</div>'
+    : `<div class="valasz"><b>A tanár válasza:</b> ${esc(k.valasz || '')}</div>`;
+  hely.innerHTML = `<div class="segitseg"><b><i class="fas fa-hand"></i> Segítséget kértél ennél a feladatnál.</b>${valasz}
+    <div style="margin-top:8px"><button class="gomb" onclick="segitsegLezar(${k.id})"><i class="fas fa-check"></i> Megvan, megoldottam</button></div></div>`;
+}
+async function segitsegLezar(id) {
+  try { await fetch(`${API}/api/segitseg/${id}/lezar`, { method: 'POST', headers: { Authorization: 'Bearer ' + USER.token } }); } catch {}
+  segitsegFrissit();
+}
+
 function haladasKuld(f, pont, max) {
   if (!USER.token || !USER.email || USER.szerep !== 'tanulo' || USER._tesztMod) return;
   fetch(`${API}/api/progress`, {
@@ -472,6 +526,7 @@ function haladasKuld(f, pont, max) {
   rajzolTemak();
   const kert = tema && tema.feladatok.find(f => f.id === p.get('feladat') && latszik(f));
   if (kert) valasztFeladat(kert.id); else valasztTema(tema ? tema.id : null);
+  segitsegFrissit();   // a ma már elküldött segítségkérések és a tanár válasza
 })();
 </script>
 <script src="../../special-roles.js"></script>

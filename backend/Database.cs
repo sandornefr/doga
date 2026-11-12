@@ -374,6 +374,25 @@ public partial class Database
                 UNIQUE (oktato, csoport, feladat)
             );
             CREATE INDEX IF NOT EXISTS ix_gyakorlo_feloldas ON gyakorlo_feloldas(csoport);
+            -- Tanári segítség: a tanuló órán jelzi, hol akadt el (feladat + kód); a tanár válaszol vagy odamegy
+            CREATE TABLE IF NOT EXISTS segitseg (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                email      TEXT NOT NULL,
+                nev        TEXT,
+                csoport    TEXT NOT NULL,         -- a tanuló kulcsa: '9.A.2', '9.B.' (csoport nélkül)
+                targy      TEXT NOT NULL,         -- 'python' | 'web'
+                feladat    TEXT NOT NULL,         -- pl. 'gyak_for_3'
+                feladat_nev TEXT,
+                kod        TEXT,
+                uzenet     TEXT,
+                allapot    TEXT NOT NULL DEFAULT 'nyitott',   -- nyitott | valasz | odamegy | lezart
+                valasz     TEXT,
+                valaszolo  TEXT,
+                created_at TEXT DEFAULT (datetime('now','localtime')),
+                valasz_at  TEXT
+            );
+            CREATE INDEX IF NOT EXISTS ix_segitseg_csoport ON segitseg(csoport, created_at);
+            CREATE INDEX IF NOT EXISTS ix_segitseg_email ON segitseg(email, created_at);
         ");
         Exec(conn, @"
             CREATE TABLE IF NOT EXISTS evfolyam_leptetes_log (
@@ -2744,6 +2763,99 @@ public partial class Database
         using var r = cmd.ExecuteReader();
         while (r.Read()) list.Add(r.GetString(0));
         return list;
+    }
+
+    // ── Tanári segítség ────────────────────────────────────────────────────────
+    // A tanuló kérése: ugyanarra a feladatra a még nyitott kérés frissül (nem lesz belőle több sor)
+    public int? SegitsegKer(string email, string targy, string feladat, string? feladatNev, string? kod, string? uzenet)
+    {
+        var u = GetUserByEmail(email);
+        if (u is null) return null;
+        var csoport = $"{(u.Evfolyam ?? "").Trim()}.{(u.Osztaly ?? "").Trim().ToUpperInvariant()}.{(u.Csoport ?? "").Trim()}";
+        var nev = $"{u.Vezeteknev} {u.Keresztnev}".Trim();
+        using var conn = Open();
+        using (var db = conn.CreateCommand())
+        {
+            db.CommandText = "SELECT COUNT(*) FROM segitseg WHERE email = $e AND date(created_at) = date('now','localtime')";
+            db.Parameters.AddWithValue("$e", email);
+            if (Convert.ToInt32(db.ExecuteScalar()) >= 40) return null;   // napi korlát (visszaélés ellen)
+        }
+        using (var upd = conn.CreateCommand())
+        {
+            upd.CommandText = @"UPDATE segitseg SET kod = $k, uzenet = $u, feladat_nev = $fn, created_at = datetime('now','localtime')
+                WHERE email = $e AND targy = $t AND feladat = $f AND allapot = 'nyitott' RETURNING id";
+            upd.Parameters.AddWithValue("$k", (object?)kod ?? DBNull.Value);
+            upd.Parameters.AddWithValue("$u", (object?)uzenet ?? DBNull.Value);
+            upd.Parameters.AddWithValue("$fn", (object?)feladatNev ?? DBNull.Value);
+            upd.Parameters.AddWithValue("$e", email);
+            upd.Parameters.AddWithValue("$t", targy);
+            upd.Parameters.AddWithValue("$f", feladat);
+            var regi = upd.ExecuteScalar();
+            if (regi is not null and not DBNull) return Convert.ToInt32(regi);
+        }
+        using var ins = conn.CreateCommand();
+        ins.CommandText = @"INSERT INTO segitseg (email, nev, csoport, targy, feladat, feladat_nev, kod, uzenet)
+            VALUES ($e, $n, $c, $t, $f, $fn, $k, $u) RETURNING id";
+        ins.Parameters.AddWithValue("$e", email);
+        ins.Parameters.AddWithValue("$n", nev);
+        ins.Parameters.AddWithValue("$c", csoport);
+        ins.Parameters.AddWithValue("$t", targy);
+        ins.Parameters.AddWithValue("$f", feladat);
+        ins.Parameters.AddWithValue("$fn", (object?)feladatNev ?? DBNull.Value);
+        ins.Parameters.AddWithValue("$k", (object?)kod ?? DBNull.Value);
+        ins.Parameters.AddWithValue("$u", (object?)uzenet ?? DBNull.Value);
+        return Convert.ToInt32(ins.ExecuteScalar());
+    }
+
+    const string SegitsegMezok = "id, email, nev, csoport, targy, feladat, feladat_nev, kod, uzenet, allapot, valasz, created_at, valasz_at";
+    static SegitsegSor SegitsegOlvas(SqliteDataReader r, bool kodIs) => new(
+        r.GetInt32(0), r.GetString(1), r.IsDBNull(2) ? null : r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5),
+        r.IsDBNull(6) ? null : r.GetString(6), kodIs && !r.IsDBNull(7) ? r.GetString(7) : null, r.IsDBNull(8) ? null : r.GetString(8),
+        r.GetString(9), r.IsDBNull(10) ? null : r.GetString(10), r.IsDBNull(11) ? "" : r.GetString(11), r.IsDBNull(12) ? null : r.GetString(12));
+
+    // A tanuló saját mai kérései (a válasz megjelenítéséhez)
+    public List<SegitsegSor> SegitsegSajat(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT {SegitsegMezok} FROM segitseg WHERE email = $e AND date(created_at) = date('now','localtime') ORDER BY id DESC LIMIT 20";
+        cmd.Parameters.AddWithValue("$e", email);
+        var list = new List<SegitsegSor>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(SegitsegOlvas(r, false));
+        return list;
+    }
+
+    // Egy csoport mai kérései; '9.A.' (csoport nélküli kulcs) az egész osztályt adja
+    public List<SegitsegSor> SegitsegCsoport(string csoport)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $@"SELECT {SegitsegMezok} FROM segitseg
+            WHERE (csoport = $c OR ($c LIKE '%.' AND csoport LIKE $c || '%')) AND date(created_at) = date('now','localtime')
+            ORDER BY CASE allapot WHEN 'nyitott' THEN 0 ELSE 1 END, id DESC LIMIT 200";
+        cmd.Parameters.AddWithValue("$c", csoport);
+        var list = new List<SegitsegSor>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(SegitsegOlvas(r, true));
+        return list;
+    }
+
+    // Tanár: válasz (szöveg) vagy „odamegyek”; tanuló: lezárja (megoldotta)
+    public bool SegitsegAllapot(int id, string allapot, string? valasz, string? valaszolo, string? csakEmail)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE segitseg SET allapot = $a,
+                valasz = COALESCE($v, valasz), valaszolo = COALESCE($vo, valaszolo),
+                valasz_at = CASE WHEN $vo IS NULL THEN valasz_at ELSE datetime('now','localtime') END
+            WHERE id = $id AND ($ce IS NULL OR email = $ce)";
+        cmd.Parameters.AddWithValue("$a", allapot);
+        cmd.Parameters.AddWithValue("$v", (object?)valasz ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$vo", (object?)valaszolo ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$ce", (object?)csakEmail ?? DBNull.Value);
+        return cmd.ExecuteNonQuery() > 0;
     }
 
     // Az utóbbi 2 percben jelt adó tanulói munkamenetek (melyik oldalon dolgozik most)

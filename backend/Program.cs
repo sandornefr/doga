@@ -1984,6 +1984,63 @@ app.MapPut("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, GyakorloFeloldasMe
     return Results.Ok(new { success = true });
 });
 
+// ── Tanári segítség (Óra mód) ───────────────────────────────────────────────
+
+// Tanuló: „Tanári segítség” – feladat + kód + rövid üzenet
+app.MapPost("/api/segitseg", (HttpContext ctx, SegitsegKeres req, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    if (IsPrivilegedRole(role) || role == "vendeg") return Results.Ok(new { skipped = true });
+    var email = NormalizeSchoolEmail(identity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    var targy = (req.Targy ?? "").Trim().ToLowerInvariant();
+    if (targy is not ("python" or "web") || !System.Text.RegularExpressions.Regex.IsMatch(req.Feladat ?? "", @"^[a-z0-9_]{1,60}$")
+        || (req.Kod?.Length ?? 0) > 20000 || (req.Uzenet?.Length ?? 0) > 500 || (req.FeladatNev?.Length ?? 0) > 120)
+        return Results.BadRequest(new { error = "Érvénytelen kérés." });
+    var id = db.SegitsegKer(email, targy, req.Feladat!, req.FeladatNev?.Trim(), req.Kod, string.IsNullOrWhiteSpace(req.Uzenet) ? null : req.Uzenet.Trim());
+    return id is null ? Results.BadRequest(new { error = "Ma már túl sok segítségkérés volt." }) : Results.Ok(new { id });
+});
+
+// Tanuló: saját mai kérései és a tanár válasza
+app.MapGet("/api/segitseg/sajat", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(db.SegitsegSajat(email));
+});
+
+// Tanuló: „Megoldottam” – lezárja a saját kérését
+app.MapPost("/api/segitseg/{id:int}/lezar", (int id, HttpContext ctx, Database db) =>
+{
+    var (valid, identity, _) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    var email = NormalizeSchoolEmail(identity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return db.SegitsegAllapot(id, "lezart", null, null, email) ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Oktató: a csoport mai kérései (kóddal)
+app.MapGet("/api/oktato/segitseg", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var csoport = ctx.Request.Query["csoport"].FirstOrDefault()?.Trim();
+    if (string.IsNullOrEmpty(csoport) || csoport.Length > 30) return Results.BadRequest(new { error = "Hiányzó csoport." });
+    return Results.Ok(db.SegitsegCsoport(csoport));
+});
+
+// Oktató: válasz szövegben, vagy „Odamegyek”
+app.MapPost("/api/oktato/segitseg/{id:int}/valasz", (int id, HttpContext ctx, SegitsegValasz req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var szoveg = string.IsNullOrWhiteSpace(req.Valasz) ? null : req.Valasz.Trim();
+    if ((szoveg?.Length ?? 0) > 1000 || (szoveg is null && !req.Odamegy)) return Results.BadRequest(new { error = "Üres válasz." });
+    var ok = db.SegitsegAllapot(id, req.Odamegy ? "odamegy" : "valasz", szoveg, OktatoAzonosito(ctx), null);
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 // Üzenetek lekérése (tesztelő vagy oktató) – channel: 'tesztelok' | 'oktatok'
