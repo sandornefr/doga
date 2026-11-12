@@ -27,6 +27,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 .spacer { flex: 1; }
 .haladas { font-size: .85rem; color: var(--muted); }
 .haladas b { color: var(--accent); }
+.teszt-csoport { font-size: .8rem; color: var(--yellow); display: flex; align-items: center; gap: 6px; }
+.teszt-csoport select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--yellow); background: var(--bg2); color: var(--text); }
 .oktato-cimke { font-size: .75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--yellow); color: var(--yellow); }
 
 .fo { flex: 1; display: flex; min-height: 0; }
@@ -113,6 +115,7 @@ pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .88rem; ba
   <a href="../../python-hub.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
   <span class="cim"><i class="fas fa-dumbbell"></i>Gyakorló feladatok</span>
   <span class="spacer"></span>
+  <label class="teszt-csoport" id="teszt-csoport" hidden>Teszt Elek ezt a csoportot nézi: <select id="teszt-csoport-valaszto" onchange="tesztCsoportValt(this.value)"></select></label>
   <span class="oktato-cimke" id="oktato-cimke" hidden>Oktatói nézet: minden feladat látszik</span>
   <span class="haladas" id="haladas"></span>
 </header>
@@ -153,7 +156,8 @@ const st = { mind: false, feloldott: new Set(), tema: null, feladat: null, fut: 
 
 // ── Feloldott feladatok a szerverről ───────────────────────────────────────
 async function feloldottBetolt() {
-  if (USER.szerep === 'oktato' || USER._tesztMod) { st.mind = true; return; }
+  if (USER._tesztMod) return tesztElekBetolt();
+  if (USER.szerep === 'oktato') { st.mind = true; return; }
   if (!USER.token) return;
   try {
     const r = await fetch(`${API}/api/gyakorlo/feloldott`, { headers: { Authorization: 'Bearer ' + USER.token } });
@@ -162,6 +166,44 @@ async function feloldottBetolt() {
     st.mind = !!d.mind;
     st.feloldott = new Set(d.feladatok || []);
   } catch { /* hálózati hiba: nem látszik semmi */ }
+}
+// Teszt Elek (tanár diáknézetben): egy kiválasztott csoport szemével látja az oldalt – a tanár órarendjéből
+async function tesztElekBetolt() {
+  let tanar = {};
+  try { tanar = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}'); } catch {}
+  const doboz = document.getElementById('teszt-csoport'), sel = document.getElementById('teszt-csoport-valaszto');
+  doboz.hidden = false;
+  if (!tanar.token) { sel.innerHTML = '<option>nincs oktatói belépés</option>'; return; }
+  const most = new Date(), tanev = most.getMonth() >= 7 ? most.getFullYear() : most.getFullYear() - 1;
+  let orak = [];
+  try {
+    const r = await fetch(`${API}/api/csoportjaim/orarend?tanev=${tanev}`, { headers: { Authorization: 'Bearer ' + tanar.token } });
+    if (r.ok) orak = await r.json();
+  } catch {}
+  const kulcsok = [...new Set(orak.map(o => `${o.evfolyam}.${o.osztaly}.${o.csoport || ''}`))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+  const sajatEvf = kulcsok.filter(k => k.split('.')[0] === String(USER.evfolyam || ''));
+  const lista = sajatEvf.length ? sajatEvf : kulcsok;
+  const nev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}` : c === 'info' ? `${e}.${o} informatika` : `${e}.${o} ${c}. cs.`; };
+  if (!lista.length) { sel.innerHTML = '<option>nincs csoport az órarendben</option>'; return; }
+  sel.innerHTML = lista.map(k => `<option value="${esc(k)}">${esc(nev(k))}</option>`).join('');
+  st.tesztTanar = tanar;
+  await tesztCsoportOlvas(lista[0]);
+}
+async function tesztCsoportOlvas(k) {
+  const [e, o, c] = k.split('.');
+  const kulcsok = c ? [k, `${e}.${o}.`] : [k];
+  st.feloldott = new Set();
+  for (const kk of kulcsok) {
+    try {
+      const r = await fetch(`${API}/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(kk)}`, { headers: { Authorization: 'Bearer ' + st.tesztTanar.token } });
+      if (r.ok) (await r.json()).forEach(x => st.feloldott.add(x.feladat));
+    } catch {}
+  }
+}
+async function tesztCsoportValt(k) {
+  await tesztCsoportOlvas(k);
+  st.tema = TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
+  valasztTema(st.tema.id);
 }
 const latszik = f => st.mind || st.feloldott.has(f.id);
 const kesz = f => store.getItem('kesz_' + f.id) === '1';
