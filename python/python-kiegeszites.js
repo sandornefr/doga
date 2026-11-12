@@ -10,7 +10,10 @@
  * fogad el, ha nyíllal választottál; különben új sort kezd (nem írja át a kódot).
  * Esc = bezár. Ha nincs lista, a Tab és az Enter az oldal saját működése marad.
  *
- * Kikapcsolás egy oldalon (pl.: dolgozat):  <html data-pykieg="ki">
+ * VS Code-mód (dolgozat, ágazati gyakorló):  <html data-pykieg="vscode">
+ *   csak valódi Python-nevek, csak a név kerül be – mint a vizsgán a VS Code-ban.
+ *
+ * Kikapcsolás egy oldalon:  <html data-pykieg="ki">
  *   vagy futás közben: PyKieg.ki = true;
  *
  * Ötletgazda, tervező, fejlesztő: Sándorné Feke Réka
@@ -101,6 +104,21 @@
       document.documentElement.getAttribute('data-pykieg') === 'ki';
   }
 
+  // ── VS Code-mód (dolgozat, ágazati gyakorló): pontosan annyi segítség, amennyit a vizsgán a VS Code ad ──
+  // Csak valódi Python-nevek (kulcsszó, beépített függvény, pont után metódus), csak a név kerül be
+  // (zárójel és kitöltendő minta nélkül), magyar súgó nélkül; a printf/inputint-féle gyakorlós minták kimaradnak.
+  // Bekapcsolás: <html data-pykieg="vscode">  vagy  PyKieg.mod = 'vscode';
+  var PY_KULCSSZAVAK = ['False', 'None', 'True', 'and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del',
+    'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+    'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield'];
+  var PY_BEEPITETT = ['abs', 'all', 'any', 'bool', 'chr', 'dict', 'divmod', 'enumerate', 'filter', 'float', 'format',
+    'input', 'int', 'isinstance', 'len', 'list', 'map', 'max', 'min', 'open', 'ord', 'pow', 'print', 'range',
+    'reversed', 'round', 'set', 'sorted', 'str', 'sum', 'tuple', 'type', 'zip'];
+  function vscodeMod() {
+    return window.PyKieg.mod === 'vscode' ||
+      document.documentElement.getAttribute('data-pykieg') === 'vscode';
+  }
+
   // ── Monaco ────────────────────────────────────────────────────────
   var monacoKesz = false;
   function monacoBekot(m) {
@@ -122,6 +140,14 @@
         var range = { startLineNumber: pos.lineNumber, endLineNumber: pos.lineNumber,
                       startColumn: szo.startColumn, endColumn: szo.endColumn };
         var pontUtan = sor.slice(0, szo.startColumn - 1).slice(-1) === '.';
+        if (vscodeMod()) {
+          var nevek = pontUtan ? METODUSOK.map(function (x) { return [x.c, K.Method]; })
+            : PY_KULCSSZAVAK.map(function (n) { return [n, K.Keyword]; })
+                .concat(PY_BEEPITETT.map(function (n) { return [n, K.Function]; }));
+          return { suggestions: nevek.map(function (x) {
+            return { label: x[0], kind: x[1], insertText: x[0], range: range };
+          }) };
+        }
         var lista = pontUtan ? METODUSOK.map(function (x) { x.t = 'metodus'; return x; }) : SZOTAR;
         return {
           suggestions: lista.map(function (x, i) {
@@ -304,6 +330,7 @@
 
   window.PyKieg = {
     ki: false,
+    mod: '',
     monaco: monacoBekot,
     textarea: textareaBekot,
     szotar: SZOTAR,

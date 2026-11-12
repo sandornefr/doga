@@ -165,7 +165,8 @@ async function initializeApp() {
     // Monaco előtöltése a háttérben, hogy startTest()-re kész legyen
     monacoReadyPromise = new Promise((resolve) => {
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
-        require(['vs/editor/editor.main'], resolve);
+        // kódkiegészítés (python-kiegeszites.js) – Réka: minden felületen, a dolgozatban is
+        require(['vs/editor/editor.main'], () => { if (window.PyKieg) PyKieg.monaco(monaco); resolve(); });
     });
     setupEventListeners();
     await loadTasksFromFile();
