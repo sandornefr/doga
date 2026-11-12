@@ -389,6 +389,9 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <label>Csoport:</label>
         <select id="csoport-select"  onchange="applyFilters()"><option value="">Összes</option></select>
         <div class="filter-sep"></div>
+        <button class="fbar-btn" onclick="openOraiMunka()" title="Kiválasztott csoport: ki dolgozik most, mit oldott meg ma" style="background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;font-weight:700;">
+            <i class="fas fa-person-chalkboard"></i> Órai munka
+        </button>
         <button class="fbar-btn" id="btn-my-groups" onclick="openCsoportModal()">
             <i class="fas fa-chalkboard-teacher"></i> Saját csoportjaim
         </button>
@@ -513,6 +516,39 @@ body { font-family:'Segoe UI',sans-serif; background:#0d1117; color:#e0e0e0; min
         <span id="tsz-info" style="color:#6b7280;font-size:.8rem;font-style:italic;"></span>
       </div>
       <div id="tsz-wrap" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Órai munka modal: a kiválasztott csoport mai munkája (ki van bent, mit oldott meg, gyakorló feladatok) -->
+<style>
+.om-tabla { width:100%; border-collapse:collapse; }
+.om-tabla th { text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; padding:7px 8px; border-bottom:1px solid #21262d; }
+.om-tabla td { padding:7px 8px; border-bottom:1px solid #21262d; font-size:.88rem; vertical-align:middle; }
+.om-tabla .sz { text-align:center; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.om-cs { font:inherit; font-size:.85rem; padding:6px 12px; border-radius:16px; border:1.5px solid #30363d; background:#0d1117; color:#e0e0e0; cursor:pointer; }
+.om-cs.aktiv { border-color:#3fb950; color:#3fb950; background:rgba(63,185,80,.12); font-weight:700; }
+.om-bent { display:inline-flex; align-items:center; gap:6px; color:#3fb950; font-weight:600; font-size:.82rem; }
+.om-bent::before { content:''; width:9px; height:9px; border-radius:50%; background:#3fb950; box-shadow:0 0 6px #3fb950; }
+.om-nincs { color:#6b7280; }
+.om-nz { display:inline-block; width:13px; height:13px; border-radius:3px; background:#1f2937; border:1px solid #30363d; margin:1px; vertical-align:middle; }
+.om-nz.kesz { background:#3fb950; border-color:#3fb950; } .om-nz.probal { background:#f59e0b; border-color:#f59e0b; }
+</style>
+<div class="modal-overlay" id="orai-munka-modal" style="display:none;z-index:2000;overflow-y:auto;">
+  <div class="modal-box" style="max-width:1100px;width:96vw;max-height:92vh;overflow-y:auto;">
+    <div class="modal-header">
+      <i class="fas fa-person-chalkboard" style="color:#3fb950;font-size:1.1rem"></i>
+      <h3>Órai munka – ki dolgozik most?</h3>
+      <button class="modal-close" onclick="closeOraiMunka()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:12px 16px;">
+      <div id="om-csoportok" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:#94a3b8;font-size:.8rem;margin-bottom:10px;">
+        <span id="om-ido"></span>
+        <button onclick="omBetolt()" style="padding:5px 12px;background:#21262d;border:1px solid #30363d;border-radius:6px;color:#e0e0e0;cursor:pointer;font-size:.8rem;"><i class="fas fa-rotate"></i> Frissítés</button>
+        <span><span class="om-nz kesz"></span> kész</span><span><span class="om-nz probal"></span> próbálkozott</span><span><span class="om-nz"></span> még nem</span>
+      </div>
+      <div id="om-wrap"></div>
     </div>
   </div>
 </div>
@@ -2360,6 +2396,117 @@ function _renderVizsgaBecslésTabla(adatok) {
 
     html += '</tbody></table>';
     return html;
+}
+</script>
+<script src="python/gyakorlo/feladatok/alapok.js?v=4"></script>
+<script src="python/gyakorlo/feladatok/ciklus.js?v=5"></script>
+<script>
+// ── Órai munka: a kiválasztott csoport mai munkája egy helyen ───────────────
+// Adat: /api/csoportjaim/orarend (csoportok), /api/haladas (névsor, allData), /api/csoportjaim/online (ki van bent),
+// /api/oktato/megoldasok/<email> (minden Ellenőrzés), /api/progress/<email>/items (kész feladatok, leckék),
+// /api/oktato/gyakorlo/feloldas (a csoportnak kiadott gyakorló feladatok). Percenként frissül, amíg nyitva van.
+const OM = { csoportok: [], csoport: null, idozito: null };
+const OM_OLDAL = { 'py-gyakorlo': 'Gyakorló feladatok', 'portal': 'Főmenü', 'python-hub': 'Python', 'py-kezdo': 'Python tananyag' };
+const omCsoportNev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}` : c === 'info' ? `${e}.${o} informatika` : `${e}.${o} ${c}. cs.`; };
+
+async function openOraiMunka() {
+    document.getElementById('orai-munka-modal').style.display = 'flex';
+    if (!OM.csoportok.length) {
+        const most = new Date(), tanev = most.getMonth() >= 7 ? most.getFullYear() : most.getFullYear() - 1;
+        try {
+            const r = await authFetch(`${API}/api/csoportjaim/orarend?tanev=${tanev}`);
+            const orak = r.ok ? await r.json() : [];
+            OM.csoportok = [...new Set(orak.map(o => `${o.evfolyam}.${o.osztaly}.${o.csoport || ''}`))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+        } catch { OM.csoportok = []; }
+    }
+    if (!OM.csoportok.length) {
+        document.getElementById('om-wrap').innerHTML = '<div style="color:#94a3b8">Még nincs felvéve órarend. Az admin felület Csoportjaim fülén veheted fel.</div>';
+        return;
+    }
+    let utolso = null; try { utolso = localStorage.getItem('orai_munka_csoport'); } catch {}
+    omValaszt(OM.csoportok.includes(utolso) ? utolso : OM.csoportok[0]);
+    clearInterval(OM.idozito);
+    OM.idozito = setInterval(() => { if (!document.hidden) omBetolt(true); }, 60000);
+}
+function closeOraiMunka() {
+    document.getElementById('orai-munka-modal').style.display = 'none';
+    clearInterval(OM.idozito); OM.idozito = null;
+}
+function omValaszt(k) {
+    OM.csoport = k;
+    try { localStorage.setItem('orai_munka_csoport', k); } catch {}
+    document.getElementById('om-csoportok').innerHTML = OM.csoportok.map(c =>
+        `<button class="om-cs${c === k ? ' aktiv' : ''}" onclick="omValaszt('${escHtml(c)}')">${escHtml(omCsoportNev(c))}</button>`).join('');
+    omBetolt();
+}
+async function omJson(url) { const r = await authFetch(API + url); if (!r.ok) throw new Error(r.status); return r.json(); }
+
+async function omBetolt(csendes) {
+    const k = OM.csoport, wrap = document.getElementById('om-wrap');
+    if (!k) return;
+    if (!csendes) wrap.innerHTML = '<div style="color:#94a3b8">Betöltés…</div>';
+    const [e, o, c] = k.split('.');
+    const tanulok = (allData || []).filter(t => String(t.evfolyam || '') === e && String(t.osztaly || '').toUpperCase() === o.toUpperCase() && (!c || String(t.csoport || '') === c))
+        .sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
+    let online = [], kiadva = [];
+    try { online = await omJson('/api/csoportjaim/online'); } catch {}
+    try { kiadva = (await omJson(`/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(k)}`)).map(x => x.feladat); } catch {}
+    const adat = new Map();
+    for (let i = 0; i < tanulok.length; i += 5) {
+        await Promise.all(tanulok.slice(i, i + 5).map(async t => {
+            const em = encodeURIComponent(t.email);
+            try {
+                const [m, p] = await Promise.all([omJson(`/api/oktato/megoldasok/${em}`), omJson(`/api/progress/${em}/items`).catch(() => [])]);
+                adat.set(t.email, { m: m.megoldasok || [], p: p || [] });
+            } catch { adat.set(t.email, null); }
+        }));
+    }
+    if (k !== OM.csoport) return;
+    omRajzol(tanulok, adat, online, kiadva);
+}
+
+function omRajzol(tanulok, adat, online, kiadva) {
+    const wrap = document.getElementById('om-wrap'), ma = todayBp(), most = new Date();
+    document.getElementById('om-ido').textContent = `Frissítve: ${most.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })} (percenként magától is)`;
+    if (!tanulok.length) { wrap.innerHTML = '<div style="color:#94a3b8">Ehhez a csoporthoz nem találtam tanulót.</div>'; return; }
+    const bent = new Map();
+    online.forEach(x => { const em = String(x.email || '').toLowerCase(); if (!bent.has(em) || x.page !== 'portal') bent.set(em, x.page); });
+    const gyFeladatok = [];
+    (window.GYAKORLO_TEMAK || []).forEach(t => t.feladatok.forEach(f => { if (kiadva.includes(f.id)) gyFeladatok.push({ t, f }); }));
+    let bentDb = 0;
+    const sorok = tanulok.map(t => {
+        const d = adat.get(t.email), em = String(t.email || '').toLowerCase();
+        const lap = bent.get(em);
+        if (lap !== undefined) bentDb++;
+        const bentTxt = lap !== undefined ? `<span class="om-bent">${escHtml(OM_OLDAL[lap] || lap || 'bent van')}</span>` : '<span class="om-nincs">–</span>';
+        if (!d) return `<tr><td>${escHtml(t.nev || t.email)}</td><td>${bentTxt}</td><td colspan="4" class="om-nincs">nem sikerült betölteni</td></tr>`;
+        const maiM = d.m.filter(x => x.frissitve && utcDate(x.frissitve) === ma);
+        const maiP = d.p.filter(x => x.datum && utcDate(x.datum) === ma);
+        const kesz = new Set([...maiP.map(x => x.targy + ':' + x.feladat), ...maiM.filter(x => x.maxPont > 0 && x.pont >= x.maxPont).map(x => x.targy + ':' + x.feladat)]);
+        const probal = maiM.filter(x => !(x.maxPont > 0 && x.pont >= x.maxPont)).length;
+        const idok = [...maiM.map(x => x.frissitve), ...maiP.map(x => x.datum)].filter(Boolean).sort();
+        const utolso = idok.length ? fmtIdo(idok[idok.length - 1]) : '';
+        const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
+        const nz = gyFeladatok.map(({ t: tm, f }) => {
+            const x = gy.get(f.id), jo = x && x.maxPont > 0 && x.pont >= x.maxPont;
+            const all = !x ? 'még nem próbálta' : jo ? `kész (${x.probalkozas} ellenőrzés)` : `próbálkozott (${x.probalkozas} ellenőrzés)`;
+            return `<span class="om-nz${jo ? ' kesz' : x ? ' probal' : ''}" title="${escHtml(tm.cim)} – ${f.sorszam}. ${escHtml(f.cim)}: ${all}"></span>`;
+        }).join('');
+        return `<tr><td>${escHtml(t.nev || t.email)}</td><td>${bentTxt}</td>
+            <td class="sz">${utolso ? escHtml(utolso) : '<span class="om-nincs">–</span>'}</td>
+            <td class="sz">${kesz.size ? `<b style="color:#3fb950">${kesz.size}</b>` : '<span class="om-nincs">–</span>'}</td>
+            <td class="sz">${probal ? `<b style="color:#f59e0b">${probal}</b>` : '<span class="om-nincs">–</span>'}</td>
+            <td>${gyFeladatok.length ? nz : '<span class="om-nincs">nincs kiadott</span>'}</td></tr>`;
+    }).join('');
+    wrap.innerHTML = `<div style="color:#94a3b8;font-size:.85rem;margin-bottom:8px;">Most bent van: <b style="color:#3fb950">${bentDb}</b> / ${tanulok.length} tanuló</div>
+        <table class="om-tabla"><thead><tr><th>Tanuló</th><th>Most</th><th class="sz">Utoljára ma</th><th class="sz">Ma kész</th><th class="sz">Ma próbálkozott</th><th>Gyakorló feladatok (kiadott)</th></tr></thead>
+        <tbody>${sorok}</tbody></table>
+        <div style="color:#6b7280;font-size:.75rem;margin-top:8px;">A „Ma kész” minden mai feladatot és leckét számol. A „Ma próbálkozott” az Ellenőrzés gombbal beküldött, még nem hibátlan feladat. A négyzetek a csoportnak kiadott gyakorló feladatok, az egérrel rámutatva látod a nevüket.</div>`;
+}
+// A kiadó oldalról érkezve (?orai=1) rögtön nyíljon meg
+if (new URLSearchParams(location.search).get('orai') === '1') {
+    const varj = setInterval(() => { if (typeof allData !== 'undefined' && allData && allData.length) { clearInterval(varj); openOraiMunka(); } }, 300);
+    setTimeout(() => clearInterval(varj), 20000);
 }
 </script>
 <script src="chat-widget.js"></script>
