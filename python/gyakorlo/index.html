@@ -403,7 +403,8 @@ async function futtatGomb() {
   allapot('Python: kész ✓'); st.fut = false; gombok(false);
 }
 
-const norm = s => String(s).replace(/\s+/g, '').toLowerCase();
+// Összevetéshez: szóköz, idézőjel és ékezet nem számít (pl.: 'pizza' vagy „etelem” is elfogadott)
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s"'`„”“‘’]+/g, '').toLowerCase();
 function egyezik(kimenet, vart) {
   const n = norm(kimenet); let poz = 0;
   for (const v of vart) { const j = n.indexOf(norm(v), poz); if (j < 0) return v; poz = j + norm(v).length; }
@@ -429,7 +430,10 @@ async function ellenorizGomb() {
       const beSz = t.be.length ? `bemenet: <code>${esc(t.be.join(', '))}</code>` : 'bemenet nélkül';
       if (e.hiba) { sorok.push([false, `${i + 1}. próba (${beSz}): ${esc(e.hiba)}`]); if (!elsoKimenet) elsoKimenet = e; return; }
       const hiany = egyezik(e.kimenet, t.ki);
-      if (hiany) { sorok.push([false, `${i + 1}. próba (${beSz}): ezt vártuk, de nem találtuk: <code>${esc(hiany)}</code>`]); if (!elsoKimenet) elsoKimenet = e; }
+      if (hiany) {
+        // Gyakori hiba: print(f"...", {valtozo}) – a kapcsos zárójel az idézőjelen kívül halmazt ír ki: {'pizza'}
+        const kapcsos = /\{'[^'\n]*'\}|\{\d+\}/.test(e.kimenet) ? ' A kiírásban kapcsos zárójel van: a <code>{változó}</code> csak az f-szöveg idézőjelein belül működik.' : '';
+        sorok.push([false, `${i + 1}. próba (${beSz}): ezt vártuk, de nem találtuk: <code>${esc(hiany)}</code>.${kapcsos}`]); if (!elsoKimenet) elsoKimenet = e; }
       else sorok.push([true, `${i + 1}. próba (${beSz})`]);
     });
     const mutat = elsoKimenet || r.eredmenyek[0];
