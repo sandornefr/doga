@@ -154,6 +154,26 @@ f('Film hossza', """
 """, "Hány perces a film? 135\n2 óra 15 perc", "Óra: perc // 60. Maradék perc: perc % 60.",
 'perc = int(input("Hány perces a film? "))\nprint(f"{perc // 60} óra {perc % 60} perc")', [(['135'], ['2 óra 15 perc']), (['90'], ['1 óra 30 perc'])])
 
+f('Kerekítés egészre: round()', """
+<p><b>Új eszköz: round()</b> – kerekít a legközelebbi egész számra.</p>
+<p><code>round(4.6)</code> → <code>5</code> &nbsp; <code>round(4.3)</code> → <code>4</code> &nbsp; <code>round(87.8)</code> → <code>88</code></p>
+<p><b>Feladat:</b> A telefon tört számmal méri a töltöttséget, de egészet mutat.</p>
+<p>Kérd be: <code>Pontos töltöttség: </code> (pl.: <code>87.6</code>)</p>
+<p>Írd ki kerekítve: <code>Akkumulátor: 88%</code></p>
+""", "Pontos töltöttség: 87.6\nAkkumulátor: 88%", "Tört számot float()-tal kérsz be, utána round(toltes).",
+'toltes = float(input("Pontos töltöttség: "))\nprint(f"Akkumulátor: {round(toltes)}%")',
+[(['87.6'], ['Akkumulátor: 88%']), (['12.3'], ['Akkumulátor: 12%']), (['99.9'], ['Akkumulátor: 100%'])])
+
+f('Kerekítés tizedesre: round(szám, 2)', """
+<p>A round() második száma megmondja, hány tizedesjegy maradjon.</p>
+<p><code>round(12.3456, 2)</code> → <code>12.35</code> &nbsp; <code>round(12.3456, 1)</code> → <code>12.3</code></p>
+<p><b>Feladat:</b> A stopper sok tizedest mér, de két tizedes elég.</p>
+<p>Kérd be: <code>Mért idő (mp): </code> (pl.: <code>12.3456</code>)</p>
+<p>Írd ki két tizedesre kerekítve: <code>Idő: 12.35 mp</code></p>
+""", "Mért idő (mp): 12.3456\nIdő: 12.35 mp", "round(ido, 2)",
+'ido = float(input("Mért idő (mp): "))\nprint(f"Idő: {round(ido, 2)} mp")',
+[(['12.3456'], ['Idő: 12.35 mp']), (['9.871'], ['Idő: 9.87 mp']), (['15.004'], ['Idő: 15.0 mp'])])
+
 f('Tankolás', """
 <p>Kérd be: <code>Literenkénti ár: </code> (lehet tört szám, pl.: <code>612.5</code>) és <code>Hány liter? </code></p>
 <p>Írd ki egész forintra kerekítve: <code>Fizetendő: 24500 Ft</code></p>
