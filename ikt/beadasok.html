@@ -46,6 +46,10 @@ details.temalista summary{cursor:pointer;font-weight:700;}
 table.tbl{border-collapse:collapse;width:100%;font-size:.88rem;margin-top:10px;}
 table.tbl th,table.tbl td{border:1px solid #e4e7eb;padding:4px 8px;text-align:left;}
 table.tbl th{background:#f0f4f8;}
+.szuro .mind{margin-left:auto;border:0;border-radius:8px;padding:7px 14px;font:inherit;font-weight:600;cursor:pointer;background:var(--ikt-gomb,#4f46e5);color:#fff;}
+.szuro .mind:disabled{opacity:.7;cursor:default;}
+.ghgomb{border:1px solid #cbd2d9;background:#fff;border-radius:6px;padding:3px 10px;font:inherit;font-size:.85rem;cursor:pointer;}
+.fajlok.gh{margin-top:14px;}
 </style>
 <link rel="stylesheet" href="ikt.css?v=1">
 </head>
@@ -96,7 +100,8 @@ async function betolt() {
   const csoportok = [...new Set(beadasok.map(csoportNev))].sort();
   app.innerHTML = `<div class="szuro"><label for="csop">Csoport:</label>
     <select id="csop"><option value="">mind</option>${csoportok.map(c => `<option>${esc(c)}</option>`).join('')}</select>
-    <span class="db" id="db"></span></div>
+    <span class="db" id="db"></span>
+    <button class="mind" onclick="mindetEllenoriz(this)" title="A kiválasztott csoport minden beadását újra ellenőrzi (a github.io oldalakat is), legfeljebb 4-et egyszerre"><i class="fas fa-list-check"></i> Mindet ellenőrzöm</button></div>
     <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
     <div id="lista"></div>
     <details class="temalista"><summary>A 35 téma</summary>
@@ -105,7 +110,8 @@ async function betolt() {
     </details>`;
   document.getElementById('csop').addEventListener('change', listaRajz);
   listaRajz();
-  for (const b of beadasok) { if (!b.nincsBeadas && b.fajlok.length) { ellenorzes[b.id] = await ellenoriz(b); sorFrissit(b); } }
+  // A feltöltött fájlokat betöltéskor ellenőrzi; a csak github.io-s beadásokat is (legfeljebb 4 egyszerre).
+  await parhuzamosan(beadasok.filter(b => !b.nincsBeadas && (b.fajlok.length || b.githubUrl)), 4, b => futtat(b, b.fajlok.length ? 'fajl' : 'github'));
 }
 
 function temaNev(b) {
@@ -121,6 +127,48 @@ async function ujrasorsol(email) {
   const r = await fetch(API + '/api/ikt/tema/' + t.id, { method: 'DELETE', headers: AUTH });
   if (!r.ok) { alert('Nem sikerült törölni (' + r.status + ').'); return; }
   betolt();
+}
+
+// Egy beadás ellenőrzése: 'fajl' = a feltöltött fájlok, 'github' = a github.io oldal.
+const ghEll = {};   // beadás id → a GitHubos ellenőrzés eredménye
+async function futtat(b, mod) {
+  if (mod === 'github') {
+    const alap = githubAlap(b.githubUrl);
+    ghEll[b.id] = alap ? { fut: true } : { hiba: 'A cím nem https://….github.io/… alakú: ' + b.githubUrl };
+    sorFrissit(b);
+    if (!alap) return;
+    try {
+      const forras = forrasGithub(alap);
+      ghEll[b.id] = await ellenoriz(b, forras);
+      if (!(await forras.letezik('index.html')))
+        ghEll[b.id].figyel = 'Ezen a címen nem található az index.html sem – lehet, hogy rossz a cím, vagy a GitHub Pages nincs bekapcsolva.';
+    }
+    catch (e) { ghEll[b.id] = { hiba: 'Nem sikerült letölteni a GitHubról: ' + e.message }; }
+  } else {
+    ellenorzes[b.id] = await ellenoriz(b, forrasFajlok(b));
+  }
+  sorFrissit(b);
+}
+
+async function parhuzamosan(lista, n, fn) {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (i < lista.length) await fn(lista[i++]); }));
+}
+
+async function mindetEllenoriz(gomb) {
+  const sz = document.getElementById('csop').value;
+  const lista = beadasok.filter(b => !b.nincsBeadas && (!sz || csoportNev(b) === sz));
+  gomb.disabled = true;
+  const feladatok = [];
+  lista.forEach(b => { if (b.fajlok.length) feladatok.push([b, 'fajl']); if (b.githubUrl) feladatok.push([b, 'github']); });
+  let kesz = 0;
+  gomb.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Ellenőrzés… 0 / ${feladatok.length}`;
+  await parhuzamosan(feladatok, 4, async ([b, m]) => {
+    await futtat(b, m);
+    gomb.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Ellenőrzés… ${++kesz} / ${feladatok.length}`;
+  });
+  gomb.disabled = false;
+  gomb.innerHTML = '<i class="fas fa-list-check"></i> Mindet ellenőrzöm';
 }
 
 const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
@@ -139,27 +187,45 @@ function listaRajz() {
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
         ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
-        <span class="pont" id="p${b.id}">${b.nincsBeadas || !b.fajlok.length ? '' : '…'}</span>
+        <span class="pont" id="p${b.id}">${b.nincsBeadas ? '' : '…'}</span>
       </div>
-      <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : !b.fajlok.length ? 'Csak a github.io-s webcímét adta be: az ellenőrzést a linken, kézzel végezd.' : 'Ellenőrzés…'}</p></div>
+      <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : 'Ellenőrzés…'}</p></div>
     </div>`).join('') : '<div class="kozep">Még nincs beadás.</div>';
-  lista.forEach(b => { if (ellenorzes[b.id]) sorFrissit(b); });
+  lista.forEach(b => { if (ellenorzes[b.id] || ghEll[b.id]) sorFrissit(b); });
 }
 
-function sorFrissit(b) {
-  const e = ellenorzes[b.id];
-  const p = document.getElementById('p' + b.id), r = document.getElementById('r' + b.id);
-  if (!e || !p || !r) return;
-  p.innerHTML = `${e.auto} <small>/ ${e.autoMax} automatikus · ${e.keziMax} pont kézi</small>`;
-  const fajlok = b.fajlok.map(f => /\.html$/i.test(f.fajlnev)
-    ? `<a href="${esc(API + b.elonezet + encodeURIComponent(f.fajlnev))}" target="_blank" rel="noopener">${esc(f.fajlnev)}</a>`
-    : `${esc(f.fajlnev)} <span>(${Math.max(1, Math.round(f.meret / 1024))} KB)</span>`).join('');
-  r.innerHTML = `<div class="fajlok"><b>Fájlok:</b> ${fajlok || '<span>nincs (csak link)</span>'}</div>
-    <table class="ell"><thead><tr><th>#</th><th>Szempont</th><th>Eredmény</th><th>Pont</th></tr></thead><tbody>
+function tablaRajz(e) {
+  return `<table class="ell"><thead><tr><th>#</th><th>Szempont</th><th>Eredmény</th><th>Pont</th></tr></thead><tbody>
     ${e.sorok.map((s, i) => `<tr><td class="p">${i + 1}</td><td>${esc(s.cim)}</td>
       <td>${s.allapot === 'ok' ? '<span class="ok"><i class="fas fa-check"></i></span> ' : s.allapot === 'nem' ? '<span class="nem"><i class="fas fa-xmark"></i></span> ' : '<span class="kezi"><i class="fas fa-user-pen"></i> kézi</span> '}${esc(s.megj || '')}</td>
       <td class="p">${s.allapot === 'kezi' ? '? / ' + s.max : (s.allapot === 'ok' ? s.max : 0) + ' / ' + s.max}</td></tr>`).join('')}
     </tbody></table>`;
+}
+const pontSzoveg = e => `${e.auto} <small>/ ${e.autoMax} automatikus · ${e.keziMax} pont kézi</small>`;
+
+function sorFrissit(b) {
+  const e = ellenorzes[b.id], g = ghEll[b.id];
+  const p = document.getElementById('p' + b.id), r = document.getElementById('r' + b.id);
+  if (!p || !r) return;
+  // A fejlécben a feltöltött fájlok eredménye; ha csak link van, a GitHubos.
+  const fo = e || (g && g.sorok ? g : null);
+  p.innerHTML = fo ? pontSzoveg(fo) + (!e && fo ? ' <small>(GitHub)</small>' : '') : (g && g.fut ? '…' : '');
+  let html = '';
+  if (b.fajlok.length) {
+    const fajlok = b.fajlok.map(f => /\.html$/i.test(f.fajlnev)
+      ? `<a href="${esc(API + b.elonezet + encodeURIComponent(f.fajlnev))}" target="_blank" rel="noopener">${esc(f.fajlnev)}</a>`
+      : `${esc(f.fajlnev)} <span>(${Math.max(1, Math.round(f.meret / 1024))} KB)</span>`).join('');
+    html += `<div class="fajlok"><b>Feltöltött fájlok:</b> ${fajlok}</div>` + (e ? tablaRajz(e) : '<p class="megj">Ellenőrzés…</p>');
+  }
+  if (b.githubUrl) {
+    html += `<div class="fajlok gh"><b><i class="fab fa-github"></i> GitHub:</b> <a href="${esc(b.githubUrl)}" target="_blank" rel="noopener">${esc(b.githubUrl)}</a>`;
+    if (!g) html += ` <button class="ghgomb" onclick="futtat(beadasok.find(x => x.id === ${esc(JSON.stringify(b.id))}), 'github')"><i class="fas fa-magnifying-glass"></i> GitHubon is ellenőrzöm</button></div>`;
+    else if (g.fut) html += ' <span class="megj"><i class="fas fa-spinner fa-spin"></i> letöltés és ellenőrzés…</span></div>';
+    else if (g.hiba) html += `</div><p class="hiba">${esc(g.hiba)}</p>`;
+    else html += ` <span class="megj">(${esc(pontSzoveg(g).replace(/<[^>]+>/g, ''))})</span></div>` +
+      (g.figyel ? `<p class="hiba"><i class="fas fa-triangle-exclamation"></i> ${esc(g.figyel)}</p>` : '') + tablaRajz(g);
+  }
+  r.innerHTML = html || '<p class="megj">Még nincs beadott fájl.</p>';
 }
 
 // ── Előellenőrzés a pontozó szerint ──
@@ -172,14 +238,59 @@ function temaEgyezik(h1, tema) {
   const n = x => String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/[.!]+$/, '').trim();
   return n(h1) === n(tema) || n(h1) === n(tema.replace(/\s*\(.*?\)\s*/g, ' '));
 }
-async function fajlSzoveg(b, nev) {
-  const f = b.fajlok.find(x => x.fajlnev.toLowerCase() === nev.toLowerCase());
-  if (!f) return null;
-  const r = await fetch(API + '/api/ikt/beadas/' + b.id + '/fajl/' + encodeURIComponent(f.fajlnev), { headers: AUTH });
-  return r.ok ? await r.text() : null;
+const fajlnev = href => decodeURIComponent(String(href || '').split(/[?#]/)[0]).split('/').pop().toLowerCase();
+
+// ── Források: ugyanazt az ellenőrzést kapja a feltöltött fájl és a github.io oldal ──
+// szoveg(út): a fájl szövege vagy null · letezik(út): van-e ilyen fájl · meret(út): bájt vagy null
+// Az út a weboldal gyökeréhez képest értendő (pl.: tema.html, css/style.css, img/kep.jpg).
+function forrasFajlok(b) {
+  const keres = ut => b.fajlok.find(x => x.fajlnev.toLowerCase() === fajlnev(ut));
+  const cache = {};
+  return {
+    tipus: 'fajl',
+    hianyUzenet: ut => 'nincs beadva: ' + fajlnev(ut),
+    szoveg(ut) {
+      const f = keres(ut);
+      if (!f) return Promise.resolve(null);
+      return cache[f.fajlnev] ||= fetch(API + '/api/ikt/beadas/' + b.id + '/fajl/' + encodeURIComponent(f.fajlnev), { headers: AUTH })
+        .then(r => r.ok ? r.text() : null).catch(() => null);
+    },
+    letezik: ut => Promise.resolve(!!keres(ut)),
+    meret: ut => Promise.resolve(keres(ut) ? keres(ut).meret : null),
+    vanKep: () => b.fajlok.some(f => /\.(jpe?g|png|gif|webp)$/i.test(f.fajlnev)),
+  };
 }
 
-const fajlnev = href => decodeURIComponent(String(href || '').split(/[?#]/)[0]).split('/').pop().toLowerCase();
+// A github.io cím alapja: https://<név>.github.io/<mappa>/ – ha fájlra mutat, annak a mappája.
+function githubAlap(url) {
+  try {
+    const u = new URL(String(url || '').trim());
+    if (u.protocol !== 'https:' || !/^[a-z0-9-]+\.github\.io$/i.test(u.hostname)) return null;
+    let p = u.pathname;
+    if (/\/[^/]+\.[a-z0-9]+$/i.test(p)) p = p.replace(/[^/]+$/, '');
+    if (!p.endsWith('/')) p += '/';
+    return u.origin + p;
+  } catch (e) { return null; }
+}
+
+function forrasGithub(alap) {
+  const cache = {};
+  const letolt = ut => {
+    const cel = new URL(String(ut).replace(/^\.\//, ''), alap).href;
+    return cache[cel] ||= fetch(cel, { cache: 'no-store' })
+      .then(async r => r.ok ? { ok: true, blob: await r.blob() } : { ok: false })
+      .catch(() => ({ ok: false, hiba: true }));
+  };
+  return {
+    tipus: 'github',
+    alap,
+    hianyUzenet: ut => ut + ' nem található a GitHubon – lehet, hogy nem töltötte fel',
+    szoveg: async ut => { const r = await letolt(ut); return r.ok ? await r.blob.text() : null; },
+    letezik: async ut => (await letolt(ut)).ok,
+    meret: async ut => { const r = await letolt(ut); return r.ok ? r.blob.size : null; },
+    vanKep: null,   // a GitHubon a tema.html képének megléte számít (lent)
+  };
+}
 const szoveg = el => (el ? el.textContent : '').replace(/\s+/g, ' ').trim();
 const mondatok = t => (t.match(/[^.!?]+[.!?]+/g) || []).length;
 
@@ -193,16 +304,16 @@ function szakasz(doc, cim) {
   return ki;
 }
 
-async function ellenoriz(b) {
+async function ellenoriz(b, f) {
   const sorok = [];
   const add = (cim, max, allapot, megj) => sorok.push({ cim, max, allapot, megj });
-  const vane = n => b.fajlok.some(f => f.fajlnev.toLowerCase() === n);
-  const temaSzoveg = await fajlSzoveg(b, 'tema.html');
-  const cssSzoveg = (await fajlSzoveg(b, 'style.css')) || '';
+  const [temaSzoveg, cssNyers] = await Promise.all([f.szoveg('tema.html'), f.szoveg('css/style.css')]);
+  const cssSzoveg = cssNyers || '';
   const doc = temaSzoveg ? new DOMParser().parseFromString(temaSzoveg, 'text/html') : null;
   const head = doc ? doc.head : null;
+  let kepMegvan = false;
 
-  add('A tema.html beadva', 1, temaSzoveg ? 'ok' : 'nem', temaSzoveg ? '' : 'nincs tema.html');
+  add('A tema.html beadva', 1, temaSzoveg ? 'ok' : 'nem', temaSzoveg ? '' : f.hianyUzenet('tema.html'));
   if (!doc) {
     ['Alap szerkezet és lang="hu"', 'title: Weboldalam', 'A css/style.css csatolva'].forEach(c => add(c, 1, 'nem', ''));
   } else {
@@ -216,18 +327,21 @@ async function ellenoriz(b) {
   }
 
   // Menü: minden beadott oldalon legyen tema.html link, és a menü minden linkje létező fájlra mutasson.
-  const hianyzik = [], rosszLink = [];
-  for (const o of OLDALAK) {
-    const t = o === 'tema.html' ? temaSzoveg : await fajlSzoveg(b, o);
-    if (t == null) { hianyzik.push(o); continue; }
+  const hianyzik = [], nincsMeg = [], rosszLink = [];
+  const oldalSzoveg = await Promise.all(OLDALAK.map(o => o === 'tema.html' ? temaSzoveg : f.szoveg(o)));
+  for (let i = 0; i < OLDALAK.length; i++) {
+    const o = OLDALAK[i], t = oldalSzoveg[i];
+    if (t == null) { nincsMeg.push(o); continue; }
     const d = new DOMParser().parseFromString(t, 'text/html');
     const linkek = [...d.querySelectorAll('nav a, a')].map(a => a.getAttribute('href') || '');
     if (!linkek.some(h => fajlnev(h) === 'tema.html')) hianyzik.push(o);
-    linkek.filter(h => /\.html?$/i.test(h.split(/[?#]/)[0]) && !/^https?:/i.test(h))
-      .forEach(h => { if (!vane(fajlnev(h))) rosszLink.push(o + ' → ' + h); });
+    for (const h of linkek.filter(h => /\.html?$/i.test(h.split(/[?#]/)[0]) && !/^https?:/i.test(h)))
+      if (!(await f.letezik(h.split(/[?#]/)[0]))) rosszLink.push(o + ' → ' + h);
   }
-  add('A menüben ott a Témám, minden oldalon, és működik', 2, hianyzik.length || rosszLink.length ? 'nem' : 'ok',
-    [hianyzik.length && 'nincs tema.html link: ' + hianyzik.join(', '), rosszLink.length && 'nem létező oldal: ' + rosszLink.slice(0, 3).join(', ')].filter(Boolean).join(' · '));
+  add('A menüben ott a Témám, minden oldalon, és működik', 2, hianyzik.length || nincsMeg.length || rosszLink.length ? 'nem' : 'ok',
+    [nincsMeg.length && (f.tipus === 'github' ? 'nem található a GitHubon: ' : 'nincs beadva: ') + nincsMeg.join(', '),
+     hianyzik.length && 'nincs tema.html link: ' + hianyzik.join(', '),
+     rosszLink.length && 'nem létező oldal: ' + rosszLink.slice(0, 3).join(', ')].filter(Boolean).join(' · '));
 
   if (!doc) {
     ['h1: a téma neve', 'Öt alcím (h2) jó sorrendben'].forEach(c => add(c, 1, 'nem', ''));
@@ -259,12 +373,13 @@ async function ellenoriz(b) {
       const src = img.getAttribute('src') || '';
       const hibak = [];
       if (!/^(\.\/)?img\//i.test(src)) hibak.push('nem az img mappából: ' + src);
-      else if (!vane(fajlnev(src))) hibak.push('a képfájl nincs beadva: ' + fajlnev(src));
+      else if (!(await f.letezik(src))) { hibak.push(f.tipus === 'github' ? f.hianyUzenet(src.replace(/^\.\//, '')) : 'a képfájl nincs beadva: ' + fajlnev(src)); }
+      else kepMegvan = true;
       if (!(img.getAttribute('alt') || '').trim()) hibak.push('nincs alt');
       if (!(img.getAttribute('title') || '').trim()) hibak.push('nincs title');
-      const kf = b.fajlok.find(f => f.fajlnev.toLowerCase() === fajlnev(src));
+      const meret = kepMegvan ? await f.meret(src) : null;
       add('Kép: img mappából, alt és title', 2, hibak.length ? 'nem' : 'kezi',
-        hibak.length ? hibak.join(', ') : `${fajlnev(src)}${kf ? ' (' + Math.round(kf.meret / 1024) + ' KB)' : ''} – témához illő? nem a legnagyobb felbontás?`);
+        hibak.length ? hibak.join(', ') : `${fajlnev(src)}${meret ? ' (' + Math.max(1, Math.round(meret / 1024)) + ' KB)' : ''} – témához illő? nem a legnagyobb felbontás?`);
     }
 
     const a = [...doc.querySelectorAll('a')].find(x => szoveg(x).replace(/[!.]+$/, '').toLowerCase() === 'tudj meg többet');
@@ -307,13 +422,14 @@ async function ellenoriz(b) {
       hibak.length ? hibak.join(', ') : `${thDb} oszlop, ${adatSor} adatsor – a megadott oszlopok?`);
   }
 
-  const hianyFajl = [...OLDALAK, 'style.css'].filter(n => !vane(n));
-  const kep = b.fajlok.some(f => /\.(jpe?g|png|gif|webp)$/i.test(f.fajlnev));
+  const hianyFajl = [];
+  for (const n of [...OLDALAK, 'css/style.css']) if (!(await f.letezik(n))) hianyFajl.push(n);
+  const kep = f.vanKep ? f.vanKep() : kepMegvan;
   const kapott = kapottTema(b);
   const h1Jo = !!(doc && kapott && temaEgyezik(szoveg(doc.querySelector('h1')), kapott));
   add('Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1,
     hianyFajl.length || !kep || !h1Jo ? 'nem' : 'ok',
-    [hianyFajl.length || !kep ? 'hiányzik: ' + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : '',
+    [hianyFajl.length || !kep ? (f.tipus === 'github' ? 'nem található a GitHubon: ' : 'hiányzik: ') + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : '',
      !kapott ? 'nincs kiosztott téma' : !h1Jo ? 'a h1 nem a kapott téma' : ''].filter(Boolean).join(' · '));
 
   const auto = sorok.filter(s => s.allapot === 'ok').reduce((a, s) => a + s.max, 0);
