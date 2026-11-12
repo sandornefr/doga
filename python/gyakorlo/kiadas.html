@@ -38,7 +38,10 @@ main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; display: flex
 .gomb.zar:hover { border-color: #f85149; }
 .lista { columns: 2 340px; column-gap: 28px; margin-top: 6px; }
 .csop { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 10px 0 4px; break-after: avoid; }
-.elem { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; break-inside: avoid; }
+.sor { display: flex; align-items: center; gap: 8px; break-inside: avoid; }
+.elem { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; flex: 1; min-width: 0; }
+.nez { color: var(--muted); text-decoration: none; padding: 2px 6px; border-radius: 6px; font-size: .85rem; }
+.nez:hover { color: var(--yellow); background: var(--bg3); }
 .elem input { width: 17px; height: 17px; accent-color: var(--accent); }
 .elem.kiadva .nev { color: var(--accent); }
 .elem .kw { color: var(--muted); font-size: .8rem; }
@@ -53,9 +56,10 @@ main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; display: flex
   <a href="../../oktato-portal.html" title="Oktatói felület"><img src="../kandologo2.png" alt="Kandó"></a>
   <a href="../../oktato-portal.html" class="vissza"><i class="fas fa-arrow-left"></i> Oktatói felület</a>
   <span class="cim"><i class="fas fa-dumbbell"></i>Gyakorló feladatok kiadása</span>
+  <a href="index.html?nezet=oktato" target="_blank" class="vissza" style="margin-left:auto"><i class="fas fa-key"></i> Feladatok megoldással</a>
 </header>
 <main>
-  <p class="magyar">Válaszd ki a csoportot, és pipáld ki, amit az órán megoldottatok. A csoport tanulói otthon csak a kipipált feladatokat látják (Python → Gyakorló feladatok). Minden pipa azonnal mentődik.</p>
+  <p class="magyar">Válaszd ki a csoportot, és pipáld ki, amit az órán megoldottatok. A csoport tanulói otthon csak a kipipált feladatokat látják (Python → Gyakorló feladatok). Minden pipa azonnal mentődik. A <i class="fas fa-eye"></i> jellel új lapon megnyitod a feladatot a megoldással.</p>
   <div class="csoportok" id="csoportok"><span class="magyar">Csoportok betöltése…</span></div>
   <div id="temak"></div>
 </main>
@@ -66,7 +70,8 @@ main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; display: flex
 'use strict';
 const API = 'https://agazati.up.railway.app';
 const U = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
-const TOKEN = (U.szerep === 'oktato' && U.token) || localStorage.getItem('admin_token') || '';
+let TANAR_MENTES = {}; try { TANAR_MENTES = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}'); } catch {}
+const TOKEN = (U.szerep === 'oktato' && U.token) || TANAR_MENTES.token || localStorage.getItem('admin_token') || '';
 if (!TOKEN) location.replace('../../login.html');
 const TEMAK = window.GYAKORLO_TEMAK || [];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -130,9 +135,10 @@ function rajzolTemak() {
     for (const f of t.feladatok) {
       if (f.csop !== csop && f.csop !== t.cim) { csop = f.csop; lista += `<div class="csop">${esc(csop)}</div>`; }
       const d = st.feloldva.get(f.id);
-      lista += `<label class="elem${d ? ' kiadva' : ''}"><input type="checkbox" ${d ? 'checked' : ''} onchange="pipa('${f.id}', this.checked)">
+      lista += `<div class="sor"><label class="elem${d ? ' kiadva' : ''}"><input type="checkbox" ${d ? 'checked' : ''} onchange="pipa('${f.id}', this.checked)">
         <span class="nev">${f.sorszam}. ${esc(f.cim)}</span>${f.kell ? `<span class="kw">(${esc(f.kell)})</span>` : ''}
-        ${d ? `<span class="datum">${esc(huDatum(d))}</span>` : ''}</label>`;
+        ${d ? `<span class="datum">${esc(huDatum(d))}</span>` : ''}</label>
+        <a class="nez" href="index.html?nezet=oktato&tema=${t.id}&feladat=${f.id}" target="_blank" title="Megnézem a megoldással"><i class="fas fa-eye"></i></a></div>`;
     }
     const kerdes = st.zarKerdes === t.id ? `<div class="megerosit">Biztosan visszazárod a téma összes feladatát ennél a csoportnál?
         <button class="gomb zar" onclick="tema('${t.id}', false, true)">Igen, visszazárom</button>

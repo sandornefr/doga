@@ -28,6 +28,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 .haladas { font-size: .85rem; color: var(--muted); }
 .haladas b { color: var(--accent); }
 .teszt-csoport { font-size: .8rem; color: var(--yellow); display: flex; align-items: center; gap: 6px; }
+.teszt-csoport[hidden] { display: none; }
 .teszt-csoport select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--yellow); background: var(--bg2); color: var(--text); }
 .oktato-cimke { font-size: .75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--yellow); color: var(--yellow); }
 
@@ -107,7 +108,12 @@ pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .88rem; ba
 </head>
 <body>
 <script>
-  (function () { const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); if (!u.token && u.szerep !== 'oktato' && u.szerep !== 'vendeg' && !u._tesztMod) location.replace('../../portal.html'); })();
+  (function () {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    const oktatoNezet = new URLSearchParams(location.search).get('nezet') === 'oktato';
+    let tanar = ''; try { tanar = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || localStorage.getItem('admin_token') || ''; } catch {}
+    if (!u.token && u.szerep !== 'oktato' && u.szerep !== 'vendeg' && !u._tesztMod && !(oktatoNezet && tanar)) location.replace('../../portal.html');
+  })();
 </script>
 
 <header class="topbar">
@@ -155,7 +161,22 @@ const st = { mind: false, feloldott: new Set(), tema: null, feladat: null, fut: 
 })();
 
 // ── Feloldott feladatok a szerverről ───────────────────────────────────────
+// Oktatói nézet a kiadó oldalról (?nezet=oktato): minden feladat + megoldás, ha a tanári belépés érvényes
+async function oktatoNezetBetolt() {
+  if (new URLSearchParams(location.search).get('nezet') !== 'oktato') return false;
+  let tok = USER.szerep === 'oktato' ? USER.token : '';
+  try { tok = tok || JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || localStorage.getItem('admin_token') || ''; } catch {}
+  if (!tok) return false;
+  try {
+    const r = await fetch(`${API}/api/oktato/gyakorlo/feloldas?csoport=9.A.`, { headers: { Authorization: 'Bearer ' + tok } });
+    if (!r.ok) return false;
+  } catch { return false; }
+  st.mind = true; st.oktatoNezet = true;
+  return true;
+}
+
 async function feloldottBetolt() {
+  if (await oktatoNezetBetolt()) return;
   if (USER._tesztMod) return tesztElekBetolt();
   if (USER.szerep === 'oktato') { st.mind = true; return; }
   if (!USER.token) return;
@@ -222,7 +243,7 @@ function rajzolLista() {
     if (f.csop !== csop) { csop = f.csop; html += `<div class="csop-cim">${esc(csop)}</div>`; }
     html += `<button class="fl-elem${kesz(f) ? ' kesz' : ''}${f === st.feladat ? ' aktiv' : ''}" onclick="valasztFeladat('${f.id}')">
       <span class="jel"><i class="fas ${kesz(f) ? 'fa-circle-check' : 'fa-circle'}"></i></span>
-      <span class="ssz">${f.sorszam}.</span><span>${esc(f.cim)}</span><span class="ck">${f.kell}</span></button>`;
+      <span class="ssz">${f.sorszam}.</span><span>${esc(f.cim)}</span><span class="ck">${esc(f.kell || '')}</span></button>`;
   }
   const zart = t.feladatok.length - lathato.length;
   if (zart > 0) html += `<div class="zarva"><i class="fas fa-lock"></i>Még ${zart} feladat vár rád. Az órán oldjuk fel őket, utána itt gyakorolhatod.</div>`;
@@ -284,7 +305,7 @@ function valasztFeladat(id) {
   const ta = document.getElementById('kod');
   ta.value = mentett != null ? mentett : `# ${f.sorszam}. feladat: ${f.cim}\n`;
   szerkesztoBekot(ta, f);
-  history.replaceState(null, '', `?tema=${st.tema.id}&feladat=${f.id}`);
+  history.replaceState(null, '', `?${st.oktatoNezet ? 'nezet=oktato&' : ''}tema=${st.tema.id}&feladat=${f.id}`);
 }
 
 function mutatTipp() {
