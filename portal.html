@@ -1350,6 +1350,11 @@
                     <span class="label">Javítás</span>
                     <span class="desc">Beadott dolgozatok megtekintése és értékelése</span>
                 </a>
+                <a class="option-card" href="ikt/beadasok.html" style="border-color:#8b5cf6">
+                    <span class="icon"><i class="fas fa-inbox" style="color:#a78bfa"></i></span>
+                    <span class="label">IKT beadások</span>
+                    <span class="desc">9–10. évfolyam: Témaoldal-beadások, előnézet, előellenőrzés</span>
+                </a>
                 <a class="option-card" href="python/szamonkeres.html" style="border-color:#6366f1">
                     <span class="icon"><i class="fas fa-file-pen" style="color:#818cf8"></i></span>
                     <span class="label">Számonkérés kiadása</span>
@@ -1966,6 +1971,8 @@
                 // Rendszergazda: teljes tanári felület
                 document.getElementById('teacher-portal').style.display = 'block';
                 document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
+                // Visszatérés egy oktatói oldalról (pl.: IKT beadások): rögtön az Oktató menü nyíljon.
+                if (location.hash === '#oktato') showTeacherSub();
                 document.getElementById('toggle-view-btn').style.display = 'block';
                 const rangsorBtnT = document.getElementById('btn-rangsor');
                 if (rangsorBtnT) rangsorBtnT.style.display = 'flex';

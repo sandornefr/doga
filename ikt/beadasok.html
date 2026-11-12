@@ -57,7 +57,7 @@ table.tbl th{background:#f0f4f8;}
 <div class="topbar">
   <span class="cim"><i class="fas fa-inbox"></i> IKT beadások – Témaoldal</span>
   <a href="temaoldal.html"><i class="fas fa-file-lines"></i> Feladatlap</a>
-  <a href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <a id="vissza" href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
@@ -73,6 +73,8 @@ const app = document.getElementById('app');
 const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || 'null');
 const TOKEN = u && u.szerep === 'oktato' ? u.token : '';
 const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+// Vissza oda, ahonnan az oktató jön: Réka a portál Oktató menüjébe, a többi oktató az oktatói portálra.
+if (u && u.email === 'sandornef@kkszki.hu') document.getElementById('vissza').href = '../portal.html#oktato';
 
 let beadasok = [];   // tanulónként egy sor: beadás és/vagy kiosztott téma
 let temak = {};      // email → {id, temaSorszam}
