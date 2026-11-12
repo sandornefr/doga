@@ -137,7 +137,9 @@ const csoportNev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}
 const tanitasiNap = d => { const s = iso(d), w = d.getDay(); return w > 0 && w < 6 && s >= TANEV.elsoNap && s <= TANEV.utolsoNap && !TANEV.unnepek.includes(s) && !TANEV.szunetek.some(([a, b]) => s >= a && s <= b); };
 const percOta = ts => { if (!ts) return null; const d = new Date(String(ts).replace(' ', 'T')); return isNaN(d) ? null : Math.round((Date.now() - d) / 60000); };
 
-const st = { orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null };
+const st = { orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null, leckeVan: true };
+// Az új leckék (python/kezdo-uj.html) még nem biztos, hogy élesben vannak: ha nincs, a gomb helyett szöveg jelenik meg
+fetch('python/kezdo-uj.html', { method: 'HEAD' }).then(r => { st.leckeVan = r.ok; rajzolReszlet(); }).catch(() => {});
 
 async function kerd(url, opt = {}) {
   const r = await fetch(API + url, { ...opt, headers: { ...(opt.headers || {}), Authorization: 'Bearer ' + TOKEN } });
@@ -207,7 +209,8 @@ function rajzolReszlet() {
   const kiadvaDb = feladatok.filter(f => st.feloldva.has(f.id)).length;
   el.innerHTML = `<h3><span class="sz">4</span> ${esc(l.nev)}</h3>
     <div class="gombsor">
-      <a class="gomb" href="python/kezdo-uj.html#${l.id}" target="_blank"><i class="fas fa-display"></i> Lecke megnyitása közös átnézéshez</a>
+      ${st.leckeVan ? `<a class="gomb" href="python/kezdo-uj.html#${l.id}" target="_blank"><i class="fas fa-display"></i> Lecke megnyitása közös átnézéshez</a>`
+        : '<div class="magyar"><i class="fas fa-hourglass-half"></i> Az új Python leckék még nincsenek élesben. Amint kikerülnek, itt egy gombbal megnyithatod a leckét.</div>'}
       ${!feladatok.length ? '' : kiadvaDb < feladatok.length
         ? `<button class="gomb fo" onclick="temaKiad()"><i class="fas fa-lock-open"></i> Megtanultuk: kiadom mind a ${feladatok.length} gyakorló feladatot</button>`
         : '<div class="magyar" style="color:var(--accent)"><i class="fas fa-check"></i> A téma összes gyakorló feladata ki van adva.</div>'}
