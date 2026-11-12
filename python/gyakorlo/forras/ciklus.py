@@ -198,7 +198,7 @@ f('Heti lépésszám', 'for', B, """
 7. nap lépései: 9000
 Összesen: 52000 lépés
 Napi átlag: 7429 lépés
-""", "Az átlag az összeg osztva 7-tel. Kerekítés: round(osszeg / 7). Emlékszel? A round()-ot az Átalakítás és műveletek témában gyakoroltuk.",
+""", "Az átlag az összeg osztva 7-tel. Kerekítés: round(osszeg / 7).",
 """
 osszeg = 0
 for nap in range(1, 8):
@@ -219,7 +219,7 @@ Jegy: 4
 Jegy: 5
 Jegy: 2
 Átlag: 3.67
-""", "Kerekítés két tizedesre: round(atlag, 2). Emlékszel? A round()-ot az Átalakítás és műveletek témában gyakoroltuk.",
+""", "Kerekítés két tizedesre: round(atlag, 2).",
 """
 n = int(input("Hány jegyed van? "))
 osszeg = 0
