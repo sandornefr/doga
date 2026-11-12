@@ -103,29 +103,26 @@ for km in range(5, tav + 1, 5):
     print(f"{km} km")
 """, [(['21'], ['5 km', '10 km', '15 km', '20 km']), (['42'], ['5 km', '40 km'])])
 
-f('Buszmenetrend', 'for', A, """
-<p>Az első busz 6:00-kor indul, utána 20 percenként jön a következő.</p>
-<p>Kérd be: <code>Hány járatot írjak ki? </code></p>
-<p>Írd ki az indulási időket <code>óra:perc</code> alakban. A perc mindig két jegyű legyen: <code>6:00</code>, <code>6:20</code>, <code>6:40</code>, <code>7:00</code></p>
+f('Körök a futópályán', 'for', A, """
+<p>Tesiórán köröket futsz.</p>
+<p>Kérd be: <code>Hány kört kell futni? </code></p>
+<p>Minden kör után írd ki: <code>1. kör kész, még 3 van hátra.</code></p>
+<p>A végén: <code>Megvan, pihenhetsz!</code></p>
 """, """
-Hány járatot írjak ki? 5
-6:00
-6:20
-6:40
-7:00
-7:20
-""", "Számold percben az időt 6:00-tól. Óra: perc // 60, perc: perc % 60. Ha a perc kisebb, mint 10, tegyél elé egy 0-t.",
+Hány kört kell futni? 4
+1. kör kész, még 3 van hátra.
+2. kör kész, még 2 van hátra.
+3. kör kész, még 1 van hátra.
+4. kör kész, még 0 van hátra.
+Megvan, pihenhetsz!
+""", "Hátralévő körök: n - i, ha i az éppen kész kör sorszáma.",
 """
-n = int(input("Hány járatot írjak ki? "))
-for i in range(n):
-    perc = 6 * 60 + i * 20
-    ora = perc // 60
-    p = perc % 60
-    if p < 10:
-        print(f"{ora}:0{p}")
-    else:
-        print(f"{ora}:{p}")
-""", [(['5'], ['6:00', '6:20', '6:40', '7:00', '7:20']), (['8'], ['6:00', '8:00', '8:20'])])
+n = int(input("Hány kört kell futni? "))
+for i in range(1, n + 1):
+    print(f"{i}. kör kész, még {n - i} van hátra.")
+print("Megvan, pihenhetsz!")
+""", [(['4'], ['1. kör kész, még 3 van hátra.', '4. kör kész, még 0 van hátra.', 'Megvan, pihenhetsz!']),
+      (['2'], ['1. kör kész, még 1 van hátra.', '2. kör kész, még 0 van hátra.'])])
 
 f('Lépcsőrajz', 'for', A, """
 <p>Rajzolj lépcsőt <code>#</code> jelekből.</p>
@@ -432,8 +429,7 @@ print(f"Heti képernyőidő: {osszeg // 60} óra {osszeg % 60} perc")
 f('Kosárra dobás', 'for', B, """
 <p>Kosárra dobsz. Minden dobás után beírod: <code>b</code> (bement) vagy <code>k</code> (kimaradt).</p>
 <p>Kérd be: <code>Hány dobás volt? </code>, majd egyesével: <code>Dobás: </code></p>
-<p>Írd ki: <code>Talált: 3</code></p>
-<p>És egészre kerekítve: <code>Találati arány: 60%</code></p>
+<p>Írd ki két sorban: <code>Talált: 3</code> és <code>Kimaradt: 2</code></p>
 """, """
 Hány dobás volt? 5
 Dobás: b
@@ -442,19 +438,22 @@ Dobás: b
 Dobás: b
 Dobás: k
 Talált: 3
-Találati arány: 60%
+Kimaradt: 2
 """, "Itt szöveget hasonlítasz: if dobas == \"b\":",
 """
 n = int(input("Hány dobás volt? "))
 talalt = 0
+kimaradt = 0
 for i in range(n):
     dobas = input("Dobás: ")
     if dobas == "b":
         talalt = talalt + 1
+    else:
+        kimaradt = kimaradt + 1
 print(f"Talált: {talalt}")
-print(f"Találati arány: {round(talalt / n * 100)}%")
-""", [(['5', 'b', 'k', 'b', 'b', 'k'], ['Talált: 3', 'Találati arány: 60%']),
-      (['3', 'b', 'k', 'k'], ['Talált: 1', 'Találati arány: 33%'])])
+print(f"Kimaradt: {kimaradt}")
+""", [(['5', 'b', 'k', 'b', 'b', 'k'], ['Talált: 3', 'Kimaradt: 2']),
+      (['3', 'b', 'k', 'k'], ['Talált: 1', 'Kimaradt: 2'])])
 
 f('Hőingás', 'for', B, """
 <p>Egy nap több hőmérsékletet mértél.</p>
@@ -690,24 +689,26 @@ while toltes > 20:
 print("Töltsd fel a telefont!")
 """, [([], ['1. óra után: 85%', '5. óra után: 25%', '6. óra után: 10%', 'Töltsd fel a telefont!'])])
 
-f('Követők', 'while', D, """
-<p>Egy iskolai oldalnak most 150 követője van.</p>
-<p>Hetente 10%-kal nő a követők száma (mindig egészre vágva: <code>int(kovetok * 1.1)</code>).</p>
-<p>Kérd be: <code>Hány követő a cél? </code></p>
-<p>Írd ki: <code>8 hét múlva lesz meg a cél.</code></p>
+f('Lift', 'while', D, """
+<p>A lift a földszintről (0. emelet) indul.</p>
+<p>Kérd be: <code>Hányadik emeletre mész? </code></p>
+<p>Amíg nem ért fel, írd ki minden emeletet: <code>1. emelet</code>, <code>2. emelet</code> …</p>
+<p>A végén: <code>Megérkeztél!</code></p>
 """, """
-Hány követő a cél? 300
-8 hét múlva lesz meg a cél.
-""", "Amíg kevesebb a követő, mint a cél: növeld, és számold a heteket.",
+Hányadik emeletre mész? 3
+1. emelet
+2. emelet
+3. emelet
+Megérkeztél!
+""", "Legyen emelet = 0. Amíg emelet < cel: emelet + 1, és kiírod.",
 """
-cel = int(input("Hány követő a cél? "))
-kovetok = 150
-het = 0
-while kovetok < cel:
-    kovetok = int(kovetok * 1.1)
-    het = het + 1
-print(f"{het} hét múlva lesz meg a cél.")
-""", None)
+cel = int(input("Hányadik emeletre mész? "))
+emelet = 0
+while emelet < cel:
+    emelet = emelet + 1
+    print(f"{emelet}. emelet")
+print("Megérkeztél!")
+""", [(['3'], ['1. emelet', '2. emelet', '3. emelet', 'Megérkeztél!']), (['0'], ['Megérkeztél!']), (['6'], ['6. emelet', 'Megérkeztél!'])])
 
 f('Számkitaláló', 'while', D, """
 <p>A gép gondolt egy számra: <b>37</b>.</p>
@@ -856,43 +857,55 @@ while tudja < diakok:
 print(f"{nap} nap múlva mindenki tudja.")
 """, [(['600'], ['11 nap múlva mindenki tudja.']), (['1'], ['1 nap múlva mindenki tudja.']), (['8'], ['4 nap múlva mindenki tudja.'])])
 
-f('Szerencseszám', 'while', D, """
-<p>A születési dátum számjegyeinek összege a „szerencseszám”.</p>
-<p>Kérd be egy számként: <code>Születési dátum (ééééhhnn): </code></p>
-<p>Add össze a számjegyeit egy while ciklussal, osztással.</p>
-<p>Írd ki: <code>Számjegyek összege: 12</code></p>
+f('Elég hosszú jelszó', 'while', D, """
+<p>Egy új fiókhoz legalább 8 karakteres jelszó kell.</p>
+<p>Kérd be: <code>Új jelszó: </code></p>
+<p>Amíg rövidebb 8 karakternél, írd ki: <code>Túl rövid, legalább 8 karakter kell!</code>, és kérd be újra.</p>
+<p>Ha jó: <code>Jelszó elmentve.</code></p>
 """, """
-Születési dátum (ééééhhnn): 20100315
-Számjegyek összege: 12
-""", "Az utolsó számjegy: szam % 10. Levágni: szam = szam // 10. Addig ismételd, amíg szam > 0.",
+Új jelszó: alma
+Túl rövid, legalább 8 karakter kell!
+Új jelszó: almafa2026
+Jelszó elmentve.
+""", "A szöveg hossza: len(jelszo). while len(jelszo) < 8:",
 """
-szam = int(input("Születési dátum (ééééhhnn): "))
-osszeg = 0
-while szam > 0:
-    osszeg = osszeg + szam % 10
-    szam = szam // 10
-print(f"Számjegyek összege: {osszeg}")
-""", [(['20100315'], ['Számjegyek összege: 12']), (['20091231'], ['Számjegyek összege: 18'])])
+jelszo = input("Új jelszó: ")
+while len(jelszo) < 8:
+    print("Túl rövid, legalább 8 karakter kell!")
+    jelszo = input("Új jelszó: ")
+print("Jelszó elmentve.")
+""", [(['alma', 'almafa2026'], ['Túl rövid, legalább 8 karakter kell!', 'Jelszó elmentve.']), (['kandokando'], ['Jelszó elmentve.']),
+      (['a', 'ab', '12345678'], ['Túl rövid', 'Túl rövid', 'Jelszó elmentve.'])])
 
 # ═════════════════ E: while – vegyes ═════════════════
 
-f('Csempézés', 'while', E, """
-<p>Egy téglalap alakú padlót azonos méretű, négyzet alakú csempékkel raknak le, vágás nélkül.</p>
-<p>Kérd be: <code>A szoba hossza (cm): </code> és <code>A szoba szélessége (cm): </code></p>
-<p>Keresd meg a legnagyobb csempeméretet az euklideszi algoritmussal.</p>
-<p>Írd ki: <code>Legnagyobb csempe: 60 cm</code></p>
+f('Hangerő', 'while', E, """
+<p>A telefon hangereje most 5. A legkisebb 0, a legnagyobb 10.</p>
+<p>Kérd be újra és újra: <code>Gomb (+ / - / ok): </code></p>
+<p><code>+</code>: eggyel hangosabb, <code>-</code>: eggyel halkabb. Utána írd ki: <code>Hangerő: 6</code></p>
+<p>10 fölé és 0 alá nem mehet. Az <code>ok</code>-ra álljon le, és írja ki: <code>Beállítva: 6</code></p>
 """, """
-A szoba hossza (cm): 420
-A szoba szélessége (cm): 300
-Legnagyobb csempe: 60 cm
-""", "Amíg b nem 0: a, b = b, a % b. A végén a-ban van az eredmény.",
+Gomb (+ / - / ok): +
+Hangerő: 6
+Gomb (+ / - / ok): +
+Hangerő: 7
+Gomb (+ / - / ok): ok
+Beállítva: 7
+""", "Amíg a gomb nem ok: if gomb == \"+\" and hangero < 10: …",
 """
-a = int(input("A szoba hossza (cm): "))
-b = int(input("A szoba szélessége (cm): "))
-while b != 0:
-    a, b = b, a % b
-print(f"Legnagyobb csempe: {a} cm")
-""", [(['420', '300'], ['Legnagyobb csempe: 60 cm']), (['350', '200'], ['Legnagyobb csempe: 50 cm'])])
+hangero = 5
+gomb = input("Gomb (+ / - / ok): ")
+while gomb != "ok":
+    if gomb == "+" and hangero < 10:
+        hangero = hangero + 1
+    elif gomb == "-" and hangero > 0:
+        hangero = hangero - 1
+    print(f"Hangerő: {hangero}")
+    gomb = input("Gomb (+ / - / ok): ")
+print(f"Beállítva: {hangero}")
+""", [(['+', '+', 'ok'], ['Hangerő: 6', 'Hangerő: 7', 'Beállítva: 7']),
+      (['-', '-', '-', '-', '-', '-', 'ok'], ['Hangerő: 4', 'Hangerő: 0', 'Hangerő: 0', 'Beállítva: 0']),
+      (['+'] * 7 + ['ok'], ['Hangerő: 10', 'Hangerő: 10', 'Beállítva: 10'])])
 
 f('Szintlépés', 'while', E, """
 <p>Egy játékban az 1. szintről a 2.-ra 100 XP kell, a 2.-ról a 3.-ra 200 XP, és így tovább (szint * 100).</p>

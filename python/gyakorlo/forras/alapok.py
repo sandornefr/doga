@@ -79,12 +79,12 @@ f('Pontgyűjtés', """
 """, "Pontszám: 15", "A változó új értéke a régiből számolható: pont = pont + 5",
 'pont = 10\npont = pont + 5\nprint("Pontszám:", pont)', [([], ['Pontszám: 15'])])
 
-f('Kerítés és fű', """
-<p>A kert 12 m hosszú és 8 m széles. Tedd ezeket a <code>hossz</code> és <code>szel</code> változókba.</p>
-<p>Írd ki két sorba: <code>Kerítés: 40 m</code> és <code>Fű: 96 m2</code></p>
-<p>A kerítés a kerület, a fű a terület.</p>
-""", "Kerítés: 40 m\nFű: 96 m2", "Kerület: 2 * (hossz + szel). Terület: hossz * szel.",
-'hossz = 12\nszel = 8\nprint("Kerítés:", 2 * (hossz + szel), "m")\nprint("Fű:", hossz * szel, "m2")', [([], ['Kerítés: 40 m', 'Fű: 96 m2'])])
+f('Bevásárlás', """
+<p>A boltban három dolgot veszel. Tedd az árakat változókba:</p>
+<p><code>kenyer</code> = 650, <code>tej</code> = 420, <code>alma</code> = 890</p>
+<p>Írd ki: <code>Összesen: 1960 Ft</code> – az összeadást a gép végezze, a változókkal.</p>
+""", "Összesen: 1960 Ft", "print(\"Összesen:\", kenyer + tej + alma, \"Ft\")",
+'kenyer = 650\ntej = 420\nalma = 890\nprint("Összesen:", kenyer + tej + alma, "Ft")', [([], ['Összesen: 1960 Ft'])])
 
 f('Kézcsere', """
 <p>A <code>bal</code> változóban <code>alma</code>, a <code>jobb</code> változóban <code>körte</code> van.</p>
@@ -161,19 +161,22 @@ f('Tankolás', """
 'ar = float(input("Literenkénti ár: "))\nliter = int(input("Hány liter? "))\nprint(f"Fizetendő: {round(ar * liter)} Ft")',
 [(['612.5', '40'], ['Fizetendő: 24500 Ft']), (['599.9', '10'], ['Fizetendő: 5999 Ft'])])
 
-f('Fahrenheit', """
-<p>Egy amerikai weboldal Fahrenheitben mutatja az időjárást.</p>
-<p>Kérd be: <code>Hány Celsius-fok van? </code></p>
-<p>Számold át: F = C * 9 / 5 + 32. Írd ki: <code>Fahrenheitben: 68.0</code></p>
-""", "Hány Celsius-fok van? 20\nFahrenheitben: 68.0", "A / osztás eredménye mindig tört szám (float), ezért lesz .0 a végén.",
-'c = int(input("Hány Celsius-fok van? "))\nprint("Fahrenheitben:", c * 9 / 5 + 32)', [(['20'], ['Fahrenheitben: 68.0']), (['-5'], ['Fahrenheitben: 23.0'])])
+f('Osztálypénz', """
+<p>Osztálykirándulásra gyűjtötök.</p>
+<p>Kérd be: <code>Hányan vagytok? </code> és <code>Mennyit ad egy diák? </code></p>
+<p>Írd ki: <code>Összegyűlt: 15000 Ft</code></p>
+""", "Hányan vagytok? 30\nMennyit ad egy diák? 500\nÖsszegyűlt: 15000 Ft", "Mindkettőt alakítsd számmá int()-tel, utána szorozd össze.",
+'db = int(input("Hányan vagytok? "))\npenz = int(input("Mennyit ad egy diák? "))\nprint(f"Összegyűlt: {db * penz} Ft")',
+[(['30', '500'], ['Összegyűlt: 15000 Ft']), (['25', '1000'], ['Összegyűlt: 25000 Ft'])])
 
-f('Akciós ár', """
-<p>A boltban minden 10%-kal olcsóbb.</p>
-<p>Kérd be: <code>Eredeti ár: </code></p>
-<p>Írd ki: <code>Akciós ár: 4500 Ft</code> (egész forint, lefelé: <code>ar * 90 // 100</code>)</p>
-""", "Eredeti ár: 5000\nAkciós ár: 4500 Ft", "Az ár 90%-a: ar * 90 // 100.",
-'ar = int(input("Eredeti ár: "))\nprint(f"Akciós ár: {ar * 90 // 100} Ft")', [(['5000'], ['Akciós ár: 4500 Ft']), (['1299'], ['Akciós ár: 1169 Ft'])])
+f('Heti játékidő', """
+<p>Kérd be: <code>Hétköznap hány percet játszol? </code> és <code>Hétvégén hány percet játszol egy nap? </code></p>
+<p>Egy héten 5 hétköznap és 2 hétvégi nap van.</p>
+<p>Írd ki: <code>Ezen a héten 650 percet játszol.</code></p>
+""", "Hétköznap hány percet játszol? 70\nHétvégén hány percet játszol egy nap? 150\nEzen a héten 650 percet játszol.",
+"5 * hetkoznap + 2 * hetvege",
+'hk = int(input("Hétköznap hány percet játszol? "))\nhv = int(input("Hétvégén hány percet játszol egy nap? "))\nprint(f"Ezen a héten {5 * hk + 2 * hv} percet játszol.")',
+[(['70', '150'], ['Ezen a héten 650 percet játszol.']), (['30', '60'], ['Ezen a héten 270 percet játszol.'])])
 
 # ═════════════ if / else ═════════════
 tema('if', 'if / else – döntés', 'Két ág: ha igaz, ezt csinálja, különben azt.', 'if')
