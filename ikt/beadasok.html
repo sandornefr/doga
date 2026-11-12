@@ -50,6 +50,43 @@ table.tbl th{background:#f0f4f8;}
 .szuro .mind:disabled{opacity:.7;cursor:default;}
 .ghgomb{border:1px solid #cbd2d9;background:#fff;border-radius:6px;padding:3px 10px;font:inherit;font-size:.85rem;cursor:pointer;}
 .fajlok.gh{margin-top:14px;}
+.fej .megnez{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:6px;padding:4px 10px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
+.nz{position:fixed;inset:0;z-index:50;background:#f8fafc;display:flex;flex-direction:column;}
+.nz[hidden]{display:none;}
+.nz-fej{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#1e1b4b;color:#fff;}
+.nz-cim{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nz-forras-valto button{border:1px solid #6366f1;background:transparent;color:#e0e7ff;border-radius:6px;padding:4px 10px;margin-left:4px;font:inherit;font-size:.85rem;cursor:pointer;}
+.nz-forras-valto button.aktiv{background:#6366f1;color:#fff;}
+.nz-uj{color:#c7d2fe;font-size:.85rem;}
+.nz-x{border:0;background:#312e81;color:#fff;border-radius:6px;width:34px;height:30px;font-size:1.1rem;cursor:pointer;}
+.nz-test{flex:1;min-height:0;display:grid;grid-template-columns:190px minmax(0,1fr) 370px;}
+.nz-fajlok{border-right:1px solid #e2e8f0;padding:8px;overflow:auto;background:#fff;}
+.nz-fajlok button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px;font:inherit;font-size:.9rem;cursor:pointer;color:#1f2933;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nz-fajlok button:hover{background:#f1f5f9;}
+.nz-fajlok button.aktiv{background:#e0e7ff;color:#3730a3;font-weight:600;}
+.nz-kozep{display:flex;flex-direction:column;min-width:0;min-height:0;}
+.nz-fulek{display:flex;gap:4px;padding:6px 8px 0;border-bottom:1px solid #e2e8f0;background:#fff;}
+.nz-fulek[hidden]{display:none;}
+.nz-fulek button{border:1px solid #e2e8f0;border-bottom:0;background:#f1f5f9;border-radius:6px 6px 0 0;padding:5px 14px;font:inherit;font-size:.9rem;cursor:pointer;}
+.nz-fulek button.aktiv{background:#fff;font-weight:600;color:#3730a3;}
+.nz-kod{flex:1;min-height:0;overflow:auto;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.5 Consolas,'Courier New',monospace;}
+.nz-kod[hidden],.nz-kinezet[hidden],.nz-kep[hidden],#nz-iframe[hidden]{display:none;}
+.nz-kod .megj,.nz-kod .hiba{padding:12px;}
+.nz-sorszam{white-space:pre;text-align:right;padding:10px 8px;color:#64748b;user-select:none;border-right:1px solid #1e293b;}
+.nz-forras{margin:0;padding:10px 12px;white-space:pre;flex:1;}
+.sz-tag{color:#93c5fd;} .sz-attr{color:#fcd34d;} .sz-ertek{color:#86efac;} .sz-komment{color:#64748b;font-style:italic;}
+.nz-kinezet{flex:1;min-height:0;display:flex;background:#fff;}
+#nz-iframe{flex:1;border:0;width:100%;height:100%;background:#fff;}
+.nz-kep{flex:1;overflow:auto;padding:14px;}
+.nz-kep img{max-width:100%;border:1px solid #e2e8f0;margin-top:10px;}
+.nz-kepadat{font-size:.95rem;}
+.nz-pont{border-left:1px solid #e2e8f0;overflow:auto;padding:10px;background:#fff;font-size:.85rem;}
+.nz-pont table.ell{font-size:.82rem;table-layout:fixed;width:100%;}
+.nz-pont table.ell th:first-child,.nz-pont table.ell td:first-child{width:26px;padding:4px 2px;}
+.nz-pont table.ell th:nth-child(2){width:34%;}
+.nz-pont table.ell th:last-child,.nz-pont table.ell td:last-child{width:46px;padding:4px 2px;}
+.nz-pont table.ell td{overflow-wrap:anywhere;}
+.nz-osszeg{font-weight:700;margin-bottom:8px;}
 </style>
 <link rel="stylesheet" href="ikt.css?v=1">
 </head>
@@ -60,6 +97,30 @@ table.tbl th{background:#f0f4f8;}
   <a id="vissza" href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<div id="nz" class="nz" hidden>
+  <div class="nz-fej">
+    <span id="nz-nev" class="nz-cim"></span>
+    <span id="nz-forras" class="nz-forras-valto"></span>
+    <a id="nz-uj" href="#" target="_blank" rel="noopener" class="nz-uj"><i class="fas fa-up-right-from-square"></i> Megnyitás új lapon</a>
+    <button class="nz-x" onclick="nzBezar()" title="Bezárás (Esc)"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="nz-test">
+    <nav id="nz-fajlok" class="nz-fajlok"></nav>
+    <section class="nz-kozep">
+      <div id="nz-fulek" class="nz-fulek">
+        <button data-f="kod" class="aktiv" onclick="nzFul('kod')"><i class="fas fa-code"></i> Kód</button>
+        <button data-f="kinezet" onclick="nzFul('kinezet')"><i class="fas fa-desktop"></i> Kinézet</button>
+      </div>
+      <div id="nz-kod" class="nz-kod"></div>
+      <div id="nz-kinezet" class="nz-kinezet" hidden>
+        <iframe id="nz-iframe" sandbox="allow-popups" referrerpolicy="no-referrer" title="A tanuló oldala"></iframe>
+        <div id="nz-kep" class="nz-kep" hidden></div>
+      </div>
+    </section>
+    <aside id="nz-pont" class="nz-pont"></aside>
+  </div>
+</div>
 
 <script src="temak.js"></script>
 <script>
@@ -189,6 +250,7 @@ function listaRajz() {
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
         ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
+        ${b.nincsBeadas ? '' : `<button class="megnez" onclick="event.stopPropagation(); nzMegnyit(${esc(JSON.stringify(b.id))})"><i class="fas fa-eye"></i> Megnézem</button>`}
         <span class="pont" id="p${b.id}">${b.nincsBeadas ? '' : '…'}</span>
       </div>
       <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : 'Ellenőrzés…'}</p></div>
@@ -439,6 +501,175 @@ async function ellenoriz(b, f) {
   const keziMax = sorok.filter(s => s.allapot === 'kezi').reduce((a, s) => a + s.max, 0);
   return { sorok, auto, autoMax, keziMax };
 }
+
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Nézegető: a tanuló fájljai kóddal és kinézettel, mellette az előellenőrzés
+//  (ugyanazon a lapon, ablakban). A tanulói kód csak szövegként jelenik meg
+//  (minden darab esc()-pel), a kinézet sandboxolt iframe-ben – szkript nem fut.
+// ══════════════════════════════════════════════════════════════════════════
+const KEP_RE = /\.(jpe?g|png|gif|webp)$/i;
+let nz = null;   // { b, mod: 'fajl'|'github', forras, fajlok: [{ut, nev}], aktiv, ful: 'kod'|'kinezet' }
+
+function nzMegnyit(id) {
+  const b = beadasok.find(x => String(x.id) === String(id));
+  if (!b) return;
+  nz = { b, ful: 'kod' };
+  document.getElementById('nz').hidden = false;
+  document.body.style.overflow = 'hidden';
+  document.getElementById('nz-nev').textContent = (b.nev || b.email) + ' · ' + csoportNev(b) + ' · ' + temaNev(b);
+  const valto = document.getElementById('nz-forras');
+  valto.innerHTML = (b.fajlok.length ? '<button data-m="fajl">Feltöltött fájlok</button>' : '') +
+                    (b.githubUrl ? '<button data-m="github"><i class="fab fa-github"></i> GitHub</button>' : '');
+  valto.querySelectorAll('button').forEach(g => g.onclick = () => nzForras(g.dataset.m));
+  nzForras(b.fajlok.length ? 'fajl' : 'github');
+}
+
+function nzBezar() {
+  document.getElementById('nz').hidden = true;
+  document.getElementById('nz-iframe').src = 'about:blank';
+  document.body.style.overflow = '';
+  nz = null;
+}
+
+async function nzForras(mod) {
+  const b = nz.b;
+  nz.mod = mod;
+  document.querySelectorAll('#nz-forras button').forEach(g => g.classList.toggle('aktiv', g.dataset.m === mod));
+  const lista = document.getElementById('nz-fajlok');
+  if (mod === 'fajl') {
+    nz.forras = forrasFajlok(b);
+    nz.alap = API + b.elonezet;
+    const sorrend = n => { const i = [...OLDALAK, 'style.css'].indexOf(n.toLowerCase()); return i < 0 ? 99 : i; };
+    nz.fajlok = b.fajlok.map(f => ({ ut: /\.css$/i.test(f.fajlnev) ? 'css/' + f.fajlnev : KEP_RE.test(f.fajlnev) ? 'img/' + f.fajlnev : f.fajlnev, nev: f.fajlnev }))
+      .sort((x, y) => sorrend(x.nev) - sorrend(y.nev) || x.nev.localeCompare(y.nev));
+  } else {
+    const alap = githubAlap(b.githubUrl);
+    if (!alap) { lista.innerHTML = '<p class="hiba">Hibás github.io cím.</p>'; return; }
+    nz.forras = forrasGithub(alap);
+    nz.alap = alap;
+    nz.fajlok = [...OLDALAK, 'css/style.css'].map(ut => ({ ut, nev: ut.split('/').pop() }));
+    lista.innerHTML = '<p class="megj">Letöltés a GitHubról…</p>';
+    // A képek a letöltött oldalakból (img src), relatív útvonallal.
+    const kepek = new Set();
+    for (const o of OLDALAK) {
+      const t = await nz.forras.szoveg(o);
+      if (!t) continue;
+      new DOMParser().parseFromString(t, 'text/html').querySelectorAll('img[src]').forEach(i => {
+        const s = (i.getAttribute('src') || '').replace(/^\.\//, '');
+        if (s && !/^(https?:|data:|\/\/)/i.test(s)) kepek.add(s.split(/[?#]/)[0]);
+      });
+    }
+    kepek.forEach(ut => nz.fajlok.push({ ut, nev: ut.split('/').pop() }));
+    if (nz.mod !== 'github') return;   // közben átváltott
+  }
+  lista.innerHTML = nz.fajlok.map((f, i) => `<button data-i="${i}"><i class="far ${KEP_RE.test(f.nev) ? 'fa-image' : /\.css$/i.test(f.nev) ? 'fa-file-lines' : 'fa-file-code'}"></i> ${esc(f.nev)}</button>`).join('');
+  lista.querySelectorAll('button').forEach(g => g.onclick = () => nzFajl(+g.dataset.i));
+  nzPontozas();
+  const tema = nz.fajlok.findIndex(f => f.nev.toLowerCase() === 'tema.html');
+  nzFajl(tema >= 0 ? tema : 0);
+}
+
+function nzPontozas() {
+  const el = document.getElementById('nz-pont');
+  const e = nz.mod === 'github' ? ghEll[nz.b.id] : ellenorzes[nz.b.id];
+  if (!e) {
+    el.innerHTML = '<p class="megj">Ellenőrzés…</p>';
+    futtat(nz.b, nz.mod).then(() => { if (nz) nzPontozas(); });
+    return;
+  }
+  if (e.fut) { el.innerHTML = '<p class="megj">Ellenőrzés…</p>'; setTimeout(() => nz && nzPontozas(), 800); return; }
+  if (e.hiba) { el.innerHTML = `<p class="hiba">${esc(e.hiba)}</p>`; return; }
+  el.innerHTML = `<div class="nz-osszeg">${pontSzoveg(e)}</div>` + (e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '') + tablaRajz(e);
+}
+
+function nzFul(ful) {
+  nz.ful = ful;
+  document.querySelectorAll('#nz-fulek button').forEach(g => g.classList.toggle('aktiv', g.dataset.f === ful));
+  document.getElementById('nz-kod').hidden = ful !== 'kod';
+  document.getElementById('nz-kinezet').hidden = ful !== 'kinezet';
+}
+
+async function nzFajl(i) {
+  const f = nz.fajlok[i];
+  if (!f) return;
+  nz.aktiv = i;
+  document.querySelectorAll('#nz-fajlok button').forEach(g => g.classList.toggle('aktiv', +g.dataset.i === i));
+  const cel = new URL(nz.mod === 'fajl' ? f.nev : f.ut, nz.alap).href;
+  document.getElementById('nz-uj').href = nz.mod === 'github' ? cel : cel;
+  const kod = document.getElementById('nz-kod');
+  const ifr = document.getElementById('nz-iframe');
+  const kepDoboz = document.getElementById('nz-kep');
+
+  if (KEP_RE.test(f.nev)) {
+    // Kép: maga a kép, a valódi mérete pixelben és KB-ban
+    nzFul('kinezet');
+    document.getElementById('nz-fulek').hidden = true;
+    ifr.hidden = true; kepDoboz.hidden = false;
+    kepDoboz.innerHTML = '<p class="megj">Betöltés…</p>';
+    const meret = await nz.forras.meret(nz.mod === 'fajl' ? f.nev : f.ut);
+    if (!meret) { kepDoboz.innerHTML = `<p class="hiba">${esc(nz.forras.hianyUzenet(f.ut))}</p>`; return; }
+    const img = new Image();
+    img.onload = () => {
+      kepDoboz.innerHTML = `<div class="nz-kepadat"><b>${esc(f.nev)}</b> · ${img.naturalWidth} × ${img.naturalHeight} pixel · ${Math.max(1, Math.round(meret / 1024))} KB` +
+        (img.naturalWidth > 1920 ? ' · <span class="nem">nagy felbontás</span>' : '') + '</div>';
+      kepDoboz.appendChild(img);
+    };
+    img.onerror = () => { kepDoboz.innerHTML = '<p class="hiba">A kép nem tölthető be.</p>'; };
+    img.alt = f.nev;
+    img.src = cel;
+    return;
+  }
+
+  document.getElementById('nz-fulek').hidden = false;
+  kepDoboz.hidden = true; ifr.hidden = false;
+  // Kód: a forrás szövegként, sorszámozva, színezve
+  kod.innerHTML = '<p class="megj">Betöltés…</p>';
+  const szoveg = await nz.forras.szoveg(nz.mod === 'fajl' ? f.nev : f.ut);
+  if (nz.aktiv !== i) return;
+  if (szoveg == null) {
+    kod.innerHTML = `<p class="hiba">${esc(nz.forras.hianyUzenet(f.ut))}</p>`;
+    ifr.src = 'about:blank';
+  } else {
+    const sorok = szoveg.replace(/\r\n?/g, '\n').split('\n').length;
+    kod.innerHTML = `<div class="nz-sorszam">${Array.from({ length: sorok }, (_, k) => k + 1).join('\n')}</div>` +
+      `<pre class="nz-forras">${/\.css$/i.test(f.nev) ? szinezCss(szoveg) : szinezHtml(szoveg)}</pre>`;
+    // Kinézet: CSS-nél nincs önálló kinézet – a tema.html-t mutatja
+    const latvany = /\.css$/i.test(f.nev) ? new URL(nz.mod === 'fajl' ? 'tema.html' : 'tema.html', nz.alap).href : cel;
+    if (ifr.dataset.cel !== latvany) { ifr.dataset.cel = latvany; ifr.src = latvany; }
+  }
+  nzFul(nz.ful);
+}
+
+// ── Egyszerű színezés: minden kiírt darab esc()-en megy át ──
+function szinezHtml(t) {
+  return t.split(/(<!--[\s\S]*?-->|<[^>]*>)/).map(d => {
+    if (!d) return '';
+    if (d.startsWith('<!--')) return `<span class="sz-komment">${esc(d)}</span>`;
+    if (!d.startsWith('<')) return esc(d);
+    const m = d.match(/^<(\/?[!\w-]*)([\s\S]*?)(\/?)>$/);
+    if (!m) return esc(d);
+    const attr = m[2].replace(/([^\s=]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"']+)?|([^\s]+)/g, (x, nev, eq, ert, magany) =>
+      magany ? esc(magany) : `<span class="sz-attr">${esc(nev)}</span>${eq ? esc(eq) : ''}${ert ? `<span class="sz-ertek">${esc(ert)}</span>` : ''}`);
+    // a szóközöket az attribútumok között meg kell őrizni: a csere csak a szavakat érinti
+    return `<span class="sz-tag">&lt;${esc(m[1])}</span>${attr}<span class="sz-tag">${esc(m[3])}&gt;</span>`;
+  }).join('');
+}
+function szinezCss(t) {
+  return t.split(/(\/\*[\s\S]*?\*\/|\{[^}]*\})/).map(d => {
+    if (!d) return '';
+    if (d.startsWith('/*')) return `<span class="sz-komment">${esc(d)}</span>`;
+    if (!d.startsWith('{')) return `<span class="sz-tag">${esc(d)}</span>`;
+    return esc('{') + d.slice(1, -1).split(/(\/\*[\s\S]*?\*\/)/).map(r => r.startsWith('/*')
+      ? `<span class="sz-komment">${esc(r)}</span>`
+      : r.replace(/([^:;{}\n]+)(:)([^;{}]*)/g, '\u0000$1\u0001$2\u0002$3\u0003')
+          .split(/(\u0000[^\u0001]*\u0001:\u0002[^\u0003]*\u0003)/).map(x => {
+            const k = x.match(/^\u0000([^\u0001]*)\u0001:\u0002([^\u0003]*)\u0003$/);
+            return k ? `<span class="sz-attr">${esc(k[1])}</span>:<span class="sz-ertek">${esc(k[2])}</span>` : esc(x);
+          }).join('')).join('') + esc('}');
+  }).join('');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && nz) nzBezar(); });
 
 if (!TOKEN) {
   app.innerHTML = '<div class="kozep"><h2>Ez az oldal oktatóknak szól.</h2><p style="margin-top:10px"><a href="../login.html">Bejelentkezés</a></p></div>';
