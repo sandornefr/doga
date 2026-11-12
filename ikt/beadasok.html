@@ -87,6 +87,14 @@ table.tbl th{background:#f0f4f8;}
 .nz-pont table.ell th:last-child,.nz-pont table.ell td:last-child{width:46px;padding:4px 2px;}
 .nz-pont table.ell td{overflow-wrap:anywhere;}
 .nz-osszeg{font-weight:700;margin-bottom:8px;}
+.vj-allapot{font-size:.8rem;border-radius:999px;padding:2px 9px;white-space:nowrap;}
+.vj-nincs{background:#f1f5f9;color:#64748b;} .vj-elkuldve{background:#e0e7ff;color:#3730a3;}
+.vj-olvasta{background:#dcfce7;color:#166534;} .vj-javitott{background:#fef3c7;color:#92400e;font-weight:600;}
+.vj-szerk{margin-top:14px;border-top:1px solid #e2e8f0;padding-top:10px;}
+.vj-szerk textarea{width:100%;margin-top:6px;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid #cbd2d9;border-radius:6px;resize:vertical;}
+.vj-sor{display:flex;gap:10px;align-items:center;margin-top:6px;}
+.vj-gomb{border:0;border-radius:6px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;background:#4f46e5;color:#fff;}
+.vj-gomb:disabled{opacity:.6;}
 </style>
 <link rel="stylesheet" href="ikt.css?v=1">
 </head>
@@ -234,6 +242,15 @@ async function mindetEllenoriz(gomb) {
   gomb.innerHTML = '<i class="fas fa-list-check"></i> Mindet ellenőrzöm';
 }
 
+// Visszajelzés állapota: [css-osztály, szöveg]. Az időbélyegek „ÉÉÉÉ-HH-NN óó:pp:mm” alakúak, szövegként is összevethetők.
+function vjAllapot(b) {
+  const v = b.visszajelzes;
+  if (!v) return ['vj-nincs', 'nincs visszajelzés'];
+  if (b.updatedAt > v.updatedAt) return ['vj-javitott', 'javított beadás érkezett'];
+  if (v.elolvasvaAt) return ['vj-olvasta', 'elolvasta'];
+  return ['vj-elkuldve', 'visszajelzés elküldve'];
+}
+
 const csoportNev = b => (b.osztaly || '–') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
 
 function listaRajz() {
@@ -246,6 +263,7 @@ function listaRajz() {
         <span class="nev">${esc(b.nev || b.email)}</span>
         <span class="oszt">${esc(csoportNev(b))}</span>
         <span class="tema">${esc(temaNev(b))}</span>
+        ${b.nincsBeadas ? '' : `<span class="vj-allapot ${vjAllapot(b)[0]}">${esc(vjAllapot(b)[1])}</span>`}
         ${temak[b.email] ? `<button class="ujra" title="A tanuló témájának törlése: a következő megnyitáskor új témát kap" onclick="event.stopPropagation(); ujrasorsol(${esc(JSON.stringify(b.email))})"><i class="fas fa-shuffle"></i> Új téma</button>` : ''}
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
@@ -580,7 +598,53 @@ function nzPontozas() {
   }
   if (e.fut) { el.innerHTML = '<p class="megj">Ellenőrzés…</p>'; setTimeout(() => nz && nzPontozas(), 800); return; }
   if (e.hiba) { el.innerHTML = `<p class="hiba">${esc(e.hiba)}</p>`; return; }
-  el.innerHTML = `<div class="nz-osszeg">${pontSzoveg(e)}</div>` + (e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '') + tablaRajz(e);
+  el.innerHTML = `<div class="nz-osszeg">${pontSzoveg(e)}</div>` + (e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '') + tablaRajz(e) +
+    `<div class="vj-szerk"><label for="vj-szoveg"><b>Visszajelzés a tanulónak</b></label>
+      <textarea id="vj-szoveg" rows="7" maxlength="4000"></textarea>
+      <div class="vj-sor"><button id="vj-kuld" class="vj-gomb"><i class="fas fa-paper-plane"></i> Elküldöm</button><span id="vj-allapot" class="megj"></span></div></div>`;
+  const v = nz.b.visszajelzes;
+  document.getElementById('vj-szoveg').value = v ? v.szoveg : vjJavaslat(e);
+  document.getElementById('vj-allapot').textContent = v ? 'Elküldve: ' + v.updatedAt + (v.elolvasvaAt ? ' · elolvasta: ' + v.elolvasvaAt : '') : '';
+  document.getElementById('vj-kuld').onclick = vjKuld;
+}
+
+// A hiányzó (piros) pontokból számozott, felszólító hibalista – a „kézi” pontok kimaradnak.
+const VJ_MONDAT = {
+  'A tema.html beadva': 'Hozd létre a tema.html fájlt a weboldal mappádban, és add be!',
+  'Alap szerkezet és lang="hu"': 'Hozd létre az alap HTML szerkezetet, és állítsd a nyelvet magyarra!',
+  'title: Weboldalam': 'A weboldal lapfülön megjelenő címe legyen: Weboldalam!',
+  'A css/style.css csatolva': 'Csatold a css mappában lévő style.css-t!',
+  'A menüben ott a Témám, minden oldalon, és működik': 'Készítsd el a navigációt! Ügyelj arra, hogy a többi oldaladról is elérhető legyen az új témaoldalad!',
+  'h1: a téma neve': 'Főcímként írd ki a kapott témád nevét!',
+  'Öt alcím (h2) jó sorrendben': 'Készíts öt alcímet ebben a sorrendben: Bemutatás, Érdekességek, Jellemzők, Adatok, Rangsor!',
+  'Bemutatás 2 mondat · Érdekességek 2 érdekesség': 'A Bemutatás alá írj egy legalább 2 mondatos bekezdést, az Érdekességek alá egy bekezdést legalább 2 érdekességgel!',
+  'Kép: img mappából, alt és title': 'Tedd be a képet az img mappából a Bemutatás bekezdése alá! Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!',
+  '„Tudj meg többet!” hivatkozás, új lapon': 'Az Érdekességek bekezdése alá készíts egy hivatkozást „Tudj meg többet!” szöveggel! A hivatkozás új lapon nyíljon meg!',
+  'Rendezetlen lista 3 jellemzővel': 'A Jellemzők alá készíts rendezetlen listát 3 jellemzővel!',
+  'Rendezett lista 3 „leg”-gel': 'A Rangsor alá írd a 3 „leg”-et rendezett listába, az elsővel kezdve!',
+  'Táblázat: fejléc + 3 sor, szegély a style.css-ből': 'Az Adatok alá készíts táblázatot egy fejléc sorral és 3 sor adattal, és másold be a szegély beállítását a css/style.css fájlba!',
+  'Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával': 'Add be az összes fájlodat (HTML-ek, style.css, képek), és figyelj, hogy a kapott témádról szóljon az oldal!',
+};
+function vjJavaslat(e) {
+  const hibak = e.sorok.filter(s => s.allapot === 'nem');
+  if (!hibak.length) return 'Szép munka, a kódod minden ellenőrzött pontja rendben van!';
+  return hibak.map((s, i) => `${i + 1}. ${VJ_MONDAT[s.cim] || s.cim}` + (s.megj ? ` (${s.megj})` : '')).join('\n');
+}
+
+async function vjKuld() {
+  const b = nz.b, gomb = document.getElementById('vj-kuld'), all = document.getElementById('vj-allapot');
+  const szoveg = document.getElementById('vj-szoveg').value.trim();
+  if (!szoveg) { all.textContent = 'Írj be valamit.'; return; }
+  gomb.disabled = true; all.textContent = 'Küldés…';
+  try {
+    const r = await fetch(API + '/api/ikt/beadas/' + b.id + '/visszajelzes', { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
+    let d = null; try { d = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((d && d.error) || ('Hiba ' + r.status));
+    b.visszajelzes = d.visszajelzes;
+    all.textContent = 'Elküldve: ' + d.visszajelzes.updatedAt;
+    listaRajz();
+  } catch (e) { all.textContent = 'Nem sikerült: ' + e.message; }
+  finally { gomb.disabled = false; }
 }
 
 function nzFul(ful) {

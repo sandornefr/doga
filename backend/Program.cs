@@ -2514,6 +2514,7 @@ object IktBeadasValasz(IktBeadasInfo b) => new
     b.Id, b.Email, b.Nev, b.Osztaly, b.Csoport, b.Feladat, b.GithubUrl, b.CreatedAt, b.UpdatedAt,
     fajlok = b.Fajlok.Select(f => new { f.Fajlnev, f.Mime, f.Meret }),
     elonezet = $"/api/ikt/elonezet/{b.Id}/{IktElonezetToken(b.Id)}/",
+    visszajelzes = db.GetIktVisszajelzes(b.Id),
 };
 
 IResult IktFajlKuldes(HttpContext ctx, (string Mime, byte[] Tartalom) f)
@@ -2575,7 +2576,24 @@ app.MapGet("/api/ikt/beadas/sajat", (HttpContext ctx, string? feladat, Database 
     var f = (feladat ?? "").Trim().ToLowerInvariant();
     if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
     var b = db.GetIktBeadasSajat(be.Email, f);
-    return Results.Ok(new { beadas = b == null ? null : IktBeadasValasz(b) });
+    if (b == null) return Results.Ok(new { beadas = (object?)null });
+    var valasz = IktBeadasValasz(b);
+    // A tanuló megnyitotta a saját beadását: a visszajelzés innentől „elolvasta”.
+    if (db.GetIktVisszajelzes(b.Id) != null) db.MarkIktVisszajelzesOlvasva(b.Id);
+    return Results.Ok(new { beadas = valasz });
+});
+
+// Tanári visszajelzés egy beadásra (oktató) — PUT /api/ikt/beadas/{id}/visszajelzes  { szoveg }
+app.MapPut("/api/ikt/beadas/{id:int}/visszajelzes", (int id, HttpContext ctx, IktVisszajelzesKeres req, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid || !IsPrivilegedRole(role)) return Results.Unauthorized();
+    if (db.GetIktBeadas(id) == null) return Results.NotFound();
+    var szoveg = (req.Szoveg ?? "").Replace("\r\n", "\n").Trim();
+    if (szoveg.Length == 0) return Results.BadRequest(new { error = "Üres visszajelzés." });
+    if (szoveg.Length > 4000) return Results.BadRequest(new { error = "A visszajelzés legfeljebb 4000 karakter lehet." });
+    db.SaveIktVisszajelzes(id, szoveg, identity);
+    return Results.Ok(new { visszajelzes = db.GetIktVisszajelzes(id) });
 });
 
 // Oktatói lista — GET /api/ikt/beadasok?feladat=temaoldal
@@ -2648,6 +2666,7 @@ app.Run($"http://0.0.0.0:{port}");
 namespace KandoTest
 {
     public record ChangePasswordRequest(string Username, string OldPassword, string NewPassword);
+    public record IktVisszajelzesKeres(string? Szoveg);
     public record DeleteAccountRequest(string Email, string Jelszo);
     public record ResetPasswordRequest(string Email, string NewPassword);
     public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);

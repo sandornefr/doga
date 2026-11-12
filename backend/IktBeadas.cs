@@ -9,6 +9,7 @@ public record IktBeadasInfo(
     int Id, string Email, string? Nev, string? Osztaly, string? Csoport, string Feladat,
     string? GithubUrl, string CreatedAt, string UpdatedAt, List<IktFajlInfo> Fajlok);
 public record IktFajlUj(string Fajlnev, string Mime, byte[] Tartalom);
+public record IktVisszajelzes(string Szoveg, string? Oktato, string CreatedAt, string UpdatedAt, string? ElolvasvaAt);
 public record IktTemaKiosztas(int Id, string Email, string? Nev, string? Osztaly, string? Csoport, string Feladat, int TemaSorszam, string CreatedAt);
 
 public partial class Database
@@ -39,6 +40,15 @@ public partial class Database
                 UNIQUE(beadas_id, fajlnev)
             );
             CREATE INDEX IF NOT EXISTS ix_ikt_beadas_fajl_beadas ON ikt_beadas_fajl(beadas_id);
+            CREATE TABLE IF NOT EXISTS ikt_visszajelzes (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                beadas_id    INTEGER NOT NULL UNIQUE,
+                szoveg       TEXT NOT NULL,
+                oktato       TEXT,
+                created_at   TEXT DEFAULT (datetime('now','localtime')),
+                updated_at   TEXT DEFAULT (datetime('now','localtime')),
+                elolvasva_at TEXT
+            );
             CREATE TABLE IF NOT EXISTS ikt_tema_kiosztas (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
                 email        TEXT NOT NULL,
@@ -252,5 +262,42 @@ public partial class Database
                 r.IsDBNull(4) ? null : r.GetString(4), r.GetString(5), r.GetInt32(6),
                 r.IsDBNull(7) ? "" : r.GetString(7)));
         return lista;
+    }
+
+    // ── Tanári visszajelzés (beadásonként egy; újraküldéskor felülíródik, és újra olvasatlan) ──
+    public void SaveIktVisszajelzes(int beadasId, string szoveg, string? oktato)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO ikt_visszajelzes (beadas_id, szoveg, oktato) VALUES ($b,$s,$o)
+            ON CONFLICT(beadas_id) DO UPDATE SET szoveg = $s, oktato = $o,
+                updated_at = datetime('now','localtime'), elolvasva_at = NULL";
+        cmd.Parameters.AddWithValue("$b", beadasId);
+        cmd.Parameters.AddWithValue("$s", szoveg);
+        cmd.Parameters.AddWithValue("$o", (object?)oktato ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public IktVisszajelzes? GetIktVisszajelzes(int beadasId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT szoveg, oktato, created_at, updated_at, elolvasva_at FROM ikt_visszajelzes WHERE beadas_id = $b";
+        cmd.Parameters.AddWithValue("$b", beadasId);
+        using var r = cmd.ExecuteReader();
+        if (!r.Read()) return null;
+        return new IktVisszajelzes(r.GetString(0), r.IsDBNull(1) ? null : r.GetString(1),
+            r.IsDBNull(2) ? "" : r.GetString(2), r.IsDBNull(3) ? "" : r.GetString(3), r.IsDBNull(4) ? null : r.GetString(4));
+    }
+
+    // A tanuló megnyitotta: az első olvasás ideje marad (újraküldésig).
+    public void MarkIktVisszajelzesOlvasva(int beadasId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE ikt_visszajelzes SET elolvasva_at = datetime('now','localtime') WHERE beadas_id = $b AND elolvasva_at IS NULL";
+        cmd.Parameters.AddWithValue("$b", beadasId);
+        cmd.ExecuteNonQuery();
     }
 }

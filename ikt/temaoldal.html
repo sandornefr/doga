@@ -59,6 +59,8 @@ iframe.minta{width:100%;height:200px;border:1px solid #cbd2d9;border-radius:8px;
   body{background:#fff;}
   .card{border:0;padding:0;}
 }
+.vj-doboz{margin-top:14px;border:1px solid #f0d36b;background:#fff8db;border-radius:8px;padding:10px 14px;}
+.vj-szoveg{margin:6px 0;line-height:1.5;}
 </style>
 <link rel="stylesheet" href="ikt.css?v=1">
 </head>
@@ -353,7 +355,10 @@ function sajatRajz(b) {
   }).join('');
   el.innerHTML = `<p>Utoljára beadva: <b>${esc(b.updatedAt)}</b></p>` +
     (b.githubUrl ? `<p>GitHub: <a href="${esc(b.githubUrl)}" target="_blank" rel="noopener">${esc(b.githubUrl)}</a></p>` : '') +
-    (fajlok ? `<ul class="fajllista">${fajlok}</ul><p class="megj">A HTML fájl nevére kattintva megnézheted, hogyan látszik.</p>` : '');
+    (fajlok ? `<ul class="fajllista">${fajlok}</ul><p class="megj">A HTML fájl nevére kattintva megnézheted, hogyan látszik.</p>` : '') +
+    (b.visszajelzes ? `<div class="vj-doboz"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(b.visszajelzes.updatedAt)})</span>` +
+      `<div class="vj-szoveg">${esc(b.visszajelzes.szoveg).replace(/\n/g, '<br>')}</div>` +
+      `<p class="megj">Javítsd ki, és add be újra a fenti Beadás részben!</p></div>` : '');
 }
 
 // ── Indítás (a deklarációk után) ──
