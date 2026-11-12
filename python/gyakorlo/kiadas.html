@@ -48,6 +48,21 @@ main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; display: flex
 .elem .datum { margin-left: auto; font-size: .75rem; color: var(--muted); white-space: nowrap; }
 .uzenet { padding: 12px 14px; border-radius: 10px; border: 1px dashed var(--border); color: var(--muted); }
 .hiba { border-color: #f85149; color: #ffa198; }
+.fulek { display: flex; gap: 8px; border-bottom: 1px solid var(--border); }
+.ful { font: inherit; font-size: .95rem; padding: 8px 14px; border: none; border-bottom: 3px solid transparent; background: none; color: var(--muted); cursor: pointer; }
+.ful.aktiv { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.h-fej { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; margin-bottom: 8px; }
+.h-tabla { width: 100%; border-collapse: collapse; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.h-tabla th { text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.h-tabla td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: .9rem; }
+.h-tabla tr:last-child td { border-bottom: none; }
+.h-tabla .szam { text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ma-van { color: var(--accent); font-weight: 700; }
+.negyzetek { display: flex; flex-wrap: wrap; gap: 3px; }
+.nz { width: 14px; height: 14px; border-radius: 3px; background: var(--bg3); border: 1px solid var(--border); }
+.nz.kesz { background: var(--accent); border-color: var(--accent); }
+.nz.probal { background: var(--yellow); border-color: var(--yellow); }
+.jelmagy { display: inline-flex; align-items: center; gap: 4px; }
 .megerosit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 10px; border-radius: 8px; background: rgba(248,81,73,.1); border: 1px solid #f85149; margin: 6px 0; font-size: .9rem; }
 </style>
 </head>
@@ -61,7 +76,12 @@ main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 40px; display: flex
 <main>
   <p class="magyar">Válaszd ki a csoportot, és pipáld ki, amit az órán megoldottatok. A csoport tanulói otthon csak a kipipált feladatokat látják (Python → Gyakorló feladatok). Minden pipa azonnal mentődik. A <i class="fas fa-eye"></i> jellel új lapon megnyitod a feladatot a megoldással.</p>
   <div class="csoportok" id="csoportok"><span class="magyar">Csoportok betöltése…</span></div>
+  <div class="fulek">
+    <button class="ful aktiv" id="ful-kiadas" onclick="fulValt('kiadas')"><i class="fas fa-square-check"></i> Kiadás</button>
+    <button class="ful" id="ful-haladas" onclick="fulValt('haladas')"><i class="fas fa-users"></i> Ki mit csinált?</button>
+  </div>
   <div id="temak"></div>
+  <div id="haladas" hidden></div>
 </main>
 
 <script src="feladatok/alapok.js?v=4"></script>
@@ -79,7 +99,7 @@ const NAP = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek'
 const huDatum = s => { const d = new Date(s + 'T12:00:00'); return `${d.getMonth() + 1}. ${d.getDate()}. (${NAP[d.getDay()]})`; };
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const csoportNev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}` : c === 'info' ? `${e}.${o} informatika` : `${e}.${o} ${c}. cs.`; };
-const st = { csoportok: [], csoport: null, feloldva: new Map(), nyitott: new Set(), zarKerdes: null };
+const st = { csoportok: [], csoport: null, feloldva: new Map(), nyitott: new Set(), zarKerdes: null, ful: 'kiadas', tanulok: null, hIdozito: null };
 
 async function kerd(url, opt = {}) {
   const r = await fetch(API + url, { ...opt, headers: { ...(opt.headers || {}), Authorization: 'Bearer ' + TOKEN } });
@@ -114,6 +134,7 @@ async function valaszt(k) {
   try { localStorage.setItem('gyakorlo_kiadas_csoport', k); } catch {}
   rajzolCsoportok();
   await betolt();
+  if (st.ful === 'haladas') haladasBetolt();
 }
 
 async function betolt() {
@@ -172,6 +193,79 @@ function tema(id, be, megerositve) {
   st.zarKerdes = null;
   const ids = t.feladatok.map(f => f.id).filter(fid => be ? !st.feloldva.has(fid) : st.feloldva.has(fid));
   if (ids.length) ment(ids, be); else rajzolTemak();
+}
+
+// ── Ki mit csinált? A kiadott feladatoknál tanulónként: kész (zöld), próbálkozott (sárga), még nem (szürke).
+// Adat: /api/haladas (tanulók névsora) + /api/oktato/megoldasok/<email> (minden Ellenőrzés gombnyomás ide kerül).
+function fulValt(f) {
+  st.ful = f;
+  document.getElementById('ful-kiadas').classList.toggle('aktiv', f === 'kiadas');
+  document.getElementById('ful-haladas').classList.toggle('aktiv', f === 'haladas');
+  document.getElementById('temak').hidden = f !== 'kiadas';
+  document.getElementById('haladas').hidden = f !== 'haladas';
+  clearInterval(st.hIdozito); st.hIdozito = null;
+  if (f === 'haladas') {
+    haladasBetolt();
+    st.hIdozito = setInterval(() => { if (!document.hidden) haladasBetolt(true); }, 60000);   // óra közben percenként frissül
+  }
+}
+
+function csoportTanuloi(k) {
+  const [e, o, c] = k.split('.');
+  return (st.tanulok || []).filter(t => String(t.evfolyam || '') === e && String(t.osztaly || '').toUpperCase() === o.toUpperCase() && (!c || String(t.csoport || '') === c))
+    .sort((a, b) => (a.nev || '').localeCompare(b.nev || '', 'hu'));
+}
+
+async function haladasBetolt(csendes) {
+  const el = document.getElementById('haladas'), k = st.csoport;
+  if (!csendes) el.innerHTML = '<div class="magyar">Betöltés…</div>';
+  try {
+    if (!st.tanulok) st.tanulok = await kerd('/api/haladas');
+    const tanulok = csoportTanuloi(k);
+    const adatok = new Map();
+    for (let i = 0; i < tanulok.length; i += 6) {
+      await Promise.all(tanulok.slice(i, i + 6).map(async t => {
+        try { const d = await kerd(`/api/oktato/megoldasok/${encodeURIComponent(t.email)}`); adatok.set(t.email, d.megoldasok || []); }
+        catch { adatok.set(t.email, null); }
+      }));
+    }
+    if (k !== st.csoport || st.ful !== 'haladas') return;
+    rajzolHaladas(tanulok, adatok);
+  } catch {
+    el.innerHTML = '<div class="uzenet hiba">Az adatok betöltése nem sikerült. Próbáld újra a Frissítés gombbal!</div>';
+  }
+}
+
+function rajzolHaladas(tanulok, adatok) {
+  const el = document.getElementById('haladas');
+  const kiadott = [];
+  for (const t of TEMAK) for (const f of t.feladatok) if (st.feloldva.has(f.id)) kiadott.push({ t, f });
+  const ma = iso(new Date()), most = new Date();
+  const fej = `<div class="h-fej"><span>Frissítve: ${String(most.getHours()).padStart(2, '0')}:${String(most.getMinutes()).padStart(2, '0')} (percenként magától is)</span>
+    <button class="gomb" onclick="haladasBetolt()"><i class="fas fa-rotate"></i> Frissítés</button>
+    <span class="jelmagy"><span class="nz kesz"></span> kész</span><span class="jelmagy"><span class="nz probal"></span> próbálkozott</span><span class="jelmagy"><span class="nz"></span> még nem</span></div>`;
+  if (!tanulok.length) { el.innerHTML = fej + '<div class="uzenet">Ehhez a csoporthoz nem találtam tanulót.</div>'; return; }
+  if (!kiadott.length) { el.innerHTML = fej + '<div class="uzenet">Ennek a csoportnak még nincs kiadott feladata. A Kiadás fülön tudsz kiadni.</div>'; return; }
+  const sorok = tanulok.map(t => {
+    const m = adatok.get(t.email);
+    if (m === null) return `<tr><td>${esc(t.nev || t.email)}</td><td colspan="4" class="magyar">nem sikerült betölteni</td></tr>`;
+    const szerint = new Map(m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
+    let kesz = 0, maKesz = 0, maProba = 0;
+    const nz = kiadott.map(({ t: tm, f }) => {
+      const x = szerint.get(f.id);
+      const jo = x && x.maxPont > 0 && x.pont >= x.maxPont;
+      const maiE = x && String(x.frissitve || '').slice(0, 10) === ma;
+      if (jo) kesz++;
+      if (jo && maiE) maKesz++;
+      if (maiE) maProba++;
+      const allapot = !x ? 'még nem próbálta' : jo ? `kész (${x.probalkozas} ellenőrzés)` : `próbálkozott (${x.probalkozas} ellenőrzés)`;
+      return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}" title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${allapot}"></span>`;
+    }).join('');
+    return `<tr><td>${esc(t.nev || t.email)}</td><td class="szam"><b>${kesz}</b> / ${kiadott.length}</td>
+      <td class="szam">${maKesz ? `<span class="ma-van">${maKesz}</span>` : '<span class="magyar">–</span>'}</td>
+      <td class="szam">${maProba ? maProba : '<span class="magyar">–</span>'}</td><td><div class="negyzetek">${nz}</div></td></tr>`;
+  }).join('');
+  el.innerHTML = fej + `<table class="h-tabla"><thead><tr><th>Tanuló</th><th class="szam">Kész</th><th class="szam">Ma kész</th><th class="szam">Ma dolgozott rajta</th><th>Kiadott feladatok</th></tr></thead><tbody>${sorok}</tbody></table>`;
 }
 
 indul();
