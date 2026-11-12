@@ -6,11 +6,11 @@ def f(cim, kell, csop, leiras, pelda, tipp, megoldas, tesztek):
     F.append(dict(cim=cim, kell=kell, csop=csop, leiras=leiras.strip(), pelda=pelda.strip('\n'),
                   tipp=tipp.strip(), megoldas=megoldas.strip('\n'), tesztek=tesztek))
 
-A = 'for – ismétlés range()-dzsel'
-B = 'for – összegzés, számlálás, legnagyobb'
-C = 'for – szöveg betűnként'
-D = 'while – amíg igaz a feltétel'
-E = 'while – vegyes, haladó'
+A = 'Ismétlés range()-dzsel'
+B = 'Összegzés, számlálás, legnagyobb'
+C = 'Szöveg betűnként'
+D = 'Amíg igaz a feltétel'
+E = 'Vegyes, haladó'
 
 # ═════════════════ A: for – ismétlés ═════════════════
 
@@ -1136,4 +1136,9 @@ print(f"Kettesben: {eredmeny}")
 """, [(['13'], ['Kettesben: 1101']), (['255'], ['Kettesben: 11111111']), (['8'], ['Kettesben: 1000'])])
 
 
-TEMAK = [dict(id='ciklus', cim='Ciklusok: for és while', leiras='Ismétlés, összegzés, számlálás, szöveg betűnként – def nélkül.', F=F)]
+TEMAK = [
+    dict(id='for', cim='for ciklus', leiras='Ismétlés range()-dzsel, összegzés, számlálás, szöveg betűnként – def nélkül.',
+         F=[x for x in F if x['kell'] == 'for']),
+    dict(id='while', cim='while ciklus', leiras='Ismétlés, amíg igaz a feltétel: bekérés, ellenőrzés, gyűjtés – def nélkül.',
+         F=[x for x in F if x['kell'] == 'while']),
+]
