@@ -274,6 +274,7 @@ body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-seri
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script src="python/python-kiegeszites.js?v=1"></script>
 <script>
 const API       = 'https://agazati.up.railway.app';
 const DUEL_MINS = 10;
@@ -303,7 +304,7 @@ const authH = { 'Authorization': `Bearer ${_duelToken}` };
 
 // ── Monaco ────────────────────────────────────────────────────────────────────
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
-require(['vs/editor/editor.main'], () => {
+require(['vs/editor/editor.main'], () => { if (window.PyKieg) PyKieg.monaco(monaco);
 
     // F-string tokenizer – Monaco alapból nem kezeli helyesen
     monaco.languages.setMonarchTokensProvider('python', {

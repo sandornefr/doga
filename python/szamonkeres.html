@@ -6,6 +6,7 @@
   <title>Számonkérés-kezelő – Kandó</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+  <script src="python-kiegeszites.js?v=1"></script>
   <script src="szamonkeres_feladatok.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -1759,7 +1760,7 @@ function closeJavitas() {
 
 function initJavMonaco() {
   if (typeof require === 'undefined') return;
-  require(['vs/editor/editor.main'], () => {
+  require(['vs/editor/editor.main'], () => { if (window.PyKieg) PyKieg.monaco(monaco);
     if (!javState) return;
     const container = document.getElementById('jav-monaco-editor');
     if (!container) return;

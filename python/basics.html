@@ -263,6 +263,7 @@
 <div class="confetti-flash" id="confetti">🎉</div>
 
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
+<script src="python-kiegeszites.js?v=1"></script>
 <script>
 'use strict';
 
@@ -1922,7 +1923,7 @@ buildPills();
 loadTask(Math.min(parseInt(kStore.getItem('py_basics_last')||'0'), TASK_COUNT-1));
 
 require.config({paths:{vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs'}});
-require(['vs/editor/editor.main'],function(){
+require(['vs/editor/editor.main'],function(){ if (window.PyKieg) PyKieg.monaco(monaco);
   st.editor=window.monaco.editor.create(document.getElementById('editor-python'),{
     value:'',language:'python',theme:'vs-dark',fontSize:15,
     minimap:{enabled:false},automaticLayout:true,wordWrap:'on',
