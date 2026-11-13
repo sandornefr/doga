@@ -1344,6 +1344,12 @@ document.getElementById('btn-filter-apply') && document.getElementById('btn-filt
   });
 });
 
+// Közvetlen megnyitás (pl.: a Korábbi óráimból): review.html?beadas=<id>
+(() => {
+  const id = Number(new URLSearchParams(location.search).get('beadas'));
+  if (id > 0) { document.getElementById('btn-submissions') && document.getElementById('btn-submissions').click(); openCodePanel(id); }
+})();
+
 document.getElementById('btn-filter-reset') && document.getElementById('btn-filter-reset').addEventListener('click', () => {
   document.getElementById('filter-subject').value = '';
   document.getElementById('filter-mode').value = '';

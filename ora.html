@@ -76,6 +76,23 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
 .ful:hover { border-color: var(--accent); color: var(--text); }
 .ful.aktiv { border-color: var(--accent); color: var(--accent); background: rgba(63,185,80,.12); font-weight: 700; }
 [hidden] { display: none !important; }
+.nz.kat { cursor: pointer; } .nz.kat:hover { outline: 2px solid var(--blue); }
+.kiadott a { font-size: .84rem; padding: 4px 10px; border-radius: 14px; border: 1px solid rgba(63,185,80,.5); color: var(--accent); background: rgba(63,185,80,.08); text-decoration: none; }
+.kiadott a:hover { background: rgba(63,185,80,.2); }
+.beerk { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; max-height: 340px; overflow-y: auto; }
+.be { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; font-size: .88rem; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+.be:hover { border-color: var(--blue); }
+.be .ik { width: 18px; text-align: center; }
+.be .pont { margin-left: auto; color: var(--muted); font-size: .8rem; white-space: nowrap; }
+.be .pont b.jo { color: var(--accent); } .be .pont b.rossz { color: var(--yellow); }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.modal .ablak { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; width: min(980px, 100%); max-height: 92vh; overflow: auto; padding: 16px 18px; }
+.modal .mfej { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.modal .mfej h2 { font-size: 1.05rem; }
+.modal .mfej button { margin-left: auto; }
+.modal pre { font-family: Consolas, monospace; font-size: .88rem; background: #020617; border: 1px solid var(--border); border-radius: 8px; padding: 10px; white-space: pre-wrap; max-height: 55vh; overflow: auto; }
+.modal iframe { width: 100%; height: 58vh; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+.modal textarea { width: 100%; font: inherit; font-size: .9rem; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-top: 8px; }
 .napfej { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 12px 0 6px; }
 .napfej:first-child { margin-top: 0; }
 .multora { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: .92rem; padding: 8px 10px; margin-bottom: 4px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
@@ -148,6 +165,7 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
   </section>
   <section class="panel" id="k-reszlet"><div class="uzenet">Válassz egy órát a listából.</div></section>
 </main>
+<div class="modal" id="modal" hidden onclick="if(event.target===this)modalZar()"><div class="ablak" id="modal-ablak"></div></div>
 
 <script src="python/gyakorlo/feladatok/alapok.js?v=4"></script>
 <script src="python/gyakorlo/feladatok/ciklus.js?v=5"></script>
@@ -394,7 +412,7 @@ function rajzolKovetes(tanulok, adat, online) {
     const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
       const x = gy.get(f.id), jo = x && keszE(x);
-      return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}" title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész' : `próbálkozik (${x.probalkozas}×)`}"></span>`;
+      return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}${x ? ' kat' : ''}" ${x ? `onclick="megoldasMutat(${x.id})"` : ''} title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész – kattints a kódért' : `próbálkozik (${x.probalkozas}×) – kattints a kódért`}"></span>`;
     }).join('');
     return `<div class="tk ${allapot}">
       <div class="nev"><span class="${bentE ? 'bent' : 'kint'}"></span>${esc(t.nev || t.email)}</div>
@@ -522,6 +540,7 @@ async function korabbiValaszt(i) {
     // a segítségkérések kóddal (a csoport aznapi kérései)
     const kerek = r.kerek.length ? await kerd(`/api/oktato/segitseg?csoport=${encodeURIComponent(r.kulcs)}&datum=${r.datum}`).catch(() => r.kerek) : [];
     const tanulok = csoportTanulok(r.kulcs);
+    if (!st.kDolgozat) st.kDolgozat = await kerd('/api/submissions').catch(() => []);
     const adat = new Map();
     for (let j = 0; j < tanulok.length; j += 5)
       await Promise.all(tanulok.slice(j, j + 5).map(async t => adat.set(t.email, await tanuloAdat(t.email))));
@@ -556,7 +575,7 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
     const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
       const x = gy.get(f.id), jo = x && keszE(x);
-      return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}" title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész' : 'próbálkozott'}"></span>`;
+      return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}${x ? ' kat' : ''}" ${x ? `onclick="megoldasMutat(${x.id})"` : ''} title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész – kattints a kódért' : 'próbálkozott – kattints a kódért'}"></span>`;
     }).join('');
     const kert = kerok.has(em);
     return `<div class="tk ${kert ? 'segit' : dolgozott ? 'halad' : 'nincs'}">
@@ -565,6 +584,27 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
       ${beadas ? `<div class="sor" style="color:#c4b5fd"><i class="fas fa-file-arrow-up"></i> Témaoldalt adott be (${esc(idoNorm(beadas.updatedAt || beadas.createdAt).slice(11))})</div>` : ''}
       ${kert ? '<div class="sor" style="color:#ffa198"><i class="fas fa-hand"></i> Segítséget kért</div>' : ''}
       ${kiadott.length ? `<div class="sor">${nz}</div>` : ''}</div>`;
+  }).join('');
+  // Beérkezett munkák aznap (időrendben, legfrissebb felül): gyakorló/tananyag megoldás, témaoldal, dolgozat
+  const emailek = new Set(tanulok.map(t => String(t.email).toLowerCase()));
+  const nevE = new Map(tanulok.map(t => [String(t.email).toLowerCase(), t.nev || t.email]));
+  const be = [];
+  tanulok.forEach(t => { const d = adat.get(t.email); if (!d) return;
+    d.m.filter(x => idoNorm(x.frissitve).slice(0, 10) === r.datum).forEach(x => be.push({ tipus: 'megoldas', ido: idoNorm(x.frissitve), nev: t.nev || t.email, x })); });
+  r.ikt.forEach(b => be.push({ tipus: 'ikt', ido: idoNorm(b.updatedAt || b.createdAt), nev: b.nev || b.email, b }));
+  (st.kDolgozat || []).filter(s => emailek.has(String(s.email).toLowerCase()) && idoNorm(s.submittedAt).slice(0, 10) === r.datum)
+    .forEach(s => be.push({ tipus: 'dolgozat', ido: idoNorm(s.submittedAt), nev: nevE.get(String(s.email).toLowerCase()) || s.name, s }));
+  be.sort((a, b) => b.ido.localeCompare(a.ido));
+  st.kBe = be;
+  const beHtml = be.map((e, j) => {
+    if (e.tipus === 'megoldas') { const x = e.x, jo = keszE(x);
+      return `<button class="be" onclick="beMutat(${j})"><span class="ik"><i class="fab fa-python" style="color:#58a6ff"></i></span><b>${esc(e.nev)}</b>
+        <span class="magyar">${esc(feladatCim(x))}</span><span class="pont">${e.ido.slice(11)} · <b class="${jo ? 'jo' : 'rossz'}">${x.pont}/${x.maxPont}</b>${x.probalkozas > 1 ? ` · ${x.probalkozas}. próba` : ''}</span></button>`; }
+    if (e.tipus === 'ikt') return `<button class="be" onclick="beMutat(${j})"><span class="ik"><i class="fas fa-file-arrow-up" style="color:#a78bfa"></i></span><b>${esc(e.nev)}</b>
+        <span class="magyar">Témaoldal</span><span class="pont">${e.ido.slice(11)}${e.b.visszajelzes ? ' · visszajelzés elküldve' : ''}</span></button>`;
+    const s = e.s;
+    return `<button class="be" onclick="beMutat(${j})"><span class="ik"><i class="fas fa-file-pen" style="color:#f59e0b"></i></span><b>${esc(e.nev)}</b>
+        <span class="magyar">Dolgozat (${esc(s.subject || '')}${s.mode === 'live' ? ', éles' : ', gyakorló'})</span><span class="pont">${e.ido.slice(11)} · <b>${s.totalScore}/${s.maxTotal}</b></span></button>`;
   }).join('');
   const ido = s => String(s || '').slice(11, 16);
   const kerHtml = kerek.map(x => `<div class="ker kesz">
@@ -577,11 +617,11 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
       <h2><i class="fas fa-clock-rotate-left" style="color:var(--blue)"></i> ${esc(csoportNev(r.kulcs))} · ${napSzoveg(r.datum)}${r.orak.length ? ' · ' + r.orak.map(o => `${oraSzoveg(o)} (${o.tol}–${o.ig})`).join(', ') : ''}</h2>
     </div>
     ${!kiadott.length && r.ikt.length ? '' : `<div class="resz-cim">Ezen a napon kiadott gyakorló feladatok</div>
-    ${kiadott.length ? `<div class="kiadott">${kiadott.map(({ t, f }) => `<span title="${esc(t.cim)}">${esc(t.cim.split(' ')[0])} ${f.sorszam}. ${esc(f.cim)}</span>`).join('')}</div>`
+    ${kiadott.length ? `<div class="kiadott">${kiadott.map(({ t, f }) => `<a href="${feladatLink(f.id)}" target="_blank" title="${esc(t.cim)} – megnyitom a helyes megoldással">${esc(t.cim.split(' ')[0])} ${f.sorszam}. ${esc(f.cim)}</a>`).join('')}</div>`
       : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem adtál ki új gyakorló feladatot ennek a csoportnak.</div>'}`}
-    ${r.ikt.length ? `<div class="resz-cim">Témaoldal-beadások ezen a napon: ${r.ikt.length}</div>
-      <div class="kiadott">${r.ikt.map(b => `<span style="border-color:rgba(167,139,250,.6);color:#c4b5fd;background:rgba(167,139,250,.08)">${esc(b.nev || b.email)} · ${esc(idoNorm(b.updatedAt || b.createdAt).slice(11))}</span>`).join('')}
-        <a class="gomb" href="ikt/beadasok.html" style="padding:4px 10px;font-size:.84rem"><i class="fas fa-inbox"></i> Megnyitom az IKT beadásoknál</a></div>` : ''}
+    <div class="resz-cim">Beérkezett munkák ezen a napon: ${be.length} <span style="text-transform:none;letter-spacing:0">(kattints rá a megnézéshez)</span></div>
+    ${be.length ? `<div class="beerk">${beHtml}</div>` : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem érkezett megoldás vagy beadás.</div>'}
+    ${r.ikt.length ? '<div style="margin:-6px 0 14px"><a class="gomb" href="ikt/beadasok.html" target="_blank" style="padding:4px 10px;font-size:.84rem"><i class="fas fa-inbox"></i> Témaoldalak ellenőrzése az IKT beadásoknál</a></div>' : ''}
     <div class="szamlalo" style="margin-bottom:10px">
       <span class="pill">Dolgozott ${mikor}: <b style="color:var(--accent)">${dolgozottDb}</b> / ${tanulok.length}</span>
       <span class="pill">Nem dolgozott: <b>${tanulok.length - dolgozottDb}</b></span>
@@ -592,6 +632,62 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
     <div class="magyar" style="margin-bottom:8px">Zöld: ${mikor} mentett megoldást vagy beadott. A négyzetek a kiadott feladatok mostani állapota:
       <span class="nz kesz"></span> kész <span class="nz probal"></span> próbálkozott <span class="nz"></span> még nem.</div>
     ${tanulok.length ? `<div class="kartyak">${kartyak}</div>` : '<div class="uzenet">Ehhez a csoporthoz nem találtam tanulót.</div>'}`;
+}
+
+// ── Megnézés: tanuló kódja, témaoldal előnézet + visszajelzés, dolgozat a Javításnál ──
+function feladatLink(id) { return `python/gyakorlo/index.html?nezet=oktato&tema=${encodeURIComponent(id.split('_')[0])}&feladat=${encodeURIComponent(id)}`; }
+function feladatCim(x) {
+  if (x.targy === 'python' && String(x.feladat).startsWith('gyak_')) {
+    const id = x.feladat.slice(5);
+    for (const t of TEMAK) { const f = t.feladatok.find(f => f.id === id); if (f) return `${t.cim} – ${f.sorszam}. ${f.cim}`; }
+  }
+  return `${x.targy}: ${x.feladat}`;
+}
+function modalNyit(html) { document.getElementById('modal-ablak').innerHTML = html; document.getElementById('modal').hidden = false; }
+function modalZar() { document.getElementById('modal').hidden = true; document.getElementById('modal-ablak').innerHTML = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modalZar(); });
+const mFej = cim => `<div class="mfej"><h2>${cim}</h2><button class="gomb" onclick="modalZar()"><i class="fas fa-xmark"></i> Bezár</button></div>`;
+
+async function megoldasMutat(id) {
+  modalNyit(mFej('Betöltés…'));
+  try {
+    const m = await kerd(`/api/oktato/megoldas/${id}`);
+    const gyak = m.targy === 'python' && String(m.feladat).startsWith('gyak_');
+    modalNyit(mFej(`${esc(m.nev || m.email)} · ${esc(feladatCim(m))}`) + `
+      <div class="szamlalo" style="margin-bottom:8px"><span class="pill">Pont: <b>${m.pont}/${m.maxPont}</b></span>
+        <span class="pill">Próbálkozás: <b>${m.probalkozas}</b></span><span class="pill">Mentve: <b>${esc(idoNorm(m.frissitve))}</b></span>
+        ${gyak ? `<a class="gomb" href="${feladatLink(m.feladat.slice(5))}" target="_blank"><i class="fas fa-eye"></i> A feladat a helyes megoldással</a>` : ''}</div>
+      <pre>${esc(m.kod || '(üres)')}</pre>`);
+  } catch { modalNyit(mFej('Hiba') + '<div class="uzenet hiba">A megoldás betöltése nem sikerült.</div>'); }
+}
+
+function iktMutat(b) {
+  const v = b.visszajelzes;
+  const elo = (b.fajlok || []).some(f => String(f.fajlnev).toLowerCase() === 'tema.html') ? API + b.elonezet + 'tema.html' : b.githubUrl || '';
+  modalNyit(mFej(`${esc(b.nev || b.email)} · Témaoldal`) + `
+    <div class="magyar" style="margin-bottom:6px">Beadva: ${esc(idoNorm(b.updatedAt || b.createdAt))}${b.githubUrl ? ` · <a href="${esc(b.githubUrl)}" target="_blank" style="color:var(--blue)">GitHub oldal</a>` : ''}
+      · <a href="ikt/beadasok.html" target="_blank" style="color:var(--blue)">IKT beadások (ellenőrzés)</a></div>
+    ${elo ? `<iframe src="${esc(elo)}" sandbox="allow-scripts" title="Témaoldal előnézet"></iframe>` : '<div class="uzenet">Ehhez a beadáshoz nincs megnyitható oldal.</div>'}
+    <div class="resz-cim">Visszajelzés a tanulónak</div>
+    <textarea id="vj-szoveg" rows="3" maxlength="2000" placeholder="pl.: Szép lett! A képnél hiányzik az alt.">${esc(v && v.szoveg || '')}</textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="gomb fo" onclick="iktVisszajelzes(${b.id})"><i class="fas fa-paper-plane"></i> Elküldöm</button>
+      <span class="magyar" id="vj-allapot">${v ? 'Elküldve: ' + esc(v.updatedAt) : ''}</span></div>`);
+}
+async function iktVisszajelzes(id) {
+  const szoveg = document.getElementById('vj-szoveg').value.trim(), all = document.getElementById('vj-allapot');
+  if (!szoveg) return;
+  try {
+    const d = await kerd(`/api/ikt/beadas/${id}/visszajelzes`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
+    all.textContent = 'Elküldve' + (d && d.visszajelzes ? ': ' + d.visszajelzes.updatedAt : '.');
+    const b = (st.kIkt || []).find(x => x.id === id); if (b) b.visszajelzes = (d && d.visszajelzes) || { szoveg };
+  } catch { all.textContent = 'A küldés nem sikerült. Próbáld újra!'; }
+}
+
+function beMutat(j) {
+  const e = st.kBe[j]; if (!e) return;
+  if (e.tipus === 'megoldas') return megoldasMutat(e.x.id);
+  if (e.tipus === 'ikt') return iktMutat(e.b);
+  window.open(`review.html?beadas=${e.s.id}`, '_blank');
 }
 
 indul();
