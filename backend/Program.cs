@@ -1971,6 +1971,15 @@ app.MapGet("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, Database db) =>
     return Results.Ok(db.GetGyakorloFeloldas(OktatoAzonosito(ctx), csoport));
 });
 
+// Az oktató összes kiadása egy naptól: GET /api/oktato/gyakorlo/feloldas/osszes?tol=ÉÉÉÉ-HH-NN
+app.MapGet("/api/oktato/gyakorlo/feloldas/osszes", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var tol = ctx.Request.Query["tol"].FirstOrDefault()?.Trim() ?? "";
+    if (!System.Text.RegularExpressions.Regex.IsMatch(tol, @"^\d{4}-\d{2}-\d{2}$")) return Results.BadRequest(new { error = "Hibás dátum." });
+    return Results.Ok(db.GetGyakorloFeloldasOsszes(OktatoAzonosito(ctx), tol));
+});
+
 app.MapPut("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, GyakorloFeloldasMentes req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
@@ -2039,6 +2048,15 @@ app.MapGet("/api/oktato/segitseg/nyitott", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     return Results.Ok(db.SegitsegNyitott(OktatoAzonosito(ctx), Database.AktualisTanev()));
+});
+
+// Oktató: minden segítségkérés egy naptól (Korábbi óráim áttekintő): GET /api/oktato/segitseg/idoszak?tol=ÉÉÉÉ-HH-NN
+app.MapGet("/api/oktato/segitseg/idoszak", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var tol = ctx.Request.Query["tol"].FirstOrDefault()?.Trim() ?? "";
+    if (!System.Text.RegularExpressions.Regex.IsMatch(tol, @"^\d{4}-\d{2}-\d{2}$")) return Results.BadRequest(new { error = "Hibás dátum." });
+    return Results.Ok(db.SegitsegIdoszak(tol));
 });
 
 // Oktató: válasz szövegben, vagy „Odamegyek”

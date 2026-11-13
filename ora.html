@@ -142,7 +142,7 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
       <div class="chipek" id="k-csoportok"><span class="magyar">Órarend betöltése…</span></div>
     </div>
     <div class="lepes">
-      <h3>Órák (az utóbbi 5 hét, az órarend szerint)</h3>
+      <h3>Mi történt? (az utóbbi 5 hét)</h3>
       <div class="orak-lista" id="k-orak"></div>
     </div>
   </section>
@@ -158,6 +158,7 @@ const U = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem
 let TANAR = {}; try { TANAR = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}'); } catch {}
 const TOKEN = (U.szerep === 'oktato' && U.token) || TANAR.token || localStorage.getItem('admin_token') || '';
 if (!TOKEN) location.replace('login.html');
+const ADMIN_TOKEN = localStorage.getItem('admin_token') || '';
 const PARAM = new URLSearchParams(location.search);
 const KORABBI = PARAM.get('korabbi') === '1';
 document.getElementById(KORABBI ? 'ful-korabbi' : 'ful-mai').classList.add('aktiv');
@@ -192,9 +193,9 @@ const st = { kszuro: '', kOrak: [], kAkt: -1, kFeloldas: new Map(), kAdat: new M
 // Az új leckék (python/kezdo-uj.html) még nem biztos, hogy élesben vannak: ha nincs, a gomb helyett szöveg jelenik meg
 fetch('python/kezdo-uj.html', { method: 'HEAD' }).then(r => { st.leckeVan = r.ok; rajzolReszlet(); }).catch(() => {});
 
-async function kerd(url, opt = {}) {
-  const r = await fetch(API + url, { ...opt, headers: { ...(opt.headers || {}), Authorization: 'Bearer ' + TOKEN } });
-  if (r.status === 401) { location.replace('login.html?expired=1'); throw new Error('401'); }
+async function kerd(url, opt = {}, token = TOKEN) {
+  const r = await fetch(API + url, { ...opt, headers: { ...(opt.headers || {}), Authorization: 'Bearer ' + token } });
+  if (r.status === 401) { if (token === TOKEN) location.replace('login.html?expired=1'); throw new Error('401'); }
   if (!r.ok) throw new Error('HTTP ' + r.status);
   return r.json();
 }
@@ -214,18 +215,25 @@ function mostaniOra() {
 
 async function indul() {
   const most = new Date(), tanev = most.getMonth() >= 7 ? most.getFullYear() : most.getFullYear() - 1;
-  try { st.orak = await kerd(`/api/csoportjaim/orarend?tanev=${tanev}`); }
-  catch { document.getElementById('csoportok').innerHTML = '<div class="uzenet hiba">Az órarend betöltése nem sikerült. Frissítsd az oldalt!</div>'; return; }
+  // Órarend: az oktatói belépéssel, ha ott üres, az admin belépéssel felvett órarend
+  st.orak = [];
+  for (const tk of [TOKEN, ADMIN_TOKEN].filter((t, i, a) => t && a.indexOf(t) === i)) {
+    try { st.orak = await kerd(`/api/csoportjaim/orarend?tanev=${tanev}`, {}, tk); } catch { st.orak = []; }
+    if (st.orak.length) break;
+  }
+  try { st.tanulok = await kerd('/api/haladas'); } catch { st.tanulok = null; }
   st.csoportok = [...new Set(st.orak.map(o => `${o.evfolyam}.${o.osztaly}.${o.csoport || ''}`))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+  st.orarendNelkul = !st.csoportok.length;
+  if (st.orarendNelkul) st.csoportok = tanuloCsoportok();   // órarend nélkül: minden csoport a tanulói listából
+  if (KORABBI) { korabbiIndul(); return; }
   if (!st.csoportok.length) {
-    document.getElementById('csoportok').innerHTML = '<div class="uzenet">Még nincs felvéve órarend. Az admin felület Csoportjaim fülén, a Beállítások gombbal veheted fel.</div>';
+    document.getElementById('csoportok').innerHTML = '<div class="uzenet hiba">A csoportok betöltése nem sikerült. Frissítsd az oldalt!</div>';
     return;
   }
-  if (KORABBI) { korabbiIndul(); return; }
   st.mostani = mostaniOra();
   document.getElementById('oraInfo').textContent = st.mostani
     ? `Most: ${csoportNev(st.mostani.kulcs)}, ${st.mostani.ora}. óra (${st.mostani.ido})${st.mostani.terem ? ', ' + st.mostani.terem : ''}`
-    : 'Most nincs órád az órarend szerint, válassz csoportot.';
+    : st.orarendNelkul ? 'Nincs felvett órarend: válaszd ki a csoportot.' : 'Most nincs órád az órarend szerint, válassz csoportot.';
   let utolso = null; try { utolso = localStorage.getItem('ora_mod_csoport'); } catch {}
   const kert = PARAM.get('csoport');   // a segítség-jelzőből érkezve: a kérő tanuló csoportja
   const kertKulcs = kert && (st.csoportok.includes(kert) ? kert : st.csoportok.find(c => c.endsWith('.') && kert.startsWith(c)));
@@ -323,6 +331,11 @@ async function valaszol(id, odamegy) {
 }
 
 // ── Élő követés ───────────────────────────────────────────────────────────────
+function tanuloCsoportok() {
+  const k = new Set();
+  (st.tanulok || []).forEach(t => { if (t.evfolyam && t.osztaly) k.add(`${t.evfolyam}.${String(t.osztaly).toUpperCase()}.${t.csoport || ''}`); });
+  return [...k].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+}
 function csoportTanulok(k) {
   const [e, o, c] = k.split('.');
   return st.tanulok.filter(t => String(t.evfolyam || '') === e && String(t.osztaly || '').toUpperCase() === o.toUpperCase() && (!c || String(t.csoport || '') === c))
@@ -396,57 +409,96 @@ function rajzolKovetes(tanulok, adat, online) {
   el.innerHTML = `<div class="kartyak">${kartyak}</div>`;
 }
 
-// ── Korábbi óráim: az órarendből visszafelé az utóbbi 5 hét órái ────────────────
-// Mit adtam ki: a gyakorló feladat első kiadásának napja. Ki dolgozott: a megoldások mentési ideje az óra alatt.
+// ── Korábbi óráim: napokra bontva, mi történt csoportonként ─────────────────────
+// Források: órarend (ha van), gyakorló kiadások (első kiadás napja), segítségkérések, témaoldal-beadások.
+// Ki dolgozott: a megoldások mentési ideje az óra alatt (órarend nélkül: azon a napon).
 const HONAP = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
-const napSzoveg = o => `${HONAP[+o.datum.slice(5, 7) - 1]} ${+o.datum.slice(8)}., ${NAPNEV[o.nap]}`;
 const NAPNEV = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+const napSzoveg = s => { const d = new Date(s + 'T12:00:00'); return `${HONAP[d.getMonth()]} ${d.getDate()}., ${NAPNEV[d.getDay()]}`; };
 const percIdo = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 const idoNorm = x => String(x || '').replace('T', ' ').slice(0, 16);
+const KORABBI_NAP = 35;
+
+// A tanuló csoportkulcsa ('9.A.2'); egész osztálynak szóló kiadásnál a '9.A.' kulcshoz is tartozik
+function tanuloKulcs(t) { return `${t.evfolyam}.${String(t.osztaly || '').toUpperCase()}.${t.csoport || ''}`; }
+function kulcsIlleszt(kulcsok, k) {   // a tanuló kulcsához tartozó meglévő sor (pontos vagy egész osztályos), különben új
+  if (kulcsok.has(k)) return k;
+  const osztaly = k.split('.').slice(0, 2).join('.') + '.';
+  return kulcsok.has(osztaly) ? osztaly : k;
+}
+
+async function korabbiIndul() {
+  document.getElementById('oraInfo').textContent = '';
+  const lista = document.getElementById('k-orak');
+  lista.innerHTML = '<div class="uzenet">Betöltés…</div>';
+  const most = new Date(), tol = iso(new Date(most.getFullYear(), most.getMonth(), most.getDate() - KORABBI_NAP));
+  const tokenek = [TOKEN, ADMIN_TOKEN].filter((t, i, a) => t && a.indexOf(t) === i);
+  const [felold, kerek, ikt] = await Promise.all([
+    Promise.all(tokenek.map(tk => kerd(`/api/oktato/gyakorlo/feloldas/osszes?tol=${tol}`, {}, tk).catch(() => []))).then(t => t.flat()),
+    kerd(`/api/oktato/segitseg/idoszak?tol=${tol}`).catch(() => []),
+    kerd('/api/ikt/beadasok?feladat=temaoldal').then(d => d.beadasok || []).catch(() => [])]);
+  const tanuloEmail = new Map((st.tanulok || []).map(t => [String(t.email).toLowerCase(), t]));
+  st.kFelold = felold; st.kKerek = kerek;
+  st.kIkt = ikt.map(b => ({ ...b, nap: idoNorm(b.updatedAt || b.createdAt).slice(0, 10), t: tanuloEmail.get(String(b.email).toLowerCase()) })).filter(b => b.t && b.nap >= tol);
+
+  // napok → csoportsorok
+  const napok = new Map();
+  const sor = (nap, k) => {
+    if (!napok.has(nap)) napok.set(nap, new Map());
+    const m = napok.get(nap), kk = kulcsIlleszt(m, k);
+    if (!m.has(kk)) m.set(kk, { datum: nap, kulcs: kk, orak: [], kiadott: [], kerek: [], ikt: [] });
+    return m.get(kk);
+  };
+  multOrak().forEach(o => sor(o.datum, o.kulcs).orak.push(o));
+  felold.forEach(x => { if (x.csoport && x.datum >= tol) { const r = sor(x.datum, x.csoport); if (!r.kiadott.includes(x.feladat)) r.kiadott.push(x.feladat); } });
+  kerek.filter(x => x.csoport).forEach(x => sor(String(x.letrehozva).slice(0, 10), x.csoport).kerek.push(x));
+  st.kIkt.forEach(b => sor(b.nap, tanuloKulcs(b.t)).ikt.push(b));
+  st.kOrak = [...napok.keys()].sort().reverse().flatMap(n => [...napok.get(n).values()].sort((a, b) =>
+    (a.orak[0] ? a.orak[0].elso : 99) - (b.orak[0] ? b.orak[0].elso : 99) || a.kulcs.localeCompare(b.kulcs, 'hu', { numeric: true })));
+  const kert = PARAM.get('csoport');
+  st.kszuro = kert || '';
+  korabbiRajzolLista();
+}
 
 function multOrak() {
   const most = new Date(), pm = most.getHours() * 60 + most.getMinutes(), lista = [];
-  for (let i = 0; i < 36; i++) {
+  if (st.orarendNelkul) return lista;
+  for (let i = 0; i <= KORABBI_NAP; i++) {
     const d = new Date(most.getFullYear(), most.getMonth(), most.getDate() - i);
     if (!tanitasiNap(d)) continue;
     const s = iso(d), felev = s <= TANEV.felevVege ? 1 : 2;
     const napi = st.orak.filter(o => Number(o.felev || 1) === felev && Number(o.nap) === d.getDay()).sort((a, b) => a.ora - b.ora);
-    const naplista = [];
     let elozo = null;
     for (const o of napi) {
       const cs = CSENGETES[o.ora]; if (!cs) continue;
       if (i === 0 && perc(cs[0]) > pm) continue;   // ma még el sem kezdődött
       const kulcs = `${o.evfolyam}.${o.osztaly}.${o.csoport || ''}`;
       if (elozo && elozo.kulcs === kulcs && elozo.utolso === o.ora - 1) { elozo.utolso = o.ora; elozo.ig = cs[1]; continue; }   // dupla óra
-      elozo = { datum: s, nap: d.getDay(), kulcs, elso: o.ora, utolso: o.ora, tol: cs[0], ig: cs[1], terem: o.terem };
-      naplista.push(elozo);
+      elozo = { datum: s, kulcs, elso: o.ora, utolso: o.ora, tol: cs[0], ig: cs[1] };
+      lista.push(elozo);
     }
-    lista.push(...naplista.reverse());
   }
   return lista;
 }
 
-function korabbiIndul() {
-  document.getElementById('oraInfo').textContent = '';
-  st.kOrak = multOrak();
-  const kert = PARAM.get('csoport');
-  st.kszuro = kert && st.csoportok.includes(kert) ? kert : '';
-  korabbiRajzolLista();
-}
-
-function korabbiSzuro(k) { st.kszuro = k; st.kAkt = -1; korabbiRajzolLista(); document.getElementById('k-reszlet').innerHTML = '<div class="uzenet">Válassz egy órát a listából.</div>'; }
+function korabbiSzuro(k) { st.kszuro = k; st.kAkt = -1; korabbiRajzolLista(); document.getElementById('k-reszlet').innerHTML = '<div class="uzenet">Válassz egy sort a listából.</div>'; }
+const oraSzoveg = o => o.elso === o.utolso ? `${o.elso}. óra` : `${o.elso}–${o.utolso}. óra`;
 
 function korabbiRajzolLista() {
-  document.getElementById('k-csoportok').innerHTML = [['', 'Mind'], ...st.csoportok.map(c => [c, csoportNev(c)])].map(([k, n]) =>
+  const kulcsok = [...new Set(st.kOrak.map(r => r.kulcs))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+  document.getElementById('k-csoportok').innerHTML = [['', 'Mind'], ...kulcsok.map(c => [c, csoportNev(c)])].map(([k, n]) =>
     `<button class="chip${st.kszuro === k ? ' aktiv' : ''}" onclick="korabbiSzuro('${esc(k)}')">${esc(n)}</button>`).join('');
   let nap = null, html = '';
-  st.kOrak.forEach((o, i) => {
-    if (st.kszuro && o.kulcs !== st.kszuro) return;
-    if (o.datum !== nap) { nap = o.datum; html += `<div class="napfej">${napSzoveg(o)}${o.datum === iso(new Date()) ? ' (ma)' : ''}</div>`; }
-    html += `<button class="multora${i === st.kAkt ? ' aktiv' : ''}" onclick="korabbiValaszt(${i})"><b>${esc(csoportNev(o.kulcs))}</b>
-      <span class="ido">${o.elso === o.utolso ? o.elso + '.' : o.elso + '–' + o.utolso + '.'} óra · ${o.tol}–${o.ig}</span></button>`;
+  st.kOrak.forEach((r, i) => {
+    if (st.kszuro && r.kulcs !== st.kszuro) return;
+    if (r.datum !== nap) { nap = r.datum; html += `<div class="napfej">${napSzoveg(r.datum)}${r.datum === iso(new Date()) ? ' (ma)' : ''}</div>`; }
+    const jel = [r.kiadott.length ? `<span title="kiadott gyakorló feladat"><i class="fas fa-lock-open" style="color:var(--accent)"></i> ${r.kiadott.length}</span>` : '',
+      r.kerek.length ? `<span title="segítségkérés"><i class="fas fa-hand" style="color:#ffa198"></i> ${r.kerek.length}</span>` : '',
+      r.ikt.length ? `<span title="témaoldal-beadás"><i class="fas fa-file-arrow-up" style="color:#a78bfa"></i> ${r.ikt.length}</span>` : ''].filter(Boolean).join(' ');
+    html += `<button class="multora${i === st.kAkt ? ' aktiv' : ''}" onclick="korabbiValaszt(${i})"><b>${esc(csoportNev(r.kulcs))}</b>
+      <span class="ido">${jel}${jel && r.orak.length ? ' · ' : ''}${r.orak.map(o => `${oraSzoveg(o)} ${o.tol}–${o.ig}`).join(', ')}</span></button>`;
   });
-  document.getElementById('k-orak').innerHTML = html || '<div class="uzenet">Nincs óra ebben az időszakban.</div>';
+  document.getElementById('k-orak').innerHTML = html || '<div class="uzenet">Az utóbbi 5 hétben nem találtam órát, kiadást, segítségkérést vagy beadást.</div>';
 }
 
 async function tanuloAdat(email) {
@@ -463,51 +515,54 @@ async function tanuloAdat(email) {
 
 async function korabbiValaszt(i) {
   st.kAkt = i; korabbiRajzolLista();
-  const o = st.kOrak[i], el = document.getElementById('k-reszlet');
+  const r = st.kOrak[i], el = document.getElementById('k-reszlet');
   el.innerHTML = '<div class="uzenet">Betöltés…</div>';
   try {
     if (!st.tanulok) st.tanulok = await kerd('/api/haladas');
-    if (!st.kFeloldas.has(o.kulcs)) st.kFeloldas.set(o.kulcs, await kerd(`/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(o.kulcs)}`).catch(() => []));
-    const kerek = await kerd(`/api/oktato/segitseg?csoport=${encodeURIComponent(o.kulcs)}&datum=${o.datum}`).catch(() => []);
-    const tanulok = csoportTanulok(o.kulcs);
+    // a segítségkérések kóddal (a csoport aznapi kérései)
+    const kerek = r.kerek.length ? await kerd(`/api/oktato/segitseg?csoport=${encodeURIComponent(r.kulcs)}&datum=${r.datum}`).catch(() => r.kerek) : [];
+    const tanulok = csoportTanulok(r.kulcs);
     const adat = new Map();
     for (let j = 0; j < tanulok.length; j += 5)
       await Promise.all(tanulok.slice(j, j + 5).map(async t => adat.set(t.email, await tanuloAdat(t.email))));
     if (st.kAkt !== i) return;
-    korabbiRajzolReszlet(o, tanulok, adat, kerek);
+    korabbiRajzolReszlet(r, tanulok, adat, kerek);
   } catch {
     el.innerHTML = '<div class="uzenet hiba">Az adatok betöltése nem sikerült. Próbáld újra!</div>';
   }
 }
 
-function korabbiRajzolReszlet(o, tanulok, adat, kerek) {
+function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
   const el = document.getElementById('k-reszlet');
-  // Az óra ideje: 10 perccel előtte és 15 perccel utána is beleszámít (korábban kezdők, csengetés után befejezők)
-  const tol = `${o.datum} ${percIdo(perc(o.tol) - 10)}`, ig = `${o.datum} ${percIdo(perc(o.ig) + 15)}`;
-  const benne = x => { const t = idoNorm(x); return t >= tol && t <= ig; };
+  // Az óra ideje 10 perccel előtte és 15 perccel utána is beleszámít; órarend nélkül az egész nap
+  const ablakok = r.orak.length ? r.orak.map(o => [`${r.datum} ${percIdo(perc(o.tol) - 10)}`, `${r.datum} ${percIdo(perc(o.ig) + 15)}`]) : [[`${r.datum} 00:00`, `${r.datum} 23:59`]];
+  const benne = x => { const t = idoNorm(x); return ablakok.some(([a, b]) => t >= a && t <= b); };
+  const mikor = r.orak.length ? 'az órán' : 'aznap';
   const feladatNev = new Map(); TEMAK.forEach(t => t.feladatok.forEach(f => feladatNev.set(f.id, { t, f })));
-  const kiadottIds = (st.kFeloldas.get(o.kulcs) || []).filter(x => x.datum === o.datum).map(x => x.feladat);
-  const kiadott = kiadottIds.map(id => feladatNev.get(id)).filter(Boolean);
+  const kiadott = r.kiadott.map(id => feladatNev.get(id)).filter(Boolean);
   const keszE = x => x.maxPont > 0 && x.pont >= x.maxPont;
   let dolgozottDb = 0;
-  const kerok = new Set(kerek.map(x => x.email.toLowerCase()));
+  const kerok = new Set(kerek.map(x => String(x.email).toLowerCase()));
+  const iktEmail = new Map(r.ikt.map(b => [String(b.email).toLowerCase(), b]));
   const kartyak = tanulok.map(t => {
-    const d = adat.get(t.email);
+    const d = adat.get(t.email), em = String(t.email).toLowerCase();
     if (!d) return `<div class="tk nincs"><div class="nev">${esc(t.nev || t.email)}</div><div class="sor">nem sikerült betölteni</div></div>`;
     const m = d.m.filter(x => benne(x.frissitve)), p = d.p.filter(x => benne(x.datum));
     const kesz = new Set([...p.map(x => x.targy + ':' + x.feladat), ...m.filter(keszE).map(x => x.targy + ':' + x.feladat)]).size;
     const probal = m.filter(x => !keszE(x)).length;
-    const dolgozott = kesz + probal > 0;
+    const beadas = iktEmail.get(em);
+    const dolgozott = kesz + probal > 0 || !!beadas;
     if (dolgozott) dolgozottDb++;
     const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
       const x = gy.get(f.id), jo = x && keszE(x);
       return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}" title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész' : 'próbálkozott'}"></span>`;
     }).join('');
-    const kert = kerok.has(String(t.email).toLowerCase());
+    const kert = kerok.has(em);
     return `<div class="tk ${kert ? 'segit' : dolgozott ? 'halad' : 'nincs'}">
       <div class="nev">${esc(t.nev || t.email)}</div>
-      <div class="sor">${dolgozott ? `Az órán kész: <b>${kesz}</b>${probal ? ` · próbálkozott: <b>${probal}</b>` : ''}` : 'Az órán nem mentett megoldást.'}</div>
+      <div class="sor">${kesz + probal ? `Kész: <b>${kesz}</b>${probal ? ` · próbálkozott: <b>${probal}</b>` : ''}` : beadas ? '' : `${mikor[0].toUpperCase() + mikor.slice(1)} nem mentett megoldást.`}</div>
+      ${beadas ? `<div class="sor" style="color:#c4b5fd"><i class="fas fa-file-arrow-up"></i> Témaoldalt adott be (${esc(idoNorm(beadas.updatedAt || beadas.createdAt).slice(11))})</div>` : ''}
       ${kert ? '<div class="sor" style="color:#ffa198"><i class="fas fa-hand"></i> Segítséget kért</div>' : ''}
       ${kiadott.length ? `<div class="sor">${nz}</div>` : ''}</div>`;
   }).join('');
@@ -519,19 +574,22 @@ function korabbiRajzolReszlet(o, tanulok, adat, kerek) {
     ${x.uzenet ? `<div class="uz">„${esc(x.uzenet)}”</div>` : ''}
     ${x.valasz ? `<div class="uz magyar">Válaszod: ${esc(x.valasz)}</div>` : ''}</div>`).join('');
   el.innerHTML = `<div class="fej">
-      <h2><i class="fas fa-clock-rotate-left" style="color:var(--blue)"></i> ${esc(csoportNev(o.kulcs))} · ${napSzoveg(o)} · ${o.elso === o.utolso ? o.elso + '.' : o.elso + '–' + o.utolso + '.'} óra (${o.tol}–${o.ig})</h2>
+      <h2><i class="fas fa-clock-rotate-left" style="color:var(--blue)"></i> ${esc(csoportNev(r.kulcs))} · ${napSzoveg(r.datum)}${r.orak.length ? ' · ' + r.orak.map(o => `${oraSzoveg(o)} (${o.tol}–${o.ig})`).join(', ') : ''}</h2>
     </div>
-    <div class="resz-cim">Ezen a napon kiadott gyakorló feladatok</div>
+    ${!kiadott.length && r.ikt.length ? '' : `<div class="resz-cim">Ezen a napon kiadott gyakorló feladatok</div>
     ${kiadott.length ? `<div class="kiadott">${kiadott.map(({ t, f }) => `<span title="${esc(t.cim)}">${esc(t.cim.split(' ')[0])} ${f.sorszam}. ${esc(f.cim)}</span>`).join('')}</div>`
-      : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem adtál ki új gyakorló feladatot ennek a csoportnak.</div>'}
+      : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem adtál ki új gyakorló feladatot ennek a csoportnak.</div>'}`}
+    ${r.ikt.length ? `<div class="resz-cim">Témaoldal-beadások ezen a napon: ${r.ikt.length}</div>
+      <div class="kiadott">${r.ikt.map(b => `<span style="border-color:rgba(167,139,250,.6);color:#c4b5fd;background:rgba(167,139,250,.08)">${esc(b.nev || b.email)} · ${esc(idoNorm(b.updatedAt || b.createdAt).slice(11))}</span>`).join('')}
+        <a class="gomb" href="ikt/beadasok.html" style="padding:4px 10px;font-size:.84rem"><i class="fas fa-inbox"></i> Megnyitom az IKT beadásoknál</a></div>` : ''}
     <div class="szamlalo" style="margin-bottom:10px">
-      <span class="pill">Dolgozott az órán: <b style="color:var(--accent)">${dolgozottDb}</b> / ${tanulok.length}</span>
-      <span class="pill">Nem mentett megoldást: <b>${tanulok.length - dolgozottDb}</b></span>
+      <span class="pill">Dolgozott ${mikor}: <b style="color:var(--accent)">${dolgozottDb}</b> / ${tanulok.length}</span>
+      <span class="pill">Nem dolgozott: <b>${tanulok.length - dolgozottDb}</b></span>
       ${kerek.length ? `<span class="pill" style="border-color:var(--red)">Segítséget kért: <b style="color:#ffa198">${kerok.size}</b></span>` : ''}
     </div>
     ${kerHtml ? `<div class="resz-cim">Segítségkérések</div><div class="kerek">${kerHtml}</div>` : ''}
     <div class="resz-cim">Tanulók</div>
-    <div class="magyar" style="margin-bottom:8px">Zöld: az óra alatt mentett megoldást. A négyzetek a kiadott feladatok mostani állapota:
+    <div class="magyar" style="margin-bottom:8px">Zöld: ${mikor} mentett megoldást vagy beadott. A négyzetek a kiadott feladatok mostani állapota:
       <span class="nz kesz"></span> kész <span class="nz probal"></span> próbálkozott <span class="nz"></span> még nem.</div>
     ${tanulok.length ? `<div class="kartyak">${kartyak}</div>` : '<div class="uzenet">Ehhez a csoporthoz nem találtam tanulót.</div>'}`;
 }

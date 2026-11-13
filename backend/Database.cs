@@ -2725,6 +2725,20 @@ public partial class Database
         return list;
     }
 
+    // Az oktató összes kiadása egy naptól (Korábbi óráim: mit adtam ki, kinek, mikor)
+    public List<GyakorloFeloldasSor> GetGyakorloFeloldasOsszes(string oktato, string tol)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT csoport, feladat, datum FROM gyakorlo_feloldas WHERE oktato = $o AND datum >= $t ORDER BY datum, id LIMIT 5000";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$t", tol);
+        var list = new List<GyakorloFeloldasSor>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(new GyakorloFeloldasSor(r.GetString(0), r.GetString(1), r.GetString(2)));
+        return list;
+    }
+
     // Feloldás (feloldva = true) vagy visszavonás; több feladat egyszerre
     public void SetGyakorloFeloldas(string oktato, string csoport, IEnumerable<string> feladatok, bool feloldva, string datum)
     {
@@ -2855,6 +2869,19 @@ public partial class Database
             ORDER BY s.id LIMIT 50";
         cmd.Parameters.AddWithValue("$o", oktato);
         cmd.Parameters.AddWithValue("$t", tanev);
+        var list = new List<SegitsegSor>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(SegitsegOlvas(r, false));
+        return list;
+    }
+
+    // Minden segítségkérés egy naptól (Korábbi óráim áttekintő, kód nélkül)
+    public List<SegitsegSor> SegitsegIdoszak(string tol)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT {SegitsegMezok} FROM segitseg WHERE date(created_at) >= $t ORDER BY id LIMIT 3000";
+        cmd.Parameters.AddWithValue("$t", tol);
         var list = new List<SegitsegSor>();
         using var r = cmd.ExecuteReader();
         while (r.Read()) list.Add(SegitsegOlvas(r, false));
