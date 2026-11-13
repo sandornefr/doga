@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Csoportjaim – órarend és óranapló</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .login-box h1 {
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 1.6rem;
+            text-shadow: 0 0 12px rgba(233,69,96,0.4);
+        }
+
+        .login-box .form-group { margin-bottom: 18px; }
+
+        .login-box label {
+            display: block;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .login-box input:focus { border-color: #e94560; }
+
+        .login-box .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-top: 6px;
+        }
+        .login-box .btn-login:hover {
+            background: #c73652;
+            box-shadow: 0 0 16px rgba(233,69,96,0.4);
+        }
+
+        .login-error {
+            background: rgba(233,69,96,0.15);
+            border: 1px solid #e94560;
+            color: #ff8fa3;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        #admin-content { display: none; }
+
+        .header {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #e94560;
+            margin-bottom: 6px;
+            font-size: 1.4rem;
+            text-shadow: 0 0 10px rgba(233,69,96,0.3);
+        }
+
+        .subtitle { color: #666; font-size: 0.85rem; }
+
+        .panel {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+        }
+
+        /* ── Csoportjaim ── */
+        .csj-fejlec { display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; margin-bottom:14px; }
+        .csj-most { font-size:1.05rem; color:#e0e0e0; }
+        .csj-most-cimke, .csj-kov-cimke { font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; margin-right:6px; letter-spacing:.5px; }
+        .csj-most-cimke { background:#16a34a; color:#fff; }
+        .csj-kov-cimke { background:#1e3a8a; color:#bfdbfe; }
+        .csj-halvany { color:#8892a6; font-size:0.85rem; }
+        .csj-csoportok { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+        .csj-chip { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:7px 12px; background:#0f1e3c; border:1.5px solid #1f3460; border-radius:10px; color:#c7d2fe; cursor:pointer; font-family:inherit; }
+        .csj-chip:hover { border-color:#536dfe; }
+        .csj-chip.aktualis { border-color:#16a34a; }
+        .csj-chip.kivalasztott { background:#1e3a8a; border-color:#818cf8; color:#fff; }
+        .csj-chip-nev { font-weight:700; font-size:0.9rem; }
+        .csj-chip-info { font-size:0.72rem; color:#94a3b8; }
+        .csj-chip.kivalasztott .csj-chip-info { color:#c7d2fe; }
+        .csj-csoport-fej h3 { color:#e0e0e0; font-size:1.25rem; margin-bottom:4px; }
+        .csj-szekcio { margin-top:20px; border-top:1px solid #0f3460; padding-top:14px; }
+        .csj-szekcio-fej { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+        .csj-szekcio-fej h4 { color:#a5b4fc; font-size:1rem; }
+        .csj-bejegyzes { background:#0f1e3c; border:1px solid #1f3460; border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+        .csj-bejegyzes.kiemelt { border-color:#536dfe; }
+        .csj-bejegyzes-fej { display:flex; justify-content:space-between; align-items:center; color:#c7d2fe; margin-bottom:6px; }
+        .csj-ikonok button { background:none; border:none; color:#64748b; cursor:pointer; padding:2px 6px; font-size:0.85rem; }
+        .csj-ikonok button:hover { color:#e0e0e0; }
+        .csj-folytatjuk { background:rgba(83,109,254,.15); border-left:3px solid #818cf8; padding:8px 10px; border-radius:6px; color:#e0e7ff; margin-bottom:8px; font-size:1rem; }
+        .csj-sor { display:flex; gap:10px; font-size:0.88rem; color:#d1d5db; margin-top:3px; }
+        .csj-sor > span { color:#8892a6; min-width:86px; }
+        .csj-megjegyzes div { color:#fcd34d; }
+        .csj-regiek summary { cursor:pointer; color:#94a3b8; font-size:0.88rem; margin:6px 0; }
+        .csj-urlap { background:#0f1e3c; border:1.5px solid #818cf8; border-radius:10px; padding:12px 14px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; }
+        .csj-urlap label { display:flex; flex-direction:column; gap:3px; color:#94a3b8; font-size:0.82rem; }
+        .csj-urlap input, .csj-urlap textarea, .csj-modal textarea, .csj-modal select { background:#0a1628; border:1px solid #2a3a5c; border-radius:8px; color:#e0e0e0; padding:7px 10px; font-family:inherit; font-size:0.92rem; resize:vertical; }
+        .csj-urlap input[type=date] { max-width:180px; }
+        .csj-urlap-gombok { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px; }
+        .csj-gomb-halvany { background:transparent; border:1px solid #2a3a5c; color:#94a3b8; border-radius:8px; padding:6px 12px; cursor:pointer; font-family:inherit; font-size:0.85rem; }
+        .csj-gomb-halvany:hover { color:#e0e0e0; border-color:#536dfe; }
+        .csj-hiba { color:#f87171; font-size:0.85rem; }
+        .csj-ures { color:#8892a6; font-style:italic; padding:10px 0; font-size:0.9rem; }
+        .csj-tag { display:inline-block; font-size:0.7rem; padding:1px 6px; margin:1px; border-radius:6px; background:#1e293b; color:#64748b; }
+        .csj-tag.kesz { background:rgba(34,197,94,.18); color:#4ade80; }
+        .csj-gy-tema { border:1px solid #1f2937; border-radius:10px; padding:8px 12px; margin-bottom:8px; }
+        .csj-gy-tema summary { cursor:pointer; padding:4px 0; }
+        .csj-gy-gombok { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+        .csj-gy-lista { columns:2 320px; column-gap:24px; }
+        .csj-gy-csop { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; margin:10px 0 4px; break-after:avoid; }
+        .csj-gy-elem { display:flex; align-items:center; gap:8px; padding:3px 0; cursor:pointer; break-inside:avoid; }
+        .csj-gy-elem.kiadva > span:first-of-type { color:#4ade80; }
+        .csj-gy-datum { margin-left:auto; font-size:0.75rem; }
+        .csj-zold { color:#4ade80; font-size:0.85rem; }
+        .csj-zold .fa-circle { font-size:0.55rem; vertical-align:middle; }
+        .csj-sarga { color:#fbbf24; } .csj-piros { color:#f87171; }
+        .csj-tabla td, .csj-tabla th { white-space:nowrap; }
+        .csj-modal-hatter { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+        .csj-modal { background:#16213e; border:1px solid #536dfe; border-radius:12px; padding:20px; width:min(720px,100%); max-height:90vh; overflow:auto; }
+        .csj-modal h3 { color:#e0e0e0; margin-bottom:10px; }
+
+        .panel h2 {
+            color: #e0e0e0;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .config-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            background: #0f3460;
+            border-radius: 8px;
+        }
+
+        .current-mode { font-size: 1rem; font-weight: 600; color: #ccc; }
+
+        .mode-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mode-practice { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; }
+        .mode-live     { background: rgba(46,213,115,0.2); color: #2ed573; border: 1px solid #2ed573; }
+
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+
+        .btn-practice { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid #ffc107; }
+        .btn-practice:hover { background: #ffc107; color: #1a1a2e; box-shadow: 0 0 12px rgba(255,193,7,0.4); }
+
+        .btn-live { background: rgba(46,213,115,0.15); color: #2ed573; border: 1px solid #2ed573; }
+        .btn-live:hover { background: #2ed573; color: #1a1a2e; box-shadow: 0 0 12px rgba(46,213,115,0.4); }
+
+        .btn-refresh { background: rgba(83,109,254,0.15); color: #536dfe; border: 1px solid #536dfe; }
+        .btn-refresh:hover { background: #536dfe; color: white; box-shadow: 0 0 12px rgba(83,109,254,0.4); }
+
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            table-layout: fixed;
+            min-width: 840px;
+        }
+
+        .submissions-table th,
+        .submissions-table td {
+            padding: 11px 12px;
+            text-align: left;
+            border-bottom: 1px solid #0f3460;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.88rem;
+        }
+
+        .submissions-table th {
+            background: #0f3460;
+            color: #e94560;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .submissions-table tr:hover td { background: rgba(15,52,96,0.5); }
+
+        /* Quiz eredmény sorok */
+        .quiz-student-row { cursor:pointer; }
+        .quiz-student-row:hover td { background: rgba(13,148,136,0.12) !important; }
+        .quiz-student-row td:first-child { white-space:nowrap; }
+        .quiz-expand-icon { display:inline-block; transition:transform .2s; margin-right:6px; color:#0d9488; font-size:0.8rem; }
+        .quiz-student-row.open .quiz-expand-icon { transform:rotate(90deg); }
+        .quiz-detail-row td { background:#0a1628 !important; font-size:0.82rem; padding:6px 12px !important; }
+        .quiz-detail-row:last-of-type td { border-bottom:2px solid #0d9488; }
+
+        /* Beadások tábla oszlopszélességek */
+        #submissions-table th:nth-child(1), #submissions-table td:nth-child(1) { width: 45px; }
+        #submissions-table th:nth-child(2), #submissions-table td:nth-child(2) { width: 130px; }
+        #submissions-table th:nth-child(4), #submissions-table td:nth-child(4) { width: 150px; }
+        #submissions-table th:nth-child(5), #submissions-table td:nth-child(5) { width: 60px; }
+        #submissions-table th:nth-child(6), #submissions-table td:nth-child(6) { width: 75px; }
+        #submissions-table th:nth-child(7), #submissions-table td:nth-child(7) { width: 100px; }
+        #submissions-table th:nth-child(8), #submissions-table td:nth-child(8) { width: 90px; }
+
+        /* Rangsor tábla – saját layout, nincs csonkítás */
+        #rangsor-table {
+            table-layout: fixed;
+            width: 100%;
+            min-width: 780px;
+        }
+        #rangsor-table th,
+        #rangsor-table td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #rangsor-table th:nth-child(1), #rangsor-table td:nth-child(1) { width: 44px; text-align: center; }
+        #rangsor-table th:nth-child(2), #rangsor-table td:nth-child(2) { width: 200px; }
+        #rangsor-table th:nth-child(3), #rangsor-table td:nth-child(3) { width: 70px; text-align: center; }
+        #rangsor-table th:nth-child(4), #rangsor-table td:nth-child(4) { width: 70px; text-align: center; }
+        #rangsor-table th:nth-child(5), #rangsor-table td:nth-child(5) { width: 80px; text-align: center; }
+        #rangsor-table th:nth-child(6), #rangsor-table td:nth-child(6) { width: 80px; text-align: center; }
+        #rangsor-table th:nth-child(7), #rangsor-table td:nth-child(7) { width: 56px; text-align: center; }
+        #rangsor-table th:nth-child(8), #rangsor-table td:nth-child(8) { width: 160px; }
+        #rangsor-table th:nth-child(9), #rangsor-table td:nth-child(9) { width: 84px; text-align: center; }
+        /* Szint tartalom soronként – engedélyezzük a törést */
+        #rangsor-table td:nth-child(8) { white-space: normal; }
+
+        .table-wrapper { overflow-x: auto; }
+
+        .loading { text-align: center; padding: 20px; color: #555; }
+
+        .submissions-panel { position: relative; }
+
+        #submissions-loading {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            padding: 5px 10px;
+            background: rgba(255,193,7,0.1);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            z-index: 5;
+        }
+
+        .error {
+            background: rgba(233,69,96,0.1);
+            border: 1px solid #e94560;
+            color: #ff8fa3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            color: #e0e0e0;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        .success {
+            background: rgba(46,213,115,0.1);
+            border: 1px solid #2ed573;
+            color: #7bed9f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .api-url-section {
+            margin-top: 16px;
+            padding: 14px;
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            border-radius: 8px;
+        }
+
+        .api-url-section input {
+            width: 100%;
+            padding: 9px 12px;
+            margin-top: 8px;
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            color: #888;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .api-url-section label { color: #aaa; font-size: 0.85rem; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: #0f3460;
+            border: 1px solid #1a4a8a;
+            color: #e0e0e0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 8px 0;
+            color: #e94560;
+            text-shadow: 0 0 10px rgba(233,69,96,0.4);
+        }
+
+        .stat-label { font-size: 0.82rem; color: #888; }
+
+        /* Tab navigáció */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 9px 18px;
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.18s, background 0.18s, border-color 0.18s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.07);
+            color: #e0e0e0;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab-btn.active {
+            background: #0f3460;
+            color: #e94560;
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .mode-vizsga { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+
+        /* Inline styles felülírás */
+        p[style*="color: #666"] { color: #666 !important; }
+        div[style*="background: #f0f0f0"] { background: #0f3460 !important; }
+        #grading-progress-bar { background: linear-gradient(90deg, #e94560, #536dfe) !important; }
+    </style>
+    <style>
+        /* Önálló Csoportjaim oldal (az Oktató menüből): ugyanaz, mint az admin Csoportjaim füle */
+        .csj-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .csj-topbar a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; border: 1px solid #30363d; color: #94a3b8; text-decoration: none; font-size: .88rem; }
+        .csj-topbar a:hover { border-color: #3fb950; color: #3fb950; }
+        .csj-topbar h1 { font-size: 1.25rem; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="csj-topbar">
+        <a href="../portal.html#oktato"><i class="fas fa-arrow-left"></i> Oktató</a>
+        <h1><i class="fas fa-people-group" style="color:#3fb950"></i> Csoportjaim</h1>
+        <a href="../ora.html" style="margin-left:auto"><i class="fas fa-person-chalkboard"></i> Órát kezdek</a>
+    </div>
+    <div class="panel" id="csoportjaim-panel" data-tab="csoportjaim">
+        <div class="csj-fejlec">
+            <div id="csj-most" class="csj-most">Betöltés...</div>
+            <button class="csj-gomb-halvany" onclick="csjBeallitas()" title="Órarend"><i class="fas fa-gear"></i> Beállítások</button>
+        </div>
+        <div id="csj-csoportok" class="csj-csoportok"></div>
+        <div id="csj-tartalom"></div>
+        <div id="csj-beallitas" class="csj-modal-hatter" style="display:none;"></div>
+    </div>
+</div>
+<script src="gyakorlo/feladatok/alapok.js?v=4"></script>
+<script src="gyakorlo/feladatok/ciklus.js?v=5"></script>
+<script>
+// Az admin.html globálisai, amelyeket a csoportjaim.js használ (authFetch, RAILWAY_URL, escHtml, jsArg).
+// Ugyanazzal a belépéssel dolgozik, mint az admin Csoportjaim füle, így ugyanazt az órarendet látod.
+const RAILWAY_URL = 'https://agazati.up.railway.app';
+const PORTAL_USER = (() => { try { return JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}'); } catch { return {}; } })();
+let authToken = localStorage.getItem('admin_token') || '';
+async function tokenSzerez() {
+    // nincs admin belépés: az oktatói belépésből kér egyet (mint az admin oldal automatikus belépése)
+    if (!PORTAL_USER.token || PORTAL_USER.szerep !== 'oktato') return false;
+    try {
+        const r = await fetch(`${RAILWAY_URL}/api/teachers/token-login`, { method: 'POST', headers: { Authorization: 'Bearer ' + PORTAL_USER.token } });
+        if (!r.ok) return false;
+        const d = await r.json();
+        authToken = d.token;
+        localStorage.setItem('admin_token', authToken);
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_username', d.username);
+        return true;
+    } catch { return false; }
+}
+async function authFetch(url, options = {}) {
+    const kuld = () => fetch(url, { ...options, headers: { ...(options.headers || {}), Authorization: `Bearer ${authToken}` } });
+    let res = await kuld();
+    if (res.status === 401 && await tokenSzerez()) res = await kuld();
+    if (res.status === 401) { location.replace('../login.html?expired=1'); throw new Error('Munkamenet lejárt'); }
+    return res;
+}
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function escHtml(s) { return escapeHtml(s); }
+function jsArg(value) { return escapeHtml(JSON.stringify(String(value ?? ''))); }
+</script>
+<script src="csoportjaim.js"></script>
+<script>
+(async () => {
+    if (!authToken && !(await tokenSzerez())) { location.replace('../login.html'); return; }
+    csjMegnyit();
+})();
+</script>
+<script src="../segitseg-jelzo.js?v=1"></script>
+</body>
+</html>
