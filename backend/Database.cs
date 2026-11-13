@@ -2826,18 +2826,38 @@ public partial class Database
         return list;
     }
 
-    // Egy csoport mai kérései; '9.A.' (csoport nélküli kulcs) az egész osztályt adja
-    public List<SegitsegSor> SegitsegCsoport(string csoport)
+    // Egy csoport kérései egy napon (alapból ma); '9.A.' (csoport nélküli kulcs) az egész osztályt adja
+    public List<SegitsegSor> SegitsegCsoport(string csoport, string? datum = null)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"SELECT {SegitsegMezok} FROM segitseg
-            WHERE (csoport = $c OR ($c LIKE '%.' AND csoport LIKE $c || '%')) AND date(created_at) = date('now','localtime')
+            WHERE (csoport = $c OR ($c LIKE '%.' AND csoport LIKE $c || '%')) AND date(created_at) = COALESCE($d, date('now','localtime'))
             ORDER BY CASE allapot WHEN 'nyitott' THEN 0 ELSE 1 END, id DESC LIMIT 200";
         cmd.Parameters.AddWithValue("$c", csoport);
+        cmd.Parameters.AddWithValue("$d", (object?)datum ?? DBNull.Value);
         var list = new List<SegitsegSor>();
         using var r = cmd.ExecuteReader();
         while (r.Read()) list.Add(SegitsegOlvas(r, true));
+        return list;
+    }
+
+    // Az oktató órarendjében szereplő csoportok mai, még válasz nélküli kérései (a jelzőhöz, kód nélkül)
+    public List<SegitsegSor> SegitsegNyitott(string oktato, string tanev)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $@"SELECT {SegitsegMezok} FROM segitseg s
+            WHERE s.allapot = 'nyitott' AND date(s.created_at) = date('now','localtime')
+              AND EXISTS (SELECT 1 FROM orarend o WHERE o.oktato = $o AND o.tanev = $t
+                AND (s.csoport = o.evfolyam || '.' || UPPER(o.osztaly) || '.' || COALESCE(o.csoport, '')
+                     OR (COALESCE(o.csoport, '') = '' AND s.csoport LIKE o.evfolyam || '.' || UPPER(o.osztaly) || '.%')))
+            ORDER BY s.id LIMIT 50";
+        cmd.Parameters.AddWithValue("$o", oktato);
+        cmd.Parameters.AddWithValue("$t", tanev);
+        var list = new List<SegitsegSor>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(SegitsegOlvas(r, false));
         return list;
     }
 

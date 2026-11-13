@@ -2022,13 +2022,23 @@ app.MapPost("/api/segitseg/{id:int}/lezar", (int id, HttpContext ctx, Database d
     return db.SegitsegAllapot(id, "lezart", null, null, email) ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 
-// Oktató: a csoport mai kérései (kóddal)
+// Oktató: a csoport kérései (kóddal) – alapból a maiak, ?datum=ÉÉÉÉ-HH-NN egy korábbi napé
 app.MapGet("/api/oktato/segitseg", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var csoport = ctx.Request.Query["csoport"].FirstOrDefault()?.Trim();
     if (string.IsNullOrEmpty(csoport) || csoport.Length > 30) return Results.BadRequest(new { error = "Hiányzó csoport." });
-    return Results.Ok(db.SegitsegCsoport(csoport));
+    var datum = ctx.Request.Query["datum"].FirstOrDefault()?.Trim();
+    if (!string.IsNullOrEmpty(datum) && !System.Text.RegularExpressions.Regex.IsMatch(datum, @"^\d{4}-\d{2}-\d{2}$"))
+        return Results.BadRequest(new { error = "Hibás dátum." });
+    return Results.Ok(db.SegitsegCsoport(csoport, string.IsNullOrEmpty(datum) ? null : datum));
+});
+
+// Oktató: a saját csoportjainak válaszra váró kérései (a jelzőhöz minden oktatói oldalon)
+app.MapGet("/api/oktato/segitseg/nyitott", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.SegitsegNyitott(OktatoAzonosito(ctx), Database.AktualisTanev()));
 });
 
 // Oktató: válasz szövegben, vagy „Odamegyek”
