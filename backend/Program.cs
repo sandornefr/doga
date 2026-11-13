@@ -1377,9 +1377,22 @@ app.MapPost("/api/password-reset-request", (PasswordResetRequestInput req, Datab
         return Results.BadRequest(new { error = "Érvénytelen email cím" });
     var user = db.GetUserByEmail(email);
     if (user != null)
-        db.SavePasswordResetRequest(email, $"{user.Vezeteknev} {user.Keresztnev}",
-            string.Join(".", new[] { user.Evfolyam, user.Osztaly }.Where(x => !string.IsNullOrEmpty(x))), user.Csoport);
+    {
+        var nev = $"{user.Vezeteknev} {user.Keresztnev}";
+        var osztaly = string.Join(".", new[] { user.Evfolyam, user.Osztaly }.Where(x => !string.IsNullOrEmpty(x)));
+        db.SavePasswordResetRequest(email, nev, osztaly, user.Csoport);
+        // E-mail értesítés a tanárnak (háttérben; ha nincs beállítva, nem csinál semmit)
+        EmailErtesito.JelszoKeresErtesites(app.Configuration, email, nev, osztaly, user.Csoport);
+    }
     return Results.Ok(new { success = true });
+}).RequireRateLimiting("auth");
+
+// E-mail értesítés próbája (csak oktató): próbalevelet küld az ERTESITES_EMAIL címre
+app.MapPost("/api/admin/email-proba", async (HttpContext ctx) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var (ok, uzenet) = await EmailErtesito.Probalevel(app.Configuration);
+    return ok ? Results.Ok(new { success = true, uzenet }) : Results.BadRequest(new { error = uzenet });
 }).RequireRateLimiting("auth");
 
 // Jelszó visszaállítási kérelmek listája (csak admin)
