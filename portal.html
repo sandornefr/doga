@@ -842,6 +842,16 @@
             transition: all .2s;
         }
         .teacher-sub-back:hover { border-color: #a371f7; color: #c4b5fd; }
+        /* Jogosultságtól függő elemek: a /api/oktato/jogaim betöltéséig rejtve (ne villanjanak fel) */
+        [data-jog]:not(.jog-ok) { display: none !important; }
+        .teacher-tananyag-sor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+        .teacher-tananyag-sor .tts-cim { color: #8b949e; font-size: 0.82rem; margin-right: 4px; }
+        .teacher-tananyag-sor a {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
+            border: 1px solid #30363d; color: #c9d1d9; text-decoration: none; font-size: 0.82rem; transition: all .2s;
+        }
+        .teacher-tananyag-sor a:hover { border-color: #a371f7; color: #e9d5ff; }
+        .teacher-tananyag-sor.ures { display: none; }
 
         .option-card.javitas { border-color: #2ed573; }
         .option-card.javitas:hover { border-color: #7bed9f; box-shadow: 0 8px 24px rgba(46,213,115,0.25); }
@@ -1360,46 +1370,67 @@
                     <span class="label">Csoportjaim</span>
                     <span class="desc">Órarend, óranapló, csoportok tanulói</span>
                 </a>
-                <a class="option-card" href="python/gyakorlo/kiadas.html" style="border-color:#f59e0b">
-                    <span class="icon"><i class="fas fa-lock-open" style="color:#f59e0b"></i></span>
-                    <span class="label">Gyakorló feladatok</span>
-                    <span class="desc">Kiadás csoportonként, feladatok megoldással</span>
-                </a>
-                <a class="option-card javitas" href="review.html">
-                    <span class="icon"><i class="fas fa-circle-check"></i></span>
-                    <span class="label">Javítás</span>
-                    <span class="desc">Beadott dolgozatok megtekintése és értékelése</span>
-                </a>
-                <a class="option-card" href="ikt/beadasok.html" style="border-color:#8b5cf6">
-                    <span class="icon"><i class="fas fa-inbox" style="color:#a78bfa"></i></span>
-                    <span class="label">IKT beadások</span>
-                    <span class="desc">9–10. évfolyam: Témaoldal-beadások, előnézet, előellenőrzés</span>
-                </a>
                 <a class="option-card" href="python/szamonkeres.html" style="border-color:#6366f1">
                     <span class="icon"><i class="fas fa-file-pen" style="color:#818cf8"></i></span>
                     <span class="label">Számonkérés kiadása</span>
                     <span class="desc">Számonkérés létrehozása, beadások kezelése</span>
                 </a>
-                <a class="option-card bemutatas" href="#" onclick="event.preventDefault(); openBemutatasModal()">
-                    <span class="icon"><i class="fas fa-tv"></i></span>
-                    <span class="label">Bemutató</span>
-                    <span class="desc">Feladatok bemutatása diákoknak</span>
+                <a class="option-card" href="sprint.html" style="border-color:#f472b6">
+                    <span class="icon"><i class="fas fa-flag-checkered" style="color:#f472b6"></i></span>
+                    <span class="label">Python sprint</span>
+                    <span class="desc">Órai verseny: ki oldja meg elsőként, 5-ösért</span>
                 </a>
                 <a class="option-card" href="oktato-haladas.html" style="border-color:#3fb950">
                     <span class="icon"><i class="fas fa-chart-line" style="color:#3fb950"></i></span>
                     <span class="label">Tanulói haladás</span>
                     <span class="desc">Előrehaladás, aktivitás, lemaradók</span>
                 </a>
-                <a class="option-card" href="oktato-validator.html" style="border-color:#38bdf8">
-                    <span class="icon"><i class="fas fa-microscope" style="color:#38bdf8"></i></span>
-                    <span class="label">Feladat Validátor</span>
-                    <span class="desc">Python és WEB feladatok ellenőrzése beadás előtt</span>
+                <a class="option-card bemutatas" href="#" onclick="event.preventDefault(); openBemutatasModal()">
+                    <span class="icon"><i class="fas fa-tv"></i></span>
+                    <span class="label">Bemutató</span>
+                    <span class="desc">Feladatok bemutatása diákoknak</span>
                 </a>
-                <a class="option-card" href="agazati-javitas.html" style="border-color:#f59e0b">
+                <!-- Tananyag-csomagtól függő kártyák (data-jog = a szükséges jog; admin: mind) -->
+                <a class="option-card" data-jog="python" href="python/gyakorlo/kiadas.html" style="border-color:#f59e0b">
+                    <span class="icon"><i class="fas fa-lock-open" style="color:#f59e0b"></i></span>
+                    <span class="label">Gyakorló feladatok</span>
+                    <span class="desc">Kiadás csoportonként, feladatok megoldással</span>
+                </a>
+                <a class="option-card" data-jog="ikt" href="ikt/beadasok.html" style="border-color:#8b5cf6">
+                    <span class="icon"><i class="fas fa-inbox" style="color:#a78bfa"></i></span>
+                    <span class="label">IKT beadások</span>
+                    <span class="desc">9–10. évfolyam: Témaoldal-beadások, előnézet, előellenőrzés</span>
+                </a>
+                <a class="option-card" data-jog="tavkozles" href="tavkozles/review.html" style="border-color:#06b6d4">
+                    <span class="icon"><i class="fas fa-tower-broadcast" style="color:#22d3ee"></i></span>
+                    <span class="label">Távközlés</span>
+                    <span class="desc">Gyakorló vizsga eredményei, témakörönként</span>
+                </a>
+                <!-- Extra szerepek -->
+                <a class="option-card javitas" data-jog="agazati_javito" href="review.html">
+                    <span class="icon"><i class="fas fa-circle-check"></i></span>
+                    <span class="label">Javítás</span>
+                    <span class="desc">Beadott dolgozatok megtekintése és értékelése</span>
+                </a>
+                <a class="option-card" data-jog="agazati_javito" href="agazati-javitas.html" style="border-color:#f59e0b">
                     <span class="icon"><i class="fas fa-file-pen" style="color:#f59e0b"></i></span>
                     <span class="label">Ágazati Javítás</span>
                     <span class="desc">WEB ágazati dolgozatok pontozása és javítása</span>
                 </a>
+                <a class="option-card" data-jog="feladatkeszito" href="oktato-validator.html" style="border-color:#38bdf8">
+                    <span class="icon"><i class="fas fa-microscope" style="color:#38bdf8"></i></span>
+                    <span class="label">Feladat Validátor</span>
+                    <span class="desc">Python és WEB feladatok ellenőrzése beadás előtt</span>
+                </a>
+            </div>
+            <!-- Tananyagok diáknézetben (a csomagok szerint) -->
+            <div class="teacher-tananyag-sor" id="teacher-tananyag-sor">
+                <span class="tts-cim"><i class="fas fa-book-open"></i> Tananyag (diák nézet):</span>
+                <a data-jog="python" href="python-hub.html"><i class="fab fa-python"></i> Python</a>
+                <a data-jog="web" href="web-hub.html"><i class="fas fa-globe"></i> WEB</a>
+                <a data-jog="ikt" href="ikt/index.html"><i class="fas fa-diagram-project"></i> IKT Projektmunka</a>
+                <a data-jog="halozat" href="halozat-hub.html"><i class="fas fa-network-wired"></i> Hálózat</a>
+                <a data-jog="interaktiv" href="interactive/index.html"><i class="fas fa-brain"></i> Interaktív teszt</a>
             </div>
         </div>
 
@@ -1435,11 +1466,11 @@
         <h3><i class="fas fa-tv"></i> Bemutatás</h3>
         <p>Melyik tárgyból mutatsz be feladatokat?</p>
         <div class="bemutatas-grid">
-            <a class="bem-card python" href="python/index.html?bemutato=1" onclick="closeBemutatasModal()">
+            <a class="bem-card python" data-jog="python" href="python/index.html?bemutato=1" onclick="closeBemutatasModal()">
                 <span class="bem-icon"><i class="fab fa-python"></i></span>
                 <span class="bem-label">Python</span>
             </a>
-            <a class="bem-card web" href="web/index.html?bemutato=1" onclick="closeBemutatasModal()">
+            <a class="bem-card web" data-jog="web" href="web/index.html?bemutato=1" onclick="closeBemutatasModal()">
                 <span class="bem-icon"><i class="fas fa-globe"></i></span>
                 <span class="bem-label">WEB</span>
             </a>
@@ -1987,30 +2018,43 @@
         document.getElementById('portal-title').textContent = `Üdvözöllek, ${keresztnev}!`;
 
         if (user.szerep === 'oktato') {
-            if (user.email === 'sandornef@kkszki.hu') {
-                // Rendszergazda: teljes tanári felület
+            const adminEmail = user.email === 'sandornef@kkszki.hu';
+            const urlMode = new URLSearchParams(location.search).get('mode');
+            if (!adminEmail && urlMode === 'student') {
+                // ?mode=student: diák nézet, hogy kipróbálhassák a feladatokat (csak a saját csomagjaik)
+                document.getElementById('student-layout-wrap').style.display = 'flex';
+                document.getElementById('changelog-python').style.display = 'block';
+                document.getElementById('changelog-web').style.display = 'block';
+                document.getElementById('changelog-interaktiv').style.display = 'block';
+                document.getElementById('changelog-halozat').style.display = 'block';
+                document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
+                document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
+                oktatoJogokBetolt(user).then(j => {
+                    const van = k => j.admin || j.jogok.includes(k);
+                    const rejt = (id, k) => { const el = document.getElementById(id); if (el && !van(k)) el.style.display = 'none'; };
+                    rejt('python-section', 'python');
+                    rejt('halozat-section', 'halozat');
+                    rejt('interaktiv-section', 'interaktiv');
+                    const web = document.getElementById('card-web');
+                    if (web && !van('web')) web.closest('.student-col').style.display = 'none';
+                    if (van('ikt')) document.getElementById('ikt-section').style.display = 'flex';
+                });
+            } else {
+                // Oktatói felület. Admin (Réka): Admin + Oktató + Teszt Elek; a többi oktató: rögtön az Oktató menü.
                 document.getElementById('teacher-portal').style.display = 'block';
                 document.getElementById('portal-sub').textContent = 'Mit szeretnél csinálni?';
-                // Visszatérés egy oktatói oldalról (pl.: IKT beadások): rögtön az Oktató menü nyíljon.
-                if (location.hash === '#oktato') showTeacherSub();
-                document.getElementById('toggle-view-btn').style.display = 'block';
+                if (adminEmail) {
+                    // Visszatérés egy oktatói oldalról (pl.: IKT beadások): rögtön az Oktató menü nyíljon.
+                    if (location.hash === '#oktato') showTeacherSub();
+                    document.getElementById('toggle-view-btn').style.display = 'block';
+                } else {
+                    showTeacherSub();
+                    const vissza = document.querySelector('#teacher-sub-view .teacher-sub-back');
+                    if (vissza) vissza.style.display = 'none';
+                }
                 const rangsorBtnT = document.getElementById('btn-rangsor');
                 if (rangsorBtnT) rangsorBtnT.style.display = 'flex';
-            } else {
-                // Többi oktató: ha nem ?mode=student paraméterrel jöttek, irányítsd az oktatói portálra
-                const urlMode = new URLSearchParams(location.search).get('mode');
-                if (urlMode !== 'student') {
-                    location.replace('oktato-portal.html');
-                } else {
-                    // ?mode=student: diák nézet, hogy kipróbálhassák a feladatokat
-                    document.getElementById('student-layout-wrap').style.display = 'flex';
-                    document.getElementById('changelog-python').style.display = 'block';
-                    document.getElementById('changelog-web').style.display = 'block';
-                    document.getElementById('changelog-interaktiv').style.display = 'block';
-                    document.getElementById('changelog-halozat').style.display = 'block';
-                    document.getElementById('portal-sub').textContent = 'Válassz ágazati alapvizsga feladatot!';
-                    document.getElementById('topbar-otlet-btn').style.display = 'inline-flex';
-                }
+                oktatoJogokBetolt(user).then(oktatoKartyakJogSzerint);
             }
         } else if (user.szerep === 'vendeg') {
             document.getElementById('student-layout-wrap').style.display = 'flex';
@@ -2069,6 +2113,30 @@
     if (urlParams.get('duel') === '1') {
         window._duelFromHub = true;
         setTimeout(() => openKodparbaj(), 400);
+    }
+
+    // ── Oktatói jogosultságok (/api/oktato/jogaim) ───────────────────────────
+    // Admin: minden; a többi oktató: a Réka által beállított csomagok + extra szerepek.
+    // (Függvény-deklarációk: a betöltéskor futó indító kód is hívhatja őket.)
+    async function oktatoJogokBetolt(user) {
+        try {
+            const r = await fetch('https://agazati.up.railway.app/api/oktato/jogaim', {
+                headers: { Authorization: 'Bearer ' + (user.token || '') }
+            });
+            if (r.ok) {
+                const d = await r.json();
+                return { admin: !!d.admin, jogok: Array.isArray(d.jogok) ? d.jogok : [] };
+            }
+        } catch (e) { /* hálózati hiba: lent */ }
+        // Ha nem sikerült: az admin mindent lát, más oktató csak az alap kártyákat
+        return { admin: user.email === 'sandornef@kkszki.hu', jogok: [] };
+    }
+    function oktatoKartyakJogSzerint(j) {
+        document.querySelectorAll('[data-jog]').forEach(el => {
+            el.classList.toggle('jog-ok', j.admin || j.jogok.includes(el.dataset.jog));
+        });
+        const sor = document.getElementById('teacher-tananyag-sor');
+        if (sor) sor.classList.toggle('ures', !sor.querySelector('a.jog-ok'));
     }
 
     // ── Oktatói al-nézet ─────────────────────────────────────────────────────

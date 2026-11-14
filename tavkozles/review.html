@@ -99,7 +99,7 @@ tr:hover td{background:#161b22;}
 <body>
 
 <div class="topbar">
-  <a class="btn-back" href="../oktato-portal.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <a class="btn-back" href="../portal.html#oktato"><i class="fas fa-arrow-left"></i> Vissza</a>
   <div>
     <div class="topbar-title"><i class="fas fa-tower-broadcast" style="color:#f59e0b;margin-right:7px"></i>Távközlési technikus – Eredmények</div>
     <div class="topbar-sub" id="topbar-sub">Betöltés…</div>
@@ -119,6 +119,9 @@ tr:hover td{background:#161b22;}
         <i class="fas fa-file-import"></i> JSON betöltése
       </button>
       <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="handleJSONFile(event)">
+      <button class="btn-import" id="btn-archiv" onclick="toggleArchiv()" title="A korábbi tanévek eredményei (nem törlődnek, csak alapból nem látszanak)">
+        <i class="fas fa-box-archive"></i> Archívum
+      </button>
     </div>
     <div class="import-toast" id="import-toast"></div>
     <div id="detail-panel" class="detail-panel"></div>
@@ -187,14 +190,58 @@ const Q_OPTS = {
   if (!saved) { location.href = '../login.html'; return; }
   let user;
   try { user = JSON.parse(saved); } catch { location.href = '../login.html'; return; }
-  if (!user || user.email !== 'sandorp@kkszki.hu') {
-    showError('Ehhez az oldalhoz csak Sándor Péter férhet hozzá.');
+  // „tavkozles” jogú oktató vagy az admin (a szerver is ellenőrzi)
+  let jogos = false;
+  if (user && user.szerep === 'oktato') {
+    try {
+      const r = await fetch(`${API}/api/oktato/jogaim`, { headers: { Authorization: `Bearer ${user.token || ''}` } });
+      if (r.ok) { const j = await r.json(); jogos = !!j.admin || (j.jogok || []).includes('tavkozles'); }
+    } catch {}
+  }
+  if (!jogos) {
+    showError('Ehhez az oldalhoz nincs jogosultságod (Távközlés).');
     document.getElementById('loading').style.display = 'none';
     return;
   }
   currentToken = user.token || '';
   await loadResults(currentToken);
 })();
+
+// ── Tanévenként tiszta lap: alapból csak az aktuális tanév (szept. 1-jétől) eredményei ──
+// Csak megjelenítési szűrés – a korábbi eredmények megmaradnak, az Archívum kapcsoló mutatja őket.
+let osszesEredmeny = [];
+let archivNezet = false;
+function tanevKezdet() {
+  const most = new Date();
+  const ev = most.getMonth() >= 8 ? most.getFullYear() : most.getFullYear() - 1;
+  return `${ev}-09-01`;
+}
+function eredmenyNap(r) {
+  // A szerver 'ÉÉÉÉ-HH-NN óó:pp:mm' formában adja; ha nem értelmezhető, az aktuálisak közé kerül.
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(r.submittedAt || ''));
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+function alkalmazTanevSzuro() {
+  const kezdet = tanevKezdet();
+  const aktualis = osszesEredmeny.filter(r => { const n = eredmenyNap(r); return !n || n >= kezdet; });
+  const korabbi = osszesEredmeny.length - aktualis.length;
+  allResults = archivNezet ? osszesEredmeny.filter(r => { const n = eredmenyNap(r); return n && n < kezdet; }) : aktualis;
+  const tv = kezdet.slice(0, 4);
+  const btn = document.getElementById('btn-archiv');
+  btn.innerHTML = archivNezet
+    ? `<i class="fas fa-rotate-left"></i> Vissza a ${tv}/${Number(tv) + 1}. tanévhez`
+    : `<i class="fas fa-box-archive"></i> Archívum (${korabbi} korábbi)`;
+  btn.disabled = !archivNezet && korabbi === 0;
+  document.getElementById('topbar-sub').textContent = archivNezet
+    ? `Archívum: ${allResults.length} beküldés a korábbi tanévekből`
+    : `${tv}/${Number(tv) + 1}. tanév: ${allResults.length} beküldés`;
+  document.getElementById('detail-panel').classList.remove('open');
+  openDetailId = null;
+  document.getElementById('summary-card').innerHTML = allResults.length ? '' : '<div style="color:#8b949e">Ebben a nézetben még nincs beküldés.</div>';
+  renderSummary();
+  renderTable();
+}
+function toggleArchiv() { archivNezet = !archivNezet; alkalmazTanevSzuro(); }
 
 async function loadResults(token) {
   try {
@@ -203,12 +250,10 @@ async function loadResults(token) {
     });
     if (res.status === 401) { showError('Hitelesítési hiba – próbálj újra bejelentkezni.'); return; }
     if (!res.ok) { showError(`Szerver hiba: ${res.status}`); return; }
-    allResults = await res.json();
+    osszesEredmeny = await res.json();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('main-section').style.display = 'block';
-    document.getElementById('topbar-sub').textContent = `${allResults.length} beküldés`;
-    renderSummary();
-    renderTable();
+    alkalmazTanevSzuro();
   } catch(e) {
     showError('Nem sikerült kapcsolódni a szerverhez. Ellenőrizd az internet-kapcsolatot.');
   }

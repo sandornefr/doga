@@ -658,7 +658,7 @@
                 showSuccess('login-success', `Üdv, ${data.nev}! Átirányítás...`);
                 setTimeout(() => {
                     const isOktato = data.szerep === 'oktato' && data.email !== 'sandornef@kkszki.hu';
-                    window.location.replace(isOktato ? 'oktato-portal.html' : 'portal.html');
+                    window.location.replace(isOktato ? 'portal.html#oktato' : 'portal.html');
                 }, 1000);
             } else {
                 showError('login-error', 'Hibás email cím vagy jelszó!');
@@ -780,7 +780,7 @@
             const user = JSON.parse(stored);
             if (user.token || user.szerep === 'vendeg') {
                 const isOktato = user.szerep === 'oktato' && user.email !== 'sandornef@kkszki.hu';
-                window.location.replace(isOktato ? 'oktato-portal.html' : 'portal.html');
+                window.location.replace(isOktato ? 'portal.html#oktato' : 'portal.html');
             }
         } catch {}
     }
