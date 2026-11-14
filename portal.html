@@ -818,11 +818,12 @@
         .teacher-sub-view { display: none; }
         .teacher-sub-view .options-grid {
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
+        @media(min-width:1100px){ .teacher-sub-view .options-grid { grid-template-columns: repeat(4, 1fr); } }
         @media(max-width:600px){ .teacher-sub-view .options-grid { grid-template-columns: repeat(2,1fr); } }
         .teacher-sub-view .option-card {
-            padding: 14px 10px;
+            padding: 12px 10px;
         }
         .teacher-sub-view .option-card .icon {
             font-size: 1.6rem;
@@ -844,7 +845,9 @@
         .teacher-sub-back:hover { border-color: #a371f7; color: #c4b5fd; }
         /* Jogosultságtól függő elemek: a /api/oktato/jogaim betöltéséig rejtve (ne villanjanak fel) */
         [data-jog]:not(.jog-ok) { display: none !important; }
-        .teacher-tananyag-sor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+        .teacher-sub-fej { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 14px; }
+        .teacher-sub-fej .teacher-sub-back { margin-bottom: 0; }
+        .teacher-tananyag-sor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .teacher-tananyag-sor .tts-cim { color: #8b949e; font-size: 0.82rem; margin-right: 4px; }
         .teacher-tananyag-sor a {
             display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
@@ -1351,9 +1354,20 @@
 
         <!-- Oktató alkártyák -->
         <div class="teacher-sub-view" id="teacher-sub-view">
-            <button class="teacher-sub-back" onclick="hideTeacherSub()">
-                <i class="fas fa-arrow-left"></i> Vissza
-            </button>
+            <div class="teacher-sub-fej">
+                <button class="teacher-sub-back" onclick="hideTeacherSub()">
+                    <i class="fas fa-arrow-left"></i> Vissza
+                </button>
+                <!-- Tananyagok diáknézetben (a csomagok szerint) -->
+                <div class="teacher-tananyag-sor" id="teacher-tananyag-sor">
+                    <span class="tts-cim"><i class="fas fa-book-open"></i> Tananyag (diák nézet):</span>
+                    <a data-jog="python" href="python-hub.html"><i class="fab fa-python"></i> Python</a>
+                    <a data-jog="web" href="web-hub.html"><i class="fas fa-globe"></i> WEB</a>
+                    <a data-jog="ikt" href="ikt/index.html"><i class="fas fa-diagram-project"></i> IKT Projektmunka</a>
+                    <a data-jog="halozat" href="halozat-hub.html"><i class="fas fa-network-wired"></i> Hálózat</a>
+                    <a data-jog="interaktiv" href="interactive/index.html"><i class="fas fa-brain"></i> Interaktív teszt</a>
+                </div>
+            </div>
             <div class="options-grid">
                 <a class="option-card" href="ora.html" style="border-color:#3fb950;background:rgba(63,185,80,.08)">
                     <span class="icon"><i class="fas fa-person-chalkboard" style="color:#3fb950"></i></span>
@@ -1422,15 +1436,6 @@
                     <span class="label">Feladat Validátor</span>
                     <span class="desc">Python és WEB feladatok ellenőrzése beadás előtt</span>
                 </a>
-            </div>
-            <!-- Tananyagok diáknézetben (a csomagok szerint) -->
-            <div class="teacher-tananyag-sor" id="teacher-tananyag-sor">
-                <span class="tts-cim"><i class="fas fa-book-open"></i> Tananyag (diák nézet):</span>
-                <a data-jog="python" href="python-hub.html"><i class="fab fa-python"></i> Python</a>
-                <a data-jog="web" href="web-hub.html"><i class="fas fa-globe"></i> WEB</a>
-                <a data-jog="ikt" href="ikt/index.html"><i class="fas fa-diagram-project"></i> IKT Projektmunka</a>
-                <a data-jog="halozat" href="halozat-hub.html"><i class="fas fa-network-wired"></i> Hálózat</a>
-                <a data-jog="interaktiv" href="interactive/index.html"><i class="fas fa-brain"></i> Interaktív teszt</a>
             </div>
         </div>
 

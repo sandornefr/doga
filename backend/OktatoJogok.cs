@@ -108,7 +108,7 @@ public partial class Database
 
     // Az oktató órarendjében (az adott tanév bármelyik félévében) szereplő csoportok tanulói (kisbetűs email).
     // Csoport nélküli órarend-sor (pl. 11. évfolyamtól) az egész osztályt jelenti.
-    // Teszt Elek mindig benne van, hogy az oktató ki tudja próbálni a felületeit.
+    // (Teszt Elek nincs benne: a közös tesztfiók a listákat ne zsúfolja.)
     public HashSet<string> OktatoTanuloi(string oktato, string tanev)
     {
         using var conn = Open();
@@ -123,7 +123,7 @@ public partial class Database
                   AND (COALESCE(o.csoport, '') = '' OR LOWER(o.csoport) = LOWER(COALESCE(u.csoport, ''))))";
         cmd.Parameters.AddWithValue("$o", oktato.Trim().ToLowerInvariant());
         cmd.Parameters.AddWithValue("$t", tanev);
-        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu" };
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         using var r = cmd.ExecuteReader();
         while (r.Read()) set.Add(r.GetString(0));
         return set;

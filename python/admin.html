@@ -1486,15 +1486,15 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const d = await res.json();
                 const kulcsok = [...d.csomagok, ...d.extra];
-                const fej = kulcsok.map(k => `<th style="text-align:center;font-size:0.78rem;${d.extra.includes(k) ? 'color:#fcd34d;' : ''}">${escapeHtml(OKTATO_JOG_NEVEK[k] || k)}</th>`).join('');
+                const fej = kulcsok.map(k => `<th style="text-align:center;font-size:0.74rem;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25;${d.extra.includes(k) ? 'color:#fcd34d;' : ''}">${escapeHtml(OKTATO_JOG_NEVEK[k] || k)}</th>`).join('');
                 const sorok = d.oktatok.map(o => {
                     const cellak = kulcsok.map(k => o.admin
                         ? '<td style="text-align:center;color:#22c55e;"><i class="fas fa-check"></i></td>'
                         : `<td style="text-align:center;"><input type="checkbox" data-email="${escapeHtml(o.email)}" data-kulcs="${escapeHtml(k)}" ${o.jogok.includes(k) ? 'checked' : ''} onchange="saveOktatoJog(${jsArg(o.email)})" style="width:17px;height:17px;cursor:pointer;"></td>`).join('');
-                    return `<tr><td style="font-weight:600;">${escapeHtml(o.nev)}${o.admin ? ' <span style="color:#a78bfa;font-size:0.75rem;">(admin – mindent lát)</span>' : ''}<div style="color:#64748b;font-size:0.75rem;">${escapeHtml(o.email)}</div></td>${cellak}<td id="okjog-allapot-${escapeHtml(o.email.replace(/[^a-z0-9]/g, '_'))}" style="font-size:0.75rem;color:#64748b;width:70px;"></td></tr>`;
+                    return `<tr><td style="font-weight:600;white-space:normal;overflow:visible;text-overflow:clip;">${escapeHtml(o.nev)}${o.admin ? ' <span style="color:#a78bfa;font-size:0.75rem;">(admin – mindent lát)</span>' : ''}<div style="color:#64748b;font-size:0.75rem;">${escapeHtml(o.email)}</div></td>${cellak}<td id="okjog-allapot-${escapeHtml(o.email.replace(/[^a-z0-9]/g, '_'))}" style="font-size:0.75rem;color:#64748b;width:70px;"></td></tr>`;
                 }).join('');
                 wrap.innerHTML = d.oktatok.length
-                    ? `<table class="submissions-table" style="min-width:760px;"><thead><tr><th>Oktató</th>${fej}<th></th></tr></thead><tbody>${sorok}</tbody></table>
+                    ? `<table class="submissions-table" style="min-width:760px;table-layout:auto;"><thead><tr><th style="width:220px;">Oktató</th>${fej}<th></th></tr></thead><tbody>${sorok}</tbody></table>
                        <div style="color:#64748b;font-size:0.78rem;margin-top:6px;">Sárga oszlop = extra szerep (Ágazati javító: Javítás, Ágazati Javítás; Feladatkészítő: Feladat Validátor). A Távközlés csak az ott pipált oktatónak látszik.</div>`
                     : '<span style="color:#64748b;">Nincs regisztrált oktató.</span>';
             } catch (e) {

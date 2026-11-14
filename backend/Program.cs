@@ -335,7 +335,7 @@ app.MapPost("/api/submit", (HttpContext ctx, SubmissionRequest req, Database db)
     if (string.IsNullOrEmpty(reqEmail))
         return Results.BadRequest(new { error = "Érvénytelen email cím" });
     if (valid && !IsSelfOrPrivileged(tokenIdentity, tokenRole, reqEmail))
-        return Results.Forbid();
+        return NincsJog();
 
     if (req.MaxTotal <= 0 || req.TotalScore < 0 || req.TotalScore > req.MaxTotal)
         return Results.BadRequest(new { error = "Érvénytelen pontszám adatok" });
@@ -692,7 +692,7 @@ app.MapPost("/api/auth/delete-account", (HttpContext ctx, DeleteAccountRequest r
 
     var (valid, tokenIdentity, _) = InspectAuthContext(ctx);
     if (valid && !tokenIdentity.Equals(email, StringComparison.OrdinalIgnoreCase))
-        return Results.Forbid();
+        return NincsJog();
 
     var user = db.GetUserByEmail(email);
     if (user == null || !BCrypt.Net.BCrypt.Verify(req.Jelszo, user.PasswordHash))
@@ -782,7 +782,7 @@ app.MapPost("/api/progress", (HttpContext ctx, ProgressRequest req, Database db)
     if (string.IsNullOrEmpty(reqEmail))
         return Results.BadRequest(new { error = "Érvénytelen email cím" });
     if (valid && !IsSelfOrPrivileged(tokenIdentity, tokenRole, reqEmail))
-        return Results.Forbid();
+        return NincsJog();
 
     if (req.MaxPont <= 0 || req.Pont < 0 || req.Pont > req.MaxPont)
         return Results.BadRequest(new { error = "Érvénytelen adat" });
@@ -813,7 +813,7 @@ app.MapGet("/api/progress/{email}", (string email, HttpContext ctx, Database db)
     var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, decoded))
-        return Results.Forbid();
+        return NincsJog();
 
     var progress = db.GetStudentProgress(decoded);
     return Results.Ok(progress);
@@ -898,7 +898,7 @@ app.MapGet("/api/user-state/{email}/{key}", (string email, string key, HttpConte
     var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, decoded))
-        return Results.Forbid();
+        return NincsJog();
 
     var value = db.GetUserState(decoded, key);
     return Results.Ok(new { value });
@@ -913,7 +913,7 @@ app.MapPut("/api/user-state/{email}/{key}", async (string email, string key, Htt
     var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
     if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, decoded))
-        return Results.Forbid();
+        return NincsJog();
 
     using var reader = new StreamReader(ctx.Request.Body);
     var body = await reader.ReadToEndAsync();
@@ -932,7 +932,7 @@ app.MapPost("/api/auth/change-own-password", (HttpContext ctx, ChangeOwnPassword
 
     var (valid, tokenIdentity, _) = InspectAuthContext(ctx);
     if (valid && !tokenIdentity.Equals(email, StringComparison.OrdinalIgnoreCase))
-        return Results.Forbid();
+        return NincsJog();
 
     var user = db.GetUserByEmail(email);
     if (user == null || !BCrypt.Net.BCrypt.Verify(req.OldPassword, user.PasswordHash))
@@ -955,7 +955,7 @@ app.MapPost("/api/auth/update-own-class", (HttpContext ctx, UpdateOwnClassReques
 
     var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
     if (!valid) return Results.Unauthorized();
-    if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, email)) return Results.Forbid();
+    if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, email)) return NincsJog();
 
     if (string.IsNullOrWhiteSpace(req.Osztaly) || string.IsNullOrWhiteSpace(req.Csoport))
         return Results.BadRequest(new { error = "Az osztály és a csoport megadása kötelező!" });
@@ -986,7 +986,7 @@ app.MapPost("/api/feedback", (HttpContext ctx, FeedbackRequest req, Database db)
     if (string.IsNullOrWhiteSpace(reqEmail) || string.IsNullOrWhiteSpace(req.FeladatNev))
         return Results.BadRequest(new { error = "Hiányzó adat" });
     if (valid && !IsSelfOrPrivileged(tokenIdentity, tokenRole, reqEmail))
-        return Results.Forbid();
+        return NincsJog();
 
     if (req.Tipus != "vote" && req.Tipus != "reaction" && req.Tipus != "practice_vote")
         return Results.BadRequest(new { error = "Érvénytelen tipus (vote, reaction vagy practice_vote)" });
@@ -1277,7 +1277,7 @@ app.MapPost("/api/feladat-javaslatok", (HttpContext ctx, Database db) =>
     if (!valid) return Results.Unauthorized();
     var email = NormalizeSchoolEmail(tokenIdentity);
     if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
-    if (!db.IsFeladatkeszito(email)) return Results.Forbid();
+    if (!db.IsFeladatkeszito(email)) return NincsJog();
     using var reader = new System.IO.StreamReader(ctx.Request.Body);
     var body = reader.ReadToEndAsync().Result;
     var req = System.Text.Json.JsonSerializer.Deserialize<FeladatJavaslatRequest>(body,
@@ -1350,7 +1350,7 @@ app.MapPost("/api/session/start", (HttpContext ctx, SessionStartRequest req, Dat
             return Results.Unauthorized();
 
         if (!IsPrivilegedRole(tokenRole) && !tokenEmail.Equals(requestedEmail, StringComparison.OrdinalIgnoreCase))
-            return Results.Forbid();
+            return NincsJog();
 
         sessionEmail = IsPrivilegedRole(tokenRole)
             ? (string.IsNullOrEmpty(requestedEmail) ? tokenEmail : requestedEmail)
@@ -1411,7 +1411,7 @@ app.MapGet("/api/session/stats/{email}", (string email, HttpContext ctx, Databas
     if (!valid) return Results.Unauthorized();
     // Tanuló csak saját adatait láthatja, oktató bárkit
     if (!IsSelfOrPrivileged(tokenIdentity, tokenRole, requested))
-        return Results.Forbid();
+        return NincsJog();
 
     var stats = db.GetSessionStats(requested);
     return Results.Ok(stats);
@@ -1492,7 +1492,7 @@ app.MapPost("/api/quiz-result", (HttpContext ctx, QuizResultRequest req, Databas
         {
             var reqEmail = NormalizeSchoolEmail(req.Email);
             if (!string.IsNullOrEmpty(reqEmail) && !reqEmail.Equals(tokenEmail, StringComparison.OrdinalIgnoreCase))
-                return Results.Forbid();
+                return NincsJog();
             normalizedEmail = tokenEmail;
         }
     }
@@ -1554,7 +1554,7 @@ app.MapGet("/api/progress/{email}/items", (string email, HttpContext ctx, Databa
     if (!valid) return Results.Unauthorized();
     var decoded = Uri.UnescapeDataString(email);
     if (!IsSelfOrPrivileged(identity, role, NormalizeSchoolEmail(decoded)))
-        return Results.Forbid();
+        return NincsJog();
     return Results.Ok(db.GetStudentProgressItems(decoded));
 });
 
@@ -1591,7 +1591,7 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
     var sz = db.GetSzamonkeres(id);
     if (sz == null) return Results.NotFound();
     var email = GetOktatoEmail(ctx);
-    if (!sz.OktatoEmail.Equals(email, StringComparison.OrdinalIgnoreCase)) return Results.Forbid();
+    if (!sz.OktatoEmail.Equals(email, StringComparison.OrdinalIgnoreCase)) return NincsJog();
     var beadasok = db.GetBeadasok(id);
     return Results.Ok(new { szamonkeres = sz, beadasok });
 });
@@ -1635,7 +1635,7 @@ app.MapGet("/api/szamonkeres/aktiv", (HttpContext ctx, Database db) =>
     else
     {
         var user = db.GetUserByEmail(email);
-        if (user == null) return Results.Forbid();
+        if (user == null) return NincsJog();
         osztaly = user.Osztaly;
         csoport = user.Csoport;
     }
@@ -1650,7 +1650,7 @@ app.MapPost("/api/szamonkeres/{id:int}/beadas", (int id, HttpContext ctx, Beadas
     if (!valid) return Results.Unauthorized();
 
     if (IsPrivilegedRole(tokenRole))
-        return Results.Forbid();
+        return NincsJog();
 
     var tokenEmail = NormalizeSchoolEmail(tokenIdentity);
     if (string.IsNullOrEmpty(tokenEmail))
@@ -1658,18 +1658,18 @@ app.MapPost("/api/szamonkeres/{id:int}/beadas", (int id, HttpContext ctx, Beadas
 
     var user = db.GetUserByEmail(tokenEmail);
     if (user == null || !string.Equals(user.Szerep, "tanulo", StringComparison.OrdinalIgnoreCase))
-        return Results.Forbid();
+        return NincsJog();
 
     var reqEmail = NormalizeSchoolEmail(req.TanuloEmail);
     if (string.IsNullOrEmpty(reqEmail) || !reqEmail.Equals(tokenEmail, StringComparison.OrdinalIgnoreCase))
-        return Results.Forbid();
+        return NincsJog();
 
     var sz = db.GetSzamonkeres(id);
     if (sz == null || sz.Statusz != "aktiv") return Results.BadRequest(new { error = "Nem aktív számonkérés" });
 
     var assigned = db.GetAktivSzamonkeresForStudent(tokenEmail, user.Osztaly, user.Csoport)
         .Any(x => x.Id == id);
-    if (!assigned) return Results.Forbid();
+    if (!assigned) return NincsJog();
 
     if (db.BeadasExists(id, tokenEmail, req.FeladatId))
         return Results.Conflict(new { error = "Már beadtad ezt a feladatot" });
@@ -1866,7 +1866,7 @@ app.MapGet("/api/duel/{id}/status", (int id, HttpContext ctx, Database db) =>
     if (d == null) return Results.NotFound();
     var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                      || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
-    if (!isParticipant) return Results.Forbid();
+    if (!isParticipant) return NincsJog();
     // Lejárt pending → expired
     if (d.Status == "pending")
     {
@@ -1895,7 +1895,7 @@ app.MapGet("/api/duel/{id}/chat", (int id, HttpContext ctx, Database db) =>
     if (d == null) return Results.NotFound();
     var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                      || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
-    if (!isParticipant) return Results.Forbid();
+    if (!isParticipant) return NincsJog();
     var sinceId = int.TryParse(ctx.Request.Query["since_id"], out var s) ? s : 0;
     return Results.Ok(db.GetChatMessages(sinceId, $"duel_{id}"));
 });
@@ -1909,7 +1909,7 @@ app.MapPost("/api/duel/{id}/chat", (int id, HttpContext ctx, ChatSendRequest req
     if (d == null) return Results.NotFound();
     var isParticipant = d.ChallengerEmail.Equals(email, StringComparison.OrdinalIgnoreCase)
                      || d.OpponentEmail.Equals(email, StringComparison.OrdinalIgnoreCase);
-    if (!isParticipant) return Results.Forbid();
+    if (!isParticipant) return NincsJog();
     if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Length > 500)
         return Results.BadRequest(new { error = "Érvénytelen üzenet" });
     var u = db.GetUserByEmail(email);
@@ -2215,7 +2215,7 @@ app.MapGet("/api/chat", (HttpContext ctx, Database db) =>
     var email = NormalizeSchoolEmail(identity);
     var isTesztelő = db.IsTesztelő(email);
     var isOktato = IsPrivilegedRole(role);
-    if (!isOktato && !isTesztelő) return Results.Forbid();
+    if (!isOktato && !isTesztelő) return NincsJog();
     var sinceId = int.TryParse(ctx.Request.Query["since_id"], out var s) ? s : 0;
     var channelParam = ctx.Request.Query["channel"].ToString();
     // Tesztelő csak a tesztelok csatornát olvashatja
@@ -2231,7 +2231,7 @@ app.MapPost("/api/chat", (HttpContext ctx, ChatSendRequest req, Database db) =>
     var email = NormalizeSchoolEmail(identity);
     var isTesztelő = db.IsTesztelő(email);
     var isOktato = IsPrivilegedRole(role);
-    if (!isOktato && !isTesztelő) return Results.Forbid();
+    if (!isOktato && !isTesztelő) return NincsJog();
     if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Length > 2000)
         return Results.BadRequest(new { error = "Érvénytelen üzenet" });
     var u = db.GetUserByEmail(email);
@@ -2357,7 +2357,7 @@ app.MapPost("/api/megoldas", (HttpContext ctx, MegoldasRequest req, Database db)
     if (!valid) return Results.Unauthorized();
     var em = NormalizeSchoolEmail(req.Email);
     if (string.IsNullOrEmpty(em)) return Results.BadRequest(new { error = "Érvénytelen email cím" });
-    if (!IsSelfOrPrivileged(identity, role, em)) return Results.Forbid();
+    if (!IsSelfOrPrivileged(identity, role, em)) return NincsJog();
     if (role == "vendeg") return Results.Ok(new { skipped = true });
     var targy = (req.Targy ?? "").Trim().ToLowerInvariant();
     if (targy is not ("python" or "web")) return Results.BadRequest(new { error = "Érvénytelen tantárgy" });
@@ -2650,7 +2650,7 @@ app.MapPatch("/api/progress/cel-honap", async (HttpContext ctx, Database db) =>
     var celHonap   = chEl.GetInt32();
     if (celHonap < 3 || celHonap > 5) return Results.BadRequest(new { error = "celHonap 3-5 lehet" });
     var ok = db.SetProgressCelHonap(progressId, email, celHonap);
-    return ok ? Results.Ok(new { success = true }) : Results.Forbid();
+    return ok ? Results.Ok(new { success = true }) : NincsJog();
 });
 
 // ── Groq AI proxy (tanárnak) ──────────────────────────────────────────────────
