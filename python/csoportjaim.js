@@ -395,18 +395,49 @@
     }
 
     // ── Órarend-beállítás (egyszerű szerkesztő) ──────────────────────────────────
-    window.csjBeallitas = () => {
+    // A csoportválasztó csak a rendszerben létező (regisztrált tanulóval bíró) csoportokat kínálja,
+    // mentéskor is ezt ellenőrzi. Admin: más oktató órarendjét is feltöltheti/szerkesztheti.
+    const bea = { oktato: '', orarend: [], letezok: [], admin: false, oktatok: [] };
+    function letezoE(evf, oszt, cs) {
+        const o = String(oszt).toUpperCase(), c = (cs || '').toLowerCase();
+        // csoport nélkül (pl. 11. évfolyamtól, egész osztály): elég, ha az osztálynak van tanulója
+        return bea.letezok.some(l => l.evfolyam === evf && String(l.osztaly).toUpperCase() === o
+            && (!c || (l.csoport || '').toLowerCase() === c));
+    }
+    window.csjBeallitas = async () => {
         const felev = felevE(new Date());
-        const sorok = st.orarend.filter(o => o.felev === felev);
         const m = document.getElementById('csj-beallitas');
         m.style.display = 'flex';
+        m.innerHTML = '<div class="csj-modal"><div class="csj-halvany">Betöltés…</div></div>';
+        bea.oktato = ''; bea.orarend = st.orarend;
+        try { bea.letezok = await getJson('/api/csoportjaim/letezo-csoportok'); } catch { bea.letezok = []; }
+        try { bea.admin = !!(await getJson('/api/oktato/jogaim')).admin; } catch { bea.admin = false; }
+        bea.oktatok = [];
+        if (bea.admin) { try { bea.oktatok = (await getJson('/api/admin/oktato-jogok')).oktatok || []; } catch { } }
+        const csopOpciok = bea.letezok.map(c =>
+            `<option value="${esc(`${c.evfolyam}|${c.osztaly}|${c.csoport || ''}`)}">${esc(csoportNev(`${c.evfolyam}.${c.osztaly}.${c.csoport || ''}`))} (${c.letszam} fő)</option>`).join('');
+        // Egész osztály (csoport nélkül), ha az osztályban csoportok vannak
+        const osztalyok = [...new Set(bea.letezok.filter(c => c.csoport).map(c => `${c.evfolyam}|${c.osztaly}|`))]
+            .filter(k => !bea.letezok.some(c => `${c.evfolyam}|${c.osztaly}|${c.csoport || ''}` === k));
+        const osztOpciok = osztalyok.map(k => { const [e, o] = k.split('|'); return `<option value="${esc(k)}">${esc(`${e}.${o}`)} – egész osztály</option>`; }).join('');
+        const oktatoValaszto = bea.admin ? `<div class="csj-halvany" style="margin-bottom:8px">Kinek az órarendje:
+                <select id="csj-b-oktato" onchange="csjBeallitasOktato(this.value)"><option value="">Saját órarendem</option>
+                ${bea.oktatok.filter(o => !o.admin).map(o => `<option value="${esc(o.email)}">${esc(o.nev)} (${esc(o.email)})</option>`).join('')}</select></div>` : '';
         m.innerHTML = `<div class="csj-modal">
             <h3><i class="fas fa-calendar-week"></i> Órarend</h3>
+            ${oktatoValaszto}
             <div class="csj-halvany" style="margin-bottom:8px">Félév: <select id="csj-b-felev" onchange="csjBeallitasFelev(this.value)">
                 <option value="1"${felev === 1 ? ' selected' : ''}>1. félév (–${TANEV.felevVege})</option>
                 <option value="2"${felev === 2 ? ' selected' : ''}>2. félév</option></select>
-                · Soronként: <code>nap óra évfolyam osztály csoport terem</code>, pl. <code>hétfő 1 9 B 2 104</code> vagy <code>szerda 2 9 K info 29</code></div>
-            <textarea id="csj-b-szoveg" rows="16" style="width:100%;font-family:monospace">${esc(orarendSzoveg(sorok))}</textarea>
+                · Soronként: <code>nap óra évfolyam osztály csoport terem</code>, pl.: <code>hétfő 1 9 B 2 104</code> vagy <code>szerda 2 9 K info 29</code></div>
+            <div class="csj-halvany" style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">Új óra:
+                <select id="csj-b-nap">${['hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek'].map(n => `<option>${n}</option>`).join('')}</select>
+                <select id="csj-b-ora">${CSENGETES.map((c, i) => `<option value="${i}">${i}. óra (${c[0]})</option>`).join('')}</select>
+                <select id="csj-b-csop">${csopOpciok}${osztOpciok}</select>
+                <input id="csj-b-terem" placeholder="terem" size="6">
+                <button class="btn-refresh" type="button" onclick="csjBeallitasHozzaad()"${bea.letezok.length ? '' : ' disabled'}><i class="fas fa-plus"></i> Hozzáad</button>
+                ${bea.letezok.length ? '' : '<span class="csj-hiba">Még nincs regisztrált tanuló egyik csoportban sem.</span>'}</div>
+            <textarea id="csj-b-szoveg" rows="14" style="width:100%;font-family:monospace">${esc(orarendSzoveg(bea.orarend.filter(o => o.felev === felev)))}</textarea>
             <div class="csj-urlap-gombok"><button class="btn-refresh" onclick="csjBeallitasMent()"><i class="fas fa-check"></i> Mentés</button>
                 <button class="csj-gomb-halvany" onclick="document.getElementById('csj-beallitas').style.display='none'">Bezárás</button>
                 <span id="csj-b-hiba" class="csj-hiba"></span></div></div>`;
@@ -414,7 +445,23 @@
     const NAPOK = { 'hétfő': 1, 'kedd': 2, 'szerda': 3, 'csütörtök': 4, 'péntek': 5 };
     const orarendSzoveg = sorok => sorok.map(o => `${NAPNEV[o.nap]} ${o.ora} ${o.evfolyam} ${o.osztaly} ${o.csoport || '-'} ${o.terem || ''}`.trim()).join('\n');
     window.csjBeallitasFelev = f => {
-        document.getElementById('csj-b-szoveg').value = orarendSzoveg(st.orarend.filter(o => o.felev === Number(f)));
+        document.getElementById('csj-b-szoveg').value = orarendSzoveg(bea.orarend.filter(o => o.felev === Number(f)));
+    };
+    window.csjBeallitasOktato = async email => {
+        const hiba = document.getElementById('csj-b-hiba');
+        hiba.textContent = '';
+        try {
+            bea.orarend = email ? await getJson(`/api/csoportjaim/orarend?tanev=${TANEV.kezdo}&oktato=${encodeURIComponent(email)}`) : st.orarend;
+            bea.oktato = email;
+            csjBeallitasFelev(document.getElementById('csj-b-felev').value);
+        } catch (e) { hiba.textContent = 'Nem sikerült betölteni: ' + e.message; }
+    };
+    window.csjBeallitasHozzaad = () => {
+        const [e, o, c] = document.getElementById('csj-b-csop').value.split('|');
+        const terem = document.getElementById('csj-b-terem').value.trim().replace(/\s+/g, ' ');
+        const ta = document.getElementById('csj-b-szoveg');
+        const sor = `${document.getElementById('csj-b-nap').value} ${document.getElementById('csj-b-ora').value} ${e} ${o} ${c || '-'} ${terem}`.trim();
+        ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + sor;
     };
     window.csjBeallitasMent = async () => {
         const felev = Number(document.getElementById('csj-b-felev').value), hiba = document.getElementById('csj-b-hiba');
@@ -424,11 +471,24 @@
             if (!sor.trim()) continue;
             const nap = NAPOK[p[0]?.toLowerCase()], ora = Number(p[1]);
             if (!nap || !(ora >= 0 && ora <= 10) || !p[2] || !p[3]) { hiba.textContent = `Hibás ${i + 1}. sor: „${sor}”`; return; }
-            orak.push({ felev, nap, ora, evfolyam: p[2], osztaly: p[3].toUpperCase(), csoport: p[4] && p[4] !== '-' ? p[4] : null, terem: p.slice(5).join(' ') || null });
+            const csoport = p[4] && p[4] !== '-' ? p[4] : null;
+            if (!letezoE(p[2], p[3], csoport)) {
+                hiba.textContent = `A(z) ${i + 1}. sor csoportja (${p[2]}.${p[3].toUpperCase()}${csoport ? ' ' + csoport : ''}) nincs a rendszerben (nincs regisztrált tanulója).`;
+                return;
+            }
+            orak.push({ felev, nap, ora, evfolyam: p[2], osztaly: p[3].toUpperCase(), csoport, terem: p.slice(5).join(' ') || null });
         }
-        const r = await authFetch(`${RAILWAY_URL}/api/csoportjaim/orarend`, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        const kinek = bea.oktato ? `?oktato=${encodeURIComponent(bea.oktato)}` : '';
+        const r = await authFetch(`${RAILWAY_URL}/api/csoportjaim/orarend${kinek}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tanev: TANEV.kezdo, felev, orak }) });
         if (!r.ok) { hiba.textContent = (await r.json().catch(() => ({}))).error || 'Mentési hiba'; return; }
+        if (bea.oktato) {
+            // Más oktató órarendje: a modal nyitva marad, a saját nézet nem változik
+            bea.orarend = bea.orarend.filter(o => o.felev !== felev).concat(orak);
+            hiba.style.color = '#22c55e'; hiba.textContent = 'Mentve.';
+            setTimeout(() => { hiba.style.color = ''; hiba.textContent = ''; }, 2500);
+            return;
+        }
         document.getElementById('csj-beallitas').style.display = 'none';
         st.kivalasztott = null;
         betolt();

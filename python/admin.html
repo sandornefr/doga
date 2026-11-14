@@ -918,6 +918,17 @@
                 <button class="btn-refresh" id="szakmavalasztas-btn" onclick="startSzakmavalasztas113()" title="Az 1/13. évfolyam (felnőttképzés) a félév végi ágazati alapvizsga után választ szakmát" style="background:#0e7490;border-color:#0891b2;color:#fff;"><i class="fas fa-code-branch"></i> 1/13. szakmaválasztás indítása</button>
             </div>
 
+            <!-- Oktatói jogosultságok (oktatónként: tananyag-csomagok + extra szerepek; az admin mindent lát) -->
+            <details id="oktato-jogok-panel" style="margin-bottom:18px;background:#0f1e35;border:1px solid #1f3460;border-radius:12px;padding:14px 18px;" ontoggle="if(this.open) loadOktatoJogok()">
+                <summary style="cursor:pointer;font-weight:700;color:#a78bfa;font-size:0.95rem;user-select:none;">
+                    <i class="fas fa-user-shield"></i> Oktatói jogosultságok
+                </summary>
+                <div style="margin-top:12px;">
+                    <div style="color:#94a3b8;font-size:0.83rem;margin-bottom:10px;">Pipáld ki, melyik oktató mit lát a portál Oktató menüjében. Mindenki kapja: Órát kezdek, Korábbi óráim, Csoportjaim, Számonkérés kiadása, Python sprint, Tanulói haladás, Bemutató. A tanulói adatokból mindenki csak az órarendjében szereplő csoportokat látja (az admin mindent).</div>
+                    <div id="oktato-jogok-wrap" style="overflow-x:auto;"><span style="color:#64748b;font-size:0.83rem;">Betöltés…</span></div>
+                </div>
+            </details>
+
             <!-- Jelszó visszaállítási kérelmek -->
             <div id="pw-reset-requests-panel" style="margin-bottom:18px;background:#1a0a0a;border:2px solid #f59e0b;border-radius:12px;padding:14px 18px;display:none;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -1461,6 +1472,51 @@
             }).join('');
         }
         // ── Követelmények vége ─────────────────────────────────────────────────
+
+        // ── Oktatói jogosultságok ─────────────────────────────────────────────
+        const OKTATO_JOG_NEVEK = {
+            python: 'Python', web: 'WEB', ikt: 'IKT', halozat: 'Hálózat', interaktiv: 'Interaktív teszt', tavkozles: 'Távközlés',
+            agazati_javito: 'Ágazati javító', feladatkeszito: 'Feladatkészítő'
+        };
+        async function loadOktatoJogok() {
+            const wrap = document.getElementById('oktato-jogok-wrap');
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/oktato-jogok`);
+                if (res.status === 403) { wrap.innerHTML = '<span style="color:#fca5a5;">Ezt csak az admin állíthatja be.</span>'; return; }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const d = await res.json();
+                const kulcsok = [...d.csomagok, ...d.extra];
+                const fej = kulcsok.map(k => `<th style="text-align:center;font-size:0.78rem;${d.extra.includes(k) ? 'color:#fcd34d;' : ''}">${escapeHtml(OKTATO_JOG_NEVEK[k] || k)}</th>`).join('');
+                const sorok = d.oktatok.map(o => {
+                    const cellak = kulcsok.map(k => o.admin
+                        ? '<td style="text-align:center;color:#22c55e;"><i class="fas fa-check"></i></td>'
+                        : `<td style="text-align:center;"><input type="checkbox" data-email="${escapeHtml(o.email)}" data-kulcs="${escapeHtml(k)}" ${o.jogok.includes(k) ? 'checked' : ''} onchange="saveOktatoJog(${jsArg(o.email)})" style="width:17px;height:17px;cursor:pointer;"></td>`).join('');
+                    return `<tr><td style="font-weight:600;">${escapeHtml(o.nev)}${o.admin ? ' <span style="color:#a78bfa;font-size:0.75rem;">(admin – mindent lát)</span>' : ''}<div style="color:#64748b;font-size:0.75rem;">${escapeHtml(o.email)}</div></td>${cellak}<td id="okjog-allapot-${escapeHtml(o.email.replace(/[^a-z0-9]/g, '_'))}" style="font-size:0.75rem;color:#64748b;width:70px;"></td></tr>`;
+                }).join('');
+                wrap.innerHTML = d.oktatok.length
+                    ? `<table class="submissions-table" style="min-width:760px;"><thead><tr><th>Oktató</th>${fej}<th></th></tr></thead><tbody>${sorok}</tbody></table>
+                       <div style="color:#64748b;font-size:0.78rem;margin-top:6px;">Sárga oszlop = extra szerep (Ágazati javító: Javítás, Ágazati Javítás; Feladatkészítő: Feladat Validátor). A Távközlés csak az ott pipált oktatónak látszik.</div>`
+                    : '<span style="color:#64748b;">Nincs regisztrált oktató.</span>';
+            } catch (e) {
+                wrap.innerHTML = `<span style="color:#e94560;">Hiba: ${escapeHtml(e.message)}</span>`;
+            }
+        }
+        async function saveOktatoJog(email) {
+            const jogok = [...document.querySelectorAll('#oktato-jogok-wrap input[type=checkbox]')]
+                .filter(c => c.dataset.email === email && c.checked).map(c => c.dataset.kulcs);
+            const cel = document.getElementById('okjog-allapot-' + email.replace(/[^a-z0-9]/g, '_'));
+            if (cel) { cel.textContent = 'Mentés…'; cel.style.color = '#64748b'; }
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/oktato-jogok`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, jogok })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (cel) { cel.textContent = 'Mentve'; cel.style.color = '#22c55e'; }
+            } catch (e) {
+                if (cel) { cel.textContent = 'Hiba!'; cel.style.color = '#e94560'; }
+                loadOktatoJogok();
+            }
+        }
 
         let _cachedUsers = [];
 
