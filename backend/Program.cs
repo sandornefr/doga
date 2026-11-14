@@ -53,6 +53,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 // Adatbázis inicializálás
 db.Initialize();
 db.InitIktBeadas();
+db.InitOktatoJogok();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
 // Piton Professzor (bot) – gép elleni meccshez (mindig létezik)
@@ -172,8 +173,11 @@ static bool ErvenyesCsoport(string? c) => string.IsNullOrEmpty(c) || Regex.IsMat
     return (true, identity, role);
 }
 
+// Saját adat, admin, vagy oktató a saját (órarendje szerinti) csoportjának tanulójáról.
 bool IsSelfOrPrivileged(string tokenIdentity, string tokenRole, string targetEmail) =>
-    IsPrivilegedRole(tokenRole) || tokenIdentity.Equals(targetEmail, StringComparison.OrdinalIgnoreCase);
+    tokenIdentity.Equals(targetEmail, StringComparison.OrdinalIgnoreCase)
+    || (IsPrivilegedRole(tokenRole) && (IsAdminIdentity(tokenIdentity)
+        || db.OktatoTanuloi(tokenIdentity, Database.AktualisTanev()).Contains((targetEmail ?? "").Trim())));
 
 static bool IsSafeImageDataUrl(string? value)
 {
@@ -220,6 +224,49 @@ bool ValidateOktato(HttpContext ctx)
     var (valid, _, role) = InspectAuthContext(ctx);
     return valid && IsPrivilegedRole(role);
 }
+
+// ── Oktatói jogosultságok (OktatoJogok.cs) ───────────────────────────────────
+// Admin = Réka (ADMIN_EMAILS, alapból sandornef@kkszki.hu) vagy a környezeti admin felhasználó.
+// Az admin minden csomagot, extra szerepet és csoportot lát.
+var adminEmails = new HashSet<string>(
+    (app.Configuration["ADMIN_EMAILS"] ?? "sandornef@kkszki.hu")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(e => e.ToLowerInvariant()),
+    StringComparer.OrdinalIgnoreCase);
+
+bool IsAdminIdentity(string identity) =>
+    !string.IsNullOrWhiteSpace(identity)
+    && (adminEmails.Contains(identity.Trim()) || identity.Trim().Equals(adminEnvUser, StringComparison.OrdinalIgnoreCase));
+
+bool IsAdmin(HttpContext ctx)
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    return valid && IsPrivilegedRole(role) && IsAdminIdentity(identity);
+}
+
+// Van-e az oktatónak ilyen joga (csomag vagy extra szerep); az admin mindig igen.
+bool OktatoJog(HttpContext ctx, string kulcs)
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid || !IsPrivilegedRole(role)) return false;
+    return IsAdminIdentity(identity) || db.GetOktatoJogok(identity).Contains(kulcs);
+}
+
+// A nem admin oktató által látható tanulók (az órarendje csoportjai); null = mindenki (admin).
+HashSet<string>? LathatoTanulok(HttpContext ctx)
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid || !IsPrivilegedRole(role)) return new HashSet<string>();
+    return IsAdminIdentity(identity) ? null : db.OktatoTanuloi(identity, Database.AktualisTanev());
+}
+
+bool LathatoTanulo(HttpContext ctx, string? email)
+{
+    var l = LathatoTanulok(ctx);
+    return l == null || l.Contains((email ?? "").Trim());
+}
+
+IResult NincsJog() => Results.Json(new { error = "Ehhez nincs jogosultságod." }, statusCode: 403);
 
 // Oktatói regisztrációs kód (env változóból)
 var teacherCode = app.Configuration["TEACHER_CODE"];
@@ -325,7 +372,8 @@ app.MapGet("/api/submissions", (HttpContext ctx, Database db) =>
     var subject = ctx.Request.Query["subject"].FirstOrDefault();
     var mode    = ctx.Request.Query["mode"].FirstOrDefault();
     var list = db.GetSubmissions(osztaly, csoport, subject, mode);
-    return Results.Ok(list);
+    var l = LathatoTanulok(ctx);
+    return Results.Ok(l == null ? list : list.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Egy beadás részletei (admin)
@@ -333,6 +381,7 @@ app.MapGet("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db) =
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var sub = db.GetSubmission(id);
+    if (sub != null && !LathatoTanulo(ctx, sub.Email)) return NincsJog();
     return sub != null ? Results.Ok(sub) : Results.NotFound();
 });
 
@@ -340,6 +389,8 @@ app.MapGet("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db) =
 app.MapPatch("/api/submissions/{id:int}/scores", (HttpContext ctx, int id, UpdateScoresRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var regi = db.GetSubmission(id);
+    if (regi != null && !LathatoTanulo(ctx, regi.Email)) return NincsJog();
     var ok = db.UpdateSubmissionScores(id, req.Scores, req.MaxScores, req.TotalScore, req.MaxTotal);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
 });
@@ -347,6 +398,8 @@ app.MapPatch("/api/submissions/{id:int}/scores", (HttpContext ctx, int id, Updat
 app.MapDelete("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var regi = db.GetSubmission(id);
+    if (regi != null && !LathatoTanulo(ctx, regi.Email)) return NincsJog();
     db.DeleteSubmission(id);
     return Results.Ok(new { success = true });
 });
@@ -355,6 +408,7 @@ app.MapDelete("/api/submissions/{id:int}", (HttpContext ctx, int id, Database db
 app.MapDelete("/api/submissions", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // tömeges törlés: csak admin
     var osztaly = ctx.Request.Query["osztaly"].FirstOrDefault();
     var csoport = ctx.Request.Query["csoport"].FirstOrDefault();
     var subject = ctx.Request.Query["subject"].FirstOrDefault();
@@ -477,7 +531,10 @@ app.MapPost("/api/auth/user-login", (UserLoginRequest req, Database db) =>
 app.MapGet("/api/users", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
-    return Results.Ok(db.GetAllUsers());
+    var l = LathatoTanulok(ctx);
+    var users = db.GetAllUsers();
+    // Nem admin oktató: csak a saját csoportjai tanulói
+    return Results.Ok(l == null ? users : users.Where(u => u.Szerep == "tanulo" && l.Contains(u.Email)).ToList());
 });
 
 // Felhasználó törlése admin/oktató által
@@ -1703,7 +1760,9 @@ app.MapGet("/api/haladas", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var osztaly = ctx.Request.Query["osztaly"].FirstOrDefault();
-    return Results.Ok(db.GetHaladasByOsztaly(osztaly));
+    var l = LathatoTanulok(ctx);
+    var lista = db.GetHaladasByOsztaly(osztaly);
+    return Results.Ok(l == null ? lista : lista.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Kötelező elemek teljesítési statisztikája (tanuló token is elég – nincs PII)
@@ -1720,13 +1779,14 @@ app.MapGet("/api/stats/kotelezo", (HttpContext ctx, Database db) =>
 app.MapGet("/api/haladas/osszesito", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
-    return Results.Ok(db.GetHaladasOsztalySummary());
+    return Results.Ok(db.GetHaladasOsztalySummary(LathatoTanulok(ctx)));
 });
 
 app.MapGet("/api/haladas/tanulo/{email}", (string email, HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var decoded = Uri.UnescapeDataString(email);
+    if (!LathatoTanulo(ctx, decoded)) return NincsJog();
     var detail = db.GetHaladasTanuloDetail(decoded);
     return detail is null ? Results.NotFound() : Results.Ok(detail);
 });
@@ -1896,6 +1956,43 @@ app.MapGet("/api/admin/ido", (HttpContext ctx, Database db) =>
     });
 });
 
+// ── Oktatói jogosultságok ────────────────────────────────────────────────────
+
+// Saját jogok (a portál ez alapján mutatja a kártyákat): GET /api/oktato/jogaim
+app.MapGet("/api/oktato/jogaim", (HttpContext ctx, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid || !IsPrivilegedRole(role)) return Results.Unauthorized();
+    var admin = IsAdminIdentity(identity);
+    var jogok = admin ? Database.OktatoMindenJog.ToList() : db.GetOktatoJogok(identity);
+    return Results.Ok(new { admin, jogok });
+});
+
+// Admin: minden oktató a jogaival + a lehetséges kulcsok: GET /api/admin/oktato-jogok
+app.MapGet("/api/admin/oktato-jogok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog();
+    var oktatok = db.GetOktatokJogokkal().Select(o => new
+    {
+        email = o.Email, nev = o.Nev, jogok = o.Jogok, admin = IsAdminIdentity(o.Email)
+    });
+    return Results.Ok(new { csomagok = Database.OktatoCsomagok, extra = Database.OktatoExtraSzerepek, oktatok });
+});
+
+// Admin: egy oktató jogainak beállítása: PUT /api/admin/oktato-jogok  { email, jogok: [...] }
+app.MapPut("/api/admin/oktato-jogok", (HttpContext ctx, OktatoJogMentes req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog();
+    var email = (req.Email ?? "").Trim().ToLowerInvariant();
+    if (!db.LetezoOktato(email)) return Results.NotFound(new { error = "Nincs ilyen oktató." });
+    var jogok = req.Jogok ?? new List<string>();
+    if (jogok.Count > 30 || jogok.Any(j => !Database.OktatoMindenJog.Contains((j ?? "").Trim().ToLowerInvariant())))
+        return Results.BadRequest(new { error = "Ismeretlen jogosultság." });
+    return Results.Ok(new { success = true, email, jogok = db.SetOktatoJogok(email, jogok) });
+});
+
 // ── Csoportjaim (oktatói munkaeszköz) ────────────────────────────────────────
 // Az órarend és az óranapló az oktató azonosítójához kötött (több oktató is használhatja).
 
@@ -1905,11 +2002,28 @@ string OktatoAzonosito(HttpContext ctx)
     return (identity ?? "").Trim().ToLowerInvariant();
 }
 
+// Kinek az órarendje: alapból a sajátja; ?oktato=email csak adminnak (más oktató órarendjének szerkesztése).
+string? OrarendGazda(HttpContext ctx)
+{
+    var masik = (ctx.Request.Query["oktato"].FirstOrDefault() ?? "").Trim().ToLowerInvariant();
+    if (string.IsNullOrEmpty(masik) || masik == OktatoAzonosito(ctx)) return OktatoAzonosito(ctx);
+    return IsAdmin(ctx) && db.LetezoOktato(masik) ? masik : null;
+}
+
+// Az órarend csoportválasztójához: a rendszerben létező (regisztrált tanulóval bíró) évfolyam/osztály/csoport
+app.MapGet("/api/csoportjaim/letezo-csoportok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    return Results.Ok(db.LetezoCsoportok());
+});
+
 app.MapGet("/api/csoportjaim/orarend", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var tanev = ctx.Request.Query["tanev"].FirstOrDefault() ?? Database.AktualisTanev();
-    return Results.Ok(db.GetOrarend(OktatoAzonosito(ctx), tanev));
+    var kie = OrarendGazda(ctx);
+    if (kie == null) return NincsJog();
+    return Results.Ok(db.GetOrarend(kie, tanev));
 });
 
 app.MapPut("/api/csoportjaim/orarend", (HttpContext ctx, OrarendMentes req, Database db) =>
@@ -1922,7 +2036,9 @@ app.MapPut("/api/csoportjaim/orarend", (HttpContext ctx, OrarendMentes req, Data
             || o.Evfolyam.Length > 5 || o.Osztaly.Length > 3 || (o.Csoport?.Length ?? 0) > 10 || (o.Terem?.Length ?? 0) > 30))
         return Results.BadRequest(new { error = "Érvénytelen órarend-adat." });
     var tanev = string.IsNullOrWhiteSpace(req.Tanev) ? Database.AktualisTanev() : req.Tanev.Trim();
-    var db_ = db.SetOrarend(OktatoAzonosito(ctx), tanev, req.Felev, orak);
+    var kie = OrarendGazda(ctx);
+    if (kie == null) return NincsJog();
+    var db_ = db.SetOrarend(kie, tanev, req.Felev, orak);
     return Results.Ok(new { success = true, orak = db_ });
 });
 
@@ -1960,7 +2076,9 @@ app.MapDelete("/api/csoportjaim/naplo/{id:int}", (int id, HttpContext ctx, Datab
 app.MapGet("/api/csoportjaim/online", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
-    return Results.Ok(db.GetOnlineTanulok());
+    var l = LathatoTanulok(ctx);
+    var online = db.GetOnlineTanulok();
+    return Results.Ok(l == null ? online : online.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // ── Gyakorló feladatok: csoportonkénti feloldás ─────────────────────────────
@@ -1996,6 +2114,7 @@ app.MapGet("/api/oktato/gyakorlo/feloldas/osszes", (HttpContext ctx, Database db
 app.MapPut("/api/oktato/gyakorlo/feloldas", (HttpContext ctx, GyakorloFeloldasMentes req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "python")) return NincsJog(); // a gyakorló feladatok a Python csomaghoz tartoznak
     var feladatok = req.Feladatok ?? new();
     var datum = string.IsNullOrWhiteSpace(req.Datum) ? DateTime.Now.ToString("yyyy-MM-dd") : req.Datum.Trim();
     if (string.IsNullOrWhiteSpace(req.Csoport) || req.Csoport.Length > 30 || feladatok.Count is 0 or > 200
@@ -2053,7 +2172,9 @@ app.MapGet("/api/oktato/segitseg", (HttpContext ctx, Database db) =>
     var datum = ctx.Request.Query["datum"].FirstOrDefault()?.Trim();
     if (!string.IsNullOrEmpty(datum) && !System.Text.RegularExpressions.Regex.IsMatch(datum, @"^\d{4}-\d{2}-\d{2}$"))
         return Results.BadRequest(new { error = "Hibás dátum." });
-    return Results.Ok(db.SegitsegCsoport(csoport, string.IsNullOrEmpty(datum) ? null : datum));
+    var l = LathatoTanulok(ctx);
+    var kerek = db.SegitsegCsoport(csoport, string.IsNullOrEmpty(datum) ? null : datum);
+    return Results.Ok(l == null ? kerek : kerek.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Oktató: a saját csoportjainak válaszra váró kérései (a jelzőhöz minden oktatói oldalon)
@@ -2069,7 +2190,9 @@ app.MapGet("/api/oktato/segitseg/idoszak", (HttpContext ctx, Database db) =>
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var tol = ctx.Request.Query["tol"].FirstOrDefault()?.Trim() ?? "";
     if (!System.Text.RegularExpressions.Regex.IsMatch(tol, @"^\d{4}-\d{2}-\d{2}$")) return Results.BadRequest(new { error = "Hibás dátum." });
-    return Results.Ok(db.SegitsegIdoszak(tol));
+    var l = LathatoTanulok(ctx);
+    var kerek = db.SegitsegIdoszak(tol);
+    return Results.Ok(l == null ? kerek : kerek.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Oktató: válasz szövegben, vagy „Odamegyek”
@@ -2134,9 +2257,9 @@ app.MapPost("/api/tavolkozles/submit", (TavolkozlesSubmitRequest req, Database d
 
 app.MapGet("/api/tavolkozles/results", (HttpContext ctx, Database db) =>
 {
-    var (valid, identity, _) = InspectAuthContext(ctx);
-    if (!valid || !identity.Equals("sandorp@kkszki.hu", StringComparison.OrdinalIgnoreCase))
-        return Results.Unauthorized();
+    // „tavkozles” jogú oktató (Sándor Péter) és az admin
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "tavkozles")) return NincsJog();
     return Results.Ok(db.GetTavolkozlesResults());
 });
 
@@ -2163,7 +2286,9 @@ app.MapPost("/api/havijegy/calculate", (HttpContext ctx, Database db) =>
         sor.Evfolyam = d.Evfolyam;
         db.UpsertHaviJegy(sor);
     }
-    return Results.Ok(db.GetHaviJegyek(ev, honap));
+    var l = LathatoTanulok(ctx);
+    var jegyek = db.GetHaviJegyek(ev, honap);
+    return Results.Ok(l == null ? jegyek : jegyek.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Tanári lista lekérése — GET /api/havijegy?ev=2026&honap=3
@@ -2172,7 +2297,9 @@ app.MapGet("/api/havijegy", (HttpContext ctx, Database db) =>
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     if (!int.TryParse(ctx.Request.Query["ev"],    out var ev))    return Results.BadRequest(new { error = "ev hiányzik" });
     if (!int.TryParse(ctx.Request.Query["honap"], out var honap)) return Results.BadRequest(new { error = "honap hiányzik" });
-    return Results.Ok(db.GetHaviJegyek(ev, honap));
+    var l = LathatoTanulok(ctx);
+    var jegyek = db.GetHaviJegyek(ev, honap);
+    return Results.Ok(l == null ? jegyek : jegyek.Where(x => l.Contains(x.Email)).ToList());
 });
 
 // Saját jegyek (diák) — GET /api/havijegy/sajat
@@ -2247,6 +2374,7 @@ app.MapGet("/api/oktato/megoldasok/{email}", (string email, HttpContext ctx, Dat
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var em = NormalizeSchoolEmail(Uri.UnescapeDataString(email));
     if (string.IsNullOrEmpty(em)) return Results.BadRequest(new { error = "Érvénytelen email cím" });
+    if (!LathatoTanulo(ctx, em)) return NincsJog();
     return Results.Ok(new { megoldasok = db.GetMegoldasok(em), plusz = db.GetTanariPlusz(em) });
 });
 
@@ -2299,7 +2427,16 @@ app.MapPost("/api/oktato/sprint", (HttpContext ctx, SprintCreateRequest req, Dat
 app.MapGet("/api/oktato/sprint/csoportok", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
-    return Results.Ok(db.SprintCsoportok().Select(c => new { evfolyam = c.Evfolyam, osztaly = c.Osztaly, csoport = c.Csoport }));
+    var csoportok = db.SprintCsoportok();
+    if (!IsAdmin(ctx))
+    {
+        // Nem admin oktató: csak az órarendjében szereplő csoportok
+        var orak = db.GetOrarend(OktatoAzonosito(ctx), Database.AktualisTanev());
+        csoportok = csoportok.Where(c => orak.Any(o => o.Evfolyam == c.Evfolyam
+            && o.Osztaly.Equals(c.Osztaly, StringComparison.OrdinalIgnoreCase)
+            && (string.IsNullOrEmpty(o.Csoport) || o.Csoport.Equals(c.Csoport, StringComparison.OrdinalIgnoreCase)))).ToList();
+    }
+    return Results.Ok(csoportok.Select(c => new { evfolyam = c.Evfolyam, osztaly = c.Osztaly, csoport = c.Csoport }));
 });
 
 // Tanár: élő állapot (csatlakozottak, leadások kóddal)
@@ -2426,10 +2563,11 @@ app.MapGet("/api/oktato/tudasszint", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var KIZART = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tesztelek@kkszki.hu", "bot@kkszki.hu" };
+    var lathato = LathatoTanulok(ctx);
     var most = DateTime.Now;
     var hon = Database.UjHonapokEddig(most).LastOrDefault();
     var lista = db.GetAllUsers()
-        .Where(u => u.Szerep == "tanulo" && u.Evfolyam == "10" && !KIZART.Contains(u.Email))
+        .Where(u => u.Szerep == "tanulo" && u.Evfolyam == "10" && !KIZART.Contains(u.Email) && (lathato == null || lathato.Contains(u.Email)))
         .OrderBy(u => u.Osztaly).ThenBy(u => u.Csoport).ThenBy(u => u.Nev)
         .Select(u =>
         {
@@ -2720,7 +2858,10 @@ app.MapPut("/api/ikt/beadas/{id:int}/visszajelzes", (int id, HttpContext ctx, Ik
 {
     var (valid, identity, role) = InspectAuthContext(ctx);
     if (!valid || !IsPrivilegedRole(role)) return Results.Unauthorized();
-    if (db.GetIktBeadas(id) == null) return Results.NotFound();
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var vb = db.GetIktBeadas(id);
+    if (vb == null) return Results.NotFound();
+    if (!LathatoTanulo(ctx, vb.Email)) return NincsJog();
     var szoveg = (req.Szoveg ?? "").Replace("\r\n", "\n").Trim();
     if (szoveg.Length == 0) return Results.BadRequest(new { error = "Üres visszajelzés." });
     if (szoveg.Length > 4000) return Results.BadRequest(new { error = "A visszajelzés legfeljebb 4000 karakter lehet." });
@@ -2734,7 +2875,9 @@ app.MapGet("/api/ikt/beadasok", (HttpContext ctx, string? feladat, Database db) 
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var f = (feladat ?? "").Trim().ToLowerInvariant();
     if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
-    return Results.Ok(new { beadasok = db.GetIktBeadasok(f).Select(IktBeadasValasz) });
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var l = LathatoTanulok(ctx);
+    return Results.Ok(new { beadasok = db.GetIktBeadasok(f).Where(b => l == null || l.Contains(b.Email)).Select(IktBeadasValasz) });
 });
 
 // Egy fájl (oktató vagy a tulajdonos, Authorization fejléccel) — GET /api/ikt/beadas/{id}/fajl/{fajlnev}
@@ -2770,13 +2913,18 @@ app.MapGet("/api/ikt/temak", (HttpContext ctx, string? feladat, Database db) =>
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var f = (feladat ?? "").Trim().ToLowerInvariant();
     if (!IktErvenyesFeladat(f)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
-    return Results.Ok(new { temak = db.GetIktTemak(f) });
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var l = LathatoTanulok(ctx);
+    return Results.Ok(new { temak = db.GetIktTemak(f).Where(t => l == null || l.Contains(t.Email)).ToList() });
 });
 
 // Egy tanuló témájának törlése (a következő megnyitáskor új témát sorsol) — DELETE /api/ikt/tema/{id}
 app.MapDelete("/api/ikt/tema/{id:int}", (int id, HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var l = LathatoTanulok(ctx);
+    if (l != null && !db.GetIktTemak("temaoldal").Any(t => t.Id == id && l.Contains(t.Email))) return NincsJog();
     return db.DeleteIktTema(id) ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 

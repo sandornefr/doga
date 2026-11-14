@@ -2186,9 +2186,10 @@ public partial class Database
         return item;
     }
 
-    public List<HaladasOsztalyStat> GetHaladasOsztalySummary()
+    // lathato: a nem admin oktató tanulói (null = mindenki)
+    public List<HaladasOsztalyStat> GetHaladasOsztalySummary(HashSet<string>? lathato = null)
     {
-        var all = GetHaladasByOsztaly(null);
+        var all = GetHaladasByOsztaly(null).Where(x => lathato == null || lathato.Contains(x.Email)).ToList();
         var cutoff = DateTime.Today.AddDays(-14).ToString("yyyy-MM-dd");
         return all
             .Where(x => x.Osztaly != null)
