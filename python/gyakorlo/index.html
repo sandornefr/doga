@@ -51,6 +51,12 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 .fl-elem .ck { margin-left: auto; font-size: .7rem; font-family: var(--mono); color: var(--muted); }
 .zarva { margin: 12px 14px 0; padding: 10px 12px; border: 1px dashed var(--border2); border-radius: 10px; color: var(--muted); font-size: .85rem; line-height: 1.45; }
 .zarva i { color: var(--yellow); margin-right: 4px; }
+.fl-elem .orai { color: var(--yellow); font-size: .75rem; }
+.elmelet { margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #1e1b4b; border: 1.5px solid #a78bfa; line-height: 1.5; font-size: 1rem; }
+.elmelet > i { font-size: 1.6rem; color: #a78bfa; }
+.elmelet b { color: #fde047; }
+.elmelet a { display: inline-block; margin-top: 6px; padding: 5px 12px; border-radius: 8px; background: #2dd4bf; color: #06111f; font-weight: 700; text-decoration: none; }
+.elmelet a:hover { background: #5eead4; }
 
 /* Jobb oldal */
 .munka { flex: 1; display: flex; min-width: 0; min-height: 0; }
@@ -229,10 +235,13 @@ async function tesztCsoportOlvas(k) {
 }
 async function tesztCsoportValt(k) {
   await tesztCsoportOlvas(k);
-  st.tema = TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
+  st.tema = TEMAK.find(t => t.feladatok.some(kiadva)) || TEMAK[0];
   valasztTema(st.tema.id);
 }
-const latszik = f => st.mind || st.feloldott.has(f.id);
+// Réka, 2026-11-16: minden feladat elérhető, az elmélet elvégzése nélkül is.
+// A tanár által kiadott feladat csak jelölést kap („Órán kiadva”).
+const latszik = () => true;
+const kiadva = f => st.feloldott.has(f.id);
 const kesz = f => store.getItem('kesz_' + f.id) === '1';
 
 // ── Lista ──────────────────────────────────────────────────────────────────
@@ -249,10 +258,8 @@ function rajzolLista() {
     if (f.csop !== csop) { csop = f.csop; html += `<div class="csop-cim">${esc(csop)}</div>`; }
     html += `<button class="fl-elem${kesz(f) ? ' kesz' : ''}${f === st.feladat ? ' aktiv' : ''}" onclick="valasztFeladat('${f.id}')">
       <span class="jel"><i class="fas ${kesz(f) ? 'fa-circle-check' : 'fa-circle'}"></i></span>
-      <span class="ssz">${f.sorszam}.</span><span>${esc(f.cim)}</span><span class="ck">${esc(f.kell || '')}</span></button>`;
+      <span class="ssz">${f.sorszam}.</span><span>${esc(f.cim)}</span>${!st.mind && kiadva(f) ? '<i class="fas fa-chalkboard-user orai" title="Órán kiadva"></i>' : ''}<span class="ck">${esc(f.kell || '')}</span></button>`;
   }
-  const zart = t.feladatok.length - lathato.length;
-  if (zart > 0) html += `<div class="zarva"><i class="fas fa-lock"></i>Még ${zart} feladat vár rád. Az órán oldjuk fel őket, utána itt gyakorolhatod.</div>`;
   el.innerHTML = html;
   const keszDb = lathato.filter(kesz).length;
   document.getElementById('haladas').innerHTML = lathato.length ? `Kész: <b>${keszDb}</b> / ${lathato.length}` : '';
@@ -262,14 +269,13 @@ function valasztTema(id) {
   st.tema = TEMAK.find(t => t.id === id) || TEMAK[0] || null;
   st.feladat = null;
   rajzolTemak();
-  const elso = st.tema && (st.tema.feladatok.find(f => latszik(f) && !kesz(f)) || st.tema.feladatok.find(latszik));
+  const elso = st.tema && (st.tema.feladatok.find(f => kiadva(f) && !kesz(f)) || st.tema.feladatok.find(f => !kesz(f)) || st.tema.feladatok[0]);
   if (elso) valasztFeladat(elso.id); else { rajzolLista(); rajzolUres(); }
 }
 
 function rajzolUres() {
-  document.getElementById('munka').innerHTML = `<div class="ures"><i class="fas fa-lock"></i>
-    <b>Még nincs kiadott feladat ebben a témában.</b><br>Az órán együtt oldjuk meg és oldjuk fel őket.
-    Utána itt otthon is gyakorolhatod.</div>`;
+  document.getElementById('munka').innerHTML = `<div class="ures"><i class="fas fa-dumbbell"></i>
+    <b>Ebben a témában még nincs feladat.</b></div>`;
 }
 
 // ── Egy feladat ────────────────────────────────────────────────────────────
@@ -277,6 +283,7 @@ function valasztFeladat(id) {
   const f = st.tema.feladatok.find(x => x.id === id);
   if (!f || !latszik(f)) return;
   st.feladat = f;
+  st.rontas = 0;   // csak a memóriában: hányszor nem sikerült az Ellenőrzés ennél a feladatnál
   rajzolLista();
   const elsoBe = (f.tesztek[0] && f.tesztek[0].be) || [];
   const mentett = store.getItem('kod_' + f.id);
@@ -294,6 +301,7 @@ function valasztFeladat(id) {
       </div>
       <div id="tipp-hely"></div>
       <div id="segitseg-hely"></div>
+      <div id="elmelet-hely"></div>
     </section>
     <section class="kod-panel">
       <div class="szerkeszto"><div class="sorszamok" id="sorszamok">1</div>
@@ -452,12 +460,26 @@ async function ellenorizGomb() {
     (minden ? '<div class="siker"><i class="fas fa-star"></i> Szép munka! Minden próba sikerült.</div>' : '') +
     sorok.map(([ok, sz]) => `<div class="e-sor ${ok ? 'ok' : 'nem'}"><span class="j"><i class="fas ${ok ? 'fa-check' : 'fa-xmark'}"></i></span><span>${sz}</span></div>`).join('');
   if (window.KandoMegoldas) KandoMegoldas.kuld('python', 'gyak_' + f.id, kod, jo, ossz);
+  if (!minden && ++st.rontas >= 2) elmeletMutat();
+  if (minden) document.getElementById('elmelet-hely').innerHTML = '';
   if (minden && !kesz(f)) {
     store.setItem('kesz_' + f.id, '1');
     haladasKuld(f, jo, ossz);
     rajzolLista();
   }
   allapot('Python: kész ✓'); st.fut = false; gombok(false);
+}
+
+// ── Elakadás: 2 sikertelen Ellenőrzés után a robot az elméletre küld (Réka, 2026-11-16) ──
+// A gyakorló témák azonosítója egyezik a kezdő szint témáival (kezdo-uj.html#print, #for …).
+const ELMELET_TEMAK = ['print', 'valtozo', 'input', 'muvelet', 'if', 'elif', 'logika', 'for', 'while'];
+function elmeletMutat() {
+  const hely = document.getElementById('elmelet-hely'), t = st.tema;
+  if (!hely || !t || hely.innerHTML) return;
+  const cel = '../kezdo-uj.html' + (ELMELET_TEMAK.includes(t.id) ? '#' + t.id : '');
+  hely.innerHTML = `<div class="elmelet"><i class="fas fa-robot"></i><div>Elakadtál? Semmi baj!<br>
+    Nézd meg az elméletet: <b>${esc(t.cim)}</b>.<br>
+    <a href="${cel}"><i class="fas fa-book-open"></i> Irány az elmélet</a></div></div>`;
 }
 
 // ── Tanári segítség: a tanuló elküldi a feladatot és a kódját; a tanár válaszol vagy odamegy ──
@@ -521,7 +543,7 @@ function haladasKuld(f, pont, max) {
   await feloldottBetolt();
   document.getElementById('oktato-cimke').hidden = !st.mind;
   const p = new URLSearchParams(location.search);
-  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
+  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK.find(t => t.feladatok.some(kiadva)) || TEMAK[0];
   st.tema = tema;
   rajzolTemak();
   const kert = tema && tema.feladatok.find(f => f.id === p.get('feladat') && latszik(f));
