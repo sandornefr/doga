@@ -468,20 +468,35 @@
     function fajlSor(o) {
         const nap = NAPOK[String(o.nap || '').trim().toLowerCase()];
         const ora = Number(o.ora);
-        const m = /^\s*(\d{1,2}(?:\/\d{1,2})?)\s*\.?\s*([A-Za-z])\s*$/.exec(String(o.osztaly || ''));
-        const cs = String(o.csoport || '').trim().toLowerCase();
-        let csoport = null;
-        if (/^\d+\s*\.?\s*(csoport)?$/.test(cs)) csoport = cs.match(/^\d+/)[0];
-        else if (cs.startsWith('info')) csoport = 'info';
-        else if (cs && !/^(egész|teljes)/.test(cs)) csoport = '?' + cs;
-        const terem = String(o.terem || '').trim().replace(/\s+/g, '');
-        const jo = !!nap && ora >= 0 && ora <= 10 && !!m && !(csoport || '').startsWith('?');
+        const csEredeti = String(o.csoport ?? '').trim();
+        let m = /^\s*(\d{1,2}(?:\/\d{1,2})?)\s*\.?\s*([A-Za-z])\s*$/.exec(String(o.osztaly || ''));
+        let osztFigyel = '';
+        if (!m) {
+            // Üres osztály mező: az osztály a csoport nevéből (pl.: „Tehetséggondozás_SP_13E” → 13.E)
+            const x = /^\s*(\d{1,2}(?:\/\d{1,2})?)\s*\.\s*([A-Za-z])\b/.exec(csEredeti) || /_(\d{1,2})([A-Za-z])\s*$/.exec(csEredeti);
+            if (x) { m = x; osztFigyel = `az osztály a csoport nevéből: ${x[1]}.${x[2].toUpperCase()}`; }
+        }
         const ev = m ? m[1] : '', oszt = m ? m[2].toUpperCase() : '';
-        // Réka döntése (2026-11-16): minden óra felkerül, tanuló nélküli csoport is – csak figyelmeztetés
+        // A KRÉTA-export a csoport elé írja az osztályt is (pl.: „10. B 1. Csoport”, „12. C Kando1”) – levágjuk
+        const cs = csEredeti.replace(/^\s*\d{1,2}(?:\/\d{1,2})?\s*\.\s*[A-Za-z]\b\s*/, '').trim().toLowerCase();
+        // 11. évfolyamtól (és felnőttképzésben) nincs csoportbontás: a csoport mezőt figyelmen kívül hagyjuk.
+        const csoportNelkul = ev.includes('/') || Number(ev) >= 11;
+        let csoport = null, csFigyel = osztFigyel;
+        if (!csoportNelkul && cs) {
+            if (/^\d+\s*\.?\s*(\.?\s*csoport|\.?\s*cs\.?)?$/.test(cs)) csoport = cs.match(/^\d+/)[0];
+            else if (cs.startsWith('info')) csoport = 'info';
+            else if (!/^(egész|teljes|-|nincs|osztály)/.test(cs))
+                csFigyel = [csFigyel, `ismeretlen csoport („${o.csoport}”) – egész osztályként kerül fel`].filter(Boolean).join("; ");
+        }
+        const terem = String(o.terem ?? '').trim().replace(/\s+/g, '');
+        // Csak a valóban értelmezhetetlen sor (nap, óra, osztály) marad ki – Réka döntése: minden óra kerüljön fel
+        const jo = !!nap && Number.isInteger(ora) && ora >= 0 && ora <= 10 && !!m;
         const nincsTanulo = jo && !letezoE(ev, oszt, csoport);
+        const okok = [!nap ? 'ismeretlen nap' : '', !(Number.isInteger(ora) && ora >= 0 && ora <= 10) ? 'hibás óraszám' : '',
+                      !m ? 'ismeretlen osztály' : ''].filter(Boolean).join(', ');
         return { nap, ora, ev, oszt, csoport, terem, tantargy: o.tantargy || '', eredeti: o,
-                 hiba: !jo ? 'értelmezhetetlen sor' : '',
-                 figyel: nincsTanulo ? 'még nincs regisztrált tanulója – felkerül' : '' };
+                 hiba: !jo ? 'értelmezhetetlen sor: ' + okok : '',
+                 figyel: [csFigyel, nincsTanulo ? 'még nincs regisztrált tanulója – felkerül' : ''].filter(Boolean).join('; ') };
     }
     window.csjBeallitasFajl = async input => {
         const f = input.files && input.files[0];
