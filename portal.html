@@ -1339,6 +1339,7 @@
                 <i class="fas fa-screwdriver-wrench tmc-icon"></i>
                 <span class="tmc-label">Admin</span>
                 <span class="tmc-desc">Mód beállítása, statisztikák, beadások kezelése</span>
+                <span id="tmc-admin-varolista" style="display:none;margin-top:4px;padding:3px 10px;border-radius:99px;background:#a78bfa;color:#160d2a;font-size:0.75rem;font-weight:700;"></span>
             </button>
             <button class="teacher-main-card tmc-oktato" onclick="showTeacherSub()">
                 <i class="fas fa-chalkboard-teacher tmc-icon"></i>
@@ -2059,7 +2060,10 @@
                 }
                 const rangsorBtnT = document.getElementById('btn-rangsor');
                 if (rangsorBtnT) rangsorBtnT.style.display = 'flex';
-                oktatoJogokBetolt(user).then(oktatoKartyakJogSzerint);
+                oktatoJogokBetolt(user).then(j => {
+                    oktatoKartyakJogSzerint(j);
+                    if (j.admin) oktatoVarolistaJelzes(user);
+                });
             }
         } else if (user.szerep === 'vendeg') {
             document.getElementById('student-layout-wrap').style.display = 'flex';
@@ -2135,6 +2139,18 @@
         } catch (e) { /* hálózati hiba: lent */ }
         // Ha nem sikerült: az admin mindent lát, más oktató csak az alap kártyákat
         return { admin: user.email === 'sandornef@kkszki.hu', jogok: [] };
+    }
+    // Admin: jóváhagyásra váró oktatói regisztrációk száma az Admin kártyán
+    async function oktatoVarolistaJelzes(user) {
+        try {
+            const r = await fetch('https://agazati.up.railway.app/api/admin/oktato-jogok', {
+                headers: { Authorization: 'Bearer ' + (user.token || '') }
+            });
+            if (!r.ok) return;
+            const db = ((await r.json()).varolista || []).length;
+            const el = document.getElementById('tmc-admin-varolista');
+            if (el && db) { el.textContent = `${db} oktató jóváhagyásra vár`; el.style.display = 'inline-block'; }
+        } catch (e) { /* nem fontos */ }
     }
     function oktatoKartyakJogSzerint(j) {
         document.querySelectorAll('[data-jog]').forEach(el => {

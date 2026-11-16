@@ -25,7 +25,79 @@ public partial class Database
                 kulcs      TEXT NOT NULL,
                 created_at TEXT DEFAULT (datetime('now','localtime')),
                 PRIMARY KEY (email, kulcs)
+            );
+            -- Oktatói regisztráció jóváhagyásra vár (2026-11-16): amíg itt van, nem tud belépni.
+            CREATE TABLE IF NOT EXISTS oktato_jovahagyasra_var (
+                email      TEXT PRIMARY KEY,
+                created_at TEXT DEFAULT (datetime('now','localtime'))
             );");
+    }
+
+    // ── Oktatói regisztráció jóváhagyása ─────────────────────────────────────
+    public void OktatoVarolistara(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT OR IGNORE INTO oktato_jovahagyasra_var (email) VALUES ($e)";
+        cmd.Parameters.AddWithValue("$e", email.Trim().ToLowerInvariant());
+        cmd.ExecuteNonQuery();
+    }
+
+    public bool OktatoJovahagyasraVar(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM oktato_jovahagyasra_var WHERE email = $e";
+        cmd.Parameters.AddWithValue("$e", email.Trim().ToLowerInvariant());
+        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+    }
+
+    public record VaroOktato(string Email, string Nev, string CreatedAt);
+    public List<VaroOktato> GetOktatoVarolista()
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"SELECT v.email, COALESCE(u.vezeteknev || ' ' || u.keresztnev, v.email), COALESCE(v.created_at, '')
+                            FROM oktato_jovahagyasra_var v LEFT JOIN users u ON LOWER(u.email) = v.email
+                            ORDER BY v.created_at";
+        var list = new List<VaroOktato>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read()) list.Add(new VaroOktato(r.GetString(0), r.GetString(1), r.GetString(2)));
+        return list;
+    }
+
+    // Jóváhagyás: lekerül a várólistáról (innentől be tud lépni; a jogait az admin pipálja be).
+    public bool OktatoJovahagy(string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM oktato_jovahagyasra_var WHERE email = $e";
+        cmd.Parameters.AddWithValue("$e", email.Trim().ToLowerInvariant());
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // Elutasítás: csak várólistán lévő oktatói fiók törölhető így (tranzakcióban).
+    public bool OktatoElutasit(string email)
+    {
+        var e = email.Trim().ToLowerInvariant();
+        using var conn = Open();
+        using var tx = conn.BeginTransaction();
+        using (var c1 = conn.CreateCommand())
+        {
+            c1.Transaction = tx;
+            c1.CommandText = "DELETE FROM oktato_jovahagyasra_var WHERE email = $e";
+            c1.Parameters.AddWithValue("$e", e);
+            if (c1.ExecuteNonQuery() == 0) { tx.Rollback(); return false; }
+        }
+        using (var c2 = conn.CreateCommand())
+        {
+            c2.Transaction = tx;
+            c2.CommandText = "DELETE FROM users WHERE LOWER(email) = $e AND szerep = 'oktato'";
+            c2.Parameters.AddWithValue("$e", e);
+            c2.ExecuteNonQuery();
+        }
+        tx.Commit();
+        return true;
     }
 
     public List<string> GetOktatoJogok(string email)
@@ -59,7 +131,8 @@ public partial class Database
         var list = new List<OktatoJogSor>();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"SELECT LOWER(email), vezeteknev || ' ' || keresztnev FROM users
-                            WHERE szerep = 'oktato' ORDER BY vezeteknev, keresztnev";
+                            WHERE szerep = 'oktato' AND LOWER(email) NOT IN (SELECT email FROM oktato_jovahagyasra_var)
+                            ORDER BY vezeteknev, keresztnev";
         using var rr = cmd.ExecuteReader();
         while (rr.Read())
         {

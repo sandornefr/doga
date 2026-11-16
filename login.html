@@ -660,6 +660,10 @@
                     const isOktato = data.szerep === 'oktato' && data.email !== 'sandornef@kkszki.hu';
                     window.location.replace(isOktato ? 'portal.html#oktato' : 'portal.html');
                 }, 1000);
+            } else if (res.status === 403) {
+                // Jóváhagyásra váró oktatói fiók
+                const d = await res.json().catch(() => ({}));
+                showError('login-error', d.error || 'A fiókod még jóváhagyásra vár.');
             } else {
                 showError('login-error', 'Hibás email cím vagy jelszó!');
             }
@@ -725,8 +729,13 @@
             const data = await res.json();
 
             if (res.ok) {
-                showSuccess('register-success', 'Sikeres regisztráció! Most már bejelentkezhetsz.');
-                setTimeout(() => switchTab('login'), 2000);
+                if (data.jovahagyasraVar) {
+                    // Oktatói fiók: az adminnak jóvá kell hagynia – az üzenet maradjon olvasható
+                    showSuccess('register-success', data.message);
+                } else {
+                    showSuccess('register-success', 'Sikeres regisztráció! Most már bejelentkezhetsz.');
+                    setTimeout(() => switchTab('login'), 2000);
+                }
             } else {
                 showError('register-error', data.error || 'Hiba a regisztráció során.');
                 if (window.turnstile) turnstile.reset();

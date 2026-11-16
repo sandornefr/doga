@@ -495,6 +495,15 @@ app.MapPost("/api/auth/register", async (RegisterRequest req, Database db) =>
     if (!success)
         return Results.BadRequest(new { error = "Ez az email cím már regisztrálva van!" });
 
+    // Oktatói fiók: az adminnak (Réka) jóvá kell hagynia, addig nem tud belépni.
+    // (Az admin email-címe kivétel, hogy saját magát ne zárhassa ki.)
+    if (requestedRole == "oktato" && !IsAdminIdentity(email))
+    {
+        db.OktatoVarolistara(email);
+        return Results.Ok(new { success = true, jovahagyasraVar = true,
+            message = "Sikeres regisztráció! Az oktatói fiókodat az adminisztrátornak jóvá kell hagynia – utána tudsz belépni." });
+    }
+
     return Results.Ok(new { success = true, message = "Sikeres regisztráció!" });
 })
 .RequireRateLimiting("auth");
@@ -509,6 +518,11 @@ app.MapPost("/api/auth/user-login", (UserLoginRequest req, Database db) =>
     var user = db.GetUserByEmail(email);
     if (user == null || !BCrypt.Net.BCrypt.Verify(req.Jelszo, user.PasswordHash))
         return Results.Unauthorized();
+
+    // Jóváhagyásra váró oktatói fiók (helyes jelszóval is) még nem léphet be.
+    if (user.Szerep == "oktato" && db.OktatoJovahagyasraVar(email))
+        return Results.Json(new { error = "Az oktatói fiókodat még nem hagyta jóvá az adminisztrátor. Ha sürgős, szólj neki.", jovahagyasraVar = true },
+                            statusCode: 403);
 
     var token = CreateToken($"{email}|{user.Szerep}");
     return Results.Ok(new
@@ -1992,7 +2006,23 @@ app.MapGet("/api/admin/oktato-jogok", (HttpContext ctx, Database db) =>
     {
         email = o.Email, nev = o.Nev, jogok = o.Jogok, admin = IsAdminIdentity(o.Email)
     });
-    return Results.Ok(new { csomagok = Database.OktatoCsomagok, extra = Database.OktatoExtraSzerepek, oktatok });
+    var varolista = db.GetOktatoVarolista().Select(v => new { email = v.Email, nev = v.Nev, createdAt = v.CreatedAt });
+    return Results.Ok(new { csomagok = Database.OktatoCsomagok, extra = Database.OktatoExtraSzerepek, oktatok, varolista });
+});
+
+// Admin: jóváhagyásra váró oktatói regisztráció elfogadása / elutasítása (az elutasítás törli a fiókot)
+// POST / DELETE /api/admin/oktato-jovahagyas/{email}
+app.MapPost("/api/admin/oktato-jovahagyas/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog();
+    return db.OktatoJovahagy(Uri.UnescapeDataString(email)) ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Nincs ilyen várakozó oktató." });
+});
+app.MapDelete("/api/admin/oktato-jovahagyas/{email}", (string email, HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog();
+    return db.OktatoElutasit(Uri.UnescapeDataString(email)) ? Results.Ok(new { success = true }) : Results.NotFound(new { error = "Nincs ilyen várakozó oktató." });
 });
 
 // Admin: egy oktató jogainak beállítása: PUT /api/admin/oktato-jogok  { email, jogok: [...] }

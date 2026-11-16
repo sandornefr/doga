@@ -929,6 +929,16 @@
                 </div>
             </details>
 
+            <!-- Jóváhagyásra váró oktatói regisztrációk (csak ha van ilyen) -->
+            <div id="oktato-varolista-panel" style="margin-bottom:18px;background:#160d2a;border:2px solid #a78bfa;border-radius:12px;padding:14px 18px;display:none;">
+                <div style="font-weight:700;color:#c4b5fd;font-size:0.97rem;margin-bottom:10px;">
+                    <i class="fas fa-user-clock"></i> Oktatói regisztráció jóváhagyásra vár
+                    <span id="oktato-varolista-badge" style="background:#a78bfa;color:#160d2a;border-radius:99px;padding:1px 9px;font-size:0.82rem;margin-left:6px;"></span>
+                </div>
+                <div style="color:#94a3b8;font-size:0.8rem;margin-bottom:10px;">Amíg nem hagyod jóvá, nem tud belépni. Jóváhagyás után az „Oktatói jogosultságok” részben pipáld be, mit láthat. Az elutasítás törli a fiókot.</div>
+                <div id="oktato-varolista"></div>
+            </div>
+
             <!-- Jelszó visszaállítási kérelmek -->
             <div id="pw-reset-requests-panel" style="margin-bottom:18px;background:#1a0a0a;border:2px solid #f59e0b;border-radius:12px;padding:14px 18px;display:none;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -1499,6 +1509,36 @@
                     : '<span style="color:#64748b;">Nincs regisztrált oktató.</span>';
             } catch (e) {
                 wrap.innerHTML = `<span style="color:#e94560;">Hiba: ${escapeHtml(e.message)}</span>`;
+            }
+        }
+        // Jóváhagyásra váró oktatói regisztrációk
+        async function loadOktatoVarolista() {
+            const panel = document.getElementById('oktato-varolista-panel');
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/oktato-jogok`);
+                if (!res.ok) { panel.style.display = 'none'; return; }
+                const lista = (await res.json()).varolista || [];
+                panel.style.display = lista.length ? 'block' : 'none';
+                document.getElementById('oktato-varolista-badge').textContent = lista.length;
+                document.getElementById('oktato-varolista').innerHTML = lista.map(v => `
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid #2e2150;">
+                        <div style="flex:1;min-width:200px;"><b>${escapeHtml(v.nev)}</b>
+                            <div style="color:#94a3b8;font-size:0.78rem;">${escapeHtml(v.email)} · regisztrált: ${escapeHtml(v.createdAt)}</div></div>
+                        <button class="btn-refresh" style="background:#166534;border-color:#22c55e;color:#fff;" onclick="oktatoDontes(${jsArg(v.email)}, true)"><i class="fas fa-check"></i> Jóváhagyom</button>
+                        <button class="btn-refresh" style="background:#7f1d1d;border-color:#ef4444;color:#fff;" onclick="oktatoDontes(${jsArg(v.email)}, false)"><i class="fas fa-xmark"></i> Elutasítom</button>
+                    </div>`).join('');
+            } catch (e) { panel.style.display = 'none'; }
+        }
+        async function oktatoDontes(email, jovahagy) {
+            if (!jovahagy && !confirm(`Biztosan elutasítod? A(z) ${email} fiók törlődik.`)) return;
+            try {
+                const res = await authFetch(`${RAILWAY_URL}/api/admin/oktato-jovahagyas/${encodeURIComponent(email)}`, { method: jovahagy ? 'POST' : 'DELETE' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            } catch (e) { alert('Nem sikerült: ' + e.message); }
+            loadOktatoVarolista();
+            if (document.getElementById('oktato-jogok-panel').open || jovahagy) {
+                document.getElementById('oktato-jogok-panel').open = true;
+                loadOktatoJogok();
             }
         }
         async function saveOktatoJog(email) {
@@ -2230,6 +2270,7 @@
             if (name === 'kovetelmenyek' && kovData.length === 0) loadKovetelmenyek();
             if (name === 'felhasznalok') {
                 loadPwResetRequests();
+                loadOktatoVarolista();
                 updateCsoportLetszam(); // azonnal kirajzol localStorage-ból
                 loadUsers();
                 startUsersAutoRefresh();
