@@ -536,6 +536,14 @@
             // Tanuló nélküli csoport is felkerül (Réka döntése, 2026-11-16) – a választólista ettől még a létezőket kínálja
             orak.push({ felev, nap, ora, evfolyam: p[2], osztaly: p[3].toUpperCase(), csoport, terem: p.slice(5).join(' ') || null });
         }
+        // Megerősítés: a mentés az adott oktató adott félévének MINDEN óráját lecseréli
+        const vsel = document.getElementById('csj-b-oktato');
+        const kieNev = bea.oktato ? ((vsel && vsel.selectedOptions[0]) ? vsel.selectedOptions[0].textContent : bea.oktato) : 'a SAJÁT órarended';
+        const regiDb = bea.orarend.filter(o => o.felev === felev).length;
+        if (!confirm(`Biztosan felülírod ${bea.oktato ? kieNev + ' órarendjét' : kieNev + 'et'} (${felev}. félév)?
+
+` +
+                     `Most ${regiDb} óra van benne – ezek törlődnek, és helyükre ${orak.length} óra kerül.`)) return;
         const kinek = bea.oktato ? `?oktato=${encodeURIComponent(bea.oktato)}` : '';
         const r = await authFetch(`${RAILWAY_URL}/api/csoportjaim/orarend${kinek}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tanev: TANEV.kezdo, felev, orak }) });

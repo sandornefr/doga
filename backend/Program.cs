@@ -2044,14 +2044,17 @@ app.MapPut("/api/admin/oktato-jogok", (HttpContext ctx, OktatoJogMentes req, Dat
 string OktatoAzonosito(HttpContext ctx)
 {
     var (_, identity, _) = InspectAuthContext(ctx);
-    return (identity ?? "").Trim().ToLowerInvariant();
+    var id = (identity ?? "").Trim().ToLowerInvariant();
+    // Az admin két azonosítója (a környezeti „admin” felhasználó és Réka email-címe) ugyanaz az ember:
+    // az órarend, óranapló, gyakorló-kiadás eddig az „admin” név alatt gyűlt – mindkettő azt lássa.
+    return IsAdminIdentity(id) ? adminEnvUser.Trim().ToLowerInvariant() : id;
 }
 
 // Kinek az órarendje: alapból a sajátja; ?oktato=email csak adminnak (más oktató órarendjének szerkesztése).
 string? OrarendGazda(HttpContext ctx)
 {
     var masik = (ctx.Request.Query["oktato"].FirstOrDefault() ?? "").Trim().ToLowerInvariant();
-    if (string.IsNullOrEmpty(masik) || masik == OktatoAzonosito(ctx)) return OktatoAzonosito(ctx);
+    if (string.IsNullOrEmpty(masik) || masik == OktatoAzonosito(ctx) || IsAdminIdentity(masik)) return OktatoAzonosito(ctx);
     return IsAdmin(ctx) && db.LetezoOktato(masik) ? masik : null;
 }
 
