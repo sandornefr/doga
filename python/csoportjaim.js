@@ -477,11 +477,11 @@
         const terem = String(o.terem || '').trim().replace(/\s+/g, '');
         const jo = !!nap && ora >= 0 && ora <= 10 && !!m && !(csoport || '').startsWith('?');
         const ev = m ? m[1] : '', oszt = m ? m[2].toUpperCase() : '';
-        // Admin (Réka döntése, 2026-11-16): tanuló nélküli csoport is felkerülhet – csak figyelmeztetés
+        // Réka döntése (2026-11-16): minden óra felkerül, tanuló nélküli csoport is – csak figyelmeztetés
         const nincsTanulo = jo && !letezoE(ev, oszt, csoport);
         return { nap, ora, ev, oszt, csoport, terem, tantargy: o.tantargy || '', eredeti: o,
-                 hiba: !jo ? 'értelmezhetetlen sor' : (nincsTanulo && !bea.admin ? 'a csoport nincs a rendszerben (nincs regisztrált tanulója)' : ''),
-                 figyel: nincsTanulo && bea.admin ? 'még nincs regisztrált tanulója – felkerül' : '' };
+                 hiba: !jo ? 'értelmezhetetlen sor' : '',
+                 figyel: nincsTanulo ? 'még nincs regisztrált tanulója – felkerül' : '' };
     }
     window.csjBeallitasFajl = async input => {
         const f = input.files && input.files[0];
@@ -533,10 +533,7 @@
             const nap = NAPOK[p[0]?.toLowerCase()], ora = Number(p[1]);
             if (!nap || !(ora >= 0 && ora <= 10) || !p[2] || !p[3]) { hiba.textContent = `Hibás ${i + 1}. sor: „${sor}”`; return; }
             const csoport = p[4] && p[4] !== '-' ? p[4] : null;
-            if (!bea.admin && !letezoE(p[2], p[3], csoport)) {   // az admin tanuló nélküli csoportot is felvehet
-                hiba.textContent = `A(z) ${i + 1}. sor csoportja (${p[2]}.${p[3].toUpperCase()}${csoport ? ' ' + csoport : ''}) nincs a rendszerben (nincs regisztrált tanulója).`;
-                return;
-            }
+            // Tanuló nélküli csoport is felkerül (Réka döntése, 2026-11-16) – a választólista ettől még a létezőket kínálja
             orak.push({ felev, nap, ora, evfolyam: p[2], osztaly: p[3].toUpperCase(), csoport, terem: p.slice(5).join(' ') || null });
         }
         const kinek = bea.oktato ? `?oktato=${encodeURIComponent(bea.oktato)}` : '';
