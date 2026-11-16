@@ -473,10 +473,11 @@ async function ellenorizGomb() {
 // ── Elakadás: 2 sikertelen Ellenőrzés után a robot az elméletre küld (Réka, 2026-11-16) ──
 // A gyakorló témák azonosítója egyezik a kezdő szint témáival (kezdo-uj.html#print, #for …).
 const ELMELET_TEMAK = ['print', 'valtozo', 'input', 'muvelet', 'if', 'elif', 'logika', 'for', 'while'];
+let ujElmelet = false; fetch('../kezdo-uj.html', { method: 'HEAD' }).then(r => { ujElmelet = r.ok; }).catch(() => {});
 function elmeletMutat() {
   const hely = document.getElementById('elmelet-hely'), t = st.tema;
   if (!hely || !t || hely.innerHTML) return;
-  const cel = '../kezdo-uj.html' + (ELMELET_TEMAK.includes(t.id) ? '#' + t.id : '');
+  const cel = ujElmelet ? '../kezdo-uj.html' + (ELMELET_TEMAK.includes(t.id) ? '#' + t.id : '') : '../basics.html';
   hely.innerHTML = `<div class="elmelet"><i class="fas fa-robot"></i><div>Elakadtál? Semmi baj!<br>
     Nézd meg az elméletet: <b>${esc(t.cim)}</b>.<br>
     <a href="${cel}"><i class="fas fa-book-open"></i> Irány az elmélet</a></div></div>`;
