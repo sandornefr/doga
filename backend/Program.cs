@@ -318,6 +318,7 @@ app.MapGet("/api/config", (Database db) =>
 app.MapPost("/api/config", (HttpContext ctx, ConfigRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     db.SetConfig("test_mode", req.TestMode);
     if (req.VizsgaKezdes != null)
         db.SetConfig("vizsga_kezdes", req.VizsgaKezdes);
@@ -541,6 +542,7 @@ app.MapGet("/api/users", (HttpContext ctx, Database db) =>
 app.MapDelete("/api/users/{email}", (HttpContext ctx, string email, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var deleted = db.DeleteUser(Uri.UnescapeDataString(email));
     return deleted ? Results.Ok(new { success = true }) : Results.NotFound();
 });
@@ -549,6 +551,7 @@ app.MapDelete("/api/users/{email}", (HttpContext ctx, string email, Database db)
 app.MapPost("/api/users/{email}/update", (HttpContext ctx, string email, UpdateUserRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     if (string.IsNullOrWhiteSpace(req.Vezeteknev)) return Results.BadRequest(new { error = "A vezetéknév nem lehet üres!" });
     if (string.IsNullOrWhiteSpace(req.Keresztnev)) return Results.BadRequest(new { error = "A keresztnév nem lehet üres!" });
     if (!ErvenyesNev(req.Vezeteknev) || !ErvenyesNev(req.Keresztnev))
@@ -566,6 +569,7 @@ app.MapPost("/api/users/{email}/update", (HttpContext ctx, string email, UpdateU
 app.MapGet("/api/admin/evfolyam-leptetes/preview", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     return Results.Ok(db.GetEvfolyamLeptetesPreview());
 });
 
@@ -599,6 +603,7 @@ IResult Mentessel(Database db, string ok, Func<string, IResult> muvelet)
 app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLeptetesApplyRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var (_, tokenIdentity, _) = InspectAuthContext(ctx);
     return Mentessel(db, "leptetes", mentes =>
     {
@@ -611,6 +616,7 @@ app.MapPost("/api/admin/evfolyam-leptetes/apply", (HttpContext ctx, EvfolyamLept
 app.MapGet("/api/admin/evfolyam-leptetes/utolso", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var info = db.GetUtolsoLeptetes();
     return info == null ? Results.NoContent() : Results.Ok(info);
 });
@@ -620,6 +626,7 @@ app.MapGet("/api/admin/evfolyam-leptetes/utolso", (HttpContext ctx, Database db)
 app.MapPost("/api/admin/evfolyam-leptetes/visszavonas", (HttpContext ctx, EvfolyamVisszavonasRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var utolso = db.GetUtolsoLeptetes();
     if (utolso == null || utolso.BatchId != req.BatchId)
         return Results.Json(new { success = false, error = "Ez már nem a legutóbbi léptetés, vagy már vissza lett vonva. Töltsd újra az ablakot." }, statusCode: 409);
@@ -637,6 +644,7 @@ app.MapPost("/api/admin/evfolyam-leptetes/visszavonas", (HttpContext ctx, Evfoly
 app.MapPost("/api/admin/vegzosok-torlese", (HttpContext ctx, VegzosokTorleseRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var (_, tokenIdentity, _) = InspectAuthContext(ctx);
     return Mentessel(db, "vegzos_torles", mentes =>
     {
@@ -649,6 +657,7 @@ app.MapPost("/api/admin/vegzosok-torlese", (HttpContext ctx, VegzosokTorleseRequ
 app.MapGet("/api/admin/mentes-letoltes", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     string mentes;
     lock (tanevvaltasLock) { mentes = db.CreateBackup("letoltes"); }
     return Results.File(File.ReadAllBytes(mentes), "application/octet-stream", Path.GetFileName(mentes));
@@ -658,6 +667,7 @@ app.MapGet("/api/admin/mentes-letoltes", (HttpContext ctx, Database db) =>
 app.MapPost("/api/admin/szakmavalasztas-inditas", (HttpContext ctx, SzakmavalasztasInditasRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     if (req.Evfolyam != "1/13")
         return Results.BadRequest(new { success = false, error = "Csak az 1/13. évfolyamra indítható." });
     return Results.Ok(new { success = true, erintett = db.SzakmavalasztasInditas(req.Evfolyam) });
@@ -667,6 +677,7 @@ app.MapPost("/api/admin/szakmavalasztas-inditas", (HttpContext ctx, Szakmavalasz
 app.MapPost("/api/admin/teszt-elek/evfolyam", (HttpContext ctx, TesztElekEvfolyamRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     return db.SetTesztElekEvfolyam(req.Evfolyam)
         ? Results.Ok(new { success = true, evfolyam = req.Evfolyam })
         : Results.BadRequest(new { success = false, error = "Ismeretlen évfolyam." });
@@ -676,6 +687,7 @@ app.MapPost("/api/admin/teszt-elek/evfolyam", (HttpContext ctx, TesztElekEvfolya
 app.MapPost("/api/users/reset-password", (HttpContext ctx, ResetPasswordRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     if (req.NewPassword.Length < 6)
         return Results.BadRequest(new { error = "A jelszó legalább 6 karakter legyen!" });
     var hash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
@@ -1448,6 +1460,7 @@ app.MapPost("/api/password-reset-request", (PasswordResetRequestInput req, Datab
 app.MapPost("/api/admin/email-proba", async (HttpContext ctx) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     var (ok, uzenet) = await EmailErtesito.Probalevel(app.Configuration);
     return ok ? Results.Ok(new { success = true, uzenet }) : Results.BadRequest(new { error = uzenet });
 }).RequireRateLimiting("auth");
@@ -1456,6 +1469,7 @@ app.MapPost("/api/admin/email-proba", async (HttpContext ctx) =>
 app.MapGet("/api/password-reset-requests", (HttpContext ctx, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     return Results.Ok(db.GetPasswordResetRequests());
 });
 
@@ -1463,6 +1477,7 @@ app.MapGet("/api/password-reset-requests", (HttpContext ctx, Database db) =>
 app.MapDelete("/api/password-reset-request/{id}", (HttpContext ctx, int id, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!IsAdmin(ctx)) return NincsJog(); // csak admin (Réka)
     db.DeletePasswordResetRequest(id);
     return Results.Ok(new { success = true });
 });
