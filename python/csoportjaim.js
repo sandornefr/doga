@@ -510,8 +510,12 @@
         // Admin: ha a fájl tanárneve egy oktatóé, azt választja ki (pl.: „Gáll Rita Beáta” → Gáll Rita)
         const vsel = document.getElementById('csj-b-oktato');
         if (vsel && d.tanar) {
-            const nev = String(d.tanar).toLowerCase();
-            const talalat = bea.oktatok.find(o => !o.admin && (nev.startsWith(o.nev.toLowerCase()) || o.nev.toLowerCase().startsWith(nev)));
+            // A név minden szava szerepeljen a másikban (pl.: „Kasza László Róbert” ↔ „Kasza Róbert”, „Gáll Rita Beáta” ↔ „Gáll Rita”)
+            const szavak = x => String(x).toLowerCase().split(/\s+/).filter(Boolean);
+            const fajlSzavak = szavak(d.tanar);
+            const egyezik = o => { const n = szavak(o.nev); return n.length >= 2 && (n.every(w => fajlSzavak.includes(w)) || fajlSzavak.every(w => n.includes(w))); };
+            const jeloltek = bea.oktatok.filter(o => !o.admin && egyezik(o));
+            const talalat = jeloltek.length === 1 ? jeloltek[0] : null;
             if (talalat && vsel.value !== talalat.email) { vsel.value = talalat.email; await csjBeallitasOktato(talalat.email); }
         }
         const sorok = d.orak.map(fajlSor).sort((a, b) => (a.nap || 9) - (b.nap || 9) || a.ora - b.ora);
