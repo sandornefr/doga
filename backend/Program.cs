@@ -2460,6 +2460,7 @@ app.MapDelete("/api/oktato/plusz/{id:int}", (int id, HttpContext ctx, Database d
 app.MapPost("/api/oktato/sprint", (HttpContext ctx, SprintCreateRequest req, Database db) =>
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "python")) return NincsJog(); // a Python sprint a Python csomaghoz tartozik
     if (string.IsNullOrWhiteSpace(req.Cim) || string.IsNullOrWhiteSpace(req.Leiras))
         return Results.BadRequest(new { error = "Cím és feladatleírás kötelező" });
     if (req.Cim.Length > 200 || req.Leiras.Length > 8000) return Results.BadRequest(new { error = "Túl hosszú szöveg" });
