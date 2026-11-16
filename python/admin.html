@@ -1364,6 +1364,18 @@
         async function checkAuth() {
             const isAuthenticated = localStorage.getItem('admin_authenticated') === 'true';
             authToken = localStorage.getItem('admin_token') || '';
+            // Közös gépen a tárolt admin-token egy korábbi felhasználóé lehet: ha a portálon most más
+            // oktató van belépve, nem használjuk (különben az ő nevében/jogaival dolgozna).
+            try {
+                const pu = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}');
+                const d = authToken ? atob(authToken) : '';
+                const p = d.slice(0, d.lastIndexOf('.'));
+                const tokenEmail = p.slice(0, p.lastIndexOf(':')).split('|')[0].trim().toLowerCase();
+                if (authToken && pu.email && pu.szerep === 'oktato' && tokenEmail !== String(pu.email).toLowerCase()) {
+                    authToken = '';
+                    ['admin_token', 'admin_authenticated', 'admin_username'].forEach(k => localStorage.removeItem(k));
+                }
+            } catch (e) { /* hibás token: alább a bejelentkezés dönt */ }
 
             if (isAuthenticated && authToken) {
                 document.getElementById('login-screen').style.display = 'none';

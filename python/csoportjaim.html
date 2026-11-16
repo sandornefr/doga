@@ -512,7 +512,14 @@
 // Ugyanazzal a belépéssel dolgozik, mint az admin Csoportjaim füle, így ugyanazt az órarendet látod.
 const RAILWAY_URL = 'https://agazati.up.railway.app';
 const PORTAL_USER = (() => { try { return JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || '{}'); } catch { return {}; } })();
+// A tárolt admin-token csak akkor használható, ha a most belépett oktatóé (közös gépen
+// különben az előző felhasználó – pl. az admin – nevében dolgozna). Token: base64("email|szerep:ts.sig")
+function tokenAzonosito(t) {
+    try { const d = atob(t); const p = d.slice(0, d.lastIndexOf('.')); return p.slice(0, p.lastIndexOf(':')).split('|')[0].trim().toLowerCase(); }
+    catch { return ''; }
+}
 let authToken = localStorage.getItem('admin_token') || '';
+if (authToken && tokenAzonosito(authToken) !== String(PORTAL_USER.email || '').toLowerCase()) authToken = '';
 async function tokenSzerez() {
     // nincs admin belépés: az oktatói belépésből kér egyet (mint az admin oldal automatikus belépése)
     if (!PORTAL_USER.token || PORTAL_USER.szerep !== 'oktato') return false;

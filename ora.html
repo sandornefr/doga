@@ -176,7 +176,12 @@ const U = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem
 let TANAR = {}; try { TANAR = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}'); } catch {}
 const TOKEN = (U.szerep === 'oktato' && U.token) || TANAR.token || localStorage.getItem('admin_token') || '';
 if (!TOKEN) location.replace('login.html');
-const ADMIN_TOKEN = localStorage.getItem('admin_token') || '';
+// A tárolt admin-token csak akkor, ha a most belépett oktatóé (közös gépen az előző felhasználóé lehet)
+const ADMIN_TOKEN = (() => {
+  const t = localStorage.getItem('admin_token') || '';
+  try { const d = atob(t), p = d.slice(0, d.lastIndexOf('.')); return p.slice(0, p.lastIndexOf(':')).split('|')[0].trim().toLowerCase() === String(U.email || '').toLowerCase() ? t : ''; }
+  catch { return ''; }
+})();
 const PARAM = new URLSearchParams(location.search);
 const KORABBI = PARAM.get('korabbi') === '1';
 document.getElementById(KORABBI ? 'ful-korabbi' : 'ful-mai').classList.add('aktiv');

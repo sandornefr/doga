@@ -652,6 +652,8 @@
                     needsClassConfirm:  data.needsClassConfirm ?? false
                 });
                 localStorage.setItem('kandoLastEmail', document.getElementById('login-email').value.trim());
+                // Egy korábbi felhasználó (pl. az admin) tárolt tokenjei ne maradjanak meg a közös gépen
+                ['admin_token', 'admin_authenticated', 'admin_username', 'kandoTeacherBackup'].forEach(k => localStorage.removeItem(k));
                 sessionStorage.setItem('kandoUser', kandoUserData);
                 // Oktatónál localStorage-ba is mentjük, hogy böngésző újranyitás után is bent maradjon
                 if (data.szerep === 'oktato') localStorage.setItem('kandoUser', kandoUserData);

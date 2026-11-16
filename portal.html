@@ -2886,6 +2886,8 @@
         const current = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
         sessionStorage.removeItem('kandoUser');
         if (current.szerep === 'oktato') localStorage.removeItem('kandoUser');
+        // a tárolt admin-belépés is (közös gépen a következő felhasználó ne örökölje)
+        ['admin_token', 'admin_authenticated', 'admin_username', 'kandoTeacherBackup'].forEach(k => localStorage.removeItem(k));
         window.location.replace('login.html');
     }
 
