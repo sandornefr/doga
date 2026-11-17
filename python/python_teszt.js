@@ -193,21 +193,14 @@ async function initializeApp() {
         }
     }
 
-    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
-
-    if (isTeacher) {
-        // Bemutató / oktatói mód: rögtön indul
-        startTest();
-    } else {
-        // Gyakorló és éles/vizsga mód: megjelenítjük a start képernyőt
-        const startEl = document.getElementById('start-section');
-        if (startEl) startEl.classList.remove('hidden');
-        const backBtn = document.getElementById('back-to-menu-btn');
-        if (backBtn) backBtn.classList.remove('hidden');
-        updateStartSection();
-        const startGomb = document.getElementById('start-btn');
-        if (startGomb) startGomb.disabled = false;
-    }
+    // Gyakorló és éles/vizsga mód: megjelenítjük a start képernyőt
+    const startEl = document.getElementById('start-section');
+    if (startEl) startEl.classList.remove('hidden');
+    const backBtn = document.getElementById('back-to-menu-btn');
+    if (backBtn) backBtn.classList.remove('hidden');
+    updateStartSection();
+    const startGomb = document.getElementById('start-btn');
+    if (startGomb) startGomb.disabled = false;
 
     // Pyodide előbetöltése a háttérben
     getPyodide()
@@ -748,15 +741,11 @@ async function startTest() {
     }
 
     // Módjelzés a quiz top bar-ban (elem már HTML-ben van, csak frissítjük)
-    const isTeacherMode = sessionStorage.getItem('kandTeacherMode') === 'true';
     const pill = document.getElementById('quiz-mode-pill');
     if (pill) {
-        if ((testMode === 'live' || testMode === 'vizsga') && !isTeacherMode) {
+        if (testMode === 'live' || testMode === 'vizsga') {
             pill.style.cssText = 'display:block;background:#2d0a0a;border:1px solid #e94560;color:#e94560;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:auto;margin-right:2rem;';
             pill.textContent = '🔴 SZÁMONKÉRÉS MÓD';
-        } else if (isTeacherMode) {
-            pill.style.cssText = 'display:block;background:#1a0d2e;border:1px solid #7c3aed;color:#c4b5fd;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:auto;margin-right:2rem;';
-            pill.textContent = '🎬 BEMUTATÓ MÓD';
         } else {
             pill.style.cssText = 'display:block;background:#0d2b0d;border:1px solid #2ed573;color:#2ed573;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:auto;margin-right:2rem;';
             pill.textContent = '🎓 GYAKORLÓ MÓD';
@@ -778,8 +767,8 @@ async function startTest() {
 
     // Vízjel – tanuló neve + emailje (screenshothoz)
 
-    // Oktatói/bemutató módban nincs fullscreen kényszer; vizsga módban igen
-    if (!isTeacherMode && (testMode === 'live' || testMode === 'vizsga')) {
+    // Vizsga módban fullscreen kényszer
+    if (testMode === 'live' || testMode === 'vizsga') {
         enterFullscreen();
     }
 
@@ -2496,11 +2485,6 @@ function handleFullscreenChange() {
         return;
     }
 
-    if (sessionStorage.getItem('kandTeacherMode') === 'true') {
-        fullscreenPrompt.style.display = 'none';
-        return;
-    }
-
     if (!isFullscreen && testActive) {
         // Azonnal feketére váltás – tartalom nem látható
         fullscreenPrompt.style.display = 'flex';
@@ -2543,7 +2527,6 @@ function handleVisibilityChange() {
     if (testMode !== 'live') {
         return;
     }
-    if (sessionStorage.getItem('kandTeacherMode') === 'true') return;
 
     if (document.hidden && !quizSection.classList.contains('hidden')) {
         logEvent('Tab hidden - potential cheating');
@@ -2557,7 +2540,6 @@ function handleWindowBlur() {
     if (testMode !== 'live') {
         return;
     }
-    if (sessionStorage.getItem('kandTeacherMode') === 'true') return;
 
     if (suppressNextBlur) {
         suppressNextBlur = false;
@@ -2802,22 +2784,18 @@ function updateTestModeBadge() {
 
     badge.style.display = 'block';
 
-    const isTeacher = sessionStorage.getItem('kandTeacherMode') === 'true';
-
     if (testMode === 'live' || testMode === 'vizsga') {
         badge.style.display = 'block';
         badge.style.background = 'linear-gradient(135deg, #7a0000, #c0392b)';
         badge.style.color = 'white';
         badge.style.border = '2px solid #e94560';
-        text.textContent = isTeacher
-            ? '🔴 SZÁMONKÉRÉS MÓD aktív (oktatói nézet – anti-cheat kikapcsolva)'
-            : '🔴 SZÁMONKÉRÉS MÓD – Az eredmények elküldésre kerülnek!';
+        text.textContent = '🔴 SZÁMONKÉRÉS MÓD – Az eredmények elküldésre kerülnek!';
     } else {
         badge.style.display = 'none';
     }
 
     // Szabályok szöveg a popupban: számonkérés/vizsga módban
-    const isLive = (testMode === 'live' || testMode === 'vizsga') && !isTeacher;
+    const isLive = (testMode === 'live' || testMode === 'vizsga');
     const rulesDiv = document.getElementById('start-live-rules');
     if (rulesDiv) rulesDiv.style.display = isLive ? 'block' : 'none';
     const frissBox = document.getElementById('friss-feladatok-box');
@@ -2833,22 +2811,22 @@ function updateTestModeBadge() {
             : 'Teszt indítása';
     }
 
-    // Időbeállítás: csak gyakorló módban, nem oktatónak
+    // Időbeállítás: csak gyakorló módban
     const picker = document.getElementById('practice-time-picker');
     if (picker) {
-        picker.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+        picker.style.display = (testMode === 'practice') ? 'block' : 'none';
     }
 
-    // Feladattípus választó: csak gyakorló módban, nem oktatónak
+    // Feladattípus választó: csak gyakorló módban
     const taskTypePicker = document.getElementById('practice-task-type');
     if (taskTypePicker) {
-        taskTypePicker.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+        taskTypePicker.style.display = (testMode === 'practice') ? 'block' : 'none';
     }
 
-    // Egyéni összeállítás gomb: csak gyakorló módban, nem oktatónak
+    // Egyéni összeállítás gomb: csak gyakorló módban
     const customBtn = document.getElementById('btn-open-custom-modal');
     if (customBtn) {
-        customBtn.style.display = (!isTeacher && testMode === 'practice') ? 'block' : 'none';
+        customBtn.style.display = (testMode === 'practice') ? 'block' : 'none';
     }
     updateTaskBreakdown();
 }

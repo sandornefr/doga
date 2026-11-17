@@ -4749,10 +4749,9 @@ function updateStudentDisplay() {
     studentInfo.textContent = '';
   }
   // Kijelentkezés gomb: portálon keresztül → "🏠 Főmenü", különben marad az ikon
-  const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
   const btnLogoutEl = document.getElementById('btn-logout');
   if (btnLogoutEl) {
-    if (sessionStorage.getItem('kandoUser') || isBemutato) {
+    if (sessionStorage.getItem('kandoUser')) {
       btnLogoutEl.innerHTML = '<i class="fas fa-house"></i> Főmenü';
       btnLogoutEl.title = 'Vissza a főmenübe';
       btnLogoutEl.style.background = 'transparent';
@@ -4855,8 +4854,7 @@ function goToPractice() { location.href = 'practice.html'; }
 function goToExam() { }
 
 function logoutStudent() {
-  const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
-  if (sessionStorage.getItem('kandoUser') || isBemutato) {
+  if (sessionStorage.getItem('kandoUser')) {
     // Vizsga módban: web rész befejezettnek jelölve
     if (typeof acLive !== 'undefined' && acLive) {
       sessionStorage.setItem('vizsga_web_beadva', '1');
@@ -5833,15 +5831,8 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
     updateTimerDisplay();
 
     // Tanuló adatok ellenőrzése
-    const isBemutato = new URLSearchParams(location.search).get('bemutato') === '1';
     const hasStudentData = loadStudentData();
-    if (isBemutato && !hasStudentData) {
-      // Bemutató mód: nincs bejelentkezés szükséges
-      studentData = { name: 'Sándorné Feke Réka', email: 'sandornef@kkszki.hu', class: 'Oktató' };
-      updateStudentDisplay();
-      hideStudentModal();
-      taskSelector.disabled = false;
-    } else if (hasStudentData) {
+    if (hasStudentData) {
       // Van mentett tanuló adat – nem kell újra bejelentkezni
       hideStudentModal();
       window._webStartTime = Date.now();

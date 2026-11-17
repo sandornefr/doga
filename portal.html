@@ -113,61 +113,6 @@
             color: #aaa;
             cursor: pointer;
         }
-        /* Bemutatás modal */
-        .bemutatas-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .bemutatas-modal-box {
-            background: #16213e;
-            border: 2px solid #ffa502;
-            border-radius: 14px;
-            padding: 2rem;
-            max-width: 480px;
-            width: 90%;
-            text-align: center;
-        }
-        .bemutatas-modal-box h3 { color: #ffd32a; margin-bottom: 0.5rem; font-size: 1.2rem; }
-        .bemutatas-modal-box p { color: #aaa; font-size: 0.85rem; margin-bottom: 1.4rem; }
-        .bemutatas-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 1rem;
-        }
-        .bem-card {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 1rem 0.5rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: block;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-        .bem-card:hover { transform: translateY(-2px); }
-        .bem-card .bem-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
-        .bem-card .bem-label { color: #e0e0e0; font-size: 0.9rem; font-weight: 700; display: block; }
-        .bem-card.python  { border-color: #3776ab; }
-        .bem-card.python:hover  { background: #1a3a5c; }
-        .bem-card.web     { border-color: #e44d26; }
-        .bem-card.web:hover     { background: #3a1a10; }
-        .bem-card.cs      { border-color: #9b59b6; }
-        .bem-card.cs:hover      { background: #2a1a3a; }
-        .bemutatas-cancel-btn {
-            padding: 0.5rem 1.4rem;
-            background: transparent;
-            border: 1px solid #555;
-            border-radius: 8px;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
         .toggle-view-btn {
             padding: 6px 14px;
             background: transparent;
@@ -859,9 +804,6 @@
         .option-card.javitas { border-color: #2ed573; }
         .option-card.javitas:hover { border-color: #7bed9f; box-shadow: 0 8px 24px rgba(46,213,115,0.25); }
         .option-card.javitas .icon { color: #2ed573; }
-        .option-card.bemutatas { border-color: #ffa502; }
-        .option-card.bemutatas:hover { border-color: #ffd32a; box-shadow: 0 8px 24px rgba(255,165,2,0.25); }
-        .option-card.bemutatas .icon { color: #ffa502; }
         .option-card.admin   { border-color: #e94560; }
         .option-card.admin:hover   { border-color: #ff6b81; box-shadow: 0 8px 24px rgba(233,69,96,0.25); }
         .option-card.admin .icon   { color: #e94560; }
@@ -1344,7 +1286,7 @@
             <button class="teacher-main-card tmc-oktato" onclick="showTeacherSub()">
                 <i class="fas fa-chalkboard-teacher tmc-icon"></i>
                 <span class="tmc-label">Oktató</span>
-                <span class="tmc-desc">Számonkérés kiadása, bemutató, tanulói haladás, javítás</span>
+                <span class="tmc-desc">Számonkérés kiadása, tanulói haladás, javítás</span>
             </button>
             <button class="teacher-main-card tmc-teszt" onclick="enterStudentTestMode()">
                 <i class="fas fa-user-graduate tmc-icon"></i>
@@ -1399,11 +1341,6 @@
                     <span class="icon"><i class="fas fa-chart-line" style="color:#3fb950"></i></span>
                     <span class="label">Tanulói haladás</span>
                     <span class="desc">Előrehaladás, aktivitás, lemaradók</span>
-                </a>
-                <a class="option-card bemutatas" href="#" onclick="event.preventDefault(); openBemutatasModal()">
-                    <span class="icon"><i class="fas fa-tv"></i></span>
-                    <span class="label">Bemutató</span>
-                    <span class="desc">Feladatok bemutatása diákoknak</span>
                 </a>
                 <!-- Tananyag-csomagtól függő kártyák (data-jog = a szükséges jog; admin: mind) -->
                 <a class="option-card" data-jog="python" href="python/gyakorlo/kiadas.html" style="border-color:#f59e0b">
@@ -1471,24 +1408,6 @@
     <div class="vc-hint">Kérlek várj türelemmel – a feladatok a kezdéskor automatikusan megjelennek.</div>
 </div>
 
-<!-- Bemutatás választó modal -->
-<div class="bemutatas-modal" id="bemutatas-modal">
-    <div class="bemutatas-modal-box">
-        <h3><i class="fas fa-tv"></i> Bemutatás</h3>
-        <p>Melyik tárgyból mutatsz be feladatokat?</p>
-        <div class="bemutatas-grid">
-            <a class="bem-card python" data-jog="python" href="python/index.html?bemutato=1" onclick="closeBemutatasModal()">
-                <span class="bem-icon"><i class="fab fa-python"></i></span>
-                <span class="bem-label">Python</span>
-            </a>
-            <a class="bem-card web" data-jog="web" href="web/index.html?bemutato=1" onclick="closeBemutatasModal()">
-                <span class="bem-icon"><i class="fas fa-globe"></i></span>
-                <span class="bem-label">WEB</span>
-            </a>
-        </div>
-        <button class="bemutatas-cancel-btn" onclick="closeBemutatasModal()">Mégse</button>
-    </div>
-</div>
 
 <!-- Elért eredmények modal -->
 <div class="ered-overlay" id="ered-overlay">
@@ -2761,12 +2680,6 @@
         }
     }
 
-    function openBemutatasModal() {
-        document.getElementById('bemutatas-modal').style.display = 'flex';
-    }
-    function closeBemutatasModal() {
-        document.getElementById('bemutatas-modal').style.display = 'none';
-    }
 
     function checkMustChangePassword() {
         const user = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');

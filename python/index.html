@@ -1593,7 +1593,7 @@
     </div>
 
     <script src="python-kiegeszites.js?v=2"></script>
-    <script src="python_teszt.js?v=4"></script>
+    <script src="python_teszt.js?v=5"></script>
     <script>
         // Előtöltés sessionStorage.kandoUser-ből
         (function () {
@@ -1608,27 +1608,20 @@
             }
             try {
                 const u = JSON.parse(saved);
-                const isBemutato = new URLSearchParams(window.location.search).has('bemutato');
-                if (isBemutato) { document.getElementById('start-section').classList.add('hidden'); document.getElementById('back-to-menu-btn').classList.add('hidden'); }
-
                 // Teszt mód banner
                 if (u._tesztMod) {
                     const b = document.getElementById('teszt-mod-banner');
                     if (b) { b.style.display = 'flex'; const _bh = b.offsetHeight || 28; const _tb = document.querySelector('.page-topbar'); if (_tb) _tb.style.top = _bh + 'px'; document.body.style.paddingTop = (56 + _bh) + 'px'; }
                 }
 
-                // Módválasztó modal – mindenkinél, kivéve bemutató és ?agazati mód
+                // Módválasztó modal – mindenkinél, kivéve ?agazati mód
                 const isAgazati = new URLSearchParams(window.location.search).has('agazati');
-                if (!isBemutato && !isAgazati) {
+                if (!isAgazati) {
                     document.getElementById('py-mode-selector').style.display = 'flex';
                 }
 
-                // kandTeacherMode CSAK bemutató linkről jönve aktív
-                if (u.szerep === 'oktato' && isBemutato) {
-                    sessionStorage.setItem('kandTeacherMode', 'true');
-                } else {
-                    sessionStorage.removeItem('kandTeacherMode');
-                }
+                // A megszűnt bemutató mód régi jelzőjét töröljük
+                sessionStorage.removeItem('kandTeacherMode');
 
                 // Projektor mód: ?nagy URL paraméter → nagy-mod class a body-n
                 if (new URLSearchParams(window.location.search).has('nagy')) {
