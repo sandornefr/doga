@@ -535,7 +535,10 @@ public partial class Database
         return ReadSzamonkeresItems(cmd).FirstOrDefault();
     }
 
-    public List<SzamonkeresItem> GetAktivSzamonkeresForStudent(string email, string? osztaly, string? csoport)
+    // Ráhagyás a számonkérés időkerete után (perc): eddig még látszik a felugró ablakban.
+    public const int SzamonkeresRahagyasPerc = 10;
+
+    public List<SzamonkeresItem> GetAktivSzamonkeresForStudent(string email, string? osztaly, string? csoport, bool csakFuto = false)
     {
         using var conn = Open();
         using var cmd = conn.CreateCommand();
@@ -544,20 +547,33 @@ public partial class Database
                    COALESCE(started_at,'') as started_at, COALESCE(perc_limit,60) as perc_limit
             FROM szamonkeres WHERE statusz IN ('varakozas','aktiv')";
         var all = ReadSzamonkeresItems(cmd);
-        // Filter in C# — csoportok is JSON array, match osztaly+csoport, osztaly, or individual email
+        // A tanuló saját kulcsa ugyanúgy, ahogy a kiadó oldal (szamonkeres.html) képzi:
+        // "osztály/csoport", csoport nélkül csak "osztály".
+        var tanuloCsoport = string.IsNullOrEmpty(osztaly) ? null
+            : string.IsNullOrEmpty(csoport) ? osztaly
+            : $"{osztaly}/{csoport}";
         return all.Where(s => {
+            if (csakFuto && !SzamonkeresFut(s)) return false;
             var cs = System.Text.Json.JsonSerializer.Deserialize<List<string>>(s.Csoportok) ?? new();
-            var tanuloCsoport = string.IsNullOrEmpty(osztaly) ? null
-                : string.IsNullOrEmpty(csoport) ? osztaly
-                : $"{osztaly}/{csoport}";
             return cs.Any(c =>
-                // Csoport alapú egyezés
-                (tanuloCsoport != null &&
-                 (c.Equals(tanuloCsoport, StringComparison.OrdinalIgnoreCase) ||
-                  c.Equals(osztaly, StringComparison.OrdinalIgnoreCase))) ||
-                // Egyéni tanuló email alapú egyezés (pl. "email:tanuloname@kkszki.hu")
+                // Csoport alapú egyezés: csak a pontos kulcs.
+                // (Korábban az osztály-kulcs, pl.: "10.C", minden csoportnak szólt, így a másik csoport is megkapta.)
+                (tanuloCsoport != null && c.Equals(tanuloCsoport, StringComparison.OrdinalIgnoreCase)) ||
+                // Egyéni tanuló email alapú egyezés (pl.: "email:tanuloname@kkszki.hu")
                 c.Equals($"email:{email}", StringComparison.OrdinalIgnoreCase));
         }).ToList();
+    }
+
+    // Fut-e most a számonkérés: elindították, és még nem telt le az időkeret (+ ráhagyás).
+    // A started_at a szerver helyi idejében van (datetime('now','localtime')), ezért DateTime.Now-hoz mérjük.
+    public static bool SzamonkeresFut(SzamonkeresItem s)
+    {
+        if (s.Statusz != "aktiv") return false;
+        if (string.IsNullOrEmpty(s.StartedAt)) return true;
+        if (!DateTime.TryParse(s.StartedAt, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var kezdes)) return true;
+        var perc = s.PercLimit > 0 ? s.PercLimit : 60;
+        return DateTime.Now <= kezdes.AddMinutes(perc + SzamonkeresRahagyasPerc);
     }
 
     private static List<SzamonkeresItem> ReadSzamonkeresItems(SqliteCommand cmd)

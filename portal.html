@@ -3471,11 +3471,12 @@
 
         // Aktív számonkérések
         try {
-            const params = new URLSearchParams({ email: user.email || '' });
+            // futo=1: csak a most zajló (elindított, időn belüli) számonkérés ugorjon fel
+            const params = new URLSearchParams({ email: user.email || '', futo: '1' });
             if (user.osztaly) params.append('osztaly', user.osztaly);
             if (user.csoport) params.append('csoport', user.csoport);
             const res = await fetch(`${API_BASE}/api/szamonkeres/aktiv?${params}`, { headers: authHdr });
-            if (res.ok) aktivak = (await res.json()) || [];
+            if (res.ok) aktivak = ((await res.json()) || []).filter(sz => (sz.statusz || sz.Statusz) === 'aktiv');
         } catch {}
 
         // Kiadott eredmények (csak tanulónak)
@@ -3488,6 +3489,12 @@
 
         const topbarBtn = document.getElementById('topbar-szamonkeres-btn');
         const badge = document.getElementById('topbar-szamonkeres-badge');
+
+        // Ha már nincs futó számonkérés, a nyitva maradt "Aktív számonkérés" ablak is bezárul
+        if (!aktivak.length) {
+            const box = document.getElementById('szamonkeres-modal-box');
+            if (box && !box.classList.contains('eredmeny-modal')) closeSzamonkeresModal();
+        }
 
         // Ha nincs semmi aktív/eredmény: gomb és badge elrejtése
         if (!aktivak.length && !eredmenyek.length) {

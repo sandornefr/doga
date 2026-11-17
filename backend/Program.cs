@@ -1669,7 +1669,9 @@ app.MapGet("/api/szamonkeres/aktiv", (HttpContext ctx, Database db) =>
         csoport = user.Csoport;
     }
 
-    return Results.Ok(db.GetAktivSzamonkeresForStudent(email, osztaly, csoport));
+    // futo=1: csak az elindított, még időkereten belüli számonkérések (portál felugró ablaka)
+    var csakFuto = ctx.Request.Query["futo"].FirstOrDefault() == "1";
+    return Results.Ok(db.GetAktivSzamonkeresForStudent(email, osztaly, csoport, csakFuto));
 });
 
 // Tanuló beadása
