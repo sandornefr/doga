@@ -152,9 +152,10 @@ const ellenorzes = {};   // beadás id → eredmény
 
 async function betolt() {
   try {
-    const [r, rt] = await Promise.all([
+    const [r, rt, rw] = await Promise.all([
       fetch(API + '/api/ikt/beadasok?feladat=' + FELADAT, { headers: AUTH }),
-      fetch(API + '/api/ikt/temak?feladat=' + FELADAT, { headers: AUTH })]);
+      fetch(API + '/api/ikt/temak?feladat=' + FELADAT, { headers: AUTH }),
+      fetch(API + '/api/ikt/beadasok?feladat=weboldal', { headers: AUTH })]);
     if (!r.ok || !rt.ok) throw new Error('Hiba ' + (r.ok ? rt.status : r.status));
     const bl = (await r.json()).beadasok || [];
     const tl = (await rt.json()).temak || [];
@@ -164,6 +165,17 @@ async function betolt() {
     beadasok = bl.slice();
     tl.filter(t => !bl.some(b => b.email === t.email)).forEach(t => beadasok.push(
       { id: 't' + t.id, email: t.email, nev: t.nev, osztaly: t.osztaly, csoport: t.csoport, fajlok: [], nincsBeadas: true }));
+    // A „Weboldalam” oldalon beküldött github.io linkek (pl.: aki a Témaoldalt még Classroomba adta be).
+    // Ha a tanulónak nincs Témaoldal-beadása, a linkje alapján ellenőrizzük; a témát órán kapta, ezért a
+    // téma egyezése itt kézi pont. A visszajelzés a Weboldalam oldalán jelenik meg (vjId).
+    const wl = rw.ok ? ((await rw.json()).beadasok || []) : [];
+    wl.filter(w => w.githubUrl).forEach(w => {
+      const i = beadasok.findIndex(b => String(b.email).toLowerCase() === String(w.email).toLowerCase());
+      const regi = i >= 0 ? beadasok[i] : null;
+      if (regi && !regi.nincsBeadas) { if (!regi.githubUrl) regi.githubUrl = w.githubUrl; return; }
+      const uj = { ...w, id: 'w' + w.id, vjId: w.id, fajlok: [], weboldalbol: true };
+      if (regi) beadasok[i] = uj; else beadasok.push(uj);
+    });
     beadasok.sort((a, b) => csoportNev(a).localeCompare(csoportNev(b), 'hu') || String(a.nev || '').localeCompare(String(b.nev || ''), 'hu'));
   } catch (e) {
     app.innerHTML = `<div class="kozep hiba">Nem sikerült betölteni: ${esc(e.message)}</div>`;
@@ -187,6 +199,7 @@ async function betolt() {
 }
 
 function temaNev(b) {
+  if (b.weboldalbol) return 'téma: órán kapta';
   const t = temak[b.email];
   return t && TEMAK[t.temaSorszam - 1] ? t.temaSorszam + '. ' + TEMAK[t.temaSorszam - 1][0] : 'nincs téma';
 }
@@ -268,7 +281,7 @@ function listaRajz() {
         ${temak[b.email] ? `<button class="ujra" title="A tanuló témájának törlése: a következő megnyitáskor új témát kap" onclick="event.stopPropagation(); ujrasorsol(${esc(JSON.stringify(b.email))})"><i class="fas fa-shuffle"></i> Új téma</button>` : ''}
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
         ${b.fajlok.some(f => f.fajlnev.toLowerCase() === 'tema.html') ? `<a href="${esc(API + b.elonezet + 'tema.html')}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> tema.html</a>` : ''}
-        ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-github"></i> github.io</a>` : ''}
+        ${b.githubUrl ? `<a href="${esc(b.githubUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" ${b.weboldalbol ? 'title="A Weboldalam oldalon küldte be"' : ''}><i class="fab fa-github"></i> github.io${b.weboldalbol ? ' (Weboldalam)' : ''}</a>` : ''}
         ${b.nincsBeadas ? '' : `<button class="megnez" onclick="event.stopPropagation(); nzMegnyit(${esc(JSON.stringify(b.id))})"><i class="fas fa-eye"></i> Megnézem</button>`}
         <span class="pont" id="p${b.id}">${b.nincsBeadas ? '' : '…'}</span>
       </div>
@@ -436,9 +449,9 @@ async function ellenoriz(b, f) {
     add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, 'nem', '');
   } else {
     const h1 = szoveg(doc.querySelector('h1'));
-    const kapott = kapottTema(b);
+    const kapott = b.weboldalbol ? null : kapottTema(b);
     if (!h1) add('h1: a téma neve', 1, 'nem', 'nincs h1');
-    else if (!kapott) add('h1: a téma neve', 1, 'kezi', '„' + h1 + '” – a tanulónak nincs kiosztott témája');
+    else if (!kapott) add('h1: a téma neve', 1, 'kezi', '„' + h1 + '” – ' + (b.weboldalbol ? 'a témát órán kapta, nézd meg kézzel' : 'a tanulónak nincs kiosztott témája'));
     else add('h1: a téma neve', 1, temaEgyezik(h1, kapott) ? 'ok' : 'nem', '„' + h1 + '” · kapott téma: „' + kapott + '”');
     const h2k = [...doc.querySelectorAll('h2')].map(szoveg);
     const jo = h2k.length >= 5 && H2_SORREND.every((c, i) => (h2k[i] || '').toLowerCase() === c.toLowerCase());
@@ -509,11 +522,11 @@ async function ellenoriz(b, f) {
   for (const n of [...OLDALAK, 'css/style.css']) if (!(await f.letezik(n))) hianyFajl.push(n);
   const kep = f.vanKep ? f.vanKep() : kepMegvan;
   const kapott = kapottTema(b);
-  const h1Jo = !!(doc && kapott && temaEgyezik(szoveg(doc.querySelector('h1')), kapott));
+  const h1Jo = b.weboldalbol || !!(doc && kapott && temaEgyezik(szoveg(doc.querySelector('h1')), kapott));
   add('Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1,
     hianyFajl.length || !kep || !h1Jo ? 'nem' : 'ok',
     [hianyFajl.length || !kep ? (f.tipus === 'github' ? 'nem található a GitHubon: ' : 'hiányzik: ') + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : '',
-     !kapott ? 'nincs kiosztott téma' : !h1Jo ? 'a h1 nem a kapott téma' : ''].filter(Boolean).join(' · '));
+     b.weboldalbol ? '' : !kapott ? 'nincs kiosztott téma' : !h1Jo ? 'a h1 nem a kapott téma' : ''].filter(Boolean).join(' · '));
 
   const auto = sorok.filter(s => s.allapot === 'ok').reduce((a, s) => a + s.max, 0);
   const autoMax = sorok.filter(s => s.allapot !== 'kezi').reduce((a, s) => a + s.max, 0);
@@ -638,7 +651,7 @@ async function vjKuld() {
   if (!szoveg) { all.textContent = 'Írj be valamit.'; return; }
   gomb.disabled = true; all.textContent = 'Küldés…';
   try {
-    const r = await fetch(API + '/api/ikt/beadas/' + b.id + '/visszajelzes', { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
+    const r = await fetch(API + '/api/ikt/beadas/' + (b.vjId || b.id) + '/visszajelzes', { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
     let d = null; try { d = await r.json(); } catch (e) {}
     if (!r.ok) throw new Error((d && d.error) || ('Hiba ' + r.status));
     b.visszajelzes = d.visszajelzes;
