@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT – Weboldalam</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{line-height:1.5;min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:900px;margin:0 auto;padding:24px 20px 40px;}
+h1{font-size:1.7rem;margin-bottom:4px;}
+.card{background:#fff;padding:18px 22px;margin-top:16px;}
+.lepesek{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+.lepes{background:#fff;border:1px solid var(--ikt-vonal);border-radius:14px;padding:12px 14px;font-size:.95rem;}
+.lepes b{display:block;color:var(--ikt-lila);font-size:1.4rem;line-height:1;}
+.sor{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.sor input[type=url]{flex:1;min-width:260px;padding:10px 12px;border:1px solid #cbd2d9;font:inherit;font-size:1.05rem;}
+.btn{border:0;padding:10px 20px;font:inherit;font-weight:600;cursor:pointer;color:#fff;}
+.uzenet{min-height:1.6em;margin-top:8px;font-weight:600;}
+.uzenet.hiba{color:#b42318;}
+.uzenet.jo{color:#067647;}
+.uzenet.sarga{color:#b54708;}
+.linkem{font-size:1.15rem;font-weight:700;word-break:break-all;}
+.linkem a{color:var(--ikt-indigo);}
+.megj{color:#52606d;font-size:.9rem;margin-top:6px;}
+.kozep{text-align:center;padding:60px 20px;}
+.kozep .btn{display:inline-block;margin-top:16px;text-decoration:none;}
+.vj-doboz{margin-top:14px;border:1px solid #f0d36b;background:#fff8db;border-radius:10px;padding:10px 14px;}
+.allapot{display:inline-block;margin-left:8px;padding:2px 12px;border-radius:99px;font-size:.85rem;font-weight:700;}
+.allapot.jo{background:#dcfce7;color:#067647;}
+.allapot.rossz{background:#fee4e2;color:#b42318;}
+.allapot.fut{background:#eef2ff;color:#4f46e5;}
+@media (max-width:640px){.lepesek{grid-template-columns:1fr;}}
+</style>
+<link rel="stylesheet" href="ikt.css?v=2">
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fab fa-github"></i> Weboldalam</span>
+  <span id="who"></span>
+  <a href="index.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<template id="oldal">
+  <h1>A weboldalam a GitHubon</h1>
+  <div class="alcim">Add meg a github.io-s címedet. A tanárod így látja az oldaladat.</div>
+
+  <div class="lepesek">
+    <div class="lepes"><b>1</b>A GitHubon nyisd meg a repódat. Kattints: <b style="display:inline;font-size:1em">Settings → Pages</b>.</div>
+    <div class="lepes"><b>2</b>Branch: <code>main</code>, majd <b style="display:inline;font-size:1em">Save</b>. Várj 1-2 percet.</div>
+    <div class="lepes"><b>3</b>Másold ki a fent megjelenő címet. Illeszd be ide (Ctrl+V).</div>
+  </div>
+
+  <div class="card">
+    <div class="sor">
+      <input type="url" id="url" placeholder="https://felhasznalonev.github.io/weboldalam/" maxlength="300" autocomplete="off">
+      <button class="btn" id="mentes"><i class="fas fa-paper-plane"></i> Beküldöm</button>
+    </div>
+    <div class="uzenet" id="uzenet"></div>
+  </div>
+
+  <div class="card" id="sajat" hidden></div>
+</template>
+
+<script src="weboldal-ellenor.js"></script>
+<script>
+const API = 'https://agazati.up.railway.app';
+const FELADAT = 'weboldal';
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const app = document.getElementById('app');
+
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+let TOKEN = u ? (u.token || '') : '';
+if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || '');
+const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+
+function uzen(szoveg, tipus) {
+  const el = document.getElementById('uzenet');
+  el.className = 'uzenet ' + (tipus || '');
+  el.textContent = szoveg || '';
+}
+
+async function sajatBetolt() {
+  try {
+    const r = await fetch(API + '/api/ikt/beadas/sajat?feladat=' + FELADAT, { headers: AUTH });
+    if (r.ok) {
+      const d = await r.json();
+      if (d.beadas && d.beadas.githubUrl) { sajatRajz(d.beadas); return; }
+    }
+    // Még nincs: ha a Témaoldalnál már megadta a github.io címét, azt ajánljuk fel.
+    const rt = await fetch(API + '/api/ikt/beadas/sajat?feladat=temaoldal', { headers: AUTH });
+    if (rt.ok) {
+      const dt = await rt.json();
+      const t = dt.beadas && dt.beadas.githubUrl;
+      if (t && WebEllenor.alap(t)) {
+        document.getElementById('url').value = WebEllenor.alap(t);
+        uzen('Ezt a címet a Témaoldalnál adtad meg. Ha jó, kattints a Beküldöm gombra.', 'sarga');
+      }
+    }
+  } catch (e) {}
+}
+
+async function sajatRajz(b) {
+  const el = document.getElementById('sajat');
+  el.hidden = false;
+  document.getElementById('url').value = b.githubUrl;
+  el.innerHTML = `<div class="linkem"><i class="fab fa-github"></i> <a href="${esc(b.githubUrl)}" target="_blank" rel="noopener">${esc(b.githubUrl)}</a>
+      <span class="allapot fut" id="allapot"><i class="fas fa-spinner fa-spin"></i> Nézem…</span></div>
+    <p class="megj">Beküldve: ${esc(b.updatedAt)}</p>
+    <div id="ell"></div>` +
+    (b.visszajelzes ? `<div class="vj-doboz"><b><i class="fas fa-comment-dots"></i> Üzenet a tanárodtól</b> <span class="megj">(${esc(b.visszajelzes.updatedAt)})</span>` +
+      `<div>${esc(b.visszajelzes.szoveg).replace(/\n/g, '<br>')}</div></div>` : '');
+  const e = await WebEllenor.ellenoriz(b.githubUrl);
+  const a = document.getElementById('allapot');
+  if (e.hiba || !e.el) {
+    a.className = 'allapot rossz';
+    a.innerHTML = '<i class="fas fa-xmark"></i> Még nem érhető el';
+  } else {
+    a.className = 'allapot ' + (e.ok === e.ossz ? 'jo' : 'fut');
+    a.innerHTML = `<i class="fas ${e.ok === e.ossz ? 'fa-check' : 'fa-list-check'}"></i> ${e.ok} / ${e.ossz}`;
+  }
+  document.getElementById('ell').innerHTML = WebEllenor.rajz(e) +
+    (e.el ? '<p class="megj">A piros elemeket javítsd ki VS Code-ban, majd töltsd fel újra a GitHubra.</p>'
+          : '<p class="megj">Nem találom az index.html-t. Be van kapcsolva a GitHub Pages? Jó a cím?</p>');
+}
+
+async function bekuld() {
+  const btn = document.getElementById('mentes');
+  let url = document.getElementById('url').value.trim();
+  if (!url) { uzen('Előbb illeszd be a címet!', 'hiba'); return; }
+  if (/^[a-z0-9-]+\.github\.io/i.test(url)) url = 'https://' + url;   // ha a https:// lemaradt
+  if (/github\.com/i.test(url)) { uzen('Ez a repó címe (github.com). A github.io-s cím kell, a Settings → Pages oldalról.', 'hiba'); return; }
+  if (!WebEllenor.jo(url)) { uzen('A cím így kezdődjön: https://…github.io/', 'hiba'); return; }
+  const fd = new FormData();
+  fd.append('feladat', FELADAT);
+  fd.append('github_url', url);
+  btn.disabled = true;
+  uzen('Küldés…');
+  try {
+    const r = await fetch(API + '/api/ikt/beadas', { method: 'POST', headers: AUTH, body: fd });
+    let d = null;
+    try { d = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((d && d.error) || ('Hiba történt (' + r.status + ').'));
+    uzen('Megkaptam a címedet!', 'jo');
+    sajatRajz(d);
+  } catch (e) {
+    uzen(e.message, 'hiba');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Indítás ──
+if (!u || !TOKEN) {
+  app.innerHTML = '<div class="kozep"><h2>Be kell jelentkezned</h2><a class="btn" href="../login.html">Bejelentkezés</a></div>';
+} else if (!JOGOS) {
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
+} else {
+  document.getElementById('who').textContent = u.nev || '';
+  app.innerHTML = '';
+  app.appendChild(document.getElementById('oldal').content.cloneNode(true));
+  document.getElementById('mentes').addEventListener('click', bekuld);
+  document.getElementById('url').addEventListener('keydown', e => { if (e.key === 'Enter') bekuld(); });
+  sajatBetolt();
+}
+</script>
+</body>
+</html>

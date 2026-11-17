@@ -52,3 +52,13 @@ iframe.minta{border:1px solid var(--ikt-vonal);border-radius:14px;box-shadow:0 6
   .card,iframe.minta{box-shadow:none;}
   h2::before{background:#555;}
 }
+
+/* Weboldal-ellenőrzés (weboldal-ellenor.js): oldalanként egy sor, zöld pipa / piros x */
+.we-tabla{border-collapse:collapse;width:100%;margin-top:10px;font-size:.9rem;}
+.we-tabla th{text-align:left;white-space:nowrap;padding:5px 10px 5px 0;vertical-align:top;font-weight:600;}
+.we-tabla td{padding:4px 0;border-bottom:1px solid #f1eefc;}
+.we-tabla tr:last-child td{border-bottom:0;}
+.we-p{display:inline-block;margin:2px 6px 2px 0;padding:1px 9px;border-radius:99px;font-size:.82rem;white-space:nowrap;}
+.we-p.jo{background:#dcfce7;color:#067647;}
+.we-p.rossz{background:#fee4e2;color:#b42318;}
+.we-hiba{color:#b42318;}

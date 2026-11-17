@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT – Weboldal-gyűjtemény</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{line-height:1.45;min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:1200px;margin:0 auto;padding:18px 20px 30px;}
+.szuro{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.csopgomb{border:1px solid #d4cdf5;background:#fff;border-radius:99px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;color:#4c1d95;}
+.csopgomb.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:transparent;}
+.csopgomb small{font-weight:400;opacity:.85;}
+.eszkoz{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.eszkoz .db{font-weight:700;color:#2e1065;margin-right:auto;}
+.kisgomb{border:1px solid #d4cdf5;background:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-size:.9rem;cursor:pointer;color:#4c1d95;}
+.kisgomb:disabled{opacity:.6;cursor:default;}
+table.lista{border-collapse:collapse;width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(76,29,149,.07);}
+table.lista th{background:#ede9fe;color:#4c1d95;text-align:left;padding:7px 10px;font-size:.88rem;}
+table.lista td{padding:6px 10px;border-top:1px solid #f1eefc;vertical-align:middle;font-size:.93rem;}
+table.lista tr.nincs td{color:#9aa5b1;}
+table.lista td.link{word-break:break-all;}
+table.lista td.link a{color:#4f46e5;}
+.tema{font-style:italic;color:#7b8794;font-size:.85rem;}
+.pont{display:inline-block;min-width:64px;text-align:center;padding:2px 10px;border-radius:99px;font-weight:700;font-size:.85rem;cursor:pointer;border:0;font-family:inherit;}
+.pont.jo{background:#dcfce7;color:#067647;}
+.pont.kozepes{background:#fef3c7;color:#92400e;}
+.pont.rossz{background:#fee4e2;color:#b42318;}
+.pont.fut{background:#eef2ff;color:#4f46e5;}
+tr.reszlet td{background:#fbfaff;padding:4px 14px 12px;}
+table.lista .we-tabla th{background:none;color:#2e1065;padding:5px 10px 5px 0;}
+table.lista .we-tabla td{background:none;border-top:0;padding:4px 0;}
+.vj{display:flex;gap:8px;align-items:flex-start;margin-top:8px;}
+.vj textarea{flex:1;min-height:52px;padding:6px 8px;border:1px solid #d4cdf5;border-radius:8px;font:inherit;font-size:.9rem;}
+.vj-all{font-size:.82rem;color:#52606d;}
+.megj{color:#52606d;font-size:.88rem;}
+.kozep{text-align:center;padding:60px 20px;}
+.hiba{color:#b42318;}
+</style>
+<link rel="stylesheet" href="ikt.css?v=2">
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fab fa-github"></i> Weboldal-gyűjtemény (github.io)</span>
+  <a href="beadasok.html"><i class="fas fa-inbox"></i> Témaoldal beadások</a>
+  <a id="vissza" href="../portal.html#oktato"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<script src="weboldal-ellenor.js"></script>
+<script>
+// A 9.-esek github.io-s weboldalai csoportonként. A tanuló az ikt/weboldal.html-en küldi be (feladat: „weboldal”).
+// Aki még nem küldte be, de a Témaoldalnál megadott github.io címet, annál azt mutatjuk (dőlt betűvel).
+const API = 'https://agazati.up.railway.app';
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const app = document.getElementById('app');
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || localStorage.getItem('kandoUser') || 'null');
+const TOKEN = u && u.szerep === 'oktato' ? u.token : '';
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+const TESZT = ['tesztelek@kkszki.hu', 'bot@kkszki.hu'];
+
+let tanulok = [];      // { email, nev, csoport, beadas, temaUrl }
+let aktivCsop = '';
+const ell = {};        // email → ellenőrzés eredménye
+const nyitva = new Set();
+
+const csopNev = (osztaly, csoport) => (osztaly || '–') + (csoport ? ' / ' + csoport + '. cs.' : '');
+const link = t => t.beadas ? t.beadas.githubUrl : t.temaUrl;
+
+async function betolt() {
+  try {
+    const [ru, rw, rt] = await Promise.all([
+      fetch(API + '/api/users', { headers: AUTH }),
+      fetch(API + '/api/ikt/beadasok?feladat=weboldal', { headers: AUTH }),
+      fetch(API + '/api/ikt/beadasok?feladat=temaoldal', { headers: AUTH })]);
+    if (!ru.ok || !rw.ok) throw new Error('Hiba ' + (ru.ok ? rw.status : ru.status));
+    const users = await ru.json();
+    const web = (await rw.json()).beadasok || [];
+    const tema = rt.ok ? ((await rt.json()).beadasok || []) : [];
+    const webE = {}; web.forEach(b => { if (b.githubUrl) webE[b.email.toLowerCase()] = b; });
+    const temaE = {}; tema.forEach(b => { if (b.githubUrl) temaE[b.email.toLowerCase()] = WebEllenor.alap(b.githubUrl) || b.githubUrl; });
+    tanulok = (Array.isArray(users) ? users : [])
+      .filter(x => (x.szerep || '') === 'tanulo' && String(x.evfolyam || '') === '9' && !TESZT.includes(String(x.email).toLowerCase()))
+      .map(x => ({
+        email: x.email,
+        nev: x.nev || ((x.vezeteknev || '') + ' ' + (x.keresztnev || '')).trim(),
+        csoport: csopNev(String(x.evfolyam || '') + (x.osztaly || ''), x.csoport),
+        beadas: webE[String(x.email).toLowerCase()] || null,
+        temaUrl: temaE[String(x.email).toLowerCase()] || null,
+      }));
+    // Aki beküldte, de már nincs a 9.-es listában (pl. kipróbálta egy oktató), az is látszik.
+    web.filter(b => b.githubUrl && !tanulok.some(t => t.email.toLowerCase() === b.email.toLowerCase()))
+       .forEach(b => tanulok.push({ email: b.email, nev: b.nev || b.email, csoport: csopNev(b.osztaly, b.csoport), beadas: b, temaUrl: null }));
+    tanulok.sort((a, b) => a.csoport.localeCompare(b.csoport, 'hu') || a.nev.localeCompare(b.nev, 'hu'));
+  } catch (e) {
+    app.innerHTML = `<div class="kozep hiba">Nem sikerült betölteni: ${esc(e.message)}</div>`;
+    return;
+  }
+  const csoportok = [...new Set(tanulok.map(t => t.csoport))];
+  if (!csoportok.length) { app.innerHTML = '<div class="kozep">Nincs 9. évfolyamos tanuló a csoportjaidban.</div>'; return; }
+  aktivCsop = csoportok[0];
+  app.innerHTML = `<div class="szuro" id="csopok"></div>
+    <div class="eszkoz">
+      <span class="db" id="db"></span>
+      <button class="kisgomb" id="ellgomb" onclick="mindetEllenoriz()"><i class="fas fa-list-check"></i> Újra ellenőrzöm</button>
+      <button class="kisgomb" id="masgomb" onclick="masol()" title="Név és link, soronként – beilleszthető Classroomba vagy táblázatba"><i class="far fa-copy"></i> Linkek másolása</button>
+    </div>
+    <div id="lista"></div>
+    <p class="megj" style="margin-top:8px">A pontszám a tanult elemeket nézi (4 oldal, lang, title, CSS, menü, címsor, bekezdés, kép, link, listák, táblázat). A szöveget nem. Kattints rá a részletekért.</p>`;
+  csopRajz();
+  listaRajz();
+  mindetEllenoriz();
+}
+
+function csopRajz() {
+  const csoportok = [...new Set(tanulok.map(t => t.csoport))];
+  document.getElementById('csopok').innerHTML = csoportok.map(c => {
+    const l = tanulok.filter(t => t.csoport === c);
+    return `<button class="csopgomb ${c === aktivCsop ? 'aktiv' : ''}" onclick="csopValt(${esc(JSON.stringify(c))})">${esc(c)} <small>${l.filter(t => t.beadas).length}/${l.length}</small></button>`;
+  }).join('');
+}
+
+function csopValt(c) { aktivCsop = c; nyitva.clear(); csopRajz(); listaRajz(); mindetEllenoriz(); }
+
+const aktivLista = () => tanulok.filter(t => t.csoport === aktivCsop);
+
+function pontHtml(t) {
+  if (!link(t)) return '';
+  const e = ell[t.email];
+  if (!e) return `<button class="pont fut" onclick="nyit(${esc(JSON.stringify(t.email))})">…</button>`;
+  if (e.fut) return '<span class="pont fut"><i class="fas fa-spinner fa-spin"></i></span>';
+  if (e.hiba || !e.el) return `<button class="pont rossz" onclick="nyit(${esc(JSON.stringify(t.email))})">nem él</button>`;
+  const cls = e.ok === e.ossz ? 'jo' : e.ok >= e.ossz * 0.7 ? 'kozepes' : 'rossz';
+  return `<button class="pont ${cls}" onclick="nyit(${esc(JSON.stringify(t.email))})">${e.ok} / ${e.ossz}</button>`;
+}
+
+function vjAllapot(b) {
+  const v = b.visszajelzes;
+  if (!v) return '';
+  if (b.updatedAt > v.updatedAt) return 'új link érkezett az üzenet után';
+  return v.elolvasvaAt ? 'elolvasta' : 'elküldve';
+}
+
+function listaRajz() {
+  const l = aktivLista();
+  const kuldte = l.filter(t => t.beadas).length;
+  const tema = l.filter(t => !t.beadas && t.temaUrl).length;
+  document.getElementById('db').textContent = `${aktivCsop}: ${kuldte} / ${l.length} beküldte` + (tema ? ` · ${tema} csak a Témaoldalnál adta meg` : '');
+  document.getElementById('lista').innerHTML = `<table class="lista"><thead><tr><th>Név</th><th>github.io cím</th><th>Ellenőrzés</th><th>Beküldve</th></tr></thead><tbody>` +
+    l.map(t => {
+      const em = esc(JSON.stringify(t.email));
+      const sor = `<tr class="${link(t) ? '' : 'nincs'}">
+        <td><b>${esc(t.nev)}</b></td>
+        <td class="link">${t.beadas
+          ? `<a href="${esc(t.beadas.githubUrl)}" target="_blank" rel="noopener">${esc(t.beadas.githubUrl)}</a>`
+          : t.temaUrl ? `<a href="${esc(t.temaUrl)}" target="_blank" rel="noopener">${esc(t.temaUrl)}</a> <span class="tema">(a Témaoldalnál adta meg)</span>`
+          : 'még nincs'}</td>
+        <td>${pontHtml(t)}</td>
+        <td class="megj">${t.beadas ? esc(String(t.beadas.updatedAt || '').slice(0, 16)) : ''}</td></tr>`;
+      if (!nyitva.has(t.email)) return sor;
+      return sor + `<tr class="reszlet"><td colspan="4">${WebEllenor.rajz(ell[t.email])}` +
+        (t.beadas ? `<div class="vj"><textarea id="vj-${esc(t.beadas.id)}" maxlength="4000" placeholder="Üzenet a tanulónak (a Weboldalam oldalon látja)">${esc(t.beadas.visszajelzes ? t.beadas.visszajelzes.szoveg : '')}</textarea>
+            <div><button class="kisgomb" onclick="vjKuld(${em})"><i class="fas fa-paper-plane"></i> Elküldöm</button><div class="vj-all" id="vja-${esc(t.beadas.id)}">${esc(vjAllapot(t.beadas))}</div></div></div>` : '') +
+        `</td></tr>`;
+    }).join('') + '</tbody></table>';
+}
+
+function nyit(email) {
+  if (nyitva.has(email)) nyitva.delete(email); else nyitva.add(email);
+  listaRajz();
+}
+
+async function parhuzamosan(lista, n, fn) {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (i < lista.length) await fn(lista[i++]); }));
+}
+
+let fut = false;
+async function mindetEllenoriz() {
+  if (fut) return;
+  fut = true;
+  const gomb = document.getElementById('ellgomb');
+  gomb.disabled = true;
+  const csop = aktivCsop;
+  const l = aktivLista().filter(t => link(t));
+  l.forEach(t => ell[t.email] = { fut: true });
+  listaRajz();
+  await parhuzamosan(l, 4, async t => {
+    ell[t.email] = await WebEllenor.ellenoriz(link(t));
+    if (csop === aktivCsop) listaRajz();
+  });
+  gomb.disabled = false;
+  fut = false;
+}
+
+async function masol() {
+  const sorok = aktivLista().map(t => t.nev + '\t' + (link(t) || '–')).join('\n');
+  const gomb = document.getElementById('masgomb');
+  try {
+    await navigator.clipboard.writeText(sorok);
+    gomb.innerHTML = '<i class="fas fa-check"></i> Kimásolva';
+  } catch (e) {
+    gomb.innerHTML = '<i class="fas fa-xmark"></i> Nem sikerült';
+  }
+  setTimeout(() => { gomb.innerHTML = '<i class="far fa-copy"></i> Linkek másolása'; }, 2000);
+}
+
+async function vjKuld(email) {
+  const t = tanulok.find(x => x.email === email);
+  if (!t || !t.beadas) return;
+  const id = t.beadas.id;
+  const szoveg = document.getElementById('vj-' + id).value.trim();
+  const all = document.getElementById('vja-' + id);
+  if (!szoveg) { all.textContent = 'Üres az üzenet.'; return; }
+  all.textContent = 'Küldés…';
+  try {
+    const r = await fetch(API + '/api/ikt/beadas/' + id + '/visszajelzes', {
+      method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
+    const d = await r.json().catch(() => null);
+    if (!r.ok) throw new Error((d && d.error) || ('Hiba ' + r.status));
+    t.beadas.visszajelzes = d.visszajelzes;
+    all.textContent = 'elküldve';
+  } catch (e) {
+    all.textContent = e.message;
+  }
+}
+
+if (!TOKEN) app.innerHTML = '<div class="kozep"><h2>Ez az oldal oktatóknak szól.</h2><a href="../login.html">Bejelentkezés</a></div>';
+else betolt();
+</script>
+</body>
+</html>

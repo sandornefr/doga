@@ -48,7 +48,7 @@ a.csempe:hover .tovabb i{transform:translateX(4px);}
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
 <script>
-// IKT Projektmunka I. – a 9. évfolyam gyűjtőoldala: Témaoldal (feladat + beadás), később a vezetett tanmenet.
+// IKT Projektmunka I. – a 9. évfolyam gyűjtőoldala: Weboldalam (github.io cím), Témaoldal (feladat + beadás), később a vezetett tanmenet.
 const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
 const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
 const app = document.getElementById('app');
@@ -64,6 +64,12 @@ if (!u) {
       <span class="evf"><i class="fas fa-graduation-cap"></i> 9. évfolyam</span>
     </div>
     <div class="csempek">
+      <a class="csempe turkiz" href="weboldal.html">
+        <span class="ikon"><i class="fab fa-github"></i></span>
+        <b>Weboldalam</b>
+        <span class="le">Itt adod meg a github.io-s címedet. Látod, mi van kész az oldaladon.</span>
+        <span class="tovabb">Megnyitás <i class="fas fa-arrow-right"></i></span>
+      </a>
       <a class="csempe" href="temaoldal.html">
         <span class="ikon"><i class="fas fa-file-arrow-up"></i></span>
         <b>Témaoldal</b>
