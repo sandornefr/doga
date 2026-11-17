@@ -77,6 +77,30 @@ const _ch = {
   },
   // A <head>-ben van <link> elem, amelynek href-je PONTOSAN css/style.css (a sima style.css nem jó)
   styleLink: (html) => _ch.inHead(html, /<link\b[^>]*\bhref\s*=\s*["']css\/style\.css["']/i),
+  // Szöveg egységesítése: szóközök összevonása, nagykötőjel → kötőjel
+  txt: (s) => (s || '').replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim(),
+  // a elem a dokumentumban b előtt áll
+  before: (a, b) => !!(a.compareDocumentPosition(b) & 4),
+  // Az első elem, amelynek (egységesített) szövege pontosan text
+  byText: (doc, sel, text) => Array.from(doc.querySelectorAll(sel)).find(e => _ch.txt(e.textContent) === text) || null,
+  // A szöveg szerint megtalált elem legközelebbi boxSel őse (pl. a címsor kártyája)
+  boxOf: (doc, sel, text, boxSel) => { const e = _ch.byText(doc, sel, text); return e ? e.closest(boxSel) : null; },
+  // CSS szabályok: [{ sels: ['h2', 'h3'], body: '...' }] (megjegyzések nélkül)
+  cssRules: (css) => {
+    const out = [];
+    const src = (css || '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let m;
+    while ((m = re.exec(src))) {
+      out.push({ sels: m[1].split(',').map(s => s.trim().replace(/\s+/g, ' ').toLowerCase()), body: m[2] });
+    }
+    return out;
+  },
+  // Van-e olyan szabály, amelynek kijelölői között ott a sel, és a törzse illeszkedik a re mintára
+  cssHas: (css, sel, re) => {
+    const s = sel.trim().replace(/\s+/g, ' ').toLowerCase();
+    return _ch.cssRules(css).some(r => r.sels.includes(s) && re.test(r.body));
+  },
 };
 
 // Feladatok konfigurációja
@@ -2797,6 +2821,595 @@ tropusi_gyumolcsok: {
     {
       id: "css-validated",
       label: "40. CSS validálás képernyőképe feltöltve",
+      check: () => validationImages.css !== null,
+    },
+  ],
+},
+
+ragcsalok: {
+  id: "ragcsalok",
+  name: "Nagytestű rágcsálók",
+  description: "Weboldal kódolása - Nagytestű rágcsálók",
+  basePath: "forrasok/ragcsalok/",
+  htmlFile: "ragcsalok.html",
+  cssFile: "css/style.css",
+  taskDescFile: "weboldal_kodolas_ragcsalok.html",
+  previewBase: "forrasok/ragcsalok/",
+  sampleImage: "ragcsalok.png",
+  sourceFiles: [
+    { name: "forras.txt", label: "Nutria szöveg (forras.txt)" },
+    { name: "tablazat.txt", label: "Nutria táblázatsor (tablazat.txt)" }
+  ],
+  maxPoints: 40,
+  checks: [
+    {
+      id: "lang-charset",
+      label: "1. Weboldal nyelve magyar, karakterkódolása UTF-8",
+      check: (doc, html) => _ch.langHu(html) && _ch.inHead(html, /meta[^>]*charset=["']?utf-8["']?/i),
+    },
+    {
+      id: "title",
+      label: "2. Böngésző címsorában megjelenő cím \"Nagytestű rágcsálók\"",
+      check: (doc, html) => doc.title.trim() === "Nagytestű rágcsálók" && _ch.inHead(html, /<title[^>]*>/i),
+    },
+    {
+      id: "style-link",
+      label: "3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
+      check: (doc, html) => _ch.styleLink(html),
+    },
+    {
+      id: "fejlec-img",
+      label: "4. A fejlec.jpg képet a Fejléc részbe, a menü elé helyezte",
+      check: (doc) => {
+        const img = doc.querySelector('header img[src$="img/fejlec.jpg"]');
+        const nav = doc.querySelector('header nav');
+        return !!img && (!nav || _ch.before(img, nav));
+      },
+    },
+    {
+      id: "fejlec-alt-title",
+      label: "5. A fejléc kép alt és title szövege \"Nagytestű rágcsálók\"",
+      check: (doc) => {
+        const img = doc.querySelector('img[src*="fejlec"]');
+        return !!img && _ch.txt(img.getAttribute('alt')) === "Nagytestű rágcsálók" && _ch.txt(img.getAttribute('title')) === "Nagytestű rágcsálók";
+      },
+    },
+    {
+      id: "fejlec-id",
+      label: "6. A fejléc képre egyedi azonosítót állított fejlec néven",
+      check: (doc) => doc.querySelector('img#fejlec[src*="fejlec"]') !== null,
+    },
+    {
+      id: "nav-new-link",
+      label: "7. Elkészítette a \"További rágcsálók\" menüpontot és jó oldalra hivatkozik",
+      check: (doc) => {
+        const a = _ch.byText(doc, 'nav a', 'További rágcsálók');
+        if (!a) return false;
+        let href = a.getAttribute('href') || '';
+        try { href = decodeURI(href); } catch {}
+        return /^https:\/\/hu\.wikipedia\.org\/wiki\/Rágcsálók\/?$/i.test(href.trim());
+      },
+    },
+    {
+      id: "nav-new-blank",
+      label: "8. A \"További rágcsálók\" link új lapon nyílik meg",
+      check: (doc) => {
+        const a = _ch.byText(doc, 'nav a', 'További rágcsálók');
+        return !!a && a.getAttribute('target') === '_blank';
+      },
+    },
+    {
+      id: "mormota-ol",
+      label: "9. A Mormota táplálékai számozott felsorolásban (ol, li elemekkel)",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, 'h2', 'Mormota', '.ragcsalo');
+        return !!box && box.querySelectorAll('ol > li').length >= 5;
+      },
+    },
+    {
+      id: "hod-ul",
+      label: "10. A Hód részben számozatlan felsorolás (ul, li elemekkel)",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, 'h2', 'Hód', '.ragcsalo');
+        return !!box && box.querySelectorAll('ul > li').length >= 4;
+      },
+    },
+    {
+      id: "hod-erdekessegek-id",
+      label: "11. A Hód felsorolásának egyedi azonosítója erdekessegek",
+      check: (doc) => doc.querySelector('ul#erdekessegek > li') !== null,
+    },
+    {
+      id: "nutria-h2",
+      label: "12. A Nutria részben a címsor 2-es szintű",
+      check: (doc) => _ch.byText(doc, 'h2', 'Nutria') !== null,
+    },
+    {
+      id: "nutria-p",
+      label: "13. A Nutria szövege bekezdésben van",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, 'h2', 'Nutria', '.ragcsalo');
+        return !!box && Array.from(box.querySelectorAll('p:not(.card-text)')).some(p => p.textContent.includes('hódpatkány'));
+      },
+    },
+    {
+      id: "nutria-img",
+      label: "14. A Nutria kép forrása img/nutria.png",
+      check: (doc) => doc.querySelector('img[src$="img/nutria.png"]') !== null,
+    },
+    {
+      id: "nutria-alt-title",
+      label: "15. A Nutria képnél alt és title szövege \"Nutria\"",
+      check: (doc) => {
+        const img = doc.querySelector('img[src*="nutria"]');
+        return !!img && _ch.txt(img.getAttribute('alt')) === "Nutria" && _ch.txt(img.getAttribute('title')) === "Nutria";
+      },
+    },
+    {
+      id: "nutria-caption",
+      label: "16. A Nutria képaláírása \"Nutria\" (card-text bekezdés)",
+      check: (doc) => Array.from(doc.querySelectorAll('p.card-text')).some(p => _ch.txt(p.textContent) === 'Nutria'),
+    },
+    {
+      id: "delamerika-italic",
+      label: "17. A \"Dél-Amerika\" és \"Dél-Amerikában\" szöveg dőlt (i vagy em, 2 helyen)",
+      check: (doc) => {
+        const t = Array.from(doc.querySelectorAll('i, em')).map(e => _ch.txt(e.textContent));
+        return t.includes('Dél-Amerika') && t.includes('Dél-Amerikában');
+      },
+    },
+    {
+      id: "nevek-bold",
+      label: "18. A rágcsálónevek első előfordulása félkövér (b vagy strong, 6 helyen)",
+      check: (doc) => {
+        const t = Array.from(doc.querySelectorAll('p b, p strong')).map(e => _ch.txt(e.textContent).toLowerCase());
+        return ['kapibara', 'mormot', 'hód', 'tarajos sül', 'nutria', 'pakarána']
+          .every(n => t.some(x => x.startsWith(n)));
+      },
+    },
+    {
+      id: "table-nutria-row",
+      label: "19. A Nutria sora a táblázatban a Tarajos sül és a Pakarána között van (tr, td)",
+      check: (doc) => {
+        const rows = Array.from(doc.querySelectorAll('#adatok table tr'));
+        const first = r => r ? _ch.txt((r.querySelector('td') || {}).textContent || '') : '';
+        const i = rows.findIndex(r => first(r) === 'Nutria');
+        return i > 0 && rows[i].querySelectorAll('td').length === 3 &&
+          first(rows[i - 1]) === 'Tarajos sül' && first(rows[i + 1]) === 'Pakarána';
+      },
+    },
+    {
+      id: "table-merge",
+      label: "20. A táblázatban összevonta a cellákat (Faj: rowspan=2, Adatok: colspan=2)",
+      check: (doc) => {
+        const ths = Array.from(doc.querySelectorAll('#adatok table th'));
+        const faj = ths.find(th => _ch.txt(th.textContent).toLowerCase() === 'faj');
+        const adat = ths.find(th => _ch.txt(th.textContent).toLowerCase() === 'adatok');
+        return !!faj && !!adat && faj.getAttribute('rowspan') === '2' && adat.getAttribute('colspan') === '2';
+      },
+    },
+    {
+      id: "table-text-center",
+      label: "21. A táblázaton alkalmazza a text-center osztályt",
+      check: (doc) => doc.querySelector('#adatok table.text-center') !== null,
+    },
+    {
+      id: "table-thead-tbody",
+      label: "22. A táblázat első két sora thead, a többi tbody elemben van",
+      check: (doc) => {
+        const t = doc.querySelector('#adatok table');
+        if (!t) return false;
+        const head = t.querySelectorAll('thead tr');
+        const body = t.querySelectorAll('tbody tr');
+        return head.length === 2 && body.length >= 5 && !head[0].querySelector('td') &&
+          _ch.txt(body[0].textContent).startsWith('Kapibara');
+      },
+    },
+    {
+      id: "table-uppercase",
+      label: "23. A táblázat fejlécének első sorában alkalmazza a text-uppercase osztályt",
+      check: (doc) => {
+        const tr = doc.querySelector('#adatok table thead tr');
+        if (!tr) return false;
+        const ths = tr.querySelectorAll('th');
+        return tr.classList.contains('text-uppercase') ||
+          (ths.length > 0 && Array.from(ths).every(th => th.classList.contains('text-uppercase')));
+      },
+    },
+    {
+      id: "elohely-col-md-6",
+      label: "24. Az Élőhely és életmód részben mindkét oszlop col-md-6 (col-md-8/col-md-4 helyett)",
+      check: (doc) => {
+        const e = doc.querySelector('#elohely');
+        if (!e) return false;
+        return e.querySelectorAll(':scope > .col-md-6').length === 2 &&
+          !e.querySelector('.col-md-8, .col-md-4');
+      },
+    },
+    {
+      id: "footer-href",
+      label: "25. A láblécben van hivatkozás a \"leiras\" azonosítóra",
+      check: (doc) => doc.querySelector('.lablec a[href="#leiras"]') !== null,
+    },
+    {
+      id: "footer-text",
+      label: "26. A lábléc hivatkozás szövege \"Az oldal tetejére\"",
+      check: (doc) => {
+        const a = doc.querySelector('.lablec a');
+        return !!a && _ch.txt(a.textContent) === 'Az oldal tetejére';
+      },
+    },
+    {
+      id: "css-body-font",
+      label: "27. CSS: Az oldal betűtípusa Arial",
+      check: (doc, html, css) => _ch.cssHas(css, 'body', /font-family\s*:\s*["']?arial\b/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-p-justify",
+      label: "28. CSS: Elemkijelölő a bekezdésekre (p), sorkizárt igazítással",
+      check: (doc, html, css) => _ch.cssHas(css, 'p', /text-align\s*:\s*justify/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-h2-h3-size",
+      label: "29. CSS: A kettes és hármas címsor betűmérete 2em vagy 200%",
+      check: (doc, html, css) => ['h2', 'h3'].every(s => _ch.cssHas(css, s, /font-size\s*:\s*(2em|200%)\s*(;|$)/i)),
+      cssCheck: true,
+    },
+    {
+      id: "css-ragcsalo-bg",
+      label: "30. CSS: A ragcsalo osztály háttérszíne rgb(232, 214, 181)",
+      check: (doc, html, css) => _ch.cssHas(css, '.ragcsalo', /background(-color)?\s*:\s*rgb\(\s*232\s*,\s*214\s*,\s*181\s*\)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-ragcsalo-border",
+      label: "31. CSS: A ragcsalo osztály szegélye 1px vastag, folytonos, fekete",
+      check: (doc, html, css) => _ch.cssHas(css, '.ragcsalo', /(^|;)\s*border\s*:\s*(?=[^;]*\b1px\b)(?=[^;]*\bsolid\b)(?=[^;]*(\bblack\b|#000\b|#000000\b|rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)))/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-lablec-a-color",
+      label: "32. CSS: A lábléc hivatkozásának (.lablec a) betűszíne fekete",
+      check: (doc, html, css) => _ch.cssHas(css, '.lablec a', /(^|;)\s*color\s*:\s*(black|#000|#000000|rgb\(\s*0\s*,\s*0\s*,\s*0\s*\))\s*(;|$)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-lablec-a-italic",
+      label: "33. CSS: A lábléc hivatkozása (.lablec a) dőlt betűs",
+      check: (doc, html, css) => _ch.cssHas(css, '.lablec a', /font-style\s*:\s*italic/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-lablec-a-nodeco",
+      label: "34. CSS: A lábléc hivatkozása (.lablec a) aláhúzás nélküli",
+      check: (doc, html, css) => _ch.cssHas(css, '.lablec a', /text-decoration\s*:\s*none/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-table-width",
+      label: "35. CSS: A táblázat szélessége 50%",
+      check: (doc, html, css) => ['table', '.table', '#adatok table', '#adatok .table']
+        .some(s => _ch.cssHas(css, s, /(^|;)\s*width\s*:\s*50%/i)),
+      cssCheck: true,
+    },
+    {
+      id: "css-erdekessegek",
+      label: "36. CSS: Létrehozta az #erdekessegek elemkijelölőt",
+      check: (doc, html, css) => _ch.cssHas(css, '#erdekessegek', /[\s\S]*/),
+      cssCheck: true,
+    },
+    {
+      id: "css-erdekessegek-image",
+      label: "37. CSS: Az #erdekessegek listaelem képe ../img/ragcsaloikon.png",
+      check: (doc, html, css) => _ch.cssHas(css, '#erdekessegek', /list-style-image\s*:\s*url\(\s*["']?\.\.\/img\/ragcsaloikon\.png["']?\s*\)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-erdekessegek-margin",
+      label: "38. CSS: Az #erdekessegek bal margója 50px",
+      check: (doc, html, css) => _ch.cssHas(css, '#erdekessegek', /margin-left\s*:\s*50px/i),
+      cssCheck: true,
+    },
+    {
+      id: "html-validated",
+      label: "39. HTML validálás képernyőképe feltöltve (ragcsalokValidalas)",
+      check: () => validationImages.html !== null,
+    },
+    {
+      id: "css-validated",
+      label: "40. CSS validálás képernyőképe feltöltve (styleValidalas)",
+      check: () => validationImages.css !== null,
+    },
+  ],
+},
+
+szigetek: {
+  id: "szigetek",
+  name: "Európa szigetei",
+  description: "Weboldal kódolása - Európa szigetei",
+  basePath: "forrasok/szigetek/",
+  htmlFile: "szigetek.html",
+  cssFile: "css/style.css",
+  taskDescFile: "weboldal_kodolas_szigetek.html",
+  previewBase: "forrasok/szigetek/",
+  sampleImage: "szigetek.png",
+  sourceFiles: [
+    { name: "forras.txt", label: "Ibiza szöveg (forras.txt)" },
+    { name: "tablazat.txt", label: "Ibiza táblázatsor (tablazat.txt)" }
+  ],
+  maxPoints: 40,
+  checks: [
+    {
+      id: "lang-charset",
+      label: "1. Weboldal nyelve magyar, karakterkódolása UTF-8",
+      check: (doc, html) => _ch.langHu(html) && _ch.inHead(html, /meta[^>]*charset=["']?utf-8["']?/i),
+    },
+    {
+      id: "title",
+      label: "2. Böngésző címsorában megjelenő cím \"Európa legszebb szigetei\"",
+      check: (doc, html) => doc.title.trim() === "Európa legszebb szigetei" && _ch.inHead(html, /<title[^>]*>/i),
+    },
+    {
+      id: "style-link",
+      label: "3. Hivatkozást helyezett el a css mappában található style.css stíluslapra",
+      check: (doc, html) => _ch.styleLink(html),
+    },
+    {
+      id: "fejlec-img",
+      label: "4. A fejlec.jpg képet a Fejléc részbe, az 1-es címsor alá helyezte",
+      check: (doc) => {
+        const img = doc.querySelector('header img[src$="img/fejlec.jpg"]');
+        const h1 = doc.querySelector('header h1');
+        const nav = doc.querySelector('header nav');
+        return !!img && !!h1 && _ch.before(h1, img) && (!nav || _ch.before(img, nav));
+      },
+    },
+    {
+      id: "fejlec-alt-title",
+      label: "5. A fejléc kép alt és title szövege \"Európa szigetei\"",
+      check: (doc) => {
+        const img = doc.querySelector('img[src*="fejlec"]');
+        return !!img && _ch.txt(img.getAttribute('alt')) === "Európa szigetei" && _ch.txt(img.getAttribute('title')) === "Európa szigetei";
+      },
+    },
+    {
+      id: "fejlec-id",
+      label: "6. A fejléc képre egyedi azonosítót állított fejlec néven",
+      check: (doc) => doc.querySelector('img#fejlec[src*="fejlec"]') !== null,
+    },
+    {
+      id: "nav-new-link",
+      label: "7. Elkészítette a \"Roadster - Legjobb szigetek\" menüpontot a \"További szigetek\" után",
+      check: (doc) => {
+        const links = Array.from(doc.querySelectorAll('nav a'));
+        const iUj = links.findIndex(a => _ch.txt(a.textContent) === 'Roadster - Legjobb szigetek');
+        const iTov = links.findIndex(a => _ch.txt(a.textContent) === 'További szigetek');
+        return iUj >= 0 && iTov >= 0 && iUj === iTov + 1;
+      },
+    },
+    {
+      id: "nav-new-href",
+      label: "8. A link a https://roadster.hu/legjobb-europai-szigetek/ oldalra mutat",
+      check: (doc) => {
+        const a = _ch.byText(doc, 'nav a', 'Roadster - Legjobb szigetek');
+        return !!a && /^https:\/\/roadster\.hu\/legjobb-europai-szigetek\/?$/i.test((a.getAttribute('href') || '').trim());
+      },
+    },
+    {
+      id: "nav-new-blank",
+      label: "9. A \"Roadster - Legjobb szigetek\" link új lapon nyílik meg",
+      check: (doc) => {
+        const a = _ch.byText(doc, 'nav a', 'Roadster - Legjobb szigetek');
+        return !!a && a.getAttribute('target') === '_blank';
+      },
+    },
+    {
+      id: "leiras-h2",
+      label: "10. A Leírás részben az \"Európa szigetei\" szöveg 2-es szintű címsor",
+      check: (doc) => Array.from(doc.querySelectorAll('#leiras h2')).some(h => _ch.txt(h.textContent) === 'Európa szigetei'),
+    },
+    {
+      id: "mallorca-bold",
+      label: "11. Mallorcánál a \"Legismertebb látnivalók:\" szöveg félkövér (b vagy strong)",
+      check: (doc) => Array.from(doc.querySelectorAll('#szigetek b, #szigetek strong'))
+        .some(e => _ch.txt(e.textContent).startsWith('Legismertebb látnivalók')),
+    },
+    {
+      id: "mallorca-ol",
+      label: "12. A Mallorca látnivalói számozott felsorolásban (ol, li elemekkel)",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, 'h3', 'Mallorca', '[class*="col-"]');
+        return !!box && box.querySelectorAll('ol > li').length >= 5;
+      },
+    },
+    {
+      id: "kreta-italic",
+      label: "13. Krétánál a \"Történelmi helyszínek:\" szöveg dőlt (i vagy em)",
+      check: (doc) => Array.from(doc.querySelectorAll('#szigetek i, #szigetek em'))
+        .some(e => _ch.txt(e.textContent).startsWith('Történelmi helyszínek')),
+    },
+    {
+      id: "kreta-ul",
+      label: "14. A Kréta helyszínei számozatlan felsorolásban (ul, li elemekkel)",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, 'h3', 'Kréta', '[class*="col-"]');
+        return !!box && box.querySelectorAll('ul > li').length >= 5;
+      },
+    },
+    {
+      id: "kreta-tortenelmi-id",
+      label: "15. A számozatlan felsorolás egyedi azonosítója tortenelmi",
+      check: (doc) => doc.querySelector('ul#tortenelmi > li') !== null,
+    },
+    {
+      id: "sziget-class",
+      label: "16. A sziget osztályt mind a 4 sziget képéhez hozzáadta",
+      check: (doc) => ['mallorca', 'kreta', 'ciprus', 'santorini']
+        .every(n => doc.querySelector(`img.sziget[src*="${n}"]`) !== null),
+    },
+    {
+      id: "ibiza-h3",
+      label: "17. Az Ibiza címsor 3-as szintű",
+      check: (doc) => _ch.byText(doc, '#szigetek h3', 'Ibiza') !== null,
+    },
+    {
+      id: "ibiza-p",
+      label: "18. Az Ibiza szövege 2 bekezdésben van",
+      check: (doc) => {
+        const box = _ch.boxOf(doc, '#szigetek h3', 'Ibiza', '[class*="col-"]');
+        if (!box) return false;
+        const ps = Array.from(box.querySelectorAll('p'));
+        return ps.some(p => p.textContent.includes('legnépszerűbb')) &&
+          ps.some(p => p.textContent.includes('Es Vedrà')) &&
+          !ps.some(p => p.textContent.includes('legnépszerűbb') && p.textContent.includes('Es Vedrà'));
+      },
+    },
+    {
+      id: "ibiza-img",
+      label: "19. Az Ibiza kép (img/ibiza.jpg) a címsor után van",
+      check: (doc) => {
+        const img = doc.querySelector('img[src$="img/ibiza.jpg"]');
+        const h3 = _ch.byText(doc, 'h3', 'Ibiza');
+        return !!img && !!h3 && _ch.before(h3, img);
+      },
+    },
+    {
+      id: "ibiza-alt-title",
+      label: "20. Az Ibiza képnél alt és title szövege \"Ibiza\"",
+      check: (doc) => {
+        const img = doc.querySelector('img[src*="ibiza"]');
+        return !!img && _ch.txt(img.getAttribute('alt')) === "Ibiza" && _ch.txt(img.getAttribute('title')) === "Ibiza";
+      },
+    },
+    {
+      id: "ibiza-classes",
+      label: "21. Az Ibiza képen alkalmazza az img-fluid és sziget osztályokat",
+      check: (doc) => doc.querySelector('img.img-fluid.sziget[src*="ibiza"]') !== null,
+    },
+    {
+      id: "table-ibiza-row",
+      label: "22. Az Ibiza sora a táblázatban a Kréta és a Ciprus között van (tr, td)",
+      check: (doc) => {
+        const rows = Array.from(doc.querySelectorAll('#adatok table tr'));
+        const first = r => r ? _ch.txt((r.querySelector('td') || {}).textContent || '') : '';
+        const i = rows.findIndex(r => first(r) === 'Ibiza');
+        return i > 0 && rows[i].querySelectorAll('td').length === 5 &&
+          first(rows[i - 1]) === 'Kréta' && first(rows[i + 1]) === 'Ciprus';
+      },
+    },
+    {
+      id: "table-thead",
+      label: "23. A táblázat első sora thead elemben van",
+      check: (doc) => {
+        const tr = doc.querySelector('#adatok table thead tr');
+        return !!tr && _ch.txt(tr.textContent).startsWith('Név');
+      },
+    },
+    {
+      id: "tovabbi-cols",
+      label: "24. További szigetek: Santorini col-md-4, Szigetek sokszínűsége col-md-8",
+      check: (doc) => {
+        const s = _ch.boxOf(doc, '#tovabbi h3', 'Santorini', '[class*="col-md-"]');
+        const k = _ch.boxOf(doc, '#tovabbi h3', 'Szigetek sokszínűsége', '[class*="col-md-"]');
+        return !!s && !!k && s.classList.contains('col-md-4') && !s.classList.contains('col-md-6') &&
+          k.classList.contains('col-md-8') && !k.classList.contains('col-md-6');
+      },
+    },
+    {
+      id: "footer-href",
+      label: "25. A láblécben van hivatkozás a \"leiras\" azonosítóra",
+      check: (doc) => doc.querySelector('footer a[href="#leiras"]') !== null,
+    },
+    {
+      id: "footer-text",
+      label: "26. A lábléc hivatkozás szövege \"Vissza a tetejére\"",
+      check: (doc) => {
+        const a = doc.querySelector('footer a');
+        return !!a && _ch.txt(a.textContent) === 'Vissza a tetejére';
+      },
+    },
+    {
+      id: "css-body-font",
+      label: "27. CSS: Az oldal betűtípusa Georgia",
+      check: (doc, html, css) => _ch.cssHas(css, 'body', /font-family\s*:\s*["']?georgia\b/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-fejlec-width",
+      label: "28. CSS: A fejlec azonosító szélessége 100%",
+      check: (doc, html, css) => _ch.cssHas(css, '#fejlec', /(^|;)\s*width\s*:\s*100%/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-szigetek-p-padding",
+      label: "29. CSS: A \"#szigetek p\" elemkijelölő belső margója 20px",
+      check: (doc, html, css) => _ch.cssHas(css, '#szigetek p', /(^|;)\s*padding\s*:\s*20px\s*(;|$)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-tablazat-radius",
+      label: "30. CSS: A tablazat osztály sarkai 10px sugárral lekerekítettek",
+      check: (doc, html, css) => _ch.cssHas(css, '.tablazat', /border-radius\s*:\s*10px\s*(;|$)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-tablazat-fontsize",
+      label: "31. CSS: A tablazat osztály betűmérete 10%-kal nagyobb (1.1em vagy 110%)",
+      check: (doc, html, css) => _ch.cssHas(css, '.tablazat', /font-size\s*:\s*(1\.1em|110%|1\.1rem)\s*(;|$)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-centerbtn-bg",
+      label: "32. CSS: A center-btn osztály háttérszíne rgb(201, 159, 62)",
+      check: (doc, html, css) => _ch.cssHas(css, '.center-btn', /background(-color)?\s*:\s*rgb\(\s*201\s*,\s*159\s*,\s*62\s*\)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-centerbtn-smallcaps",
+      label: "33. CSS: A center-btn osztály betűi kiskapitálisak",
+      check: (doc, html, css) => _ch.cssHas(css, '.center-btn', /font-variant\s*:\s*small-caps/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-a-nodeco",
+      label: "34. CSS: A hivatkozások (a) aláhúzás nélküliek",
+      check: (doc, html, css) => _ch.cssHas(css, 'a', /text-decoration\s*:\s*none/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-a-color",
+      label: "35. CSS: A hivatkozások (a) betűszíne rgb(122, 84, 6)",
+      check: (doc, html, css) => _ch.cssHas(css, 'a', /(^|;)\s*color\s*:\s*rgb\(\s*122\s*,\s*84\s*,\s*6\s*\)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-tortenelmi",
+      label: "36. CSS: Létrehozta a #tortenelmi elemkijelölőt",
+      check: (doc, html, css) => _ch.cssHas(css, '#tortenelmi', /[\s\S]*/),
+      cssCheck: true,
+    },
+    {
+      id: "css-tortenelmi-image",
+      label: "37. CSS: A #tortenelmi listaelem képe ../img/history-icon.png",
+      check: (doc, html, css) => _ch.cssHas(css, '#tortenelmi', /list-style-image\s*:\s*url\(\s*["']?\.\.\/img\/history-icon\.png["']?\s*\)/i),
+      cssCheck: true,
+    },
+    {
+      id: "css-p-justify",
+      label: "38. CSS: Elemkijelölő a bekezdésekre (p), sorkizárt igazítással",
+      check: (doc, html, css) => _ch.cssHas(css, 'p', /text-align\s*:\s*justify/i),
+      cssCheck: true,
+    },
+    {
+      id: "html-validated",
+      label: "39. HTML validálás képernyőképe feltöltve (szigetekValidalas)",
+      check: () => validationImages.html !== null,
+    },
+    {
+      id: "css-validated",
+      label: "40. CSS validálás képernyőképe feltöltve (styleValidalas)",
       check: () => validationImages.css !== null,
     },
   ],

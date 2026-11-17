@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 12px 16px; padding: 0; }
+    .fejezet { font-size: 10pt; color: #555; margin-bottom: 2px; }
+    .pontszam { font-size: 10pt; color: #555; float: right; }
+    h1.feladat-cim { font-size: 14pt; font-weight: bold; margin: 4px 0 10px 0; }
+    p { margin: 4px 0 6px 0; text-align: justify; }
+    p.utasitas { margin: 4px 0 10px 0; }
+    ol.fo { margin: 6px 0; padding-left: 22px; }
+    ol.fo > li { margin: 5px 0; padding-left: 2px; text-align: justify; }
+    ol.fo li > p { margin: 0; }
+    ol.al { list-style-type: lower-alpha; margin: 4px 0; padding-left: 22px; }
+    ol.al > li { margin: 3px 0; text-align: justify; }
+    ul { margin: 3px 0; padding-left: 22px; }
+    b, strong { font-weight: bold; } i, em { font-style: italic; } u { text-decoration: underline; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <p class="fejezet">A. Weboldalak kódolása <span class="pontszam">40 pont</span></p>
+  <h1 class="feladat-cim">Európa szigetei</h1>
+<p>A következő feladatban egy weboldalt kell készítenie a legszebb európai szigetek rövid bemutatására a feladatleírás és a minta szerint! Ahol a feladat másként nem kéri, a formázási beállításokat a style.css stílusállományban végezze el úgy, hogy az új szelektorokat az állomány végén helyezze el! A feladat szövegében található részek megnevezései a HTML fájlban találhatóak <u>megjegyzés</u> formában.</p>
+<p>Nagyobb felbontású, színes mintát a kész weboldalról a <strong>szigetek.png</strong> fájlban találja.</p>
+<p>Az elkészült oldalt HTML-validáló eszközzel ellenőrizni kell!</p>
+<p class="utasitas">Nyissa meg a <strong>szigetek.html</strong> és <strong>css\style.css</strong> állományokat és szerkessze azoknak a tartalmát az alábbiak szerint:</p>
+<ol class="fo">
+<li><p>A weboldal nyelvezete legyen <strong>magyar</strong>, a karakterkódolása pedig <strong>UTF-8</strong>!</p></li>
+<li><p>A böngésző címsorában megjelenő cím „<strong>Európa legszebb szigetei</strong>” legyen!</p></li>
+<li><p>A weboldal fejrészében helyezzen el hivatkozást a <strong>css</strong> könyvtárban található <strong>style.css</strong> stíluslapra a Bootstrap stíluslapra történő hivatkozása alá!</p></li>
+<li><p><u>A <em>„Fejléc”</em> részben végezze el az alábbi feladatokat:</u></p>
+<ol class="al">
+<li><p>Helyezze el a <strong>fejlec.jpg</strong> képet a <strong>menüsor előtt található részben az egyes szintű címsor alá</strong>! Ha a kép nem jelenik meg, illetve ha a kép fölé visszük az egér kurzort, akkor a „<strong>Európa szigetei”</strong> szöveg jelenjen meg!</p></li>
+<li><p>A képnek állítson be egyedi azonosítót „<strong>fejlec</strong>” néven!</p></li>
+<li><p>A navigációs menüsorban helyezzen el egy új menüpontot a „<em>További szigetek</em>” menüpont <strong>után</strong> és „<strong>Roadster -</strong> <strong>Legjobb szigetek</strong>” legyen a neve!</p></li>
+<li><p>Az új menüpont a <strong>https://roadster.hu/legjobb-europai-szigetek/</strong> weboldalra mutasson úgy, hogy a linkre kattintva az oldal <strong>új lapon jelenjen meg</strong> a böngészőben!</p></li>
+</ol></li>
+<li><p>A <em>„Leírás”</em> részben „<em>Európa szigetei</em>” szöveget alakítsa <strong>2-es szintű címsorrá</strong>!</p></li>
+<li><p><u>A <em>„Szigetek”</em> részben végezze el az alábbi feladatot:</u></p>
+<ol class="al">
+<li><p>A „<em>Mallorca</em>” sziget leírásánál a „<em>Legismertebb látnivalók:“</em> szöveget <strong>HTML tag</strong> segítségével alakítsa <strong>félkövérré</strong>!</p></li>
+<li><p>A „<em>Legismertebb látnivalók:“</em> szöveg alatt található 5 látnivaló névből alakítson <strong>számozott felsorolást</strong>!</p></li>
+<li><p>A „<em>Kréta</em>” sziget leírásánál a „<em>Történelmi helyszínek:“</em> szöveget <strong>HTML tag</strong> segítségével alakítsa <strong>dőlt betűssé</strong>!</p></li>
+<li><p>A „<em>Történelmi helyszínek:“</em> szöveg után található helyszínekből alakítson <strong>számozatlan felsorolást</strong>!</p></li>
+<li><p>A számozatlan felsorolásnak állítsa be a „<strong>tortenelmi</strong>” egyedi azonosítót!</p></li>
+<li><p>Adja hozzá a <strong>„sziget”</strong> osztályjelölőt az egyes szigetek kép elemeihez (4 helyen), hogy a style.css stíluslapon megírt animáció hatása érvényesüljön!</p></li>
+</ol></li>
+<li><p>Az <em>„Ibiza”</em> szigetet lefelejtették a weboldalról! Tegye a hiányzó tartalmat a <em>„Kréta”</em> és a <em>„Ciprus”</em> részek közé<em>!</em> A szükséges szövegek a forras.txt állományban találhatóak.</p>
+<ol class="al">
+<li><p>A <strong>címsort</strong> a minta alapján alakítsa <strong>hármas</strong> szintűvé!</p></li>
+<li><p>A szövegrész <strong>bekezdéseit</strong> a minta alapján alakítsa ki!</p></li>
+<li><p>Állítsa be a <strong>címsor után</strong> a mintának megfelelően Ibiza képét! A kép az <strong>img</strong> könyvtárban található <strong>ibiza.jpg</strong> néven. Ha a kép nem jelenik meg, illetve ha a kép fölé visszük az egér kurzort, akkor az „<strong>Ibiza</strong>” szöveg jelenjen meg!</p></li>
+<li><p>Alkalmazza a képre az <strong>„img-fluid sziget”</strong> osztályjelölőket!</p></li>
+</ol></li>
+<li><p><u>A <em>„Szigetek adatai”</em> részben végezze el az alábbi feladatokat:</u></p>
+<ol class="al">
+<li><p>A táblázatból szintén hiányzik Ibiza és a rá vonatkozó adatok. Készítse el a hiányzó sort a mintának megfelelően a <em>„Kréta”</em> és <em>„Ciprus”</em> bolygók sorai közé, amelyhez az adatokat a „<strong>tablazat.txt</strong>” állományban találja!</p></li>
+<li><p>A táblázat első sorára a stíluslapon eltérő megjelenítés vonatkozik. Ehhez állítsa be, hogy az első sor a <strong>táblázat fejrésze</strong> legyen!</p></li>
+</ol></li>
+<li><p>A „<em>További szigetek</em>” részben található rácsszerkezetet állítsa a közepesméretű eszközöknél 1/2-ed 1/2-ed osztásról <strong>1/3-ad 2/3-ad</strong> osztásra!</p></li>
+<li><p><u>Módosítsa a lábléc beállításait az alábbi leírás alapján:</u></p>
+<ol class="al">
+<li><p>Készítsen egy hivatkozást, amely a weboldalon belül a „<strong>leiras</strong>” egyedi azonosítójú keretre hivatkozik!</p></li>
+<li><p>A hivatkozás szövege „<strong>Vissza a tetejére</strong>” legyen!</p></li>
+</ol></li>
+<li><p><u>A következő beállításokat, módosításokat a <strong>style.css</strong> külső stíluslap állományon végezze el:</u></p>
+<ol class="al">
+<li><p>Az <strong>oldal</strong> betűtípusa legyen „<strong>Georgia”</strong>!</p></li>
+<li><p>A „<strong>fejlec</strong>” egyedi azonosítójú elemkijelölő <strong>szélességét</strong> állítsa <strong>100%-ra</strong>!</p></li>
+<li><p>A „<strong>szigetek</strong>” egyedi azonosítóhoz tartozó <strong>bekezdések</strong> elemkijelölőjében állítson be <strong>20px belső margót!</strong></p></li>
+<li><p>A „<strong>tablazat</strong>” osztályazonosítójú elemkijelölőre állítson be <strong>10px sugarú lekerekített szegélyt</strong>, valamint állítsa be a <strong>betűméretet</strong> úgy, hogy <strong>10%-kal nagyobb legyen, mint az alapértelmezett betűméret</strong>!</p></li>
+<li><p>A „<strong>center-btn</strong>” osztályazonosítójú elemkijelölő <strong>háttérszíne</strong> legyen <strong>201, 159, 62 RGB</strong> kódú, valamint a <strong>betűk kiskapitálisak</strong>!</p></li>
+<li><p>A <strong>hivatkozásokhoz</strong> tartozó elemkijelölő jelenleg üres. Állítsa be, hogy <strong>aláhúzás nélküli</strong> legyen!</p></li>
+<li><p>Állítsa be a <strong>hivatkozásokhoz</strong> a <strong>122, 84, 6 RGB</strong> kódú <strong>betűszínt!</strong></p></li>
+<li><p>Hozzon létre a „<strong>tortenelmi</strong>” egyedi azonosítóhoz tartozó elemkijelölőt, és állítsa a <strong>listaelem stílus képét</strong> az <strong>img</strong> könyvtárban található <strong>history-icon.png</strong>-re!</p></li>
+<li><p>Hozzon létre a <strong>bekezdésekhez</strong> elemkijelölőt, majd állítson be rájuk <strong>sorkizárt betűigazítást</strong>!</p></li>
+</ol></li>
+<li><p><u>Ellenőrizze munkáját!</u></p>
+<ol class="al">
+<li><p>A HTML oldalt validálja a <strong>https://validator.w3.org/</strong> oldalon! Az eredményről készítsen pillanatképet, amelyet mentsen el <strong><em>szigetekValidalas</em></strong> néven!</p></li>
+<li><p>A stíluslapot ellenőrizze <strong>https://jigsaw.w3.org/css-validator/</strong> oldalon! Az eredményről készítsen pillanatképet és mentse el <strong><em>styleValidalas</em></strong> néven!</p></li>
+</ol></li>
+</ol>
+</body>
+</html>

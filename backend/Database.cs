@@ -1908,7 +1908,7 @@ public partial class Database
                  FROM quiz_results WHERE LOWER(email)=LOWER(u.email) AND tipus IN ('html','css','bootstrap')),
                 (SELECT MIN(datum) FROM progress
                  WHERE LOWER(email)=LOWER(u.email) AND targy='web'
-                 AND feladat IN ('bogyos','humanoid','baglyok','egijelensegek','evmadarai','gombak','hobbiallatok','hullok','tropusi_gyumolcsok')),
+                 AND feladat IN ('bogyos','humanoid','baglyok','egijelensegek','evmadarai','gombak','hobbiallatok','hullok','tropusi_gyumolcsok','ragcsalok','szigetek')),
                 MAX(CASE WHEN s.state_key='python_kezdo'           THEN s.state_value END),
                 MAX(CASE WHEN s.state_key='python_halado'          THEN s.state_value END),
                 (SELECT MIN(datum) FROM progress
@@ -1988,7 +1988,7 @@ public partial class Database
             FROM progress
             WHERE targy='web' AND feladat IN (
                 'bogyos','humanoid','baglyok','egijelensegek','evmadarai',
-                'gombak','hobbiallatok','hullok','tropusi_gyumolcsok')
+                'gombak','hobbiallatok','hullok','tropusi_gyumolcsok','ragcsalok','szigetek')
             GROUP BY LOWER(email)
         ) wag ON LOWER(u.email)=wag.email
         LEFT JOIN (

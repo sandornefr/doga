@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Calibri, 'Segoe UI', sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; margin: 12px 16px; padding: 0; }
+    .fejezet { font-size: 10pt; color: #555; margin-bottom: 2px; }
+    .pontszam { font-size: 10pt; color: #555; float: right; }
+    h1.feladat-cim { font-size: 14pt; font-weight: bold; margin: 4px 0 10px 0; }
+    p { margin: 4px 0 6px 0; text-align: justify; }
+    p.utasitas { margin: 4px 0 10px 0; }
+    ol.fo { margin: 6px 0; padding-left: 22px; }
+    ol.fo > li { margin: 5px 0; padding-left: 2px; text-align: justify; }
+    ol.fo li > p { margin: 0; }
+    ol.al { list-style-type: lower-alpha; margin: 4px 0; padding-left: 22px; }
+    ol.al > li { margin: 3px 0; text-align: justify; }
+    ul { margin: 3px 0; padding-left: 22px; }
+    b, strong { font-weight: bold; } i, em { font-style: italic; } u { text-decoration: underline; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <p class="fejezet">A. Weboldal kódolása <span class="pontszam">40 pont</span></p>
+  <h1 class="feladat-cim">Nagytestű rágcsálók</h1>
+<p>A következő feladatban egy weboldalt kell készítenie a legismertebb nagytestű rágcsálók rövid bemutatására a feladatleírás és a minta szerint! Ahol a feladat másként nem kéri, a formázási beállításokat a style.css stílusállományban végezze el úgy, hogy az új szelektorokat az állomány végén helyezze el! A feladat szövegében található rész megnevezések a HTML fájlban találhatóak megjegyzés formában.</p>
+<p>Nagyobb felbontású, színes mintát a kész weboldalról a <strong>ragcsalok.png</strong> fájlban találja.</p>
+<p>Az elkészült oldalt HTML-validáló eszközzel ellenőrizni kell!</p>
+<p class="utasitas">Nyissa meg a <strong>ragcsalok.html</strong> és <strong>css\style.css</strong> állományokat és szerkessze azoknak a tartalmát az alábbiak szerint:</p>
+<ol class="fo">
+<li><p>A weboldal nyelvezete legyen <strong>magyar</strong>, a karakterkódolása pedig <strong>UTF-8</strong>!</p></li>
+<li><p>A böngésző címsorában megjelenő cím „<strong>Nagytestű rágcsálók</strong>” legyen!</p></li>
+<li><p>A weboldal fejrészében helyezzen el hivatkozást a <strong>css</strong> könyvtárban található <strong>style.css</strong> stíluslapra a Bootstrap stíluslapra történő hivatkozása alá!</p></li>
+<li><p><u>A <em>„Fejléc”</em> részben végezze el az alábbi feladatokat:</u></p>
+<ol class="al">
+<li>Helyezze el a <strong>fejlec.jpg</strong> képet a „Fejléc” részben található üres részbe, a navigációs menü elé! Ha a kép nem jelenik meg, vagy ha a kép fölé visszük az egér kurzort, akkor a „<strong>Nagytestű rágcsálók”</strong> szöveg jelenjen meg! A képnek állítson be egyedi azonosítót „<strong>fejlec</strong>” néven!</li>
+</ol></li>
+<li><p><u>A weboldalon készítsen egy új menüpontot az alábbi leírás és a minta alapján:</u></p>
+<ol class="al">
+<li><p>Az új menüpont az „Élőhely és életmód” menüpont <strong>után</strong> helyezkedjen el és „<strong>További rágcsálók</strong>” legyen a neve!</p></li>
+<li><p>Az új menüpont a <strong>https://hu.wikipedia.org/wiki/Rágcsálók</strong> weboldalra mutasson úgy, hogy a linkre kattintva az oldal, új lapon jelenjen meg a böngészőben!</p></li>
+</ol></li>
+<li><p>A <em>„Mormota”</em> részben a „<em>A mormoták gyakori táplálékai:</em>” bekezdés után megjelenő élelmekből készítsen <strong>számozott</strong> felsorolást!</p></li>
+<li><p>A <em>„Hód”</em> részben állítsa be a következőket:</p>
+<ol class="al">
+<li><p>A hód leírása bekezdés utáni megfelelő szövegrészekből alakítson <strong>számozatlan</strong> felsorolást a minta alapján!</p></li>
+<li><p>A felsorolásnak állítson „erdekessegek” <strong>egyedi azonosítót</strong>!</p></li>
+</ol></li>
+<li><p>A Nutria fajt nemrég fedezték fel, így őt is el kellene helyezni a weboldalon! A <em>„Nutria”</em> részben alakítsa ki a tartalmat a minta alapján! A szükséges szövegek a forras.txt állományban találhatóak. Ügyeljen arra, hogy az osztályjelölők is megegyezzenek a többi rágcsálónál használt osztályjelölőkkel!</p>
+<ol class="al">
+<li><p>A <strong>címsort</strong> a minta alapján alakítsa ki <strong>kettes</strong> szintűvé!</p></li>
+<li><p>A szövegrész <strong>bekezdéseit</strong> a minta alapján alakítsa ki!</p></li>
+<li><p>Állítsa be a kép tag forrását az <strong>img</strong> könyvtárban található <strong>nutria.png</strong>-re! Ha a kép nem jelenik meg, vagy ha a kép fölé visszük az egér kurzort, akkor a „<strong>Nutria</strong>” szöveg jelenjen meg!</p></li>
+<li><p>A képaláírás <strong>„Nutria”</strong> legyen!</p></li>
+</ol></li>
+<li><p>A <em>„Kapibara”</em> részben illetve a <em>„Pakarána”</em> részben a <em>„Dél-Amerika”, illetve „Dél-Amerikában”</em> szövegrészeket <strong>HTML tag</strong> segítségével alakítsa <strong>dőlt betűssé</strong>! Minden rágcsáló leírását tartalmazó bekezdésben (6 helyen) a rágcsáló nevének <strong>legelső</strong> előfordulását <strong>HTML tag</strong> segítségével alakítsa <strong>félkövér betűstílusúvá</strong> (a mintának megfelelően).</p></li>
+<li><p><u>A <em>„Rágcsáló adatok”</em> részben végezze el az alábbi feladatokat:</u></p>
+<ol class="al">
+<li><p>A táblázatból szintén hiányzik a Nutria és a rá vonatkozó adatok. <strong>Készítse el a hiányzó sort</strong> a mintának megfelelően a „Tarajos sül” és „Pakarána” sorai közé, amelyhez az adatokat a „tablazat.txt” állományban találja!</p></li>
+<li><p>A mintának megfelelően <strong>vonja össze</strong> a szükséges cellákat!</p></li>
+<li><p>A táblázathoz adja hozzá a <strong>text-center</strong> osztályjelölőt!</p></li>
+<li><p>A táblázat első két sorát állítsa be a táblázat <strong>fejlécének</strong>, a többit pedig a táblázat <strong>törzsének</strong>. Az első sorában pedig alkalmazza a <strong>text-uppercase</strong> osztályjelölőt, hogy a szövegek nagybetűsek legyenek!</p></li>
+</ol></li>
+<li><p>Az „<em>Élőhely és életmód</em>” részben található oszlopelrendezést, közepesméretű eszközöknél állítsa 2/3-1/3 osztásról <strong>1/2-1/2</strong> osztásra!</p></li>
+<li><p><u>Módosítsa a lábléc beállításait az alábbi leírás alapján:</u></p>
+<ol class="al">
+<li><p>Készítsen egy hivatkozást, amely a weboldalon belül a „<strong>leiras</strong>” egyedi azonosítójú keretre hivatkozzon!</p></li>
+<li><p>A hivatkozás szövege „<strong>Az oldal tetejére</strong>” legyen!</p></li>
+</ol></li>
+<li><p><u>A következő beállításokat, módosításokat a <strong>style.css</strong> külső stíluslap állományon végezze el:</u></p>
+<ol class="al">
+<li><p>Az <strong>oldal</strong> betűtípusa legyen <strong>Arial</strong>!</p></li>
+<li><p>Hozzon létre elemkijelölőt az <strong>összes bekezdéshez</strong> és állítsa be a szövegüket <strong>sorkizártra</strong>!</p></li>
+<li><p>A <strong>kettes és</strong> <strong>hármas szintű címsor</strong> <strong>betűméretét</strong> módosítsa úgy, hogy az 2-szer nagyobb legyen, mint az alapértelmezett betűméret!</p></li>
+<li><p>A <strong>ragcsalo</strong> osztályazonosítójú elemkijelölő <strong>háttérszíne</strong> legyen <strong>232, 214, 181 RGB</strong> kódú, valamint állítson be <strong>1 képpont vastag, folytonos vonalú, fekete színű</strong> szegélyt!</p></li>
+<li><p>A <strong>lábléc hivatkozásához</strong> állítsa be a stílusbeállítást úgy, hogy a hivatkozás <strong>betűszíne fekete,</strong> stílusa <strong>dőlt betűs</strong> és <strong>aláhúzás nélküli</strong> legyen!</p></li>
+<li><p>A <strong>táblázathoz</strong> állítson <strong>50%-os szélességet</strong>!</p></li>
+<li><p>Hozza létre az „<strong>erdekessegek</strong>” egyedi azonosítóhoz tartozó elemkijelölőt, majd végezze el a következő beállításokat.:</p>
+<ul>
+<li><p>Állítsa a <strong>listaelem stílus képét</strong> az <strong>img</strong> könyvtárban található <strong>ragcsaloikon.png</strong>-re!</p></li>
+<li><p>Állítsa a <strong>bal (külső) margót 50 képpont</strong> nagyságúra!</p></li>
+</ul></li>
+</ol></li>
+<li><p><u>Ellenőrizze munkáját!</u></p>
+<ol class="al">
+<li><p>A HTML oldalt validálja a <strong>https://validator.w3.org/</strong> oldalon! Az eredményről készítsen pillanatképet, amelyet mentsen el <strong><em>ragcsalokValidalas</em></strong> néven!</p></li>
+<li><p>A stíluslapot ellenőrizze <strong>https://jigsaw.w3.org/css-validator/</strong> oldalon! Az eredményről készítsen pillanatképet és mentse el <strong><em>styleValidalas</em></strong> néven!</p></li>
+</ol></li>
+</ol>
+</body>
+</html>

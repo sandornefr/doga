@@ -1,0 +1,82 @@
+body {
+	height: 400px;
+	background-color: rgb(214, 196, 164);
+	background: radial-gradient(rgb(119, 91, 54), rgb(226, 204, 166));
+	background-size: 100% 300%;
+	animation: hatterMozgas 20s ease infinite;
+}
+
+@keyframes hatterMozgas {
+	0% {
+		background-position: 0% 0%;
+	}
+	50% {
+		background-position: 0% 100%;
+	}
+	100% {
+		background-position: 0% 0%;
+	}
+}
+
+#fejlec {
+	width: 100%;
+}
+
+#focim {
+	text-shadow: 5px 5px 10px rgb(92, 61, 31);
+}
+
+h2, h3 {
+	color: black;
+	text-shadow: 5px 5px 10px rgb(92, 61, 31);
+	font-variant: small-caps;
+}
+
+.ragcsalo {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	display: flex;
+	align-items: center;
+	gap: 30px;
+}
+
+.szoveg{
+	flex: 1;
+}
+
+.kep{
+	flex: 1;
+}
+
+.card {
+	background-color: transparent;
+	border: none;
+}
+
+.lablec {
+	background-color: rgb(232, 214, 181);
+}
+
+.lablec a {
+
+}
+
+.lablec a:hover {
+	text-transform: uppercase;
+}
+
+.navbar {
+	font-variant: small-caps;
+	font-size: 1.2em;
+	margin-left: 0;
+}
+
+.card {
+	width: 80%;
+	margin: auto;
+}
+
+.table {
+	background-color: rgb(232, 214, 181);
+	border: 1px solid black;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
