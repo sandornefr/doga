@@ -717,7 +717,7 @@ function buildFilterOptions() {
     };
     add('evfolyam-select', ef, v => v+'. évfolyam');
     add('osztaly-select',  oz, v => v+'. osztály');
-    add('csoport-select',  cs, v => v==='info' ? 'info csoport' : v+'. csoport');
+    add('csoport-select',  cs, v => /^\d+$/.test(v) ? v+'. csoport' : v+' csoport');
 
     if (ef.includes('10')) document.getElementById('evfolyam-select').value = '10';
 }
@@ -931,7 +931,7 @@ function renderLeft(students) {
         const kotAtl   = Math.round(g.students.reduce((a,s)=>a+getKotelezoDb(s),0)/total*10)/10;
         const aktivPct = Math.round(aktiv/total*100);
         const kotPct   = Math.round(kotAtl/KOTELEZO.length*100);
-        const label    = [g.ef ? g.ef+'.' : '', g.oz ? g.oz : '', g.cs ? (g.cs==='info'?'info':g.cs+'. cs.') : ''].filter(Boolean).join(' ');
+        const label    = [g.ef ? g.ef+'.' : '', g.oz ? g.oz : '', g.cs ? (/^\d+$/.test(g.cs)?g.cs+'. cs.':g.cs) : ''].filter(Boolean).join(' ');
 
         const aktivColor = aktivPct>=70?'#3fb950':aktivPct>=40?'#d29922':'#f85149';
         const kotColor   = kotPct>=80?'#3fb950':kotPct>=50?'#d29922':'#f85149';
@@ -987,7 +987,7 @@ function makeCard(s) {
     const doneCnt  = getKotelezoDb(s);
     const total    = KOTELEZO.length;
     const stColor  = kotelezoStatusColor(s);
-    const csLabel  = s.csoport==='info'?'info cs.':(s.csoport?s.csoport+'. cs.':'');
+    const csLabel  = !s.csoport?'':(/^\d+$/.test(s.csoport)?s.csoport+'. cs.':s.csoport+' cs.');
     const evozLabel= [s.evfolyam,s.osztaly].filter(Boolean).join('.');
 
     const cardCls  = status==='piros'?' gyenge':status==='sarga'?' sarga':status==='zold'?' zold':'';
@@ -1113,7 +1113,7 @@ function renderDetail(s) {
     const doneCnt = getKotelezoDb(s);
     const total   = KOTELEZO.length;
     const stColor = kotelezoStatusColor(s);
-    const csLabel = s.csoport==='info'?'info csoport':(s.csoport?s.csoport+'. csoport':'ismeretlen csoport');
+    const csLabel = !s.csoport?'ismeretlen csoport':(/^\d+$/.test(s.csoport)?s.csoport+'. csoport':s.csoport+' csoport');
     const evozLabel=[s.evfolyam,s.osztaly].filter(Boolean).join('.')||'?';
 
     // ── Jegyjavaslat + peer comparison ─────────────────────────────────────
@@ -1280,7 +1280,7 @@ function groupKey(s) {
     return [String(s.evfolyam||''), s.osztaly||'', String(s.csoport||'')].join('_');
 }
 function groupLabel(ef, oz, cs) {
-    return [ef ? ef+'.' : '', oz||'', cs ? (cs==='info'?'info cs.':cs+'. cs.') : ''].filter(Boolean).join(' ');
+    return [ef ? ef+'.' : '', oz||'', cs ? (/^\d+$/.test(cs)?cs+'. cs.':cs+' cs.') : ''].filter(Boolean).join(' ');
 }
 
 function openCsoportModal() {

@@ -555,7 +555,9 @@
         if (osztaly === 'K') {
             csoportGroup.style.display = 'block';
             csoportSel.innerHTML = `
-                <option value="info" selected>infó</option>
+                <option value="">– válassz –</option>
+                <option value="info">infó</option>
+                <option value="katona">katona</option>
             `;
         } else if (osztaly === 'F' || NINCS_CSOPORT_EVFOLYAMOK.includes(evfolyam)) {
             // 11. évfolyamtól (és felnőttképzésben) nincs csoportbontás.

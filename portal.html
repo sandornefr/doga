@@ -2721,7 +2721,7 @@
         const elozo = sel.value;
         const opciok =
             nincsCsoport    ? [['nincs', 'nincs csoport']] :
-            osztaly === 'K' ? [['info', 'infó']] :
+            osztaly === 'K' ? [['', '– válassz –'], ['info', 'infó'], ['katona', 'katona']] :
             osztaly === 'T' ? [['teszt', 'teszt']] :
             [['', '– válassz –'], ['1', '1. csoport'], ['2', '2. csoport']];
         sel.innerHTML = opciok.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');

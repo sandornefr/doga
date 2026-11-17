@@ -43,7 +43,16 @@
     function csoportNev(k) {
         const [e, o, c] = k.split('.');
         if (!c) return `${e}.${o}`;
-        return c === 'info' ? `${e}.${o} informatika` : `${e}.${o} ${c}. cs.`;
+        if (c === 'info') return `${e}.${o} informatika`;
+        return /^\d+$/.test(c) ? `${e}.${o} ${c}. cs.` : `${e}.${o} ${c}`;
+    }
+    // Csoport szó egységesítése: infó/informatika → info, kat/katona/honvéd → katona, „1.”/„1.cs” → 1
+    function csoportKod(s) {
+        if (!s || s === '-') return null;
+        const t = s.toLowerCase().replace(/\.?\s*cs(oport)?\.?$/, '').replace(/\.$/, '');
+        if (/^inf/.test(t)) return 'info';
+        if (/^(kat|honv)/.test(t)) return 'katona';
+        return t || null;
     }
 
     // Egy félév órarendje csoportonként, egymást követő órák összevonva blokká (dupla, tripla)
@@ -434,7 +443,7 @@
             <div class="csj-halvany" style="margin-bottom:8px">Félév: <select id="csj-b-felev" onchange="csjBeallitasFelev(this.value)">
                 <option value="1"${felev === 1 ? ' selected' : ''}>1. félév (–${TANEV.felevVege})</option>
                 <option value="2"${felev === 2 ? ' selected' : ''}>2. félév</option></select>
-                · Soronként: <code>nap óra évfolyam osztály csoport terem</code>, pl.: <code>hétfő 1 9 B 2 104</code> vagy <code>szerda 2 9 K info 29</code></div>
+                · Soronként: <code>nap óra évfolyam osztály csoport terem</code>, pl.: <code>hétfő 1 9 B 2 104</code>, <code>szerda 2 9 K info 29</code> vagy <code>szerda 2 9 K katona 29</code></div>
             <div id="csj-b-uj" class="csj-halvany" style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">Új óra:
                 <select id="csj-b-nap">${['hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek'].map(n => `<option>${n}</option>`).join('')}</select>
                 <select id="csj-b-ora">${CSENGETES.map((c, i) => `<option value="${i}">${i}. óra (${c[0]})</option>`).join('')}</select>
@@ -485,6 +494,7 @@
         if (!csoportNelkul && cs) {
             if (/^\d+\s*\.?\s*(\.?\s*csoport|\.?\s*cs\.?)?$/.test(cs)) csoport = cs.match(/^\d+/)[0];
             else if (cs.startsWith('info')) csoport = 'info';
+            else if (/^(kat|honv)/.test(cs)) csoport = 'katona';
             else if (!/^(egész|teljes|-|nincs|osztály)/.test(cs))
                 csFigyel = [csFigyel, `ismeretlen csoport („${o.csoport}”) – egész osztályként kerül fel`].filter(Boolean).join("; ");
         }
@@ -540,7 +550,7 @@
         const [e, o, c] = document.getElementById('csj-b-csop').value.split('|');
         const terem = document.getElementById('csj-b-terem').value.trim().replace(/\s+/g, ' ');
         const ta = document.getElementById('csj-b-szoveg');
-        const sor = `${document.getElementById('csj-b-nap').value} ${document.getElementById('csj-b-ora').value} ${e} ${o} ${c || '-'} ${terem}`.trim();
+        const sor = `${document.getElementById('csj-b-nap').value} ${document.getElementById('csj-b-ora').value} ${e} ${o} ${csoportKod(c) || '-'} ${terem}`.trim();
         ta.value = (ta.value.trim() ? ta.value.trim() + '\n' : '') + sor;
     };
     window.csjBeallitasMent = async () => {
@@ -549,9 +559,12 @@
         for (const [i, sor] of document.getElementById('csj-b-szoveg').value.split('\n').entries()) {
             const p = sor.trim().split(/\s+/);
             if (!sor.trim()) continue;
+            // „9.K” vagy „9K” egyben is jó: szétbontjuk évfolyamra és osztályra
+            const egyben = /^(\d{1,2})\.?([A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű])$/.exec(p[2] || '');
+            if (egyben) p.splice(2, 1, egyben[1], egyben[2]);
             const nap = NAPOK[p[0]?.toLowerCase()], ora = Number(p[1]);
             if (!nap || !(ora >= 0 && ora <= 10) || !p[2] || !p[3]) { hiba.textContent = `Hibás ${i + 1}. sor: „${sor}”`; return; }
-            const csoport = p[4] && p[4] !== '-' ? p[4] : null;
+            const csoport = csoportKod(p[4]);
             // Tanuló nélküli csoport is felkerül (Réka döntése, 2026-11-16) – a választólista ettől még a létezőket kínálja
             orak.push({ felev, nap, ora, evfolyam: p[2], osztaly: p[3].toUpperCase(), csoport, terem: p.slice(5).join(' ') || null });
         }
