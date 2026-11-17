@@ -8,6 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
   <script src="python-kiegeszites.js?v=1"></script>
   <script src="szamonkeres_feladatok.js"></script>
+  <!-- Python futtatás külön szálon (Worker), 5 mp korláttal: végtelen ciklus nem fagyasztja le az oldalt -->
+  <script src="tananyag/pyworker.js?v=1"></script>
+  <script src="tananyag/pyrunner.js?v=1"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -1000,61 +1003,51 @@ function closeDiakOverlay() {
   loadEredmenyek();
 }
 
-// ── Pyodide futtatás ──────────────────────────────────────────────────────────
+// ── Python futtatás (külön szálon) ───────────────────────────────────────────
+// A kód Workerben fut, 5 mp után leáll. Végtelen ciklus vagy túl sok kiírás
+// így nem fagyasztja le az oldalt: a tanuló tovább dolgozhat és beküldhet.
 async function diakRunCode() {
   const outputEl = document.getElementById('diak-output');
+  const runBtn   = document.getElementById('diak-run-btn');
+  const statusEl = document.getElementById('diak-pyodide-status');
   const kod = diakMonaco ? diakMonaco.getValue() : '';
+  const runner = getDiakRunner();
 
-  if (!diakPyodide) {
-    outputEl.textContent = diakPyodideLoading
-      ? 'Python betöltése folyamatban, kérlek várj...'
-      : 'Python nem töltődött be.';
+  if (!runner) {
+    outputEl.style.color = '#fca5a5';
+    outputEl.textContent = 'A Python futtató nem indult el. Frissítsd az oldalt!';
     return;
   }
-
-  outputEl.style.color = '#94a3b8';
-  outputEl.textContent = '▶ Futtatás...';
+  if (runner.busy) {
+    outputEl.style.color = '#94a3b8';
+    outputEl.textContent = 'Python betöltése folyamatban, kérlek várj...';
+    return;
+  }
 
   const rawInputs = document.getElementById('diak-inputs')?.value || '';
   const inputQueue = rawInputs.split('\n').map(s => s.trim()).filter(Boolean);
 
+  outputEl.style.color = '#94a3b8';
+  outputEl.textContent = runner.loaded ? '▶ Futtatás...' : 'Python betöltése folyamatban, kérlek várj...';
+  if (runBtn) runBtn.disabled = true;
+
   try {
-    diakPyodide.globals.set('_diak_input_queue', diakPyodide.toPy(inputQueue));
-
-    await diakPyodide.runPythonAsync(`
-import sys, builtins
-from io import StringIO
-_stdout = StringIO()
-_stderr = StringIO()
-sys.stdout = _stdout
-sys.stderr = _stderr
-_q = list(_diak_input_queue)
-_qi = [0]
-def _input(prompt=''):
-    sys.stdout.write(str(prompt))
-    if _qi[0] < len(_q):
-        v = _q[_qi[0]]; _qi[0] += 1
-        sys.stdout.write(v + '\\n')
-        return v
-    return ''
-builtins.input = _input
-`);
-
-    await diakPyodide.runPythonAsync(kod);
-
-    const stdout = diakPyodide.runPython('_stdout.getvalue()');
-    const stderr = diakPyodide.runPython('_stderr.getvalue()');
-    outputEl.style.color = '#4ade80';
-    outputEl.textContent = stdout || '(nincs kimenet)';
-    if (stderr) {
+    const res = await runner.run(kod, inputQueue, st => {
+      if (st === 'running') outputEl.textContent = '▶ Futtatás...';
+    });
+    if (statusEl) statusEl.textContent = 'Python kész';
+    if (res.error) {
       outputEl.style.color = '#fca5a5';
-      outputEl.textContent = '⚠ Hiba:\n' + stderr;
+      outputEl.textContent = (res.output ? res.output + '\n' : '') + '⚠ Hiba:\n' + res.error;
+    } else {
+      outputEl.style.color = '#4ade80';
+      outputEl.textContent = res.output || '(nincs kimenet)';
     }
   } catch(e) {
     outputEl.style.color = '#fca5a5';
-    outputEl.textContent = '✗ Hiba:\n' + e.message;
+    outputEl.textContent = '✗ ' + e.message;
   } finally {
-    try { diakPyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__'); } catch {}
+    if (runBtn) runBtn.disabled = false;
   }
 }
 
@@ -1098,27 +1091,31 @@ function initDiakMonaco() {
   });
 }
 
-// ── Pyodide betöltés ──────────────────────────────────────────────────────────
+// ── Python futtató betöltés ──────────────────────────────────────────────────
+let diakRunner = null;
+function getDiakRunner() {
+  if (diakRunner) return diakRunner;
+  if (!window.TPyRunner) return null;
+  diakRunner = TPyRunner.createRunner({ workerUrl: 'tananyag/pyworker.js?v=1', idleTimeout: 30 * 60 * 1000 });
+  return diakRunner;
+}
+
+// A számonkérés megnyitásakor előre betölti a Pythont, hogy az első futtatás gyors legyen
 async function loadDiakPyodide() {
   if (diakPyodide || diakPyodideLoading) return;
-  diakPyodideLoading = true;
+  const runner = getDiakRunner();
   const statusEl = document.getElementById('diak-pyodide-status');
+  if (!runner) { if (statusEl) statusEl.textContent = 'Python betöltési hiba'; return; }
+  diakPyodideLoading = true;
   if (statusEl) statusEl.textContent = 'Python betöltése...';
   try {
-    if (typeof loadPyodide === 'undefined') {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-    diakPyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/' });
+    await runner.run('pass', []);
+    diakPyodide = true;
     if (statusEl) statusEl.textContent = 'Python kész';
   } catch(e) {
     if (statusEl) statusEl.textContent = 'Python betöltési hiba';
-    diakPyodideLoading = false;
   }
+  diakPyodideLoading = false;
 }
 
 function escH(s) {
