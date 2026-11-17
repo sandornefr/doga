@@ -62,3 +62,90 @@ iframe.minta{border:1px solid var(--ikt-vonal);border-radius:14px;box-shadow:0 6
 .we-p.jo{background:#dcfce7;color:#067647;}
 .we-p.rossz{background:#fee4e2;color:#b42318;}
 .we-hiba{color:#b42318;}
+
+/* ── Sötét téma (Réka kérése, 2026-11-17): a portál színeihez igazodik ──
+   Portál: háttér #1a1a2e, kártya #16213e, keret #0f3460, szöveg #e0e0e0, halvány #94a3b8.
+   Csak képernyőn; nyomtatáskor marad a világos. A tanulói oldalak előnézete (iframe) fehér marad. */
+@media screen{
+:root{
+  --ikt-sotet:#ede9fe; --ikt-szoveg:#e0e0e0; --ikt-halvany:#94a3b8; --ikt-vonal:#2a3a66; --ikt-hatter:#1a1a2e;
+  --ikt-lila:#a78bfa; --ikt-indigo:#818cf8; --ikt-turkiz:#22d3ee;
+  --d-kartya:#16213e; --d-mely:#111a33; --d-keret:#2a3a66; --d-szoveg:#e0e0e0; --d-halvany:#94a3b8;
+}
+html body{
+  color:var(--d-szoveg);
+  background:
+    radial-gradient(1100px 480px at -5% -12%,rgba(124,58,237,.18) 0,transparent 60%),
+    radial-gradient(900px 420px at 105% -5%,rgba(8,145,178,.14) 0,transparent 55%),
+    #1a1a2e;
+  background-attachment:fixed;
+}
+body .topbar{background:#16213e;border-bottom:1px solid #0f3460;box-shadow:0 4px 18px rgba(0,0,0,.35);}
+body .topbar .cim i{color:#a78bfa;}
+body h1,body h2,body h3{color:#ede9fe;}
+body .alcim,body .megj,body .minta-cim,body .szuro .db,body .fej .oszt,body .fej .ido,body .fej .pont small,
+body .fajlok span,body .vj-all,body .tema,body table.tbl td.sz,body .fajllista li .meret{color:var(--d-halvany);}
+body a{color:#93c5fd;}
+body .hiba,body .nem,body .uzenet.hiba,body .temam .hiba,body .we-hiba{color:#fca5a5;}
+body .ok,body .uzenet.jo{color:#86efac;}
+body .kezi,body .uzenet.sarga,body .fej .nincs{color:#fcd34d;}
+
+/* kártyák, dobozok */
+body .card,body .lepes,body .csempe,body .tanulo,body details.temalista,body table.lista{
+  background:var(--d-kartya);border-color:var(--d-keret);box-shadow:0 6px 24px rgba(0,0,0,.3);}
+body a.csempe:hover{border-color:#7c3aed;box-shadow:0 14px 32px rgba(124,58,237,.25);}
+body .csempe.hamarosan{background:rgba(22,33,62,.55);}
+body .cimke{background:rgba(8,145,178,.15);color:#67e8f9;border-color:rgba(34,211,238,.35);}
+body .hos{box-shadow:0 18px 40px rgba(0,0,0,.4);}
+body .sarga,body .vj-doboz{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45);color:#fde68a;}
+body .temam{background:linear-gradient(135deg,rgba(79,70,229,.2),rgba(8,145,178,.15));border-color:#3b4a8a;}
+body .temam .nev{color:#a5b4fc;}
+body code{background:#0f172a;color:#c4b5fd;}
+body h2{border-bottom-color:var(--d-keret);}
+
+/* táblázatok */
+body table.tbl{background:var(--d-kartya);}
+body table.tbl th,body table.ell th{background:#0f3460;color:#e0e7ff;border-color:var(--d-keret);}
+body table.tbl td,body table.ell td{border-color:var(--d-keret);}
+body table.tbl tr:nth-child(even) td{background:#1a2747;}
+body table.lista th{background:#0f3460;color:#e0e7ff;}
+body table.lista td{border-top-color:var(--d-keret);}
+body table.lista tr.nincs td{color:#64748b;}
+body table.lista td.link a{color:#93c5fd;}
+body tr.reszlet td{background:var(--d-mely);}
+body .we-tabla th,body table.lista .we-tabla th{color:#e0e7ff;}
+body .we-tabla td{border-bottom-color:var(--d-keret);}
+
+/* jelvények (pipák, pontszámok, állapotok) */
+body .we-p.jo,body .pont.jo,body .allapot.jo,body .vj-olvasta{background:rgba(34,197,94,.16);color:#86efac;}
+body .we-p.rossz,body .pont.rossz,body .allapot.rossz{background:rgba(239,68,68,.16);color:#fca5a5;}
+body .pont.kozepes,body .vj-javitott{background:rgba(245,158,11,.16);color:#fcd34d;}
+body .pont.fut,body .allapot.fut,body .vj-elkuldve{background:rgba(99,102,241,.2);color:#c7d2fe;}
+body .vj-nincs{background:#1e293b;color:#94a3b8;}
+
+/* űrlapok, gombok */
+body input[type=url],body .sor input[type=url],body textarea,body select,body .szuro select{
+  background:var(--d-mely);color:var(--d-szoveg);border:1px solid var(--d-keret);}
+body input::placeholder,body textarea::placeholder{color:#64748b;}
+body .csopgomb,body .kisgomb,body .ghgomb,body .fej button.ujra{background:var(--d-kartya);border-color:var(--d-keret);color:#c4b5fd;}
+body .fej button.ujra{color:#fca5a5;}
+body .csopgomb.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:transparent;}
+body .eszkoz .db{color:#ede9fe;}
+body .fej .megnez{background:rgba(99,102,241,.2);border-color:#4f46e5;color:#c7d2fe;}
+body .drop{background:var(--d-mely);border-color:#5b4a9e;color:var(--d-halvany);}
+body .drop:hover,body .drop.over{background:#1b2547;border-color:#a78bfa;}
+body .drop i{color:#a78bfa;}
+body .fajllista li{border-bottom-color:var(--d-keret);}
+body .btn:disabled{background:#334155;color:#94a3b8;}
+
+/* oktatói nézegető (beadasok.html) – a kinézet-előnézet fehér marad */
+body .nz{background:#1a1a2e;}
+body .nz-fajlok,body .nz-fulek,body .nz-pont{background:var(--d-kartya);border-color:var(--d-keret);color:var(--d-szoveg);}
+body .nz-fajlok button{color:var(--d-szoveg);}
+body .nz-fajlok button:hover{background:#1f2d52;}
+body .nz-fajlok button.aktiv{background:rgba(99,102,241,.25);color:#c7d2fe;}
+body .nz-fulek button{background:var(--d-mely);border-color:var(--d-keret);color:var(--d-halvany);}
+body .nz-fulek button.aktiv{background:var(--d-kartya);color:#c7d2fe;}
+body .vj-szerk{border-top-color:var(--d-keret);}
+body iframe.minta,body #nz-iframe,body .nz-kinezet{background:#fff;}
+}
