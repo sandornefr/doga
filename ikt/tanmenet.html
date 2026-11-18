@@ -42,10 +42,10 @@ details.alk[open] .nyil{transform:rotate(180deg);}
 .fulek button{border:0;border-radius:8px;padding:5px 14px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8;}
 .fulek button.aktiv{background:#312e81;color:#fff;}
 .fulek .fajl{margin-left:auto;align-self:center;color:#94a3b8;font-size:.85rem;padding-right:6px;}
-.minta .panel{height:340px;}
-.minta pre{height:100%;overflow:auto;margin:0;padding:12px 14px;background:#0b1020;color:#e2e8f0;font:13px/1.55 Consolas,'Courier New',monospace;white-space:pre;}
-.minta pre .reszcim{color:#64748b;}
-.minta iframe{width:100%;height:100%;border:0;background:#fff;display:block;}
+.minta pre{margin:0;padding:12px 14px;background:#0b1020;color:#e2e8f0;font:13px/1.55 Consolas,'Courier New',monospace;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;}
+.minta iframe{width:100%;height:420px;border:0;background:#fff;display:block;color-scheme:light;}
+.minta{scrollbar-color:#475569 #0f172a;}
+.minta pre .ks{display:block;min-height:1.55em;}
 .minta .panel[hidden]{display:none;}
 
 /* teendő */
@@ -56,6 +56,7 @@ details.alk[open] .nyil{transform:rotate(180deg);}
 .teendo button.tg.nemertem.aktiv{background:rgba(239,68,68,.2);border-color:#ef4444;color:#fecaca;}
 .teendo .kerdes{display:flex;gap:8px;margin-top:10px;align-items:flex-start;}
 .teendo textarea{flex:1;min-height:56px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid #cbd2d9;font:inherit;font-size:.95rem;}
+.teendo .kerdes[hidden]{display:none;}
 .teendo .uz{min-height:1.4em;margin-top:6px;font-size:.88rem;}
 .teendo .kuld{flex:none;border:0;border-radius:99px;padding:9px 18px;font:inherit;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
 
@@ -112,7 +113,7 @@ const ujOldal = (fajl, focim) => [
 ];
 
 // Egy alkalom: cím, mit csináltunk, lépések, minta (kódrészletek a mintaoldalból + kinézet), ha hiányoztál.
-// resz: { fajl, tol, ig, cim } – a mintafájl szövegéből a tol…ig közötti rész (ig: kizárólagos, ha ig nincs: a tol-lal kezdődő sor végéig).
+// resz: { fajl, navNelkul } – a mintafájl egészben, az eredeti behúzással; navNelkul: a menü (nav) nélkül, mert az csak az 5. alkalommal jön.
 const ALKALMAK = [
   {
     cim: 'VS Code és a mappa', al: 'az IKT mappa: css és img',
@@ -140,8 +141,7 @@ const ALKALMAK = [
       'Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!',
       'Mentsd el, és nézd meg a böngészőben!',
     ],
-    reszek: [{ fajl: 'index.html', tol: '<!DOCTYPE', ig: '<nav>', cim: 'A fej (head) – minden oldalon ugyanez' },
-             { fajl: 'index.html', tol: '<h1>', ig: '</body>', cim: 'A főoldal tartalma' }],
+    reszek: [{ fajl: 'index.html', navNelkul: true }],
     kinezet: 'index.html',
     hiany: 'A Lépések alapján készítsd el a főoldaladat; a mintán megnézheted, hogyan néz ki nálam.',
   },
@@ -157,7 +157,7 @@ const ALKALMAK = [
       'A hivatkozás új lapon nyíljon meg!',
       'Mentsd el, és próbáld ki a böngészőben!',
     ],
-    reszek: [{ fajl: 'keplink.html', tol: '<h1>', ig: '</body>', cim: 'A Kép + link oldal tartalma' }],
+    reszek: [{ fajl: 'keplink.html', navNelkul: true }],
     kinezet: 'keplink.html',
     hiany: 'A Lépések alapján készítsd el a keplink.html oldalt; a kép bármi lehet, ami neked tetszik.',
   },
@@ -172,7 +172,7 @@ const ALKALMAK = [
       'Alá készíts rendezett listát 3 tantárggyal!',
       'Mentsd el, és nézd meg a böngészőben!',
     ],
-    reszek: [{ fajl: 'listak.html', tol: '<h1>', ig: '</body>', cim: 'A Listák oldal tartalma' }],
+    reszek: [{ fajl: 'listak.html', navNelkul: true }],
     kinezet: 'listak.html',
     hiany: 'A Lépések alapján készítsd el a listak.html oldalt a saját tevékenységeiddel és tantárgyaiddal.',
   },
@@ -188,8 +188,7 @@ const ALKALMAK = [
       'Készítsd el a navigációt minden oldaladon! A menüből mind a négy oldal legyen elérhető: FŐOLDAL, KÉP+LINK, LISTÁK, ÓRAREND.',
       'Ellenőrizd a böngészőben: minden menüpont működik?',
     ],
-    reszek: [{ fajl: 'index.html', tol: '<nav>', ig: '<h1>', cim: 'A menü – minden oldal elejére, a body-ba' },
-             { fajl: 'orarend.html', tol: '<h1>', ig: '</body>', cim: 'Az Órarend oldal tartalma' }],
+    reszek: [{ fajl: 'orarend.html' }],
     kinezet: 'orarend.html',
     hiany: 'A Lépések alapján készítsd el az órarendedet, és tedd be a menüt mind a négy oldaladra.',
   },
@@ -229,18 +228,6 @@ IKT/
 // A mintafájlok szövege (egyszer töltjük le).
 const mintaCache = {};
 const mintaSzoveg = f => mintaCache[f] ||= fetch(MINTA + f, { cache: 'no-cache' }).then(r => r.ok ? r.text() : '').catch(() => '');
-
-// Részlet a mintából, közös behúzás nélkül.
-function reszlet(szoveg, tol, ig) {
-  const a = szoveg.indexOf(tol);
-  if (a < 0) return '';
-  let b = ig ? szoveg.indexOf(ig, a + tol.length) : -1;
-  if (b < 0) b = szoveg.length;
-  const kezd = szoveg.lastIndexOf('\n', a) + 1;          // a sor elejétől, hogy a behúzás egységes legyen
-  const sorok = szoveg.slice(kezd, b).replace(/\s+$/, '').split('\n');
-  const beh = Math.min(...sorok.filter(s => s.trim()).map(s => s.match(/^\s*/)[0].length));
-  return sorok.map(s => s.slice(beh)).join('\n');
-}
 
 let jelzesek = {};   // alkalom → { allapot, megjegyzes, updatedAt }
 
@@ -289,6 +276,14 @@ function alkalomRajz(a, i) {
   </details>`;
 }
 
+// Kód soronként: a hosszú sor tördelődik, a folytatás a sor behúzása alatt kezdődik (+2 karakter).
+function kodSorok(szoveg) {
+  return szoveg.split('\n').map(sor => {
+    const beh = sor.match(/^\s*/)[0].replace(/\t/g, '    ').length;
+    return `<span class="ks" style="padding-left:${beh + 2}ch;text-indent:-2ch">${esc(sor.trim()) || ' '}</span>`;
+  }).join('');
+}
+
 async function kodBetolt(n) {
   const a = ALKALMAK[n - 1];
   if (!a.reszek) return;
@@ -296,10 +291,11 @@ async function kodBetolt(n) {
   if (pre.dataset.kesz) return;
   const darabok = [];
   for (const r of a.reszek) {
-    const sz = await mintaSzoveg(r.fajl);
-    darabok.push(`<span class="reszcim">${esc('<!-- ' + r.cim + ' (' + r.fajl + ') -->')}</span>\n` + esc(reszlet(sz, r.tol, r.ig) || '(nem található)'));
+    let sz = (await mintaSzoveg(r.fajl)).replace(/\r/g, '').trim();
+    if (r.navNelkul) sz = sz.replace(/\n[ \t]*<nav>[\s\S]*?<\/nav>[ \t]*/, '');
+    darabok.push(kodSorok(sz || '(nem található)'));
   }
-  pre.innerHTML = darabok.join('\n\n');
+  pre.innerHTML = darabok.join('<span class="ks"> </span>');
   pre.dataset.kesz = '1';
 }
 
@@ -310,9 +306,17 @@ function fulValt(minta, ful) {
   const p = minta.querySelector('[data-panel="kinezet"]');
   if (ful === 'kinezet' && p && !p.firstChild) {
     const f = document.createElement('iframe');
-    f.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    f.setAttribute('sandbox', a.elo ? 'allow-popups allow-popups-to-escape-sandbox' : 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
     f.title = 'A minta kinézete';
     f.src = a.elo ? ELO_MINTA : MINTA + a.kinezet;
+    if (!a.elo) f.addEventListener('load', () => {
+      try {
+        const d = f.contentDocument;
+        const igazit = () => { f.style.height = Math.max(150, d.body.scrollHeight + 24) + 'px'; };
+        igazit();
+        [...d.images].forEach(k => k.complete || k.addEventListener('load', igazit));
+      } catch (e) {}
+    });
     p.appendChild(f);
   }
 }

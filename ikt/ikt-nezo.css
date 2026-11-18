@@ -24,6 +24,7 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 .nz-fulek[hidden]{display:none;}
 .nz-fulek button{border:1px solid #e2e8f0;border-bottom:0;background:#f1f5f9;border-radius:6px 6px 0 0;padding:5px 14px;font:inherit;font-size:.9rem;cursor:pointer;}
 .nz-fulek button.aktiv{background:#fff;font-weight:600;color:#3730a3;}
+.nz,.nz *{scrollbar-color:#475569 #0f172a;}
 .nz-kod{flex:1;min-height:0;overflow:auto;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.5 Consolas,'Courier New',monospace;}
 .nz-kod[hidden],.nz-kinezet[hidden],.nz-kep[hidden],#nz-iframe[hidden]{display:none;}
 .nz-kod .megj,.nz-kod .hiba{padding:12px;}
