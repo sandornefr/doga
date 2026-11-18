@@ -61,7 +61,15 @@ iframe.minta{width:100%;height:200px;border:1px solid #cbd2d9;border-radius:8px;
 }
 .vj-doboz{margin-top:14px;border:1px solid #f0d36b;background:#fff8db;border-radius:8px;padding:10px 14px;}
 .vj-szoveg{margin:6px 0;line-height:1.5;}
+.megnez-gomb{margin-top:4px;}
+.szorg-jelzo{margin:0 0 10px;padding:10px 14px;border-radius:8px;background:#fef3c7;border:1px solid #fcd34d;color:#78350f;}
+.szorg-jelzo i{color:#f59e0b;}
+.szorg-tbl td.szorg-allapot{white-space:nowrap;text-align:right;}
+.szorg-tbl tr.aktiv td{background:#fef3c7;}
+.szorg-tbl .kesz{color:#067647;font-weight:600;font-size:.85rem;}
+.szorg-gomb{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:6px;padding:3px 10px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
 </style>
+<link rel="stylesheet" href="ikt-nezo.css?v=1">
 <link rel="stylesheet" href="ikt.css?v=3">
 </head>
 <body>
@@ -132,7 +140,8 @@ th, td {
   <iframe class="minta" id="minta" title="Minta: Lovak" sandbox="allow-same-origin" scrolling="no"></iframe>
 
   <div id="beadas-resz">
-    <h2>Beadás</h2>
+    <h2 id="beadas-cim">Beadás</h2>
+    <div id="szorg-jelzo" class="szorg-jelzo" hidden></div>
     <div class="card">
       <p>Válaszd ki a fájljaidat (több is lehet egyszerre), vagy húzd ide őket. Vagy csak a github.io-s webcímedet add meg. Újra beadva a régi fájlok helyére az újak kerülnek.</p>
       <div class="drop" id="drop" tabindex="0">
@@ -152,10 +161,19 @@ th, td {
 
     <h2>Amit beadtál</h2>
     <div class="card" id="sajat">Még nem adtál be semmit.</div>
+
+    <div id="szorg-resz" hidden>
+      <h2><i class="fas fa-star" style="color:#f59e0b"></i> Szorgalmi: gyakorolj más témákkal!</h2>
+      <div class="card">
+        <p>A kötelező témaoldaladat már beadtad. Ha szeretnél, válassz még egy témát, készítsd el ugyanígy, és add be. A tanárod külön, szorgalmiként látja.</p>
+        <table class="tbl szorg-tbl"><thead><tr><th>#</th><th>Téma</th><th>A táblázat oszlopai</th><th>Rangsor: keresd meg…</th><th></th></tr></thead><tbody id="szorg-lista"></tbody></table>
+      </div>
+    </div>
   </div>
 </template>
 
 <script src="temak.js"></script>
+<script src="ikt-ellenor.js?v=1"></script>
 <script>
 const TEMAK = window.IKT_TEMAK;
 const API = 'https://agazati.up.railway.app';
@@ -230,6 +248,22 @@ if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoT
 const TANAR = !!u && u.szerep === 'oktato' && !u._tesztMod;
 const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
 
+// A közös ellenőrző és nézegető (ikt-ellenor.js) ezeket használja; a tanulói oldalon csak olvasható.
+const IKT_TANULO = true;
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+const OLDALAK = ['index.html', 'keplink.html', 'listak.html', 'orarend.html', 'tema.html'];
+const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
+let beadasok = [];          // a saját beadások (kötelező és szorgalmi), amiket a nézegető megnyithat
+let temak = {};             // email → { temaSorszam } – a kötelező, kapott téma
+const ellenorzes = {};
+function sorFrissit() {}
+const csoportNev = b => (b.osztaly || '') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
+function temaNev(b) { const n = beadasTemaSorszam(b); return n && TEMAK[n - 1] ? TEMAK[n - 1][0] : ''; }
+let kapottSorszam = null;   // a kötelező téma sorszáma
+let aktivFeladat = FELADAT; // amit most bead: 'temaoldal' vagy 'szorgalmi-<sorszám>'
+let szorgalmiBeadva = {};   // sorszám → utolsó beadás ideje
+let temaIgeret = Promise.resolve();   // a sorsolt téma betöltése (a szorgalmi lista ezt megvárja)
+
 let valasztott = [];   // File objektumok
 
 function feladatlapRajz() {
@@ -239,7 +273,7 @@ function feladatlapRajz() {
     `<tr><td class="sz">${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('');
   mintaBetolt();
   if (TANAR) { document.getElementById('temak-resz').hidden = false; document.getElementById('temam').textContent = 'Oktatói nézet: a tanulók témáját a rendszer sorsolja (lásd lent a Témák listáját).'; }
-  else temaBetolt();
+  else temaIgeret = temaBetolt();
   beadasInit();
   sajatBetolt();
 }
@@ -253,6 +287,8 @@ async function temaBetolt() {
     try { d = await r.json(); } catch (e) {}
     if (!r.ok || !d || !TEMAK[d.temaSorszam - 1]) throw new Error((d && d.error) || 'Nem sikerült betölteni a témádat.');
     const t = TEMAK[d.temaSorszam - 1];
+    kapottSorszam = d.temaSorszam;
+    if (u && u.email) temak[u.email] = { temaSorszam: d.temaSorszam };
     el.innerHTML = `A témádat a rendszer sorsolta. A te témád:<div class="nev">${esc(t[0])}</div>` +
       `A táblázat oszlopai: <b>${esc(t[1])}</b><br>Rangsor: keresd meg ${esc(t[2])}!`;
   } catch (e) {
@@ -314,7 +350,7 @@ async function bead() {
   const url = document.getElementById('ghurl').value.trim();
   if (url && !/^https:\/\/[a-z0-9-]+\.github\.io(\/\S*)?$/i.test(url)) { uzen('A cím így kezdődjön: https://…github.io/', 'hiba'); return; }
   const fd = new FormData();
-  fd.append('feladat', FELADAT);
+  fd.append('feladat', aktivFeladat);
   if (url) fd.append('github_url', url);
   valasztott.forEach(f => fd.append('fajlok', f, f.name));
   btn.disabled = true;
@@ -337,15 +373,20 @@ async function bead() {
 
 async function sajatBetolt() {
   try {
-    const r = await fetch(API + '/api/ikt/beadas/sajat?feladat=' + FELADAT, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    const r = await fetch(API + '/api/ikt/beadas/sajat?feladat=' + aktivFeladat, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
     if (!r.ok) return;
     const d = await r.json();
     if (d.beadas) sajatRajz(d.beadas);
+    else document.getElementById('sajat').textContent = 'Még nem adtál be semmit.';
   } catch (e) {}
 }
 
 function sajatRajz(b) {
   const el = document.getElementById('sajat');
+  // A nézegető ezt a beadást nyitja meg; új beadásnál az értékelés újra lefut.
+  beadasok = beadasok.filter(x => x.id !== b.id).concat([b]);
+  delete ellenorzes[b.id]; delete ghEll[b.id];
+  if (b.feladat === 'temaoldal' && !TANAR) szorgalmiBetolt();
   const elo = API + b.elonezet;
   const fajlok = (b.fajlok || []).map(f => {
     const html = /\.html$/i.test(f.fajlnev);
@@ -354,11 +395,53 @@ function sajatRajz(b) {
       `</span><span class="meret">${meretSzoveg(f.meret)}</span></li>`;
   }).join('');
   el.innerHTML = `<p>Utoljára beadva: <b>${esc(b.updatedAt)}</b></p>` +
+    `<p><button class="btn megnez-gomb" onclick="nzMegnyit(${b.id})"><i class="fas fa-eye"></i> Megnézem a munkámat és az értékelésemet</button></p>` +
     (b.githubUrl ? `<p>GitHub: <a href="${esc(b.githubUrl)}" target="_blank" rel="noopener">${esc(b.githubUrl)}</a></p>` : '') +
     (fajlok ? `<ul class="fajllista">${fajlok}</ul><p class="megj">A HTML fájl nevére kattintva megnézheted, hogyan látszik.</p>` : '') +
     (b.visszajelzes ? `<div class="vj-doboz"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(b.visszajelzes.updatedAt)})</span>` +
       `<div class="vj-szoveg">${esc(b.visszajelzes.szoveg).replace(/\n/g, '<br>')}</div>` +
       `<p class="megj">Javítsd ki, és add be újra a fenti Beadás részben!</p></div>` : '');
+}
+
+// ── Szorgalmi témák ──
+async function szorgalmiBetolt() {
+  await temaIgeret;
+  try {
+    const r = await fetch(API + '/api/ikt/szorgalmi/sajat', { headers: AUTH });
+    if (!r.ok) return;
+    szorgalmiBeadva = {};
+    ((await r.json()).beadasok || []).forEach(b => { const m = /^szorgalmi-(\d+)$/.exec(b.feladat); if (m) szorgalmiBeadva[+m[1]] = b.updatedAt; });
+  } catch (e) { return; }
+  document.getElementById('szorg-resz').hidden = false;
+  document.getElementById('szorg-lista').innerHTML = TEMAK.map((t, i) => {
+    const n = i + 1;
+    if (n === kapottSorszam) return '';
+    const kesz = szorgalmiBeadva[n];
+    return `<tr${n === szorgSorszam() ? ' class="aktiv"' : ''}><td class="sz">${n}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td>
+      <td class="szorg-allapot">${kesz ? `<span class="kesz"><i class="fas fa-check"></i> beadva</span> ` : ''}<button class="szorg-gomb" onclick="szorgalmiValaszt(${n})">${kesz ? 'Megnyitom' : 'Ezt választom'}</button></td></tr>`;
+  }).join('');
+}
+function szorgSorszam() { const m = /^szorgalmi-(\d+)$/.exec(aktivFeladat); return m ? +m[1] : null; }
+
+function szorgalmiValaszt(n) {
+  aktivFeladat = n ? 'szorgalmi-' + n : FELADAT;
+  const jelzo = document.getElementById('szorg-jelzo');
+  if (n) {
+    const t = TEMAK[n - 1];
+    document.getElementById('beadas-cim').textContent = 'Beadás – szorgalmi téma';
+    jelzo.hidden = false;
+    jelzo.innerHTML = `<i class="fas fa-star"></i> Most a szorgalmi témádat adod be: <b>${esc(t[0])}</b> · oszlopok: ${esc(t[1])} · rangsor: ${esc(t[2])}. ` +
+      `<button class="szorg-gomb" onclick="szorgalmiValaszt(null)">Vissza a kötelező témámhoz</button>`;
+  } else {
+    document.getElementById('beadas-cim').textContent = 'Beadás';
+    jelzo.hidden = true;
+  }
+  valasztott = []; listaRajz(); uzen('');
+  document.getElementById('ghurl').value = '';
+  document.getElementById('sajat').textContent = 'Betöltés…';
+  sajatBetolt();
+  szorgalmiBetolt();
+  document.getElementById('beadas-cim').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Indítás (a deklarációk után) ──

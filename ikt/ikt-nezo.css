@@ -1,0 +1,52 @@
+/* IKT: a pontozó-táblázat, a „Megnézem” nézegető és a visszajelzés közös stílusa (tanári és tanulói oldal). */
+table.ell{border-collapse:collapse;width:100%;font-size:.9rem;}
+table.ell th,table.ell td{border:1px solid #e4e7eb;padding:4px 8px;text-align:left;vertical-align:top;}
+table.ell th{background:#f0f4f8;}
+table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
+.ok{color:#067647;}
+.nem{color:#b42318;}
+.kezi{color:#b54708;}
+.nz{position:fixed;inset:0;z-index:50;background:#f8fafc;display:flex;flex-direction:column;}
+.nz[hidden]{display:none;}
+.nz-fej{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#1e1b4b;color:#fff;}
+.nz-cim{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nz-forras-valto button{border:1px solid #6366f1;background:transparent;color:#e0e7ff;border-radius:6px;padding:4px 10px;margin-left:4px;font:inherit;font-size:.85rem;cursor:pointer;}
+.nz-forras-valto button.aktiv{background:#6366f1;color:#fff;}
+.nz-uj{color:#c7d2fe;font-size:.85rem;}
+.nz-x{border:0;background:#312e81;color:#fff;border-radius:6px;width:34px;height:30px;font-size:1.1rem;cursor:pointer;}
+.nz-test{flex:1;min-height:0;display:grid;grid-template-columns:190px minmax(0,1fr) 370px;}
+.nz-fajlok{border-right:1px solid #e2e8f0;padding:8px;overflow:auto;background:#fff;}
+.nz-fajlok button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px;font:inherit;font-size:.9rem;cursor:pointer;color:#1f2933;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nz-fajlok button:hover{background:#f1f5f9;}
+.nz-fajlok button.aktiv{background:#e0e7ff;color:#3730a3;font-weight:600;}
+.nz-kozep{display:flex;flex-direction:column;min-width:0;min-height:0;}
+.nz-fulek{display:flex;gap:4px;padding:6px 8px 0;border-bottom:1px solid #e2e8f0;background:#fff;}
+.nz-fulek[hidden]{display:none;}
+.nz-fulek button{border:1px solid #e2e8f0;border-bottom:0;background:#f1f5f9;border-radius:6px 6px 0 0;padding:5px 14px;font:inherit;font-size:.9rem;cursor:pointer;}
+.nz-fulek button.aktiv{background:#fff;font-weight:600;color:#3730a3;}
+.nz-kod{flex:1;min-height:0;overflow:auto;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.5 Consolas,'Courier New',monospace;}
+.nz-kod[hidden],.nz-kinezet[hidden],.nz-kep[hidden],#nz-iframe[hidden]{display:none;}
+.nz-kod .megj,.nz-kod .hiba{padding:12px;}
+.nz-sorszam{white-space:pre;text-align:right;padding:10px 8px;color:#64748b;user-select:none;border-right:1px solid #1e293b;}
+.nz-forras{margin:0;padding:10px 12px;white-space:pre;flex:1;}
+.sz-tag{color:#93c5fd;} .sz-attr{color:#fcd34d;} .sz-ertek{color:#86efac;} .sz-komment{color:#64748b;font-style:italic;}
+.nz-kinezet{flex:1;min-height:0;display:flex;background:#fff;}
+#nz-iframe{flex:1;border:0;width:100%;height:100%;background:#fff;}
+.nz-kep{flex:1;overflow:auto;padding:14px;}
+.nz-kep img{max-width:100%;border:1px solid #e2e8f0;margin-top:10px;}
+.nz-kepadat{font-size:.95rem;}
+.nz-pont{border-left:1px solid #e2e8f0;overflow:auto;padding:10px;background:#fff;font-size:.85rem;}
+.nz-pont table.ell{font-size:.82rem;table-layout:fixed;width:100%;}
+.nz-pont table.ell th:first-child,.nz-pont table.ell td:first-child{width:26px;padding:4px 2px;}
+.nz-pont table.ell th:nth-child(2){width:34%;}
+.nz-pont table.ell th:last-child,.nz-pont table.ell td:last-child{width:46px;padding:4px 2px;}
+.nz-pont table.ell td{overflow-wrap:anywhere;}
+.nz-osszeg{font-weight:700;margin-bottom:8px;}
+.vj-allapot{font-size:.8rem;border-radius:999px;padding:2px 9px;white-space:nowrap;}
+.vj-nincs{background:#f1f5f9;color:#64748b;} .vj-elkuldve{background:#e0e7ff;color:#3730a3;}
+.vj-olvasta{background:#dcfce7;color:#166534;} .vj-javitott{background:#fef3c7;color:#92400e;font-weight:600;}
+.vj-szerk{margin-top:14px;border-top:1px solid #e2e8f0;padding-top:10px;}
+.vj-szerk textarea{width:100%;margin-top:6px;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid #cbd2d9;border-radius:6px;resize:vertical;}
+.vj-sor{display:flex;gap:10px;align-items:center;margin-top:6px;}
+.vj-gomb{border:0;border-radius:6px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;background:#4f46e5;color:#fff;}
+.vj-gomb:disabled{opacity:.6;}

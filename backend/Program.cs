@@ -2860,6 +2860,18 @@ app.MapPost("/api/ikt/beadas", async (HttpContext ctx, Database db) =>
 
     var feladat = (form["feladat"].FirstOrDefault() ?? "").Trim().ToLowerInvariant();
     if (!IktErvenyesFeladat(feladat)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    // Szorgalmi témaoldal: csak a kötelező beadás után, és nem a saját kapott témával.
+    var szorg = Regex.Match(feladat, @"^szorgalmi-(\d{1,2})$");
+    if (feladat.StartsWith("szorgalmi"))
+    {
+        if (!szorg.Success || !int.TryParse(szorg.Groups[1].Value, out var ssz) || ssz < 1 || ssz > 35)
+            return Results.BadRequest(new { error = "Érvénytelen szorgalmi téma." });
+        if (db.GetIktBeadasSajat(be.Email, "temaoldal") == null)
+            return Results.BadRequest(new { error = "Szorgalmi témát a kötelező Témaoldal beadása után adhatsz be." });
+        var sajatTema = db.GetOrAssignIktTema(be.Email, be.Nev, be.Osztaly, be.Csoport, "temaoldal", 35);
+        if (sajatTema.TemaSorszam == ssz)
+            return Results.BadRequest(new { error = "Ez a kötelező témád – szorgalmiként egy másikat válassz." });
+    }
     var url = (form["github_url"].FirstOrDefault() ?? "").Trim();
     if (url.Length > 0 && !IktErvenyesGithubUrl(url))
         return Results.BadRequest(new { error = "A link csak https://….github.io/… cím lehet." });
@@ -2918,6 +2930,23 @@ app.MapPut("/api/ikt/beadas/{id:int}/visszajelzes", (int id, HttpContext ctx, Ik
     if (szoveg.Length > 4000) return Results.BadRequest(new { error = "A visszajelzés legfeljebb 4000 karakter lehet." });
     db.SaveIktVisszajelzes(id, szoveg, identity);
     return Results.Ok(new { visszajelzes = db.GetIktVisszajelzes(id) });
+});
+
+// A tanuló saját szorgalmi témaoldalai — GET /api/ikt/szorgalmi/sajat
+app.MapGet("/api/ikt/szorgalmi/sajat", (HttpContext ctx, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    return Results.Ok(new { beadasok = db.GetIktSzorgalmiSajat(be.Email).Select(b => new { b.Id, b.Feladat, b.UpdatedAt }) });
+});
+
+// Szorgalmi témaoldalak (oktató) — GET /api/ikt/szorgalmi
+app.MapGet("/api/ikt/szorgalmi", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var l = LathatoTanulok(ctx);
+    return Results.Ok(new { beadasok = db.GetIktSzorgalmiBeadasok().Where(b => l == null || l.Contains(b.Email)).Select(IktBeadasValasz) });
 });
 
 // Oktatói lista — GET /api/ikt/beadasok?feladat=temaoldal

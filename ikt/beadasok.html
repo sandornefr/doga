@@ -28,13 +28,6 @@ body{background:#f4f6f8;color:#1f2933;font-family:'Segoe UI',system-ui,sans-seri
 .tanulo.nyitva .reszletek{display:block;}
 .fajlok{margin:10px 0;font-size:.9rem;display:flex;gap:6px 14px;flex-wrap:wrap;}
 .fajlok span{color:#7b8794;}
-table.ell{border-collapse:collapse;width:100%;font-size:.9rem;}
-table.ell th,table.ell td{border:1px solid #e4e7eb;padding:4px 8px;text-align:left;vertical-align:top;}
-table.ell th{background:#f0f4f8;}
-table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
-.ok{color:#067647;}
-.nem{color:#b42318;}
-.kezi{color:#b54708;}
 .megj{color:#52606d;font-size:.85rem;}
 .kozep{text-align:center;padding:60px 20px;}
 .hiba{color:#b42318;}
@@ -51,51 +44,11 @@ table.tbl th{background:#f0f4f8;}
 .ghgomb{border:1px solid #cbd2d9;background:#fff;border-radius:6px;padding:3px 10px;font:inherit;font-size:.85rem;cursor:pointer;}
 .fajlok.gh{margin-top:14px;}
 .fej .megnez{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:6px;padding:4px 10px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
-.nz{position:fixed;inset:0;z-index:50;background:#f8fafc;display:flex;flex-direction:column;}
-.nz[hidden]{display:none;}
-.nz-fej{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#1e1b4b;color:#fff;}
-.nz-cim{font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nz-forras-valto button{border:1px solid #6366f1;background:transparent;color:#e0e7ff;border-radius:6px;padding:4px 10px;margin-left:4px;font:inherit;font-size:.85rem;cursor:pointer;}
-.nz-forras-valto button.aktiv{background:#6366f1;color:#fff;}
-.nz-uj{color:#c7d2fe;font-size:.85rem;}
-.nz-x{border:0;background:#312e81;color:#fff;border-radius:6px;width:34px;height:30px;font-size:1.1rem;cursor:pointer;}
-.nz-test{flex:1;min-height:0;display:grid;grid-template-columns:190px minmax(0,1fr) 370px;}
-.nz-fajlok{border-right:1px solid #e2e8f0;padding:8px;overflow:auto;background:#fff;}
-.nz-fajlok button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px;font:inherit;font-size:.9rem;cursor:pointer;color:#1f2933;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nz-fajlok button:hover{background:#f1f5f9;}
-.nz-fajlok button.aktiv{background:#e0e7ff;color:#3730a3;font-weight:600;}
-.nz-kozep{display:flex;flex-direction:column;min-width:0;min-height:0;}
-.nz-fulek{display:flex;gap:4px;padding:6px 8px 0;border-bottom:1px solid #e2e8f0;background:#fff;}
-.nz-fulek[hidden]{display:none;}
-.nz-fulek button{border:1px solid #e2e8f0;border-bottom:0;background:#f1f5f9;border-radius:6px 6px 0 0;padding:5px 14px;font:inherit;font-size:.9rem;cursor:pointer;}
-.nz-fulek button.aktiv{background:#fff;font-weight:600;color:#3730a3;}
-.nz-kod{flex:1;min-height:0;overflow:auto;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.5 Consolas,'Courier New',monospace;}
-.nz-kod[hidden],.nz-kinezet[hidden],.nz-kep[hidden],#nz-iframe[hidden]{display:none;}
-.nz-kod .megj,.nz-kod .hiba{padding:12px;}
-.nz-sorszam{white-space:pre;text-align:right;padding:10px 8px;color:#64748b;user-select:none;border-right:1px solid #1e293b;}
-.nz-forras{margin:0;padding:10px 12px;white-space:pre;flex:1;}
-.sz-tag{color:#93c5fd;} .sz-attr{color:#fcd34d;} .sz-ertek{color:#86efac;} .sz-komment{color:#64748b;font-style:italic;}
-.nz-kinezet{flex:1;min-height:0;display:flex;background:#fff;}
-#nz-iframe{flex:1;border:0;width:100%;height:100%;background:#fff;}
-.nz-kep{flex:1;overflow:auto;padding:14px;}
-.nz-kep img{max-width:100%;border:1px solid #e2e8f0;margin-top:10px;}
-.nz-kepadat{font-size:.95rem;}
-.nz-pont{border-left:1px solid #e2e8f0;overflow:auto;padding:10px;background:#fff;font-size:.85rem;}
-.nz-pont table.ell{font-size:.82rem;table-layout:fixed;width:100%;}
-.nz-pont table.ell th:first-child,.nz-pont table.ell td:first-child{width:26px;padding:4px 2px;}
-.nz-pont table.ell th:nth-child(2){width:34%;}
-.nz-pont table.ell th:last-child,.nz-pont table.ell td:last-child{width:46px;padding:4px 2px;}
-.nz-pont table.ell td{overflow-wrap:anywhere;}
-.nz-osszeg{font-weight:700;margin-bottom:8px;}
-.vj-allapot{font-size:.8rem;border-radius:999px;padding:2px 9px;white-space:nowrap;}
-.vj-nincs{background:#f1f5f9;color:#64748b;} .vj-elkuldve{background:#e0e7ff;color:#3730a3;}
-.vj-olvasta{background:#dcfce7;color:#166534;} .vj-javitott{background:#fef3c7;color:#92400e;font-weight:600;}
-.vj-szerk{margin-top:14px;border-top:1px solid #e2e8f0;padding-top:10px;}
-.vj-szerk textarea{width:100%;margin-top:6px;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid #cbd2d9;border-radius:6px;resize:vertical;}
-.vj-sor{display:flex;gap:10px;align-items:center;margin-top:6px;}
-.vj-gomb{border:0;border-radius:6px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;background:#4f46e5;color:#fff;}
-.vj-gomb:disabled{opacity:.6;}
+.szorg-cim{margin:26px 0 10px;font-size:1.1rem;}
+.szorg-cim i,.szorg-cimke i{color:#f59e0b;}
+.szorg-cimke{font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;background:#fef3c7;color:#92400e;white-space:nowrap;}
 </style>
+<link rel="stylesheet" href="ikt-nezo.css?v=1">
 <link rel="stylesheet" href="ikt.css?v=3">
 </head>
 <body>
@@ -107,31 +60,9 @@ table.tbl th{background:#f0f4f8;}
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
-<div id="nz" class="nz" hidden>
-  <div class="nz-fej">
-    <span id="nz-nev" class="nz-cim"></span>
-    <span id="nz-forras" class="nz-forras-valto"></span>
-    <a id="nz-uj" href="#" target="_blank" rel="noopener" class="nz-uj"><i class="fas fa-up-right-from-square"></i> Megnyitás új lapon</a>
-    <button class="nz-x" onclick="nzBezar()" title="Bezárás (Esc)"><i class="fas fa-xmark"></i></button>
-  </div>
-  <div class="nz-test">
-    <nav id="nz-fajlok" class="nz-fajlok"></nav>
-    <section class="nz-kozep">
-      <div id="nz-fulek" class="nz-fulek">
-        <button data-f="kod" class="aktiv" onclick="nzFul('kod')"><i class="fas fa-code"></i> Kód</button>
-        <button data-f="kinezet" onclick="nzFul('kinezet')"><i class="fas fa-desktop"></i> Kinézet</button>
-      </div>
-      <div id="nz-kod" class="nz-kod"></div>
-      <div id="nz-kinezet" class="nz-kinezet" hidden>
-        <iframe id="nz-iframe" sandbox="allow-popups" referrerpolicy="no-referrer" title="A tanuló oldala"></iframe>
-        <div id="nz-kep" class="nz-kep" hidden></div>
-      </div>
-    </section>
-    <aside id="nz-pont" class="nz-pont"></aside>
-  </div>
-</div>
 
 <script src="temak.js"></script>
+<script src="ikt-ellenor.js?v=1"></script>
 <script>
 const TEMAK = window.IKT_TEMAK;
 const API = 'https://agazati.up.railway.app';
@@ -147,6 +78,7 @@ const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
 if (u && u.email === 'sandornef@kkszki.hu') document.getElementById('vissza').href = '../portal.html#oktato';
 
 let beadasok = [];   // tanulónként egy sor: beadás és/vagy kiosztott téma
+let szorgalmiLista = [];   // szorgalmi témaoldalak (feladat: „szorgalmi-<sorszám>”), a kötelezőtől külön
 let temak = {};      // email → {id, temaSorszam}
 const ellenorzes = {};   // beadás id → eredmény
 
@@ -156,6 +88,8 @@ async function betolt() {
       fetch(API + '/api/ikt/beadasok?feladat=' + FELADAT, { headers: AUTH }),
       fetch(API + '/api/ikt/temak?feladat=' + FELADAT, { headers: AUTH }),
       fetch(API + '/api/ikt/beadasok?feladat=weboldal', { headers: AUTH })]);
+    const rsz = await fetch(API + '/api/ikt/szorgalmi', { headers: AUTH }).catch(() => null);
+    szorgalmiLista = rsz && rsz.ok ? ((await rsz.json()).beadasok || []) : [];
     if (!r.ok || !rt.ok) throw new Error('Hiba ' + (r.ok ? rt.status : r.status));
     const bl = (await r.json()).beadasok || [];
     const tl = (await rt.json()).temak || [];
@@ -188,6 +122,8 @@ async function betolt() {
     <button class="mind" onclick="mindetEllenoriz(this)" title="A kiválasztott csoport minden beadását újra ellenőrzi (a github.io oldalakat is), legfeljebb 4-et egyszerre"><i class="fas fa-list-check"></i> Mindet ellenőrzöm</button></div>
     <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
     <div id="lista"></div>
+    <h2 class="szorg-cim"><i class="fas fa-star"></i> Szorgalmi témaoldalak</h2>
+    <div id="szorg"></div>
     <details class="temalista"><summary>A 35 téma</summary>
       <table class="tbl"><thead><tr><th>#</th><th>Téma</th><th>A táblázat oszlopai</th><th>Rangsor: keresd meg…</th></tr></thead>
       <tbody>${TEMAK.map((t, i) => `<tr><td>${i + 1}</td><td>${esc(t[0])}</td><td>${esc(t[1])}</td><td>${esc(t[2])}</td></tr>`).join('')}</tbody></table>
@@ -195,7 +131,7 @@ async function betolt() {
   document.getElementById('csop').addEventListener('change', listaRajz);
   listaRajz();
   // A feltöltött fájlokat betöltéskor ellenőrzi; a csak github.io-s beadásokat is (legfeljebb 4 egyszerre).
-  await parhuzamosan(beadasok.filter(b => !b.nincsBeadas && (b.fajlok.length || b.githubUrl)), 4, b => futtat(b, b.fajlok.length ? 'fajl' : 'github'));
+  await parhuzamosan([...beadasok, ...szorgalmiLista].filter(b => !b.nincsBeadas && (b.fajlok.length || b.githubUrl)), 4, b => futtat(b, b.fajlok.length ? 'fajl' : 'github'));
 }
 
 function temaNev(b) {
@@ -215,26 +151,6 @@ async function ujrasorsol(email) {
 }
 
 // Egy beadás ellenőrzése: 'fajl' = a feltöltött fájlok, 'github' = a github.io oldal.
-const ghEll = {};   // beadás id → a GitHubos ellenőrzés eredménye
-async function futtat(b, mod) {
-  if (mod === 'github') {
-    const alap = githubAlap(b.githubUrl);
-    ghEll[b.id] = alap ? { fut: true } : { hiba: 'A cím nem https://….github.io/… alakú: ' + b.githubUrl };
-    sorFrissit(b);
-    if (!alap) return;
-    try {
-      const forras = forrasGithub(alap);
-      ghEll[b.id] = await ellenoriz(b, forras);
-      if (!(await forras.letezik('index.html')))
-        ghEll[b.id].figyel = 'Ezen a címen nem található az index.html sem – lehet, hogy rossz a cím, vagy a GitHub Pages nincs bekapcsolva.';
-    }
-    catch (e) { ghEll[b.id] = { hiba: 'Nem sikerült letölteni a GitHubról: ' + e.message }; }
-  } else {
-    ellenorzes[b.id] = await ellenoriz(b, forrasFajlok(b));
-  }
-  sorFrissit(b);
-}
-
 async function parhuzamosan(lista, n, fn) {
   let i = 0;
   await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (i < lista.length) await fn(lista[i++]); }));
@@ -242,7 +158,7 @@ async function parhuzamosan(lista, n, fn) {
 
 async function mindetEllenoriz(gomb) {
   const sz = document.getElementById('csop').value;
-  const lista = beadasok.filter(b => !b.nincsBeadas && (!sz || csoportNev(b) === sz));
+  const lista = [...beadasok, ...szorgalmiLista].filter(b => !b.nincsBeadas && (!sz || csoportNev(b) === sz));
   gomb.disabled = true;
   const feladatok = [];
   lista.forEach(b => { if (b.fajlok.length) feladatok.push([b, 'fajl']); if (b.githubUrl) feladatok.push([b, 'github']); });
@@ -288,16 +204,26 @@ function listaRajz() {
       <div class="reszletek" id="r${b.id}"><p class="megj">${b.nincsBeadas ? 'Még nincs beadott fájl.' : 'Ellenőrzés…'}</p></div>
     </div>`).join('') : '<div class="kozep">Még nincs beadás.</div>';
   lista.forEach(b => { if (ellenorzes[b.id] || ghEll[b.id]) sorFrissit(b); });
+  // Szorgalmi témaoldalak: ugyanaz a csoportszűrő, „szorgalmi” jelöléssel, a kötelezőtől külön.
+  const szl = szorgalmiLista.filter(b => !sz || csoportNev(b) === sz);
+  document.getElementById('szorg').innerHTML = szl.length ? szl.map(b => {
+    const n = beadasTemaSorszam(b);
+    return `
+    <div class="tanulo szorgalmi" id="t${b.id}">
+      <div class="fej" onclick="this.parentElement.classList.toggle('nyitva')">
+        <span class="szorg-cimke"><i class="fas fa-star"></i> szorgalmi</span>
+        <span class="nev">${esc(b.nev || b.email)}</span>
+        <span class="oszt">${esc(csoportNev(b))}</span>
+        <span class="tema">${esc(n && TEMAK[n - 1] ? n + '. ' + TEMAK[n - 1][0] : b.feladat)}</span>
+        <span class="vj-allapot ${vjAllapot(b)[0]}">${esc(vjAllapot(b)[1])}</span>
+        <span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>
+        <button class="megnez" onclick="event.stopPropagation(); nzMegnyit(${esc(JSON.stringify(b.id))})"><i class="fas fa-eye"></i> Megnézem</button>
+        <span class="pont" id="p${b.id}">…</span>
+      </div>
+      <div class="reszletek" id="r${b.id}"><p class="megj">Ellenőrzés…</p></div>
+    </div>`; }).join('') : '<p class="megj">Még nincs szorgalmi beadás.</p>';
+  szl.forEach(b => { if (ellenorzes[b.id] || ghEll[b.id]) sorFrissit(b); });
 }
-
-function tablaRajz(e) {
-  return `<table class="ell"><thead><tr><th>#</th><th>Szempont</th><th>Eredmény</th><th>Pont</th></tr></thead><tbody>
-    ${e.sorok.map((s, i) => `<tr><td class="p">${i + 1}</td><td>${esc(s.cim)}</td>
-      <td>${s.allapot === 'ok' ? '<span class="ok"><i class="fas fa-check"></i></span> ' : s.allapot === 'nem' ? '<span class="nem"><i class="fas fa-xmark"></i></span> ' : '<span class="kezi"><i class="fas fa-user-pen"></i> kézi</span> '}${esc(s.megj || '')}</td>
-      <td class="p">${s.allapot === 'kezi' ? '? / ' + s.max : (s.allapot === 'ok' ? s.max : 0) + ' / ' + s.max}</td></tr>`).join('')}
-    </tbody></table>`;
-}
-const pontSzoveg = e => `${e.auto} <small>/ ${e.autoMax} automatikus · ${e.keziMax} pont kézi</small>`;
 
 function sorFrissit(b) {
   const e = ellenorzes[b.id], g = ghEll[b.id];
@@ -323,431 +249,6 @@ function sorFrissit(b) {
   }
   r.innerHTML = html || '<p class="megj">Még nincs beadott fájl.</p>';
 }
-
-// ── Előellenőrzés a pontozó szerint ──
-function kapottTema(b) {
-  const t = temak[b.email];
-  return t && TEMAK[t.temaSorszam - 1] ? TEMAK[t.temaSorszam - 1][0] : null;
-}
-// Kis-nagybetű és szóközök nélkül; a zárójeles kiegészítés elhagyható (pl.: „Macskafélék (vadon élő)” = „Macskafélék”).
-function temaEgyezik(h1, tema) {
-  const n = x => String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/[.!]+$/, '').trim();
-  return n(h1) === n(tema) || n(h1) === n(tema.replace(/\s*\(.*?\)\s*/g, ' '));
-}
-const fajlnev = href => decodeURIComponent(String(href || '').split(/[?#]/)[0]).split('/').pop().toLowerCase();
-
-// ── Források: ugyanazt az ellenőrzést kapja a feltöltött fájl és a github.io oldal ──
-// szoveg(út): a fájl szövege vagy null · letezik(út): van-e ilyen fájl · meret(út): bájt vagy null
-// Az út a weboldal gyökeréhez képest értendő (pl.: tema.html, css/style.css, img/kep.jpg).
-function forrasFajlok(b) {
-  const keres = ut => b.fajlok.find(x => x.fajlnev.toLowerCase() === fajlnev(ut));
-  const cache = {};
-  return {
-    tipus: 'fajl',
-    hianyUzenet: ut => 'nincs beadva: ' + fajlnev(ut),
-    szoveg(ut) {
-      const f = keres(ut);
-      if (!f) return Promise.resolve(null);
-      return cache[f.fajlnev] ||= fetch(API + '/api/ikt/beadas/' + b.id + '/fajl/' + encodeURIComponent(f.fajlnev), { headers: AUTH })
-        .then(r => r.ok ? r.text() : null).catch(() => null);
-    },
-    letezik: ut => Promise.resolve(!!keres(ut)),
-    meret: ut => Promise.resolve(keres(ut) ? keres(ut).meret : null),
-    vanKep: () => b.fajlok.some(f => /\.(jpe?g|png|gif|webp)$/i.test(f.fajlnev)),
-  };
-}
-
-// A github.io cím alapja: https://<név>.github.io/<mappa>/ – ha fájlra mutat, annak a mappája.
-function githubAlap(url) {
-  try {
-    const u = new URL(String(url || '').trim());
-    if (u.protocol !== 'https:' || !/^[a-z0-9-]+\.github\.io$/i.test(u.hostname)) return null;
-    let p = u.pathname;
-    if (/\/[^/]+\.[a-z0-9]+$/i.test(p)) p = p.replace(/[^/]+$/, '');
-    if (!p.endsWith('/')) p += '/';
-    return u.origin + p;
-  } catch (e) { return null; }
-}
-
-function forrasGithub(alap) {
-  const cache = {};
-  const letolt = ut => {
-    const cel = new URL(String(ut).replace(/^\.\//, ''), alap).href;
-    return cache[cel] ||= fetch(cel, { cache: 'no-store' })
-      .then(async r => r.ok ? { ok: true, blob: await r.blob() } : { ok: false })
-      .catch(() => ({ ok: false, hiba: true }));
-  };
-  return {
-    tipus: 'github',
-    alap,
-    hianyUzenet: ut => ut + ' nem található a GitHubon – lehet, hogy nem töltötte fel',
-    szoveg: async ut => { const r = await letolt(ut); return r.ok ? await r.blob.text() : null; },
-    letezik: async ut => (await letolt(ut)).ok,
-    meret: async ut => { const r = await letolt(ut); return r.ok ? r.blob.size : null; },
-    vanKep: null,   // a GitHubon a tema.html képének megléte számít (lent)
-  };
-}
-const szoveg = el => (el ? el.textContent : '').replace(/\s+/g, ' ').trim();
-const mondatok = t => (t.match(/[^.!?]+[.!?]+/g) || []).length;
-
-// A h2-k közötti elemek (dokumentum-sorrendben), a megadott alcím után a következő h2-ig.
-function szakasz(doc, cim) {
-  const minden = [...doc.body.querySelectorAll('*')];
-  const kezd = minden.findIndex(el => el.tagName === 'H2' && szoveg(el).toLowerCase() === cim.toLowerCase());
-  if (kezd < 0) return [];
-  const ki = [];
-  for (let i = kezd + 1; i < minden.length && minden[i].tagName !== 'H2'; i++) ki.push(minden[i]);
-  return ki;
-}
-
-async function ellenoriz(b, f) {
-  const sorok = [];
-  const add = (cim, max, allapot, megj) => sorok.push({ cim, max, allapot, megj });
-  const [temaSzoveg, cssNyers] = await Promise.all([f.szoveg('tema.html'), f.szoveg('css/style.css')]);
-  const cssSzoveg = cssNyers || '';
-  const doc = temaSzoveg ? new DOMParser().parseFromString(temaSzoveg, 'text/html') : null;
-  const head = doc ? doc.head : null;
-  let kepMegvan = false;
-
-  add('A tema.html beadva', 1, temaSzoveg ? 'ok' : 'nem', temaSzoveg ? '' : f.hianyUzenet('tema.html'));
-  if (!doc) {
-    ['Alap szerkezet és lang="hu"', 'title: Weboldalam', 'A css/style.css csatolva'].forEach(c => add(c, 1, 'nem', ''));
-  } else {
-    const szerk = /<!doctype html>/i.test(temaSzoveg) && /<head[\s>]/i.test(temaSzoveg) && /<body[\s>]/i.test(temaSzoveg);
-    const lang = (doc.documentElement.getAttribute('lang') || '').toLowerCase() === 'hu';
-    add('Alap szerkezet és lang="hu"', 1, szerk && lang ? 'ok' : 'nem', [!szerk && 'hiányos váz (doctype/head/body)', !lang && 'nincs lang="hu"'].filter(Boolean).join(', '));
-    const title = szoveg(head.querySelector('title'));
-    add('title: Weboldalam', 1, title === 'Weboldalam' ? 'ok' : 'nem', title ? '„' + title + '”' : 'nincs title');
-    const link = [...head.querySelectorAll('link[rel~="stylesheet"]')].some(l => (l.getAttribute('href') || '').replace(/^\.\//, '') === 'css/style.css');
-    add('A css/style.css csatolva', 1, link ? 'ok' : 'nem', link ? '' : 'nincs <link href="css/style.css"> a head-ben');
-  }
-
-  // Menü: minden beadott oldalon legyen tema.html link, és a menü minden linkje létező fájlra mutasson.
-  const hianyzik = [], nincsMeg = [], rosszLink = [];
-  const oldalSzoveg = await Promise.all(OLDALAK.map(o => o === 'tema.html' ? temaSzoveg : f.szoveg(o)));
-  for (let i = 0; i < OLDALAK.length; i++) {
-    const o = OLDALAK[i], t = oldalSzoveg[i];
-    if (t == null) { nincsMeg.push(o); continue; }
-    const d = new DOMParser().parseFromString(t, 'text/html');
-    const linkek = [...d.querySelectorAll('nav a, a')].map(a => a.getAttribute('href') || '');
-    if (!linkek.some(h => fajlnev(h) === 'tema.html')) hianyzik.push(o);
-    for (const h of linkek.filter(h => /\.html?$/i.test(h.split(/[?#]/)[0]) && !/^https?:/i.test(h)))
-      if (!(await f.letezik(h.split(/[?#]/)[0]))) rosszLink.push(o + ' → ' + h);
-  }
-  add('A menüben ott a Témám, minden oldalon, és működik', 2, hianyzik.length || nincsMeg.length || rosszLink.length ? 'nem' : 'ok',
-    [nincsMeg.length && (f.tipus === 'github' ? 'nem található a GitHubon: ' : 'nincs beadva: ') + nincsMeg.join(', '),
-     hianyzik.length && 'nincs tema.html link: ' + hianyzik.join(', '),
-     rosszLink.length && 'nem létező oldal: ' + rosszLink.slice(0, 3).join(', ')].filter(Boolean).join(' · '));
-
-  if (!doc) {
-    ['h1: a téma neve', 'Öt alcím (h2) jó sorrendben'].forEach(c => add(c, 1, 'nem', ''));
-    add('Bemutatás 2 mondat · Érdekességek 2 érdekesség', 2, 'nem', '');
-    add('Kép: img mappából, alt és title', 2, 'nem', '');
-    add('„Tudj meg többet!” hivatkozás, új lapon', 2, 'nem', '');
-    add('Rendezetlen lista 3 jellemzővel', 1, 'nem', '');
-    add('Rendezett lista 3 „leg”-gel', 1, 'nem', '');
-    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, 'nem', '');
-  } else {
-    const h1 = szoveg(doc.querySelector('h1'));
-    const kapott = b.weboldalbol ? null : kapottTema(b);
-    if (!h1) add('h1: a téma neve', 1, 'nem', 'nincs h1');
-    else if (!kapott) add('h1: a téma neve', 1, 'kezi', '„' + h1 + '” – ' + (b.weboldalbol ? 'a témát órán kapta, nézd meg kézzel' : 'a tanulónak nincs kiosztott témája'));
-    else add('h1: a téma neve', 1, temaEgyezik(h1, kapott) ? 'ok' : 'nem', '„' + h1 + '” · kapott téma: „' + kapott + '”');
-    const h2k = [...doc.querySelectorAll('h2')].map(szoveg);
-    const jo = h2k.length >= 5 && H2_SORREND.every((c, i) => (h2k[i] || '').toLowerCase() === c.toLowerCase());
-    add('Öt alcím (h2) jó sorrendben', 1, jo ? 'ok' : 'nem', jo ? '' : 'van: ' + (h2k.join(', ') || 'nincs h2'));
-
-    const bemP = szakasz(doc, 'Bemutatás').filter(e => e.tagName === 'P').map(szoveg).join(' ');
-    const erdP = szakasz(doc, 'Érdekességek').filter(e => e.tagName === 'P').map(szoveg).join(' ');
-    const bemOk = mondatok(bemP) >= 2, erdOk = erdP.length > 0;
-    add('Bemutatás 2 mondat · Érdekességek 2 érdekesség', 2, bemOk && erdOk ? 'kezi' : 'nem',
-      [`Bemutatás: ${mondatok(bemP)} mondat`, erdOk ? 'Érdekességek: van bekezdés (saját szavak? 2 érdekesség?)' : 'nincs bekezdés az Érdekességek alatt'].join(' · '));
-
-    const img = szakasz(doc, 'Bemutatás').find(e => e.tagName === 'IMG') || doc.querySelector('img');
-    if (!img) add('Kép: img mappából, alt és title', 2, 'nem', 'nincs kép');
-    else {
-      const src = img.getAttribute('src') || '';
-      const hibak = [];
-      if (!/^(\.\/)?img\//i.test(src)) hibak.push('nem az img mappából: ' + src);
-      else if (!(await f.letezik(src))) { hibak.push(f.tipus === 'github' ? f.hianyUzenet(src.replace(/^\.\//, '')) : 'a képfájl nincs beadva: ' + fajlnev(src)); }
-      else kepMegvan = true;
-      if (!(img.getAttribute('alt') || '').trim()) hibak.push('nincs alt');
-      if (!(img.getAttribute('title') || '').trim()) hibak.push('nincs title');
-      const meret = kepMegvan ? await f.meret(src) : null;
-      add('Kép: img mappából, alt és title', 2, hibak.length ? 'nem' : 'kezi',
-        hibak.length ? hibak.join(', ') : `${fajlnev(src)}${meret ? ' (' + Math.max(1, Math.round(meret / 1024)) + ' KB)' : ''} – témához illő? nem a legnagyobb felbontás?`);
-    }
-
-    const a = [...doc.querySelectorAll('a')].find(x => szoveg(x).replace(/[!.]+$/, '').toLowerCase() === 'tudj meg többet');
-    if (!a) add('„Tudj meg többet!” hivatkozás, új lapon', 2, 'nem', 'nincs ilyen szövegű link');
-    else {
-      const href = a.getAttribute('href') || '';
-      const ujlap = (a.getAttribute('target') || '').toLowerCase() === '_blank';
-      const kulso = /^https?:\/\//i.test(href);
-      add('„Tudj meg többet!” hivatkozás, új lapon', 2, ujlap && kulso ? 'kezi' : 'nem',
-        [kulso ? href : 'nem weboldal: ' + (href || 'üres'), !ujlap && 'nincs target="_blank"'].filter(Boolean).join(' · ') + (ujlap && kulso ? ' – témához illő?' : ''));
-    }
-
-    const ul = szakasz(doc, 'Jellemzők').find(e => e.tagName === 'UL');
-    const ulDb = ul ? ul.querySelectorAll(':scope > li').length : 0;
-    add('Rendezetlen lista 3 jellemzővel', 1, ulDb >= 3 ? 'ok' : 'nem', ul ? ulDb + ' elem' : 'nincs ul a Jellemzők alatt');
-
-    const ol = szakasz(doc, 'Rangsor').find(e => e.tagName === 'OL');
-    const olDb = ol ? ol.querySelectorAll(':scope > li').length : 0;
-    add('Rendezett lista 3 „leg”-gel', 1, olDb >= 3 ? 'kezi' : 'nem',
-      ol ? olDb + ' elem: ' + [...ol.querySelectorAll(':scope > li')].map(szoveg).join(', ') + ' – helyes sorrend?' : 'nincs ol a Rangsor alatt');
-
-    const tbl = szakasz(doc, 'Adatok').find(e => e.tagName === 'TABLE') || doc.querySelector('table');
-    const thDb = tbl ? tbl.querySelectorAll('th').length : 0;
-    const adatSor = tbl ? [...tbl.querySelectorAll('tr')].filter(tr => tr.querySelector('td')).length : 0;
-    const css = cssSzoveg.replace(/\/\*[\s\S]*?\*\//g, '');
-    // Szegély a style.css-ből (így ellenőrizhető, hogy a CSS-csatolás működik); a cellákba írt stílus nem elég.
-    const cssSzegely = /(^|[},\s])(th\s*,\s*td|td\s*,\s*th)\s*\{[^}]*border\s*:/i.test(css)
-      || (/(^|[},\s])td\s*\{[^}]*border\s*:/i.test(css) && /(^|[},\s])th\s*\{[^}]*border\s*:/i.test(css));
-    const cellak = tbl ? [...tbl.querySelectorAll('th, td')] : [];
-    const inlineSzegely = cellak.length > 0 && cellak.every(c => /border\s*:/i.test(c.getAttribute('style') || ''));
-    const cellaSzegely = cssSzegely;
-    const hibak = [];
-    if (!tbl) hibak.push('nincs táblázat');
-    else {
-      if (thDb < 3) hibak.push('fejléc: ' + thDb + ' th');
-      if (adatSor < 3) hibak.push('adatsor: ' + adatSor);
-    }
-    if (!cellaSzegely) hibak.push(inlineSzegely ? 'a szegély a cellákban van, nem a style.css-ben' : 'a style.css-ben nincs th, td szegély');
-    add('Táblázat: fejléc + 3 sor, szegély a style.css-ből', 3, hibak.length ? 'nem' : 'kezi',
-      hibak.length ? hibak.join(', ') : `${thDb} oszlop, ${adatSor} adatsor – a megadott oszlopok?`);
-  }
-
-  const hianyFajl = [];
-  for (const n of [...OLDALAK, 'css/style.css']) if (!(await f.letezik(n))) hianyFajl.push(n);
-  const kep = f.vanKep ? f.vanKep() : kepMegvan;
-  const kapott = kapottTema(b);
-  const h1Jo = b.weboldalbol || !!(doc && kapott && temaEgyezik(szoveg(doc.querySelector('h1')), kapott));
-  add('Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával', 1,
-    hianyFajl.length || !kep || !h1Jo ? 'nem' : 'ok',
-    [hianyFajl.length || !kep ? (f.tipus === 'github' ? 'nem található a GitHubon: ' : 'hiányzik: ') + [...hianyFajl, !kep && 'kép'].filter(Boolean).join(', ') : '',
-     b.weboldalbol ? '' : !kapott ? 'nincs kiosztott téma' : !h1Jo ? 'a h1 nem a kapott téma' : ''].filter(Boolean).join(' · '));
-
-  const auto = sorok.filter(s => s.allapot === 'ok').reduce((a, s) => a + s.max, 0);
-  const autoMax = sorok.filter(s => s.allapot !== 'kezi').reduce((a, s) => a + s.max, 0);
-  const keziMax = sorok.filter(s => s.allapot === 'kezi').reduce((a, s) => a + s.max, 0);
-  return { sorok, auto, autoMax, keziMax };
-}
-
-
-// ══════════════════════════════════════════════════════════════════════════
-//  Nézegető: a tanuló fájljai kóddal és kinézettel, mellette az előellenőrzés
-//  (ugyanazon a lapon, ablakban). A tanulói kód csak szövegként jelenik meg
-//  (minden darab esc()-pel), a kinézet sandboxolt iframe-ben – szkript nem fut.
-// ══════════════════════════════════════════════════════════════════════════
-const KEP_RE = /\.(jpe?g|png|gif|webp)$/i;
-let nz = null;   // { b, mod: 'fajl'|'github', forras, fajlok: [{ut, nev}], aktiv, ful: 'kod'|'kinezet' }
-
-function nzMegnyit(id) {
-  const b = beadasok.find(x => String(x.id) === String(id));
-  if (!b) return;
-  nz = { b, ful: 'kod' };
-  document.getElementById('nz').hidden = false;
-  document.body.style.overflow = 'hidden';
-  document.getElementById('nz-nev').textContent = (b.nev || b.email) + ' · ' + csoportNev(b) + ' · ' + temaNev(b);
-  const valto = document.getElementById('nz-forras');
-  valto.innerHTML = (b.fajlok.length ? '<button data-m="fajl">Feltöltött fájlok</button>' : '') +
-                    (b.githubUrl ? '<button data-m="github"><i class="fab fa-github"></i> GitHub</button>' : '');
-  valto.querySelectorAll('button').forEach(g => g.onclick = () => nzForras(g.dataset.m));
-  nzForras(b.fajlok.length ? 'fajl' : 'github');
-}
-
-function nzBezar() {
-  document.getElementById('nz').hidden = true;
-  document.getElementById('nz-iframe').src = 'about:blank';
-  document.body.style.overflow = '';
-  nz = null;
-}
-
-async function nzForras(mod) {
-  const b = nz.b;
-  nz.mod = mod;
-  document.querySelectorAll('#nz-forras button').forEach(g => g.classList.toggle('aktiv', g.dataset.m === mod));
-  const lista = document.getElementById('nz-fajlok');
-  if (mod === 'fajl') {
-    nz.forras = forrasFajlok(b);
-    nz.alap = API + b.elonezet;
-    const sorrend = n => { const i = [...OLDALAK, 'style.css'].indexOf(n.toLowerCase()); return i < 0 ? 99 : i; };
-    nz.fajlok = b.fajlok.map(f => ({ ut: /\.css$/i.test(f.fajlnev) ? 'css/' + f.fajlnev : KEP_RE.test(f.fajlnev) ? 'img/' + f.fajlnev : f.fajlnev, nev: f.fajlnev }))
-      .sort((x, y) => sorrend(x.nev) - sorrend(y.nev) || x.nev.localeCompare(y.nev));
-  } else {
-    const alap = githubAlap(b.githubUrl);
-    if (!alap) { lista.innerHTML = '<p class="hiba">Hibás github.io cím.</p>'; return; }
-    nz.forras = forrasGithub(alap);
-    nz.alap = alap;
-    nz.fajlok = [...OLDALAK, 'css/style.css'].map(ut => ({ ut, nev: ut.split('/').pop() }));
-    lista.innerHTML = '<p class="megj">Letöltés a GitHubról…</p>';
-    // A képek a letöltött oldalakból (img src), relatív útvonallal.
-    const kepek = new Set();
-    for (const o of OLDALAK) {
-      const t = await nz.forras.szoveg(o);
-      if (!t) continue;
-      new DOMParser().parseFromString(t, 'text/html').querySelectorAll('img[src]').forEach(i => {
-        const s = (i.getAttribute('src') || '').replace(/^\.\//, '');
-        if (s && !/^(https?:|data:|\/\/)/i.test(s)) kepek.add(s.split(/[?#]/)[0]);
-      });
-    }
-    kepek.forEach(ut => nz.fajlok.push({ ut, nev: ut.split('/').pop() }));
-    if (nz.mod !== 'github') return;   // közben átváltott
-  }
-  lista.innerHTML = nz.fajlok.map((f, i) => `<button data-i="${i}"><i class="far ${KEP_RE.test(f.nev) ? 'fa-image' : /\.css$/i.test(f.nev) ? 'fa-file-lines' : 'fa-file-code'}"></i> ${esc(f.nev)}</button>`).join('');
-  lista.querySelectorAll('button').forEach(g => g.onclick = () => nzFajl(+g.dataset.i));
-  nzPontozas();
-  const tema = nz.fajlok.findIndex(f => f.nev.toLowerCase() === 'tema.html');
-  nzFajl(tema >= 0 ? tema : 0);
-}
-
-function nzPontozas() {
-  const el = document.getElementById('nz-pont');
-  const e = nz.mod === 'github' ? ghEll[nz.b.id] : ellenorzes[nz.b.id];
-  if (!e) {
-    el.innerHTML = '<p class="megj">Ellenőrzés…</p>';
-    futtat(nz.b, nz.mod).then(() => { if (nz) nzPontozas(); });
-    return;
-  }
-  if (e.fut) { el.innerHTML = '<p class="megj">Ellenőrzés…</p>'; setTimeout(() => nz && nzPontozas(), 800); return; }
-  if (e.hiba) { el.innerHTML = `<p class="hiba">${esc(e.hiba)}</p>`; return; }
-  el.innerHTML = `<div class="nz-osszeg">${pontSzoveg(e)}</div>` + (e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '') + tablaRajz(e) +
-    `<div class="vj-szerk"><label for="vj-szoveg"><b>Visszajelzés a tanulónak</b></label>
-      <textarea id="vj-szoveg" rows="7" maxlength="4000"></textarea>
-      <div class="vj-sor"><button id="vj-kuld" class="vj-gomb"><i class="fas fa-paper-plane"></i> Elküldöm</button><span id="vj-allapot" class="megj"></span></div></div>`;
-  const v = nz.b.visszajelzes;
-  document.getElementById('vj-szoveg').value = v ? v.szoveg : vjJavaslat(e);
-  document.getElementById('vj-allapot').textContent = v ? 'Elküldve: ' + v.updatedAt + (v.elolvasvaAt ? ' · elolvasta: ' + v.elolvasvaAt : '') : '';
-  document.getElementById('vj-kuld').onclick = vjKuld;
-}
-
-// A hiányzó (piros) pontokból számozott, felszólító hibalista – a „kézi” pontok kimaradnak.
-const VJ_MONDAT = {
-  'A tema.html beadva': 'Hozd létre a tema.html fájlt a weboldal mappádban, és add be!',
-  'Alap szerkezet és lang="hu"': 'Hozd létre az alap HTML szerkezetet, és állítsd a nyelvet magyarra!',
-  'title: Weboldalam': 'A weboldal lapfülön megjelenő címe legyen: Weboldalam!',
-  'A css/style.css csatolva': 'Csatold a css mappában lévő style.css-t!',
-  'A menüben ott a Témám, minden oldalon, és működik': 'Készítsd el a navigációt! Ügyelj arra, hogy a többi oldaladról is elérhető legyen az új témaoldalad!',
-  'h1: a téma neve': 'Főcímként írd ki a kapott témád nevét!',
-  'Öt alcím (h2) jó sorrendben': 'Készíts öt alcímet ebben a sorrendben: Bemutatás, Érdekességek, Jellemzők, Adatok, Rangsor!',
-  'Bemutatás 2 mondat · Érdekességek 2 érdekesség': 'A Bemutatás alá írj egy legalább 2 mondatos bekezdést, az Érdekességek alá egy bekezdést legalább 2 érdekességgel!',
-  'Kép: img mappából, alt és title': 'Tedd be a képet az img mappából a Bemutatás bekezdése alá! Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!',
-  '„Tudj meg többet!” hivatkozás, új lapon': 'Az Érdekességek bekezdése alá készíts egy hivatkozást „Tudj meg többet!” szöveggel! A hivatkozás új lapon nyíljon meg!',
-  'Rendezetlen lista 3 jellemzővel': 'A Jellemzők alá készíts rendezetlen listát 3 jellemzővel!',
-  'Rendezett lista 3 „leg”-gel': 'A Rangsor alá írd a 3 „leg”-et rendezett listába, az elsővel kezdve!',
-  'Táblázat: fejléc + 3 sor, szegély a style.css-ből': 'Az Adatok alá készíts táblázatot egy fejléc sorral és 3 sor adattal, és másold be a szegély beállítását a css/style.css fájlba!',
-  'Minden fájl beadva (HTML-ek, style.css, képek), a témája egyezik a kapott témával': 'Add be az összes fájlodat (HTML-ek, style.css, képek), és figyelj, hogy a kapott témádról szóljon az oldal!',
-};
-function vjJavaslat(e) {
-  const hibak = e.sorok.filter(s => s.allapot === 'nem');
-  if (!hibak.length) return 'Szép munka, a kódod minden ellenőrzött pontja rendben van!';
-  return hibak.map((s, i) => `${i + 1}. ${VJ_MONDAT[s.cim] || s.cim}` + (s.megj ? ` (${s.megj})` : '')).join('\n');
-}
-
-async function vjKuld() {
-  const b = nz.b, gomb = document.getElementById('vj-kuld'), all = document.getElementById('vj-allapot');
-  const szoveg = document.getElementById('vj-szoveg').value.trim();
-  if (!szoveg) { all.textContent = 'Írj be valamit.'; return; }
-  gomb.disabled = true; all.textContent = 'Küldés…';
-  try {
-    const r = await fetch(API + '/api/ikt/beadas/' + (b.vjId || b.id) + '/visszajelzes', { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ szoveg }) });
-    let d = null; try { d = await r.json(); } catch (e) {}
-    if (!r.ok) throw new Error((d && d.error) || ('Hiba ' + r.status));
-    b.visszajelzes = d.visszajelzes;
-    all.textContent = 'Elküldve: ' + d.visszajelzes.updatedAt;
-    listaRajz();
-  } catch (e) { all.textContent = 'Nem sikerült: ' + e.message; }
-  finally { gomb.disabled = false; }
-}
-
-function nzFul(ful) {
-  nz.ful = ful;
-  document.querySelectorAll('#nz-fulek button').forEach(g => g.classList.toggle('aktiv', g.dataset.f === ful));
-  document.getElementById('nz-kod').hidden = ful !== 'kod';
-  document.getElementById('nz-kinezet').hidden = ful !== 'kinezet';
-}
-
-async function nzFajl(i) {
-  const f = nz.fajlok[i];
-  if (!f) return;
-  nz.aktiv = i;
-  document.querySelectorAll('#nz-fajlok button').forEach(g => g.classList.toggle('aktiv', +g.dataset.i === i));
-  const cel = new URL(nz.mod === 'fajl' ? f.nev : f.ut, nz.alap).href;
-  document.getElementById('nz-uj').href = nz.mod === 'github' ? cel : cel;
-  const kod = document.getElementById('nz-kod');
-  const ifr = document.getElementById('nz-iframe');
-  const kepDoboz = document.getElementById('nz-kep');
-
-  if (KEP_RE.test(f.nev)) {
-    // Kép: maga a kép, a valódi mérete pixelben és KB-ban
-    nzFul('kinezet');
-    document.getElementById('nz-fulek').hidden = true;
-    ifr.hidden = true; kepDoboz.hidden = false;
-    kepDoboz.innerHTML = '<p class="megj">Betöltés…</p>';
-    const meret = await nz.forras.meret(nz.mod === 'fajl' ? f.nev : f.ut);
-    if (!meret) { kepDoboz.innerHTML = `<p class="hiba">${esc(nz.forras.hianyUzenet(f.ut))}</p>`; return; }
-    const img = new Image();
-    img.onload = () => {
-      kepDoboz.innerHTML = `<div class="nz-kepadat"><b>${esc(f.nev)}</b> · ${img.naturalWidth} × ${img.naturalHeight} pixel · ${Math.max(1, Math.round(meret / 1024))} KB` +
-        (img.naturalWidth > 1920 ? ' · <span class="nem">nagy felbontás</span>' : '') + '</div>';
-      kepDoboz.appendChild(img);
-    };
-    img.onerror = () => { kepDoboz.innerHTML = '<p class="hiba">A kép nem tölthető be.</p>'; };
-    img.alt = f.nev;
-    img.src = cel;
-    return;
-  }
-
-  document.getElementById('nz-fulek').hidden = false;
-  kepDoboz.hidden = true; ifr.hidden = false;
-  // Kód: a forrás szövegként, sorszámozva, színezve
-  kod.innerHTML = '<p class="megj">Betöltés…</p>';
-  const szoveg = await nz.forras.szoveg(nz.mod === 'fajl' ? f.nev : f.ut);
-  if (nz.aktiv !== i) return;
-  if (szoveg == null) {
-    kod.innerHTML = `<p class="hiba">${esc(nz.forras.hianyUzenet(f.ut))}</p>`;
-    ifr.src = 'about:blank';
-  } else {
-    const sorok = szoveg.replace(/\r\n?/g, '\n').split('\n').length;
-    kod.innerHTML = `<div class="nz-sorszam">${Array.from({ length: sorok }, (_, k) => k + 1).join('\n')}</div>` +
-      `<pre class="nz-forras">${/\.css$/i.test(f.nev) ? szinezCss(szoveg) : szinezHtml(szoveg)}</pre>`;
-    // Kinézet: CSS-nél nincs önálló kinézet – a tema.html-t mutatja
-    const latvany = /\.css$/i.test(f.nev) ? new URL(nz.mod === 'fajl' ? 'tema.html' : 'tema.html', nz.alap).href : cel;
-    if (ifr.dataset.cel !== latvany) { ifr.dataset.cel = latvany; ifr.src = latvany; }
-  }
-  nzFul(nz.ful);
-}
-
-// ── Egyszerű színezés: minden kiírt darab esc()-en megy át ──
-function szinezHtml(t) {
-  return t.split(/(<!--[\s\S]*?-->|<[^>]*>)/).map(d => {
-    if (!d) return '';
-    if (d.startsWith('<!--')) return `<span class="sz-komment">${esc(d)}</span>`;
-    if (!d.startsWith('<')) return esc(d);
-    const m = d.match(/^<(\/?[!\w-]*)([\s\S]*?)(\/?)>$/);
-    if (!m) return esc(d);
-    const attr = m[2].replace(/([^\s=]+)(\s*=\s*)("[^"]*"|'[^']*'|[^\s"']+)?|([^\s]+)/g, (x, nev, eq, ert, magany) =>
-      magany ? esc(magany) : `<span class="sz-attr">${esc(nev)}</span>${eq ? esc(eq) : ''}${ert ? `<span class="sz-ertek">${esc(ert)}</span>` : ''}`);
-    // a szóközöket az attribútumok között meg kell őrizni: a csere csak a szavakat érinti
-    return `<span class="sz-tag">&lt;${esc(m[1])}</span>${attr}<span class="sz-tag">${esc(m[3])}&gt;</span>`;
-  }).join('');
-}
-function szinezCss(t) {
-  return t.split(/(\/\*[\s\S]*?\*\/|\{[^}]*\})/).map(d => {
-    if (!d) return '';
-    if (d.startsWith('/*')) return `<span class="sz-komment">${esc(d)}</span>`;
-    if (!d.startsWith('{')) return `<span class="sz-tag">${esc(d)}</span>`;
-    return esc('{') + d.slice(1, -1).split(/(\/\*[\s\S]*?\*\/)/).map(r => r.startsWith('/*')
-      ? `<span class="sz-komment">${esc(r)}</span>`
-      : r.replace(/([^:;{}\n]+)(:)([^;{}]*)/g, '\u0000$1\u0001$2\u0002$3\u0003')
-          .split(/(\u0000[^\u0001]*\u0001:\u0002[^\u0003]*\u0003)/).map(x => {
-            const k = x.match(/^\u0000([^\u0001]*)\u0001:\u0002([^\u0003]*)\u0003$/);
-            return k ? `<span class="sz-attr">${esc(k[1])}</span>:<span class="sz-ertek">${esc(k[2])}</span>` : esc(x);
-          }).join('')).join('') + esc('}');
-  }).join('');
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && nz) nzBezar(); });
 
 if (!TOKEN) {
   app.innerHTML = '<div class="kozep"><h2>Ez az oldal oktatóknak szól.</h2><p style="margin-top:10px"><a href="../login.html">Bejelentkezés</a></p></div>';

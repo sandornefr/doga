@@ -127,6 +127,13 @@ public partial class Database
     public List<IktBeadasInfo> GetIktBeadasok(string feladat) =>
         ReadIktBeadasok("WHERE b.feladat = $p", "$p", feladat);
 
+    // Szorgalmi témaoldalak: a feladat neve „szorgalmi-<témasorszám>”.
+    public List<IktBeadasInfo> GetIktSzorgalmiBeadasok() =>
+        ReadIktBeadasok("WHERE b.feladat LIKE $p", "$p", "szorgalmi-%");
+
+    public List<IktBeadasInfo> GetIktSzorgalmiSajat(string email) =>
+        ReadIktBeadasok("WHERE b.email = $p AND b.feladat LIKE $f", "$p", email, "szorgalmi-%");
+
     private List<IktBeadasInfo> ReadIktBeadasok(string where, string pNev, object pErtek, string? feladat = null)
     {
         using var conn = Open();

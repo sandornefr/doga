@@ -53,7 +53,7 @@ table.lista .we-tabla td{background:none;border-top:0;padding:4px 0;}
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
-<script src="weboldal-ellenor.js"></script>
+<script src="weboldal-ellenor.js?v=2"></script>
 <script>
 // A 9.-esek github.io-s weboldalai csoportonként. A tanuló az ikt/weboldal.html-en küldi be (feladat: „weboldal”).
 // Aki még nem küldte be, de a Témaoldalnál megadott github.io címet, annál azt mutatjuk (dőlt betűvel).
@@ -192,7 +192,7 @@ async function mindetEllenoriz() {
   l.forEach(t => ell[t.email] = { fut: true });
   listaRajz();
   await parhuzamosan(l, 4, async t => {
-    ell[t.email] = await WebEllenor.ellenoriz(link(t));
+    ell[t.email] = await WebEllenor.ellenoriz(link(t), { nev: t.nev && !t.nev.includes('@') ? t.nev : null });
     if (csop === aktivCsop) listaRajz();
   });
   gomb.disabled = false;
