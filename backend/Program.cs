@@ -53,6 +53,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 // Adatbázis inicializálás
 db.Initialize();
 db.InitIktBeadas();
+db.InitIktTeendo();
 db.InitOktatoJogok();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
@@ -2932,6 +2933,37 @@ app.MapPut("/api/ikt/beadas/{id:int}/visszajelzes", (int id, HttpContext ctx, Ik
     return Results.Ok(new { visszajelzes = db.GetIktVisszajelzes(id) });
 });
 
+// Vezetett tanmenet: a tanuló saját jelzései (alkalmanként: kész / nem értem + megjegyzés) — GET /api/ikt/teendo/sajat
+app.MapGet("/api/ikt/teendo/sajat", (HttpContext ctx, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    return Results.Ok(new { teendok = db.GetIktTeendok(be.Email).Select(t => new { t.Alkalom, t.Allapot, t.Megjegyzes, t.UpdatedAt }) });
+});
+
+// Jelzés mentése — PUT /api/ikt/teendo/{alkalom}  { allapot: "kesz" | "nemertem" | "", megjegyzes }
+app.MapPut("/api/ikt/teendo/{alkalom:int}", (int alkalom, HttpContext ctx, IktTeendoKeres req, Database db) =>
+{
+    var be = IktBeado(ctx, db);
+    if (!be.Ok) return be.Hiba!;
+    if (alkalom < 1 || alkalom > 30) return Results.BadRequest(new { error = "Érvénytelen alkalom." });
+    var allapot = (req.Allapot ?? "").Trim().ToLowerInvariant();
+    if (allapot != "" && !Database.IktTeendoAllapotok.Contains(allapot)) return Results.BadRequest(new { error = "Érvénytelen állapot." });
+    var megj = (req.Megjegyzes ?? "").Trim();
+    if (megj.Length > 500) return Results.BadRequest(new { error = "A megjegyzés legfeljebb 500 karakter lehet." });
+    db.SaveIktTeendo(be.Email, be.Nev, be.Osztaly, be.Csoport, alkalom, allapot, megj);
+    return Results.Ok(new { ok = true });
+}).RequireRateLimiting("auth");
+
+// Vezetett tanmenet áttekintés (oktató) — GET /api/ikt/teendok
+app.MapGet("/api/ikt/teendok", (HttpContext ctx, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var l = LathatoTanulok(ctx);
+    return Results.Ok(new { teendok = db.GetIktTeendok().Where(t => l == null || l.Contains(t.Email)) });
+});
+
 // A tanuló saját szorgalmi témaoldalai — GET /api/ikt/szorgalmi/sajat
 app.MapGet("/api/ikt/szorgalmi/sajat", (HttpContext ctx, Database db) =>
 {
@@ -3027,6 +3059,7 @@ namespace KandoTest
 {
     public record ChangePasswordRequest(string Username, string OldPassword, string NewPassword);
     public record IktVisszajelzesKeres(string? Szoveg);
+    public record IktTeendoKeres(string? Allapot, string? Megjegyzes);
     public record DeleteAccountRequest(string Email, string Jelszo);
     public record ResetPasswordRequest(string Email, string NewPassword);
     public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);

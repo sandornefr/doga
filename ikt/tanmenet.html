@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT – Vezetett tanmenet</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{line-height:1.55;min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
+h1{font-size:1.7rem;margin-bottom:4px;}
+.kozep{text-align:center;padding:60px 0;}
+.kozep .btn{display:inline-block;margin-top:14px;padding:9px 18px;color:#fff;text-decoration:none;}
+
+/* alkalom-kártyák */
+details.alk{margin-top:14px;border:1px solid var(--d-keret,#e6e1fb);border-radius:14px;background:var(--d-kartya,#fff);box-shadow:0 6px 24px rgba(0,0,0,.25);}
+details.alk>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 18px;}
+details.alk>summary::-webkit-details-marker{display:none;}
+.alk .sz{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:1.15rem;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.alk .nev{flex:1;font-weight:700;font-size:1.1rem;color:#ede9fe;}
+.alk .nev small{display:block;font-weight:400;font-size:.88rem;color:var(--d-halvany,#6b7280);}
+.alk .nyil{color:#a78bfa;transition:transform .2s;}
+details.alk[open] .nyil{transform:rotate(180deg);}
+.alk .torzs{padding:0 18px 18px;border-top:1px solid var(--d-keret,#e6e1fb);}
+.alk h3{font-size:1rem;margin:16px 0 6px;color:#c4b5fd;}
+.alk h3 i{width:20px;}
+.alk ol{padding-left:24px;}
+.alk ol li{margin:3px 0;}
+.alk .megj{font-size:.92rem;}
+.jel{flex:none;font-size:.82rem;font-weight:700;padding:3px 12px;border-radius:99px;white-space:nowrap;}
+.jel.kesz{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.4);}
+.jel.nemertem{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.4);}
+
+/* minta: két fül, állandó magasság (ne ugráljon) */
+.minta{border:1px solid var(--d-keret,#e6e1fb);border-radius:10px;overflow:hidden;}
+.fulek{display:flex;gap:4px;padding:6px;background:#0f172a;}
+.fulek button{border:0;border-radius:8px;padding:5px 14px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8;}
+.fulek button.aktiv{background:#312e81;color:#fff;}
+.fulek .fajl{margin-left:auto;align-self:center;color:#94a3b8;font-size:.85rem;padding-right:6px;}
+.minta .panel{height:340px;}
+.minta pre{height:100%;overflow:auto;margin:0;padding:12px 14px;background:#0b1020;color:#e2e8f0;font:13px/1.55 Consolas,'Courier New',monospace;white-space:pre;}
+.minta pre .reszcim{color:#64748b;}
+.minta iframe{width:100%;height:100%;border:0;background:#fff;display:block;}
+.minta .panel[hidden]{display:none;}
+
+/* teendő */
+.teendo{margin-top:16px;padding:12px 14px;border-radius:10px;border:1px dashed var(--d-keret,#e6e1fb);}
+.teendo .gombok{display:flex;gap:10px;flex-wrap:wrap;}
+.teendo button.tg{border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:7px 16px;font:inherit;font-weight:600;cursor:pointer;background:transparent;color:#cbd5e1;}
+.teendo button.tg.kesz.aktiv{background:rgba(34,197,94,.2);border-color:#22c55e;color:#bbf7d0;}
+.teendo button.tg.nemertem.aktiv{background:rgba(239,68,68,.2);border-color:#ef4444;color:#fecaca;}
+.teendo .kerdes{display:flex;gap:8px;margin-top:10px;align-items:flex-start;}
+.teendo textarea{flex:1;min-height:56px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid #cbd2d9;font:inherit;font-size:.95rem;}
+.teendo .uz{min-height:1.4em;margin-top:6px;font-size:.88rem;}
+.teendo .kuld{flex:none;border:0;border-radius:99px;padding:9px 18px;font:inherit;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+
+/* oktatói áttekintés */
+.attek{margin-top:16px;}
+.attek .szuro{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.attek select{padding:6px 10px;border-radius:8px;font:inherit;}
+table.at{width:100%;border-collapse:collapse;font-size:.92rem;}
+table.at th,table.at td{border:1px solid var(--d-keret,#e6e1fb);padding:6px 8px;text-align:center;}
+table.at td.n{text-align:left;}
+table.at th{background:#0f3460;color:#e0e7ff;}
+table.at .ok{color:#86efac;}
+table.at .nem{color:#fca5a5;}
+.kerdesek{margin-top:12px;}
+.kerdesek li{margin:6px 0 6px 20px;}
+.kerdesek .ido{color:var(--d-halvany,#6b7280);font-size:.85rem;}
+</style>
+<link rel="stylesheet" href="ikt.css?v=3">
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fas fa-route"></i> Vezetett tanmenet</span>
+  <span id="who"></span>
+  <a href="index.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+
+<script>
+// IKT Projektmunka I. – Vezetett tanmenet (9. évfolyam): a Weboldalam lépésről lépésre, Réka órai mintaoldala
+// (https://sandornefr.github.io/IKT_9.A-1.cs/) szerint. A minta statikus másolata: tanmenet-minta/ (nem függ a github.io-tól).
+// A tanuló alkalmanként jelez (kész / van, amit nem ért) – csak a szerveren tárolva (/api/ikt/teendo), a böngészőben semmi.
+const API = 'https://agazati.up.railway.app';
+const MINTA = 'tanmenet-minta/';
+const ELO_MINTA = 'https://sandornefr.github.io/IKT_9.A-1.cs/';
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const app = document.getElementById('app');
+
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+let TOKEN = u ? (u.token || '') : '';
+if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || '');
+const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
+const OKTATO = !!u && u.szerep === 'oktato';
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+
+// Új oldal: mindig ez a 7 lépés (Réka mondatai, IKT_9_STILUS.md). A menü az 5. alkalommal jön.
+const ujOldal = (fajl, focim) => [
+  `Az órán közösen használt IKT mappában, a saját weboldal mappádban hozz létre egy új fájlt <b>${fajl}</b> néven!`,
+  'Hozd létre az alap HTML szerkezetet!',
+  'Állítsd a nyelvet magyarra!',
+  'Csatold a css mappában lévő style.css-t!',
+  'A weboldal lapfülön megjelenő címe: Weboldalam',
+  focim,
+  'Mentsd el!',
+];
+
+// Egy alkalom: cím, mit csináltunk, lépések, minta (kódrészletek a mintaoldalból + kinézet), ha hiányoztál.
+// resz: { fajl, tol, ig, cim } – a mintafájl szövegéből a tol…ig közötti rész (ig: kizárólagos, ha ig nincs: a tol-lal kezdődő sor végéig).
+const ALKALMAK = [
+  {
+    cim: 'VS Code és a mappa', al: 'a weboldal mappája: css és img',
+    mit: 'Létrehoztuk a weboldalunk mappáját. Benne lett egy css mappa a style.css fájllal, és egy img mappa a képeknek. A mappát VS Code-ban nyitjuk meg.',
+    lepesek: [
+      'Az órán közösen használt IKT mappában hozd létre a saját weboldal mappádat!',
+      'Nyisd meg a mappát VS Code-ban!',
+      'Hozz létre benne egy css mappát, és abban egy style.css fájlt!',
+      'Hozz létre egy img mappát a képeknek!',
+      'A mappák és a fájlok neve legyen kisbetűs, ékezet és szóköz nélkül!',
+    ],
+    mappa: true,
+    hiany: 'Kérdezd meg egy osztálytársadat, hogyan néz ki a mappája, és hozd létre ugyanígy a sajátodat!',
+  },
+  {
+    cim: 'Főoldal', al: 'index.html: a neved, bemutatkozás, kollázs',
+    mit: 'Elkészült az első oldalunk, a főoldal (index.html). A főcím a nevünk, alatta bemutatkozunk két bekezdésben, és betettük a kollázs képünket.',
+    lepesek: [
+      ...ujOldal('index.html', 'Főcímként írd ki a teljes nevedet!'),
+      'Készíts egy alcímet Bemutatkozás szöveggel!',
+      'Az alcím alá írj egy bekezdést magadról!',
+      'Írj egy második bekezdést arról, miért a mi iskolánkat választottad!',
+      'Készíts egy alcímet Kollázs képem szöveggel!',
+      'Mentsd a kollázs képedet az img mappába, és tedd be az alcím alá, 500 képpont szélesen!',
+      'Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!',
+      'Mentsd el, és nézd meg a böngészőben!',
+    ],
+    reszek: [{ fajl: 'index.html', tol: '<!DOCTYPE', ig: '<nav>', cim: 'A fej (head) – minden oldalon ugyanez' },
+             { fajl: 'index.html', tol: '<h1>', ig: '</body>', cim: 'A főoldal tartalma' }],
+    kinezet: 'index.html',
+    hiany: 'A Lépések alapján készítsd el a főoldaladat; a mintán megnézheted, hogyan néz ki nálam.',
+  },
+  {
+    cim: 'Kép és link', al: 'keplink.html: kattintható kép, új lapon',
+    mit: 'Új oldalt készítettünk (keplink.html). Betettünk egy képet, ami egyben link is: rákattintva új lapon megnyílik egy oldal, ahol többet megtudhatunk arról, ami a képen van.',
+    lepesek: [
+      ...ujOldal('keplink.html', 'Főcímként írd ki: KÉP + LINK feladat'),
+      'Tölts le a pixabay.com oldalról egy képet, ne a legnagyobb felbontásban, és mentsd az img mappába!',
+      'Tedd be a képet a főcím alá!',
+      'Ha a kép nem jeleníthető meg, vagy ha fölé viszed az egeret, jelenjen meg a képre utaló szöveg!',
+      'Ha a képre kattintasz, nyíljon meg egy oldal, ahol többet megtudhatunk arról, ami a képen van!',
+      'A hivatkozás új lapon nyíljon meg!',
+      'Mentsd el, és próbáld ki a böngészőben!',
+    ],
+    reszek: [{ fajl: 'keplink.html', tol: '<h1>', ig: '</body>', cim: 'A Kép + link oldal tartalma' }],
+    kinezet: 'keplink.html',
+    hiany: 'A Lépések alapján készítsd el a keplink.html oldalt; a kép bármi lehet, ami neked tetszik.',
+  },
+  {
+    cim: 'Listák', al: 'listak.html: felsorolás és számozott lista',
+    mit: 'Új oldalt készítettünk (listak.html), rajta két listát: egy felsorolást a kedvenc szabadidős tevékenységeinkről, és egy számozott listát a kedvenc tantárgyainkról.',
+    lepesek: [
+      ...ujOldal('listak.html', 'Főcímként írd ki: LISTÁK'),
+      'Készíts egy alcímet: Kedvenc szabadidős tevékenységeim:',
+      'Alá készíts rendezetlen listát 3 tevékenységgel!',
+      'Készíts egy alcímet: Kedvenc tantárgyaim:',
+      'Alá készíts rendezett listát 3 tantárggyal!',
+      'Mentsd el, és nézd meg a böngészőben!',
+    ],
+    reszek: [{ fajl: 'listak.html', tol: '<h1>', ig: '</body>', cim: 'A Listák oldal tartalma' }],
+    kinezet: 'listak.html',
+    hiany: 'A Lépések alapján készítsd el a listak.html oldalt a saját tevékenységeiddel és tantárgyaiddal.',
+  },
+  {
+    cim: 'Órarend és menü', al: 'orarend.html: táblázat; menü minden oldalon',
+    mit: 'Elkészült az órarendünk táblázatban (orarend.html). Utána minden oldalra menüt tettünk, így bármelyik oldalról el lehet jutni a többire.',
+    lepesek: [
+      ...ujOldal('orarend.html', 'Főcímként írd ki: Órarend'),
+      'Készíts táblázatot az órarendedből! A fejléc sorban legyen: Óra, Időpont, Hétfő, Kedd, Szerda, Csütörtök, Péntek!',
+      'Minden órának legyen egy sora (0.–8. óra), benne az óra sorszámával és az időpontjával!',
+      'Írd be a tantárgyaidat a megfelelő cellákba!',
+      'A táblázatnak legyen szegélye!',
+      'Készítsd el a navigációt minden oldaladon! A menüből mind a négy oldal legyen elérhető: FŐOLDAL, KÉP+LINK, LISTÁK, ÓRAREND.',
+      'Ellenőrizd a böngészőben: minden menüpont működik?',
+    ],
+    reszek: [{ fajl: 'index.html', tol: '<nav>', ig: '<h1>', cim: 'A menü – minden oldal elejére, a body-ba' },
+             { fajl: 'orarend.html', tol: '<h1>', ig: '</body>', cim: 'Az Órarend oldal tartalma' }],
+    kinezet: 'orarend.html',
+    hiany: 'A Lépések alapján készítsd el az órarendedet, és tedd be a menüt mind a négy oldaladra.',
+  },
+  {
+    cim: 'GitHub', al: 'feltöltés, GitHub Pages, a link beküldése',
+    mit: 'Feltöltöttük a weboldalunkat a GitHubra, és bekapcsoltuk a GitHub Pages-t. Így a weboldalunk bárhonnan elérhető egy github.io-s címen, és ezt a címet beküldtük a Weboldalam csempén.',
+    lepesek: [
+      'Hozz létre egy fiókot a github.com oldalon, vagy jelentkezz be a meglévővel!',
+      'Hozz létre egy új repót a weboldaladnak!',
+      'Töltsd fel a weboldalad összes fájlját a mappáival együtt (css, img)!',
+      'Kapcsold be a GitHub Pages-t: Settings → Pages, Branch: main, majd Save!',
+      'Várj 1-2 percet, és nyisd meg a megjelenő címet!',
+      'Másold ki a címet, és küldd be a <a href="weboldal.html">Weboldalam</a> csempén!',
+    ],
+    elo: true,
+    hiany: 'A Lépések alapján töltsd fel az oldaladat, és küldd be a címét a Weboldalam csempén.',
+  },
+];
+
+const MAPPA_FA = `weboldalam/
+├── css/
+│   └── style.css
+└── img/
+
+(az 5. alkalom végére)
+weboldalam/
+├── css/
+│   └── style.css
+├── img/
+│   ├── kollazs.jpg
+│   └── kivi.jpg
+├── index.html
+├── keplink.html
+├── listak.html
+└── orarend.html`;
+
+// A mintafájlok szövege (egyszer töltjük le).
+const mintaCache = {};
+const mintaSzoveg = f => mintaCache[f] ||= fetch(MINTA + f, { cache: 'no-cache' }).then(r => r.ok ? r.text() : '').catch(() => '');
+
+// Részlet a mintából, közös behúzás nélkül.
+function reszlet(szoveg, tol, ig) {
+  const a = szoveg.indexOf(tol);
+  if (a < 0) return '';
+  let b = ig ? szoveg.indexOf(ig, a + tol.length) : -1;
+  if (b < 0) b = szoveg.length;
+  const kezd = szoveg.lastIndexOf('\n', a) + 1;          // a sor elejétől, hogy a behúzás egységes legyen
+  const sorok = szoveg.slice(kezd, b).replace(/\s+$/, '').split('\n');
+  const beh = Math.min(...sorok.filter(s => s.trim()).map(s => s.match(/^\s*/)[0].length));
+  return sorok.map(s => s.slice(beh)).join('\n');
+}
+
+let jelzesek = {};   // alkalom → { allapot, megjegyzes, updatedAt }
+
+function jelCimke(n) {
+  const j = jelzesek[n];
+  if (!j) return '';
+  return j.allapot === 'kesz' ? '<span class="jel kesz"><i class="fas fa-check"></i> kész</span>'
+                              : '<span class="jel nemertem"><i class="fas fa-circle-question"></i> kérdésem van</span>';
+}
+
+function alkalomRajz(a, i) {
+  const n = i + 1;
+  const vanMinta = a.reszek || a.mappa || a.elo;
+  return `<details class="alk" id="a${n}" data-n="${n}">
+    <summary><span class="sz">${n}</span><span class="nev">${esc(a.cim)}<small>${esc(a.al)}</small></span><span id="jel${n}">${jelCimke(n)}</span><i class="fas fa-chevron-down nyil"></i></summary>
+    <div class="torzs">
+      <h3><i class="fas fa-chalkboard-user"></i> Mit csináltunk</h3>
+      <p>${esc(a.mit)}</p>
+      <h3><i class="fas fa-list-ol"></i> Lépések</h3>
+      <ol>${a.lepesek.map(l => `<li>${l}</li>`).join('')}</ol>
+      ${vanMinta ? `<h3><i class="fas fa-eye"></i> Minta: így néz ki nálam</h3>
+      <div class="minta" data-n="${n}">
+        <div class="fulek">
+          <button class="aktiv" data-ful="kod"><i class="fas fa-code"></i> Kód</button>
+          ${a.kinezet || a.elo ? '<button data-ful="kinezet"><i class="fas fa-display"></i> Kinézet</button>' : ''}
+          <span class="fajl">${a.mappa ? 'mappaszerkezet' : a.elo ? esc(ELO_MINTA) : esc(a.kinezet)}</span>
+        </div>
+        <div class="panel" data-panel="kod"><pre>${a.mappa ? esc(MAPPA_FA) : a.elo ? esc('A weboldalam címe:\n' + ELO_MINTA + '\n\nNézd meg a Kinézet fülön, vagy nyisd meg új lapon!') : 'Betöltés…'}</pre></div>
+        ${a.kinezet || a.elo ? '<div class="panel" data-panel="kinezet" hidden></div>' : ''}
+      </div>
+      ${a.elo ? `<p class="megj" style="margin-top:6px"><a href="${esc(ELO_MINTA)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Megnyitom új lapon</a></p>` : ''}` : ''}
+      <h3><i class="fas fa-user-clock"></i> Ha hiányoztál</h3>
+      <p>${esc(a.hiany)}</p>
+      ${OKTATO ? '' : `<div class="teendo" data-n="${n}">
+        <div class="gombok">
+          <button class="tg kesz" data-allapot="kesz"><i class="fas fa-check"></i> Kész vagyok vele</button>
+          <button class="tg nemertem" data-allapot="nemertem"><i class="fas fa-circle-question"></i> Van, amit nem értek</button>
+        </div>
+        <div class="kerdes" hidden>
+          <textarea maxlength="500" placeholder="Írd le röviden, mit nem értesz! (A tanárod látja.)"></textarea>
+          <button class="btn kuld"><i class="fas fa-paper-plane"></i> Elküldöm</button>
+        </div>
+        <div class="uz megj"></div>
+      </div>`}
+    </div>
+  </details>`;
+}
+
+async function kodBetolt(n) {
+  const a = ALKALMAK[n - 1];
+  if (!a.reszek) return;
+  const pre = document.querySelector(`.minta[data-n="${n}"] [data-panel="kod"] pre`);
+  if (pre.dataset.kesz) return;
+  const darabok = [];
+  for (const r of a.reszek) {
+    const sz = await mintaSzoveg(r.fajl);
+    darabok.push(`<span class="reszcim">${esc('<!-- ' + r.cim + ' (' + r.fajl + ') -->')}</span>\n` + esc(reszlet(sz, r.tol, r.ig) || '(nem található)'));
+  }
+  pre.innerHTML = darabok.join('\n\n');
+  pre.dataset.kesz = '1';
+}
+
+function fulValt(minta, ful) {
+  const n = +minta.dataset.n, a = ALKALMAK[n - 1];
+  minta.querySelectorAll('.fulek button').forEach(b => b.classList.toggle('aktiv', b.dataset.ful === ful));
+  minta.querySelectorAll('.panel').forEach(p => p.hidden = p.dataset.panel !== ful);
+  const p = minta.querySelector('[data-panel="kinezet"]');
+  if (ful === 'kinezet' && p && !p.firstChild) {
+    const f = document.createElement('iframe');
+    f.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    f.title = 'A minta kinézete';
+    f.src = a.elo ? ELO_MINTA : MINTA + a.kinezet;
+    p.appendChild(f);
+  }
+}
+
+function teendoRajz(n) {
+  const el = document.querySelector(`.teendo[data-n="${n}"]`);
+  if (!el) return;
+  const j = jelzesek[n];
+  el.querySelectorAll('.tg').forEach(b => b.classList.toggle('aktiv', !!j && b.dataset.allapot === j.allapot));
+  const kerdes = el.querySelector('.kerdes');
+  kerdes.hidden = !(j && j.allapot === 'nemertem') && !el.dataset.nyitva;
+  if (j && j.allapot === 'nemertem' && document.activeElement !== el.querySelector('textarea')) el.querySelector('textarea').value = j.megjegyzes || '';
+  document.getElementById('jel' + n).innerHTML = jelCimke(n);
+}
+
+async function jelzesKuld(n, allapot, megjegyzes) {
+  const el = document.querySelector(`.teendo[data-n="${n}"]`);
+  const uz = el.querySelector('.uz');
+  uz.textContent = 'Mentés…'; uz.style.color = '';
+  try {
+    const r = await fetch(API + '/api/ikt/teendo/' + n, { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ allapot, megjegyzes }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || ('Hiba: ' + r.status));
+    if (allapot) jelzesek[n] = { allapot, megjegyzes, updatedAt: '' }; else delete jelzesek[n];
+    delete el.dataset.nyitva;
+    teendoRajz(n);
+    uz.textContent = !allapot ? 'Visszavontad a jelzést.' : allapot === 'kesz' ? 'Szuper! Elmentve.' : 'Elküldve, a tanárod látja.';
+    uz.style.color = '#86efac';
+  } catch (e) {
+    uz.textContent = 'Nem sikerült menteni: ' + e.message; uz.style.color = '#fca5a5';
+  }
+}
+
+function teendoEsemenyek() {
+  document.querySelectorAll('.teendo').forEach(el => {
+    const n = +el.dataset.n;
+    el.querySelectorAll('.tg').forEach(b => b.onclick = () => {
+      const j = jelzesek[n];
+      if (b.dataset.allapot === 'kesz') { jelzesKuld(n, j && j.allapot === 'kesz' ? '' : 'kesz', ''); return; }
+      // „Van, amit nem értek”: előbb megírja, mit nem ért, az Elküldöm menti.
+      if (j && j.allapot === 'nemertem') { jelzesKuld(n, '', ''); return; }
+      el.dataset.nyitva = '1'; teendoRajz(n);
+      el.querySelector('textarea').focus();
+    });
+    el.querySelector('.kuld').onclick = () => {
+      const t = el.querySelector('textarea').value.trim();
+      if (!t) { const uz = el.querySelector('.uz'); uz.textContent = 'Írd le röviden, mit nem értesz!'; uz.style.color = '#fcd34d'; return; }
+      jelzesKuld(n, 'nemertem', t);
+    };
+  });
+}
+
+// ── Oktatói áttekintés: tanulónként az alkalmak jelzései ──
+let attekAdat = [];
+async function attekBetolt() {
+  const el = document.getElementById('attek');
+  try {
+    const r = await fetch(API + '/api/ikt/teendok', { headers: AUTH });
+    if (!r.ok) { el.innerHTML = '<p class="megj">Az áttekintéshez IKT jogosultság kell.</p>'; return; }
+    attekAdat = (await r.json()).teendok || [];
+  } catch (e) { el.innerHTML = '<p class="hiba">Nem sikerült betölteni.</p>'; return; }
+  const csop = [...new Set(attekAdat.map(t => csopNev(t)))].sort((a, b) => a.localeCompare(b, 'hu'));
+  el.innerHTML = `<div class="szuro"><label>Csoport: <select id="at-csop"><option value="">mind</option>${csop.map(c => `<option>${esc(c)}</option>`).join('')}</select></label>
+    <span class="megj">Csak azok a tanulók látszanak, akik már jeleztek valamit.</span></div><div id="at-tabla"></div>`;
+  document.getElementById('at-csop').onchange = attekRajz;
+  attekRajz();
+}
+const csopNev = t => (t.osztaly || '') + (t.csoport ? ' / ' + t.csoport + '. cs.' : '');
+function attekRajz() {
+  const sz = document.getElementById('at-csop').value;
+  const adat = attekAdat.filter(t => !sz || csopNev(t) === sz);
+  const tanulok = {};
+  adat.forEach(t => { (tanulok[t.email] ||= { nev: t.nev || t.email, csop: csopNev(t), j: {} }).j[t.alkalom] = t; });
+  const sorok = Object.values(tanulok).sort((a, b) => a.csop.localeCompare(b.csop, 'hu') || a.nev.localeCompare(b.nev, 'hu'));
+  const kerdesek = adat.filter(t => t.allapot === 'nemertem');
+  document.getElementById('at-tabla').innerHTML = !sorok.length ? '<p class="megj">Még senki nem jelzett.</p>' :
+    `<table class="at"><thead><tr><th>Tanuló</th><th>Csoport</th>${ALKALMAK.map((a, i) => `<th title="${esc(a.cim)}">${i + 1}.</th>`).join('')}</tr></thead><tbody>` +
+    sorok.map(s => `<tr><td class="n">${esc(s.nev)}</td><td>${esc(s.csop)}</td>${ALKALMAK.map((a, i) => {
+      const j = s.j[i + 1];
+      return `<td>${!j ? '' : j.allapot === 'kesz' ? '<i class="fas fa-check ok" title="kész"></i>' : `<i class="fas fa-circle-question nem" title="${esc(j.megjegyzes || '')}"></i>`}</td>`;
+    }).join('')}</tr>`).join('') + '</tbody></table>' +
+    (kerdesek.length ? `<div class="kerdesek"><h3 style="margin-top:14px"><i class="fas fa-circle-question" style="color:#fca5a5"></i> Amit nem értenek (${kerdesek.length})</h3><ul>` +
+      kerdesek.map(t => `<li><b>${esc(t.nev || t.email)}</b> (${esc(csopNev(t))}) – ${t.alkalom}. ${esc(ALKALMAK[t.alkalom - 1] ? ALKALMAK[t.alkalom - 1].cim : '')}: „${esc(t.megjegyzes || '')}” <span class="ido">${esc(t.updatedAt)}</span></li>`).join('') + '</ul></div>' : '');
+}
+
+async function indit() {
+  document.getElementById('who').textContent = u.nev || '';
+  app.innerHTML = `<h1>A Weboldalam lépésről lépésre</h1>
+    <div class="alcim">Minden alkalomnál megnézheted, mit csináltunk, mik voltak a lépések, és hogyan néz ki nálam. A végén jelezd, hogy kész vagy-e vele!</div>
+    ${OKTATO ? `<div class="card attek"><h2 style="margin-top:0"><i class="fas fa-table"></i> Áttekintés: ki hol tart?</h2><div id="attek">Betöltés…</div></div>` : ''}
+    ${ALKALMAK.map(alkalomRajz).join('')}`;
+  document.querySelectorAll('details.alk').forEach(d => d.addEventListener('toggle', () => { if (d.open) kodBetolt(+d.dataset.n); }));
+  document.querySelectorAll('.minta').forEach(m => m.querySelectorAll('.fulek button').forEach(b => b.onclick = () => fulValt(m, b.dataset.ful)));
+  if (OKTATO) { attekBetolt(); }
+  else {
+    teendoEsemenyek();
+    try {
+      const r = await fetch(API + '/api/ikt/teendo/sajat', { headers: AUTH });
+      if (r.ok) ((await r.json()).teendok || []).forEach(t => jelzesek[t.alkalom] = t);
+    } catch (e) {}
+    ALKALMAK.forEach((a, i) => teendoRajz(i + 1));
+  }
+  // #a3 → a 3. alkalom nyitva
+  const m = /^#a(\d+)$/.exec(location.hash);
+  const d = m && document.getElementById('a' + m[1]);
+  if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); }
+}
+
+if (!u) {
+  app.innerHTML = '<div class="kozep"><h2>Be kell jelentkezned</h2><a class="btn" href="../login.html">Bejelentkezés</a></div>';
+} else if (!JOGOS) {
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
+} else {
+  indit();
+}
+</script>
+</body>
+</html>
