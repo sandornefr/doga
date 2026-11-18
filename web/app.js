@@ -4581,6 +4581,10 @@ function showWrapWidget(editor, onConfirm) {
   });
 }
 
+// Soron belüli HTML-elemek: ezeket a Wrap mindig helyben (a sorban) csomagolja
+const INLINE_TAGS = new Set(['a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'del', 'dfn', 'em', 'i',
+  'ins', 'kbd', 'label', 'mark', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var']);
+
 // Wrap with Abbreviation funkció
 // Többsoros kijelölésnél (vagy ul>li* / p* mintánál) teljes sorokon dolgozik: a sor eredeti behúzását megtartja,
 // a tartalmat eggyel beljebb húzza, a záró címke külön sorba kerül. Egysoros kijelölésnél beillesztve (inline) csomagol.
@@ -4617,6 +4621,21 @@ function wrapWithAbbreviation(editor, monaco, abbreviation) {
   const endAdjusted = endLine < selection.endLineNumber;   // a kijelölés a következő sor elején ért véget
   const coversWholeLine = endLine === startLine
     && selection.startColumn <= firstNonWs && (endAdjusted || selection.endColumn >= lastNonWs);
+  // Soron belüli (inline) címkék (b, i, strong, em, span, a …): mindig helyben, a sorban csomagolunk,
+  // akkor is, ha a kijelölés az egész sor vagy több sor (mint a VS Code Emmet-je).
+  const inlineAbbr = !wrapEachMatch && !wrapEachSimpleMatch
+    && abbreviation.split('>').every(p => /^[a-zA-Z]/.test(p) && INLINE_TAGS.has(parseTagAbbr(p).tag.toLowerCase()));
+  if (inlineAbbr) {
+    const raw = model.getValueInRange(selection);
+    const lead = raw.match(/^\s*/)[0];
+    const trail = raw.slice(lead.length).match(/\s*$/)[0];
+    const core = raw.slice(lead.length, raw.length - trail.length);
+    const parts = abbreviation.split('>').map(parseTagAbbr);
+    const wrapped = parts.map(buildOpenTag).join('') + core + parts.slice().reverse().map(p => `</${p.tag}>`).join('');
+    editor.executeEdits('wrap-with-abbreviation', [{ range: selection, text: lead + wrapped + trail, forceMoveMarkers: true }]);
+    return;
+  }
+
   const lineMode = endLine > startLine || wrapEachMatch || wrapEachSimpleMatch || coversWholeLine;
 
   if (lineMode) {
