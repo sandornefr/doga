@@ -102,7 +102,7 @@ const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
 
 // Új oldal: mindig ez a 7 lépés (Réka mondatai, IKT_9_STILUS.md). A menü az 5. alkalommal jön.
 const ujOldal = (fajl, focim) => [
-  `Az órán közösen használt IKT mappában, a saját weboldal mappádban hozz létre egy új fájlt <b>${fajl}</b> néven!`,
+  `Az IKT mappádban hozz létre egy új fájlt <b>${fajl}</b> néven!`,
   'Hozd létre az alap HTML szerkezetet!',
   'Állítsd a nyelvet magyarra!',
   'Csatold a css mappában lévő style.css-t!',
@@ -115,17 +115,17 @@ const ujOldal = (fajl, focim) => [
 // resz: { fajl, tol, ig, cim } – a mintafájl szövegéből a tol…ig közötti rész (ig: kizárólagos, ha ig nincs: a tol-lal kezdődő sor végéig).
 const ALKALMAK = [
   {
-    cim: 'VS Code és a mappa', al: 'a weboldal mappája: css és img',
-    mit: 'Létrehoztuk a weboldalunk mappáját. Benne lett egy css mappa a style.css fájllal, és egy img mappa a képeknek. A mappát VS Code-ban nyitjuk meg.',
+    cim: 'VS Code és a mappa', al: 'az IKT mappa: css és img',
+    mit: 'IKT mappát hoztunk létre a saját meghajtódon az iskolai számítógépen. Benne lett egy css mappa a style.css fájllal, és egy img mappa a képeknek. A mappát VS Code-ban nyitjuk meg.',
     lepesek: [
-      'Az órán közösen használt IKT mappában hozd létre a saját weboldal mappádat!',
+      'Hozz létre egy IKT mappát a saját meghajtódon az iskolai számítógépen!',
       'Nyisd meg a mappát VS Code-ban!',
       'Hozz létre benne egy css mappát, és abban egy style.css fájlt!',
       'Hozz létre egy img mappát a képeknek!',
       'A mappák és a fájlok neve legyen kisbetűs, ékezet és szóköz nélkül!',
     ],
     mappa: true,
-    hiany: 'Kérdezd meg egy osztálytársadat, hogyan néz ki a mappája, és hozd létre ugyanígy a sajátodat!',
+    hiany: 'Kérdezd meg egy osztálytársadat, hogyan néz ki az IKT mappája, és hozd létre ugyanígy a sajátodat a saját meghajtódon!',
   },
   {
     cim: 'Főoldal', al: 'index.html: a neved, bemutatkozás, kollázs',
@@ -209,13 +209,13 @@ const ALKALMAK = [
   },
 ];
 
-const MAPPA_FA = `weboldalam/
+const MAPPA_FA = `IKT/
 ├── css/
 │   └── style.css
 └── img/
 
 (az 5. alkalom végére)
-weboldalam/
+IKT/
 ├── css/
 │   └── style.css
 ├── img/
