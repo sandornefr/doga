@@ -7,74 +7,112 @@
 <link rel="icon" href="../kando_favion_light.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+/* Semmi nem görget (Réka kérése): az oldal pontosan a képernyő magas, a betűméret a képernyőhöz igazodik,
+   egyszerre egy alkalom látszik, fülekkel; a hosszú kód oszlopokba tördelődik, a kinézet kicsinyítve fér be. */
 *{box-sizing:border-box;margin:0;padding:0;}
-body{line-height:1.55;min-height:100vh;}
-.topbar{display:flex;align-items:center;gap:12px;color:#fff;}
+html{font-size:clamp(10.5px,min(1.02vw,1.85vh),27px);}
+html,body{height:100%;}
+body{line-height:1.5;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+button,input,select,textarea{font:inherit;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;flex:none;}
 .topbar .cim{font-weight:700;flex:1;}
 .topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
-.wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px;}
-h1{font-size:1.7rem;margin-bottom:4px;}
 .kozep{text-align:center;padding:60px 0;}
 .kozep .btn{display:inline-block;margin-top:14px;padding:9px 18px;color:#fff;text-decoration:none;}
+#app{flex:1;min-height:0;}
 
-/* alkalom-kártyák */
-details.alk{margin-top:14px;border:1px solid var(--d-keret,#e6e1fb);border-radius:14px;background:var(--d-kartya,#fff);box-shadow:0 6px 24px rgba(0,0,0,.25);}
-details.alk>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:14px 18px;}
-details.alk>summary::-webkit-details-marker{display:none;}
-.alk .sz{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:1.15rem;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
-.alk .nev{flex:1;font-weight:700;font-size:1.1rem;color:#ede9fe;}
-.alk .nev small{display:block;font-weight:400;font-size:.88rem;color:var(--d-halvany,#6b7280);}
-.alk .nyil{color:#a78bfa;transition:transform .2s;}
-details.alk[open] .nyil{transform:rotate(180deg);}
-.alk .torzs{padding:0 18px 18px;border-top:1px solid var(--d-keret,#e6e1fb);}
-.alk h3{font-size:1rem;margin:16px 0 6px;color:#c4b5fd;}
-.alk h3 i{width:20px;}
-.alk ol{padding-left:24px;}
-.alk ol li{margin:3px 0;}
-.alk .megj{font-size:.92rem;}
-.jel{flex:none;font-size:.82rem;font-weight:700;padding:3px 12px;border-radius:99px;white-space:nowrap;}
-.jel.kesz{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.4);}
-.jel.nemertem{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.4);}
+.fo{height:100%;display:grid;grid-template-columns:17rem minmax(0,1fr);gap:1.2rem;padding:1.1rem 1.6rem;}
+/* bal: az alkalmak */
+.sav{display:flex;flex-direction:column;gap:.55rem;min-height:0;}
+.sav .fejcim{font-weight:800;font-size:1.15rem;color:#ede9fe;line-height:1.25;}
+.sav .fejal{font-size:.82rem;color:var(--d-halvany,#6b7280);margin-bottom:.2rem;}
+.ab{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;cursor:pointer;padding:.55rem .7rem;border-radius:.8rem;
+  border:1px solid var(--d-keret,#e6e1fb);background:var(--d-kartya,#fff);color:#e2e8f0;font-size:.95rem;}
+.ab:hover{border-color:#7c3aed;}
+.ab.aktiv{border-color:#a78bfa;background:linear-gradient(135deg,rgba(124,58,237,.35),rgba(79,70,229,.25));}
+.ab .sz{flex:none;width:2.1rem;height:2.1rem;border-radius:.6rem;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.ab .nev{flex:1;min-width:0;font-weight:700;line-height:1.25;}
+.ab .nev small{display:block;font-weight:400;font-size:.78rem;color:var(--d-halvany,#94a3b8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ab .jelzo{flex:none;width:1.3rem;text-align:center;}
+.ab .jelzo .fa-check{color:#86efac;}
+.ab .jelzo .fa-circle-question{color:#fca5a5;}
+.ab.attekgomb .sz{background:linear-gradient(135deg,#0891b2,#0e7490);}
 
-/* minta: két fül, állandó magasság (ne ugráljon) */
-.minta{border:1px solid var(--d-keret,#e6e1fb);border-radius:10px;overflow:hidden;}
-.fulek{display:flex;gap:4px;padding:6px;background:#0f172a;}
-.fulek button{border:0;border-radius:8px;padding:5px 14px;font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8;}
-.fulek button.aktiv{background:#312e81;color:#fff;}
-.fulek .fajl{margin-left:auto;align-self:center;color:#94a3b8;font-size:.85rem;padding-right:6px;}
-.minta pre{margin:0;padding:12px 14px;background:#0b1020;color:#e2e8f0;font:13px/1.55 Consolas,'Courier New',monospace;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;}
-.minta iframe{width:100%;height:420px;border:0;background:#fff;display:block;color-scheme:light;}
-.minta{scrollbar-color:#475569 #0f172a;}
-.minta pre .ks{display:block;min-height:1.55em;}
-.minta .panel[hidden]{display:none;}
+/* jobb: a kiválasztott alkalom */
+.jobb{display:flex;flex-direction:column;min-height:0;border:1px solid var(--d-keret,#e6e1fb);border-radius:1rem;background:var(--d-kartya,#fff);box-shadow:0 6px 24px rgba(0,0,0,.3);overflow:hidden;}
+.jfej{flex:none;display:flex;align-items:center;gap:1rem;padding:.75rem 1.1rem;border-bottom:1px solid var(--d-keret,#e6e1fb);}
+.jfej h1{font-size:1.35rem;line-height:1.2;color:#ede9fe;}
+.jfej h1 small{display:block;font-size:.85rem;font-weight:400;color:var(--d-halvany,#94a3b8);}
+.fulek{margin-left:auto;display:flex;gap:.3rem;flex:none;}
+.fulek button{border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:.35rem .95rem;font-size:.9rem;font-weight:600;cursor:pointer;background:transparent;color:#cbd5e1;}
+.fulek button.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);border-color:transparent;color:#fff;}
+.tartalom{flex:1;min-height:0;position:relative;}
+.panel{position:absolute;inset:0;overflow:hidden;}
+.panel[hidden]{display:none;}
 
-/* teendő */
-.teendo{margin-top:16px;padding:12px 14px;border-radius:10px;border:1px dashed var(--d-keret,#e6e1fb);}
-.teendo .gombok{display:flex;gap:10px;flex-wrap:wrap;}
-.teendo button.tg{border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:7px 16px;font:inherit;font-weight:600;cursor:pointer;background:transparent;color:#cbd5e1;}
-.teendo button.tg.kesz.aktiv{background:rgba(34,197,94,.2);border-color:#22c55e;color:#bbf7d0;}
-.teendo button.tg.nemertem.aktiv{background:rgba(239,68,68,.2);border-color:#ef4444;color:#fecaca;}
-.teendo .kerdes{display:flex;gap:8px;margin-top:10px;align-items:flex-start;}
-.teendo textarea{flex:1;min-height:56px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid #cbd2d9;font:inherit;font-size:.95rem;}
-.teendo .kerdes[hidden]{display:none;}
-.teendo .uz{min-height:1.4em;margin-top:6px;font-size:.88rem;}
-.teendo .kuld{flex:none;border:0;border-radius:99px;padding:9px 18px;font:inherit;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+/* Lépések fül */
+.lp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:1.4rem;padding:1rem 1.2rem;height:100%;}
+.lp h3{font-size:1rem;color:#c4b5fd;margin-bottom:.3rem;}
+.lp h3 i{width:1.3rem;}
+.lp p{margin-bottom:.9rem;}
+.lp ol{padding-left:1.7rem;}
+.lp ol li{margin:.15rem 0;break-inside:avoid;}
+.lp ol.ket{columns:2;column-gap:2rem;}
+
+/* Kód fül: tördelt sorok, szükség esetén több oszlopban (column-fill:auto) */
+.kod{height:100%;margin:0;padding:.8rem 1rem;background:#0b1020;color:#e2e8f0;font-family:Consolas,'Courier New',monospace;line-height:1.45;
+  white-space:pre-wrap;overflow-wrap:anywhere;column-fill:auto;column-gap:1.6rem;column-rule:1px solid #1e293b;overflow:hidden;}
+.kod .ks{display:block;min-height:1.45em;break-inside:avoid;}
+.kod .megj{color:#64748b;}
+
+/* Kinézet fül: a mintaoldal kicsinyítve fér be */
+.kinezet{height:100%;background:#fff;position:relative;overflow:hidden;}
+.kinezet iframe{position:absolute;top:0;left:0;border:0;background:#fff;transform-origin:0 0;}
+.kinezet .elolink{position:absolute;right:.6rem;bottom:.6rem;background:#312e81;color:#fff;border-radius:99px;padding:.3rem .9rem;font-size:.85rem;text-decoration:none;}
+
+/* jelzés: állandó magas sáv alul (nem ugrik) */
+.teendo{flex:none;display:flex;align-items:center;gap:.7rem;padding:.6rem 1.1rem;border-top:1px solid var(--d-keret,#e6e1fb);min-height:3.6rem;}
+.teendo .tg{flex:none;border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:.4rem 1rem;font-weight:600;cursor:pointer;background:transparent;color:#cbd5e1;font-size:.92rem;}
+.teendo .tg.kesz.aktiv{background:rgba(34,197,94,.2);border-color:#22c55e;color:#bbf7d0;}
+.teendo .tg.nemertem.aktiv{background:rgba(239,68,68,.2);border-color:#ef4444;color:#fecaca;}
+.teendo .kerdes{flex:1;display:flex;gap:.5rem;min-width:0;}
+.teendo .kerdes.rejt{visibility:hidden;}
+.teendo input{flex:1;min-width:0;padding:.4rem .7rem;border-radius:.5rem;border:1px solid #cbd2d9;font-size:.92rem;}
+.teendo .kuld{flex:none;border:0;border-radius:99px;padding:.4rem 1rem;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);font-size:.92rem;}
+.teendo .uz{flex:none;width:13rem;font-size:.85rem;text-align:right;}
 
 /* oktatói áttekintés */
-.attek{margin-top:16px;}
-.attek .szuro{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
-.attek select{padding:6px 10px;border-radius:8px;font:inherit;}
-table.at{width:100%;border-collapse:collapse;font-size:.92rem;}
-table.at th,table.at td{border:1px solid var(--d-keret,#e6e1fb);padding:6px 8px;text-align:center;}
+.attek{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:1.4rem;padding:1rem 1.2rem;height:100%;}
+.attek .szuro{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem;font-size:.9rem;}
+.attek select{padding:.25rem .5rem;border-radius:.4rem;}
+table.at{width:100%;border-collapse:collapse;}
+table.at th,table.at td{border:1px solid var(--d-keret,#e6e1fb);padding:.25rem .45rem;text-align:center;}
 table.at td.n{text-align:left;}
 table.at th{background:#0f3460;color:#e0e7ff;}
 table.at .ok{color:#86efac;}
 table.at .nem{color:#fca5a5;}
-.kerdesek{margin-top:12px;}
-.kerdesek li{margin:6px 0 6px 20px;}
-.kerdesek .ido{color:var(--d-halvany,#6b7280);font-size:.85rem;}
+.attek h3{font-size:1rem;color:#c4b5fd;margin-bottom:.3rem;}
+.kerdesek li{margin:.3rem 0 .3rem 1.1rem;}
+.kerdesek .ido{color:var(--d-halvany,#94a3b8);font-size:.85em;}
+
+/* telefonon (keskeny képernyőn) szabad görgetni */
+@media (max-width:760px){
+  html{font-size:14px;}
+  body{height:auto;overflow:auto;}
+  .fo{height:auto;grid-template-columns:1fr;}
+  .jobb{min-height:80vh;}
+  .lp,.attek{grid-template-columns:1fr;height:auto;}
+  .panel{position:static;}
+  .tartalom{min-height:60vh;}
+  .kinezet{height:60vh;}
+  .teendo{flex-wrap:wrap;}
+}
 </style>
 <link rel="stylesheet" href="ikt.css?v=3">
+<style>
+/* az ikt.css után: a felső sáv is rem-ben */
+body .topbar{padding:.7rem 1.6rem;}
+</style>
 </head>
 <body>
 <div class="topbar">
@@ -82,12 +120,13 @@ table.at .nem{color:#fca5a5;}
   <span id="who"></span>
   <a href="index.html"><i class="fas fa-arrow-left"></i> Vissza</a>
 </div>
-<div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
+<div id="app"><div class="kozep">Betöltés…</div></div>
 
 <script>
 // IKT Projektmunka I. – Vezetett tanmenet (9. évfolyam): a Weboldalam lépésről lépésre, Réka órai mintaoldala
 // (https://sandornefr.github.io/IKT_9.A-1.cs/) szerint. A minta statikus másolata: tanmenet-minta/ (nem függ a github.io-tól).
 // A tanuló alkalmanként jelez (kész / van, amit nem ért) – csak a szerveren tárolva (/api/ikt/teendo), a böngészőben semmi.
+// Semmi nem görget: bal oldalt az alkalmak, jobb oldalt egyszerre egy, fülekkel (Lépések, Kód, Kinézet).
 const API = 'https://agazati.up.railway.app';
 const MINTA = 'tanmenet-minta/';
 const ELO_MINTA = 'https://sandornefr.github.io/IKT_9.A-1.cs/';
@@ -230,50 +269,77 @@ const mintaCache = {};
 const mintaSzoveg = f => mintaCache[f] ||= fetch(MINTA + f, { cache: 'no-cache' }).then(r => r.ok ? r.text() : '').catch(() => '');
 
 let jelzesek = {};   // alkalom → { allapot, megjegyzes, updatedAt }
+let aktiv = null;    // a kiválasztott alkalom sorszáma (oktatónál 0 = áttekintés)
+let aktivFul = 'lepes';
 
-function jelCimke(n) {
-  const j = jelzesek[n];
-  if (!j) return '';
-  return j.allapot === 'kesz' ? '<span class="jel kesz"><i class="fas fa-check"></i> kész</span>'
-                              : '<span class="jel nemertem"><i class="fas fa-circle-question"></i> kérdésem van</span>';
+// Egy elem betűméretét addig csökkenti, amíg a tartalma befér (nincs görgetés). Kód esetén oszlopokat is próbál.
+function illeszt(el, { min = 0.55, max = 1.05, oszlop = 1 } = {}) {
+  if (!el || !el.clientHeight) return;
+  for (let fs = max; fs >= min - 0.001; fs -= 0.025) {
+    el.style.fontSize = fs.toFixed(3) + 'rem';
+    for (let c = 1; c <= oszlop; c++) {
+      if (oszlop > 1) el.style.columnCount = c;
+      if (el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1) return;
+    }
+  }
 }
 
-function alkalomRajz(a, i) {
-  const n = i + 1;
-  const vanMinta = a.reszek || a.mappa || a.elo;
-  return `<details class="alk" id="a${n}" data-n="${n}">
-    <summary><span class="sz">${n}</span><span class="nev">${esc(a.cim)}<small>${esc(a.al)}</small></span><span id="jel${n}">${jelCimke(n)}</span><i class="fas fa-chevron-down nyil"></i></summary>
-    <div class="torzs">
-      <h3><i class="fas fa-chalkboard-user"></i> Mit csináltunk</h3>
-      <p>${esc(a.mit)}</p>
-      <h3><i class="fas fa-list-ol"></i> Lépések</h3>
-      <ol>${a.lepesek.map(l => `<li>${l}</li>`).join('')}</ol>
-      ${vanMinta ? `<h3><i class="fas fa-eye"></i> Minta: így néz ki nálam</h3>
-      <div class="minta" data-n="${n}">
-        <div class="fulek">
-          <button class="aktiv" data-ful="kod"><i class="fas fa-code"></i> Kód</button>
-          ${a.kinezet || a.elo ? '<button data-ful="kinezet"><i class="fas fa-display"></i> Kinézet</button>' : ''}
-          <span class="fajl">${a.mappa ? 'mappaszerkezet' : a.elo ? esc(ELO_MINTA) : esc(a.kinezet)}</span>
-        </div>
-        <div class="panel" data-panel="kod"><pre>${a.mappa ? esc(MAPPA_FA) : a.elo ? esc('A weboldalam címe:\n' + ELO_MINTA + '\n\nNézd meg a Kinézet fülön, vagy nyisd meg új lapon!') : 'Betöltés…'}</pre></div>
-        ${a.kinezet || a.elo ? '<div class="panel" data-panel="kinezet" hidden></div>' : ''}
+function savRajz() {
+  const ikon = n => { const j = jelzesek[n]; return !j ? '' : j.allapot === 'kesz' ? '<i class="fas fa-check" title="kész"></i>' : '<i class="fas fa-circle-question" title="kérdésem van"></i>'; };
+  document.getElementById('sav').innerHTML =
+    `<div class="fejcim">A Weboldalam lépésről lépésre</div><div class="fejal">Válaszd ki az alkalmat!</div>` +
+    (OKTATO ? `<button class="ab attekgomb${aktiv === 0 ? ' aktiv' : ''}" data-n="0"><span class="sz"><i class="fas fa-table"></i></span><span class="nev">Ki hol tart?<small>a tanulók jelzései</small></span></button>` : '') +
+    ALKALMAK.map((a, i) => `<button class="ab${aktiv === i + 1 ? ' aktiv' : ''}" data-n="${i + 1}"><span class="sz">${i + 1}</span><span class="nev">${esc(a.cim)}<small>${esc(a.al)}</small></span><span class="jelzo">${ikon(i + 1)}</span></button>`).join('');
+  document.querySelectorAll('#sav .ab').forEach(b => b.onclick = () => valaszt(+b.dataset.n));
+}
+
+function valaszt(n, ful) {
+  aktiv = n;
+  aktivFul = ful || 'lepes';
+  try { history.replaceState(null, '', n ? '#a' + n : '#attekintes'); } catch (e) {}
+  savRajz();
+  if (n === 0) { attekRajzKeret(); return; }
+  const a = ALKALMAK[n - 1];
+  const vanKinezet = !!(a.kinezet || a.elo);
+  document.getElementById('jobb').innerHTML = `
+    <div class="jfej">
+      <h1>${n}. ${esc(a.cim)}<small>${esc(a.al)}</small></h1>
+      <div class="fulek">
+        <button data-ful="lepes"><i class="fas fa-list-ol"></i> Lépések</button>
+        <button data-ful="kod"><i class="fas fa-code"></i> ${a.mappa ? 'Mappák' : a.elo ? 'Cím' : 'Kód'}</button>
+        ${vanKinezet ? '<button data-ful="kinezet"><i class="fas fa-display"></i> Kinézet</button>' : ''}
       </div>
-      ${a.elo ? `<p class="megj" style="margin-top:6px"><a href="${esc(ELO_MINTA)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Megnyitom új lapon</a></p>` : ''}` : ''}
-      <h3><i class="fas fa-user-clock"></i> Ha hiányoztál</h3>
-      <p>${esc(a.hiany)}</p>
-      ${OKTATO ? '' : `<div class="teendo" data-n="${n}">
-        <div class="gombok">
-          <button class="tg kesz" data-allapot="kesz"><i class="fas fa-check"></i> Kész vagyok vele</button>
-          <button class="tg nemertem" data-allapot="nemertem"><i class="fas fa-circle-question"></i> Van, amit nem értek</button>
-        </div>
-        <div class="kerdes" hidden>
-          <textarea maxlength="500" placeholder="Írd le röviden, mit nem értesz! (A tanárod látja.)"></textarea>
-          <button class="btn kuld"><i class="fas fa-paper-plane"></i> Elküldöm</button>
-        </div>
-        <div class="uz megj"></div>
-      </div>`}
     </div>
-  </details>`;
+    <div class="tartalom">
+      <div class="panel" data-panel="lepes"><div class="lp">
+        <div>
+          <h3><i class="fas fa-chalkboard-user"></i> Mit csináltunk</h3><p>${esc(a.mit)}</p>
+          <h3><i class="fas fa-user-clock"></i> Ha hiányoztál</h3><p>${esc(a.hiany)}</p>
+        </div>
+        <div><h3><i class="fas fa-list-ol"></i> Lépések</h3><ol class="${a.lepesek.length > 9 ? 'ket' : ''}">${a.lepesek.map(l => `<li>${l}</li>`).join('')}</ol></div>
+      </div></div>
+      <div class="panel" data-panel="kod" hidden><pre class="kod"></pre></div>
+      ${vanKinezet ? `<div class="panel" data-panel="kinezet" hidden><div class="kinezet"></div></div>` : ''}
+    </div>
+    ${OKTATO ? '' : `<div class="teendo">
+      <button class="tg kesz" data-allapot="kesz"><i class="fas fa-check"></i> Kész vagyok vele</button>
+      <button class="tg nemertem" data-allapot="nemertem"><i class="fas fa-circle-question"></i> Van, amit nem értek</button>
+      <div class="kerdes rejt"><input type="text" maxlength="500" placeholder="Írd le röviden, mit nem értesz! (A tanárod látja.)"><button class="kuld"><i class="fas fa-paper-plane"></i> Elküldöm</button></div>
+      <div class="uz megj"></div>
+    </div>`}`;
+  document.querySelectorAll('#jobb .fulek button').forEach(b => b.onclick = () => fulValt(b.dataset.ful));
+  if (!OKTATO) teendoEsemenyek(n);
+  fulValt(aktivFul);
+}
+
+async function fulValt(ful) {
+  aktivFul = ful;
+  document.querySelectorAll('#jobb .fulek button').forEach(b => b.classList.toggle('aktiv', b.dataset.ful === ful));
+  document.querySelectorAll('#jobb .panel').forEach(p => p.hidden = p.dataset.panel !== ful);
+  const a = ALKALMAK[aktiv - 1];
+  if (ful === 'lepes') illeszt(document.querySelector('#jobb .lp'), { min: 0.6, max: 1.05 });
+  if (ful === 'kod') await kodRajz(a);
+  if (ful === 'kinezet') kinezetRajz(a);
 }
 
 // Kód soronként: a hosszú sor tördelődik, a folytatás a sor behúzása alatt kezdődik (+2 karakter).
@@ -284,56 +350,69 @@ function kodSorok(szoveg) {
   }).join('');
 }
 
-async function kodBetolt(n) {
-  const a = ALKALMAK[n - 1];
-  if (!a.reszek) return;
-  const pre = document.querySelector(`.minta[data-n="${n}"] [data-panel="kod"] pre`);
-  if (pre.dataset.kesz) return;
-  const darabok = [];
-  for (const r of a.reszek) {
-    let sz = (await mintaSzoveg(r.fajl)).replace(/\r/g, '').trim();
-    if (r.navNelkul) sz = sz.replace(/\n[ \t]*<nav>[\s\S]*?<\/nav>[ \t]*/, '');
-    darabok.push(kodSorok(sz || '(nem található)'));
+async function kodRajz(a) {
+  const pre = document.querySelector('#jobb .kod');
+  if (!pre.dataset.kesz) {
+    if (a.mappa) pre.innerHTML = kodSorok(MAPPA_FA);
+    else if (a.elo) pre.innerHTML = kodSorok('A weboldalam címe:\n' + ELO_MINTA + '\n\nA Kinézet fülön megnézheted, vagy nyisd meg új lapon!') +
+      `<span class="ks"> </span><span class="ks"><a href="${esc(ELO_MINTA)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Megnyitom új lapon</a></span>`;
+    else {
+      const darabok = [];
+      for (const r of a.reszek) {
+        let sz = (await mintaSzoveg(r.fajl)).replace(/\r/g, '').trim();
+        if (r.navNelkul) sz = sz.replace(/\n[ \t]*<nav>[\s\S]*?<\/nav>[ \t]*/, '');
+        darabok.push(`<span class="ks megj">${esc('<!-- ' + r.fajl + ' -->')}</span>` + kodSorok(sz || '(nem található)'));
+      }
+      pre.innerHTML = darabok.join('<span class="ks"> </span>');
+    }
+    pre.dataset.kesz = '1';
   }
-  pre.innerHTML = darabok.join('<span class="ks"> </span>');
-  pre.dataset.kesz = '1';
+  if (aktivFul === 'kod') illeszt(pre, { min: 0.5, max: 1, oszlop: 4 });
 }
 
-function fulValt(minta, ful) {
-  const n = +minta.dataset.n, a = ALKALMAK[n - 1];
-  minta.querySelectorAll('.fulek button').forEach(b => b.classList.toggle('aktiv', b.dataset.ful === ful));
-  minta.querySelectorAll('.panel').forEach(p => p.hidden = p.dataset.panel !== ful);
-  const p = minta.querySelector('[data-panel="kinezet"]');
-  if (ful === 'kinezet' && p && !p.firstChild) {
-    const f = document.createElement('iframe');
-    f.setAttribute('sandbox', a.elo ? 'allow-popups allow-popups-to-escape-sandbox' : 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+// A mintaoldal 1100 px szélesen, a tartalom teljes magasságában, a dobozba kicsinyítve.
+const KIN_SZ = 1100;
+function kinezetRajz(a) {
+  const doboz = document.querySelector('#jobb .kinezet');
+  let f = doboz.querySelector('iframe');
+  const meretez = () => {
+    try {
+      const d = f.contentDocument;
+      const h = Math.max(300, d.body.scrollHeight + 24);
+      const s = Math.min(1, doboz.clientWidth / KIN_SZ, doboz.clientHeight / h);
+      f.style.width = KIN_SZ + 'px'; f.style.height = h + 'px';
+      f.style.transform = `scale(${s})`;
+      f.style.left = Math.max(0, (doboz.clientWidth - KIN_SZ * s) / 2) + 'px';
+    } catch (e) {}
+  };
+  if (!f) {
+    f = document.createElement('iframe');
+    // azonos eredetű, szkript nélküli statikus mintaoldal: a méretét le lehet mérni; szkript nem futhat benne
+    f.setAttribute('sandbox', 'allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+    f.setAttribute('scrolling', 'no');
     f.title = 'A minta kinézete';
-    f.src = a.elo ? ELO_MINTA : MINTA + a.kinezet;
-    if (!a.elo) f.addEventListener('load', () => {
-      try {
-        const d = f.contentDocument;
-        const igazit = () => { f.style.height = Math.max(150, d.body.scrollHeight + 24) + 'px'; };
-        igazit();
-        [...d.images].forEach(k => k.complete || k.addEventListener('load', igazit));
-      } catch (e) {}
-    });
-    p.appendChild(f);
-  }
+    f.src = MINTA + (a.kinezet || 'index.html');
+    f.addEventListener('load', () => { meretez(); [...f.contentDocument.images].forEach(k => k.complete || k.addEventListener('load', meretez)); });
+    doboz.appendChild(f);
+    doboz.insertAdjacentHTML('beforeend', a.elo
+      ? `<a class="elolink" href="${esc(ELO_MINTA)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Az élő oldalam a GitHubon</a>`
+      : `<a class="elolink" href="${esc(MINTA + a.kinezet)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Megnyitom nagyban</a>`);
+  } else meretez();
 }
 
 function teendoRajz(n) {
-  const el = document.querySelector(`.teendo[data-n="${n}"]`);
-  if (!el) return;
+  const el = document.querySelector('#jobb .teendo');
+  if (!el || aktiv !== n) return;
   const j = jelzesek[n];
   el.querySelectorAll('.tg').forEach(b => b.classList.toggle('aktiv', !!j && b.dataset.allapot === j.allapot));
   const kerdes = el.querySelector('.kerdes');
-  kerdes.hidden = !(j && j.allapot === 'nemertem') && !el.dataset.nyitva;
-  if (j && j.allapot === 'nemertem' && document.activeElement !== el.querySelector('textarea')) el.querySelector('textarea').value = j.megjegyzes || '';
-  document.getElementById('jel' + n).innerHTML = jelCimke(n);
+  kerdes.classList.toggle('rejt', !(j && j.allapot === 'nemertem') && !el.dataset.nyitva);
+  const inp = el.querySelector('input');
+  if (j && j.allapot === 'nemertem' && document.activeElement !== inp) inp.value = j.megjegyzes || '';
 }
 
 async function jelzesKuld(n, allapot, megjegyzes) {
-  const el = document.querySelector(`.teendo[data-n="${n}"]`);
+  const el = document.querySelector('#jobb .teendo');
   const uz = el.querySelector('.uz');
   uz.textContent = 'Mentés…'; uz.style.color = '';
   try {
@@ -342,7 +421,7 @@ async function jelzesKuld(n, allapot, megjegyzes) {
     if (!r.ok) throw new Error(d.error || ('Hiba: ' + r.status));
     if (allapot) jelzesek[n] = { allapot, megjegyzes, updatedAt: '' }; else delete jelzesek[n];
     delete el.dataset.nyitva;
-    teendoRajz(n);
+    teendoRajz(n); savRajz();
     uz.textContent = !allapot ? 'Visszavontad a jelzést.' : allapot === 'kesz' ? 'Szuper! Elmentve.' : 'Elküldve, a tanárod látja.';
     uz.style.color = '#86efac';
   } catch (e) {
@@ -350,41 +429,44 @@ async function jelzesKuld(n, allapot, megjegyzes) {
   }
 }
 
-function teendoEsemenyek() {
-  document.querySelectorAll('.teendo').forEach(el => {
-    const n = +el.dataset.n;
-    el.querySelectorAll('.tg').forEach(b => b.onclick = () => {
-      const j = jelzesek[n];
-      if (b.dataset.allapot === 'kesz') { jelzesKuld(n, j && j.allapot === 'kesz' ? '' : 'kesz', ''); return; }
-      // „Van, amit nem értek”: előbb megírja, mit nem ért, az Elküldöm menti.
-      if (j && j.allapot === 'nemertem') { jelzesKuld(n, '', ''); return; }
-      el.dataset.nyitva = '1'; teendoRajz(n);
-      el.querySelector('textarea').focus();
-    });
-    el.querySelector('.kuld').onclick = () => {
-      const t = el.querySelector('textarea').value.trim();
-      if (!t) { const uz = el.querySelector('.uz'); uz.textContent = 'Írd le röviden, mit nem értesz!'; uz.style.color = '#fcd34d'; return; }
-      jelzesKuld(n, 'nemertem', t);
-    };
+function teendoEsemenyek(n) {
+  const el = document.querySelector('#jobb .teendo');
+  el.querySelectorAll('.tg').forEach(b => b.onclick = () => {
+    const j = jelzesek[n];
+    if (b.dataset.allapot === 'kesz') { jelzesKuld(n, j && j.allapot === 'kesz' ? '' : 'kesz', ''); return; }
+    // „Van, amit nem értek”: előbb megírja, mit nem ért, az Elküldöm menti.
+    if (j && j.allapot === 'nemertem') { jelzesKuld(n, '', ''); return; }
+    el.dataset.nyitva = '1'; teendoRajz(n);
+    el.querySelector('input').focus();
   });
+  const kuld = () => {
+    const t = el.querySelector('input').value.trim();
+    if (!t) { const uz = el.querySelector('.uz'); uz.textContent = 'Írd le röviden, mit nem értesz!'; uz.style.color = '#fcd34d'; return; }
+    jelzesKuld(n, 'nemertem', t);
+  };
+  el.querySelector('.kuld').onclick = kuld;
+  el.querySelector('input').onkeydown = e => { if (e.key === 'Enter') kuld(); };
+  teendoRajz(n);
 }
 
 // ── Oktatói áttekintés: tanulónként az alkalmak jelzései ──
-let attekAdat = [];
-async function attekBetolt() {
-  const el = document.getElementById('attek');
-  try {
-    const r = await fetch(API + '/api/ikt/teendok', { headers: AUTH });
-    if (!r.ok) { el.innerHTML = '<p class="megj">Az áttekintéshez IKT jogosultság kell.</p>'; return; }
-    attekAdat = (await r.json()).teendok || [];
-  } catch (e) { el.innerHTML = '<p class="hiba">Nem sikerült betölteni.</p>'; return; }
-  const csop = [...new Set(attekAdat.map(t => csopNev(t)))].sort((a, b) => a.localeCompare(b, 'hu'));
-  el.innerHTML = `<div class="szuro"><label>Csoport: <select id="at-csop"><option value="">mind</option>${csop.map(c => `<option>${esc(c)}</option>`).join('')}</select></label>
-    <span class="megj">Csak azok a tanulók látszanak, akik már jeleztek valamit.</span></div><div id="at-tabla"></div>`;
+let attekAdat = null;
+const csopNev = t => (t.osztaly || '') + (t.csoport ? ' / ' + t.csoport + '. cs.' : '');
+async function attekRajzKeret() {
+  document.getElementById('jobb').innerHTML = `<div class="jfej"><h1>Ki hol tart?<small>Csak azok a tanulók látszanak, akik már jeleztek valamit.</small></h1></div>
+    <div class="tartalom"><div class="panel"><div class="attek" id="attek">Betöltés…</div></div></div>`;
+  if (!attekAdat) {
+    try {
+      const r = await fetch(API + '/api/ikt/teendok', { headers: AUTH });
+      if (!r.ok) { document.getElementById('attek').innerHTML = '<p class="megj">Az áttekintéshez IKT jogosultság kell.</p>'; return; }
+      attekAdat = (await r.json()).teendok || [];
+    } catch (e) { document.getElementById('attek').innerHTML = '<p class="hiba">Nem sikerült betölteni.</p>'; return; }
+  }
+  const csop = [...new Set(attekAdat.map(csopNev))].sort((a, b) => a.localeCompare(b, 'hu'));
+  document.getElementById('attek').innerHTML = `<div><div class="szuro"><label>Csoport: <select id="at-csop"><option value="">mind</option>${csop.map(c => `<option>${esc(c)}</option>`).join('')}</select></label></div><div id="at-tabla"></div></div><div id="at-kerdes" class="kerdesek"></div>`;
   document.getElementById('at-csop').onchange = attekRajz;
   attekRajz();
 }
-const csopNev = t => (t.osztaly || '') + (t.csoport ? ' / ' + t.csoport + '. cs.' : '');
 function attekRajz() {
   const sz = document.getElementById('at-csop').value;
   const adat = attekAdat.filter(t => !sz || csopNev(t) === sz);
@@ -397,32 +479,28 @@ function attekRajz() {
     sorok.map(s => `<tr><td class="n">${esc(s.nev)}</td><td>${esc(s.csop)}</td>${ALKALMAK.map((a, i) => {
       const j = s.j[i + 1];
       return `<td>${!j ? '' : j.allapot === 'kesz' ? '<i class="fas fa-check ok" title="kész"></i>' : `<i class="fas fa-circle-question nem" title="${esc(j.megjegyzes || '')}"></i>`}</td>`;
-    }).join('')}</tr>`).join('') + '</tbody></table>' +
-    (kerdesek.length ? `<div class="kerdesek"><h3 style="margin-top:14px"><i class="fas fa-circle-question" style="color:#fca5a5"></i> Amit nem értenek (${kerdesek.length})</h3><ul>` +
-      kerdesek.map(t => `<li><b>${esc(t.nev || t.email)}</b> (${esc(csopNev(t))}) – ${t.alkalom}. ${esc(ALKALMAK[t.alkalom - 1] ? ALKALMAK[t.alkalom - 1].cim : '')}: „${esc(t.megjegyzes || '')}” <span class="ido">${esc(t.updatedAt)}</span></li>`).join('') + '</ul></div>' : '');
+    }).join('')}</tr>`).join('') + '</tbody></table>';
+  document.getElementById('at-kerdes').innerHTML = `<h3><i class="fas fa-circle-question" style="color:#fca5a5"></i> Amit nem értenek (${kerdesek.length})</h3>` +
+    (kerdesek.length ? '<ul>' + kerdesek.map(t => `<li><b>${esc(t.nev || t.email)}</b> (${esc(csopNev(t))}) – ${t.alkalom}. ${esc(ALKALMAK[t.alkalom - 1] ? ALKALMAK[t.alkalom - 1].cim : '')}: „${esc(t.megjegyzes || '')}” <span class="ido">${esc(t.updatedAt)}</span></li>`).join('') + '</ul>' : '<p class="megj">Nincs kérdés.</p>');
+  illeszt(document.getElementById('attek'), { min: 0.55, max: 1 });
 }
+
+let atmeretezIdo;
+window.addEventListener('resize', () => { clearTimeout(atmeretezIdo); atmeretezIdo = setTimeout(() => { if (aktiv === 0) attekRajz(); else if (aktiv) fulValt(aktivFul); }, 150); });
 
 async function indit() {
   document.getElementById('who').textContent = u.nev || '';
-  app.innerHTML = `<h1>A Weboldalam lépésről lépésre</h1>
-    <div class="alcim">Minden alkalomnál megnézheted, mit csináltunk, mik voltak a lépések, és hogyan néz ki nálam. A végén jelezd, hogy kész vagy-e vele!</div>
-    ${OKTATO ? `<div class="card attek"><h2 style="margin-top:0"><i class="fas fa-table"></i> Áttekintés: ki hol tart?</h2><div id="attek">Betöltés…</div></div>` : ''}
-    ${ALKALMAK.map(alkalomRajz).join('')}`;
-  document.querySelectorAll('details.alk').forEach(d => d.addEventListener('toggle', () => { if (d.open) kodBetolt(+d.dataset.n); }));
-  document.querySelectorAll('.minta').forEach(m => m.querySelectorAll('.fulek button').forEach(b => b.onclick = () => fulValt(m, b.dataset.ful)));
-  if (OKTATO) { attekBetolt(); }
-  else {
-    teendoEsemenyek();
+  app.innerHTML = `<div class="fo"><nav class="sav" id="sav"></nav><section class="jobb" id="jobb"></section></div>`;
+  if (!OKTATO) {
     try {
       const r = await fetch(API + '/api/ikt/teendo/sajat', { headers: AUTH });
       if (r.ok) ((await r.json()).teendok || []).forEach(t => jelzesek[t.alkalom] = t);
     } catch (e) {}
-    ALKALMAK.forEach((a, i) => teendoRajz(i + 1));
   }
-  // #a3 → a 3. alkalom nyitva
+  // #a3 → a 3. alkalom; oktatónál alapból az áttekintés
   const m = /^#a(\d+)$/.exec(location.hash);
-  const d = m && document.getElementById('a' + m[1]);
-  if (d) { d.open = true; d.scrollIntoView({ block: 'start' }); }
+  const n = m && ALKALMAK[+m[1] - 1] ? +m[1] : (OKTATO ? 0 : 1);
+  valaszt(n);
 }
 
 if (!u) {
