@@ -8,6 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js"></script>
   <script src="python-kiegeszites.js?v=1"></script>
   <script src="szamonkeres_feladatok.js"></script>
+  <script src="tananyag/pyworker.js?v=1"></script>
+  <script src="tananyag/pyrunner.js?v=1"></script>
+  <script src="szamonkeres-pontozo.js?v=1"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -108,6 +111,13 @@
     .kod-btn{padding:3px 8px;background:#1e3a5f;border:1px solid #3b82f6;border-radius:6px;color:#93c5fd;cursor:pointer;font-size:0.78rem}
     .kod-view{background:#0b1120;border-radius:8px;padding:10px;font-family:monospace;font-size:0.82rem;white-space:pre-wrap;max-height:300px;overflow-y:auto;margin-top:8px;display:none;border:1px solid #374151}
     .empty-state{text-align:center;color:#64748b;padding:40px 20px;font-size:0.9rem}
+    .auto-cell{cursor:help;white-space:nowrap}
+    .auto-cell .auto-jel{font-size:0.7rem;color:#64748b;margin-left:3px}
+    #auto-allapot{font-size:0.8rem;color:#94a3b8;margin:-6px 0 10px;min-height:1.1em}
+    #jav-szempontok{flex-shrink:0;border-bottom:1px solid #1f2937;padding:6px 12px;background:#0b1120;display:none}
+    #jav-szempontok .sz-sor{font-size:0.78rem;line-height:1.45;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #jav-szempontok .sz-ok{color:#4ade80}
+    #jav-szempontok .sz-nem{color:#f87171}
     .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.88rem;display:none}
     .msg-ok{background:#14532d;border:1px solid #16a34a;color:#86efac}
     .msg-err{background:#7f1d1d;border:1px solid #dc2626;color:#fca5a5}
@@ -424,6 +434,7 @@
     <div id="detail-meta" style="font-size:0.82rem;color:#64748b;margin-bottom:12px"></div>
     <div id="detail-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
     <div id="detail-msg" class="msg"></div>
+    <div id="auto-allapot"></div>
 
     <!-- Feladatok összefoglaló -->
     <div id="detail-feladatok" style="margin-bottom:16px"></div>
@@ -523,6 +534,7 @@
         <span><i class="fas fa-terminal"></i> Kimenet</span>
         <button id="jav-run-btn" onclick="javRunCode()" style="padding:3px 14px;background:#15803d;border:none;border-radius:6px;color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer"><i class="fas fa-play"></i> Futtatás</button>
       </div>
+      <div id="jav-szempontok"></div>
       <div id="jav-inputs-wrap" style="display:none;padding:6px 10px;border-bottom:1px solid #1f2937;background:#0b1120;flex-shrink:0">
         <label style="font-size:0.72rem;color:#64748b;display:block;margin-bottom:3px"><i class="fas fa-keyboard"></i> Tesztbemenetek (soronként 1 érték):</label>
         <textarea id="jav-inputs" rows="2" style="width:100%;padding:5px 8px;background:#060d1a;border:1px solid #374151;border-radius:6px;color:#e0e0e0;font-family:monospace;font-size:0.82rem;resize:none;outline:none"></textarea>
@@ -537,6 +549,7 @@
       <label style="font-size:0.85rem;color:#94a3b8;margin:0">Pontszám:</label>
       <input id="jav-pont-input" type="number" min="0" style="width:62px;padding:5px 8px;background:#0b1120;border:1px solid #374151;border-radius:6px;color:#e0e0e0;text-align:center;font-size:0.95rem;font-weight:700;outline:none">
       <span style="font-size:0.85rem;color:#64748b">/ <span id="jav-pont-max">0</span> pont</span>
+      <span id="jav-javasolt" style="font-size:0.82rem;color:#a5b4fc;margin-left:6px"></span>
     </div>
     <div style="flex:1"></div>
     <button id="jav-prev-btn" onclick="javGoTo(javState.currentIdx - 1)" style="padding:6px 18px;background:transparent;border:1px solid #374151;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.85rem"><i class="fas fa-arrow-left"></i> Előző</button>
@@ -1088,6 +1101,7 @@ async function openDetail(id) {
     allBeadasok = data.beadasok || [];
     renderDetail(data.szamonkeres, allBeadasok);
     renderMunkak(data.munkak || [], data.szunetMaxPerc || 10);
+    autoPontozas(id, false);
   } catch(e) {
     document.getElementById('detail-tbody').innerHTML = '<tr><td colspan="9" style="color:#ef4444">Hiba a betöltés során</td></tr>';
   }
@@ -1127,11 +1141,13 @@ function renderDetail(sz, beadasok) {
   } else if (sz.statusz === 'aktiv') {
     actions.innerHTML = `
       <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
+      ${ujrapontozGomb(sz.id)}
       <button class="btn btn-danger btn-sm" onclick="lezarSzamonkeres(${sz.id})"><i class="fas fa-lock"></i> Lezárás</button>`;
   } else if (sz.statusz === 'lezart') {
     actions.innerHTML = `
       <button class="btn btn-success btn-sm" onclick="kuldjEredmenyek(${sz.id})"><i class="fas fa-paper-plane"></i> Eredmények kiadása</button>
-      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>`;
+      <button class="btn btn-ghost btn-sm" onclick="openDetail(${sz.id})"><i class="fas fa-rotate-right"></i> Frissítés</button>
+      ${ujrapontozGomb(sz.id)}`;
   } else {
     actions.innerHTML = `<span style="color:#fcd34d;font-size:0.85rem"><i class="fas fa-check-circle"></i> Eredmények kiadva</span>`;
   }
@@ -1151,7 +1167,7 @@ function renderDetail(sz, beadasok) {
       <td><div style="font-weight:600">${escH(b.tanuloNev)}</div><div style="font-size:0.75rem;color:#64748b">${escH(b.tanuloEmail)}</div></td>
       <td>${escH(b.osztaly||'')}${b.csoport?'/'+escH(b.csoport):''}</td>
       <td style="font-size:0.82rem">${escH(b.feladatId)}</td>
-      <td style="text-align:center">${b.autoPont}</td>
+      <td style="text-align:center" class="auto-cell" id="auto-cell-${b.id}" title="${escH(autoCellTitle(b))}">${autoCellHtml(b)}</td>
       <td style="text-align:center">
         <input class="pont-input" type="number" min="0" max="${b.maxPont}" value="${vegPont}"
           id="pont-input-${b.id}"
@@ -1563,6 +1579,7 @@ function showAiModal(szoveg, beadasId, maxPont) {
 }
 
 async function kuldjEredmenyek(id) {
+  if (autoFut) { showDetailMsg('err', 'Várj egy kicsit: még fut az automatikus pontozás.'); return; }
   if (!confirm('Kiadod az eredményeket? A tanulók látni fogják a pontjaikat és a jegyüket.')) return;
   try {
     const res = await authFetch(`${API}/api/szamonkeres/${id}/kuldj`, {method:'PATCH'});
@@ -1590,6 +1607,113 @@ document.getElementById('detail-modal').addEventListener('click', e => { if(e.ta
 // ── Monaco konfiguráció ───────────────────────────────────────────────────────
 if (typeof require !== 'undefined') {
   require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+}
+
+// ── Automatikus pontozás (mint az ágazati alapvizsgán) ───────────────────────
+// A feladatbank (feladatok.txt) feladatainál a „Pontozas:” sorok a szempontok, mindegyik 1 pont.
+// A pontot ez az oldal számolja ki (a tanuló nem küldheti), és a szerverre menti „Auto pont”-ként.
+// A „Végleges pont” mezőben Réka bármikor felülírhatja; a kézi pontot a gép nem írja át.
+let autoFut = false;
+let autoRunner = null;
+let szempontCache = null;
+
+async function loadSzempontok() {
+  if (szempontCache) return szempontCache;
+  const res = await fetch('feladatok.txt?v=' + Date.now());
+  if (!res.ok) throw new Error('feladatok.txt');
+  szempontCache = SzamPontozo.feladatSzempontok(await res.text());
+  return szempontCache;
+}
+
+function beadasFeladat(b) {
+  const m = /^r_(\d+)$/.exec(b?.feladatId || '');
+  if (!m || !szempontCache) return null;
+  const f = szempontCache[parseInt(m[1])];
+  return f && f.criteria.length ? f : null;
+}
+
+function autoReszletek(b) {
+  if (!b || !b.autoReszletek) return null;
+  try { return JSON.parse(b.autoReszletek); } catch { return null; }
+}
+
+function autoCellHtml(b) {
+  const r = autoReszletek(b);
+  if (r) return `${b.autoPont}<span class="auto-jel">(${r.filter(x => x.ok).length}/${r.length})</span>`;
+  if (b.kod && /^r_\d+$/.test(b.feladatId || '') && currentSzamonkeres?.statusz !== 'kiadva')
+    return '<i class="fas fa-spinner fa-spin" style="color:#64748b"></i>';
+  return b.autoPont ? String(b.autoPont) : '–';
+}
+
+function autoCellTitle(b) {
+  const r = autoReszletek(b);
+  if (!r) return 'Nincs automatikus pontozás (nem feladatbanki feladat vagy még nem futott le)';
+  return r.map(x => (x.ok ? '✓ ' : '✗ ') + x.c).join('\n');
+}
+
+function ujrapontozGomb(id) {
+  return `<button class="btn btn-ghost btn-sm" onclick="autoPontozas(${id}, true)" title="A feladatbank szempontjai alapján újraszámolja az Auto pontot. A kézzel adott pontot nem írja át."><i class="fas fa-wand-magic-sparkles"></i> Újrapontozás</button>`;
+}
+
+function autoAllapot(txt) { document.getElementById('auto-allapot').innerHTML = txt || ''; }
+
+async function autoPontozas(szId, mindet) {
+  if (autoFut || !currentSzamonkeres || currentSzamonkeres.id !== szId) return;
+  if (currentSzamonkeres.statusz === 'kiadva') { autoAllapot(''); return; }
+  try { await loadSzempontok(); } catch { autoAllapot('<i class="fas fa-triangle-exclamation" style="color:#fca5a5"></i> A feladatbank nem tölthető be, az automatikus pontozás most kimarad.'); return; }
+  const lista = allBeadasok.filter(b => b.kod && beadasFeladat(b) && (mindet || !b.autoReszletek));
+  allBeadasok.forEach(b => { if (!lista.includes(b) && !b.autoReszletek) { const c = document.getElementById(`auto-cell-${b.id}`); if (c) c.innerHTML = autoCellHtml({ ...b, kod: '' }); } });
+  if (!lista.length) { autoAllapot(''); return; }
+  if (!window.TPyRunner) { autoAllapot('A Python futtató nem érhető el.'); return; }
+  if (!autoRunner) autoRunner = TPyRunner.createRunner({ workerUrl: 'tananyag/pyworker.js?v=1', idleTimeout: 10 * 60 * 1000 });
+  autoFut = true;
+  let kesz = 0, hiba = false;
+  try {
+    for (const b of lista) {
+      if (!currentSzamonkeres || currentSzamonkeres.id !== szId) break; // közben bezárta / másikat nyitott
+      autoAllapot(`<i class="fas fa-spinner fa-spin"></i> Automatikus pontozás: ${kesz + 1} / ${lista.length} (${escH(b.tanuloNev)})`);
+      let eredm;
+      try { eredm = await SzamPontozo.pontoz(autoRunner, b.kod, beadasFeladat(b), b.maxPont); }
+      catch { hiba = true; break; } // a Python nem töltődött be: nem adunk 0 pontot
+      const reszletek = JSON.stringify(eredm.reszletek);
+      const res = await authFetch(`${API}/api/szamonkeres/beadas/${b.id}/autopont`, {
+        method: 'PATCH', body: JSON.stringify({ pont: eredm.pont, reszletek })
+      }).catch(() => null);
+      if (!res || !res.ok) { hiba = true; break; }
+      b.autoPont = eredm.pont; b.autoReszletek = reszletek;
+      // ha közben Frissítés volt, az új listában is átírjuk
+      const uj = allBeadasok.find(x => x.id === b.id);
+      if (uj && uj !== b) { uj.autoPont = b.autoPont; uj.autoReszletek = reszletek; }
+      kesz++;
+      const cell = document.getElementById(`auto-cell-${b.id}`);
+      if (cell) { cell.innerHTML = autoCellHtml(b); cell.title = autoCellTitle(b); }
+      const inp = document.getElementById(`pont-input-${b.id}`);
+      if (inp && b.manualisPont == null) inp.value = b.autoPont;
+    }
+  } finally { autoFut = false; }
+  if (currentSzamonkeres && currentSzamonkeres.id === szId) {
+    const feladatok = JSON.parse(currentSzamonkeres.feladatok || '[]');
+    const ph = JSON.parse(currentSzamonkeres.ponthatarak || '{}');
+    const isSzambankAuto = feladatok.length === 1 && feladatok[0].tipus === 'szambank_auto';
+    renderOsszes(allBeadasok, feladatok, ph, isSzambankAuto ? 40 : feladatok.reduce((s, f) => s + (f.pont || 0), 0));
+    autoAllapot(hiba
+      ? `<i class="fas fa-triangle-exclamation" style="color:#fca5a5"></i> Az automatikus pontozás megszakadt (${kesz} / ${lista.length} kész). Nyomd meg a Frissítés gombot!`
+      : `<i class="fas fa-circle-check" style="color:#4ade80"></i> Automatikus pontozás kész: ${kesz} beadás. A Végleges pont mezőben felülírhatod.`);
+    // közben (Frissítés után) érkezett új beadások
+    if (!hiba && allBeadasok.some(b => b.kod && beadasFeladat(b) && !b.autoReszletek)) autoPontozas(szId, false);
+  }
+}
+
+function javSzempontokRajz(t) {
+  const el = document.getElementById('jav-szempontok');
+  const jav = document.getElementById('jav-javasolt');
+  const r = t.reszletek;
+  if (!r || !r.length) { el.style.display = 'none'; jav.textContent = ''; return; }
+  const jo = r.filter(x => x.ok).length;
+  el.innerHTML = `<div style="font-size:0.72rem;color:#64748b;margin-bottom:2px"><i class="fas fa-list-check"></i> Automatikus pontozás: ${jo} / ${r.length} szempont</div>` +
+    r.map(x => `<div class="sz-sor" title="${escH(x.c)}"><span class="${x.ok ? 'sz-ok' : 'sz-nem'}">${x.ok ? '✓' : '✗'}</span> ${escH(x.c)}</div>`).join('');
+  el.style.display = 'block';
+  jav.textContent = `(javasolt: ${t.autoPont})`;
 }
 
 // ── Javítás overlay ───────────────────────────────────────────────────────────
@@ -1637,6 +1761,7 @@ async function openJavitas(tanuloEmail) {
       kod: b?.kod || '',
       autoPont: b?.autoPont ?? 0,
       manualisPont: b?.manualisPont ?? null,
+      reszletek: autoReszletek(b),
     };
   });
 
@@ -1657,6 +1782,8 @@ async function openJavitas(tanuloEmail) {
   ).join('');
 
   document.getElementById('javitas-overlay').style.display = 'flex';
+  // A javGoTo az előző feladat mezőjét menti: induláskor ebben még üres/régi érték van, ne írja felül az 1. feladat pontját
+  document.getElementById('jav-pont-input').value = javState.scores[0];
   javGoTo(0);
   initJavMonaco();
   loadJavPyodide();
@@ -1682,6 +1809,7 @@ function javGoTo(idx) {
   document.getElementById('jav-pont-input').value = javState.scores[idx];
   document.getElementById('jav-pont-max').textContent = t.maxPont;
   document.getElementById('jav-output').textContent = '';
+  javSzempontokRajz(t);
 
   if (javState.monacoEditor) {
     javState.monacoEditor.setValue(t.kod || '# Nincs beadott kód');

@@ -456,9 +456,11 @@ public class BeadasItem
     public int     MaxPont        { get; set; }
     public string? Megjegyzes     { get; set; }
     public string  SubmittedAt    { get; set; } = "";
+    public string? AutoReszletek  { get; set; }   // JSON: [{c: szempont, ok: true/false}], null = még nincs pontozva
 }
 
 public record SetBeadasPontRequest(int Pont, string? Megjegyzes);
+public record SetBeadasAutoPontRequest(int Pont, string? Reszletek);
 
 // Számonkérés közbeni félkész munka (piszkozat) és mosdószünetek, tanulónként.
 // A piszkozat JSON: {"feladatId": "kód", ...}. Az időket a szerver méri, a kliens nem tudja átírni.

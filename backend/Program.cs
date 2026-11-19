@@ -1712,7 +1712,8 @@ app.MapPost("/api/szamonkeres/{id:int}/beadas", (int id, HttpContext ctx, Beadas
         TanuloEmail = tokenEmail,
         TanuloNev = $"{user.Vezeteknev} {user.Keresztnev}",
         Osztaly = user.Osztaly,
-        Csoport = user.Csoport
+        Csoport = user.Csoport,
+        AutoPont = 0 // az automatikus pontot az oktatói oldal számolja, a tanuló nem küldheti
     };
 
     var beadasId = db.SaveBeadas(id, normalizedReq);
@@ -1738,7 +1739,11 @@ app.MapGet("/api/szamonkeres/{id:int}/sajat", (int id, HttpContext ctx, Database
     if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
     var sz = db.GetSzamonkeres(id);
     if (sz == null) return Results.NotFound();
-    return Results.Ok(db.GetTanuloBeadasok(id, email));
+    var lista = db.GetTanuloBeadasok(id, email);
+    // A tanuló a pontot csak az eredmények kiadása után látja (addig az automatikus pont is rejtve)
+    if (!IsPrivilegedRole(tokenRole) && sz.Statusz != "kiadva")
+        foreach (var b in lista) { b.AutoPont = 0; b.ManualisPont = null; b.AutoReszletek = null; }
+    return Results.Ok(lista);
 });
 
 // ── Számonkérés közben: félkész munka mentése és mosdószünet (tanuló) ──────
@@ -1820,6 +1825,20 @@ app.MapPatch("/api/szamonkeres/beadas/{beadasId:int}/pont", (int beadasId, HttpC
 {
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var ok = db.SetBeadasPont(beadasId, req.Pont, req.Megjegyzes);
+    return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Automatikus pont mentése (oktató böngészője számolja a feladatbank szempontjaiból, mint az ágazati alapvizsgán)
+app.MapPatch("/api/szamonkeres/beadas/{beadasId:int}/autopont", (int beadasId, HttpContext ctx, SetBeadasAutoPontRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var szId = db.GetBeadasSzamonkeresId(beadasId);
+    if (szId == null) return Results.NotFound();
+    var sz = db.GetSzamonkeres(szId.Value);
+    if (sz == null) return Results.NotFound();
+    if (!sz.OktatoEmail.Equals(GetOktatoEmail(ctx), StringComparison.OrdinalIgnoreCase)) return NincsJog();
+    if (req.Reszletek != null && req.Reszletek.Length > 20000) return Results.BadRequest(new { error = "Túl hosszú" });
+    var ok = db.SetBeadasAutoPont(beadasId, req.Pont, req.Reszletek);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
 });
 

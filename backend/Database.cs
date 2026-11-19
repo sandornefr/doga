@@ -465,6 +465,8 @@ public partial class Database
                 PRIMARY KEY (szamonkeres_id, tanulo_email)
             );
         ");
+        // Automatikus pontozás részletei (szempontonként teljesült-e). NULL = még nincs automatikusan pontozva.
+        try { Exec(conn, "ALTER TABLE szamonkeres_beadas ADD COLUMN auto_reszletek TEXT"); } catch { }
     }
 
     // ── Számonkérés ───────────────────────────────────────────────────────────
@@ -616,7 +618,7 @@ public partial class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"SELECT id,szamonkeres_id,tanulo_email,tanulo_nev,osztaly,csoport,
-            feladat_id,kod,auto_pont,manualis_pont,max_pont,megjegyzes,submitted_at
+            feladat_id,kod,auto_pont,manualis_pont,max_pont,megjegyzes,submitted_at,auto_reszletek
             FROM szamonkeres_beadas WHERE szamonkeres_id=$id ORDER BY submitted_at DESC";
         cmd.Parameters.AddWithValue("$id", szamonkeresId);
         return ReadBeadasok(cmd);
@@ -627,7 +629,7 @@ public partial class Database
         using var conn = Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"SELECT id,szamonkeres_id,tanulo_email,tanulo_nev,osztaly,csoport,
-            feladat_id,kod,auto_pont,manualis_pont,max_pont,megjegyzes,submitted_at
+            feladat_id,kod,auto_pont,manualis_pont,max_pont,megjegyzes,submitted_at,auto_reszletek
             FROM szamonkeres_beadas WHERE szamonkeres_id=$id AND LOWER(tanulo_email)=LOWER($email)";
         cmd.Parameters.AddWithValue("$id",    szamonkeresId);
         cmd.Parameters.AddWithValue("$email", email);
@@ -676,6 +678,32 @@ public partial class Database
         cmd.Parameters.AddWithValue("$m",   (object?)megjegyzes ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$id",  beadasId);
         return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // Automatikus pontozás eredménye (oktató böngészője számolja a feladatbank szempontjaiból).
+    // A kézi pontot NEM írja felül; a pont 0 és a feladat max. pontja közé kerül.
+    public bool SetBeadasAutoPont(int beadasId, int pont, string? reszletek)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"UPDATE szamonkeres_beadas
+            SET auto_pont = MAX(0, MIN($p, max_pont)), auto_reszletek = $r
+            WHERE id=$id";
+        cmd.Parameters.AddWithValue("$p",  pont);
+        cmd.Parameters.AddWithValue("$r",  (object?)reszletek ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$id", beadasId);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    // Melyik számonkéréshez tartozik a beadás (jogosultság-ellenőrzéshez)
+    public int? GetBeadasSzamonkeresId(int beadasId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT szamonkeres_id FROM szamonkeres_beadas WHERE id=$id";
+        cmd.Parameters.AddWithValue("$id", beadasId);
+        var v = cmd.ExecuteScalar();
+        return v == null || v is DBNull ? null : Convert.ToInt32(v);
     }
 
     public bool SetSzamonkeresStatusz(int id, string statusz, string oktatoEmail)
@@ -882,7 +910,8 @@ public partial class Database
                 ManualisPont  = r.IsDBNull(9)  ? null : r.GetInt32(9),
                 MaxPont       = r.GetInt32(10),
                 Megjegyzes    = r.IsDBNull(11) ? null : r.GetString(11),
-                SubmittedAt   = r.GetString(12)
+                SubmittedAt   = r.GetString(12),
+                AutoReszletek = r.IsDBNull(13) ? null : r.GetString(13)
             });
         return list;
     }

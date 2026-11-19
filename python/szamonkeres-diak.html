@@ -833,8 +833,9 @@ function diakGoTo(idx) {
   const sav = document.getElementById('diak-beadott-sav');
   if (t.beadva) {
     const b = t.beadas;
+    // Pontot csak az eredmények kiadása után mutatunk (addig a tanár javít)
     const pont = b?.manualisPont != null ? b.manualisPont : b?.autoPont;
-    const pontSzov = pont != null ? ` · ${pont} / ${t.pont} pont` : '';
+    const pontSzov = pont != null && diakState.szamonkeres?.statusz === 'kiadva' ? ` · ${pont} / ${t.pont} pont` : '';
     sav.style.display = 'flex';
     sav.innerHTML = `<i class="fas fa-circle-check"></i> Beadva${pontSzov}`;
   } else {
