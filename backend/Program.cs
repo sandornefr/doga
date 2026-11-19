@@ -1633,7 +1633,7 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
             if (System.Text.Json.Nodes.JsonNode.Parse(m.Piszkozat) is System.Text.Json.Nodes.JsonObject o)
                 foreach (var kv in o)
                 {
-                    var kod = kv.Value?.GetValueKind() == System.Text.Json.JsonValueKind.String ? kv.Value!.GetValue<string>() : null;
+                    string? kod = null; if (kv.Value is System.Text.Json.Nodes.JsonValue jv && jv.TryGetValue<string>(out var ks)) kod = ks;
                     if (string.IsNullOrWhiteSpace(kod)) continue;
                     if (beadasok.Any(b => b.FeladatId == kv.Key && b.TanuloEmail.Equals(m.TanuloEmail, StringComparison.OrdinalIgnoreCase))) continue;
                     beNemAdott.Add(new { tanuloEmail = m.TanuloEmail, tanuloNev = m.TanuloNev, osztaly = m.Osztaly, csoport = m.Csoport, feladatId = kv.Key, kod, mentveAt = m.MentveAt });
@@ -1863,8 +1863,8 @@ app.MapPost("/api/szamonkeres/{id:int}/piszkozat-beadas", (int id, HttpContext c
     try
     {
         if (System.Text.Json.Nodes.JsonNode.Parse(m.Piszkozat) is System.Text.Json.Nodes.JsonObject o
-            && o[req.FeladatId] is System.Text.Json.Nodes.JsonValue v && v.GetValueKind() == System.Text.Json.JsonValueKind.String)
-            kod = v.GetValue<string>();
+            && o[req.FeladatId] is System.Text.Json.Nodes.JsonValue v && v.TryGetValue<string>(out var vs))
+            kod = vs;
     }
     catch { }
     if (string.IsNullOrWhiteSpace(kod)) return Results.NotFound(new { error = "Nincs mentett kód ehhez a feladathoz" });
