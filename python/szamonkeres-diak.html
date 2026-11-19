@@ -673,6 +673,10 @@ function openDiakOverlay(sz) {
   // Státusz badge + timer
   document.getElementById('szam-status-badge').style.display = 'inline-block';
   munkaReset(sz.id);
+  // Az idő a vizsga fejlécében látszódjon (különben az overlay eltakarja)
+  const timerEl0 = document.getElementById('diak-timer');
+  const pyStat0 = document.getElementById('diak-pyodide-status');
+  if (timerEl0 && pyStat0 && timerEl0.parentElement !== pyStat0.parentElement) pyStat0.parentElement.insertBefore(timerEl0, pyStat0);
   startTimer(sz);
   installPasteGuard();
 
