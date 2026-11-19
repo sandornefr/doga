@@ -450,6 +450,20 @@ public partial class Database
                 megjegyzes       TEXT,
                 submitted_at     TEXT DEFAULT (datetime('now','localtime'))
             );
+            CREATE TABLE IF NOT EXISTS szamonkeres_munka (
+                szamonkeres_id   INTEGER NOT NULL,
+                tanulo_email     TEXT NOT NULL,
+                tanulo_nev       TEXT,
+                osztaly          TEXT,
+                csoport          TEXT,
+                piszkozat        TEXT NOT NULL DEFAULT '{}',
+                mentve_at        TEXT,
+                szunet_kezdet    TEXT,
+                szunet_ossz_mp   INTEGER NOT NULL DEFAULT 0,
+                szunet_db        INTEGER NOT NULL DEFAULT 0,
+                szunetek         TEXT NOT NULL DEFAULT '[]',
+                PRIMARY KEY (szamonkeres_id, tanulo_email)
+            );
         ");
     }
 
@@ -706,6 +720,148 @@ public partial class Database
             });
         }
         return list;
+    }
+
+    // ── Számonkérés: félkész munka mentése és mosdószünet ─────────────────────
+    // Egy szünetből legfeljebb ennyi perc hosszabbítja meg a tanuló idejét.
+    public const int SzunetMaxPerc = 10;
+    const string MunkaIdoFormat = "yyyy-MM-dd HH:mm:ss";
+
+    const string MunkaSelect = @"SELECT szamonkeres_id,tanulo_email,COALESCE(tanulo_nev,''),osztaly,csoport,
+            piszkozat,mentve_at,szunet_kezdet,szunet_ossz_mp,szunet_db,szunetek
+            FROM szamonkeres_munka";
+
+    static int MunkaElteltMp(string? kezdet)
+    {
+        if (string.IsNullOrEmpty(kezdet)) return 0;
+        if (!DateTime.TryParse(kezdet, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var k)) return 0;
+        return Math.Max(0, (int)(DateTime.Now - k).TotalSeconds);
+    }
+
+    static List<SzamonkeresMunkaItem> ReadMunkak(SqliteCommand cmd)
+    {
+        var list = new List<SzamonkeresMunkaItem>();
+        using var r = cmd.ExecuteReader();
+        while (r.Read())
+        {
+            var m = new SzamonkeresMunkaItem {
+                SzamonkeresId = r.GetInt32(0),
+                TanuloEmail   = r.GetString(1),
+                TanuloNev     = r.GetString(2),
+                Osztaly       = r.IsDBNull(3) ? null : r.GetString(3),
+                Csoport       = r.IsDBNull(4) ? null : r.GetString(4),
+                Piszkozat     = r.GetString(5),
+                MentveAt      = r.IsDBNull(6) ? null : r.GetString(6),
+                SzunetKezdet  = r.IsDBNull(7) ? null : r.GetString(7),
+                SzunetOsszMp  = r.GetInt32(8),
+                SzunetDb      = r.GetInt32(9),
+                Szunetek      = r.GetString(10)
+            };
+            m.AktivSzunetMp = MunkaElteltMp(m.SzunetKezdet);
+            list.Add(m);
+        }
+        return list;
+    }
+
+    public SzamonkeresMunkaItem? GetMunka(int szamonkeresId, string email)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = MunkaSelect + " WHERE szamonkeres_id=$id AND tanulo_email=$email";
+        cmd.Parameters.AddWithValue("$id", szamonkeresId);
+        cmd.Parameters.AddWithValue("$email", email.ToLowerInvariant());
+        return ReadMunkak(cmd).FirstOrDefault();
+    }
+
+    // Oktatói nézethez: piszkozat nélkül (az nem kell, és nagy lehet).
+    public List<SzamonkeresMunkaItem> GetMunkak(int szamonkeresId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = MunkaSelect + " WHERE szamonkeres_id=$id ORDER BY tanulo_nev";
+        cmd.Parameters.AddWithValue("$id", szamonkeresId);
+        var list = ReadMunkak(cmd);
+        foreach (var m in list) m.Piszkozat = "";
+        return list;
+    }
+
+    void MunkaSorBiztosit(SqliteConnection conn, int szamonkeresId, string email, string nev, string? osztaly, string? csoport)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"INSERT INTO szamonkeres_munka (szamonkeres_id,tanulo_email,tanulo_nev,osztaly,csoport)
+            VALUES ($id,$email,$nev,$osz,$cso)
+            ON CONFLICT(szamonkeres_id,tanulo_email) DO UPDATE SET tanulo_nev=$nev,osztaly=$osz,csoport=$cso";
+        cmd.Parameters.AddWithValue("$id", szamonkeresId);
+        cmd.Parameters.AddWithValue("$email", email.ToLowerInvariant());
+        cmd.Parameters.AddWithValue("$nev", nev);
+        cmd.Parameters.AddWithValue("$osz", (object?)osztaly ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$cso", (object?)csoport ?? DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    public SzamonkeresMunkaItem? SavePiszkozat(int szamonkeresId, string email, string nev, string? osztaly, string? csoport, string piszkozat)
+    {
+        using (var conn = Open())
+        {
+            MunkaSorBiztosit(conn, szamonkeresId, email, nev, osztaly, csoport);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"UPDATE szamonkeres_munka SET piszkozat=$p, mentve_at=$t
+                WHERE szamonkeres_id=$id AND tanulo_email=$email";
+            cmd.Parameters.AddWithValue("$p", piszkozat);
+            cmd.Parameters.AddWithValue("$t", DateTime.Now.ToString(MunkaIdoFormat));
+            cmd.Parameters.AddWithValue("$id", szamonkeresId);
+            cmd.Parameters.AddWithValue("$email", email.ToLowerInvariant());
+            cmd.ExecuteNonQuery();
+        }
+        return GetMunka(szamonkeresId, email);
+    }
+
+    // Szünet kezdete. Ha már szünetel, nem kezd újat (a régi kezdet marad).
+    public SzamonkeresMunkaItem? SzunetKezd(int szamonkeresId, string email, string nev, string? osztaly, string? csoport)
+    {
+        using (var conn = Open())
+        {
+            MunkaSorBiztosit(conn, szamonkeresId, email, nev, osztaly, csoport);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"UPDATE szamonkeres_munka SET szunet_kezdet=$t, szunet_db=szunet_db+1
+                WHERE szamonkeres_id=$id AND tanulo_email=$email AND szunet_kezdet IS NULL";
+            cmd.Parameters.AddWithValue("$t", DateTime.Now.ToString(MunkaIdoFormat));
+            cmd.Parameters.AddWithValue("$id", szamonkeresId);
+            cmd.Parameters.AddWithValue("$email", email.ToLowerInvariant());
+            cmd.ExecuteNonQuery();
+        }
+        return GetMunka(szamonkeresId, email);
+    }
+
+    // Szünet vége: a szerver méri a hosszát; legfeljebb SzunetMaxPerc percet ír jóvá.
+    public SzamonkeresMunkaItem? SzunetVege(int szamonkeresId, string email)
+    {
+        var m = GetMunka(szamonkeresId, email);
+        if (m == null || string.IsNullOrEmpty(m.SzunetKezdet)) return m;
+        var mp = MunkaElteltMp(m.SzunetKezdet);
+        var jovairt = Math.Min(mp, SzunetMaxPerc * 60);
+        var lista = new System.Text.Json.Nodes.JsonArray();
+        try { if (System.Text.Json.Nodes.JsonNode.Parse(m.Szunetek) is System.Text.Json.Nodes.JsonArray a) lista = a; } catch { }
+        lista.Add(new System.Text.Json.Nodes.JsonObject {
+            ["kezd"] = m.SzunetKezdet,
+            ["veg"]  = DateTime.Now.ToString(MunkaIdoFormat),
+            ["mp"]   = mp
+        });
+        using (var conn = Open())
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"UPDATE szamonkeres_munka
+                SET szunet_kezdet=NULL, szunet_ossz_mp=szunet_ossz_mp+$j, szunetek=$l
+                WHERE szamonkeres_id=$id AND tanulo_email=$email AND szunet_kezdet=$k";
+            cmd.Parameters.AddWithValue("$j", jovairt);
+            cmd.Parameters.AddWithValue("$l", lista.ToJsonString());
+            cmd.Parameters.AddWithValue("$id", szamonkeresId);
+            cmd.Parameters.AddWithValue("$email", email.ToLowerInvariant());
+            cmd.Parameters.AddWithValue("$k", m.SzunetKezdet);
+            cmd.ExecuteNonQuery();
+        }
+        return GetMunka(szamonkeresId, email);
     }
 
     private static List<BeadasItem> ReadBeadasok(SqliteCommand cmd)
@@ -1243,6 +1399,7 @@ public partial class Database
         ("havijegyek",                "email"),
         ("quiz_results",              "email"),
         ("szamonkeres_beadas",        "tanulo_email"),
+        ("szamonkeres_munka",         "tanulo_email"),
     };
 
     // Csak tényleg végzős, idén NEM léptetett tanulót töröl (13. / 2/14.) – egy rossz email-lista

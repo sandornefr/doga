@@ -428,6 +428,17 @@
     <!-- Feladatok összefoglaló -->
     <div id="detail-feladatok" style="margin-bottom:16px"></div>
 
+    <!-- Mosdószünetek és mentések (tanulónként) -->
+    <div id="munka-section" style="display:none;margin-bottom:16px">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:6px"><i class="fas fa-restroom" style="color:#fcd34d"></i> Mosdószünetek és mentések</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tanuló</th><th>Csoport</th><th>Utolsó mentés</th><th>Szünetek</th><th>Szünet összesen</th><th>Hosszabbítás</th></tr></thead>
+          <tbody id="munka-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Beadások táblázata -->
     <div style="font-weight:700;font-size:0.9rem;margin-bottom:6px">Beadások</div>
     <div class="table-wrap">
@@ -1076,6 +1087,7 @@ async function openDetail(id) {
     currentSzamonkeres = data.szamonkeres;
     allBeadasok = data.beadasok || [];
     renderDetail(data.szamonkeres, allBeadasok);
+    renderMunkak(data.munkak || [], data.szunetMaxPerc || 10);
   } catch(e) {
     document.getElementById('detail-tbody').innerHTML = '<tr><td colspan="9" style="color:#ef4444">Hiba a betöltés során</td></tr>';
   }
@@ -1160,6 +1172,40 @@ function renderDetail(sz, beadasok) {
 
   // Összesített eredmények
   renderOsszes(beadasok, feladatok, ph, maxOssz);
+}
+
+// Mosdószünetek: a szerver méri, a tanuló nem tudja átírni.
+// Szünetenként legfeljebb szunetMaxPerc perc hosszabbítja meg a tanuló idejét.
+function renderMunkak(munkak, maxPerc) {
+  const sec = document.getElementById('munka-section');
+  const lista = munkak.filter(m => m.szunetDb > 0 || m.mentveAt);
+  if (!lista.length) { sec.style.display = 'none'; return; }
+  const perc = mp => {
+    const m = Math.floor(mp / 60), s = mp % 60;
+    return m ? `${m} p ${s} mp` : `${s} mp`;
+  };
+  document.getElementById('munka-tbody').innerHTML = lista.map(m => {
+    let szunetek = [];
+    try { szunetek = JSON.parse(m.szunetek || '[]'); } catch {}
+    const lezartMp = szunetek.reduce((a, x) => a + (x.mp || 0), 0);
+    const osszMp = lezartMp + (m.szunetKezdet ? m.aktivSzunetMp : 0);
+    const reszlet = szunetek.map(x => {
+      const tul = (x.mp || 0) > maxPerc * 60;
+      return `<span style="color:${tul ? '#fca5a5' : '#94a3b8'}">${escH((x.kezd || '').substring(11, 16))} (${perc(x.mp || 0)})</span>`;
+    }).join(', ');
+    const most = m.szunetKezdet
+      ? `<div style="margin-top:3px;font-weight:700;color:#fcd34d"><i class="fas fa-circle" style="font-size:0.5rem;vertical-align:middle"></i> Most szünetel: ${perc(m.aktivSzunetMp)}</div>`
+      : '';
+    return `<tr${m.szunetKezdet ? ' style="background:#2a1a00"' : ''}>
+      <td><div style="font-weight:600">${escH(m.tanuloNev)}</div><div style="font-size:0.75rem;color:#64748b">${escH(m.tanuloEmail)}</div></td>
+      <td>${escH(m.osztaly || '')}${m.csoport ? '/' + escH(m.csoport) : ''}</td>
+      <td style="font-size:0.82rem">${escH((m.mentveAt || '–').substring(11, 16) || '–')}</td>
+      <td style="font-size:0.8rem"><strong>${m.szunetDb} db</strong>${reszlet ? '<br>' + reszlet : ''}${most}</td>
+      <td style="text-align:center;font-weight:700;color:${osszMp > maxPerc * 60 ? '#fca5a5' : '#e0e0e0'}">${perc(osszMp)}</td>
+      <td style="text-align:center">+${perc(m.szunetOsszMp)}</td>
+    </tr>`;
+  }).join('');
+  sec.style.display = 'block';
 }
 
 function renderOsszes(beadasok, feladatok, ph, maxOssz) {

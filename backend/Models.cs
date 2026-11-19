@@ -460,6 +460,26 @@ public class BeadasItem
 
 public record SetBeadasPontRequest(int Pont, string? Megjegyzes);
 
+// Számonkérés közbeni félkész munka (piszkozat) és mosdószünetek, tanulónként.
+// A piszkozat JSON: {"feladatId": "kód", ...}. Az időket a szerver méri, a kliens nem tudja átírni.
+public record PiszkozatRequest(string Piszkozat);
+
+public class SzamonkeresMunkaItem
+{
+    public int     SzamonkeresId  { get; set; }
+    public string  TanuloEmail    { get; set; } = "";
+    public string  TanuloNev      { get; set; } = "";
+    public string? Osztaly        { get; set; }
+    public string? Csoport        { get; set; }
+    public string  Piszkozat      { get; set; } = "{}";
+    public string? MentveAt       { get; set; }
+    public string? SzunetKezdet   { get; set; }  // ha nem null: most szünetel
+    public int     SzunetOsszMp   { get; set; }  // a lezárt szünetekből jóváírt idő (mp)
+    public int     SzunetDb       { get; set; }
+    public string  Szunetek       { get; set; } = "[]"; // [{kezd, veg, mp}]
+    public int     AktivSzunetMp  { get; set; }  // a folyamatban lévő szünet eddigi hossza (mp)
+}
+
 // ── Távközlési technikus vizsga ───────────────────────────────────────────────
 
 public record TavolkozlesValaszDto(

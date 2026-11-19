@@ -1623,7 +1623,8 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
     var email = GetOktatoEmail(ctx);
     if (!sz.OktatoEmail.Equals(email, StringComparison.OrdinalIgnoreCase)) return NincsJog();
     var beadasok = db.GetBeadasok(id);
-    return Results.Ok(new { szamonkeres = sz, beadasok });
+    var munkak = db.GetMunkak(id); // mosdószünetek, utolsó mentés (piszkozat nélkül)
+    return Results.Ok(new { szamonkeres = sz, beadasok, munkak, szunetMaxPerc = Database.SzunetMaxPerc });
 });
 
 // Számonkérés indítása (oktató → mindenki polling-gal kapja)
@@ -1738,6 +1739,80 @@ app.MapGet("/api/szamonkeres/{id:int}/sajat", (int id, HttpContext ctx, Database
     var sz = db.GetSzamonkeres(id);
     if (sz == null) return Results.NotFound();
     return Results.Ok(db.GetTanuloBeadasok(id, email));
+});
+
+// ── Számonkérés közben: félkész munka mentése és mosdószünet (tanuló) ──────
+// Csak a saját, neki kiadott, aktív számonkérésén. Az időket a szerver méri.
+(IResult? Hiba, string Email, UserRecord? User) TanuloAktivSzamonkeres(HttpContext ctx, int id, Database db)
+{
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
+    if (!valid) return (Results.Unauthorized(), "", null);
+    if (IsPrivilegedRole(tokenRole)) return (NincsJog(), "", null);
+    var email = NormalizeSchoolEmail(tokenIdentity);
+    if (string.IsNullOrEmpty(email)) return (Results.Unauthorized(), "", null);
+    var user = db.GetUserByEmail(email);
+    if (user == null || !string.Equals(user.Szerep, "tanulo", StringComparison.OrdinalIgnoreCase))
+        return (NincsJog(), "", null);
+    var sz = db.GetSzamonkeres(id);
+    if (sz == null || sz.Statusz != "aktiv")
+        return (Results.BadRequest(new { error = "Nem aktív számonkérés" }), "", null);
+    var assigned = db.GetAktivSzamonkeresForStudent(email, user.Osztaly, user.Csoport).Any(x => x.Id == id);
+    if (!assigned) return (NincsJog(), "", null);
+    return (null, email, user);
+}
+
+object MunkaValasz(SzamonkeresMunkaItem? m) => new {
+    piszkozat     = m?.Piszkozat ?? "{}",
+    mentveAt      = m?.MentveAt,
+    szunetel      = !string.IsNullOrEmpty(m?.SzunetKezdet),
+    szunetOsszMp  = m?.SzunetOsszMp ?? 0,
+    aktivSzunetMp = m?.AktivSzunetMp ?? 0,
+    szunetDb      = m?.SzunetDb ?? 0,
+    szunetMaxPerc = Database.SzunetMaxPerc
+};
+
+// Saját félkész munka + szünet állapota (visszatöltéshez)
+app.MapGet("/api/szamonkeres/{id:int}/munka", (int id, HttpContext ctx, Database db) =>
+{
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    if (IsPrivilegedRole(tokenRole)) return Results.Ok(MunkaValasz(null));
+    var email = NormalizeSchoolEmail(tokenIdentity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(MunkaValasz(db.GetMunka(id, email)));
+});
+
+// Mentés gomb (és automatikus mentés): a be nem adott feladatok kódja
+app.MapPut("/api/szamonkeres/{id:int}/munka", (int id, HttpContext ctx, PiszkozatRequest req, Database db) =>
+{
+    var (hiba, email, user) = TanuloAktivSzamonkeres(ctx, id, db);
+    if (hiba != null) return hiba;
+    var p = req.Piszkozat ?? "{}";
+    if (p.Length > 200_000) return Results.BadRequest(new { error = "Túl nagy a mentés" });
+    try { if (System.Text.Json.Nodes.JsonNode.Parse(p) is not System.Text.Json.Nodes.JsonObject) throw new Exception(); }
+    catch { return Results.BadRequest(new { error = "Hibás mentés" }); }
+    var m = db.SavePiszkozat(id, email, $"{user!.Vezeteknev} {user.Keresztnev}", user.Osztaly, user.Csoport, p);
+    return Results.Ok(MunkaValasz(m));
+});
+
+// Mosdószünet kezdete / vége
+app.MapPost("/api/szamonkeres/{id:int}/szunet/kezd", (int id, HttpContext ctx, Database db) =>
+{
+    var (hiba, email, user) = TanuloAktivSzamonkeres(ctx, id, db);
+    if (hiba != null) return hiba;
+    var m = db.SzunetKezd(id, email, $"{user!.Vezeteknev} {user.Keresztnev}", user.Osztaly, user.Csoport);
+    return Results.Ok(MunkaValasz(m));
+});
+
+app.MapPost("/api/szamonkeres/{id:int}/szunet/vege", (int id, HttpContext ctx, Database db) =>
+{
+    // A szünet végét lezárt számonkérésnél is engedjük, hogy a hossza rögzüljön.
+    var (valid, tokenIdentity, tokenRole) = InspectAuthContext(ctx);
+    if (!valid) return Results.Unauthorized();
+    if (IsPrivilegedRole(tokenRole)) return NincsJog();
+    var email = NormalizeSchoolEmail(tokenIdentity);
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+    return Results.Ok(MunkaValasz(db.SzunetVege(id, email)));
 });
 
 // Beadás manuális pontjának beállítása (oktató)
