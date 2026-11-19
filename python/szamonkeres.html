@@ -454,6 +454,9 @@
       </div>
     </div>
 
+    <!-- Megírt, de be nem adott feladatok (automatikus mentésből) -->
+    <div id="piszkozat-sav" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:8px;background:#2a1a00;border:1px solid #b45309;color:#fcd34d;font-size:0.85rem"></div>
+
     <!-- Beadások táblázata -->
     <div style="font-weight:700;font-size:0.9rem;margin-bottom:6px">Beadások</div>
     <div class="table-wrap">
@@ -1113,6 +1116,7 @@ async function openDetail(id) {
     allBeadasok = data.beadasok || [];
     renderDetail(data.szamonkeres, allBeadasok);
     renderMunkak(data.munkak || [], data.szunetMaxPerc || 10);
+    renderBeNemAdott(data.beNemAdott || []);
     autoPontozas(id, false);
   } catch(e) {
     document.getElementById('detail-tbody').innerHTML = '<tr><td colspan="9" style="color:#ef4444">Hiba a betöltés során</td></tr>';
@@ -1665,6 +1669,52 @@ function autoCellTitle(b) {
 
 function ujrapontozGomb(id) {
   return `<button class="btn btn-ghost btn-sm" onclick="autoPontozas(${id}, true)" title="A feladatbank szempontjai alapján újraszámolja az Auto pontot. A kézzel adott pontot nem írja át."><i class="fas fa-wand-magic-sparkles"></i> Újrapontozás</button>`;
+}
+
+// ── Megírt, de be nem adott feladatok ───────────────────────────────────────
+// A tanuló munkája gépelés közben automatikusan mentődik. Ha elfelejtette beadni,
+// lezárás után egy gombbal beadható (a kódot a szerver veszi a mentésből).
+let beNemAdottLista = [];
+
+function feladatMaxPont(feladatId) {
+  const feladatok = JSON.parse(currentSzamonkeres?.feladatok || '[]');
+  const r = /^r_(\d+)$/.exec(feladatId);
+  if (r) return feladatok.find(f => f.tipus === 'rendszer' && f.feladat_szam === parseInt(r[1]))?.pont || 0;
+  const s = /^s_(\d+)$/.exec(feladatId);
+  if (s) return feladatok[parseInt(s[1])]?.pont || 0;
+  const b = /^S(\d+)_/.exec(feladatId); // automatikus kiosztás: S8_03 → 8 pont
+  return b ? parseInt(b[1]) : 0;
+}
+
+function renderBeNemAdott(lista) {
+  beNemAdottLista = lista;
+  const el = document.getElementById('piszkozat-sav');
+  if (!lista.length || currentSzamonkeres?.statusz === 'kiadva') { el.style.display = 'none'; return; }
+  const tanulok = {};
+  lista.forEach(x => { (tanulok[x.tanuloEmail] = tanulok[x.tanuloEmail] || { nev: x.tanuloNev, db: 0 }).db++; });
+  const nevek = Object.values(tanulok).map(t => `${escH(t.nev)} (${t.db})`).join(', ');
+  const st = currentSzamonkeres?.statusz;
+  el.innerHTML = `<i class="fas fa-triangle-exclamation"></i> <strong>Megírta, de nem adta be:</strong> ${nevek}` +
+    (st === 'lezart'
+      ? ` <button class="btn btn-sm" style="margin-left:8px;background:#b45309;color:#fff" onclick="beNemAdottBeadasa()"><i class="fas fa-paper-plane"></i> Mentett munkák beadása (${lista.length})</button>`
+      : ` <span style="color:#94a3b8">– a számonkérés lezárása után egy gombbal beadhatod őket.</span>`);
+  el.style.display = 'block';
+}
+
+async function beNemAdottBeadasa() {
+  if (!currentSzamonkeres || !beNemAdottLista.length) return;
+  if (!confirm(`Beadod a ${beNemAdottLista.length} megírt, de be nem adott feladatot? Az automatikus pontozás utána lefut rájuk.`)) return;
+  const id = currentSzamonkeres.id;
+  let jo = 0;
+  for (const x of beNemAdottLista) {
+    const res = await authFetch(`${API}/api/szamonkeres/${id}/piszkozat-beadas`, {
+      method: 'POST', body: JSON.stringify({ tanuloEmail: x.tanuloEmail, feladatId: x.feladatId, maxPont: feladatMaxPont(x.feladatId) })
+    }).catch(() => null);
+    if (res && res.ok) jo++;
+  }
+  const ossz = beNemAdottLista.length;
+  await openDetail(id);
+  showDetailMsg(jo === ossz ? 'ok' : 'err', `${jo} / ${ossz} mentett munka beadva.`);
 }
 
 function autoAllapot(txt) { document.getElementById('auto-allapot').innerHTML = txt || ''; }

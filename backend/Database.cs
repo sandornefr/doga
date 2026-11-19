@@ -802,6 +802,26 @@ public partial class Database
         return ReadMunkak(cmd).FirstOrDefault();
     }
 
+    // Oktatói nézethez: piszkozattal együtt (a be nem adott munkák kiszűréséhez)
+    public List<SzamonkeresMunkaItem> GetMunkakPiszkozattal(int szamonkeresId)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = MunkaSelect + " WHERE szamonkeres_id=$id ORDER BY tanulo_nev";
+        cmd.Parameters.AddWithValue("$id", szamonkeresId);
+        return ReadMunkak(cmd);
+    }
+
+    public void SetBeadasMegjegyzes(int beadasId, string megjegyzes)
+    {
+        using var conn = Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE szamonkeres_beadas SET megjegyzes=$m WHERE id=$id";
+        cmd.Parameters.AddWithValue("$m", megjegyzes);
+        cmd.Parameters.AddWithValue("$id", beadasId);
+        cmd.ExecuteNonQuery();
+    }
+
     // Oktatói nézethez: piszkozat nélkül (az nem kell, és nagy lehet).
     public List<SzamonkeresMunkaItem> GetMunkak(int szamonkeresId)
     {

@@ -465,6 +465,7 @@ public record SetBeadasAutoPontRequest(int Pont, string? Reszletek);
 // Számonkérés közbeni félkész munka (piszkozat) és mosdószünetek, tanulónként.
 // A piszkozat JSON: {"feladatId": "kód", ...}. Az időket a szerver méri, a kliens nem tudja átírni.
 public record PiszkozatRequest(string Piszkozat);
+public record PiszkozatBeadasRequest(string TanuloEmail, string FeladatId, int MaxPont);
 
 public class SzamonkeresMunkaItem
 {

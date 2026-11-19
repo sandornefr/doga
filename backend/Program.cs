@@ -1623,8 +1623,26 @@ app.MapGet("/api/szamonkeres/{id:int}", (int id, HttpContext ctx, Database db) =
     var email = GetOktatoEmail(ctx);
     if (!sz.OktatoEmail.Equals(email, StringComparison.OrdinalIgnoreCase)) return NincsJog();
     var beadasok = db.GetBeadasok(id);
-    var munkak = db.GetMunkak(id); // mosdószünetek, utolsó mentés (piszkozat nélkül)
-    return Results.Ok(new { szamonkeres = sz, beadasok, munkak, szunetMaxPerc = Database.SzunetMaxPerc });
+    var munkak = db.GetMunkakPiszkozattal(id);
+    // Megírt, de be nem adott feladatok (a tanuló automatikusan mentett munkájából)
+    var beNemAdott = new List<object>();
+    foreach (var m in munkak)
+    {
+        try
+        {
+            if (System.Text.Json.Nodes.JsonNode.Parse(m.Piszkozat) is System.Text.Json.Nodes.JsonObject o)
+                foreach (var kv in o)
+                {
+                    var kod = kv.Value?.GetValueKind() == System.Text.Json.JsonValueKind.String ? kv.Value!.GetValue<string>() : null;
+                    if (string.IsNullOrWhiteSpace(kod)) continue;
+                    if (beadasok.Any(b => b.FeladatId == kv.Key && b.TanuloEmail.Equals(m.TanuloEmail, StringComparison.OrdinalIgnoreCase))) continue;
+                    beNemAdott.Add(new { tanuloEmail = m.TanuloEmail, tanuloNev = m.TanuloNev, osztaly = m.Osztaly, csoport = m.Csoport, feladatId = kv.Key, kod, mentveAt = m.MentveAt });
+                }
+        }
+        catch { }
+        m.Piszkozat = ""; // a munkák listájában nem kell
+    }
+    return Results.Ok(new { szamonkeres = sz, beadasok, munkak, beNemAdott, szunetMaxPerc = Database.SzunetMaxPerc });
 });
 
 // Számonkérés indítása (oktató → mindenki polling-gal kapja)
@@ -1826,6 +1844,34 @@ app.MapPatch("/api/szamonkeres/beadas/{beadasId:int}/pont", (int beadasId, HttpC
     if (!ValidateOktato(ctx)) return Results.Unauthorized();
     var ok = db.SetBeadasPont(beadasId, req.Pont, req.Megjegyzes);
     return ok ? Results.Ok(new { success = true }) : Results.NotFound();
+});
+
+// Be nem adott, de automatikusan mentett munka beadása az oktató kérésére (lezárt számonkérésnél).
+// A kódot a szerver veszi a tanuló mentéséből, az oktató nem írhatja át.
+app.MapPost("/api/szamonkeres/{id:int}/piszkozat-beadas", (int id, HttpContext ctx, PiszkozatBeadasRequest req, Database db) =>
+{
+    if (!ValidateOktato(ctx)) return Results.Unauthorized();
+    var sz = db.GetSzamonkeres(id);
+    if (sz == null) return Results.NotFound();
+    if (!sz.OktatoEmail.Equals(GetOktatoEmail(ctx), StringComparison.OrdinalIgnoreCase)) return NincsJog();
+    if (sz.Statusz != "lezart") return Results.BadRequest(new { error = "Csak lezárt számonkérésnél lehet" });
+    var email = NormalizeSchoolEmail(req.TanuloEmail);
+    if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(req.FeladatId)) return Results.BadRequest(new { error = "Hiányzó adat" });
+    var m = db.GetMunka(id, email);
+    if (m == null) return Results.NotFound(new { error = "Nincs mentett munka" });
+    string? kod = null;
+    try
+    {
+        if (System.Text.Json.Nodes.JsonNode.Parse(m.Piszkozat) is System.Text.Json.Nodes.JsonObject o
+            && o[req.FeladatId] is System.Text.Json.Nodes.JsonValue v && v.GetValueKind() == System.Text.Json.JsonValueKind.String)
+            kod = v.GetValue<string>();
+    }
+    catch { }
+    if (string.IsNullOrWhiteSpace(kod)) return Results.NotFound(new { error = "Nincs mentett kód ehhez a feladathoz" });
+    if (db.BeadasExists(id, email, req.FeladatId)) return Results.Conflict(new { error = "Már be van adva" });
+    var beadasId = db.SaveBeadas(id, new BeadasCreateRequest(email, m.TanuloNev, m.Osztaly, m.Csoport, req.FeladatId, kod, 0, Math.Clamp(req.MaxPont, 0, 100)));
+    db.SetBeadasMegjegyzes(beadasId, "Nem adta be – mentett munkából");
+    return Results.Ok(new { success = true, id = beadasId });
 });
 
 // Automatikus pont mentése (oktató böngészője számolja a feladatbank szempontjaiból, mint az ágazati alapvizsgán)

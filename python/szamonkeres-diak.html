@@ -48,6 +48,9 @@
     .diak-nav-btn:hover{border-color:#3b82f6;color:#93c5fd}
     .diak-nav-btn.active{border-color:#3b82f6;background:#1e3a5f;color:#93c5fd}
     .diak-nav-btn.done{border-color:#15803d;color:#4ade80;background:#0a2a1a}
+    .diak-nav-btn.vazlat{border-color:#f59e0b;color:#fcd34d}
+    #diak-osszes-btn{padding:7px 16px;background:transparent;border:1px solid #1d4ed8;border-radius:8px;color:#93c5fd;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
+    #diak-osszes-btn:hover{background:#1e3a5f}
 
     #diak-overlay-topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #1f2937;background:#16213e;flex-shrink:0;min-height:52px}
     #diak-szam-cim{font-weight:700;font-size:0.9rem;color:#e0e0e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;flex-shrink:0}
@@ -187,7 +190,7 @@
     <div id="diak-szam-cim"></div>
     <div id="diak-nav"></div>
     <span id="diak-pyodide-status"></span>
-    <button id="diak-vissza-btn" onclick="closeDiakOverlay()" style="display:none;margin-left:6px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
+    <button id="diak-vissza-btn" onclick="kilepes()" style="display:none;margin-left:6px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
       <i class="fas fa-list"></i> Lista
     </button>
     <button onclick="closeDiakOverlay()" style="margin-left:4px;padding:4px 12px;background:transparent;border:1px solid #374151;border-radius:6px;color:#64748b;cursor:pointer;font-size:0.8rem;flex-shrink:0;white-space:nowrap">
@@ -268,6 +271,9 @@
       </button>
       <button id="diak-bekules-btn" onclick="diakBekules()">
         <i class="fas fa-paper-plane"></i> Beküldés
+      </button>
+      <button id="diak-osszes-btn" onclick="osszesBekules()" style="display:none" title="Minden megírt, még be nem adott feladatot bead">
+        <i class="fas fa-paper-plane"></i> Összes beadása
       </button>
     </div>
     <button id="diak-next-btn" onclick="diakNext()">
@@ -725,9 +731,58 @@ async function autoSubmitAll() {
   for (let i = 0; i < diakState.feladatok.length; i++) {
     if (!diakState.feladatok[i].beadva) {
       diakGoTo(i);  // betölti a draft-ot az editorba
-      await diakBekules();
+      await diakBekules(true);
     }
   }
+}
+
+// Megírt, de még be nem adott feladatok (sorszámmal)
+function beNemAdottak() {
+  const lista = [];
+  diakState.feladatok.forEach((f, i) => {
+    const kod = i === diakState.currentIdx && diakMonaco && !f.beadva ? diakMonaco.getValue() : diakState.drafts[i];
+    if (!f.beadva && kod && kod.trim()) lista.push(i);
+  });
+  return lista;
+}
+
+// „Összes beadása”: minden megírt feladatot bead, egymás után
+async function osszesBekules(kerdezes = true) {
+  const lista = beNemAdottak();
+  if (!lista.length) { alert('Nincs megírt, be nem adott feladatod.'); return; }
+  if (kerdezes && !confirm(`Beadod ezeket a feladatokat: ${lista.map(i => (i + 1) + '.').join(', ')}?\nBeadás után már nem javíthatsz rajtuk.`)) return;
+  for (const i of lista) {
+    diakGoTo(i);
+    await diakBekules(true);
+  }
+  const hibas = beNemAdottak();
+  if (hibas.length) alert(`Nem sikerült beadni: ${hibas.map(i => (i + 1) + '.').join(', ')} feladat. Próbáld újra!`);
+}
+
+// Kilépés előtt: ha van megírt, de be nem adott feladat, rákérdez
+async function kilepes() {
+  const lista = beNemAdottak();
+  if (lista.length) {
+    const sorsz = lista.map(i => (i + 1) + '.').join(', ');
+    if (confirm(`Ezt még NEM adtad be: ${sorsz} feladat.\nBeadod most?\n\nOK = beadom   Mégse = visszamegyek a feladathoz`)) {
+      await osszesBekules(false);
+    } else {
+      diakGoTo(lista[0]);
+      return;
+    }
+  }
+  closeDiakOverlay();
+}
+
+// A navigáció jelzi: zöld = beadva, sárga = megírtad, de még nincs beadva
+function navJelzes() {
+  const lista = new Set(beNemAdottak());
+  diakState.feladatok.forEach((f, i) => {
+    const b = document.getElementById(`diak-nb-${i}`);
+    if (b) b.classList.toggle('vazlat', lista.has(i));
+  });
+  const ossz = document.getElementById('diak-osszes-btn');
+  if (ossz) ossz.style.display = diakState.feladatok.length > 1 && lista.size ? 'inline-block' : 'none';
 }
 
 // ── Paste védelem ─────────────────────────────────────────────────────────────
@@ -855,8 +910,9 @@ function diakGoTo(idx) {
   bekulesBtn.disabled = t.beadva;
   bekulesBtn.className = t.beadva ? 'beadva' : '';
   bekulesBtn.innerHTML = t.beadva
-    ? '<i class="fas fa-circle-check"></i> Beadva'
-    : '<i class="fas fa-paper-plane"></i> Beküldés';
+    ? `<i class="fas fa-circle-check"></i> ${idx + 1}. feladat beadva`
+    : `<i class="fas fa-paper-plane"></i> ${idx + 1}. feladat beadása`;
+  navJelzes();
 
   // Navigáció gombok
   const isFirst = idx === 0;
@@ -877,20 +933,20 @@ function diakGoTo(idx) {
 function diakNext() {
   const isLast = diakState.currentIdx === diakState.feladatok.length - 1;
   if (isLast) {
-    closeDiakOverlay();
+    kilepes();
   } else {
     diakGoTo(diakState.currentIdx + 1);
   }
 }
 
-async function diakBekules() {
+async function diakBekules(csendes) {
   if (diakSubmitting) return;
   const idx = diakState.currentIdx;
   const t = diakState.feladatok[idx];
   if (t.beadva) return;
 
   const kod = diakMonaco ? diakMonaco.getValue().trim() : '';
-  if (!kod) { alert('Írd be a megoldásodat mielőtt beküldöd!'); return; }
+  if (!kod) { if (!csendes) alert('Írd be a megoldásodat mielőtt beküldöd!'); return; }
 
   diakSubmitting = true;
   const btn = document.getElementById('diak-bekules-btn');
@@ -944,9 +1000,9 @@ async function diakBekules() {
     if (next >= 0) setTimeout(() => diakGoTo(next), 400);
 
   } catch(e) {
-    alert('Hiba: ' + e.message);
+    if (!csendes) alert('Hiba: ' + e.message);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Beküldés';
+    btn.innerHTML = `<i class="fas fa-paper-plane"></i> ${idx + 1}. feladat beadása`;
   }
   diakSubmitting = false;
 }
@@ -1199,6 +1255,7 @@ async function betoltMunka(sz) {
       if (d.mentveAt) { munka.mentveSzoveg = 'Visszatöltve'; halozatAllapot(); }
     }
     if (munka.szunetel) szunetKepernyo(true);
+    navJelzes();
   } catch {}
 }
 
@@ -1422,6 +1479,7 @@ function initDiakMonaco() {
       const idx = diakState.currentIdx;
       if (!diakState.feladatok[idx]?.beadva && !munkaBetoltes) {
         diakState.drafts[idx] = diakMonaco.getValue();
+        navJelzes();
         munkaValtozott();
       }
     });
