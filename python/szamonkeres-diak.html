@@ -81,15 +81,13 @@
     #diak-prev-btn:hover,#diak-next-btn:hover{border-color:#6b7280;color:#e0e0e0}
     #diak-next-btn.green{background:#15803d;border-color:#15803d;color:#fff;font-weight:700}
     #diak-footer-mid{display:flex;align-items:center;gap:8px}
-    #diak-mentes-btn,#diak-mosdo-btn{padding:7px 16px;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
-    #diak-mentes-btn{background:#1e3a5f;border:1px solid #3b82f6;color:#bfdbfe}
-    #diak-mentes-btn:hover:not(:disabled){background:#1d4ed8;color:#fff}
+    #diak-mosdo-btn{padding:7px 16px;border-radius:8px;font-size:0.88rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
     #diak-mosdo-btn{background:#2a1a00;border:1px solid #d97706;color:#fcd34d}
     #diak-mosdo-btn:hover:not(:disabled){background:#78350f}
-    #diak-mentes-btn:disabled,#diak-mosdo-btn:disabled{opacity:.5;cursor:not-allowed}
-    #diak-mentes-allapot{font-size:0.78rem;color:#64748b;min-width:92px;text-align:right;white-space:nowrap}
-    #diak-mentes-allapot.ok{color:#4ade80}
-    #diak-mentes-allapot.hiba{color:#fca5a5}
+    #diak-mosdo-btn:disabled{opacity:.5;cursor:not-allowed}
+    #diak-mentes-allapot{font-size:0.85rem;font-weight:700;color:#64748b;padding:5px 12px;border-radius:8px;border:1px solid transparent;white-space:nowrap}
+    #diak-mentes-allapot.ok{color:#4ade80;border-color:#15803d;background:#0a2a1a}
+    #diak-mentes-allapot.hiba{color:#fca5a5;border-color:#dc2626;background:#2a0a0a}
 
     /* ── Mosdószünet képernyő ── */
     #szunet-screen{position:fixed;inset:0;z-index:1200;background:#0b1120;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
@@ -267,9 +265,6 @@
       <span id="diak-mentes-allapot"></span>
       <button id="diak-mosdo-btn" onclick="szunetKezd()" title="Megállítja az idődet, amíg kint vagy">
         <i class="fas fa-restroom"></i> Mosdószünet
-      </button>
-      <button id="diak-mentes-btn" onclick="diakMentes()" title="Elmenti a félkész munkádat (Ctrl+S)">
-        <i class="fas fa-floppy-disk"></i> Mentés
       </button>
       <button id="diak-bekules-btn" onclick="diakBekules()">
         <i class="fas fa-paper-plane"></i> Beküldés
@@ -934,7 +929,7 @@ async function diakBekules() {
 
     // A beadott feladat kikerül a mentett piszkozatból
     delete diakState.drafts[idx];
-    munka.valtozott = true;
+    munkaValtozott();
 
     // Nav gomb zöld
     const navBtn = document.getElementById(`diak-nb-${idx}`);
@@ -1069,6 +1064,9 @@ function closeDiakOverlay() {
 const munka = {
   szId: null,
   valtozott: false,     // van-e mentetlen változás
+  utolsoValtozas: 0,    // mikor gépelt utoljára
+  mentveSzoveg: '',     // pl.: "Mentve 12:07"
+  gepelesIdozito: null,
   mentes: null,         // folyamatban lévő mentés (Promise)
   szunetel: false,
   szunetOsszMp: 0,      // lezárt szünetekből jóváírt idő
@@ -1083,10 +1081,13 @@ function munkaReset(szId) {
   Object.assign(munka, { szId, valtozott: false, mentes: null, szunetel: false,
     szunetOsszMp: 0, aktivSzunetMp: 0, lekerveMs: Date.now() });
   if (!munkaAutoMentes) {
-    // 30 mp-enként automatikusan ment, ha változott valami
+    // Automatikus mentés: gépelés után 5 mp-cel, és 10 mp-enként újra próbálja,
+    // amíg sikerül (pl.: ha elment az internet). Mentés gomb nincs.
     munkaAutoMentes = setInterval(() => {
-      if (munka.valtozott && !munka.szunetel && document.getElementById('diak-overlay').style.display === 'flex') diakMentes(true);
-    }, 30000);
+      if (munka.valtozott && Date.now() - munka.utolsoValtozas > 4000) autoMentes();
+    }, 10000);
+    window.addEventListener('online', () => { if (munka.valtozott) autoMentes(); else halozatAllapot(); });
+    window.addEventListener('offline', () => halozatAllapot());
   }
   mentesAllapot('', '');
 }
@@ -1108,6 +1109,52 @@ function munkaAktivSzunetMs() {
 function munkaSzunetJovairasMs() {
   const max = munka.szunetMaxPerc * 60 * 1000;
   return munka.szunetOsszMp * 1000 + Math.min(munkaAktivSzunetMs(), max);
+}
+
+// ── Átmeneti helyi tartalék CSAK internet-kiesésre (Réka döntése, 2026-11-19) ──
+// Ha a szerverre mentés nem sikerül, a böngésző megőrzi a mentetlen kódot, hogy
+// bezárás/frissítés után se vesszen el. Sikeres szerveres mentés után azonnal törlődik.
+function tartalekKulcs() {
+  const sz = diakState.szamonkeres;
+  return sz ? `kandoSzamTartalek_${sz.id}_${(currentUser.email || '').toLowerCase()}` : '';
+}
+function tartalekIr() {
+  const k = tartalekKulcs(); if (!k || currentUser._tesztMod) return;
+  try { localStorage.setItem(k, JSON.stringify({ piszkozat: munkaPiszkozat(), ido: Date.now() })); } catch {}
+}
+function tartalekTorol() {
+  const k = tartalekKulcs(); if (!k) return;
+  try { localStorage.removeItem(k); } catch {}
+}
+function tartalekOlvas() {
+  const k = tartalekKulcs(); if (!k) return null;
+  try { const d = JSON.parse(localStorage.getItem(k) || 'null'); return d && d.piszkozat ? d.piszkozat : null; } catch { return null; }
+}
+
+function autoMentes() {
+  if (!diakState.szamonkeres || munka.szunetel) return;
+  if (document.getElementById('diak-overlay').style.display !== 'flex') return;
+  diakMentes(true);
+}
+
+// Gépeléskor: jelzi, hogy van mentetlen rész, és 5 mp szünet után ment
+function munkaValtozott() {
+  munka.valtozott = true;
+  munka.utolsoValtozas = Date.now();
+  halozatAllapot();
+  clearTimeout(munka.gepelesIdozito);
+  munka.gepelesIdozito = setTimeout(autoMentes, 5000);
+}
+
+// A tanuló mindig lássa: el van-e mentve a munkája
+function halozatAllapot() {
+  if (!navigator.onLine) {
+    mentesAllapot('Nincs internet! Ne zárd be az oldalt!', 'hiba');
+  } else if (munka.valtozott) {
+    mentesAllapot('Mentés...', '');
+  } else if (munka.mentveSzoveg) {
+    mentesAllapot('✓ ' + munka.mentveSzoveg, 'ok');
+  }
 }
 
 function mentesAllapot(szoveg, osztaly) {
@@ -1134,6 +1181,9 @@ async function betoltMunka(sz) {
     munkaAllapotBeallit(d);
     let p = {};
     try { p = JSON.parse(d.piszkozat || '{}') || {}; } catch {}
+    // Ha net nélkül maradt mentetlen munka a böngészőben, az az újabb
+    const tartalek = munka.szunetel ? null : tartalekOlvas();
+    if (tartalek) p = { ...p, ...tartalek };
     let volt = false;
     diakState.feladatok.forEach((f, i) => {
       if (f.beadva || typeof p[f.feladatId] !== 'string') return;
@@ -1142,9 +1192,10 @@ async function betoltMunka(sz) {
       diakState.drafts[i] = p[f.feladatId];
       volt = true;
     });
+    if (tartalek) { munka.valtozott = true; munka.utolsoValtozas = 0; autoMentes(); }
     if (volt) {
       kodBetoltEditorba();
-      if (d.mentveAt) mentesAllapot('Visszatöltve', 'ok');
+      if (d.mentveAt) { munka.mentveSzoveg = 'Visszatöltve'; halozatAllapot(); }
     }
     if (munka.szunetel) szunetKepernyo(true);
   } catch {}
@@ -1164,8 +1215,7 @@ async function diakMentes(csendes) {
   const sz = diakState.szamonkeres;
   if (!sz) return false;
   if (munka.mentes) return munka.mentes;
-  const btn = document.getElementById('diak-mentes-btn');
-  if (!csendes && btn) btn.disabled = true;
+  if (!navigator.onLine) { tartalekIr(); halozatAllapot(); return false; }
   mentesAllapot('Mentés...', '');
   munka.valtozott = false;
   munka.mentes = (async () => {
@@ -1177,15 +1227,18 @@ async function diakMentes(csendes) {
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || 'Nem sikerült menteni');
       munkaAllapotBeallit(d);
+      if (!munka.valtozott) tartalekTorol();   // a szerveren van, a helyi tartalék nem kell
       const most = new Date();
-      mentesAllapot(`Mentve ${String(most.getHours()).padStart(2,'0')}:${String(most.getMinutes()).padStart(2,'0')}`, 'ok');
+      munka.mentveSzoveg = `Mentve ${String(most.getHours()).padStart(2,'0')}:${String(most.getMinutes()).padStart(2,'0')}`;
+      // ha mentés közben is gépelt, az a következő körben megy
+      halozatAllapot();
       return true;
     } catch (e) {
       munka.valtozott = true;
-      mentesAllapot('Nem sikerült menteni!', 'hiba');
+      tartalekIr();
+      mentesAllapot(navigator.onLine ? 'Nincs mentve! Újrapróbálom...' : 'Nincs internet! Ne zárd be az oldalt!', 'hiba');
       return false;
     } finally {
-      if (btn) btn.disabled = false;
       munka.mentes = null;
     }
   })();
@@ -1200,7 +1253,7 @@ async function szunetKezd() {
   try {
     // Előbb mentünk, hogy a kód biztosan megmaradjon
     const ok = await diakMentes(true);
-    if (!ok) { alert('Nem sikerült menteni. Próbáld újra!'); return; }
+    if (!ok) { alert('Most nincs internet, ezért a szünet nem indul el. A munkád megvan, ne zárd be az oldalt!'); return; }
     const res = await authFetch(`${API}/api/szamonkeres/${sz.id}/szunet/kezd`, { method: 'POST' });
     const d = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(d.error || 'Nem sikerült a szünet');
@@ -1268,9 +1321,13 @@ function frissitSzunetOra() {
 }
 
 // Oldal elhagyásakor még elküldjük a mentetlen munkát
-window.addEventListener('beforeunload', () => {
+window.addEventListener('beforeunload', (e) => {
   const sz = diakState.szamonkeres;
   if (!sz || !munka.valtozott || munka.szunetel) return;
+  // Mentetlen munka: a böngésző rákérdez, mielőtt bezárná/frissítené az oldalt
+  tartalekIr();
+  e.preventDefault();
+  e.returnValue = '';
   try {
     const tok = getToken();
     fetch(`${API}/api/szamonkeres/${sz.id}/munka`, {
@@ -1364,7 +1421,7 @@ function initDiakMonaco() {
       const idx = diakState.currentIdx;
       if (!diakState.feladatok[idx]?.beadva && !munkaBetoltes) {
         diakState.drafts[idx] = diakMonaco.getValue();
-        munka.valtozott = true;
+        munkaValtozott();
       }
     });
     // Ctrl+S = Mentés
