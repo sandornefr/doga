@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKT – Szorgalmi feladatok</title>
+<link rel="icon" href="../kando_favion_light.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* Semmi nem görget (Réka kérése): a lap a képernyő magas, két fül; ha nem fér ki, kisebb betűvel rajzol. */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:clamp(10.5px,min(1.02vw,1.85vh),27px);}
+html,body{height:100%;}
+body{line-height:1.5;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+button{font:inherit;}
+.topbar{display:flex;align-items:center;gap:12px;color:#fff;flex:none;}
+.topbar .cim{font-weight:700;flex:1;}
+.topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
+.kozep{text-align:center;padding:60px 0;}
+.kozep .btn{display:inline-block;margin-top:14px;padding:9px 18px;color:#fff;text-decoration:none;}
+#app{flex:1;min-height:0;display:flex;flex-direction:column;padding:1rem 1.6rem;max-width:80rem;width:100%;margin:0 auto;}
+.fej{flex:none;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.fej h1{font-size:1.5rem;}
+.fej .db{color:var(--d-halvany,#6b7280);}
+.fulsor{display:flex;gap:.5rem;margin-left:auto;}
+.fulsor button{border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:.35rem 1rem;font-weight:600;cursor:pointer;background:transparent;color:inherit;}
+.fulsor button.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);border-color:transparent;color:#fff;}
+.alcim{flex:none;margin:.3rem 0 .8rem;}
+.panel{flex:1;min-height:0;overflow:hidden;border:1px solid var(--d-keret,#e6e1fb);border-radius:1rem;background:var(--d-kartya,#fff);padding:.9rem 1.1rem;}
+.panel[hidden]{display:none;}
+.belso{height:100%;overflow:hidden;}
+table.sz{width:100%;border-collapse:collapse;}
+table.sz th,table.sz td{border-bottom:1px solid var(--d-keret,#e6e1fb);padding:.35rem .5rem;text-align:left;vertical-align:top;}
+table.sz th{color:#c4b5fd;font-size:.9em;}
+table.sz td.p{white-space:nowrap;}
+.kisgomb{border:1px solid var(--d-keret,#cbd2d9);border-radius:99px;padding:.2rem .8rem;font-weight:600;cursor:pointer;background:transparent;color:#c4b5fd;white-space:nowrap;}
+.vj{font-size:.9em;}
+.racs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem;}
+.tg{display:flex;align-items:center;gap:.45rem;text-align:left;border:1px solid var(--d-keret,#cbd2d9);border-radius:.6rem;padding:.35rem .6rem;cursor:pointer;background:transparent;color:inherit;font-size:.92em;line-height:1.25;}
+.tg .n{flex:none;width:1.7em;height:1.7em;border-radius:.45rem;display:grid;place-items:center;font-weight:800;font-size:.85em;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);}
+.tg.kesz .n{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.tg.valasztott{border-color:#a78bfa;background:rgba(124,58,237,.25);}
+.reszlet{margin-top:.7rem;padding:.6rem .9rem;border-radius:.7rem;border:1px dashed var(--d-keret,#cbd2d9);min-height:3.4rem;display:flex;align-items:center;gap:1rem;}
+.reszlet .szoveg{flex:1;}
+.btn{border:0;border-radius:99px;padding:.45rem 1.1rem;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);text-decoration:none;white-space:nowrap;}
+.szorg-cimke{display:inline-block;font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;background:rgba(245,158,11,.15);color:#fcd34d;}
+@media (max-width:760px){
+  html{font-size:14px;} body{height:auto;overflow:auto;} .panel,.belso{overflow:visible;} .racs{grid-template-columns:1fr 1fr;}
+}
+</style>
+<link rel="stylesheet" href="ikt-nezo.css?v=3">
+<link rel="stylesheet" href="ikt.css?v=4">
+<style>body .topbar{padding:.7rem 1.6rem;}</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="cim"><i class="fas fa-star"></i> Szorgalmi feladatok</span>
+  <span id="who"></span>
+  <a href="index.html"><i class="fas fa-arrow-left"></i> Vissza</a>
+</div>
+<div id="app"><div class="kozep">Betöltés…</div></div>
+
+<script src="temak.js"></script>
+<script src="ikt-ellenor.js?v=3"></script>
+<script>
+// IKT Projektmunka I. – Szorgalmi feladatok (9. évfolyam): a kötelező Témaoldal beadása után a többi 34 témából
+// bármennyit elkészíthet a tanuló. Itt látja a beadott szorgalmijait (tájékoztató gépi pont, a tanár végleges pontja,
+// visszajelzés), és itt választ újat (a feladatlap és a beadás: temaoldal.html?szorgalmi=<sorszám>).
+const API = 'https://agazati.up.railway.app';
+const TEMAK = window.IKT_TEMAK;
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const app = document.getElementById('app');
+const u = JSON.parse(sessionStorage.getItem('kandoUser') || 'null');
+let TOKEN = u ? (u.token || '') : '';
+if (u && !TOKEN && u._tesztMod) TOKEN = (JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || '');
+const JOGOS = !!u && (u.szerep === 'oktato' || u._tesztMod || String(u.evfolyam || '') === '9');
+const TANAR = !!u && u.szerep === 'oktato' && !u._tesztMod;
+
+// A közös ellenőrző és nézegető (ikt-ellenor.js) ezeket használja; itt csak olvasható.
+const IKT_TANULO = true;
+const AUTH = { 'Authorization': 'Bearer ' + TOKEN };
+const OLDALAK = ['index.html', 'keplink.html', 'listak.html', 'orarend.html', 'tema.html'];
+const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
+let beadasok = [];
+const temak = {};
+const ellenorzes = {};
+function sorFrissit() {}
+function listaRajz() {}
+const csoportNev = b => (b.osztaly || '') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
+function temaNev(b) { const n = beadasTemaSorszam(b); return n && TEMAK[n - 1] ? TEMAK[n - 1][0] : ''; }
+
+let kapott = null;         // a kötelező téma sorszáma (szorgalmiként nem választható)
+let valasztott = null;     // az Új szorgalmi fülön kijelölt téma
+let aktivFul = 'beadott';
+
+// Betűméret-illesztés: a panel tartalma férjen ki (nincs görgetés).
+function illeszt() {
+  if (innerWidth < 760) return;
+  const b = document.querySelector('.panel:not([hidden]) .belso');
+  if (!b) return;
+  for (let fs = 1; fs >= 0.6; fs -= 0.025) {
+    b.style.fontSize = fs.toFixed(3) + 'rem';
+    if (b.scrollHeight <= b.clientHeight + 1 && b.scrollWidth <= b.clientWidth + 1) return;
+  }
+}
+window.addEventListener('resize', () => { clearTimeout(window._ii); window._ii = setTimeout(illeszt, 150); });
+
+function fulValt(ful) {
+  aktivFul = ful;
+  document.querySelectorAll('.fulsor button').forEach(g => g.classList.toggle('aktiv', g.dataset.ful === ful));
+  document.getElementById('p-beadott').hidden = ful !== 'beadott';
+  document.getElementById('p-uj').hidden = ful !== 'uj';
+  try { history.replaceState(null, '', '#' + ful); } catch (e) {}
+  illeszt();
+}
+
+function beadottRajz() {
+  const el = document.getElementById('beadott');
+  if (!beadasok.length) {
+    el.innerHTML = '<p>Még nincs beadott szorgalmid. Az <b>Új szorgalmi</b> fülön választhatsz témát.</p>';
+    return;
+  }
+  el.innerHTML = `<table class="sz"><thead><tr><th>Téma</th><th>Beadva</th><th>Tájékoztató (gépi)</th><th>Végleges</th><th>Visszajelzés</th><th></th></tr></thead><tbody>` +
+    beadasok.map(b => {
+      const n = beadasTemaSorszam(b), t = TEMAK[n - 1];
+      const e = ellenorzes[b.id] || ghEll[b.id];
+      const gepi = !e ? '<i class="fas fa-spinner fa-spin"></i>' : e.hiba ? '<span class="hiba">nem sikerült</span>' : `${e.auto} / ${e.autoMax}`;
+      const v = b.ertekeles, vj = b.visszajelzes;
+      return `<tr><td><b>${n}. ${esc(t ? t[0] : '')}</b></td><td class="p">${esc(b.updatedAt)}</td><td class="p">${gepi}</td>
+        <td class="p">${v ? `<b>${v.osszes} / 20</b>` : '<span class="megj">a tanárod adja</span>'}</td>
+        <td class="vj">${vj ? esc(vj.szoveg.length > 90 ? vj.szoveg.slice(0, 90) + '…' : vj.szoveg) : '<span class="megj">még nincs</span>'}</td>
+        <td><button class="kisgomb" onclick="nzMegnyit(${b.id})"><i class="fas fa-eye"></i> Megnézem</button>
+            <a class="kisgomb" href="temaoldal.html?szorgalmi=${n}" style="text-decoration:none"><i class="fas fa-rotate"></i> Újra beadom</a></td></tr>`;
+    }).join('') + '</tbody></table>' +
+    '<p class="megj" style="margin-top:.6rem">A gépi pontok csak tájékoztatók – a végső pontszámot a tanárod adja. A „Megnézem” ablakban szempontonként is látod.</p>';
+}
+
+function ujRajz() {
+  const kesz = new Set(beadasok.map(beadasTemaSorszam));
+  document.getElementById('racs').innerHTML = TEMAK.map((t, i) => i + 1).filter(n => n !== kapott).map(n =>
+    `<button class="tg${kesz.has(n) ? ' kesz' : ''}${valasztott === n ? ' valasztott' : ''}" data-n="${n}" title="${esc(TEMAK[n - 1][0])}">
+      <span class="n">${kesz.has(n) ? '<i class="fas fa-star"></i>' : n}</span><span>${esc(TEMAK[n - 1][0])}</span></button>`).join('');
+  document.querySelectorAll('#racs .tg').forEach(g => g.onclick = () => { valasztott = +g.dataset.n; ujRajz(); });
+  const r = document.getElementById('reszlet');
+  if (!valasztott) { r.innerHTML = '<span class="szoveg megj">Kattints egy témára! A csillagos témákat már beadtad.</span>'; return; }
+  const t = TEMAK[valasztott - 1];
+  r.innerHTML = `<span class="szoveg"><b>${valasztott}. ${esc(t[0])}</b> · a táblázat oszlopai: ${esc(t[1])} · rangsor: keresd meg ${esc(t[2])}!</span>
+    <a class="btn" href="temaoldal.html?szorgalmi=${valasztott}"><i class="fas fa-pen"></i> ${kesz.has(valasztott) ? 'Újra beadom' : 'Elkészítem'}</a>`;
+}
+
+async function indit() {
+  document.getElementById('who').textContent = u.nev || '';
+  if (TANAR) {
+    app.innerHTML = '<div class="kozep"><h2>Ez a tanulói nézet.</h2><p>A szorgalmi beadásokat az Oktató menü <b>Szorgalmi feladatok</b> kártyáján látod.</p><a class="btn" href="beadasok.html?szorgalmi=1">Megnyitom</a></div>';
+    return;
+  }
+  // Csak a kötelező Témaoldal beadása után.
+  let kot = null;
+  try {
+    const r = await fetch(API + '/api/ikt/beadas/sajat?nemolvas=1&feladat=temaoldal', { headers: AUTH });
+    kot = r.ok ? (await r.json()).beadas : null;
+  } catch (e) {}
+  if (!kot) {
+    app.innerHTML = '<div class="kozep"><h2><i class="fas fa-lock"></i> A Témaoldal beadása után nyílik meg.</h2><p>Előbb add be a kötelező Témaoldaladat, utána választhatsz szorgalmi témát.</p><a class="btn" href="temaoldal.html">A Témaoldalhoz</a></div>';
+    return;
+  }
+  try {
+    const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal', { headers: AUTH });
+    const dt = rt.ok ? await rt.json() : null;
+    if (dt && dt.temaSorszam) { kapott = dt.temaSorszam; if (u.email) temak[u.email] = { temaSorszam: kapott }; }
+  } catch (e) {}
+  try {
+    const r = await fetch(API + '/api/ikt/szorgalmi/sajat', { headers: AUTH });
+    beadasok = r.ok ? ((await r.json()).beadasok || []) : [];
+  } catch (e) { beadasok = []; }
+  beadasok.sort((a, b) => beadasTemaSorszam(a) - beadasTemaSorszam(b));
+  app.innerHTML = `<div class="fej"><h1>Szorgalmi feladatok</h1><span class="db">${beadasok.length} szorgalmit adtál be</span>
+      <div class="fulsor"><button data-ful="beadott"><i class="fas fa-list-check"></i> Beadott szorgalmijaim</button><button data-ful="uj"><i class="fas fa-plus"></i> Új szorgalmi</button></div></div>
+    <div class="alcim megj">Gyakorolj más témákkal is! Ugyanúgy készítsd el, mint a kötelező Témaoldalt. A tanárod külön, szorgalmiként látja és pontozza.</div>
+    <div class="panel" id="p-beadott"><div class="belso" id="beadott"></div></div>
+    <div class="panel" id="p-uj" hidden><div class="belso"><div class="racs" id="racs"></div><div class="reszlet" id="reszlet"></div></div></div>`;
+  document.querySelectorAll('.fulsor button').forEach(g => g.onclick = () => fulValt(g.dataset.ful));
+  beadottRajz(); ujRajz();
+  fulValt(location.hash === '#uj' || !beadasok.length ? 'uj' : 'beadott');
+  // a tájékoztató gépi pontok (egyenként)
+  for (const b of beadasok) {
+    await futtat(b, b.fajlok && b.fajlok.length ? 'fajl' : 'github').catch(() => {});
+    beadottRajz(); if (aktivFul === 'beadott') illeszt();
+  }
+}
+
+if (!u || !TOKEN) {
+  app.innerHTML = '<div class="kozep"><h2>Be kell jelentkezned</h2><a class="btn" href="../login.html">Bejelentkezés</a></div>';
+} else if (!JOGOS) {
+  app.innerHTML = '<div class="kozep"><h2>Ez az oldal a 9. évfolyamnak szól.</h2><a class="btn" href="../portal.html">Vissza a portálra</a></div>';
+} else {
+  indit();
+}
+</script>
+</body>
+</html>

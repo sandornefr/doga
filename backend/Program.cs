@@ -54,6 +54,7 @@ app.UseRateLimiter(); // Ráhelyezzük a rate limitert a pipeline-ra
 db.Initialize();
 db.InitIktBeadas();
 db.InitIktTeendo();
+db.InitIktErtekeles();
 db.InitOktatoJogok();
 db.MigrateChatChannel();
 db.MigrateDuelTime();
@@ -2977,6 +2978,7 @@ object IktBeadasValasz(IktBeadasInfo b) => new
     fajlok = b.Fajlok.Select(f => new { f.Fajlnev, f.Mime, f.Meret }),
     elonezet = $"/api/ikt/elonezet/{b.Id}/{IktElonezetToken(b.Id)}/",
     visszajelzes = db.GetIktVisszajelzes(b.Id),
+    ertekeles = db.GetIktErtekeles(b.Id),
 };
 
 IResult IktFajlKuldes(HttpContext ctx, (string Mime, byte[] Tartalom) f)
@@ -3043,7 +3045,7 @@ app.MapPost("/api/ikt/beadas", async (HttpContext ctx, Database db) =>
 }).RequireRateLimiting("auth");
 
 // A tanuló saját beadása — GET /api/ikt/beadas/sajat?feladat=temaoldal
-app.MapGet("/api/ikt/beadas/sajat", (HttpContext ctx, string? feladat, Database db) =>
+app.MapGet("/api/ikt/beadas/sajat", (HttpContext ctx, string? feladat, string? nemolvas, Database db) =>
 {
     var be = IktBeado(ctx, db);
     if (!be.Ok) return be.Hiba!;
@@ -3053,7 +3055,8 @@ app.MapGet("/api/ikt/beadas/sajat", (HttpContext ctx, string? feladat, Database 
     if (b == null) return Results.Ok(new { beadas = (object?)null });
     var valasz = IktBeadasValasz(b);
     // A tanuló megnyitotta a saját beadását: a visszajelzés innentől „elolvasta”.
-    if (db.GetIktVisszajelzes(b.Id) != null) db.MarkIktVisszajelzesOlvasva(b.Id);
+    // nemolvas=1: csak az állapotot kérdezi (pl.: a Témaoldal beadás-része), a visszajelzést nem mutatja – nem jelöljük olvasottnak.
+    if (nemolvas != "1" && db.GetIktVisszajelzes(b.Id) != null) db.MarkIktVisszajelzesOlvasva(b.Id);
     return Results.Ok(new { beadas = valasz });
 });
 
@@ -3071,6 +3074,27 @@ app.MapPut("/api/ikt/beadas/{id:int}/visszajelzes", (int id, HttpContext ctx, Ik
     if (szoveg.Length > 4000) return Results.BadRequest(new { error = "A visszajelzés legfeljebb 4000 karakter lehet." });
     db.SaveIktVisszajelzes(id, szoveg, identity);
     return Results.Ok(new { visszajelzes = db.GetIktVisszajelzes(id) });
+});
+
+// A tanár végleges pontozása (oktató) — PUT /api/ikt/beadas/{id}/ertekeles  { pontok: [szempontonként egész] }
+// A gépi előellenőrzés csak tájékoztató; a tanuló ezt látja véglegesként. A kötelező Témaoldalnál jegy is (ponthatárok), a szorgalminál csak pont.
+app.MapPut("/api/ikt/beadas/{id:int}/ertekeles", (int id, HttpContext ctx, IktErtekelesKeres req, Database db) =>
+{
+    var (valid, identity, role) = InspectAuthContext(ctx);
+    if (!valid || !IsPrivilegedRole(role)) return Results.Unauthorized();
+    if (!OktatoJog(ctx, "ikt")) return NincsJog();
+    var eb = db.GetIktBeadas(id);
+    if (eb == null) return Results.NotFound();
+    if (!LathatoTanulo(ctx, eb.Email)) return NincsJog();
+    var max = Database.IktPontozoMax;
+    var p = req.Pontok;
+    if (p == null || p.Length != max.Length) return Results.BadRequest(new { error = "Minden szempontnál adj meg pontot." });
+    for (int i = 0; i < max.Length; i++)
+        if (p[i] < 0 || p[i] > max[i]) return Results.BadRequest(new { error = $"A(z) {i + 1}. szempont pontja 0 és {max[i]} között lehet." });
+    var osszes = p.Sum();
+    int? jegy = eb.Feladat.StartsWith("szorgalmi") ? null : Database.IktJegy(osszes);   // a Weboldalam-linkes beadás is kötelező
+    db.SaveIktErtekeles(id, System.Text.Json.JsonSerializer.Serialize(p), osszes, jegy, identity);
+    return Results.Ok(new { ertekeles = db.GetIktErtekeles(id) });
 });
 
 // Vezetett tanmenet: a tanuló saját jelzései (alkalmanként: kész / nem értem + megjegyzés) — GET /api/ikt/teendo/sajat
@@ -3109,7 +3133,11 @@ app.MapGet("/api/ikt/szorgalmi/sajat", (HttpContext ctx, Database db) =>
 {
     var be = IktBeado(ctx, db);
     if (!be.Ok) return be.Hiba!;
-    return Results.Ok(new { beadasok = db.GetIktSzorgalmiSajat(be.Email).Select(b => new { b.Id, b.Feladat, b.UpdatedAt }) });
+    // A Szorgalmi kártya a saját munkát a nézegetőben is megnyitja (fájlok, előnézet, visszajelzés), ezért a teljes beadás kell.
+    var lista = db.GetIktSzorgalmiSajat(be.Email);
+    var valasz = lista.Select(IktBeadasValasz).ToList();
+    foreach (var b in lista) if (db.GetIktVisszajelzes(b.Id) != null) db.MarkIktVisszajelzesOlvasva(b.Id);
+    return Results.Ok(new { beadasok = valasz });
 });
 
 // Szorgalmi témaoldalak (oktató) — GET /api/ikt/szorgalmi
@@ -3200,6 +3228,7 @@ namespace KandoTest
     public record ChangePasswordRequest(string Username, string OldPassword, string NewPassword);
     public record IktVisszajelzesKeres(string? Szoveg);
     public record IktTeendoKeres(string? Allapot, string? Megjegyzes);
+    public record IktErtekelesKeres(int[]? Pontok);
     public record DeleteAccountRequest(string Email, string Jelszo);
     public record ResetPasswordRequest(string Email, string NewPassword);
     public record UpdateUserRequest(string Vezeteknev, string Keresztnev, string? Csoport, string? Evfolyam, string? Osztaly);

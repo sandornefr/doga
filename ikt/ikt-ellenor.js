@@ -59,7 +59,76 @@ function tablaRajz(e) {
       <td class="p">${s.allapot === 'kezi' ? '? / ' + s.max : (s.allapot === 'ok' ? s.max : 0) + ' / ' + s.max}</td></tr>`).join('')}
     </tbody></table>`;
 }
-const pontSzoveg = e => `${e.auto} <small>/ ${e.autoMax} automatikus · ${e.keziMax} pont kézi</small>`;
+// A listákban: „gépi X / Y” és ha a tanár már pontozott, „végleges Z / 20 (jegy)”.
+const pontSzoveg = (e, b) => {
+  const v = b && b.ertekeles;
+  return `${e.auto} <small>/ ${e.autoMax} gépi · ${e.keziMax} pont kézi</small>` +
+    (v ? ` <span class="vegleges-cimke" title="A tanár végleges pontszáma">végleges ${v.osszes} / ${pontozoMax(e)}${v.jegy ? ' · ' + v.jegy + ' (' + JEGY_NEV[v.jegy] + ')' : ''}</span>` : '');
+};
+
+// ── Végleges pontozás (a gépi előellenőrzés csak tájékoztató; a végső pontot a tanár adja) ──
+const JEGY_NEV = { 5: 'jeles', 4: 'jó', 3: 'közepes', 2: 'elégséges', 1: 'elégtelen' };
+const jegyPontbol = o => o >= 18 ? 5 : o >= 15 ? 4 : o >= 12 ? 3 : o >= 10 ? 2 : 1;   // ponthatárok (20 pont)
+const pontozoMax = e => e.sorok.reduce((a, s) => a + s.max, 0);
+function vegsoPontok(b) {
+  try { const p = b && b.ertekeles && JSON.parse(b.ertekeles.pontok); return Array.isArray(p) ? p : null; } catch (x) { return null; }
+}
+// A pontozó táblázat. mod: 'tanulo' (csak olvasható: tájékoztató + végleges), 'tanar' (szerkeszthető végleges pontok).
+function pontozoRajz(e, b, mod) {
+  const v = vegsoPontok(b), szorg = szorgalmiE(b), max = pontozoMax(e);
+  const gepi = s => s.allapot === 'ok' ? s.max : s.allapot === 'nem' ? 0 : null;
+  const sorok = e.sorok.map((s, i) => {
+    const eredm = s.allapot === 'ok' ? '<span class="ok"><i class="fas fa-check"></i></span> ' : s.allapot === 'nem' ? '<span class="nem"><i class="fas fa-xmark"></i></span> '
+      : `<span class="kezi"><i class="fas fa-user-pen"></i> ${mod === 'tanulo' ? 'a tanár pontozza' : 'kézi'}</span> `;
+    let pont;
+    if (mod === 'tanar') {
+      const ertek = v ? v[i] : gepi(s);
+      pont = `<input class="vp" type="number" min="0" max="${s.max}" step="1" data-i="${i}" value="${ertek == null ? '' : ertek}"> / ${s.max}`;
+    } else if (v) pont = `<b>${v[i]}</b> / ${s.max}`;
+    else pont = `<span class="tajek">${gepi(s) == null ? '–' : gepi(s)} / ${s.max}</span>`;
+    return `<tr><td class="p">${i + 1}</td><td>${esc(s.cim)}</td><td>${eredm}${esc(s.megj || '')}</td><td class="p${mod === 'tanar' ? ' vpt' : ''}">${pont}</td></tr>`;
+  }).join('');
+  const tabla = `<table class="ell"><thead><tr><th>#</th><th>Szempont</th><th>Gépi előellenőrzés</th><th>${mod === 'tanar' ? 'Végleges' : v ? 'Végleges' : 'Pont'}</th></tr></thead><tbody>${sorok}</tbody></table>`;
+  if (mod === 'tanar') {
+    return `<div class="ert-fej"><div>Gépi (tájékoztató): <b>${e.auto}</b> / ${e.autoMax} · kézi: ${e.keziMax} pont</div>
+      <div class="ert-ossz" id="ert-ossz"></div></div>` + tabla +
+      `<div class="ert-sor"><button id="ert-ment" class="vj-gomb"><i class="fas fa-floppy-disk"></i> Végleges pontszám mentése</button>
+        <span id="ert-allapot" class="megj">${v ? 'Mentve: ' + esc(b.ertekeles.updatedAt) : 'Még nincs végleges pontszám.'}</span></div>`;
+  }
+  const fej = v
+    ? `<div class="ert-vegleges"><i class="fas fa-award"></i> Végleges: <b>${b.ertekeles.osszes} / ${max}</b>${!szorg && b.ertekeles.jegy ? ` · <b>${b.ertekeles.jegy} (${JEGY_NEV[b.ertekeles.jegy]})</b>` : ''}</div>
+       <div class="ert-tajek">Gépi előellenőrzés (tájékoztató): ${e.auto} / ${e.autoMax}</div>`
+    : `<div class="ert-tajek-fo"><i class="fas fa-circle-info"></i> Tájékoztató pontok (gépi előellenőrzés): <b>${e.auto} / ${e.autoMax}</b> – a végső pontszámot a tanárod adja.</div>`;
+  return fej + tabla;
+}
+// Tanári pontozó: összeg és jegy élőben, mentés a szerverre.
+function pontozoEsemenyek(e, b) {
+  const szorg = szorgalmiE(b), max = pontozoMax(e);
+  const inputok = [...document.querySelectorAll('#nz-pont input.vp')];
+  const osszeg = () => {
+    const ert = inputok.map(x => x.value === '' ? null : Math.round(+x.value));
+    const kesz = ert.every((x, i) => x != null && x >= 0 && x <= e.sorok[i].max);
+    const o = ert.reduce((a, x) => a + (x || 0), 0);
+    document.getElementById('ert-ossz').innerHTML = `Végleges: <b>${o} / ${max}</b>` + (!szorg ? ` · jegy: <b>${jegyPontbol(o)} (${JEGY_NEV[jegyPontbol(o)]})</b>` : '') +
+      (kesz ? '' : ' <span class="kezi">– még van kitöltetlen szempont</span>');
+    return { ert, kesz };
+  };
+  inputok.forEach(x => x.addEventListener('input', osszeg));
+  osszeg();
+  document.getElementById('ert-ment').onclick = async () => {
+    const { ert, kesz } = osszeg(), all = document.getElementById('ert-allapot');
+    if (!kesz) { all.textContent = 'Minden szemponthoz írj pontot (0 és a szempont pontja között)!'; return; }
+    all.textContent = 'Mentés…';
+    try {
+      const r = await fetch(API + '/api/ikt/beadas/' + (b.vjId || b.id) + '/ertekeles', { method: 'PUT', headers: { ...AUTH, 'Content-Type': 'application/json' }, body: JSON.stringify({ pontok: ert }) });
+      let d = null; try { d = await r.json(); } catch (x) {}
+      if (!r.ok) throw new Error((d && d.error) || ('Hiba ' + r.status));
+      b.ertekeles = d.ertekeles;
+      all.textContent = 'Mentve: ' + d.ertekeles.updatedAt;
+      sorFrissit(b); listaRajz();
+    } catch (x) { all.textContent = 'Nem sikerült: ' + x.message; }
+  };
+}
 
 // ── Előellenőrzés a pontozó szerint ──
 // A beadás témájának sorszáma: szorgalminál a feladat nevéből („szorgalmi-12”), különben a kapott téma.
@@ -360,16 +429,16 @@ function nzPontozas() {
   }
   if (e.fut) { el.innerHTML = '<p class="megj">Ellenőrzés…</p>'; setTimeout(() => nz && nzPontozas(), 800); return; }
   if (e.hiba) { el.innerHTML = `<p class="hiba">${esc(e.hiba)}</p>`; return; }
-  const fejlec = `<div class="nz-osszeg">${pontSzoveg(e)}</div>` + (e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '') + tablaRajz(e);
+  const figyel = e.figyel ? `<p class="hiba">${esc(e.figyel)}</p>` : '';
   if (typeof IKT_TANULO !== 'undefined' && IKT_TANULO) {
-    // Tanulói nézet: csak olvasható; a „kézi” pontokat a tanár bírálja el; alatta a tanár visszajelzése.
+    // Tanulói nézet: csak olvasható; tájékoztató gépi pontok, a tanár végleges pontjai; alatta a tanár visszajelzése.
     const v = nz.b.visszajelzes;
-    el.innerHTML = fejlec + '<p class="megj" style="margin-top:8px">A „kézi” pontokat a tanárod nézi meg és pontozza.</p>' +
+    el.innerHTML = figyel + pontozoRajz(e, nz.b, 'tanulo') +
       (v ? `<div class="vj-szerk"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(v.updatedAt)})</span>` +
            `<div style="margin-top:6px">${esc(v.szoveg).replace(/\n/g, '<br>')}</div></div>` : '');
     return;
   }
-  el.innerHTML = fejlec +
+  el.innerHTML = figyel + pontozoRajz(e, nz.b, 'tanar') +
     `<div class="vj-szerk"><label for="vj-szoveg"><b>Visszajelzés a tanulónak</b></label>
       <textarea id="vj-szoveg" rows="7" maxlength="4000"></textarea>
       <div class="vj-sor"><button id="vj-kuld" class="vj-gomb"><i class="fas fa-paper-plane"></i> Elküldöm</button><span id="vj-allapot" class="megj"></span></div></div>`;
@@ -377,6 +446,7 @@ function nzPontozas() {
   document.getElementById('vj-szoveg').value = v ? v.szoveg : vjJavaslat(e);
   document.getElementById('vj-allapot').textContent = v ? 'Elküldve: ' + v.updatedAt + (v.elolvasvaAt ? ' · elolvasta: ' + v.elolvasvaAt : '') : '';
   document.getElementById('vj-kuld').onclick = vjKuld;
+  pontozoEsemenyek(e, nz.b);
 }
 
 // A hiányzó (piros) pontokból számozott, felszólító hibalista – a „kézi” pontok kimaradnak.

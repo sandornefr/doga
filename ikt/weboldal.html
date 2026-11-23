@@ -37,7 +37,15 @@ html{font-size:16px;}
 .allapot.rossz{background:#fee4e2;color:#b42318;}
 .allapot.fut{background:#eef2ff;color:#4f46e5;}
 @media (max-width:640px){.lepesek{grid-template-columns:1fr;}}
+/* két fül: A weboldalam · Témaoldal értékelése */
+.fulsor{display:flex;gap:8px;margin:10px 0 4px;}
+.fulsor button{border:1px solid #cbd2d9;border-radius:99px;padding:6px 16px;font:inherit;font-weight:600;cursor:pointer;background:transparent;color:inherit;}
+.fulsor button.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);border-color:transparent;color:#fff;}
+.ert-racs{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start;}
+.ert-racs table.ell{font-size:.86rem;}
+@media (max-width:760px){.ert-racs{grid-template-columns:1fr;}}
 </style>
+<link rel="stylesheet" href="ikt-nezo.css?v=3">
 <link rel="stylesheet" href="ikt.css?v=4">
 </head>
 <body>
@@ -49,7 +57,12 @@ html{font-size:16px;}
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
 <template id="oldal">
-  <h1>A weboldalam a GitHubon</h1>
+  <h1>Weboldalam</h1>
+  <div class="fulsor">
+    <button data-ful="web" class="aktiv"><i class="fab fa-github"></i> A weboldalam</button>
+    <button data-ful="tema"><i class="fas fa-file-circle-check"></i> Témaoldal értékelése</button>
+  </div>
+  <div id="ful-web">
   <div class="alcim">Add meg a github.io-s címedet. A tanárod így látja az oldaladat.</div>
 
   <div class="lepesek">
@@ -67,9 +80,13 @@ html{font-size:16px;}
   </div>
 
   <div class="card" id="sajat" hidden></div>
+  </div>
+  <div id="ful-tema" hidden><div class="card" id="temaert">Betöltés…</div></div>
 </template>
 
 <script src="weboldal-ellenor.js?v=3"></script>
+<script src="temak.js"></script>
+<script src="ikt-ellenor.js?v=3"></script>
 <script>
 const API = 'https://agazati.up.railway.app';
 const FELADAT = 'weboldal';
@@ -108,10 +125,76 @@ async function sajatBetolt() {
   } catch (e) {}
 }
 
-// Ne görgessen (Réka szabálya): ha az oldal nem fér ki a képernyőre, kisebb betűvel rajzolja (16 → 11 px).
+// ── Témaoldal értékelése fül: a beadott Témaoldal tájékoztató (gépi) pontjai, a tanár végleges pontjai és visszajelzése ──
+// A közös ellenőrző és nézegető (ikt-ellenor.js) ezeket használja; itt csak olvasható (IKT_TANULO).
+const IKT_TANULO = true;
+const TEMAK = window.IKT_TEMAK;
+const OLDALAK = ['index.html', 'keplink.html', 'listak.html', 'orarend.html', 'tema.html'];
+const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
+let beadasok = [];
+const temak = {};
+const ellenorzes = {};
+function sorFrissit() {}
+function listaRajz() {}
+const csoportNev = b => (b.osztaly || '') + (b.csoport ? ' / ' + b.csoport + '. cs.' : '');
+function temaNev(b) { const n = beadasTemaSorszam(b); return n && TEMAK[n - 1] ? TEMAK[n - 1][0] : ''; }
+
+function fulValt(ful) {
+  document.querySelectorAll('.fulsor button').forEach(g => g.classList.toggle('aktiv', g.dataset.ful === ful));
+  document.getElementById('ful-web').hidden = ful !== 'web';
+  document.getElementById('ful-tema').hidden = ful !== 'tema';
+  try { history.replaceState(null, '', ful === 'tema' ? '#temaoldal' : '#'); } catch (e) {}
+  if (ful === 'tema') temaErtekeles(); else illesztOldal();
+}
+
+let temaErtFut = false;
+async function temaErtekeles() {
+  const el = document.getElementById('temaert');
+  if (temaErtFut) return;
+  temaErtFut = true;
+  try {
+    const r = await fetch(API + '/api/ikt/beadas/sajat?feladat=temaoldal', { headers: AUTH });
+    const d = r.ok ? await r.json() : null;
+    const b = d && d.beadas;
+    if (!b || !((b.fajlok && b.fajlok.length) || b.githubUrl)) {
+      el.innerHTML = '<p>Még nem adtad be a Témaoldalt. A <a href="temaoldal.html">Témaoldal</a> kártyán adhatod be.</p>';
+      return;
+    }
+    // a kapott téma (a h1 összevetéséhez)
+    try {
+      const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal', { headers: AUTH });
+      const dt = rt.ok ? await rt.json() : null;
+      if (dt && dt.temaSorszam && u.email) temak[u.email] = { temaSorszam: dt.temaSorszam };
+    } catch (e) {}
+    beadasok = [b];
+    el.innerHTML = '<p class="megj"><i class="fas fa-spinner fa-spin"></i> Ellenőrzés…</p>';
+    const mod = b.fajlok && b.fajlok.length ? 'fajl' : 'github';
+    await futtat(b, mod);
+    const e = mod === 'github' ? ghEll[b.id] : ellenorzes[b.id];
+    if (!e || e.hiba) { el.innerHTML = `<p class="hiba">${esc((e && e.hiba) || 'Nem sikerült ellenőrizni.')}</p>`; return; }
+    const v = b.visszajelzes;
+    el.innerHTML = `<div class="ert-racs">
+      <div>${pontozoRajz(e, b, 'tanulo')}</div>
+      <div>
+        <p class="megj">Beadva: <b>${esc(b.updatedAt)}</b></p>
+        <p style="margin:8px 0"><button class="btn" onclick="nzMegnyit(${b.id})"><i class="fas fa-eye"></i> Megnézem a munkámat</button></p>
+        ${v ? `<div class="vj-doboz"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(v.updatedAt)})</span>` +
+              `<div style="margin-top:6px">${esc(v.szoveg).replace(/\n/g, '<br>')}</div></div>`
+            : '<p class="megj">A tanárod még nem küldött visszajelzést.</p>'}
+        <p class="megj" style="margin-top:8px">A „kézi” szempontokat és a végső pontszámot a tanárod adja.</p>
+      </div></div>`;
+  } catch (x) {
+    el.innerHTML = '<p class="hiba">Nem sikerült betölteni. Frissítsd az oldalt!</p>';
+  } finally {
+    temaErtFut = false;
+    illesztOldal();
+  }
+}
+
+// Ne görgessen (Réka szabálya): ha az oldal nem fér ki a képernyőre, kisebb betűvel rajzolja (16 → 9,5 px).
 function illesztOldal() {
   if (innerWidth < 760) { document.documentElement.style.fontSize = ''; return; }
-  for (let fs = 16; fs >= 11; fs -= 0.5) {
+  for (let fs = 16; fs >= 9.5; fs -= 0.5) {
     document.documentElement.style.fontSize = fs + 'px';
     if (document.documentElement.scrollHeight <= innerHeight + 1) return;
   }
@@ -179,6 +262,8 @@ if (!u || !TOKEN) {
   app.innerHTML = '';
   app.appendChild(document.getElementById('oldal').content.cloneNode(true));
   document.getElementById('mentes').addEventListener('click', bekuld);
+  document.querySelectorAll('.fulsor button').forEach(g => g.onclick = () => fulValt(g.dataset.ful));
+  if (location.hash === '#temaoldal') fulValt('tema');
   document.getElementById('url').addEventListener('keydown', e => { if (e.key === 'Enter') bekuld(); });
   sajatBetolt();
 }

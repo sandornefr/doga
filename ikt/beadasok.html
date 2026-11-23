@@ -46,9 +46,10 @@ table.tbl th{background:#f0f4f8;}
 .fej .megnez{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:6px;padding:4px 10px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;}
 .szorg-cim{margin:26px 0 10px;font-size:1.1rem;}
 .szorg-cim i,.szorg-cimke i{color:#f59e0b;}
+.szorg-db{margin-bottom:14px;}
 .szorg-cimke{font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;background:#fef3c7;color:#92400e;white-space:nowrap;}
 </style>
-<link rel="stylesheet" href="ikt-nezo.css?v=2">
+<link rel="stylesheet" href="ikt-nezo.css?v=3">
 <link rel="stylesheet" href="ikt.css?v=4">
 </head>
 <body>
@@ -63,7 +64,7 @@ table.tbl th{background:#f0f4f8;}
 
 
 <script src="temak.js"></script>
-<script src="ikt-ellenor.js?v=2"></script>
+<script src="ikt-ellenor.js?v=3"></script>
 <script>
 const TEMAK = window.IKT_TEMAK;
 const API = 'https://agazati.up.railway.app';
@@ -82,6 +83,12 @@ let beadasok = [];   // tanulónként egy sor: beadás és/vagy kiosztott téma
 let szorgalmiLista = [];   // szorgalmi témaoldalak (feladat: „szorgalmi-<sorszám>”), a kötelezőtől külön
 let temak = {};      // email → {id, temaSorszam}
 const ellenorzes = {};   // beadás id → eredmény
+// beadasok.html?szorgalmi=1 – az Oktató menü „Szorgalmi feladatok” kártyája: csak a szorgalmik, tanulónkénti darabszámmal.
+const SZORG_MOD = new URLSearchParams(location.search).has('szorgalmi');
+if (SZORG_MOD) {
+  document.title = 'IKT – Szorgalmi feladatok';
+  document.querySelector('.topbar .cim').innerHTML = '<i class="fas fa-star"></i> IKT – Szorgalmi feladatok';
+}
 
 async function betolt() {
   try {
@@ -122,8 +129,9 @@ async function betolt() {
     <span class="db" id="db"></span>
     <button class="mind" onclick="mindetEllenoriz(this)" title="A kiválasztott csoport minden beadását újra ellenőrzi (a github.io oldalakat is), legfeljebb 4-et egyszerre"><i class="fas fa-list-check"></i> Mindet ellenőrzöm</button></div>
     <p class="megj" style="margin-bottom:12px">Az automatikus előellenőrzés csak a kódot nézi. A tartalmat (saját szavak, témához illő kép és link, a „leg”-ek helyessége, a kép felbontása) neked kell elbírálnod – ezeknél „kézi” áll.</p>
-    <div id="lista"></div>
+    <div id="lista" ${SZORG_MOD ? 'hidden' : ''}></div>
     <h2 class="szorg-cim"><i class="fas fa-star"></i> Szorgalmi témaoldalak</h2>
+    ${SZORG_MOD ? '<div id="szorg-db" class="szorg-db"></div>' : ''}
     <div id="szorg"></div>
     <details class="temalista"><summary>A 35 téma</summary>
       <table class="tbl"><thead><tr><th>#</th><th>Téma</th><th>A táblázat oszlopai</th><th>Rangsor: keresd meg…</th></tr></thead>
@@ -132,7 +140,7 @@ async function betolt() {
   document.getElementById('csop').addEventListener('change', listaRajz);
   listaRajz();
   // A feltöltött fájlokat betöltéskor ellenőrzi; a csak github.io-s beadásokat is (legfeljebb 4 egyszerre).
-  await parhuzamosan([...beadasok, ...szorgalmiLista].filter(b => !b.nincsBeadas && (b.fajlok.length || b.githubUrl)), 4, b => futtat(b, b.fajlok.length ? 'fajl' : 'github'));
+  await parhuzamosan((SZORG_MOD ? szorgalmiLista : [...beadasok, ...szorgalmiLista]).filter(b => !b.nincsBeadas && (b.fajlok.length || b.githubUrl)), 4, b => futtat(b, b.fajlok.length ? 'fajl' : 'github'));
 }
 
 function temaNev(b) {
@@ -224,6 +232,16 @@ function listaRajz() {
       <div class="reszletek" id="r${b.id}"><p class="megj">Ellenőrzés…</p></div>
     </div>`; }).join('') : '<p class="megj">Még nincs szorgalmi beadás.</p>';
   szl.forEach(b => { if (ellenorzes[b.id] || ghEll[b.id]) sorFrissit(b); });
+  // Külön elszámolás: tanulónként hány szorgalmit adott be, és mennyi a végleges pontjuk.
+  const dbEl = document.getElementById('szorg-db');
+  if (dbEl) {
+    const t = {};
+    szl.forEach(b => { (t[b.email] ||= { nev: b.nev || b.email, csop: csoportNev(b), db: 0, veg: [] }).db++; if (b.ertekeles) t[b.email].veg.push(b.ertekeles.osszes); });
+    const sorok = Object.values(t).sort((a, b) => a.csop.localeCompare(b.csop, 'hu') || a.nev.localeCompare(b.nev, 'hu'));
+    dbEl.innerHTML = sorok.length ? `<table class="tbl"><thead><tr><th>Tanuló</th><th>Csoport</th><th>Szorgalmi (db)</th><th>Végleges pontok</th></tr></thead><tbody>` +
+      sorok.map(s => `<tr><td>${esc(s.nev)}</td><td>${esc(s.csop)}</td><td><b>${s.db}</b></td><td>${s.veg.length ? s.veg.map(x => x + ' / 20').join(', ') + (s.veg.length < s.db ? ` <span class="megj">(+${s.db - s.veg.length} még pontozatlan)</span>` : '') : '<span class="megj">még nincs</span>'}</td></tr>`).join('') +
+      '</tbody></table>' : '';
+  }
 }
 
 function sorFrissit(b) {
@@ -232,7 +250,7 @@ function sorFrissit(b) {
   if (!p || !r) return;
   // A fejlécben a feltöltött fájlok eredménye; ha csak link van, a GitHubos.
   const fo = e || (g && g.sorok ? g : null);
-  p.innerHTML = fo ? pontSzoveg(fo) + (!e && fo ? ' <small>(GitHub)</small>' : '') : (g && g.fut ? '…' : '');
+  p.innerHTML = fo ? pontSzoveg(fo, b) + (!e && fo ? ' <small>(GitHub)</small>' : '') : (g && g.fut ? '…' : '');
   let html = '';
   if (b.fajlok.length) {
     const fajlok = b.fajlok.map(f => /\.html$/i.test(f.fajlnev)
