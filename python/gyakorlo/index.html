@@ -52,6 +52,19 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); disp
 .zarva { margin: 12px 14px 0; padding: 10px 12px; border: 1px dashed var(--border2); border-radius: 10px; color: var(--muted); font-size: .85rem; line-height: 1.45; }
 .zarva i { color: var(--yellow); margin-right: 4px; }
 .fl-elem .orai { color: var(--yellow); font-size: .75rem; }
+/* Órán kiadott feladatok: a lista tetején, elöl a feladat, alatta kisebben a téma */
+.kiadott { padding: 10px; border-bottom: 1.5px solid var(--border); background: rgba(245,158,11,.06); max-height: 45%; overflow-y: auto; flex-shrink: 0; }
+.kiadott[hidden] { display: none; }
+.kiadott-cim { font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--yellow); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.ki-elem { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; font: inherit; padding: 8px 10px; margin-bottom: 6px; border-radius: 10px; border: 1.5px solid rgba(245,158,11,.55); background: var(--bg3); color: var(--text); cursor: pointer; }
+.ki-elem:hover { border-color: var(--yellow); }
+.ki-elem.aktiv { border-color: var(--yellow); background: rgba(245,158,11,.15); }
+.ki-elem.kesz { border-color: rgba(34,197,94,.5); opacity: .75; }
+.ki-elem .jel { color: var(--yellow); font-size: 1.05rem; }
+.ki-elem.kesz .jel { color: var(--accent); }
+.ki-elem b { display: block; font-size: .98rem; }
+.ki-elem small { display: block; color: var(--muted); font-size: .78rem; margin-top: 1px; }
+.kiadott .mind-kesz { color: var(--accent); font-size: .88rem; padding: 2px 2px 4px; }
 .elmelet { margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #1e1b4b; border: 1.5px solid #a78bfa; line-height: 1.5; font-size: 1rem; }
 .elmelet > i { font-size: 1.6rem; color: #a78bfa; }
 .elmelet b { color: #fde047; }
@@ -140,6 +153,7 @@ pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .88rem; ba
 
 <div class="fo">
   <nav class="lista">
+    <div class="kiadott" id="kiadott" hidden></div>
     <div class="temak" id="temak"></div>
     <div class="feladatlista" id="feladatlista"></div>
   </nav>
@@ -249,7 +263,32 @@ function rajzolTemak() {
   document.getElementById('temak').innerHTML = TEMAK.filter(t => t === st.tema || t.feladatok.some(latszik)).map(t =>
     `<button class="tema-gomb${t === st.tema ? ' aktiv' : ''}" onclick="valasztTema('${t.id}')">${esc(t.cim)}</button>`).join('');
 }
+// Az órán kiadott feladatok külön, a lista tetején: elöl a feladat neve, alatta a téma.
+// Sorrend: a még nem kész feladatok elöl, a legutóbbi (tananyagban későbbi) témáé az első.
+function kiadottFeladatok() {
+  const lista = [];
+  TEMAK.forEach((t, ti) => t.feladatok.forEach(f => { if (kiadva(f)) lista.push({ t, f, ti }); }));
+  return lista.sort((a, b) => (kesz(a.f) - kesz(b.f)) || (b.ti - a.ti) || (a.f.sorszam - b.f.sorszam));
+}
+function rajzolKiadott() {
+  const el = document.getElementById('kiadott');
+  const lista = st.mind ? [] : kiadottFeladatok();
+  el.hidden = !lista.length;
+  if (!lista.length) { el.innerHTML = ''; return; }
+  const nemKesz = lista.filter(x => !kesz(x.f));
+  const mutat = nemKesz.length ? nemKesz : [];
+  el.innerHTML = `<div class="kiadott-cim"><i class="fas fa-chalkboard-user"></i> Órán kiadott feladataid</div>` +
+    (mutat.length ? mutat.map(({ t, f }) => `<button class="ki-elem${f === st.feladat ? ' aktiv' : ''}" onclick="kiadottValaszt('${t.id}','${f.id}')">
+      <span class="jel"><i class="fas fa-circle-play"></i></span><span><b>${f.sorszam}. ${esc(f.cim)}</b><small>Téma: ${esc(t.cim)}</small></span></button>`).join('')
+      : `<div class="mind-kesz"><i class="fas fa-circle-check"></i> Mind a ${lista.length} kiadott feladat kész. Ügyes vagy!</div>`);
+}
+function kiadottValaszt(temaId, feladatId) {
+  st.tema = TEMAK.find(t => t.id === temaId) || st.tema;
+  rajzolTemak();
+  valasztFeladat(feladatId);
+}
 function rajzolLista() {
+  rajzolKiadott();
   const t = st.tema, el = document.getElementById('feladatlista');
   if (!t) { el.innerHTML = ''; return; }
   const lathato = t.feladatok.filter(latszik);
@@ -544,11 +583,15 @@ function haladasKuld(f, pont, max) {
   await feloldottBetolt();
   document.getElementById('oktato-cimke').hidden = !st.mind;
   const p = new URLSearchParams(location.search);
-  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK.find(t => t.feladatok.some(kiadva)) || TEMAK[0];
+  // Ha van még meg nem oldott kiadott feladat, rögtön azzal indul
+  const elsoKiadott = st.mind ? null : kiadottFeladatok().find(x => !kesz(x.f));
+  const tema = TEMAK.find(t => t.id === p.get('tema')) || (elsoKiadott && elsoKiadott.t) || TEMAK.find(t => t.feladatok.some(kiadva)) || TEMAK[0];
   st.tema = tema;
   rajzolTemak();
   const kert = tema && tema.feladatok.find(f => f.id === p.get('feladat') && latszik(f));
-  if (kert) valasztFeladat(kert.id); else valasztTema(tema ? tema.id : null);
+  if (kert) valasztFeladat(kert.id);
+  else if (elsoKiadott && elsoKiadott.t === tema) valasztFeladat(elsoKiadott.f.id);
+  else valasztTema(tema ? tema.id : null);
   segitsegFrissit();   // a ma már elküldött segítségkérések és a tanár válasza
 })();
 </script>
