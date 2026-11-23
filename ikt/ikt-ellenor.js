@@ -22,7 +22,7 @@
       </div>
       <div id="nz-kod" class="nz-kod"></div>
       <div id="nz-kinezet" class="nz-kinezet" hidden>
-        <iframe id="nz-iframe" sandbox="allow-popups" referrerpolicy="no-referrer" title="A tanuló oldala"></iframe>
+        <iframe id="nz-iframe" sandbox="allow-same-origin allow-popups" referrerpolicy="no-referrer" scrolling="no" title="A tanuló oldala"></iframe>
         <div id="nz-kep" class="nz-kep" hidden></div>
       </div>
     </section>
@@ -376,7 +376,8 @@ function nzMegnyit(id) {
 
 function nzBezar() {
   document.getElementById('nz').hidden = true;
-  document.getElementById('nz-iframe').src = 'about:blank';
+  const ifr = document.getElementById('nz-iframe');
+  ifr.removeAttribute('srcdoc'); ifr.dataset.cel = ''; ifr.src = 'about:blank';
   document.body.style.overflow = '';
   nz = null;
 }
@@ -419,6 +420,37 @@ async function nzForras(mod) {
   nzFajl(tema >= 0 ? tema : 0);
 }
 
+// A jobb sáv két füle: Pontozás és Visszajelzés (semmi nem görget: a tartalom kisebb betűvel fér be).
+function nzJobbFul(ful) {
+  if (nz) nz.jobbFul = ful;
+  document.querySelectorAll('#nz-pont .nzj-fulek button').forEach(g => g.classList.toggle('aktiv', g.dataset.j === ful));
+  document.querySelectorAll('#nz-pont .nzj-panel').forEach(p => p.hidden = p.dataset.j !== ful);
+  nzIllesztes();
+}
+const nzJobbKeret = (pont, vj, vjCim) => `<div class="nzj-fulek"><button data-j="pont" onclick="nzJobbFul('pont')"><i class="fas fa-list-check"></i> Pontozás</button>` +
+  `<button data-j="vj" onclick="nzJobbFul('vj')"><i class="fas fa-comment-dots"></i> ${vjCim}</button></div>` +
+  `<div class="nzj-panel" data-j="pont">${pont}</div><div class="nzj-panel" data-j="vj" hidden>${vj}</div>`;
+
+// Betűméret-illesztés: az elem tartalma férjen ki (nincs görgetés). oszlop > 1: a kód több oszlopba is tördelődhet.
+function nzIllesztElem(el, { max = 1, min = 0.55, oszlop = 1 } = {}) {
+  if (!el || !el.offsetParent || !el.clientHeight) return;
+  for (let fs = max; fs >= min - 0.001; fs -= 0.025) {
+    el.style.fontSize = fs.toFixed(3) + 'em';
+    for (let c = 1; c <= oszlop; c++) {
+      if (oszlop > 1) el.style.columnCount = c;
+      if (el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1) return;
+    }
+  }
+}
+function nzIllesztes() {
+  if (!nz || innerWidth < 760) return;
+  nzIllesztElem(document.getElementById('nz-fajlok'), { min: 0.6 });
+  nzIllesztElem(document.querySelector('#nz-kod .nz-forras'), { min: 0.5, oszlop: 3 });
+  nzIllesztElem(document.querySelector('#nz-pont .nzj-panel:not([hidden])'), { min: 0.55 });
+  nzKinezetMeretez();
+}
+window.addEventListener('resize', () => { clearTimeout(window._nzIll); window._nzIll = setTimeout(nzIllesztes, 150); });
+
 function nzPontozas() {
   const el = document.getElementById('nz-pont');
   const e = nz.mod === 'github' ? ghEll[nz.b.id] : ellenorzes[nz.b.id];
@@ -433,20 +465,24 @@ function nzPontozas() {
   if (typeof IKT_TANULO !== 'undefined' && IKT_TANULO) {
     // Tanulói nézet: csak olvasható; tájékoztató gépi pontok, a tanár végleges pontjai; alatta a tanár visszajelzése.
     const v = nz.b.visszajelzes;
-    el.innerHTML = figyel + pontozoRajz(e, nz.b, 'tanulo') +
-      (v ? `<div class="vj-szerk"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(v.updatedAt)})</span>` +
-           `<div style="margin-top:6px">${esc(v.szoveg).replace(/\n/g, '<br>')}</div></div>` : '');
+    el.innerHTML = nzJobbKeret(figyel + pontozoRajz(e, nz.b, 'tanulo'),
+      v ? `<div class="vj-szerk"><b><i class="fas fa-comment-dots"></i> Visszajelzés a tanárodtól</b> <span class="megj">(${esc(v.updatedAt)})</span>` +
+          `<div style="margin-top:6px">${esc(v.szoveg).replace(/\n/g, '<br>')}</div></div>` : '<p class="megj">A tanárod még nem küldött visszajelzést.</p>',
+      'Visszajelzés' + (v ? ' <span class="nzj-pottyl"></span>' : ''));
+    nzJobbFul(nz.jobbFul || 'pont');
     return;
   }
-  el.innerHTML = figyel + pontozoRajz(e, nz.b, 'tanar') +
+  el.innerHTML = nzJobbKeret(figyel + pontozoRajz(e, nz.b, 'tanar'),
     `<div class="vj-szerk"><label for="vj-szoveg"><b>Visszajelzés a tanulónak</b></label>
-      <textarea id="vj-szoveg" rows="7" maxlength="4000"></textarea>
-      <div class="vj-sor"><button id="vj-kuld" class="vj-gomb"><i class="fas fa-paper-plane"></i> Elküldöm</button><span id="vj-allapot" class="megj"></span></div></div>`;
+      <textarea id="vj-szoveg" maxlength="4000"></textarea>
+      <div class="vj-sor"><button id="vj-kuld" class="vj-gomb"><i class="fas fa-paper-plane"></i> Elküldöm</button><span id="vj-allapot" class="megj"></span></div></div>`,
+    'Visszajelzés');
   const v = nz.b.visszajelzes;
   document.getElementById('vj-szoveg').value = v ? v.szoveg : vjJavaslat(e);
   document.getElementById('vj-allapot').textContent = v ? 'Elküldve: ' + v.updatedAt + (v.elolvasvaAt ? ' · elolvasta: ' + v.elolvasvaAt : '') : '';
   document.getElementById('vj-kuld').onclick = vjKuld;
   pontozoEsemenyek(e, nz.b);
+  nzJobbFul(nz.jobbFul || 'pont');
 }
 
 // A hiányzó (piros) pontokból számozott, felszólító hibalista – a „kézi” pontok kimaradnak.
@@ -493,6 +529,38 @@ function nzFul(ful) {
   document.querySelectorAll('#nz-fulek button').forEach(g => g.classList.toggle('aktiv', g.dataset.f === ful));
   document.getElementById('nz-kod').hidden = ful !== 'kod';
   document.getElementById('nz-kinezet').hidden = ful !== 'kinezet';
+  nzIllesztes();
+}
+
+// A Kinézet: a tanuló oldala 1100 px szélesen, a teljes magasságában, a dobozba kicsinyítve (nincs görgetés).
+const NZ_KIN_SZ = 1100;
+function nzKinezetMeretez() {
+  const ifr = document.getElementById('nz-iframe'), doboz = document.getElementById('nz-kinezet');
+  if (!ifr || ifr.hidden || doboz.hidden || !doboz.clientWidth) return;
+  try {
+    const d = ifr.contentDocument;
+    if (!d || !d.body) return;
+    const h = Math.max(300, d.documentElement.scrollHeight, d.body.scrollHeight);
+    const s = Math.min(1, doboz.clientWidth / NZ_KIN_SZ, doboz.clientHeight / h);
+    ifr.style.width = NZ_KIN_SZ + 'px'; ifr.style.height = h + 'px';
+    ifr.style.transform = `scale(${s})`;
+    ifr.style.left = Math.max(0, (doboz.clientWidth - NZ_KIN_SZ * s) / 2) + 'px';
+  } catch (x) {}
+}
+// A tanuló HTML-je szövegként, <base>-zel (a képek, a CSS a beadásból / a GitHubról töltődnek); szkript nem fut (sandbox).
+async function nzKinezetBetolt(ut, cel) {
+  const ifr = document.getElementById('nz-iframe');
+  if (ifr.dataset.cel === cel) { nzKinezetMeretez(); return; }
+  ifr.dataset.cel = cel;
+  const html = await nz.forras.szoveg(ut);
+  if (ifr.dataset.cel !== cel) return;
+  const base = `<base href="${esc(cel)}" target="_blank">`;
+  const t = html == null ? '<p style="font-family:sans-serif">Nem található.</p>' : (/<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + base) : base + html);
+  ifr.onload = () => {
+    nzKinezetMeretez();
+    try { [...ifr.contentDocument.images].forEach(k => k.complete || k.addEventListener('load', nzKinezetMeretez)); } catch (x) {}
+  };
+  ifr.srcdoc = t;
 }
 
 async function nzFajl(i) {
@@ -534,14 +602,18 @@ async function nzFajl(i) {
   if (nz.aktiv !== i) return;
   if (szoveg == null) {
     kod.innerHTML = `<p class="hiba">${esc(nz.forras.hianyUzenet(f.ut))}</p>`;
-    ifr.src = 'about:blank';
+    ifr.removeAttribute('srcdoc'); ifr.dataset.cel = ''; ifr.src = 'about:blank';
   } else {
-    const sorok = szoveg.replace(/\r\n?/g, '\n').split('\n').length;
-    kod.innerHTML = `<div class="nz-sorszam">${Array.from({ length: sorok }, (_, k) => k + 1).join('\n')}</div>` +
-      `<pre class="nz-forras">${/\.css$/i.test(f.nev) ? szinezCss(szoveg) : szinezHtml(szoveg)}</pre>`;
+    // Soronként: sorszám + a sor, tördelve (a folytatás a sor behúzása alatt), színezve; szükség esetén több oszlopban.
+    const css = /\.css$/i.test(f.nev);
+    kod.innerHTML = `<pre class="nz-forras">` + szoveg.replace(/\r\n?/g, '\n').replace(/\s+$/, '').split('\n').map((sor, k) => {
+      const beh = sor.match(/^\s*/)[0].replace(/\t/g, '    ').length;
+      const t = sor.trim();
+      return `<span class="ks"><span class="ln">${k + 1}</span><span class="kt" style="padding-left:${beh + 2}ch;text-indent:-2ch">${t ? (css ? szinezCss(t) : szinezHtml(t)) : ' '}</span></span>`;
+    }).join('') + `</pre>`;
     // Kinézet: CSS-nél nincs önálló kinézet – a tema.html-t mutatja
-    const latvany = /\.css$/i.test(f.nev) ? new URL(nz.mod === 'fajl' ? 'tema.html' : 'tema.html', nz.alap).href : cel;
-    if (ifr.dataset.cel !== latvany) { ifr.dataset.cel = latvany; ifr.src = latvany; }
+    const latvany = css ? new URL('tema.html', nz.alap).href : cel;
+    nzKinezetBetolt(css ? (nz.mod === 'fajl' ? 'tema.html' : 'tema.html') : (nz.mod === 'fajl' ? f.nev : f.ut), latvany);
   }
   nzFul(nz.ful);
 }
