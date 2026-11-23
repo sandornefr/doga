@@ -61,6 +61,7 @@ iframe.minta{border:1px solid var(--ikt-vonal);border-radius:14px;box-shadow:0 6
 .we-p{display:inline-block;margin:2px 6px 2px 0;padding:1px 9px;border-radius:99px;font-size:.82rem;white-space:nowrap;}
 .we-p.jo{background:#dcfce7;color:#067647;}
 .we-p.rossz{background:#fee4e2;color:#b42318;}
+.we-p.kesobb{background:#fef3c7;color:#92400e;}
 .we-hiba{color:#b42318;}
 
 /* ── Sötét téma (Réka kérése, 2026-11-17): a portál színeihez igazodik ──
@@ -119,6 +120,7 @@ body .we-tabla td{border-bottom-color:var(--d-keret);}
 /* jelvények (pipák, pontszámok, állapotok) */
 body .we-p.jo,body .pont.jo,body .allapot.jo,body .vj-olvasta{background:rgba(34,197,94,.16);color:#86efac;}
 body .we-p.rossz,body .pont.rossz,body .allapot.rossz{background:rgba(239,68,68,.16);color:#fca5a5;}
+body .we-p.kesobb{background:rgba(245,158,11,.14);color:#fcd34d;}
 body .pont.kozepes,body .vj-javitott{background:rgba(245,158,11,.16);color:#fcd34d;}
 body .pont.fut,body .allapot.fut,body .vj-elkuldve{background:rgba(99,102,241,.2);color:#c7d2fe;}
 body .vj-nincs{background:#1e293b;color:#94a3b8;}

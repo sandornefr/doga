@@ -12,16 +12,17 @@ body{line-height:1.5;min-height:100vh;}
 .topbar{display:flex;align-items:center;gap:12px;color:#fff;}
 .topbar .cim{font-weight:700;flex:1;}
 .topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
-.wrap{max-width:900px;margin:0 auto;padding:24px 20px 40px;}
+.wrap{max-width:900px;margin:0 auto;padding:18px 20px 16px;}
 h1{font-size:1.7rem;margin-bottom:4px;}
-.card{background:#fff;padding:18px 22px;margin-top:16px;}
-.lepesek{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
-.lepes{background:#fff;border:1px solid var(--ikt-vonal);border-radius:14px;padding:12px 14px;font-size:.95rem;}
-.lepes b{display:block;color:var(--ikt-lila);font-size:1.4rem;line-height:1;}
+.card{background:#fff;padding:14px 20px;margin-top:12px;}
+.lepesek{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+.lepes{background:#fff;border:1px solid var(--ikt-vonal);border-radius:14px;padding:8px 14px;font-size:.92rem;display:flex;gap:10px;align-items:center;}
+.lepes b{flex:none;color:var(--ikt-lila);font-size:1.4rem;line-height:1;}
 .sor{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .sor input[type=url]{flex:1;min-width:260px;padding:10px 12px;border:1px solid #cbd2d9;font:inherit;font-size:1.05rem;}
 .btn{border:0;padding:10px 20px;font:inherit;font-weight:600;cursor:pointer;color:#fff;}
-.uzenet{min-height:1.6em;margin-top:8px;font-weight:600;}
+.uzenet{min-height:1.4em;margin-top:6px;font-weight:600;}
+html{font-size:16px;}
 .uzenet.hiba{color:#b42318;}
 .uzenet.jo{color:#067647;}
 .uzenet.sarga{color:#b54708;}
@@ -37,7 +38,7 @@ h1{font-size:1.7rem;margin-bottom:4px;}
 .allapot.fut{background:#eef2ff;color:#4f46e5;}
 @media (max-width:640px){.lepesek{grid-template-columns:1fr;}}
 </style>
-<link rel="stylesheet" href="ikt.css?v=3">
+<link rel="stylesheet" href="ikt.css?v=4">
 </head>
 <body>
 <div class="topbar">
@@ -52,9 +53,9 @@ h1{font-size:1.7rem;margin-bottom:4px;}
   <div class="alcim">Add meg a github.io-s címedet. A tanárod így látja az oldaladat.</div>
 
   <div class="lepesek">
-    <div class="lepes"><b>1</b>A GitHubon nyisd meg a repódat. Kattints: <b style="display:inline;font-size:1em">Settings → Pages</b>.</div>
-    <div class="lepes"><b>2</b>Branch: <code>main</code>, majd <b style="display:inline;font-size:1em">Save</b>. Várj 1-2 percet.</div>
-    <div class="lepes"><b>3</b>Másold ki a fent megjelenő címet. Illeszd be ide (Ctrl+V).</div>
+    <div class="lepes"><b>1</b><span>A GitHubon nyisd meg a repódat. Kattints: <strong>Settings → Pages</strong>.</span></div>
+    <div class="lepes"><b>2</b><span>Branch: <code>main</code>, majd <strong>Save</strong>. Várj 1-2 percet.</span></div>
+    <div class="lepes"><b>3</b><span>Másold ki a fent megjelenő címet. Illeszd be ide (Ctrl+V).</span></div>
   </div>
 
   <div class="card">
@@ -68,7 +69,7 @@ h1{font-size:1.7rem;margin-bottom:4px;}
   <div class="card" id="sajat" hidden></div>
 </template>
 
-<script src="weboldal-ellenor.js?v=2"></script>
+<script src="weboldal-ellenor.js?v=3"></script>
 <script>
 const API = 'https://agazati.up.railway.app';
 const FELADAT = 'weboldal';
@@ -107,6 +108,16 @@ async function sajatBetolt() {
   } catch (e) {}
 }
 
+// Ne görgessen (Réka szabálya): ha az oldal nem fér ki a képernyőre, kisebb betűvel rajzolja (16 → 11 px).
+function illesztOldal() {
+  if (innerWidth < 760) { document.documentElement.style.fontSize = ''; return; }
+  for (let fs = 16; fs >= 11; fs -= 0.5) {
+    document.documentElement.style.fontSize = fs + 'px';
+    if (document.documentElement.scrollHeight <= innerHeight + 1) return;
+  }
+}
+window.addEventListener('resize', () => { clearTimeout(window._illIdo); window._illIdo = setTimeout(illesztOldal, 150); });
+
 async function sajatRajz(b) {
   const el = document.getElementById('sajat');
   el.hidden = false;
@@ -127,8 +138,9 @@ async function sajatRajz(b) {
     a.innerHTML = `<i class="fas ${e.ok === e.ossz ? 'fa-check' : 'fa-list-check'}"></i> ${e.ok} / ${e.ossz}`;
   }
   document.getElementById('ell').innerHTML = WebEllenor.rajz(e) +
-    (e.el ? '<p class="megj">A piros elemeket javítsd ki VS Code-ban, majd töltsd fel újra a GitHubra.</p>'
+    (e.el ? '<p class="megj">A piros elemeket javítsd ki VS Code-ban, majd töltsd fel újra a GitHubra. A zöld jelre mutatva látod, mi van rendben.</p>'
           : '<p class="megj">Nem találom az index.html-t. Be van kapcsolva a GitHub Pages? Jó a cím?</p>');
+  illesztOldal();
 }
 
 async function bekuld() {

@@ -4,13 +4,16 @@
 // A tartalmat is nézi (Réka mintája szerint: IKT_9.A-1.cs), nem csak a tageket: üres h1, üres
 // bekezdés, üres lista, üres táblázat, meg nem jelenő kép nem ér pontot. A szöveget nem várja
 // betűre – minden tanulónál más –, csak hogy ki legyen töltve, és a főoldal h1-e a tanuló neve.
+// Az 5. oldal a tema.html (a Témaoldal számonkérés): ha még nincs fent, azt nem hibaként jelzi, és nem számít a pontba.
 (function () {
   const OLDALAK = [
     { fajl: 'index.html', nev: 'Főoldal', db: 10 },
     { fajl: 'keplink.html', nev: 'Kép és link', db: 10 },
     { fajl: 'listak.html', nev: 'Listák', db: 9 },
     { fajl: 'orarend.html', nev: 'Órarend', db: 9 },
+    { fajl: 'tema.html', nev: 'Témám', db: 16, kesobb: true },
   ];
+  const H2_SORREND = ['Bemutatás', 'Érdekességek', 'Jellemzők', 'Adatok', 'Rangsor'];
 
   // A github.io cím alapja: https://<név>.github.io/<mappa>/ – ha fájlra mutat, annak a mappája.
   function alap(url) {
@@ -18,7 +21,8 @@
       const u = new URL(String(url || '').trim());
       if (u.protocol !== 'https:' || !/^[a-z0-9-]+\.github\.io$/i.test(u.hostname)) return null;
       let p = u.pathname;
-      if (/\/[^/]+\.[a-z0-9]+$/i.test(p)) p = p.replace(/[^/]+$/, '');
+      // Csak a .html/.htm végű utolsó tag fájl; a pontot tartalmazó mappanév (pl.: IKT_9.A-1.cs) mappa marad.
+      if (/\/[^/]+\.html?$/i.test(p)) p = p.replace(/[^/]+$/, '');
       if (!p.endsWith('/')) p += '/';
       return u.origin + p;
     } catch (e) { return null; }
@@ -33,12 +37,30 @@
     } catch (e) { return null; }
   }
 
-  // A menü: van-e nav, és abban link mind a 4 oldalra.
-  function menuRendben(doc) {
+  // A menü: van-e nav, és abban link mind az 5 oldalra (a tema.html-re csak akkor kell, ha már fent van).
+  function menuRendben(doc, vanTema) {
     const nav = doc.querySelector('nav');
     if (!nav) return false;
-    const hrefek = [...nav.querySelectorAll('a[href]')].map(a => a.getAttribute('href').trim().replace(/^\.\//, '').toLowerCase());
-    return OLDALAK.every(o => hrefek.includes(o.fajl));
+    const hrefek = [...nav.querySelectorAll('a[href]')].map(a => a.getAttribute('href').trim().replace(/^\.\//, '').split(/[?#]/)[0].toLowerCase());
+    return OLDALAK.every(o => (o.fajl === 'tema.html' && !vanTema) || hrefek.includes(o.fajl));
+  }
+  // Egy h2 alcím alatti elemek a következő h2-ig (a Témaoldal szakaszai).
+  function szakasz(doc, cim) {
+    const h2 = [...doc.querySelectorAll('h2')].find(h => norm(szoveg(h)) === norm(cim));
+    const ki = [];
+    if (!h2) return ki;
+    for (let e = h2.nextElementSibling; e && e.tagName !== 'H2'; e = e.nextElementSibling) {
+      ki.push(e);
+      ki.push(...e.querySelectorAll('*'));
+    }
+    return ki;
+  }
+  const mondatok = s => (String(s || '').match(/[^.!?]*[a-záéíóöőúüű0-9][^.!?]*[.!?]+/gi) || []).length;
+  // A táblázat szegélye a style.css-ből (Réka kérése: így látszik, hogy a CSS-csatolás működik).
+  function cssSzegely(css) {
+    const c = String(css || '').replace(/\/\*[\s\S]*?\*\//g, '');
+    return /(^|[},\s])(th\s*,\s*td|td\s*,\s*th|table\s*,\s*th\s*,\s*td|table\s*,\s*td\s*,\s*th)\s*\{[^}]*border\s*:/i.test(c)
+      || (/(^|[},\s])td\s*\{[^}]*border\s*:/i.test(c) && /(^|[},\s])th\s*\{[^}]*border\s*:/i.test(c));
   }
 
   // Szöveg összevetéshez: kisbetű, ékezet nélkül, egy szóközzel.
@@ -111,6 +133,31 @@
         ['az órák beírva (legalább 5 cella)', orak >= 5],
       ];
     }
+    if (fajl === 'tema.html') {
+      const h2k = [...doc.querySelectorAll('h2')].map(szoveg);
+      const bemP = szakasz(doc, 'Bemutatás').filter(e => e.tagName === 'P').map(szoveg).join(' ');
+      const erdP = szakasz(doc, 'Érdekességek').filter(e => e.tagName === 'P').map(szoveg).join(' ');
+      const img = szakasz(doc, 'Bemutatás').find(e => e.tagName === 'IMG') || doc.querySelector('body img');
+      const a = [...doc.querySelectorAll('a[href]')].find(x => norm(szoveg(x)) === 'tudj meg tobbet');
+      const ul = szakasz(doc, 'Jellemzők').find(e => e.tagName === 'UL');
+      const ol = szakasz(doc, 'Rangsor').find(e => e.tagName === 'OL');
+      const tbl = szakasz(doc, 'Adatok').find(e => e.tagName === 'TABLE') || doc.querySelector('table');
+      const adatSorok = tbl ? [...tbl.querySelectorAll('tr')].filter(tr => tr.querySelector('td') && [...tr.querySelectorAll('td')].some(c => szoveg(c))) : [];
+      const css = await letolt(new URL('css/style.css', cim).href);
+      return [
+        ['h1: a téma neve', !!h1],
+        ['5 alcím (h2) sorrendben', h2k.length >= 5 && H2_SORREND.every((c, i) => norm(h2k[i]) === norm(c))],
+        ['Bemutatás: legalább 2 mondat', mondatok(bemP) >= 2],
+        ['Érdekességek: bekezdés', szavak(erdP).length >= 3],
+        ['kép megjelenik', await kepMegjelenik(img, cim)],
+        ['kép: alt és title', altTitle(img)],
+        ['„Tudj meg többet!” új lapon', !!a && /^https?:\/\/[^\s/]+\.[^\s]+/i.test(a.getAttribute('href').trim()) && (a.getAttribute('target') || '').trim().toLowerCase() === '_blank'],
+        ['Jellemzők: ul, legalább 3 elem', !!ul && kitoltott(ul, 'li').length >= 3],
+        ['Adatok: táblázat fejléc + 3 sor', !!tbl && kitoltott(tbl, 'th').length >= 2 && adatSorok.length >= 3],
+        ['táblázat szegélye a style.css-ből', !!tbl && cssSzegely(css)],
+        ['Rangsor: ol, legalább 3 elem', !!ol && kitoltott(ol, 'li').length >= 3],
+      ];
+    }
     return [];
   }
 
@@ -121,37 +168,46 @@
     const a = alap(url);
     if (!a) return { hiba: 'A cím nem https://….github.io/… alakú.' };
     const szovegek = await Promise.all(OLDALAK.map(o => letolt(a + o.fajl)));
+    const vanTema = szovegek[OLDALAK.findIndex(o => o.fajl === 'tema.html')] != null;
     const oldalak = await Promise.all(OLDALAK.map(async (o, i) => {
       const t = szovegek[i];
-      if (t == null) return { ...o, van: false, pontok: [] };
+      if (t == null) return { ...o, van: false, pontok: [], kesobbJon: !!o.kesobb };
       const doc = new DOMParser().parseFromString(t, 'text/html');
       const html = doc.documentElement;
       const p = [
         ['lang="hu"', (html.getAttribute('lang') || '').toLowerCase() === 'hu'],
         ['title: Weboldalam', norm(szoveg(doc.querySelector('head title'))) === 'weboldalam'],
         ['css/style.css', [...doc.querySelectorAll('head link[rel~="stylesheet"]')].some(l => (l.getAttribute('href') || '').trim().replace(/^\.\//, '') === 'css/style.css')],
-        ['menü mind a 4 oldalra', menuRendben(doc)],
+        [vanTema ? 'menü mind az 5 oldalra' : 'menü mind a 4 oldalra', menuRendben(doc, vanTema)],
       ];
       p.push(...await tartalmiPontok(o.fajl, doc, a + o.fajl, nev));
       return { ...o, van: true, pontok: p.map(([sz, ok]) => ({ szoveg: sz, ok })) };
     }));
     // Pont = az oldal megléte + a rajta lévő ellenőrzések (db = 1 + ellenőrzések száma).
-    const ossz = oldalak.reduce((s, o) => s + o.db, 0);
+    // A még el nem készült tema.html nem számít bele (később jön, nem hiba).
+    const ossz = oldalak.reduce((s, o) => s + (o.kesobbJon ? 0 : o.db), 0);
     const ok = oldalak.reduce((s, o) => s + (o.van ? 1 + o.pontok.filter(x => x.ok).length : 0), 0);
     return { el: oldalak[0].van, alap: a, oldalak, ok, ossz };
   }
 
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-  // Kis táblázat: oldalanként egy sor, zöld pipák és piros x-ek.
+  // Kis táblázat: oldalanként egy sor. A rendben lévő pontok egy zöld jelben („✓ 9 rendben”, rámutatva a lista),
+  // a hiányzók egyenként pirosan – így kifér a képernyőre, és rögtön látszik, mit kell javítani.
   function rajz(e) {
     if (!e) return '';
     if (e.hiba) return `<p class="we-hiba">${esc(e.hiba)}</p>`;
     return `<table class="we-tabla"><tbody>${e.oldalak.map(o => `<tr>
       <th>${o.van ? `<a href="${esc(e.alap + o.fajl)}" target="_blank" rel="noopener">${esc(o.fajl)}</a>` : esc(o.fajl)}</th>
       <td>${o.van
-        ? o.pontok.map(x => `<span class="we-p ${x.ok ? 'jo' : 'rossz'}"><i class="fas ${x.ok ? 'fa-check' : 'fa-xmark'}"></i> ${esc(x.szoveg)}</span>`).join('')
-        : '<span class="we-p rossz"><i class="fas fa-xmark"></i> nincs fent a GitHubon</span>'}</td></tr>`).join('')}</tbody></table>`;
+        ? (() => {
+            const jok = o.pontok.filter(x => x.ok), rosszak = o.pontok.filter(x => !x.ok);
+            return (jok.length ? `<span class="we-p jo" title="${esc(jok.map(x => x.szoveg).join(' · '))}"><i class="fas fa-check"></i> ${rosszak.length ? jok.length + ' rendben' : 'minden rendben (' + jok.length + ')'}</span>` : '') +
+              rosszak.map(x => `<span class="we-p rossz"><i class="fas fa-xmark"></i> ${esc(x.szoveg)}</span>`).join('');
+          })()
+        : o.kesobbJon
+          ? '<span class="we-p kesobb"><i class="fas fa-hourglass-half"></i> még nincs fent – a Témaoldal feladatnál készíted el</span>'
+          : '<span class="we-p rossz"><i class="fas fa-xmark"></i> nincs fent a GitHubon</span>'}</td></tr>`).join('')}</tbody></table>`;
   }
 
   window.WebEllenor = { OLDALAK, alap, jo, ellenoriz, rajz, nevEgyezik };

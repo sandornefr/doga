@@ -108,7 +108,8 @@ function githubAlap(url) {
     const u = new URL(String(url || '').trim());
     if (u.protocol !== 'https:' || !/^[a-z0-9-]+\.github\.io$/i.test(u.hostname)) return null;
     let p = u.pathname;
-    if (/\/[^/]+\.[a-z0-9]+$/i.test(p)) p = p.replace(/[^/]+$/, '');
+    // Csak a .html/.htm végű utolsó tag fájl; a pontot tartalmazó mappanév (pl.: IKT_9.A-1.cs) mappa marad.
+    if (/\/[^/]+\.html?$/i.test(p)) p = p.replace(/[^/]+$/, '');
     if (!p.endsWith('/')) p += '/';
     return u.origin + p;
   } catch (e) { return null; }
