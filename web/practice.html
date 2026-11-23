@@ -731,7 +731,7 @@ require(['vs/editor/editor.main'], function() {
 
     state.editors.html = m.editor.create(document.getElementById('editor-html'), {
       value: '', language: 'html', theme: 'vs-dark', fontSize: 15,
-      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on', wrappingIndent: 'same',
       scrollBeyondLastLine: false, tabSize: 2,
       quickSuggestions: { other: true, comments: false, strings: true },
       suggest: { showSnippets: true, showWords: false },
@@ -740,7 +740,7 @@ require(['vs/editor/editor.main'], function() {
 
     state.editors.css = m.editor.create(document.getElementById('editor-css'), {
       value: '', language: 'css', theme: 'vs-dark', fontSize: 15,
-      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on',
+      minimap: { enabled: false }, automaticLayout: true, wordWrap: 'on', wrappingIndent: 'same',
       scrollBeyondLastLine: false, tabSize: 2,
       quickSuggestions: { other: true, comments: false, strings: true },
     });

@@ -4349,6 +4349,7 @@ function createEditor(monaco, elementId, language, value) {
     tabSize: 2,
     insertSpaces: true,
     wordWrap: "on",
+    wrappingIndent: "same",   // a hosszú sor folytatása a sor behúzásához igazodik (mint a VS Code-ban)
     fontFamily: "'Fira Code', 'Consolas', 'Courier New', monospace",
     fontLigatures: false,
     renderWhitespace: "none",
