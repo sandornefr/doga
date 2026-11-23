@@ -783,6 +783,10 @@
 
     // Lejárt session üzenet
     if (new URLSearchParams(location.search).get('expired') === '1') {
+        // A lejárt (7 napnál régebbi) tokent el kell dobni, különben az alábbi átirányítás
+        // rögtön visszadob a portálra, és onnan soha nem lehet újra belépni (pl. Órát kezdek → portál)
+        sessionStorage.removeItem('kandoUser');
+        ['kandoUser', 'admin_token', 'admin_authenticated', 'admin_username', 'kandoTeacherBackup'].forEach(k => localStorage.removeItem(k));
         showError('login-error', 'A munkamenet lejárt. Kérlek lépj be újra!');
     }
 
