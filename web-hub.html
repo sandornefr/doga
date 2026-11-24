@@ -46,6 +46,8 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .portal-sub{color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px;text-align:center}
 
 /* ── GRID ── */
+.gyak-sav{display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:14px 20px;border-radius:14px;border:2px solid #22c55e;background:#0a1f14;color:#e2e8f0;text-decoration:none;font-size:1.05rem;transition:background .2s}
+.gyak-sav:hover{background:#14532d}.gyak-sav>i{color:#22c55e;font-size:1.4rem}.gyak-sav span{flex:1}.gyak-sav small{display:block;color:#94a3b8;font-size:.85rem;margin-top:2px}
 .card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto;gap:18px}
 .card-col{display:grid;grid-template-rows:subgrid;grid-row:span 2;gap:10px}
 
@@ -130,6 +132,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 <div class="portal">
   <div class="portal-title"><i class="fas fa-globe" style="color:#ff3d2e;margin-right:8px;"></i><span class="web-accent">Weboldal Kódolás</span></div>
   <div class="portal-sub">Válassz kategóriát a tanuláshoz</div>
+
+  <!-- GYAKORLÓ FELADATOK: az órán kiadott rövid feladatok (web/gyakorlo/) -->
+  <a class="gyak-sav" href="web/gyakorlo/index.html"><i class="fas fa-dumbbell"></i><span><b>Gyakorló feladatok</b><small>Az órán kiadott rövid feladatok: írd meg, és rögtön látod, jó-e</small></span><i class="fas fa-arrow-right"></i></a>
 
   <div class="card-grid">
 

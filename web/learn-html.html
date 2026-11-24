@@ -1382,12 +1382,15 @@ const whenMonaco = cb => monacoOk ? cb() : monacoQ.push(cb);
 // ══════════════════════════════════════════════════════════════════════
 
 document.getElementById('prog-total').textContent = tasks.length;
+// ?blokk=N: az Óra módból közös átnézéshez rögtön az adott témánál nyílik
+const _blokk = Number(new URLSearchParams(location.search).get('blokk')) || 0;
+const _blokkIdx = _blokk ? tasks.findIndex(t => t.block === _blokk) : -1;
 buildLeft();
-loadTask(0);
+loadTask(_blokkIdx >= 0 ? _blokkIdx : 0);
 // Fiókhoz kötött haladás (csak szerveren): betöltés után ott folytatja, ahol abbahagyta
 LearnSync.sync(SKEY, state.done, () => {
   const kov = state.done.indexOf(false);
-  buildLeft(); loadTask(kov < 0 ? 0 : kov);
+  buildLeft(); loadTask(_blokkIdx >= 0 ? _blokkIdx : kov < 0 ? 0 : kov);
 });
 
 // ══════════════════════════════════════════════════════════════════════

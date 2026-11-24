@@ -27,8 +27,12 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
 .chip { font: inherit; font-size: .88rem; padding: 6px 12px; border-radius: 18px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
 .chip:hover { border-color: var(--accent); }
 .chip.aktiv { border-color: var(--accent); background: rgba(63,185,80,.15); color: var(--accent); font-weight: 700; }
+.chip[hidden] { display: none; }
 .chip.most::after { content: ' • most'; color: var(--yellow); font-weight: 600; }
 .chip[disabled] { opacity: .45; cursor: not-allowed; }
+.valaszto { width: 100%; font: inherit; font-size: .95rem; padding: 9px 12px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+.valaszto:focus, .valaszto:hover { border-color: var(--accent); outline: none; }
+.valaszto optgroup { color: var(--muted); font-style: normal; } .valaszto option { color: var(--text); }
 .gomb { font: inherit; font-size: .9rem; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; text-decoration: none; }
 .gomb:hover { border-color: var(--accent); }
 .gomb.fo { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 700; }
@@ -77,6 +81,10 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
 .ful.aktiv { border-color: var(--accent); color: var(--accent); background: rgba(63,185,80,.12); font-weight: 700; }
 [hidden] { display: none !important; }
 .nz.kat { cursor: pointer; } .nz.kat:hover { outline: 2px solid var(--blue); }
+/* IKT vezetett tanmenet: alkalmanként a tanuló jelzése (kész / nem érti) */
+.ikt { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 3px; border-radius: 4px; font-size: .7rem; font-weight: 700; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); margin: 1px; }
+.ikt.kesz { background: var(--accent); border-color: var(--accent); color: #fff; } .ikt.nem { background: var(--red); border-color: var(--red); color: #fff; }
+.ikt-kerdes { color: #ffa198; font-size: .82rem; margin-top: 3px; }
 .kiadott a { font-size: .84rem; padding: 4px 10px; border-radius: 14px; border: 1px solid rgba(63,185,80,.5); color: var(--accent); background: rgba(63,185,80,.08); text-decoration: none; }
 .kiadott a:hover { background: rgba(63,185,80,.2); }
 .beerk { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; max-height: 340px; overflow-y: auto; }
@@ -124,13 +132,14 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
     <div class="lepes">
       <h3><span class="sz">2</span> Mit csinálunk ma?</h3>
       <div class="chipek">
+        <button class="chip" id="targy-ikt" onclick="targyValt('ikt')" hidden><i class="fas fa-diagram-project"></i> IKT</button>
         <button class="chip aktiv" id="targy-python" onclick="targyValt('python')"><i class="fab fa-python"></i> Python</button>
-        <button class="chip" id="targy-web" disabled title="Hamarosan: a 9.-eseknek az IKT órai anyag, a nagyobbaknak a web feladatok"><i class="fas fa-globe"></i> Web (hamarosan)</button>
+        <button class="chip" id="targy-web" onclick="targyValt('web')"><i class="fas fa-globe"></i> Web</button>
       </div>
     </div>
     <div class="lepes">
       <h3><span class="sz">3</span> Mai téma</h3>
-      <div class="chipek" id="temak"></div>
+      <select id="temak" class="valaszto" onchange="leckeValaszt(this.value)"></select>
     </div>
     <div class="lepes" id="tema-reszlet"></div>
   </section>
@@ -169,6 +178,7 @@ main { display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 16px
 
 <script src="python/gyakorlo/feladatok/alapok.js?v=4"></script>
 <script src="python/gyakorlo/feladatok/ciklus.js?v=5"></script>
+<script src="web/gyakorlo/feladatok/html.js?v=1"></script>
 <script>
 'use strict';
 const API = 'https://agazati.up.railway.app';
@@ -194,17 +204,34 @@ const TANEV = { elsoNap: '2026-09-01', felevVege: '2027-01-22', utolsoNap: '2027
 const CSENGETES = [['7:15', '8:00'], ['8:00', '8:45'], ['8:55', '9:40'], ['9:50', '10:35'], ['10:45', '11:30'],
   ['11:40', '12:25'], ['12:45', '13:30'], ['13:35', '14:20'], ['14:25', '15:10'], ['15:15', '16:00'], ['16:05', '16:50']];
 
-// ── Leckék (python/kezdo-uj.html#<id>) és a hozzájuk tartozó gyakorló témák ──
+// ── Leckék és a hozzájuk tartozó gyakorló témák ──
+// Python: python/kezdo-uj.html#<id>; Web: a régi web tananyag (web/learn-*.html?blokk=N)
 const LECKEK = [
-  { id: 'algo', nev: 'Bevezető', gy: [] }, { id: 'tipus', nev: 'Típusok', gy: [] }, { id: 'print', nev: 'print()', gy: ['print'] },
-  { id: 'komment', nev: 'Megjegyzés (#)', gy: [] }, { id: 'valtozo', nev: 'Változók', gy: ['valtozo'] }, { id: 'input', nev: 'input()', gy: ['input'] },
-  { id: 'atalakitas', nev: 'Átalakítás', gy: ['muvelet'] }, { id: 'muvelet', nev: 'Műveletek', gy: ['muvelet'] }, { id: 'if', nev: 'if / else', gy: ['if'] },
-  { id: 'elif', nev: 'elif', gy: ['elif'] }, { id: 'logika', nev: 'and / or / not', gy: ['logika'] }, { id: 'bmi', nev: 'BMI', gy: ['muvelet'] },
-  { id: 'for', nev: 'for ciklus', gy: ['for'] }, { id: 'while', nev: 'while ciklus', gy: ['while'] }, { id: 'def', nev: 'def (függvény)', gy: [] }
-];
-const TEMAK = window.GYAKORLO_TEMAK || [];
-const OLDAL = { 'py-gyakorlo': 'Gyakorló feladatok', portal: 'Főmenü', 'py-basics': 'Python kezdő', practice: 'WEB gyakorló', web: 'WEB feladat', python: 'Python dolgozat' };
+  { id: 'algo', kor: 'Alapok', nev: 'Bevezető', gy: [] }, { id: 'tipus', kor: 'Alapok', nev: 'Típusok', gy: [] }, { id: 'print', kor: 'Alapok', nev: 'print()', gy: ['print'] },
+  { id: 'komment', kor: 'Alapok', nev: 'Megjegyzés (#)', gy: [] }, { id: 'valtozo', kor: 'Alapok', nev: 'Változók', gy: ['valtozo'] }, { id: 'input', kor: 'Alapok', nev: 'input()', gy: ['input'] },
+  { id: 'atalakitas', kor: 'Számolás', nev: 'Átalakítás', gy: ['muvelet'] }, { id: 'muvelet', kor: 'Számolás', nev: 'Műveletek', gy: ['muvelet'] }, { id: 'bmi', kor: 'Számolás', nev: 'BMI', gy: ['muvelet'] },
+  { id: 'if', kor: 'Elágazás', nev: 'if / else', gy: ['if'] }, { id: 'elif', kor: 'Elágazás', nev: 'elif', gy: ['elif'] }, { id: 'logika', kor: 'Elágazás', nev: 'and / or / not', gy: ['logika'] },
+  { id: 'for', kor: 'Ciklus és függvény', nev: 'for ciklus', gy: ['for'] }, { id: 'while', kor: 'Ciklus és függvény', nev: 'while ciklus', gy: ['while'] }, { id: 'def', kor: 'Ciklus és függvény', nev: 'def (függvény)', gy: [] }
+].map(l => ({ ...l, targy: 'python', lap: `python/kezdo-uj.html#${l.id}` }));
+const WEB_BLOKKOK = {
+  html: ['HTML', 'web/learn-html.html', ['Mi a HTML?', 'Szöveg elemek', 'Linkek és képek', 'Listák', 'Span, id és class', 'Táblázatok', 'Szemantikus váz', 'Div és figure', 'Kommentek', 'Űrlapok']],
+  css: ['CSS', 'web/learn-css.html', ['Mi a CSS? + CSS módok', 'Mértékegységek', 'Szöveg stílusok', 'Doboz modell', 'Szelektorok', 'Háttér, szegély, opacity', 'Display és Float', 'Pozicionálás', 'Flexbox',
+    'CSS függvények + Hover', 'Kommentek', 'Színkezelés', 'Háttér (background)', 'Lista stílusok', 'Táblázat stílusok', 'Méretek']],
+  bs: ['Bootstrap', 'web/learn-bootstrap.html', ['Bootstrap bevezetés', 'Rácsrendszer (Grid)', 'Tipográfia és szöveg', 'Gombok', 'Táblázat és Card', 'Színek']]
+};
+// A web gyakorló témák (window.WEB_GYAKORLO_TEMAK) azonosítója: <kör>_<blokk>, pl.: html_4 (Listák)
+Object.entries(WEB_BLOKKOK).forEach(([k, [kor, lap, nevek]]) => nevek.forEach((nev, i) =>
+  LECKEK.push({ id: `${k}_${i + 1}`, targy: 'web', kor, nev, lap: `${lap}?blokk=${i + 1}`, gy: [`${k}_${i + 1}`] })));
+// IKT (9. évfolyam): a vezetett tanmenet alkalmai (ikt/tanmenet.html ALKALMAK, #aN nyitja az N. alkalmat)
+const IKT_ALKALMAK = ['VS Code és a mappa', 'Főoldal', 'Kép és link', 'Listák', 'Órarend és menü', 'GitHub'];
+IKT_ALKALMAK.forEach((nev, i) => LECKEK.push({ id: `ikt_${i + 1}`, targy: 'ikt', kor: 'Vezetett tanmenet', nev: `${i + 1}. ${nev}`, lap: `ikt/tanmenet.html#a${i + 1}`, gy: [] }));
+const TEMAK = [...(window.GYAKORLO_TEMAK || []), ...(window.WEB_GYAKORLO_TEMAK || [])];
+// 9. évfolyam: IKT és Web (Python nincs); 10.-től Python és Web
+const kilences = k => String(k || '').split('.')[0] === '9';
+const OLDAL = { 'py-gyakorlo': 'Gyakorló feladatok', portal: 'Főmenü', 'py-basics': 'Python kezdő', practice: 'WEB gyakorló', 'web-gyakorlo': 'Web gyakorló feladatok', web: 'WEB feladat', python: 'Python dolgozat' };
 
+// Gyakorló feladat megoldása (Python: gyak_<id>, Web: gyak_html_…)
+const gyakE = x => (x.targy === 'python' || x.targy === 'web') && String(x.feladat).startsWith('gyak_');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const perc = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
@@ -212,7 +239,7 @@ const csoportNev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}
 const tanitasiNap = d => { const s = iso(d), w = d.getDay(); return w > 0 && w < 6 && s >= TANEV.elsoNap && s <= TANEV.utolsoNap && !TANEV.unnepek.includes(s) && !TANEV.szunetek.some(([a, b]) => s >= a && s <= b); };
 const percOta = ts => { if (!ts) return null; const d = new Date(String(ts).replace(' ', 'T')); return isNaN(d) ? null : Math.round((Date.now() - d) / 60000); };
 
-const st = { kszuro: '', kOrak: [], kAkt: -1, kFeloldas: new Map(), kAdat: new Map(), kerek: [], kodNyitva: new Set(), irasban: false, orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null, leckeVan: true };
+const st = { targy: 'python', kszuro: '', kOrak: [], kAkt: -1, kFeloldas: new Map(), kAdat: new Map(), kerek: [], kodNyitva: new Set(), irasban: false, orak: [], csoportok: [], csoport: null, mostani: null, lecke: null, feloldva: new Map(), tanulok: null, idozito: null, leckeVan: true };
 // Az új leckék (python/kezdo-uj.html) még nem biztos, hogy élesben vannak: ha nincs, a gomb helyett szöveg jelenik meg
 fetch('python/kezdo-uj.html', { method: 'HEAD' }).then(r => { st.leckeVan = r.ok; rajzolReszlet(); }).catch(() => {});
 
@@ -270,15 +297,32 @@ function csoportValaszt(k) {
   try { localStorage.setItem('ora_mod_csoport', k); } catch {}
   document.getElementById('csoportok').innerHTML = st.csoportok.map(c =>
     `<button class="chip${c === k ? ' aktiv' : ''}${st.mostani && st.mostani.kulcs === c ? ' most' : ''}" onclick="csoportValaszt('${esc(c)}')">${esc(csoportNev(c))}</button>`).join('');
+  targyBeallit();
   feloldasBetolt().then(() => { rajzolReszlet(); kovetes(); });
 }
-function targyValt() { /* Web később: 9.-eseknek IKT anyag, nagyobbaknak web feladatok */ }
-
-function rajzolTemak() {
-  document.getElementById('temak').innerHTML = LECKEK.map(l =>
-    `<button class="chip${st.lecke === l.id ? ' aktiv' : ''}" onclick="leckeValaszt('${l.id}')">${esc(l.nev)}</button>`).join('');
+// A csoport évfolyamához illő tárgyak: 9.-nél IKT + Web, különben Python + Web
+function targyBeallit() {
+  const k9 = kilences(st.csoport);
+  document.getElementById('targy-ikt').hidden = !k9;
+  document.getElementById('targy-python').hidden = k9;
+  if (k9 && st.targy === 'python') targyValt('ikt');
+  else if (!k9 && st.targy === 'ikt') targyValt('python');
 }
-function leckeValaszt(id) { st.lecke = id; rajzolTemak(); rajzolReszlet(); }
+function targyValt(t) {
+  if (st.targy === t) return;
+  st.targy = t; st.lecke = null;
+  ['ikt', 'python', 'web'].forEach(x => document.getElementById('targy-' + x).classList.toggle('aktiv', t === x));
+  rajzolTemak(); rajzolReszlet();
+}
+
+// Mai téma: legördülő választó, témakörökre bontva
+function rajzolTemak() {
+  const korok = [];
+  LECKEK.filter(l => l.targy === st.targy).forEach(l => { let k = korok.find(x => x.nev === l.kor); if (!k) korok.push(k = { nev: l.kor, l: [] }); k.l.push(l); });
+  document.getElementById('temak').innerHTML = `<option value=""${st.lecke ? '' : ' selected'}>Válassz témát…</option>` +
+    korok.map(k => `<optgroup label="${esc(k.nev)}">${k.l.map(l => `<option value="${l.id}"${st.lecke === l.id ? ' selected' : ''}>${esc(l.nev)}</option>`).join('')}</optgroup>`).join('');
+}
+function leckeValaszt(id) { st.lecke = id || null; rajzolTemak(); rajzolReszlet(); if (st.targy === 'ikt') kovetes(true); }
 
 async function feloldasBetolt() {
   try { st.feloldva = new Map((await kerd(`/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(st.csoport)}`)).map(x => [x.feladat, x.datum])); }
@@ -292,9 +336,20 @@ function rajzolReszlet() {
   const gyTemak = TEMAK.filter(t => l.gy.includes(t.id));
   const feladatok = gyTemak.flatMap(t => t.feladatok);
   const kiadvaDb = feladatok.filter(f => st.feloldva.has(f.id)).length;
+  if (l.targy === 'ikt') {
+    el.innerHTML = `<h3><span class="sz">4</span> ${esc(l.nev)}</h3>
+      <div class="gombsor">
+        <a class="gomb fo" href="${l.lap}" target="_blank"><i class="fas fa-display"></i> Az alkalom megnyitása közös átnézéshez</a>
+        <a class="gomb" href="ikt/tanmenet.html" target="_blank"><i class="fas fa-table"></i> Ki hol tart? (a teljes tanmenet)</a>
+        <a class="gomb" href="ikt/beadasok.html" target="_blank"><i class="fas fa-file-arrow-up"></i> Témaoldal beadások</a>
+        <a class="gomb" href="ikt/weboldalak.html" target="_blank"><i class="fab fa-github"></i> Weboldal-gyűjtemény</a>
+      </div>
+      <div class="magyar" style="margin-top:8px">Itt nincs kiadandó feladat: a tanulók a tanmenetben jelzik, hogy kész vannak, vagy mit nem értenek. Ezt jobb oldalt, a kártyáikon látod.</div>`;
+    return;
+  }
   el.innerHTML = `<h3><span class="sz">4</span> ${esc(l.nev)}</h3>
     <div class="gombsor">
-      ${st.leckeVan ? `<a class="gomb" href="python/kezdo-uj.html#${l.id}" target="_blank"><i class="fas fa-display"></i> Lecke megnyitása közös átnézéshez</a>`
+      ${l.targy === 'web' || st.leckeVan ? `<a class="gomb" href="${l.lap}" target="_blank"><i class="fas fa-display"></i> Lecke megnyitása közös átnézéshez</a>`
         : '<div class="magyar"><i class="fas fa-hourglass-half"></i> Az új Python leckék még nincsenek élesben. Amint kikerülnek, itt egy gombbal megnyithatod a leckét.</div>'}
       ${!feladatok.length ? '' : kiadvaDb < feladatok.length
         ? `<button class="gomb fo" onclick="temaKiad()"><i class="fas fa-lock-open"></i> Megtanultuk: kiadom mind a ${feladatok.length} gyakorló feladatot</button>`
@@ -303,8 +358,8 @@ function rajzolReszlet() {
     ${feladatok.length ? `<div class="magyar" style="margin-top:8px">Kiadva ennek a csoportnak: <b>${kiadvaDb}</b> / ${feladatok.length}. Vagy pipáld ki egyenként, amit az órán megoldotok:</div>
       <div class="lista">${feladatok.map(f => { const d = st.feloldva.has(f.id); return `<label class="elem${d ? ' kiadva' : ''}">
         <input type="checkbox" ${d ? 'checked' : ''} onchange="pipa(['${f.id}'], this.checked)"> ${f.sorszam}. ${esc(f.cim)}
-        <a href="python/gyakorlo/index.html?nezet=oktato&tema=${f.id.split('_')[0]}&feladat=${f.id}" target="_blank" title="Megnézem a megoldással"><i class="fas fa-eye"></i></a></label>`; }).join('')}</div>`
-      : '<div class="magyar" style="margin-top:8px">Ehhez a témához még nincs gyakorló feladat.</div>'}`;
+        <a href="${feladatLink(f.id)}" target="_blank" title="Megnézem a megoldással"><i class="fas fa-eye"></i></a></label>`; }).join('')}</div>`
+      : `<div class="magyar" style="margin-top:8px">${l.targy === 'web' ? 'Ehhez a web témához a gyakorló feladatok most készülnek.' : 'Ehhez a témához még nincs gyakorló feladat.'}</div>`}`;
 }
 
 async function pipa(ids, be) {
@@ -383,6 +438,11 @@ async function kovetes(csendes) {
         } catch { adat.set(t.email, null); }
       }));
     }
+    // 9. évfolyam: a vezetett tanmenet jelzései (kész / nem értem) tanulónként
+    st.iktJel = new Map();
+    if (kilences(k)) {
+      try { ((await kerd('/api/ikt/teendok')).teendok || []).forEach(x => { const em = String(x.email || '').toLowerCase(); if (!st.iktJel.has(em)) st.iktJel.set(em, {}); st.iktJel.get(em)[x.alkalom] = x; }); } catch {}
+    }
     if (k !== st.csoport) return;
     rajzolKovetes(tanulok, adat, online);
     rajzolKerek();
@@ -414,7 +474,7 @@ function rajzolKovetes(tanulok, adat, online) {
     const keres = st.kerek.find(x => x.email.toLowerCase() === em && x.allapot === 'nyitott');
     const allapot = keres ? 'segit' : ota !== null && ota <= 10 ? 'halad' : bentE ? 'all' : 'nincs';
     if (allapot === 'halad') haladDb++; else if (allapot === 'all') allDb++;
-    const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
+    const gy = new Map(d.m.filter(gyakE).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
       const x = gy.get(f.id), jo = x && keszE(x);
       return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}${x ? ' kat' : ''}" ${x ? `onclick="megoldasMutat(${x.id})"` : ''} title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész – kattints a kódért' : `próbálkozik (${x.probalkozas}×) – kattints a kódért`}"></span>`;
@@ -424,12 +484,23 @@ function rajzolKovetes(tanulok, adat, online) {
       <div class="sor">${bentE ? esc(OLDAL[lap] || lap || 'bent van') : 'nincs bent'}${ota !== null ? ` · utoljára <b>${ota < 1 ? 'most' : ota + ' perce'}</b>` : ''}</div>
       ${keres ? '<div class="sor" style="color:#ffa198"><i class="fas fa-hand"></i> <b style="color:#ffa198">Segítséget kér</b></div>' : ''}
       <div class="sor">Ma kész: <b>${kesz}</b>${probal ? ` · próbálkozik: <b>${probal}</b>` : ''}</div>
-      ${kiadott.length ? `<div class="sor">${nz}</div>` : ''}</div>`;
+      ${kiadott.length ? `<div class="sor">${nz}</div>` : ''}${iktSor(em)}</div>`;
   }).join('');
   document.getElementById('szamlalo').innerHTML = `<span class="pill">Bent: <b>${bentDb}</b> / ${tanulok.length}</span>
     ${st.kerek.some(x => x.allapot === 'nyitott') ? `<span class="pill" style="border-color:var(--red)">Segítséget kér: <b style="color:#ffa198">${st.kerek.filter(x => x.allapot === 'nyitott').length}</b></span>` : ''}
     <span class="pill">Dolgozik: <b style="color:var(--accent)">${haladDb}</b></span><span class="pill">Áll: <b style="color:var(--yellow)">${allDb}</b></span>`;
   el.innerHTML = `<div class="kartyak">${kartyak}</div>`;
+}
+
+// IKT tanmenet sor a tanuló kártyáján: alkalmanként zöld = kész, piros = nem érti (a kérdés alatta)
+function iktSor(em) {
+  if (!kilences(st.csoport) || !st.iktJel) return '';
+  const j = st.iktJel.get(em) || {};
+  const l = LECKEK.find(x => x.id === st.lecke && x.targy === 'ikt'), aktN = l ? Number(l.id.split('_')[1]) : 0;
+  const kerdes = Object.values(j).filter(x => x.allapot === 'nemertem' && (!aktN || x.alkalom === aktN));
+  return `<div class="sor">Tanmenet: ${IKT_ALKALMAK.map((nev, i) => { const x = j[i + 1];
+      return `<span class="ikt${!x ? '' : x.allapot === 'kesz' ? ' kesz' : ' nem'}" title="${i + 1}. ${esc(nev)}: ${!x ? 'még nem jelzett' : x.allapot === 'kesz' ? 'kész' : 'nem érti' + (x.megjegyzes ? ' – ' + esc(x.megjegyzes) : '')}">${i + 1}</span>`; }).join('')}</div>` +
+    kerdes.map(x => `<div class="ikt-kerdes"><i class="fas fa-circle-question"></i> ${x.alkalom}. alkalom: ${esc(x.megjegyzes || 'nem érti')}</div>`).join('');
 }
 
 // ── Korábbi óráim: napokra bontva, mi történt csoportonként ─────────────────────
@@ -577,7 +648,7 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
     const beadas = iktEmail.get(em);
     const dolgozott = kesz + probal > 0 || !!beadas;
     if (dolgozott) dolgozottDb++;
-    const gy = new Map(d.m.filter(x => x.targy === 'python' && String(x.feladat).startsWith('gyak_')).map(x => [x.feladat.slice(5), x]));
+    const gy = new Map(d.m.filter(gyakE).map(x => [x.feladat.slice(5), x]));
     const nz = kiadott.map(({ t: tm, f }) => {
       const x = gy.get(f.id), jo = x && keszE(x);
       return `<span class="nz${jo ? ' kesz' : x ? ' probal' : ''}${x ? ' kat' : ''}" ${x ? `onclick="megoldasMutat(${x.id})"` : ''} title="${esc(tm.cim)} – ${f.sorszam}. ${esc(f.cim)}: ${!x ? 'még nem próbálta' : jo ? 'kész – kattints a kódért' : 'próbálkozott – kattints a kódért'}"></span>`;
@@ -622,7 +693,7 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
       <h2><i class="fas fa-clock-rotate-left" style="color:var(--blue)"></i> ${esc(csoportNev(r.kulcs))} · ${napSzoveg(r.datum)}${r.orak.length ? ' · ' + r.orak.map(o => `${oraSzoveg(o)} (${o.tol}–${o.ig})`).join(', ') : ''}</h2>
     </div>
     ${!kiadott.length && r.ikt.length ? '' : `<div class="resz-cim">Ezen a napon kiadott gyakorló feladatok</div>
-    ${kiadott.length ? `<div class="kiadott">${kiadott.map(({ t, f }) => `<a href="${feladatLink(f.id)}" target="_blank" title="${esc(t.cim)} – megnyitom a helyes megoldással">${esc(t.cim.split(' ')[0])} ${f.sorszam}. ${esc(f.cim)}</a>`).join('')}</div>`
+    ${kiadott.length ? `<div class="kiadott">${kiadott.map(({ t, f }) => `<a href="${feladatLink(f.id)}" target="_blank" title="${esc(t.cim)} – megnyitom a helyes megoldással">${esc(t.id.startsWith('html_') ? 'HTML' : t.cim.split(' ')[0])} ${f.sorszam}. ${esc(f.cim)}</a>`).join('')}</div>`
       : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem adtál ki új gyakorló feladatot ennek a csoportnak.</div>'}`}
     <div class="resz-cim">Beérkezett munkák ezen a napon: ${be.length} <span style="text-transform:none;letter-spacing:0">(kattints rá a megnézéshez)</span></div>
     ${be.length ? `<div class="beerk">${beHtml}</div>` : '<div class="magyar" style="margin-bottom:14px">Ezen a napon nem érkezett megoldás vagy beadás.</div>'}
@@ -640,9 +711,13 @@ function korabbiRajzolReszlet(r, tanulok, adat, kerek) {
 }
 
 // ── Megnézés: tanuló kódja, témaoldal előnézet + visszajelzés, dolgozat a Javításnál ──
-function feladatLink(id) { return `python/gyakorlo/index.html?nezet=oktato&tema=${encodeURIComponent(id.split('_')[0])}&feladat=${encodeURIComponent(id)}`; }
+function feladatLink(id) {
+  const t = TEMAK.find(t => t.feladatok.some(f => f.id === id));
+  const lap = (window.WEB_GYAKORLO_TEMAK || []).includes(t) ? 'web/gyakorlo/index.html' : 'python/gyakorlo/index.html';
+  return `${lap}?nezet=oktato&tema=${encodeURIComponent(t ? t.id : id.split('_')[0])}&feladat=${encodeURIComponent(id)}`;
+}
 function feladatCim(x) {
-  if (x.targy === 'python' && String(x.feladat).startsWith('gyak_')) {
+  if (gyakE(x)) {
     const id = x.feladat.slice(5);
     for (const t of TEMAK) { const f = t.feladatok.find(f => f.id === id); if (f) return `${t.cim} – ${f.sorszam}. ${f.cim}`; }
   }
@@ -657,7 +732,7 @@ async function megoldasMutat(id) {
   modalNyit(mFej('Betöltés…'));
   try {
     const m = await kerd(`/api/oktato/megoldas/${id}`);
-    const gyak = m.targy === 'python' && String(m.feladat).startsWith('gyak_');
+    const gyak = gyakE(m);
     modalNyit(mFej(`${esc(m.nev || m.email)} · ${esc(feladatCim(m))}`) + `
       <div class="szamlalo" style="margin-bottom:8px"><span class="pill">Pont: <b>${m.pont}/${m.maxPont}</b></span>
         <span class="pill">Próbálkozás: <b>${m.probalkozas}</b></span><span class="pill">Mentve: <b>${esc(idoNorm(m.frissitve))}</b></span>

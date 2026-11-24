@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gyakorló feladatok – Web – Kandó</title>
+<link rel="icon" href="../../kando_favion_dark.png" type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="../../kando_favion_light.png" type="image/png" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<script src="../../kando-store.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f172a; --bg2: #111827; --bg3: #1e293b; --border: #1f2937; --border2: #334155;
+  --accent: #38bdf8; --ok: #22c55e; --text: #e2e8f0; --muted: #94a3b8; --yellow: #f59e0b; --red: #ef4444;
+  --font: 'Segoe UI', system-ui, sans-serif; --mono: 'Cascadia Code', Consolas, 'Courier New', monospace;
+}
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; font-size: 16px; }
+
+.topbar { height: 54px; background: var(--bg2); border-bottom: 1.5px solid var(--border); display: flex; align-items: center; padding: 0 12px; gap: 10px; flex-shrink: 0; }
+.topbar img { height: 30px; display: block; }
+.btn-back { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px; border: 1.5px solid var(--border2); color: var(--muted); font-size: .85rem; text-decoration: none; }
+.btn-back:hover { border-color: var(--accent); color: var(--accent); }
+.cim { font-weight: 700; font-size: 1.05rem; }
+.cim i { color: var(--accent); margin-right: 6px; }
+.spacer { flex: 1; }
+.haladas { font-size: .85rem; color: var(--muted); }
+.haladas b { color: var(--ok); }
+.teszt-csoport { font-size: .8rem; color: var(--yellow); display: flex; align-items: center; gap: 6px; }
+.teszt-csoport[hidden] { display: none; }
+.teszt-csoport select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--yellow); background: var(--bg2); color: var(--text); }
+.oktato-cimke { font-size: .75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--yellow); color: var(--yellow); }
+
+.fo { flex: 1; display: flex; min-height: 0; }
+
+/* Bal oldali lista */
+.lista { width: 270px; flex-shrink: 0; background: var(--bg2); border-right: 1.5px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
+.temak { padding: 10px; border-bottom: 1px solid var(--border); }
+.temak select { width: 100%; font: inherit; font-size: .92rem; padding: 7px 10px; border-radius: 8px; border: 1.5px solid var(--border2); background: var(--bg3); color: var(--text); }
+.feladatlista { flex: 1; overflow-y: auto; padding: 6px 0 12px; }
+.fl-elem { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: .92rem; padding: 7px 14px; background: transparent; border: 0; border-left: 3px solid transparent; color: var(--text); cursor: pointer; }
+.fl-elem:hover { background: var(--bg3); }
+.fl-elem.aktiv { background: var(--bg3); border-left-color: var(--accent); }
+.fl-elem .jel { width: 18px; text-align: center; color: var(--border2); }
+.fl-elem.kesz .jel { color: var(--ok); }
+.fl-elem .ssz { color: var(--muted); font-size: .8rem; min-width: 24px; }
+.zarva { margin: 12px 14px 0; padding: 10px 12px; border: 1px dashed var(--border2); border-radius: 10px; color: var(--muted); font-size: .85rem; line-height: 1.45; }
+.zarva i { color: var(--yellow); margin-right: 4px; }
+
+/* Jobb oldal */
+.munka { flex: 1; display: flex; min-width: 0; min-height: 0; }
+.ures { margin: auto; max-width: 460px; text-align: center; color: var(--muted); line-height: 1.6; padding: 20px; }
+.ures i { font-size: 2.4rem; color: var(--yellow); margin-bottom: 12px; display: block; }
+.ures b { color: var(--text); }
+.leiras-panel { width: 32%; min-width: 280px; overflow-y: auto; padding: 18px 20px; border-right: 1.5px solid var(--border); }
+.leiras-panel h2 { font-size: 1.2rem; margin-bottom: 4px; }
+.cimke { display: inline-block; font-family: var(--mono); font-size: .75rem; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--accent); color: var(--accent); margin-bottom: 12px; }
+.leiras { line-height: 1.6; font-size: 1.02rem; }
+.leiras p { margin-bottom: 8px; }
+code { font-family: var(--mono); background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: #fde68a; font-size: .92em; }
+.alcim { font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 16px 0 6px; }
+.tipp { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.35); line-height: 1.5; font-size: .95rem; }
+.tipp i { color: var(--yellow); margin-right: 6px; }
+pre.megoldas { margin-top: 12px; font-family: var(--mono); font-size: .85rem; background: #020617; border: 1px solid var(--yellow); border-radius: 8px; padding: 10px 12px; white-space: pre; overflow-x: auto; }
+.e-lista { display: flex; flex-direction: column; gap: 2px; }
+.e-sor { display: flex; gap: 8px; padding: 3px 0; font-size: .92rem; line-height: 1.45; }
+.e-sor .j { width: 18px; flex-shrink: 0; text-align: center; color: var(--border2); }
+.e-sor.ok, .e-sor.ok .j { color: var(--ok); }
+.e-sor.nem .j { color: var(--red); }
+.siker { color: var(--ok); font-weight: 700; padding: 6px 0; font-size: 1.05rem; }
+.halvany { color: var(--muted); }
+
+.kod-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 12px 14px; gap: 10px; }
+.szerkeszto { flex: 1; min-height: 160px; border: 1.5px solid var(--border2); border-radius: 10px; background: #1e1e1e; overflow: hidden; position: relative; }
+.szerkeszto:focus-within { border-color: var(--accent); }
+.szerkeszto textarea { width: 100%; height: 100%; resize: none; border: 0; outline: 0; background: #1e1e1e; color: var(--text); font-family: var(--mono); font-size: .95rem; line-height: 1.5; padding: 10px; tab-size: 2; white-space: pre; }
+.szerkeszto .monaco { position: absolute; inset: 0; }
+.elonezet { flex: 1; min-height: 140px; display: flex; flex-direction: column; border: 1.5px solid var(--border2); border-radius: 10px; overflow: hidden; background: #fff; }
+.elonezet .fej { font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: var(--bg2); padding: 4px 10px; display: flex; align-items: center; gap: 6px; }
+.elonezet .fej i { color: var(--ok); font-size: .55rem; }
+.elonezet iframe { flex: 1; border: 0; width: 100%; background: #fff; }
+.sor { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gomb { font: inherit; font-size: .9rem; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--border2); background: var(--bg3); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.gomb:hover { border-color: var(--accent); }
+.gomb.fo-gomb { background: #14532d; border-color: var(--ok); }
+.gomb.segit { border-color: rgba(239,68,68,.6); color: #fca5a5; }
+.gomb.segit:hover { border-color: var(--red); background: rgba(239,68,68,.12); }
+.sugo { font-size: .8rem; color: var(--muted); margin-left: auto; }
+.sugo b { color: var(--text); }
+.segitseg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.4); line-height: 1.5; font-size: .95rem; }
+.segitseg textarea { width: 100%; margin: 6px 0; font: inherit; font-size: .9rem; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2); color: var(--text); resize: vertical; }
+.segitseg .valasz { margin-top: 6px; padding: 8px 10px; border-radius: 6px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.45); }
+
+@media (max-width: 900px) {
+  html, body { overflow: auto; height: auto; }
+  .fo, .munka { flex-direction: column; }
+  .lista { width: 100%; max-height: 260px; }
+  .leiras-panel { width: 100%; min-width: 0; border-right: 0; }
+  .szerkeszto { min-height: 280px; }
+  .elonezet { min-height: 240px; }
+}
+</style>
+</head>
+<body>
+<script>
+  (function () {
+    const u = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+    const oktatoNezet = new URLSearchParams(location.search).get('nezet') === 'oktato';
+    let tanar = ''; try { tanar = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || localStorage.getItem('admin_token') || ''; } catch {}
+    if (!u.token && u.szerep !== 'oktato' && u.szerep !== 'vendeg' && !u._tesztMod && !(oktatoNezet && tanar)) location.replace('../../portal.html');
+  })();
+</script>
+
+<header class="topbar">
+  <a href="../../portal.html" title="Főmenü"><img src="../../python/kandologo2.png" alt="Kandó"></a>
+  <a href="../../web-hub.html" class="btn-back"><i class="fas fa-arrow-left"></i> Vissza</a>
+  <span class="cim"><i class="fas fa-dumbbell"></i>Web gyakorló feladatok</span>
+  <span class="spacer"></span>
+  <label class="teszt-csoport" id="teszt-csoport" hidden>Teszt Elek ezt a csoportot nézi: <select id="teszt-csoport-valaszto" onchange="tesztCsoportValt(this.value)"></select></label>
+  <span class="oktato-cimke" id="oktato-cimke" hidden>Oktatói nézet: minden feladat látszik</span>
+  <span class="haladas" id="haladas"></span>
+</header>
+
+<div class="fo">
+  <nav class="lista">
+    <div class="temak"><select id="temak" onchange="valasztTema(this.value)" title="Téma"></select></div>
+    <div class="feladatlista" id="feladatlista"></div>
+  </nav>
+  <main class="munka" id="munka">
+    <div class="ures" id="betolt"><i class="fas fa-spinner fa-spin"></i>Betöltés…</div>
+  </main>
+</div>
+
+<script src="feladatok/html.js?v=1"></script>
+<script>
+'use strict';
+const API = 'https://agazati.up.railway.app';
+const USER = JSON.parse(sessionStorage.getItem('kandoUser') || '{}');
+const store = window.KandoStore ? KandoStore.create('webgyakorlo') : { getItem: () => null, setItem() {} };
+const TEMAK = window.WEB_GYAKORLO_TEMAK || [];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Feladatszöveg: sima szöveg; `…` = kód kiemelés, üres sor = új bekezdés
+const szoveg = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const bekezdesek = s => String(s).split(/\n\s*\n/).map(p => `<p>${szoveg(p).replace(/\n/g, '<br>')}</p>`).join('');
+
+const st = { mind: false, feloldott: new Set(), tema: null, feladat: null, ed: null, idozito: null };
+
+// ── Munkamenet (a Csoportjaim és az Óra mód „bent van” jelzéséhez) ──────────
+(function () {
+  if (!USER.email) return;
+  let sid = null;
+  fetch(`${API}/api/session/start`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: USER.email, page: 'web-gyakorlo' }) })
+    .then(r => r.json()).then(d => {
+      sid = d.sessionId;
+      setInterval(() => { if (sid) fetch(`${API}/api/session/heartbeat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {}); }, 30000);
+    }).catch(() => {});
+  window.addEventListener('beforeunload', () => { if (sid) fetch(`${API}/api/session/end`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: sid }), keepalive: true }).catch(() => {}); });
+})();
+
+// ── Feloldott feladatok a szerverről (ugyanaz, mint a Python gyakorlónál) ──
+async function oktatoNezetBetolt() {
+  if (new URLSearchParams(location.search).get('nezet') !== 'oktato') return false;
+  let tok = USER.szerep === 'oktato' ? USER.token : '';
+  try { tok = tok || JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}').token || localStorage.getItem('admin_token') || ''; } catch {}
+  if (!tok) return false;
+  try {
+    const r = await fetch(`${API}/api/oktato/gyakorlo/feloldas?csoport=9.A.`, { headers: { Authorization: 'Bearer ' + tok } });
+    if (!r.ok) return false;
+  } catch { return false; }
+  st.mind = true; st.oktatoNezet = true;
+  return true;
+}
+async function feloldottBetolt() {
+  if (await oktatoNezetBetolt()) return;
+  if (USER._tesztMod) return tesztElekBetolt();
+  if (USER.szerep === 'oktato') { st.mind = true; return; }
+  if (!USER.token) return;
+  try {
+    const r = await fetch(`${API}/api/gyakorlo/feloldott`, { headers: { Authorization: 'Bearer ' + USER.token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    st.mind = !!d.mind;
+    st.feloldott = new Set(d.feladatok || []);
+  } catch { /* hálózati hiba: nem látszik semmi */ }
+}
+// Teszt Elek (tanár diáknézetben): egy kiválasztott csoport szemével látja az oldalt
+async function tesztElekBetolt() {
+  let tanar = {};
+  try { tanar = JSON.parse(localStorage.getItem('kandoTeacherBackup') || '{}'); } catch {}
+  const doboz = document.getElementById('teszt-csoport'), sel = document.getElementById('teszt-csoport-valaszto');
+  doboz.hidden = false;
+  if (!tanar.token) { sel.innerHTML = '<option>nincs oktatói belépés</option>'; return; }
+  const most = new Date(), tanev = most.getMonth() >= 7 ? most.getFullYear() : most.getFullYear() - 1;
+  let orak = [];
+  try {
+    const r = await fetch(`${API}/api/csoportjaim/orarend?tanev=${tanev}`, { headers: { Authorization: 'Bearer ' + tanar.token } });
+    if (r.ok) orak = await r.json();
+  } catch {}
+  const kulcsok = [...new Set(orak.map(o => `${o.evfolyam}.${o.osztaly}.${o.csoport || ''}`))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true }));
+  const sajatEvf = kulcsok.filter(k => k.split('.')[0] === String(USER.evfolyam || ''));
+  const lista = sajatEvf.length ? sajatEvf : kulcsok;
+  const nev = k => { const [e, o, c] = k.split('.'); return !c ? `${e}.${o}` : c === 'info' ? `${e}.${o} informatika` : `${e}.${o} ${c}. cs.`; };
+  if (!lista.length) { sel.innerHTML = '<option>nincs csoport az órarendben</option>'; return; }
+  sel.innerHTML = lista.map(k => `<option value="${esc(k)}">${esc(nev(k))}</option>`).join('');
+  st.tesztTanar = tanar;
+  await tesztCsoportOlvas(lista[0]);
+}
+async function tesztCsoportOlvas(k) {
+  const [e, o, c] = k.split('.');
+  const kulcsok = c ? [k, `${e}.${o}.`] : [k];
+  st.feloldott = new Set();
+  for (const kk of kulcsok) {
+    try {
+      const r = await fetch(`${API}/api/oktato/gyakorlo/feloldas?csoport=${encodeURIComponent(kk)}`, { headers: { Authorization: 'Bearer ' + st.tesztTanar.token } });
+      if (r.ok) (await r.json()).forEach(x => st.feloldott.add(x.feladat));
+    } catch {}
+  }
+}
+async function tesztCsoportValt(k) {
+  await tesztCsoportOlvas(k);
+  st.tema = TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
+  valasztTema(st.tema.id);
+}
+const latszik = f => st.mind || st.feloldott.has(f.id);
+const kesz = f => store.getItem('kesz_' + f.id) === '1';
+
+// ── Lista ──────────────────────────────────────────────────────────────────
+function rajzolTemak() {
+  const lathato = TEMAK.filter(t => t === st.tema || t.feladatok.some(latszik));
+  document.getElementById('temak').innerHTML = lathato.map(t =>
+    `<option value="${t.id}"${t === st.tema ? ' selected' : ''}>${esc(t.cim)}</option>`).join('');
+}
+function rajzolLista() {
+  const t = st.tema, el = document.getElementById('feladatlista');
+  if (!t) { el.innerHTML = ''; return; }
+  const lathato = t.feladatok.filter(latszik);
+  let html = lathato.map(f => `<button class="fl-elem${kesz(f) ? ' kesz' : ''}${f === st.feladat ? ' aktiv' : ''}" onclick="valasztFeladat('${f.id}')">
+      <span class="jel"><i class="fas ${kesz(f) ? 'fa-circle-check' : 'fa-circle'}"></i></span>
+      <span class="ssz">${f.sorszam}.</span><span>${esc(f.cim)}</span></button>`).join('');
+  const zart = t.feladatok.length - lathato.length;
+  if (zart > 0) html += `<div class="zarva"><i class="fas fa-lock"></i>Még ${zart} feladat vár rád. Az órán oldjuk fel őket, utána itt gyakorolhatod.</div>`;
+  el.innerHTML = html;
+  const keszDb = lathato.filter(kesz).length;
+  document.getElementById('haladas').innerHTML = lathato.length ? `Kész: <b>${keszDb}</b> / ${lathato.length}` : '';
+}
+function valasztTema(id) {
+  st.tema = TEMAK.find(t => t.id === id) || TEMAK[0] || null;
+  st.feladat = null;
+  rajzolTemak();
+  const elso = st.tema && (st.tema.feladatok.find(f => latszik(f) && !kesz(f)) || st.tema.feladatok.find(latszik));
+  if (elso) valasztFeladat(elso.id); else { rajzolLista(); rajzolUres(); }
+}
+function rajzolUres() {
+  szerkesztoEldob();
+  document.getElementById('munka').innerHTML = `<div class="ures"><i class="fas fa-lock"></i>
+    <b>Még nincs kiadott feladat ebben a témában.</b><br>Az órán együtt oldjuk meg és oldjuk fel őket.
+    Utána itt otthon is gyakorolhatod.</div>`;
+}
+
+// ── Egy feladat ────────────────────────────────────────────────────────────
+function valasztFeladat(id) {
+  const f = st.tema.feladatok.find(x => x.id === id);
+  if (!f || !latszik(f)) return;
+  st.feladat = f;
+  rajzolLista();
+  szerkesztoEldob();
+  document.getElementById('munka').innerHTML = `
+    <section class="leiras-panel">
+      <h2>${f.sorszam}. ${esc(f.cim)}</h2>
+      ${f.kell ? `<span class="cimke">Ezt gyakorlod: ${esc(f.kell)}</span>` : ''}
+      <div class="leiras">${bekezdesek(f.leiras)}</div>
+      <div class="alcim">Ezt nézi az ellenőrzés</div>
+      <div class="e-lista" id="ellenorzes">${f.ell.map(([sz]) => `<div class="e-sor"><span class="j"><i class="far fa-square"></i></span><span>${szoveg(sz)}</span></div>`).join('')}</div>
+      <div id="eredmeny"></div>
+      <div class="sor" style="margin-top:14px">
+        <button class="gomb" onclick="mutatTipp()"><i class="fas fa-lightbulb"></i> Tipp</button>
+        ${st.mind ? '<button class="gomb" onclick="mutatMegoldas()"><i class="fas fa-key"></i> Megoldás (oktató)</button>' : ''}
+        <button class="gomb segit" onclick="segitsegNyit()" title="Elküldi a tanárnak, hol tartasz (a feladatot és a kódodat)"><i class="fas fa-hand"></i> Tanári segítség</button>
+      </div>
+      <div id="tipp-hely"></div>
+      <div id="segitseg-hely"></div>
+    </section>
+    <section class="kod-panel">
+      <div class="szerkeszto" id="szerkeszto"></div>
+      <div class="sor">
+        <button class="gomb fo-gomb" onclick="ellenorizGomb()"><i class="fas fa-check"></i> Ellenőrzés</button>
+        <button class="gomb" onclick="visszaallit()" title="Visszaállítja a kiinduló kódot"><i class="fas fa-rotate-left"></i> Újrakezdem</button>
+        <span class="sugo">Tipp: írd be <b>!</b> és nyomj <b>Tab</b>-ot, vagy <b>ul>li*3</b> + <b>Tab</b></span>
+      </div>
+      <div class="elonezet"><div class="fej"><i class="fas fa-circle"></i> Élő előnézet</div>
+        <iframe id="elonezet" sandbox="allow-scripts" title="Élő előnézet"></iframe></div>
+    </section>`;
+  const mentett = store.getItem('kod_' + f.id);
+  szerkesztoLetrehoz(mentett != null ? mentett : f.kezdo, f);
+  segitsegRajzol();
+  history.replaceState(null, '', `?${st.oktatoNezet ? 'nezet=oktato&' : ''}tema=${st.tema.id}&feladat=${f.id}`);
+}
+function mutatTipp() {
+  document.getElementById('tipp-hely').innerHTML = `<div class="tipp"><i class="fas fa-lightbulb"></i>${szoveg(st.feladat.tipp)}</div>`;
+}
+function mutatMegoldas() {
+  document.getElementById('tipp-hely').innerHTML = `<pre class="megoldas">${esc(st.feladat.megoldas)}</pre>`;
+}
+function visszaallit() {
+  const f = st.feladat; if (!f || !st.ed) return;
+  st.ed.set(f.kezdo);
+}
+
+// ── Szerkesztő: Monaco (mint a VS Code: Emmet, automatikus záró tag); ha nem tölt be, sima szövegmező ──
+let monacoKesz = false, monacoHiba = false;
+const monacoVarok = [];
+(function () {
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.min.js';
+  s.onload = () => {
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+    require(['vs/editor/editor.main'], () => {
+      require(['vs/language/html/htmlMode'], () => {
+        const em = document.createElement('script');
+        em.src = '../emmet-monaco.min.js';
+        em.onload = em.onerror = () => {
+          try { if (window.emmetMonaco) window.emmetMonaco.emmetHTML(monaco); } catch {}
+          monacoKesz = true; monacoVarok.splice(0).forEach(fn => fn());
+        };
+        document.head.appendChild(em);
+      });
+    }, () => { monacoHiba = true; });
+  };
+  s.onerror = () => { monacoHiba = true; };
+  document.head.appendChild(s);
+})();
+
+function szerkesztoEldob() {
+  clearTimeout(st.idozito);
+  if (st.ed && st.ed.eldob) st.ed.eldob();
+  st.ed = null;
+}
+function szerkesztoLetrehoz(ertek, f) {
+  const hely = document.getElementById('szerkeszto');
+  const valtozott = () => {
+    clearTimeout(st.idozito);
+    st.idozito = setTimeout(() => { store.setItem('kod_' + f.id, st.ed.get()); frissit(); }, 350);
+  };
+  // Először sima szövegmező (azonnal használható), Monaco betöltése után arra cseréljük
+  hely.innerHTML = '<textarea spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Ide írd a HTML kódot…"></textarea>';
+  const ta = hely.querySelector('textarea');
+  ta.value = ertek;
+  ta.addEventListener('input', valtozott);
+  ta.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); ta.setRangeText('  ', ta.selectionStart, ta.selectionEnd, 'end'); valtozott(); } });
+  st.ed = { get: () => ta.value, set: v => { ta.value = v; valtozott(); } };
+  const sajat = st.ed;
+  const cserel = () => {
+    if (st.ed !== sajat || !document.body.contains(hely)) return;
+    const div = document.createElement('div'); div.className = 'monaco';
+    const v = ta.value; hely.innerHTML = ''; hely.appendChild(div);
+    const ed = monaco.editor.create(div, {
+      value: v, language: 'html', theme: 'vs-dark', fontSize: 15, minimap: { enabled: false }, automaticLayout: true,
+      wordWrap: 'on', scrollBeyondLastLine: false, tabSize: 2, quickSuggestions: { other: true, comments: false, strings: true }
+    });
+    ed.onDidChangeModelContent(valtozott);
+    st.ed = { get: () => ed.getValue(), set: x => ed.setValue(x), eldob: () => ed.dispose() };
+    ed.focus();
+  };
+  if (monacoKesz) cserel(); else if (!monacoHiba) monacoVarok.push(cserel);
+  frissit();
+}
+
+// ── Előnézet és élő ellenőrzés ─────────────────────────────────────────────
+// A képek a feladat mappájához képest töltődnek; a belső (#) link görget, a külső nem nyílik meg az előnézetben
+const ELONEZET_SEGED = `<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;e.preventDefault();var h=a.getAttribute('href');if(h.charAt(0)==='#'){var t=document.getElementById(decodeURIComponent(h.slice(1)));if(t)t.scrollIntoView({behavior:'smooth'});}});<\/script>`;
+function ellenoriz(f, html) {
+  let doc;
+  try { doc = new DOMParser().parseFromString(html, 'text/html'); } catch { doc = document.implementation.createHTMLDocument(''); }
+  return f.ell.map(([sz, fn]) => { let ok = false; try { ok = !!fn(doc, html); } catch {} return [ok, sz]; });
+}
+function frissit() {
+  const f = st.feladat; if (!f || !st.ed) return;
+  const html = st.ed.get();
+  const fr = document.getElementById('elonezet');
+  if (fr) {
+    const alap = `<base href="${location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '')}">`;
+    fr.srcdoc = (/<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + alap) : alap + html) + ELONEZET_SEGED;
+  }
+  const el = document.getElementById('ellenorzes');
+  if (el) el.innerHTML = ellenoriz(f, html).map(([ok, sz]) =>
+    `<div class="e-sor${ok ? ' ok' : ''}"><span class="j"><i class="${ok ? 'fas fa-square-check' : 'far fa-square'}"></i></span><span>${szoveg(sz)}</span></div>`).join('');
+}
+
+function ellenorizGomb() {
+  const f = st.feladat; if (!f || !st.ed) return;
+  const kod = st.ed.get();
+  const sorok = ellenoriz(f, kod);
+  const jo = sorok.filter(s => s[0]).length, ossz = sorok.length, minden = jo === ossz;
+  document.getElementById('ellenorzes').innerHTML = sorok.map(([ok, sz]) =>
+    `<div class="e-sor ${ok ? 'ok' : 'nem'}"><span class="j"><i class="fas ${ok ? 'fa-square-check' : 'fa-xmark'}"></i></span><span>${szoveg(sz)}</span></div>`).join('');
+  document.getElementById('eredmeny').innerHTML = minden
+    ? '<div class="siker"><i class="fas fa-star"></i> Szép munka! Minden stimmel.</div>'
+    : `<div class="halvany" style="padding:6px 0">${jo} / ${ossz} stimmel. A piros sorokat javítsd!</div>`;
+  if (window.KandoMegoldas) KandoMegoldas.kuld('web', 'gyak_' + f.id, kod, jo, ossz);
+  if (minden && !kesz(f)) {
+    store.setItem('kesz_' + f.id, '1');
+    haladasKuld(f, jo, ossz);
+    rajzolLista();
+  }
+}
+function haladasKuld(f, pont, max) {
+  if (!USER.token || !USER.email || USER.szerep !== 'tanulo' || USER._tesztMod) return;
+  fetch(`${API}/api/progress`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + USER.token },
+    body: JSON.stringify({ email: USER.email, nev: USER.nev || '', osztaly: USER.osztaly ? `${USER.evfolyam || ''}.${USER.osztaly}` : '',
+      targy: 'web', feladat: 'gyak_' + f.id, pont, maxPont: max, mode: 'practice' })
+  }).catch(() => {});
+}
+
+// ── Tanári segítség: a tanuló elküldi a feladatot és a kódját; a tanár válaszol vagy odamegy ──
+const seg = { lista: [], idozito: null };
+const segTanulo = () => USER.token && USER.email && USER.szerep === 'tanulo' && !USER._tesztMod;
+function segitsegNyit() {
+  const hely = document.getElementById('segitseg-hely');
+  if (!segTanulo()) { hely.innerHTML = '<div class="segitseg">Ezt a gombot a tanulók használják: elküldik a tanárnak, hol akadtak el.</div>'; return; }
+  hely.innerHTML = `<div class="segitseg"><b><i class="fas fa-hand"></i> Hol akadtál el?</b> Nem kötelező írni, a kódodat így is látja a tanár.
+    <textarea id="seg-uzenet" rows="2" maxlength="500" placeholder="pl.: nem jelenik meg a kép"></textarea>
+    <button class="gomb fo-gomb" onclick="segitsegKuld()"><i class="fas fa-paper-plane"></i> Küldés a tanárnak</button>
+    <button class="gomb" onclick="document.getElementById('segitseg-hely').innerHTML=''; segitsegRajzol()">Mégse</button></div>`;
+  document.getElementById('seg-uzenet').focus();
+}
+async function segitsegKuld() {
+  const f = st.feladat; if (!f) return;
+  const uzenet = (document.getElementById('seg-uzenet') || {}).value || '';
+  try {
+    const r = await fetch(`${API}/api/segitseg`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + USER.token },
+      body: JSON.stringify({ targy: 'web', feladat: 'gyak_' + f.id, feladatNev: `${st.tema.cim} – ${f.sorszam}. ${f.cim}`, kod: st.ed ? st.ed.get() : '', uzenet }) });
+    if (!r.ok) throw new Error(r.status);
+  } catch { document.getElementById('segitseg-hely').innerHTML = '<div class="segitseg">A küldés nem sikerült. Próbáld újra, vagy jelentkezz!</div>'; return; }
+  document.getElementById('segitseg-hely').innerHTML = '';
+  await segitsegFrissit();
+}
+async function segitsegFrissit() {
+  if (!segTanulo()) return;
+  try { const r = await fetch(`${API}/api/segitseg/sajat`, { headers: { Authorization: 'Bearer ' + USER.token } }); if (r.ok) seg.lista = await r.json(); } catch {}
+  segitsegRajzol();
+  clearTimeout(seg.idozito);
+  if (seg.lista.some(x => x.allapot === 'nyitott' || x.allapot === 'odamegy')) seg.idozito = setTimeout(() => { if (!document.hidden) segitsegFrissit(); else seg.idozito = setTimeout(segitsegFrissit, 20000); }, 20000);
+}
+function segitsegRajzol() {
+  const hely = document.getElementById('segitseg-hely'), f = st.feladat;
+  if (!hely || !f || document.getElementById('seg-uzenet')) return;
+  const k = seg.lista.find(x => x.feladat === 'gyak_' + f.id && x.allapot !== 'lezart');
+  if (!k) { hely.innerHTML = ''; return; }
+  const valasz = k.allapot === 'nyitott' ? '<div style="margin-top:4px"><i class="fas fa-hourglass-half"></i> Elküldve. A tanár látja, hamarosan válaszol.</div>'
+    : k.allapot === 'odamegy' ? '<div class="valasz"><i class="fas fa-person-walking"></i> A tanár odamegy hozzád.</div>'
+    : `<div class="valasz"><b>A tanár válasza:</b> ${esc(k.valasz || '')}</div>`;
+  hely.innerHTML = `<div class="segitseg"><b><i class="fas fa-hand"></i> Segítséget kértél ennél a feladatnál.</b>${valasz}
+    <div style="margin-top:8px"><button class="gomb" onclick="segitsegLezar(${k.id})"><i class="fas fa-check"></i> Megvan, megoldottam</button></div></div>`;
+}
+async function segitsegLezar(id) {
+  try { await fetch(`${API}/api/segitseg/${id}/lezar`, { method: 'POST', headers: { Authorization: 'Bearer ' + USER.token } }); } catch {}
+  segitsegFrissit();
+}
+
+// ── Indulás ────────────────────────────────────────────────────────────────
+(async function () {
+  await feloldottBetolt();
+  document.getElementById('oktato-cimke').hidden = !st.mind;
+  const p = new URLSearchParams(location.search);
+  const tema = TEMAK.find(t => t.id === p.get('tema')) || TEMAK.find(t => t.feladatok.some(latszik)) || TEMAK[0];
+  st.tema = tema;
+  rajzolTemak();
+  const kert = tema && tema.feladatok.find(f => f.id === p.get('feladat') && latszik(f));
+  if (kert) valasztFeladat(kert.id); else valasztTema(tema ? tema.id : null);
+  segitsegFrissit();
+})();
+</script>
+<script src="../../special-roles.js"></script>
+</body>
+</html>
