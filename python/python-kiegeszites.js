@@ -13,6 +13,10 @@
  * VS Code-mód (dolgozat, ágazati gyakorló):  <html data-pykieg="vscode">
  *   csak valódi Python-nevek, csak a név kerül be – mint a vizsgán a VS Code-ban.
  *
+ * Párzárás (textarea): ( [ { " ' beírásakor a pár is bekerül, a kurzor középre.
+ * Záró jelnél átlép, Backspace az üres párt törli, kijelölést körbezár.
+ * (A Monaco szerkesztő ezt magától tudja.)
+ *
  * Kikapcsolás egy oldalon:  <html data-pykieg="ki">
  *   vagy futás közben: PyKieg.ki = true;
  *
@@ -303,8 +307,59 @@
       return true;
     }
 
+    // ── Párzárás (mint a VS Code): ( [ { " ' ──────────────────────────
+    // Nyitó jelre a pár is bekerül, a kurzor középre kerül. Záró jelnél, ha
+    // már ott van, csak átlép rajta. Backspace az üres párt együtt törli.
+    // Kijelölt szövegnél körbezárja a kijelölést.
+    var PAROK = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+    var ZARO = { ')': 1, ']': 1, '}': 1 };
+    var ELE_ZAR = /^($|[\s;:.,=)\]}>])/;   // ez előtt zárunk párt (VS Code szabálya)
+    function beir(szoveg, kezd, veg, uKezd, uVeg) {
+      szuneteltet = true;
+      ta.setSelectionRange(kezd, veg);
+      if (!document.execCommand('insertText', false, szoveg)) {
+        ta.setRangeText(szoveg, kezd, veg, 'end');
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      szuneteltet = false;
+      ta.setSelectionRange(uKezd, uVeg);
+    }
+    function parZaras(e) {
+      if (kikapcsolva() || e.isComposing || e.metaKey || (e.ctrlKey && !e.altKey)) return false;
+      var k = e.key, s = ta.selectionStart, v2 = ta.selectionEnd, v = ta.value;
+      var utana = v.charAt(v2), elotte = v.charAt(s - 1);
+      var sor = v.slice(v.lastIndexOf('\n', s - 1) + 1, s);
+      if (k === 'Backspace') {
+        if (s !== v2 || !PAROK[elotte] || PAROK[elotte] !== utana) return false;
+        beir('', s - 1, s + 1, s - 1, s - 1);
+        return true;
+      }
+      if (ZARO[k] || k === '"' || k === "'") {
+        // átlépés a már ott lévő záró jelen
+        if (s === v2 && utana === k) { ta.setSelectionRange(s + 1, s + 1); return true; }
+      }
+      if (!PAROK[k]) return false;
+      var zar = PAROK[k];
+      if (s !== v2) {   // kijelölés körbezárása
+        beir(k + v.slice(s, v2) + zar, s, v2, s + 1, v2 + 1);
+        return true;
+      }
+      if (/#/.test(sor.replace(/(["'])(?:\\.|(?!\1).)*\1/g, ''))) return false;   // megjegyzésben nem
+      if (!ELE_ZAR.test(v.slice(v2))) return false;
+      if (k === '"' || k === "'") {
+        if (/[\wáéíóöőúüűÁÉÍÓÖŐÚÜŰ]/.test(elotte)) return false;   // pl.: it's
+        var nyitott = /(["'])(?:\\.|(?!\1).)*$/.exec(sor.replace(/(["'])(?:\\.|(?!\1).)*\1/g, ''));
+        if (nyitott) return false;   // épp egy szöveget zárunk le
+      }
+      beir(k + zar, s, s, s + 1, s + 1);
+      return true;
+    }
+
     // capture: előbb fut, mint az oldal saját Tab/Enter kezelője
     ta.addEventListener('keydown', function (e) {
+      if (/^[(\[{)\]}"']$/.test(e.key) || e.key === 'Backspace') {
+        if (!(ul && e.key === 'Backspace') && parZaras(e)) { bezar(); e.preventDefault(); e.stopImmediatePropagation(); return; }
+      }
       if (!ul) {
         if (e.key === 'Tab' && !e.shiftKey && ugrasok.length && ugrik()) { e.preventDefault(); e.stopImmediatePropagation(); }
         else if (e.key === 'Escape' || e.key === 'Enter') ugrasok = [];
