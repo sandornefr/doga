@@ -34,19 +34,19 @@
     // Minták (a leggyakoribb szerkezetek)
     { c: 'print', t: 'minta', s: 'print(${1})', d: 'Kiírás a képernyőre' },
     { c: 'printf', t: 'minta', s: 'print(f"${1}")', d: 'Kiírás f-stringgel: print(f"{nev}")' },
-    { c: 'input', t: 'minta', s: '${1:valtozo} = input("${2:Kérdés: }")', d: 'Szöveg bekérése' },
-    { c: 'inputint', t: 'minta', s: '${1:szam} = int(input("${2:Adj meg egy számot: }"))', d: 'Egész szám bekérése' },
-    { c: 'inputfloat', t: 'minta', s: '${1:szam} = float(input("${2:Adj meg egy számot: }"))', d: 'Tört szám bekérése' },
-    { c: 'for', t: 'minta', s: 'for ${1:i} in range(${2:10}):\n\t${3:pass}', d: 'Számlálós ciklus' },
-    { c: 'forin', t: 'minta', s: 'for ${1:elem} in ${2:lista}:\n\t${3:pass}', d: 'Bejárás: lista minden eleme' },
-    { c: 'while', t: 'minta', s: 'while ${1:feltetel}:\n\t${2:pass}', d: 'Feltételes ciklus' },
-    { c: 'if', t: 'minta', s: 'if ${1:feltetel}:\n\t${2:pass}', d: 'Elágazás' },
-    { c: 'ifelse', t: 'minta', s: 'if ${1:feltetel}:\n\t${2:pass}\nelse:\n\t${3:pass}', d: 'Elágazás különben ággal' },
-    { c: 'elif', t: 'minta', s: 'elif ${1:feltetel}:\n\t${2:pass}', d: 'Különben ha' },
-    { c: 'else', t: 'minta', s: 'else:\n\t${1:pass}', d: 'Különben' },
-    { c: 'def', t: 'minta', s: 'def ${1:nev}(${2}):\n\t${3:pass}', d: 'Saját függvény' },
-    { c: 'withopen', t: 'minta', s: 'with open("${1:adat.txt}", encoding="utf-8") as ${2:f}:\n\t${3:pass}', d: 'Fájl olvasása' },
-    { c: 'try', t: 'minta', s: 'try:\n\t${1:pass}\nexcept ${2:ValueError}:\n\t${3:pass}', d: 'Hibakezelés' },
+    { c: 'input', t: 'minta', s: 'input("${1}")', d: 'Szöveg bekérése: input("")' },
+    { c: 'inputint', t: 'minta', s: 'int(input("${1}"))', d: 'Egész szám bekérése' },
+    { c: 'inputfloat', t: 'minta', s: 'float(input("${1}"))', d: 'Tört szám bekérése' },
+    { c: 'for', t: 'minta', s: 'for ${1} in range(${2}):\n\t${3}', d: 'Számlálós ciklus: for i in range(10)' },
+    { c: 'forin', t: 'minta', s: 'for ${1} in ${2}:\n\t${3}', d: 'Bejárás: lista minden eleme' },
+    { c: 'while', t: 'minta', s: 'while ${1}:\n\t${2}', d: 'Feltételes ciklus' },
+    { c: 'if', t: 'minta', s: 'if ${1}:\n\t${2}', d: 'Elágazás' },
+    { c: 'ifelse', t: 'minta', s: 'if ${1}:\n\t${2}\nelse:\n\t${3}', d: 'Elágazás különben ággal' },
+    { c: 'elif', t: 'minta', s: 'elif ${1}:\n\t${2}', d: 'Különben ha' },
+    { c: 'else', t: 'minta', s: 'else:\n\t${1}', d: 'Különben' },
+    { c: 'def', t: 'minta', s: 'def ${1}(${2}):\n\t${3}', d: 'Saját függvény' },
+    { c: 'withopen', t: 'minta', s: 'with open("${1}", encoding="utf-8") as ${2}:\n\t${3}', d: 'Fájl olvasása' },
+    { c: 'try', t: 'minta', s: 'try:\n\t${1}\nexcept ${2}:\n\t${3}', d: 'Hibakezelés' },
 
     // Beépített függvények
     { c: 'int', t: 'fuggveny', s: 'int(${1})', d: 'Egész számmá alakít' },
@@ -55,7 +55,7 @@
     { c: 'bool', t: 'fuggveny', s: 'bool(${1})', d: 'Logikai értékké alakít' },
     { c: 'len', t: 'fuggveny', s: 'len(${1})', d: 'Hossz (elemek száma)' },
     { c: 'range', t: 'fuggveny', s: 'range(${1})', d: 'Számsor: range(start, stop, lépés)' },
-    { c: 'round', t: 'fuggveny', s: 'round(${1}, ${2:2})', d: 'Kerekítés' },
+    { c: 'round', t: 'fuggveny', s: 'round(${1})', d: 'Kerekítés: round(x, 2)' },
     { c: 'abs', t: 'fuggveny', s: 'abs(${1})', d: 'Abszolút érték' },
     { c: 'min', t: 'fuggveny', s: 'min(${1})', d: 'Legkisebb' },
     { c: 'max', t: 'fuggveny', s: 'max(${1})', d: 'Legnagyobb' },
@@ -81,7 +81,7 @@
   // Pont után ('.') felajánlott metódusok
   var METODUSOK = [
     { c: 'append', s: 'append(${1})', d: 'Lista: elem a végére' },
-    { c: 'insert', s: 'insert(${1:0}, ${2})', d: 'Lista: beszúrás' },
+    { c: 'insert', s: 'insert(${1})', d: 'Lista: beszúrás' },
     { c: 'remove', s: 'remove(${1})', d: 'Lista: elem törlése' },
     { c: 'pop', s: 'pop(${1})', d: 'Lista: kivesz egy elemet' },
     { c: 'sort', s: 'sort()', d: 'Lista: rendezés helyben' },
@@ -91,14 +91,14 @@
     { c: 'upper', s: 'upper()', d: 'Szöveg: nagybetűs' },
     { c: 'lower', s: 'lower()', d: 'Szöveg: kisbetűs' },
     { c: 'strip', s: 'strip()', d: 'Szöveg: szóközök le a széléről' },
-    { c: 'split', s: 'split(${1:";"})', d: 'Szöveg: darabolás listává' },
+    { c: 'split', s: 'split(${1})', d: 'Szöveg: darabolás listává' },
     { c: 'join', s: 'join(${1})', d: 'Szöveg: lista összefűzése' },
-    { c: 'replace', s: 'replace("${1}", "${2}")', d: 'Szöveg: csere' },
-    { c: 'startswith', s: 'startswith("${1}")', d: 'Szöveg: ezzel kezdődik?' },
-    { c: 'endswith', s: 'endswith("${1}")', d: 'Szöveg: ezzel végződik?' },
+    { c: 'replace', s: 'replace(${1})', d: 'Szöveg: csere' },
+    { c: 'startswith', s: 'startswith(${1})', d: 'Szöveg: ezzel kezdődik?' },
+    { c: 'endswith', s: 'endswith(${1})', d: 'Szöveg: ezzel végződik?' },
     { c: 'isdigit', s: 'isdigit()', d: 'Szöveg: csak számjegy?' },
     { c: 'readlines', s: 'readlines()', d: 'Fájl: sorok listája' },
-    { c: 'randint', s: 'randint(${1:1}, ${2:10})', d: 'random: egész szám a két határ között' },
+    { c: 'randint', s: 'randint(${1})', d: 'random: egész szám a két határ között' },
     { c: 'choice', s: 'choice(${1})', d: 'random: véletlen elem' },
     { c: 'sqrt', s: 'sqrt(${1})', d: 'math: négyzetgyök' }
   ];
@@ -156,7 +156,11 @@
         return {
           suggestions: lista.map(function (x, i) {
             return {
-              label: x.c, kind: tipus[x.t] || K.Text,
+              // a minta nem Snippet fajtájú: a snippetSuggestions:'bottom' beállítás (ágazati gyakorló)
+              // különben a lista aljára tenné, és pl.: „inp” + Tab az „import random”-ot hozná
+              label: x.c, kind: x.t === 'minta'
+                ? (PY_KULCSSZAVAK.indexOf(x.s.split(/[\s(:]/)[0]) >= 0 ? K.Keyword : K.Function)
+                : (tipus[x.t] || K.Text),
               insertText: x.s || x.c, insertTextRules: x.s ? SNIP : undefined,
               detail: x.d || '', range: range,
               sortText: (x.t === 'minta' ? '0' : '1') + ('00' + i).slice(-3)
@@ -165,6 +169,26 @@
         };
       }
     });
+
+    // A minta üres helyén (for | in range(): …) a beírt rövid (1–2 betűs) név után a Tab a
+    // következő helyre ugorjon, ne a felugró javaslatot (pl.: i → if/input) fogadja el.
+    function tabBekot(ed) {
+      if (!ed || ed.__pykiegTab) return;
+      ed.__pykiegTab = true;
+      ed.onKeyDown(function (e) {
+        if (e.keyCode !== m.KeyCode.Tab || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || kikapcsolva()) return;
+        var kk = ed._contextKeyService, ertek = function (k) { try { return kk.getContextKeyValue(k); } catch (h) { return false; } };
+        if (!kk || !ertek('suggestWidgetVisible') || !ertek('inSnippetMode') || !ertek('hasNextTabstop')) return;
+        var model = ed.getModel(), pos = ed.getPosition();
+        var szo = model.getWordUntilPosition(pos).word;
+        if (szo.length >= 3 || model.getLineContent(pos.lineNumber).charAt(pos.column - 2 - szo.length) === '.') return;
+        e.preventDefault(); e.stopPropagation();
+        ed.trigger('pykieg', 'hideSuggestWidget', null);
+        ed.trigger('pykieg', 'jumpToNextSnippetPlaceholder', null);
+      });
+    }
+    m.editor.getEditors().forEach(tabBekot);
+    m.editor.onDidCreateEditor(tabBekot);
   }
 
   // ── Textarea ──────────────────────────────────────────────────────
