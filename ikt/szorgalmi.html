@@ -154,17 +154,23 @@ async function indit() {
     app.innerHTML = '<div class="kozep"><h2>Ez a tanulói nézet.</h2><p>A szorgalmi beadásokat az Oktató menü <b>Szorgalmi feladatok</b> kártyáján látod.</p><a class="btn" href="beadasok.html?szorgalmi=1">Megnyitom</a></div>';
     return;
   }
-  // Csak a kötelező Témaoldal beadása után.
-  let kot = null;
+  // Csak a kötelező Témaoldal beadása után: Témaoldal-beadás, vagy a Weboldalam oldalon beküldött github.io link
+  // (aki a Témaoldalt órán, a GitHubon készítette el). Teszt Elek (tanár diákként) zár nélkül kipróbálhatja.
+  let kot = null, webLink = null;
   try {
-    const r = await fetch(API + '/api/ikt/beadas/sajat?nemolvas=1&feladat=temaoldal', { headers: AUTH });
+    const [r, rw] = await Promise.all([
+      fetch(API + '/api/ikt/beadas/sajat?nemolvas=1&feladat=temaoldal', { headers: AUTH }),
+      fetch(API + '/api/ikt/beadas/sajat?nemolvas=1&feladat=weboldal', { headers: AUTH })]);
     kot = r.ok ? (await r.json()).beadas : null;
+    const w = rw.ok ? (await rw.json()).beadas : null;
+    webLink = w && w.githubUrl ? w : null;
   } catch (e) {}
-  if (!kot) {
+  if (!kot && !webLink && !u._tesztMod) {
     app.innerHTML = '<div class="kozep"><h2><i class="fas fa-lock"></i> A Témaoldal beadása után nyílik meg.</h2><p>Előbb add be a kötelező Témaoldaladat, utána választhatsz szorgalmi témát.</p><a class="btn" href="temaoldal.html">A Témaoldalhoz</a></div>';
     return;
   }
-  try {
+  // A kötelező (sorsolt) téma csak Témaoldal-beadásnál ismert – a Weboldalam-linkes tanulónak nem sorsolunk.
+  if (kot) try {
     const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal', { headers: AUTH });
     const dt = rt.ok ? await rt.json() : null;
     if (dt && dt.temaSorszam) { kapott = dt.temaSorszam; if (u.email) temak[u.email] = { temaSorszam: kapott }; }

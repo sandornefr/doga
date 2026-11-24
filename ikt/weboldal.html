@@ -155,13 +155,20 @@ async function temaErtekeles() {
   try {
     const r = await fetch(API + '/api/ikt/beadas/sajat?feladat=temaoldal', { headers: AUTH });
     const d = r.ok ? await r.json() : null;
-    const b = d && d.beadas;
+    let b = d && d.beadas;
+    // Aki a Témaoldalt a GitHubon készítette el, és csak itt, a Weboldalam oldalon küldte be a linkjét:
+    // a tanár ezt a linket pontozza (a témát órán kapta, a h1-et kézzel nézi).
+    if (!b || !((b.fajlok && b.fajlok.length) || b.githubUrl)) {
+      const rw = await fetch(API + '/api/ikt/beadas/sajat?feladat=weboldal', { headers: AUTH });
+      const dw = rw.ok ? await rw.json() : null;
+      if (dw && dw.beadas && dw.beadas.githubUrl) b = { ...dw.beadas, weboldalbol: true };
+    }
     if (!b || !((b.fajlok && b.fajlok.length) || b.githubUrl)) {
       el.innerHTML = '<p>Még nem adtad be a Témaoldalt. A <a href="temaoldal.html">Témaoldal</a> kártyán adhatod be.</p>';
       return;
     }
-    // a kapott téma (a h1 összevetéséhez)
-    try {
+    // a kapott téma (a h1 összevetéséhez) – csak Témaoldal-beadásnál
+    if (!b.weboldalbol) try {
       const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal', { headers: AUTH });
       const dt = rt.ok ? await rt.json() : null;
       if (dt && dt.temaSorszam && u.email) temak[u.email] = { temaSorszam: dt.temaSorszam };

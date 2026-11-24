@@ -3009,11 +3009,21 @@ app.MapPost("/api/ikt/beadas", async (HttpContext ctx, Database db) =>
     {
         if (!szorg.Success || !int.TryParse(szorg.Groups[1].Value, out var ssz) || ssz < 1 || ssz > 35)
             return Results.BadRequest(new { error = "Érvénytelen szorgalmi téma." });
-        if (db.GetIktBeadasSajat(be.Email, "temaoldal") == null)
+        // A kötelező Témaoldal beadva: Témaoldal-beadás, vagy a Weboldalam oldalon beküldött github.io link
+        // (aki a Témaoldalt órán, a GitHubon készítette el). Az oktató / Teszt Elek kipróbálhatja.
+        var (_, _, beSzerep) = InspectAuthContext(ctx);
+        var kotelezo = db.GetIktBeadasSajat(be.Email, "temaoldal");
+        var weboldalLink = db.GetIktBeadasSajat(be.Email, "weboldal");
+        var vanKotelezo = kotelezo != null || (weboldalLink != null && !string.IsNullOrEmpty(weboldalLink.GithubUrl));
+        if (!vanKotelezo && !IsPrivilegedRole(beSzerep))
             return Results.BadRequest(new { error = "Szorgalmi témát a kötelező Témaoldal beadása után adhatsz be." });
-        var sajatTema = db.GetOrAssignIktTema(be.Email, be.Nev, be.Osztaly, be.Csoport, "temaoldal", 35);
-        if (sajatTema.TemaSorszam == ssz)
-            return Results.BadRequest(new { error = "Ez a kötelező témád – szorgalmiként egy másikat válassz." });
+        // A saját (sorsolt) téma csak a Témaoldal-beadásnál ismert; a Weboldalam-linkes tanulónál nem sorsolunk.
+        if (kotelezo != null)
+        {
+            var sajatTema = db.GetOrAssignIktTema(be.Email, be.Nev, be.Osztaly, be.Csoport, "temaoldal", 35);
+            if (sajatTema.TemaSorszam == ssz)
+                return Results.BadRequest(new { error = "Ez a kötelező témád – szorgalmiként egy másikat válassz." });
+        }
     }
     var url = (form["github_url"].FirstOrDefault() ?? "").Trim();
     if (url.Length > 0 && !IktErvenyesGithubUrl(url))
