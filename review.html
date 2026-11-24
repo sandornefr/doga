@@ -1247,6 +1247,55 @@ function renderSubmissionsTable(list) {
   }).join('');
 }
 
+// ── WEB beadás újraellenőrzése a web/app.js MOSTANI ellenőrzéseivel ─────────
+// Csak megjelenít, semmit nem ment. Az ellenőrzések egyetlen forrása a web/app.js.
+let _webTasksFactory = null;
+async function getWebTasks(validationImages) {
+  if (!_webTasksFactory) {
+    const src = await (await fetch('web/app.js?t=' + Date.now(), { cache: 'no-store' })).text();
+    const a = src.indexOf('const _ch = {');
+    const b = src.indexOf('\nlet currentTask = null;');
+    if (a < 0 || b < 0 || b < a) throw new Error('Az ellenőrzések nem találhatók a web/app.js-ben.');
+    _webTasksFactory = new Function('validationImages', src.slice(a, b) + '\nreturn availableTasks;');
+  }
+  return _webTasksFactory(validationImages);
+}
+
+async function webUjraellenorzes(s) {
+  const box = document.getElementById('web-ujraellenorzes-eredmeny');
+  if (!box) return;
+  box.innerHTML = '<div style="color:#94a3b8;font-size:0.85rem;">Ellenőrzés…</div>';
+  try {
+    const snap = JSON.parse(s.codeSnapshot || '{}');
+    const vi = snap.validationImages || {};
+    const tasks = await getWebTasks({ html: vi.html || null, css: vi.css || null });
+    const task = tasks[s.taskIds];
+    if (!task || !task.checks) { box.innerHTML = '<div style="color:#ef4444;font-size:0.85rem;">Ehhez a feladathoz nincs ellenőrzés.</div>'; return; }
+    const html = snap.html || '', css = snap.css || '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const regi = {};
+    (snap.checkResults || []).forEach(r => { regi[r.id] = r.done; });
+    const sorok = task.checks.map(ch => {
+      let done = false;
+      try { done = !!ch.check(doc, html, css); } catch {}
+      return { label: ch.label, done, valtozott: ch.id in regi && regi[ch.id] !== done };
+    });
+    const pont = sorok.filter(r => r.done).length;
+    const valt = sorok.filter(r => r.valtozott).length;
+    box.innerHTML = `
+      <div style="font-weight:700;color:#93c5fd;margin-bottom:0.5rem;">Újraellenőrzés: ${pont} / ${sorok.length} pont (mentve: ${s.totalScore} / ${s.maxTotal})${valt ? ` · ${valt} pont eltér` : ''}</div>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        ${sorok.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:${r.done?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.08)'};font-size:0.82rem;${r.valtozott?'outline:2px solid #facc15;':''}">
+          <span style="font-weight:700;color:${r.done?'#10b981':'#ef4444'};min-width:16px;">${r.done?'✓':'✗'}</span>
+          <span style="color:${r.done?'#d1fae5':'#fca5a5'};">${esc2(r.label)}</span>
+          ${r.valtozott ? '<span style="color:#facc15;font-size:0.75rem;">eltér a mentettől</span>' : ''}
+        </div>`).join('')}
+      </div>`;
+  } catch (e) {
+    box.innerHTML = `<div style="color:#ef4444;font-size:0.85rem;">Hiba az újraellenőrzéskor: ${esc2(e.message)}</div>`;
+  }
+}
+
 async function openCodePanel(id) {
   const token = getToken();
   document.getElementById('submissions-section').classList.add('hidden');
@@ -1293,6 +1342,12 @@ async function openCodePanel(id) {
                   <span style="color:${r.done?'#d1fae5':'#fca5a5'};">${esc2(r.label||'')}</span>
                 </div>`).join('')}
               </div>
+            </div>` : ''}
+            ${s.taskIds ? `
+            <div style="margin-top:1.25rem;">
+              <button id="web-ujraellenorzes-btn" style="padding:6px 14px;background:#1a3a5c;border:1px solid #3b82f6;border-radius:6px;color:#93c5fd;font-size:0.85rem;cursor:pointer;">🔄 Újraellenőrzés a mostani szabályokkal</button>
+              <span style="color:#94a3b8;font-size:0.78rem;margin-left:8px;">Csak megmutatja. A mentett pontszámot nem írja felül.</span>
+              <div id="web-ujraellenorzes-eredmeny" style="margin-top:0.75rem;"></div>
             </div>` : ''}`;
         } else if (snap.tasks) {
           // Python beadás
@@ -1318,6 +1373,8 @@ async function openCodePanel(id) {
         <div><div style="color:#94a3b8;font-size:0.75rem;">Beadva</div><div style="font-size:0.85rem;">${(s.submittedAt||'').replace('T',' ').substring(0,16)}</div></div>
       </div>
       ${codeHtml || '<div style="color:#4b5563;padding:1rem;">Nincs kód mentve.</div>'}`;
+    const ujBtn = document.getElementById('web-ujraellenorzes-btn');
+    if (ujBtn) ujBtn.onclick = () => webUjraellenorzes(s);
   } catch(e) {
     content.innerHTML = '<div style="color:#e94560;padding:1rem;">Hiba a betöltéskor.</div>';
   }
