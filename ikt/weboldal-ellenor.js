@@ -30,11 +30,30 @@
 
   const jo = url => /^https:\/\/[a-z0-9-]+\.github\.io(\/\S*)?$/i.test(String(url || '').trim());
 
+  // Letöltés időkorláttal (15 mp) és egy újrapróbálással. A 404 végleges válasz (nincs fent); a hálózati hiba,
+  // az időtúllépés és az 5xx után még egyszer próbálja, utána HalozatHiba – ilyenkor nem 0 pont, hanem „nem sikerült betölteni”.
+  // A böngésző normál gyorsítótárát használja (a GitHub Pages 10 percig engedi), így az újraellenőrzés gyors.
+  const IDOKORLAT = 15000;
+  class HalozatHiba extends Error {}
+  async function kerFetch(cim, opciok) {
+    for (let probal = 0; probal < 2; probal++) {
+      const ac = new AbortController();
+      const idozito = setTimeout(() => ac.abort(), IDOKORLAT);
+      try {
+        const r = await fetch(cim, { ...(opciok || {}), signal: ac.signal });
+        if (r.status >= 500 && probal === 0) continue;
+        return r;
+      } catch (e) {
+        if (probal === 1) throw new HalozatHiba('Nem sikerült letölteni: ' + cim);
+      } finally { clearTimeout(idozito); }
+    }
+    throw new HalozatHiba('Nem sikerült letölteni: ' + cim);
+  }
   async function letolt(cim) {
-    try {
-      const r = await fetch(cim, { cache: 'no-store' });
-      return r.ok ? await r.text() : null;
-    } catch (e) { return null; }
+    const r = await kerFetch(cim);
+    if (r.status >= 500) throw new HalozatHiba('A GitHub nem válaszolt: ' + cim);
+    if (!r.ok) return null;
+    try { return await r.text(); } catch (e) { throw new HalozatHiba('Megszakadt a letöltés: ' + cim); }
   }
 
   // A menü: van-e nav, és abban link mind az 5 oldalra (a tema.html-re csak akkor kell, ha már fent van).
@@ -76,13 +95,20 @@
   // A 2. bekezdés az iskoláról szól-e (ékezet nélkül nézve).
   const ISKOLA_RE = /iskol|suli|kando|technikum|valaszt|informatik/;
 
-  // A kép tényleg megjelenik-e: a fájl letölthető, és kép.
+  // A kép tényleg megjelenik-e: a fájl elérhető, és kép. Csak a fejlécet kéri (HEAD) – a több MB-os kollázst
+  // nem tölti le; ha a HEAD nem megy, sima letöltéssel próbálja.
   async function kepMegjelenik(img, alapCim) {
     if (!img || !(img.getAttribute('src') || '').trim()) return false;
+    let cim;
+    try { cim = new URL(img.getAttribute('src').trim(), alapCim).href; } catch (e) { return false; }
+    const kep = r => r.ok && /^image\//i.test(r.headers.get('content-type') || '');
     try {
-      const r = await fetch(new URL(img.getAttribute('src').trim(), alapCim).href, { cache: 'no-store' });
-      return r.ok && /^image\//i.test(r.headers.get('content-type') || '');
-    } catch (e) { return false; }
+      const r = await kerFetch(cim, { method: 'HEAD' });
+      if (r.ok || r.status === 404) return kep(r);
+    } catch (e) { /* HEAD nem ment: sima letöltés */ }
+    const r = await kerFetch(cim);
+    if (r.status >= 500) throw new HalozatHiba('A GitHub nem válaszolt: ' + cim);
+    return kep(r);
   }
   const altTitle = img => !!img && !!(img.getAttribute('alt') || '').trim() && !!(img.getAttribute('title') || '').trim();
 
@@ -164,6 +190,14 @@
   // Eredmény: { el: bool, oldalak: [{fajl, nev, van, pontok:[{szoveg, ok}]}], ok, ossz }
   // opciok.nev: a tanuló neve (a főoldal h1-éhez).
   async function ellenoriz(url, opciok) {
+    try { return await ellenorizBelso(url, opciok); }
+    catch (e) {
+      // A böngésző nem tudja megkülönböztetni az akadozó hálót a rossz (nem létező) github.io címtől: mindkettőt jelezzük.
+      if (e instanceof HalozatHiba) return { halozat: true, hiba: 'Nem sikerült betölteni: akadozik a háló, vagy rossz a cím / nincs bekapcsolva a GitHub Pages. Próbáld újra!' };
+      return { halozat: true, hiba: 'Nem sikerült ellenőrizni: ' + (e && e.message || e) };
+    }
+  }
+  async function ellenorizBelso(url, opciok) {
     const nev = opciok && opciok.nev;
     const a = alap(url);
     if (!a) return { hiba: 'A cím nem https://….github.io/… alakú.' };
@@ -197,6 +231,7 @@
   function rajz(e) {
     if (!e) return '';
     if (e.hiba) return `<p class="we-hiba">${esc(e.hiba)}</p>`;
+    if (!e.oldalak) return '';
     return `<table class="we-tabla"><tbody>${e.oldalak.map(o => `<tr>
       <th>${o.van ? `<a href="${esc(e.alap + o.fajl)}" target="_blank" rel="noopener">${esc(o.fajl)}</a>` : esc(o.fajl)}</th>
       <td>${o.van

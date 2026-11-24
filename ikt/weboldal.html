@@ -69,7 +69,7 @@ html{font-size:16px;}
   <div class="card" id="sajat" hidden></div>
 </template>
 
-<script src="weboldal-ellenor.js?v=3"></script>
+<script src="weboldal-ellenor.js?v=4"></script>
 <script>
 const API = 'https://agazati.up.railway.app';
 const FELADAT = 'weboldal';
@@ -130,7 +130,12 @@ async function sajatRajz(b) {
       `<div>${esc(b.visszajelzes.szoveg).replace(/\n/g, '<br>')}</div></div>` : '');
   const e = await WebEllenor.ellenoriz(b.githubUrl, { nev: u && !u._tesztMod ? u.nev : null });
   const a = document.getElementById('allapot');
-  if (e.hiba || !e.el) {
+  if (e.halozat) {
+    // Lassú vagy akadozó háló: nem hiba a tanuló oldalán – újrapróbálható.
+    a.className = 'allapot fut';
+    window._sajatB = b;
+    a.innerHTML = '<i class="fas fa-rotate-right"></i> Nem sikerült betölteni – <a href="#" onclick="sajatRajz(window._sajatB);return false">újra</a>';
+  } else if (e.hiba || !e.el) {
     a.className = 'allapot rossz';
     a.innerHTML = '<i class="fas fa-xmark"></i> Még nem érhető el';
   } else {
@@ -138,7 +143,8 @@ async function sajatRajz(b) {
     a.innerHTML = `<i class="fas ${e.ok === e.ossz ? 'fa-check' : 'fa-list-check'}"></i> ${e.ok} / ${e.ossz}`;
   }
   document.getElementById('ell').innerHTML = WebEllenor.rajz(e) +
-    (e.el ? '<p class="megj">A piros elemeket javítsd ki VS Code-ban, majd töltsd fel újra a GitHubra. A zöld jelre mutatva látod, mi van rendben.</p>'
+    (e.halozat ? '<p class="megj">Most nem sikerült letölteni az oldaladat a GitHubról (lassú vagy akadozó a háló). Kattints az „újra” linkre, vagy frissítsd az oldalt egy kicsit később!</p>' :
+     e.el ? '<p class="megj">A piros elemeket javítsd ki VS Code-ban, majd töltsd fel újra a GitHubra. A zöld jelre mutatva látod, mi van rendben.</p>'
           : '<p class="megj">Nem találom az index.html-t. Be van kapcsolva a GitHub Pages? Jó a cím?</p>');
   illesztOldal();
 }

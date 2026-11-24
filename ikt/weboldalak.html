@@ -8,11 +8,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;}
 body{line-height:1.45;min-height:100vh;}
 .topbar{display:flex;align-items:center;gap:12px;color:#fff;}
 .topbar .cim{font-weight:700;flex:1;}
 .topbar a{color:#fff;text-decoration:none;font-size:.9rem;}
-.wrap{max-width:1200px;margin:0 auto;padding:18px 20px 30px;}
+.wrap{max-width:1200px;margin:0 auto;padding:1.1em 1.25em 1em;}
 .szuro{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
 .csopgomb{border:1px solid #d4cdf5;background:#fff;border-radius:99px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;color:#4c1d95;}
 .csopgomb.aktiv{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:transparent;}
@@ -22,8 +23,8 @@ body{line-height:1.45;min-height:100vh;}
 .kisgomb{border:1px solid #d4cdf5;background:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-size:.9rem;cursor:pointer;color:#4c1d95;}
 .kisgomb:disabled{opacity:.6;cursor:default;}
 table.lista{border-collapse:collapse;width:100%;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(76,29,149,.07);}
-table.lista th{background:#ede9fe;color:#4c1d95;text-align:left;padding:7px 10px;font-size:.88rem;}
-table.lista td{padding:6px 10px;border-top:1px solid #f1eefc;vertical-align:middle;font-size:.93rem;}
+table.lista th{background:#ede9fe;color:#4c1d95;text-align:left;padding:.45em .65em;font-size:.88rem;}
+table.lista td{padding:.35em .65em;border-top:1px solid #f1eefc;vertical-align:middle;font-size:.93rem;}
 table.lista tr.nincs td{color:#9aa5b1;}
 table.lista td.link{word-break:break-all;}
 table.lista td.link a{color:#4f46e5;}
@@ -33,11 +34,11 @@ table.lista td.link a{color:#4f46e5;}
 .pont.kozepes{background:#fef3c7;color:#92400e;}
 .pont.rossz{background:#fee4e2;color:#b42318;}
 .pont.fut{background:#eef2ff;color:#4f46e5;}
-tr.reszlet td{background:#fbfaff;padding:4px 14px 12px;}
-table.lista .we-tabla th{background:none;color:#2e1065;padding:5px 10px 5px 0;}
-table.lista .we-tabla td{background:none;border-top:0;padding:4px 0;}
-.vj{display:flex;gap:8px;align-items:flex-start;margin-top:8px;}
-.vj textarea{flex:1;min-height:52px;padding:6px 8px;border:1px solid #d4cdf5;border-radius:8px;font:inherit;font-size:.9rem;}
+tr.reszlet td{background:#fbfaff;padding:.25em .9em .7em;}
+table.lista .we-tabla th{background:none;color:#2e1065;padding:.3em .65em .3em 0;}
+table.lista .we-tabla td{background:none;border-top:0;padding:.2em 0;}
+.vj{display:flex;gap:.5em;align-items:flex-start;margin-top:.5em;}
+.vj textarea{flex:1;min-height:3.4em;padding:.35em .5em;border:1px solid #d4cdf5;border-radius:8px;font:inherit;font-size:.9rem;}
 .vj-all{font-size:.82rem;color:#52606d;}
 .megj{color:#52606d;font-size:.88rem;}
 .kozep{text-align:center;padding:60px 20px;}
@@ -53,7 +54,7 @@ table.lista .we-tabla td{background:none;border-top:0;padding:4px 0;}
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
-<script src="weboldal-ellenor.js?v=3"></script>
+<script src="weboldal-ellenor.js?v=4"></script>
 <script>
 // A 9.-esek github.io-s weboldalai csoportonként. A tanuló az ikt/weboldal.html-en küldi be (feladat: „weboldal”).
 // Aki még nem küldte be, de a Témaoldalnál megadott github.io címet, annál azt mutatjuk (dőlt betűvel).
@@ -132,12 +133,16 @@ const aktivLista = () => tanulok.filter(t => t.csoport === aktivCsop);
 
 function pontHtml(t) {
   if (!link(t)) return '';
-  const e = ell[t.email];
-  if (!e) return `<button class="pont fut" onclick="nyit(${esc(JSON.stringify(t.email))})">…</button>`;
-  if (e.fut) return '<span class="pont fut"><i class="fas fa-spinner fa-spin"></i></span>';
-  if (e.hiba || !e.el) return `<button class="pont rossz" onclick="nyit(${esc(JSON.stringify(t.email))})">nem él</button>`;
+  const em = esc(JSON.stringify(t.email));
+  let e = ell[t.email];
+  if (!e) return `<button class="pont fut" onclick="nyit(${em})">…</button>`;
+  // Újraellenőrzés közben a régi pont látszik, mellette egy kis forgó ikon.
+  const forog = e.fut ? ' <i class="fas fa-spinner fa-spin" title="Ellenőrzés…"></i>' : '';
+  if (e.fut) { if (!e.elozo) return '<span class="pont fut"><i class="fas fa-spinner fa-spin"></i></span>'; e = e.elozo; }
+  if (e.halozat) return `<button class="pont kozepes" onclick="ujraEgy(${em})" title="${esc(e.hiba || '')}"><i class="fas fa-rotate-right"></i> nem tölthető be – újra</button>${forog}`;
+  if (e.hiba || !e.el) return `<button class="pont rossz" onclick="nyit(${em})">nem él</button>${forog}`;
   const cls = e.ok === e.ossz ? 'jo' : e.ok >= e.ossz * 0.7 ? 'kozepes' : 'rossz';
-  return `<button class="pont ${cls}" onclick="nyit(${esc(JSON.stringify(t.email))})">${e.ok} / ${e.ossz}</button>`;
+  return `<button class="pont ${cls}" onclick="nyit(${em})">${e.ok} / ${e.ossz}</button>${forog}`;
 }
 
 function vjAllapot(b) {
@@ -164,21 +169,53 @@ function listaRajz() {
         <td>${pontHtml(t)}</td>
         <td class="megj">${t.beadas ? esc(String(t.beadas.updatedAt || '').slice(0, 16)) : ''}</td></tr>`;
       if (!nyitva.has(t.email)) return sor;
-      return sor + `<tr class="reszlet"><td colspan="4">${WebEllenor.rajz(ell[t.email])}` +
+      const er = ell[t.email] && ell[t.email].fut ? ell[t.email].elozo : ell[t.email];   // ellenőrzés közben a korábbi eredmény
+      return sor + `<tr class="reszlet"><td colspan="4">${er ? WebEllenor.rajz(er) : '<p class="megj"><i class="fas fa-spinner fa-spin"></i> Ellenőrzés…</p>'}` +
         (t.beadas ? `<div class="vj"><textarea id="vj-${esc(t.beadas.id)}" maxlength="4000" placeholder="Üzenet a tanulónak (a Weboldalam oldalon látja)">${esc(t.beadas.visszajelzes ? t.beadas.visszajelzes.szoveg : '')}</textarea>
             <div><button class="kisgomb" onclick="vjKuld(${em})"><i class="fas fa-paper-plane"></i> Elküldöm</button><div class="vj-all" id="vja-${esc(t.beadas.id)}">${esc(vjAllapot(t.beadas))}</div></div></div>` : '') +
         `</td></tr>`;
     }).join('') + '</tbody></table>';
+  illesztOldal();
 }
 
+// Ne görgessen (Réka szabálya): ha a lista nem fér ki a képernyőre, kisebb betűvel rajzolja (16 → 9 px).
+function illesztOldal() {
+  if (innerWidth < 760) { document.documentElement.style.fontSize = ''; return; }
+  for (let fs = 16; fs >= 9; fs -= 0.5) {
+    document.documentElement.style.fontSize = fs + 'px';
+    if (document.documentElement.scrollHeight <= innerHeight + 1) return;
+  }
+}
+window.addEventListener('resize', () => { clearTimeout(window._illIdo); window._illIdo = setTimeout(illesztOldal, 150); });
+
+// Egyszerre egy tanuló részletei nyitva (így a lista kifér a képernyőre).
 function nyit(email) {
-  if (nyitva.has(email)) nyitva.delete(email); else nyitva.add(email);
+  if (nyitva.has(email)) nyitva.delete(email); else { nyitva.clear(); nyitva.add(email); }
   listaRajz();
 }
 
 async function parhuzamosan(lista, n, fn) {
   let i = 0;
   await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (i < lista.length) await fn(lista[i++]); }));
+}
+
+// Egy tanuló ellenőrzése; a korábbi eredmény addig látszik (elozo), hiba esetén sem marad forgó ikon.
+async function egyEllenoriz(t) {
+  const regi = ell[t.email];
+  ell[t.email] = { fut: true, elozo: regi && !regi.fut ? regi : (regi && regi.elozo) || null };
+  try {
+    ell[t.email] = await WebEllenor.ellenoriz(link(t), { nev: t.nev && !t.nev.includes('@') ? t.nev : null });
+  } catch (e) {
+    ell[t.email] = { halozat: true, hiba: 'Nem sikerült ellenőrizni.' };
+  }
+}
+async function ujraEgy(email) {
+  const t = tanulok.find(x => x.email === email);
+  if (!t || (ell[email] && ell[email].fut)) return;
+  const p = egyEllenoriz(t);
+  listaRajz();
+  await p;
+  listaRajz();
 }
 
 let fut = false;
@@ -188,15 +225,19 @@ async function mindetEllenoriz() {
   const gomb = document.getElementById('ellgomb');
   gomb.disabled = true;
   const csop = aktivCsop;
-  const l = aktivLista().filter(t => link(t));
-  l.forEach(t => ell[t.email] = { fut: true });
-  listaRajz();
-  await parhuzamosan(l, 4, async t => {
-    ell[t.email] = await WebEllenor.ellenoriz(link(t), { nev: t.nev && !t.nev.includes('@') ? t.nev : null });
+  try {
+    const l = aktivLista().filter(t => link(t));
+    l.forEach(t => { const r = ell[t.email]; ell[t.email] = { fut: true, elozo: r && !r.fut ? r : (r && r.elozo) || null }; });
+    listaRajz();
+    await parhuzamosan(l, 4, async t => {
+      await egyEllenoriz(t);
+      if (csop === aktivCsop) listaRajz();
+    });
+  } finally {
+    gomb.disabled = false;
+    fut = false;
     if (csop === aktivCsop) listaRajz();
-  });
-  gomb.disabled = false;
-  fut = false;
+  }
 }
 
 async function masol() {
