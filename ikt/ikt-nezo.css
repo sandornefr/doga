@@ -14,8 +14,8 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 .nz-forras-valto button.aktiv{background:#6366f1;color:#fff;}
 .nz-uj{color:#c7d2fe;font-size:.85rem;}
 .nz-x{border:0;background:#312e81;color:#fff;border-radius:6px;width:34px;height:30px;font-size:1.1rem;cursor:pointer;}
-.nz-test{flex:1;min-height:0;display:grid;grid-template-columns:190px minmax(0,1fr) 370px;}
-.nz-fajlok{border-right:1px solid #e2e8f0;padding:8px;overflow:auto;background:#fff;}
+.nz-test{flex:1;min-height:0;display:grid;grid-template-columns:170px minmax(0,1fr) 430px;}
+.nz-fajlok{border-right:1px solid #e2e8f0;padding:8px;overflow:hidden;background:#fff;}
 .nz-fajlok button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px;font:inherit;font-size:.9rem;cursor:pointer;color:#1f2933;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nz-fajlok button:hover{background:#f1f5f9;}
 .nz-fajlok button.aktiv{background:#e0e7ff;color:#3730a3;font-weight:600;}
@@ -25,29 +25,55 @@ table.ell td.p{width:60px;text-align:center;white-space:nowrap;}
 .nz-fulek button{border:1px solid #e2e8f0;border-bottom:0;background:#f1f5f9;border-radius:6px 6px 0 0;padding:5px 14px;font:inherit;font-size:.9rem;cursor:pointer;}
 .nz-fulek button.aktiv{background:#fff;font-weight:600;color:#3730a3;}
 .nz,.nz *{scrollbar-color:#475569 #0f172a;}
-.nz-kod{flex:1;min-height:0;overflow:auto;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.5 Consolas,'Courier New',monospace;}
+.nz-kod{flex:1;min-height:0;overflow:hidden;display:flex;background:#0f172a;color:#e2e8f0;font:13px/1.45 Consolas,'Courier New',monospace;}
 .nz-kod[hidden],.nz-kinezet[hidden],.nz-kep[hidden],#nz-iframe[hidden]{display:none;}
 .nz-kod .megj,.nz-kod .hiba{padding:12px;}
-.nz-sorszam{white-space:pre;text-align:right;padding:10px 8px;color:#64748b;user-select:none;border-right:1px solid #1e293b;}
-.nz-forras{margin:0;padding:10px 12px;white-space:pre;flex:1;}
+.nz-forras{margin:0;padding:8px 10px;flex:1;height:100%;overflow:hidden;column-fill:auto;column-gap:18px;column-rule:1px solid #1e293b;}
+.nz-forras .ks{display:flex;break-inside:avoid;}
+.nz-forras .ln{flex:none;width:2.6em;text-align:right;padding-right:.7em;color:#64748b;user-select:none;}
+.nz-forras .kt{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;}
 .sz-tag{color:#93c5fd;} .sz-attr{color:#fcd34d;} .sz-ertek{color:#86efac;} .sz-komment{color:#64748b;font-style:italic;}
-.nz-kinezet{flex:1;min-height:0;display:flex;background:#fff;}
-#nz-iframe{flex:1;border:0;width:100%;height:100%;background:#fff;}
-.nz-kep{flex:1;overflow:auto;padding:14px;}
-.nz-kep img{max-width:100%;border:1px solid #e2e8f0;margin-top:10px;}
+.nz-kinezet{flex:1;min-height:0;position:relative;overflow:hidden;background:#fff;}
+#nz-iframe{position:absolute;top:0;left:0;border:0;background:#fff;transform-origin:0 0;}
+.nz-kep{position:absolute;inset:0;overflow:hidden;padding:14px;display:flex;flex-direction:column;}
+.nz-kep img{max-width:100%;max-height:calc(100% - 2.5em);object-fit:contain;align-self:flex-start;border:1px solid #e2e8f0;margin-top:10px;}
 .nz-kepadat{font-size:.95rem;}
-.nz-pont{border-left:1px solid #e2e8f0;overflow:auto;padding:10px;background:#fff;font-size:.85rem;}
-.nz-pont table.ell{font-size:.82rem;table-layout:fixed;width:100%;}
+.nz-pont{border-left:1px solid #e2e8f0;overflow:hidden;padding:8px 10px;background:#fff;font-size:.85rem;display:flex;flex-direction:column;min-height:0;}
+.nzj-fulek{flex:none;display:flex;gap:4px;margin-bottom:6px;}
+.nzj-fulek button{border:1px solid #cbd2d9;border-radius:99px;padding:3px 12px;font:inherit;font-weight:600;cursor:pointer;background:transparent;color:inherit;}
+.nzj-fulek button.aktiv{background:#4f46e5;border-color:#4f46e5;color:#fff;}
+.nzj-pottyl{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;vertical-align:middle;}
+.nzj-panel{flex:1;min-height:0;overflow:hidden;}
+.nzj-panel[hidden]{display:none;}
+.nzj-panel[data-j="vj"]{display:flex;flex-direction:column;}
+.nzj-panel[data-j="vj"][hidden]{display:none;}
+.nzj-panel .vj-szerk{flex:1;display:flex;flex-direction:column;margin-top:0;border-top:0;padding-top:0;min-height:0;}
+.nzj-panel .vj-szerk textarea{flex:1;min-height:6em;resize:none;}
+.nz-pont table.ell{font-size:.97em;table-layout:fixed;width:100%;}
 .nz-pont table.ell th:first-child,.nz-pont table.ell td:first-child{width:26px;padding:4px 2px;}
 .nz-pont table.ell th:nth-child(2){width:34%;}
 .nz-pont table.ell th:last-child,.nz-pont table.ell td:last-child{width:46px;padding:4px 2px;}
 .nz-pont table.ell td{overflow-wrap:anywhere;}
+.nz-pont .ert-vegleges,.nz-pont .ert-tajek-fo{overflow-wrap:anywhere;}
 .nz-osszeg{font-weight:700;margin-bottom:8px;}
 .vj-allapot{font-size:.8rem;border-radius:999px;padding:2px 9px;white-space:nowrap;}
 .vj-nincs{background:#f1f5f9;color:#64748b;} .vj-elkuldve{background:#e0e7ff;color:#3730a3;}
 .vj-olvasta{background:#dcfce7;color:#166534;} .vj-javitott{background:#fef3c7;color:#92400e;font-weight:600;}
 .vj-szerk{margin-top:14px;border-top:1px solid #e2e8f0;padding-top:10px;}
-.vj-szerk textarea{width:100%;margin-top:6px;font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid #cbd2d9;border-radius:6px;resize:vertical;}
+.vj-szerk textarea{width:100%;margin-top:6px;font:inherit;font-size:1em;padding:6px 8px;border:1px solid #cbd2d9;border-radius:6px;resize:vertical;}
 .vj-sor{display:flex;gap:10px;align-items:center;margin-top:6px;}
 .vj-gomb{border:0;border-radius:6px;padding:6px 14px;font:inherit;font-weight:600;cursor:pointer;background:#4f46e5;color:#fff;}
 .vj-gomb:disabled{opacity:.6;}
+/* végleges pontozás */
+.nz-pont input.vp{width:2.6em;padding:1px 2px;border:1px solid #94a3b8;border-radius:4px;font:inherit;text-align:center;}
+.nz-pont table.ell td.vpt{width:74px;white-space:nowrap;text-align:center;}
+.ert-fej{display:flex;flex-direction:column;gap:2px;margin-bottom:6px;}
+.ert-ossz{font-size:1.05em;}
+.ert-sor{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 4px;}
+.ert-vegleges{font-size:1.1em;padding:6px 10px;border-radius:8px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.45);margin-bottom:4px;}
+.ert-tajek{font-size:.9em;opacity:.75;margin-bottom:6px;}
+.ert-tajek-fo{padding:6px 10px;border-radius:8px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);margin-bottom:6px;}
+.tajek{opacity:.7;}
+.vegleges-cimke{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:rgba(34,197,94,.18);color:#15803d;font-size:.8rem;font-weight:700;}
+body .vegleges-cimke{color:#86efac;}
+.nz-pont table.ell th:last-child{width:76px;}   /* a végleges pont mezője */
