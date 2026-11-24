@@ -63,7 +63,7 @@ table.tbl th{background:#f0f4f8;}
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
 
-<script src="temak.js"></script>
+<script src="temak.js?v=2"></script>
 <script src="ikt-ellenor.js?v=4"></script>
 <script>
 const TEMAK = window.IKT_TEMAK;
@@ -201,7 +201,7 @@ function listaRajz() {
       <div class="fej" onclick="this.parentElement.classList.toggle('nyitva')">
         <span class="nev">${esc(b.nev || b.email)}</span>
         <span class="oszt">${esc(csoportNev(b))}</span>
-        <span class="tema">${esc(temaNev(b))}</span>
+        <span class="tema" id="tm${b.id}">${esc(temaNev(b))}</span>
         ${b.nincsBeadas ? '' : `<span class="vj-allapot ${vjAllapot(b)[0]}">${esc(vjAllapot(b)[1])}</span>`}
         ${temak[b.email] ? `<button class="ujra" title="A tanuló témájának törlése: a következő megnyitáskor új témát kap" onclick="event.stopPropagation(); ujrasorsol(${esc(JSON.stringify(b.email))})"><i class="fas fa-shuffle"></i> Új téma</button>` : ''}
         ${b.nincsBeadas ? '<span class="nincs"><i class="fas fa-hourglass-half"></i> még nem adott be</span>' : `<span class="ido"><i class="far fa-clock"></i> ${esc(b.updatedAt)}</span>`}
@@ -244,8 +244,20 @@ function listaRajz() {
   }
 }
 
+// A Weboldalam-linkes (órán kapott témájú) tanuló témája a github.io-s témaoldalából felismerve.
+const ghTema = {};
+async function ghTemaFelismer(b) {
+  if (!b.weboldalbol || ghTema[b.id] !== undefined) return;
+  ghTema[b.id] = null;
+  const gt = await window.iktGithubTema(githubAlap(b.githubUrl));
+  ghTema[b.id] = gt;
+  const el = document.getElementById('tm' + b.id);
+  if (el && gt) el.textContent = gt.sorszam ? gt.sorszam + '. ' + TEMAK[gt.sorszam - 1][0] + ' (felismerve)' : gt.oldal + ': a téma nem azonosítható';
+}
+
 function sorFrissit(b) {
   const e = ellenorzes[b.id], g = ghEll[b.id];
+  ghTemaFelismer(b);
   const p = document.getElementById('p' + b.id), r = document.getElementById('r' + b.id);
   if (!p || !r) return;
   // A fejlécben a feltöltött fájlok eredménye; ha csak link van, a GitHubos.

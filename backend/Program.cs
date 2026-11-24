@@ -3187,12 +3187,18 @@ app.MapGet("/api/ikt/beadas/{id:int}/fajl/{fajlnev}", (int id, string fajlnev, H
 var iktTemaDb = new Dictionary<string, int> { ["temaoldal"] = 35 };
 
 // A tanuló témája (ha még nincs, a rendszer kisorsolja; cserélni nem lehet) — GET /api/ikt/tema?feladat=temaoldal
-app.MapGet("/api/ikt/tema", (HttpContext ctx, string? feladat, Database db) =>
+app.MapGet("/api/ikt/tema", (HttpContext ctx, string? feladat, string? csak, Database db) =>
 {
     var be = IktBeado(ctx, db);
     if (!be.Ok) return be.Hiba!;
     var f = (feladat ?? "").Trim().ToLowerInvariant();
     if (!iktTemaDb.TryGetValue(f, out var db35)) return Results.BadRequest(new { error = "Érvénytelen feladat." });
+    // csak=1: csak lekérdezi a már kiosztott témát (pl.: a Szorgalmi kártya), nem sorsol újat.
+    if (csak == "1")
+    {
+        var m = db.GetIktTemaSajat(be.Email, f);
+        return Results.Ok(new { temaSorszam = m?.TemaSorszam, CreatedAt = m?.CreatedAt });
+    }
     var t = db.GetOrAssignIktTema(be.Email, be.Nev, be.Osztaly, be.Csoport, f, db35);
     return Results.Ok(new { temaSorszam = t.TemaSorszam, t.CreatedAt });
 });

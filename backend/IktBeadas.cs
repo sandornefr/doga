@@ -235,6 +235,13 @@ public partial class Database
         }
     }
 
+    // A tanuló kiosztott témája, ha van – sorsolás (írás) nélkül.
+    public IktTemaKiosztas? GetIktTemaSajat(string email, string feladat)
+    {
+        using var conn = Open();
+        return ReadIktTemak(conn, null, "WHERE email = $p AND feladat = $f", email, feladat).FirstOrDefault();
+    }
+
     public List<IktTemaKiosztas> GetIktTemak(string feladat)
     {
         using var conn = Open();

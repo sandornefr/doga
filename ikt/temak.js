@@ -37,3 +37,42 @@ window.IKT_TEMAK = [
   ['Szárazföldi emlősök', 'emlős | kontinens | mit eszik', 'a 3 legnagyobb szárazföldi emlőst'],
   ['Programozási nyelvek', 'nyelv | megalkotás éve | mire használják', 'a 3 legnépszerűbb programozási nyelvet'],
 ];
+
+// Egy szövegből (a tanuló témaoldalának h1-éből vagy title-jéből) melyik téma: a sorszám, vagy null.
+// Kis-nagybetű, ékezet, írásjel, zárójeles rész nem számít; ha több téma is illik, a leghosszabb nevű nyer.
+window.iktTemaAzonosit = function (szoveg) {
+  const n = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+  const h = n(szoveg);
+  if (!h || h.length < 3) return null;
+  let legjobb = null, hossz = 0;
+  window.IKT_TEMAK.forEach((t, i) => {
+    const nev = n(t[0]);
+    const illik = h === nev || (nev.length > 4 && (` ${h} `.includes(` ${nev} `) || (h.length > 4 && ` ${nev} `.includes(` ${h} `))));
+    if (illik && nev.length > hossz) { legjobb = i + 1; hossz = nev.length; }
+  });
+  return legjobb;
+};
+
+// A tanuló github.io-s weboldalán a témaoldal: tema.html, vagy a menüben a 4 alapoldalon kívüli oldal.
+// Eredmény: { sorszam, oldal } (sorszam null, ha nem azonosítható) vagy null, ha nincs témaoldal.
+window.iktGithubTema = async function (alap) {
+  if (!alap) return null;
+  const ALAP4 = ['index.html', 'keplink.html', 'listak.html', 'orarend.html'];
+  const letolt = async u => { try { const r = await fetch(u); return r.ok ? await r.text() : null; } catch (e) { return null; } };
+  const doc = t => new DOMParser().parseFromString(t, 'text/html');
+  const jeloltek = ['tema.html'];
+  const index = await letolt(alap + 'index.html');
+  if (index) doc(index).querySelectorAll('nav a[href], a[href]').forEach(a => {
+    const h = (a.getAttribute('href') || '').trim().replace(/^\.\//, '').split(/[?#]/)[0];
+    if (/^[^/:]+\.html?$/i.test(h) && !ALAP4.includes(h.toLowerCase()) && !jeloltek.includes(h)) jeloltek.push(h);
+  });
+  for (const oldal of jeloltek) {
+    const t = await letolt(alap + oldal);
+    if (!t) continue;
+    const d = doc(t);
+    const h1 = d.querySelector('h1') ? d.querySelector('h1').textContent : '';
+    const sorszam = window.iktTemaAzonosit(h1) || window.iktTemaAzonosit(d.title);
+    return { sorszam, oldal };
+  }
+  return null;
+};

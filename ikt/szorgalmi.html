@@ -43,6 +43,7 @@ table.sz td.p{white-space:nowrap;}
 .reszlet{margin-top:.7rem;padding:.6rem .9rem;border-radius:.7rem;border:1px dashed var(--d-keret,#cbd2d9);min-height:3.4rem;display:flex;align-items:center;gap:1rem;}
 .reszlet .szoveg{flex:1;}
 .btn{border:0;border-radius:99px;padding:.45rem 1.1rem;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);text-decoration:none;white-space:nowrap;}
+.kesz-cimke{display:inline-block;font-size:.78em;font-weight:700;border-radius:99px;padding:0 .5em;background:rgba(34,197,94,.18);color:#86efac;}
 .szorg-cimke{display:inline-block;font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 9px;background:rgba(245,158,11,.15);color:#fcd34d;}
 @media (max-width:760px){
   html{font-size:14px;} body{height:auto;overflow:auto;} .panel,.belso{overflow:visible;} .racs{grid-template-columns:1fr 1fr;}
@@ -60,7 +61,7 @@ table.sz td.p{white-space:nowrap;}
 </div>
 <div id="app"><div class="kozep">Betöltés…</div></div>
 
-<script src="temak.js"></script>
+<script src="temak.js?v=2"></script>
 <script src="ikt-ellenor.js?v=4"></script>
 <script>
 // IKT Projektmunka I. – Szorgalmi feladatok (9. évfolyam): a kötelező Témaoldal beadása után a többi 34 témából
@@ -139,7 +140,7 @@ function ujRajz() {
   const kesz = new Set(beadasok.map(beadasTemaSorszam));
   document.getElementById('racs').innerHTML = TEMAK.map((t, i) => i + 1).filter(n => n !== kapott).map(n =>
     `<button class="tg${kesz.has(n) ? ' kesz' : ''}${valasztott === n ? ' valasztott' : ''}" data-n="${n}" title="${esc(TEMAK[n - 1][0])}">
-      <span class="n">${kesz.has(n) ? '<i class="fas fa-star"></i>' : n}</span><span>${esc(TEMAK[n - 1][0])}</span></button>`).join('');
+      <span class="n">${kesz.has(n) ? '<i class="fas fa-star"></i>' : n}</span><span>${esc(TEMAK[n - 1][0])}${kesz.has(n) ? ' <span class="kesz-cimke">kész</span>' : ''}</span></button>`).join('');
   document.querySelectorAll('#racs .tg').forEach(g => g.onclick = () => { valasztott = +g.dataset.n; ujRajz(); });
   const r = document.getElementById('reszlet');
   if (!valasztott) { r.innerHTML = '<span class="szoveg megj">Kattints egy témára! A csillagos témákat már beadtad.</span>'; return; }
@@ -169,12 +170,20 @@ async function indit() {
     app.innerHTML = '<div class="kozep"><h2><i class="fas fa-lock"></i> A Témaoldal beadása után nyílik meg.</h2><p>Előbb add be a kötelező Témaoldaladat, utána választhatsz szorgalmi témát.</p><a class="btn" href="temaoldal.html">A Témaoldalhoz</a></div>';
     return;
   }
-  // A kötelező (sorsolt) téma csak Témaoldal-beadásnál ismert – a Weboldalam-linkes tanulónak nem sorsolunk.
-  if (kot) try {
-    const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal', { headers: AUTH });
+  // A saját (kötelező) téma: 1) a kiosztott téma, ha van (csak lekérdezés, sorsolás nélkül);
+  // 2) a Weboldalam-linkes tanulónál a github.io-s témaoldala h1-éből / title-jéből felismerve.
+  // Ha nem azonosítható, minden téma választható marad (téves témát nem írunk ki).
+  let kapottKesz = !!kot;
+  try {
+    const rt = await fetch(API + '/api/ikt/tema?feladat=temaoldal&csak=1', { headers: AUTH });
     const dt = rt.ok ? await rt.json() : null;
-    if (dt && dt.temaSorszam) { kapott = dt.temaSorszam; if (u.email) temak[u.email] = { temaSorszam: kapott }; }
+    if (dt && dt.temaSorszam) kapott = dt.temaSorszam;
   } catch (e) {}
+  if (webLink) {
+    const gt = await window.iktGithubTema(githubAlap(webLink.githubUrl));
+    if (gt) { kapottKesz = true; if (!kapott && gt.sorszam) kapott = gt.sorszam; }
+  }
+  if (kapott && u.email) temak[u.email] = { temaSorszam: kapott };
   try {
     const r = await fetch(API + '/api/ikt/szorgalmi/sajat', { headers: AUTH });
     beadasok = r.ok ? ((await r.json()).beadasok || []) : [];
@@ -182,7 +191,7 @@ async function indit() {
   beadasok.sort((a, b) => beadasTemaSorszam(a) - beadasTemaSorszam(b));
   app.innerHTML = `<div class="fej"><h1>Szorgalmi feladatok</h1><span class="db">${beadasok.length} szorgalmit adtál be</span>
       <div class="fulsor"><button data-ful="beadott"><i class="fas fa-list-check"></i> Beadott szorgalmijaim</button><button data-ful="uj"><i class="fas fa-plus"></i> Új szorgalmi</button></div></div>
-    <div class="alcim megj">Gyakorolj más témákkal is! Ugyanúgy készítsd el, mint a kötelező Témaoldalt. A tanárod külön, szorgalmiként látja és pontozza.</div>
+    <div class="alcim megj">${kapott ? `A témád: <b>${esc(TEMAK[kapott - 1][0])}</b>${kapottKesz ? ' – <span class="kesz-cimke"><i class="fas fa-check"></i> kész</span>' : ''} (szorgalmiként nem választható). ` : ''}Gyakorolj más témákkal is! Ugyanúgy készítsd el, mint a kötelező Témaoldalt. A tanárod külön, szorgalmiként látja és pontozza. A csillagos témákat már beadtad.</div>
     <div class="panel" id="p-beadott"><div class="belso" id="beadott"></div></div>
     <div class="panel" id="p-uj" hidden><div class="belso"><div class="racs" id="racs"></div><div class="reszlet" id="reszlet"></div></div></div>`;
   document.querySelectorAll('.fulsor button').forEach(g => g.onclick = () => fulValt(g.dataset.ful));

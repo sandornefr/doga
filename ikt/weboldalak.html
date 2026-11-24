@@ -54,6 +54,7 @@ table.lista .we-tabla td{background:none;border-top:0;padding:.2em 0;}
 </div>
 <div class="wrap" id="app"><div class="kozep">Betöltés…</div></div>
 
+<script src="temak.js?v=2"></script>
 <script src="weboldal-ellenor.js?v=4"></script>
 <script>
 // A 9.-esek github.io-s weboldalai csoportonként. A tanuló az ikt/weboldal.html-en küldi be (feladat: „weboldal”).
@@ -161,7 +162,7 @@ function listaRajz() {
     l.map(t => {
       const em = esc(JSON.stringify(t.email));
       const sor = `<tr class="${link(t) ? '' : 'nincs'}">
-        <td><b>${esc(t.nev)}</b></td>
+        <td><b>${esc(t.nev)}</b>${temaJelzes(t)}</td>
         <td class="link">${t.beadas
           ? `<a href="${esc(t.beadas.githubUrl)}" target="_blank" rel="noopener">${esc(t.beadas.githubUrl)}</a>`
           : t.temaUrl ? `<a href="${esc(t.temaUrl)}" target="_blank" rel="noopener">${esc(t.temaUrl)}</a> <span class="tema">(a Témaoldalnál adta meg)</span>`
@@ -199,12 +200,18 @@ async function parhuzamosan(lista, n, fn) {
   await Promise.all(Array.from({ length: Math.min(n, lista.length) }, async () => { while (i < lista.length) await fn(lista[i++]); }));
 }
 
+// A tanuló témája a github.io-s témaoldalából felismerve (csak megjelenítés, nem tárolódik).
+const temaFel = {};
+const temaJelzes = t => { const g = temaFel[t.email]; return g && g.sorszam ? ` <span class="tema">· ${esc(TEMAK_[g.sorszam - 1][0])}</span>` : ''; };
+const TEMAK_ = window.IKT_TEMAK;
+
 // Egy tanuló ellenőrzése; a korábbi eredmény addig látszik (elozo), hiba esetén sem marad forgó ikon.
 async function egyEllenoriz(t) {
   const regi = ell[t.email];
   ell[t.email] = { fut: true, elozo: regi && !regi.fut ? regi : (regi && regi.elozo) || null };
   try {
     ell[t.email] = await WebEllenor.ellenoriz(link(t), { nev: t.nev && !t.nev.includes('@') ? t.nev : null });
+    if (temaFel[t.email] === undefined) temaFel[t.email] = await window.iktGithubTema(WebEllenor.alap(link(t))).catch(() => null);
   } catch (e) {
     ell[t.email] = { halozat: true, hiba: 'Nem sikerült ellenőrizni.' };
   }
