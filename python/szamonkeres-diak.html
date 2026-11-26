@@ -583,7 +583,13 @@ function parseFeladatok(txt) {
 }
 
 function getFeladatId(f, i) {
+  if (f.tipus === 'web') return `w_${f.feladat_id}`;
   return f.tipus === 'rendszer' ? `r_${f.feladat_szam}` : `s_${i}`;
+}
+
+// WEB számonkérés: a WEB dolgozat szerkesztőjében fut (web/index.html?szk=<id>, web/szamonkeres-web.js)
+function webSzamonkeres(sz) {
+  try { const f = JSON.parse(sz.feladatok || '[]'); return f.length === 1 && f[0].tipus === 'web'; } catch { return false; }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -602,6 +608,7 @@ let diakSubmitting = false;
 let pasteGuardInstalled = false;
 
 function openDiakOverlay(sz) {
+  if (webSzamonkeres(sz)) { location.href = '../web/index.html?szk=' + encodeURIComponent(sz.id); return; }
   const rawFeladatok = JSON.parse(sz.feladatok || '[]');
   const beadasok = sajatBeadasok[sz.id] || [];
 

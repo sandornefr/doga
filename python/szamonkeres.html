@@ -11,6 +11,7 @@
   <script src="tananyag/pyworker.js?v=1"></script>
   <script src="tananyag/pyrunner.js?v=1"></script>
   <script src="szamonkeres-pontozo.js?v=1"></script>
+  <script src="../web/web-ellenorzes.js?v=1"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#0b1120;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -290,7 +291,7 @@
         </div>
 
         <!-- Módválasztó gombok -->
-        <div class="feladat-mode-btns" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="feladat-mode-btns" style="grid-template-columns:1fr 1fr 1fr 1fr">
           <button class="feladat-mode-btn active" id="mode-btn-rendszer" onclick="setFeladatMode('rendszer')">
             <span class="mi"><i class="fas fa-list-check"></i></span>
             <span class="mt">Meglévő feladat</span>
@@ -306,6 +307,20 @@
             <span class="mt">Automatikus kiosztás</span>
             <span class="md">48 feladatos bankból – mindenki egyedi 1×8p + 1×14p + 1×18p kombinációt kap</span>
           </button>
+          <button class="feladat-mode-btn" id="mode-btn-web" onclick="setFeladatMode('web')" style="border-color:#0891b2">
+            <span class="mi"><i class="fas fa-code" style="color:#22d3ee"></i></span>
+            <span class="mt">WEB feladat</span>
+            <span class="md">Ágazati WEB feladat (40 pont) – mindenki ugyanazt írja, a WEB dolgozat szerkesztőjében, automatikusan pontozva</span>
+          </button>
+        </div>
+
+        <!-- WEB feladat panel -->
+        <div id="panel-web" class="card" style="display:none">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #0e7490;border-radius:8px;font-size:0.82rem;color:#a5f3fc;margin-bottom:14px">
+            <i class="fas fa-circle-info" style="color:#22d3ee;margin-top:2px;flex-shrink:0"></i>
+            <span>Egy WEB feladatot választhatsz, Python feladat nem kerülhet mellé. A tanuló a WEB dolgozat szerkesztőjében dolgozik (HTML + CSS, előnézet, forrásfájlok, minta). A 40 szempontot a gép pontozza a WEB dolgozat szabályaival, a végleges pontot te írhatod át.</span>
+          </div>
+          <div id="web-feladat-lista" class="feladat-list"><div style="padding:16px;color:#64748b">Feladatok betöltése...</div></div>
         </div>
 
         <!-- Rendszer feladatok panel -->
@@ -494,12 +509,13 @@
 
 <!-- ── Kód megtekintő modal ───────────────────────────────────────── -->
 <div class="modal" id="kod-modal">
-  <div class="modal-box" style="max-width:700px">
+  <div class="modal-box" id="kod-modal-box" style="max-width:700px">
     <div class="modal-header">
       <div class="modal-title" id="kod-modal-cim">Beadott kód</div>
       <button class="close-btn" onclick="document.getElementById('kod-modal').classList.remove('open')"><i class="fas fa-xmark"></i></button>
     </div>
     <pre id="kod-modal-content" style="background:#0b1120;border-radius:8px;padding:14px;font-size:0.85rem;overflow-x:auto;white-space:pre-wrap;color:#e0e0e0;max-height:70vh;overflow-y:auto"></pre>
+    <div id="kod-modal-web" style="display:none"></div>
   </div>
 </div>
 
@@ -655,15 +671,21 @@ function validateStep(step) {
       alert('Adj hozzá legalább egy feladatot a folytatáshoz!');
       return false;
     }
+    if (feladatMode === 'web' && !webValasztva()) {
+      alert('Válassz egy WEB feladatot a folytatáshoz!');
+      return false;
+    }
   }
   return true;
 }
 
 function setFeladatMode(mode) {
   feladatMode = mode;
-  ['rendszer','sajat','szambank'].forEach(m => {
+  ['rendszer','sajat','szambank','web'].forEach(m => {
     document.getElementById('mode-btn-' + m)?.classList.toggle('active', m === mode);
   });
+  document.getElementById('panel-web').style.display = mode === 'web' ? 'block' : 'none';
+  if (mode === 'web') loadWebFeladatok();
   document.getElementById('panel-rendszer').style.display  = mode === 'rendszer'  ? 'block' : 'none';
   document.getElementById('panel-sajat').style.display     = mode === 'sajat'     ? 'block' : 'none';
   document.getElementById('panel-szambank').style.display  = mode === 'szambank'  ? 'block' : 'none';
@@ -731,7 +753,7 @@ function updateStep3Summary() {
   } else {
     maxOssz = selectedFeladatok.reduce((s, f) => s + (parseInt(f.pont) || 0), 0);
     feladatReszletek = selectedFeladatok.map(f =>
-      `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
+      `${f.tipus === 'sajat' ? '<i class="fas fa-pen" style="color:#a5b4fc"></i>' : f.tipus === 'web' ? '<i class="fas fa-code" style="color:#22d3ee"></i>' : '<i class="fas fa-robot" style="color:#64748b"></i>'} ${escH(f.cim)} (${f.pont} pt)`
     ).join('<br>');
   }
   const rows = [
@@ -752,13 +774,11 @@ async function loadCsoportok() {
     const users = await res.json();
     allTanulok = users.filter(u => u.szerep === 'tanulo');
 
-    // Csak 10. évfolyamos tanulók
+    // 9. és 10. évfolyamos tanulók (WEB számonkérés a 9.-eseknek is)
+    const evf = u => { const o = (u.osztaly || '').toString(), ev = (u.evfolyam || '').toString();
+      return ev === '10' || o.startsWith('10') ? '10' : ev === '9' || /^9(?!\d)/.test(o) ? '9' : ''; };
     csoportGroups = new Map();
-    allTanulok.filter(u => {
-      const o = (u.osztaly || '').toString();
-      const ev = (u.evfolyam || '').toString();
-      return o.startsWith('10') || ev === '10';
-    }).forEach(u => {
+    allTanulok.filter(u => evf(u)).forEach(u => {
       const key = u.osztaly && u.csoport ? `${u.osztaly}/${u.csoport}`
                 : u.osztaly ? u.osztaly
                 : u.evfolyam || 'ismeretlen';
@@ -771,9 +791,12 @@ async function loadCsoportok() {
       el.innerHTML = '<span style="color:#64748b;font-size:0.85rem">Nincsenek tanuló csoportok</span>';
       return;
     }
-    el.innerHTML = '<div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px"><i class="fas fa-graduation-cap" style="color:#3b82f6;margin-right:5px"></i>10. évfolyam</div>';
-    [...csoportGroups.entries()].sort(([a],[b]) => a.localeCompare(b)).forEach(([key, members]) => {
-      el.appendChild(buildCsoportCard(key, members));
+    el.innerHTML = '';
+    ['10', '9'].forEach(e => {
+      const lista = [...csoportGroups.entries()].filter(([, m]) => evf(m[0]) === e).sort(([a],[b]) => a.localeCompare(b));
+      if (!lista.length) return;
+      el.insertAdjacentHTML('beforeend', `<div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin:${el.children.length ? '18px' : '0'} 0 10px"><i class="fas fa-graduation-cap" style="color:#3b82f6;margin-right:5px"></i>${e}. évfolyam</div>`);
+      lista.forEach(([key, members]) => el.appendChild(buildCsoportCard(key, members)));
     });
   } catch(e) {
     document.getElementById('csoport-lista').innerHTML = '<span style="color:#ef4444;font-size:0.85rem">Hiba a betöltés során</span>';
@@ -973,6 +996,7 @@ function parseTasks(txt) {
 }
 
 function toggleFeladat(num, cim, pont, checked) {
+  if (checked) webKivesz();
   if (checked) {
     if (!selectedFeladatok.find(f => f.tipus==='rendszer' && f.feladat_szam===num))
       selectedFeladatok.push({tipus:'rendszer', feladat_szam:num, cim, pont});
@@ -987,6 +1011,7 @@ function addSajatFeladat() {
   const szoveg = document.getElementById('sf-szoveg').value.trim();
   const pont = parseInt(document.getElementById('sf-pont').value) || 0;
   if (!cim || !szoveg || !pont) { alert('Töltsd ki a saját feladat összes mezőjét!'); return; }
+  webKivesz();
   selectedFeladatok.push({tipus:'sajat', cim, szoveg, pont});
   document.getElementById('sf-cim').value = '';
   document.getElementById('sf-szoveg').value = '';
@@ -996,6 +1021,7 @@ function addSajatFeladat() {
 
 function removeFeladat(i) {
   const f = selectedFeladatok[i];
+  if (f.tipus === 'web') { selectedFeladatok.splice(i, 1); renderWebLista(); renderSelectedTags(); return; }
   if (f.tipus === 'rendszer') {
     const cb = document.getElementById('f'+f.feladat_szam);
     if (cb) { cb.checked = false; cb.closest('.feladat-item')?.classList.remove('selected'); }
@@ -1008,7 +1034,7 @@ function renderSelectedTags() {
   const el = document.getElementById('selected-tags');
   el.innerHTML = selectedFeladatok.map((f,i) =>
     `<div class="sel-tag"><span class="badge ${f.tipus==='sajat'?'badge-sajat':''}" style="${f.tipus!=='sajat'?'':''}">
-      ${f.tipus==='sajat'?'Saját':'#'+f.feladat_szam}</span> ${escH(f.cim)} (${f.pont} pt)
+      ${f.tipus==='sajat'?'Saját':f.tipus==='web'?'WEB':'#'+f.feladat_szam}</span> ${escH(f.cim)} (${f.pont} pt)
       <button onclick="removeFeladat(${i})" title="Eltávolítás"><i class="fas fa-xmark"></i></button></div>`
   ).join('');
 }
@@ -1068,6 +1094,7 @@ async function createSzamonkeres() {
     document.querySelectorAll('.csoport-card').forEach(c=>{c.classList.remove('has-selection');c.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);c.querySelectorAll('.csoport-student-item').forEach(i=>i.classList.remove('selected'));});
     document.querySelectorAll('.feladat-item input').forEach(cb=>cb.checked=false);
     renderSelectedTags();
+    renderWebLista();
   } catch(e) {
     showMsg(err, e.message);
   }
@@ -1191,9 +1218,10 @@ function renderDetail(sz, beadasok) {
       </td>
       <td style="text-align:center">${b.maxPont}</td>
       <td style="font-size:0.78rem;color:#94a3b8">${escH(b.megjegyzes||'')}</td>
-      <td>${b.kod ? `<button class="kod-btn" onclick="showKod(${b.id},'${escH(b.tanuloNev)} – ${escH(b.feladatId)}')"><i class="fas fa-code"></i> Kód</button>` : '<span style="color:#374151">–</span>'}</td>
+      <td>${b.kod ? `<button class="kod-btn" onclick="showKod(${b.id},'${escH(b.tanuloNev)} – ${escH(b.feladatId)}')"><i class="fas ${webId(b.feladatId) ? 'fa-eye' : 'fa-code'}"></i> ${webId(b.feladatId) ? 'Megnézem' : 'Kód'}</button>` : '<span style="color:#374151">–</span>'}</td>
       <td style="white-space:nowrap">
-        ${b.kod ? `
+        ${b.kod && webId(b.feladatId) ? `<button class="kod-btn" onclick="letoltMegoldas(${b.id})" title="Megoldás letöltése (HTML + CSS)"><i class="fas fa-download"></i></button>` : ''}
+        ${b.kod && !webId(b.feladatId) ? `
           <button class="kod-btn" onclick="letoltMegoldas(${b.id})" title="Megoldás letöltése"><i class="fas fa-download"></i></button>
           <button class="kod-btn" onclick="letoltRubrika(${b.id})" title="Pontozási rubrika letöltése" style="margin-left:4px"><i class="fas fa-list-check"></i></button>
           <button class="kod-btn" onclick="aiPontozas(${b.id})" title="AI pontozás (Gemini)" style="margin-left:4px;background:#1a1a4e;border-color:#6366f1;color:#a5b4fc"><i class="fas fa-robot"></i> AI</button>
@@ -1251,7 +1279,10 @@ function renderOsszes(beadasok, feladatok, ph, maxOssz) {
     const szaz = maxOssz > 0 ? Math.round(s.ossz/maxOssz*100) : 0;
     const jegy = szaz>=ph.ot?5:szaz>=ph.negy?4:szaz>=ph.harom?3:szaz>=ph.ket?2:1;
     const jColors = ['','#ef4444','#f97316','#eab308','#22c55e'];
-    const javBtn = !isKiadva
+    const webB = beadasok.find(b => b.tanuloEmail === email && webId(b.feladatId) && b.kod);
+    const javBtn = webB
+      ? `<button class="javitas-btn" onclick="showKod(${webB.id},'${escH(s.nev)}')"><i class="fas fa-eye"></i> Megnézem</button>`
+      : !isKiadva
       ? `<button class="javitas-btn" onclick="openJavitas('${escH(email)}')"><i class="fas fa-pen-to-square"></i> Javítás</button>`
       : `<span style="font-size:0.75rem;color:#64748b">kiadva</span>`;
     return `<tr>
@@ -1313,6 +1344,10 @@ async function setBeadasPont(beadasId, pont, megjegyzes) {
 function showKod(beadasId, cim) {
   const b = allBeadasok.find(x => x.id === beadasId);
   if (!b || !b.kod) return;
+  if (webId(b.feladatId)) { webNezet(b, cim); return; }
+  document.getElementById('kod-modal-box').style.maxWidth = '700px';
+  document.getElementById('kod-modal-web').style.display = 'none';
+  document.getElementById('kod-modal-content').style.display = 'block';
   document.getElementById('kod-modal-cim').textContent = cim;
   document.getElementById('kod-modal-content').textContent = b.kod;
   document.getElementById('kod-modal').classList.add('open');
@@ -1356,6 +1391,13 @@ async function lezarSzamonkeres(id) {
 function letoltMegoldas(beadasId) {
   const b = allBeadasok.find(x => x.id === beadasId);
   if (!b?.kod) return;
+  if (webId(b.feladatId)) {
+    const m = WebEllenorzes.munka(b.kod);
+    downloadTxt([`Tanuló: ${b.tanuloNev} (${b.tanuloEmail})`, `Számonkérés: ${currentSzamonkeres?.cim || ''}`,
+      `Feladat: ${webFeladatNev(b.feladatId)} (${b.maxPont} pont)`, `Beadás: ${b.submittedAt || ''}`, '─'.repeat(50), '',
+      '===== HTML =====', m.html, '', '===== css/style.css =====', m.css].join('\n'), `${b.tanuloNev.replace(/\s+/g,'_')}_web_megoldas.txt`);
+    return;
+  }
   const sz = currentSzamonkeres;
   const feladatok = JSON.parse(sz?.feladatok || '[]');
   const feladat = feladatok.find((f, i) => (f.tipus==='rendszer'?`r_${f.feladat_szam}`:`s_${i}`) === b.feladatId);
@@ -1656,7 +1698,7 @@ function autoReszletek(b) {
 function autoCellHtml(b) {
   const r = autoReszletek(b);
   if (r) return `${b.autoPont}<span class="auto-jel">(${r.filter(x => x.ok).length}/${r.length})</span>`;
-  if (b.kod && /^r_\d+$/.test(b.feladatId || '') && currentSzamonkeres?.statusz !== 'kiadva')
+  if (b.kod && (/^r_\d+$/.test(b.feladatId || '') || webId(b.feladatId)) && currentSzamonkeres?.statusz !== 'kiadva')
     return '<i class="fas fa-spinner fa-spin" style="color:#64748b"></i>';
   return b.autoPont ? String(b.autoPont) : '–';
 }
@@ -1682,6 +1724,7 @@ function feladatMaxPont(feladatId) {
   if (r) return feladatok.find(f => f.tipus === 'rendszer' && f.feladat_szam === parseInt(r[1]))?.pont || 0;
   const s = /^s_(\d+)$/.exec(feladatId);
   if (s) return feladatok[parseInt(s[1])]?.pont || 0;
+  if (webId(feladatId)) return 40;
   const b = /^S(\d+)_/.exec(feladatId); // automatikus kiosztás: S8_03 → 8 pont
   return b ? parseInt(b[1]) : 0;
 }
@@ -1717,11 +1760,135 @@ async function beNemAdottBeadasa() {
   showDetailMsg(jo === ossz ? 'ok' : 'err', `${jo} / ${ossz} mentett munka beadva.`);
 }
 
+// ── WEB számonkérés (ágazati WEB feladat, web/web-ellenorzes.js) ───────────────
+// feladatok: [{tipus:'web', feladat_id:'baglyok', cim, pont:40}], beadás feladatId: 'w_<feladat_id>',
+// kód: JSON {html, css, vh, vc, kepek}. A tanuló a web/index.html?szk=<id> oldalon dolgozik.
+const WEB_ALAP = '../web/';
+let webFeladatLista = null;
+
+function webId(feladatId) { const m = /^w_([a-z0-9_]+)$/i.exec(feladatId || ''); return m ? m[1] : null; }
+function webValasztva() { return selectedFeladatok.find(f => f.tipus === 'web') || null; }
+function webFeladatNev(feladatId) {
+  const id = webId(feladatId);
+  const f = (webFeladatLista || []).find(x => x.id === id);
+  return f ? f.nev : id;
+}
+function webKivesz() {
+  if (!webValasztva()) return;
+  selectedFeladatok = selectedFeladatok.filter(f => f.tipus !== 'web');
+  renderWebLista();
+}
+
+async function loadWebFeladatok() {
+  if (webFeladatLista) { renderWebLista(); return; }
+  try { webFeladatLista = await WebEllenorzes.feladatok(WEB_ALAP); }
+  catch (e) { document.getElementById('web-feladat-lista').innerHTML = `<div style="padding:16px;color:#ef4444">A WEB feladatok nem tölthetők be: ${escH(e.message)}</div>`; return; }
+  renderWebLista();
+}
+
+function renderWebLista() {
+  const el = document.getElementById('web-feladat-lista');
+  if (!el || !webFeladatLista) return;
+  const val = webValasztva();
+  el.innerHTML = webFeladatLista.map(f => `
+    <label class="feladat-item${val && val.feladat_id === f.id ? ' selected' : ''}" style="cursor:pointer">
+      <input type="radio" name="web-feladat" ${val && val.feladat_id === f.id ? 'checked' : ''} onchange="webValaszt('${escH(f.id)}')">
+      <div style="flex:1"><div style="font-weight:600">${escH(f.nev)}</div>
+        <div style="font-size:0.75rem;color:#64748b">${f.pont} szempont · ${f.pont} pont</div></div>
+    </label>`).join('');
+}
+
+function webValaszt(id) {
+  const f = (webFeladatLista || []).find(x => x.id === id);
+  if (!f) return;
+  selectedFeladatok = [{ tipus: 'web', feladat_id: f.id, cim: f.nev, pont: f.pont }];
+  document.querySelectorAll('.feladat-item input[type=checkbox]').forEach(cb => { cb.checked = false; cb.closest('.feladat-item')?.classList.remove('selected'); });
+  renderWebLista();
+  renderSelectedTags();
+}
+
+async function webNezet(b, cim) {
+  document.getElementById('kod-modal-cim').textContent = cim;
+  document.getElementById('kod-modal-content').style.display = 'none';
+  document.getElementById('kod-modal-box').style.maxWidth = '1200px';
+  const box = document.getElementById('kod-modal-web');
+  box.style.display = 'block';
+  box.innerHTML = '<div style="color:#94a3b8">Betöltés…</div>';
+  document.getElementById('kod-modal').classList.add('open');
+  try {
+    const id = webId(b.feladatId);
+    const task = await WebEllenorzes.feladat(WEB_ALAP, id);
+    const e = await WebEllenorzes.pontoz(WEB_ALAP, id, b.kod);
+    const m = WebEllenorzes.munka(b.kod);
+    const kep = (k, nev) => typeof k === 'string' && /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+\/=]+$/.test(k)
+      ? `<figure style="margin:0"><img src="${k}" alt="${nev} validálás" style="max-width:100%;border:1px solid #334155;border-radius:6px"><figcaption style="font-size:0.72rem;color:#64748b">${nev} validálás</figcaption></figure>` : '';
+    box.innerHTML = `
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1 1 560px;min-width:0">
+          <div style="font-size:0.78rem;color:#64748b;margin-bottom:6px">Előnézet (mint a WEB dolgozatban)</div>
+          <iframe id="web-elonezet" sandbox="allow-same-origin" style="width:100%;height:62vh;border:1px solid #334155;border-radius:8px;background:#fff"></iframe>
+        </div>
+        <div style="flex:0 1 380px;min-width:260px;max-height:68vh;overflow-y:auto">
+          <div style="font-weight:700;color:#93c5fd;margin-bottom:8px">Automatikus pont: ${e.pont} / ${e.max}</div>
+          <div style="display:flex;flex-direction:column;gap:3px">${e.reszletek.map(r => `
+            <div style="display:flex;gap:8px;padding:4px 8px;border-radius:6px;font-size:0.8rem;background:${r.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)'}">
+              <i class="fas ${r.ok ? 'fa-check' : 'fa-xmark'}" style="color:${r.ok ? '#10b981' : '#ef4444'};margin-top:3px"></i>
+              <span style="color:${r.ok ? '#d1fae5' : '#fca5a5'}">${escH(r.c)}</span></div>`).join('')}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${kep(m.kepek.html, 'HTML')}${kep(m.kepek.css, 'CSS')}</div>
+        </div>
+      </div>
+      <details style="margin-top:12px"><summary style="cursor:pointer;color:#94a3b8">HTML kód</summary><pre style="background:#0b1120;border-radius:8px;padding:12px;font-size:0.8rem;white-space:pre-wrap;color:#e0e0e0;max-height:50vh;overflow:auto">${escH(m.html)}</pre></details>
+      <details style="margin-top:8px"><summary style="cursor:pointer;color:#94a3b8">CSS kód (css/style.css)</summary><pre style="background:#0b1120;border-radius:8px;padding:12px;font-size:0.8rem;white-space:pre-wrap;color:#e0e0e0;max-height:50vh;overflow:auto">${escH(m.css)}</pre></details>`;
+    document.getElementById('web-elonezet').srcdoc = WebEllenorzes.elonezet(WEB_ALAP, task, b.kod);
+  } catch (err) {
+    box.innerHTML = `<div style="color:#ef4444">Hiba: ${escH(err.message)}</div>`;
+  }
+}
+
+async function webAutoPontozas(szId, mindet) {
+  if (autoFut) return;
+  const lista = allBeadasok.filter(b => b.kod && webId(b.feladatId) && (mindet || !b.autoReszletek));
+  if (!lista.length) { autoAllapot(''); return; }
+  autoFut = true;
+  let kesz = 0, hiba = false;
+  try {
+    for (const b of lista) {
+      if (!currentSzamonkeres || currentSzamonkeres.id !== szId) break;
+      autoAllapot(`<i class="fas fa-spinner fa-spin"></i> Automatikus pontozás: ${kesz + 1} / ${lista.length} (${escH(b.tanuloNev)})`);
+      let eredm;
+      try { eredm = await WebEllenorzes.pontoz(WEB_ALAP, webId(b.feladatId), b.kod); }
+      catch { hiba = true; break; }
+      const reszletek = JSON.stringify(eredm.reszletek);
+      const res = await authFetch(`${API}/api/szamonkeres/beadas/${b.id}/autopont`, {
+        method: 'PATCH', body: JSON.stringify({ pont: eredm.pont, reszletek })
+      }).catch(() => null);
+      if (!res || !res.ok) { hiba = true; break; }
+      b.autoPont = eredm.pont; b.autoReszletek = reszletek;
+      const uj = allBeadasok.find(x => x.id === b.id);
+      if (uj && uj !== b) { uj.autoPont = b.autoPont; uj.autoReszletek = reszletek; }
+      kesz++;
+      const cell = document.getElementById(`auto-cell-${b.id}`);
+      if (cell) { cell.innerHTML = autoCellHtml(b); cell.title = autoCellTitle(b); }
+      const inp = document.getElementById(`pont-input-${b.id}`);
+      if (inp && b.manualisPont == null) inp.value = b.autoPont;
+    }
+  } finally { autoFut = false; }
+  if (currentSzamonkeres && currentSzamonkeres.id === szId) {
+    const feladatok = JSON.parse(currentSzamonkeres.feladatok || '[]');
+    const ph = JSON.parse(currentSzamonkeres.ponthatarak || '{}');
+    renderOsszes(allBeadasok, feladatok, ph, feladatok.reduce((s, f) => s + (f.pont || 0), 0));
+    autoAllapot(hiba
+      ? `<i class="fas fa-triangle-exclamation" style="color:#fca5a5"></i> Az automatikus pontozás megszakadt (${kesz} / ${lista.length} kész). Nyomd meg a Frissítés gombot!`
+      : `<i class="fas fa-circle-check" style="color:#4ade80"></i> Automatikus pontozás kész: ${kesz} beadás. A Végleges pont mezőben felülírhatod.`);
+  }
+}
+
 function autoAllapot(txt) { document.getElementById('auto-allapot').innerHTML = txt || ''; }
 
 async function autoPontozas(szId, mindet) {
   if (autoFut || !currentSzamonkeres || currentSzamonkeres.id !== szId) return;
   if (currentSzamonkeres.statusz === 'kiadva') { autoAllapot(''); return; }
+  if (allBeadasok.some(b => webId(b.feladatId))) { await webAutoPontozas(szId, mindet); return; }
   try { await loadSzempontok(); } catch { autoAllapot('<i class="fas fa-triangle-exclamation" style="color:#fca5a5"></i> A feladatbank nem tölthető be, az automatikus pontozás most kimarad.'); return; }
   const lista = allBeadasok.filter(b => b.kod && beadasFeladat(b) && (mindet || !b.autoReszletek));
   allBeadasok.forEach(b => { if (!lista.includes(b) && !b.autoReszletek) { const c = document.getElementById(`auto-cell-${b.id}`); if (c) c.innerHTML = autoCellHtml({ ...b, kod: '' }); } });

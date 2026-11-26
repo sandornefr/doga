@@ -3824,6 +3824,7 @@ function initKeszBtn() {
 
 function saveToLocalStorage() {
   if (!currentTask || !htmlEditor || !cssEditor) return;
+  if (window.SzkWeb && SzkWeb.aktiv) { SzkWeb.mentes(); return; }   // WEB számonkérés (szamonkeres-web.js)
 
   // Bejelentkezett tanuló: semmi a böngészőbe – éles módban a beadás, gyakorlóban a szerveres vázlat
   const tanulo = portalTanulo();
@@ -3972,7 +3973,9 @@ async function selectTask(taskId) {
   // Tanulónál a vázlat a szerverről jön (ott folytatja, ahol abbahagyta)
   const tanulo = portalTanulo();
   let saved = null;
-  if (!(acLive || liveModeDetected)) {
+  if (window.SzkWeb && SzkWeb.aktiv) {
+    saved = SzkWeb.mentett();
+  } else if (!(acLive || liveModeDetected)) {
     if (tanulo) {
       draftLoading = true;
       statusEl.textContent = 'Mentett munka betöltése a szerverről…';
@@ -4803,7 +4806,9 @@ function updateStudentDisplay() {
     }
   }
 
-  if (sessionStorage.getItem('kandoUser') && studentData.name) {
+  if (window.SzkWeb && SzkWeb.aktiv && sessionStorage.getItem('kandoUser') && studentData.name) {
+    if (!window._szkIndult) { window._szkIndult = true; SzkWeb.indit(); }
+  } else if (sessionStorage.getItem('kandoUser') && studentData.name) {
     showModeSelector(); // azonnal takar, mielőtt az API válaszol
     if (kandoUser.szerep === 'oktato') {
       if (switchBtn) switchBtn.style.display = 'inline-block';
@@ -5018,7 +5023,7 @@ function startTimer() {
       timerSeconds--;
       updateTimerDisplay();
       // Mentés localStorage-be - tanuló-specifikus kulccsal
-      const timerKey = getTimerStorageKey();
+      const timerKey = (window.SzkWeb && SzkWeb.aktiv) ? null : getTimerStorageKey();
       if (timerKey) {
         localStorage.setItem(timerKey, timerSeconds.toString());
       }
@@ -5868,7 +5873,9 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
     // Anti-cheat inicializálás (test mode lekérdezése után)
     const acKandoUser = (() => { try { return JSON.parse(sessionStorage.getItem('kandoUser') || '{}'); } catch { return {}; } })();
-    if (acKandoUser.szerep !== 'oktato') {
+    if (window.SzkWeb && SzkWeb.aktiv) {
+      // WEB számonkérés: az anti-cheat-et a szamonkeres-web.js indítja
+    } else if (acKandoUser.szerep !== 'oktato') {
       fetch('https://agazati.up.railway.app/api/config', { signal: AbortSignal.timeout(6000) })
         .then(r => r.json())
         .then(data => { initAntiCheat(data.test_mode === 'live'); })
@@ -5886,6 +5893,7 @@ if (btnToggleTasks) btnToggleTasks.addEventListener('click', () => {
 
 // WEB beadás a backendbe (éles módban autosave hívja)
 async function submitWebToBackend(celHonap) {
+  if (window.SzkWeb && SzkWeb.aktiv) { SzkWeb.mentes(true); return; }   // WEB számonkérés: csak mentés
   if (!studentData.name || !studentData.email) return;
   const htmlCode = htmlEditor ? htmlEditor.getValue() : '';
   const cssCode  = cssEditor  ? cssEditor.getValue()  : '';
@@ -5958,6 +5966,7 @@ function acShow(reason) {
   document.getElementById('ac-text').textContent = reason;
   document.getElementById('ac-count').textContent = acWarnings + '. figyelmeztetés / ' + AC_MAX;
   if (acWarnings >= AC_MAX) {
+    if (window.SzkWeb && SzkWeb.aktiv) { acLive = false; SzkWeb.beadas(true); return; }
     document.getElementById('ac-title').textContent = '⛔ Szabályszegés rögzítve';
     document.getElementById('ac-count').textContent = 'A dolgozatod zárolva. Értesítsd az oktatót!';
     document.getElementById('ac-close-btn').textContent = 'Vissza a főmenübe';
@@ -6045,6 +6054,7 @@ function getScoreSummaryText() {
 }
 
 async function handleWebSubmit() {
+  if (window.SzkWeb && SzkWeb.aktiv) { SzkWeb.beadas(false); return; }
   const celHonap = await window.showWebHonapModal();
   if (celHonap === false) return; // "Mégse" → vissza
   acLive = false;
